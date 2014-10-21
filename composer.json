@@ -15,7 +15,7 @@
 		}
 	],
 	"require": {
-		"php": ">= 5.3.7",
+		"php": ">= 5.3.3",
 		"nette/nette": "~2.2.0",
 		"dg/adminer-custom": "~1.5",
 		"kdyby/forms-replicator": "@dev",
