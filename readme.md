@@ -2,6 +2,8 @@ HKFree UserDB
 =============
 Powerful [HKFree.org](http://www.hkfree.org) user&ip managment database
 
+Developed by powerful team - Evil, ZitnyP & Bkralik
+
 License
 -------
 - Nette: New BSD License or GPL 2.0 or 3.0 (http://nette.org/license)
