@@ -18,6 +18,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->oblast = $oblast;
     }
     
+    public function startup() {
+    	parent::startup();
+    	$this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
+    }
+    
     protected function beforeRender() {
         parent::__construct();
         parent::beforeRender();
