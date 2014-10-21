@@ -1,0 +1,21 @@
+{block content}
+{ifset $ap}
+
+<h2>{$ap->oblast->jmeno}, {$ap->jmeno}</h2>
+<a href="{link Ap:edit id=>$ap->id}" class="btn btn-default btn-sm" role="button">Editovat</a>
+<a href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm" role="button">Zobrazit uživatele oblasti</a>
+<br><br>
+<pre>
+{$ap->poznamka}
+</pre>
+<br>
+
+<h4>IP Adresy</h4>
+{$adresy}
+
+<h4>Subnety</h4>
+{$subnety}
+
+{/ifset}
+{/block}
+

@@ -1,0 +1,16 @@
+log/*
+temp/*
+vendor/*
+!vendor/others
+
+!log/web.config
+!temp/web.config
+!log/.htaccess
+!temp/.htaccess
+
+
+.DS_Store
+!.gitignore
+!.htaccess
+!web.config
+app/config/config.local.neon

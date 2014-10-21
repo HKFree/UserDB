@@ -1,0 +1,34 @@
+<form n:name=$form>
+
+    <ul class="error" n:if="$form->ownErrors" n:block="#errors">
+        <li n:foreach="$form->ownErrors as $error">{$error}</li>
+    </ul>
+
+    <fieldset n:foreach="$form->groups as $group" n:if="$group->controls" n:block="#group">
+        <legend n:ifset="$group->options[label]">{$group->options[label]}</legend>
+        <p n:ifset="$group->options[description]">{$group->options[description]}</p>
+
+        <table n:block="#controls" class="form">
+        {foreach $group->controls as $field}
+            {if $field->name=='ipAdresa'||$field->name=='hostname'||$field->name=='macAdresa'||$field->name=='internet'||$field->name=='smokeping'||$field->name=='login'||$field->name=='heslo'||$field->name=='popis'||$field->name=='remove'}
+                {if $field->name=='ipAdresa'}
+                    <tr><td colspan="4"><table class="ip"><tr>
+                {/if}
+                    <td>{input $field} {inputError $field}</td>
+                {if $field->name=='remove'}
+                    </tr></table></td></tr>
+                {/if}
+            {else}
+                <tr n:if="!$field->getOption(rendered)" n:class="$field->required ? required" n:block="$field->name.'-row'">
+                    <th n:block="#label">{label $field /}{!$field->required ? '<span class="red">*</span>'}</th>
+
+                    <td n:block="#control" colspan="3">{input $field} {inputError $field}</td>
+                </tr>
+
+            {/if}
+        {/foreach}
+        </table>
+    </fieldset>
+
+    {include #controls, group => $form}
+</form>
