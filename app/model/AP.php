@@ -14,7 +14,7 @@ class AP extends Table
     /**
     * @var string
     */
-    protected $tableName = 'ap';
+    protected $tableName = 'Ap';
     public $test = 'test';
        
     public function getAP($id) {
@@ -35,7 +35,7 @@ class AP extends Table
 	$aps = array();
 	$oblasti = $this->getSeznamOblasti();
 	while($oblast = $oblasti->fetch()) {
-	    foreach($oblast->related('ap.oblast_id') as $apid => $ap) {
+	    foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
 		$aps[$apid] = $oblast->jmeno.' - '.$ap->jmeno;
 	    }
 	}

@@ -14,7 +14,7 @@ class Uzivatel extends Table
     /**
     * @var string
     */
-    protected $tableName = 'uzivatel';
+    protected $tableName = 'Uzivatel';
 
     public function getSeznamUzivatelu()
     {
@@ -24,7 +24,7 @@ class Uzivatel extends Table
     
     public function getSeznamUzivateluZAP($idAP)
     {
-	return($this->findBy(array('ap_id' => $idAP)));
+	return($this->findBy(array('Ap_id' => $idAP)));
     }
 
     public function getUzivatel($id)

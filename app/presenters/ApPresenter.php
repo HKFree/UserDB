@@ -29,7 +29,7 @@ class ApPresenter extends BasePresenter {
     public function renderList() {
 	if($this->getParam('id'))
 	{
-	    $apcka = $this->ap->findAP(array('oblast_id' => intval($this->getParam('id'))));
+	    $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParam('id'))));
 	    if($apcka->count() == 0) {
 		$this->template->table = 'Chyba, zadaná oblast neexistuje nebo nemá žádná AP.';
 		return true;
@@ -86,8 +86,8 @@ class ApPresenter extends BasePresenter {
     public function renderShow() {
 	if($this->getParam('id') && $ap = $this->ap->getAP($this->getParam('id'))) {
 	    $this->template->ap = $ap;
-	    $this->template->adresy = $this->ipAdresa->getIPTable($ap->related('ipAdresa.ap_id'));
-	    $this->template->subnety = $this->subnet->getSubnetTable($ap->related('subnet.ap_id'));
+	    $this->template->adresy = $this->ipAdresa->getIPTable($ap->related('IPAdresa.Ap_id'));
+	    $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
 	    
 	}
     }
@@ -100,14 +100,14 @@ class ApPresenter extends BasePresenter {
 	$form = new Form;
         $form->addHidden('id');
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
-	$form->addSelect('oblast_id', 'Oblast', array(91=>91, 120=>120))->setRequired('Zadejte jméno oblasti');;
+	$form->addSelect('Oblast_id', 'Oblast', array(91=>91, 120=>120))->setRequired('Zadejte jméno oblasti');;
 	$form->addTextArea('poznamka', 'Poznámka', 24, 10);
         $ips = $form->addDynamic('ip', function (Container $ip) {
                 //$ip->addHidden('uzivatel_id')->setValue($this->getParam('id'));
                 $ip->addHidden('id')->setAttribute('class', 'ip');
-                $ip->addText('ipAdresa', 'IP Adresa',10)->setAttribute('class', 'ip')->setAttribute('placeholder', 'IP Adresa');
+                $ip->addText('ip_adresa', 'IP Adresa',10)->setAttribute('class', 'ip')->setAttribute('placeholder', 'IP Adresa');
                 $ip->addText('hostname', 'Hostname',9)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Hostname');
-                $ip->addText('macAdresa', 'MAC Adresa',18)->setAttribute('class', 'ip')->setAttribute('placeholder', 'MAC Adresa');
+                $ip->addText('mac_adresa', 'MAC Adresa',18)->setAttribute('class', 'ip')->setAttribute('placeholder', 'MAC Adresa');
                 $ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'ip');
                 $ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'ip');
                 $ip->addText('login', 'Login',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Login');
@@ -133,7 +133,7 @@ class ApPresenter extends BasePresenter {
 	if($this->getParam('id')) {
 	    $values = $this->ap->getAP($this->getParam('id'));
 	    if($values) {
-		foreach($values->related('ipAdresa.ap_id') as $ip_id => $ip_data) {
+		foreach($values->related('IPAdresa.Ap_id') as $ip_id => $ip_data) {
 		    $form["ip"][$ip_id]->setValues($ip_data);
 		}
 		$form->setValues($values);
@@ -173,7 +173,7 @@ class ApPresenter extends BasePresenter {
 	}
 	
 	// A tady smazeme v DB ty ipcka co jsme smazali
-	$APIPIDs = array_keys($this->ap->getAP($idAP)->related('ipAdresa.ap_id')->fetchPairs('id', 'ipAdresa'));
+	$APIPIDs = array_keys($this->ap->getAP($idAP)->related('IPAdresa.Ap_id')->fetchPairs('id', 'IPAdresa'));
 	$toDelete = array_values(array_diff($APIPIDs, $newAPIPIDs));
 	$this->ipAdresa->deleteIPAdresy($toDelete);
 	

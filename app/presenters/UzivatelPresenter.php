@@ -45,19 +45,19 @@ class UzivatelPresenter extends BasePresenter
 	    $form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');;
 	    $form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
 	    $form->addTextArea('adresa', 'Adresa (ulice čp, psč město)', 24)->setRequired('Zadejte adresu');
-	    $form->addText('rokNarozeni', 'Rok narození',30);
-	    $form->addSelect('ap_id', 'Oblast - AP', $aps);
-	    $form->addRadioList('typClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
-	    $form->addRadioList('zpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
-	    $form->addSelect('indexPotizisty', 'Index potížisty', array(10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(50);
+	    $form->addText('rok_narozeni', 'Rok narození',30);
+	    $form->addSelect('Ap_id', 'Oblast - AP', $aps);
+	    $form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
+	    $form->addRadioList('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
+	    $form->addSelect('index_potizisty', 'Index potížisty', array(10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(50);
 	    $form->addTextArea('poznamka', 'Poznámka', 24, 10);
 
             $ips = $form->addDynamic('ip', function (Container $ip) {
 		    //$ip->addHidden('uzivatel_id')->setValue($this->getParam('id'));
                     $ip->addHidden('id')->setAttribute('class', 'ip');
-		    $ip->addText('ipAdresa', 'IP Adresa',10)->setAttribute('class', 'ip')->setAttribute('placeholder', 'IP Adresa');
+		    $ip->addText('ip_adresa', 'IP Adresa',10)->setAttribute('class', 'ip')->setAttribute('placeholder', 'IP Adresa');
 		    $ip->addText('hostname', 'Hostname',9)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Hostname');
-		    $ip->addText('macAdresa', 'MAC Adresa',18)->setAttribute('class', 'ip')->setAttribute('placeholder', 'MAC Adresa');
+		    $ip->addText('mac_adresa', 'MAC Adresa',18)->setAttribute('class', 'ip')->setAttribute('placeholder', 'MAC Adresa');
 		    $ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'ip');
                     $ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'ip');
 		    $ip->addText('login', 'Login',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Login');
@@ -83,7 +83,7 @@ class UzivatelPresenter extends BasePresenter
 	    if($this->getParam('id')) {
 		$values = $this->uzivatel->getUzivatel($this->getParam('id'));
 		if($values) {
-		    foreach($values->related('ipAdresa.uzivatel_id') as $ip_id => $ip_data) {
+		    foreach($values->related('IPAdresa.Uzivatel_id') as $ip_id => $ip_data) {
 			$form["ip"][$ip_id]->setValues($ip_data);
 		    }
 		    $form->setValues($values);
@@ -143,7 +143,7 @@ class UzivatelPresenter extends BasePresenter
 	}
 
 	// A tady smazeme v DB ty ipcka co jsme smazali
-	$userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('ipAdresa.uzivatel_id')->fetchPairs('id', 'ipAdresa'));
+	$userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'IPAdresa'));
 	$toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
 	$this->ipAdresa->deleteIPAdresy($toDelete);
 	

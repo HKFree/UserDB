@@ -14,7 +14,7 @@ class TypClenstvi extends Table
     /**
     * @var string
     */
-    protected $tableName = 'typClenstvi';
+    protected $tableName = 'TypClenstvi';
 
     public function getTypyClenstvi()
     {

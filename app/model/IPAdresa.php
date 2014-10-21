@@ -15,7 +15,7 @@ class IPAdresa extends Table
     /**
     * @var string
     */
-    protected $tableName = 'ipAdresa';
+    protected $tableName = 'IPAdresa';
 
     public function getSeznamIPAdres()
     {
@@ -52,10 +52,10 @@ class IPAdresa extends Table
 
 	foreach ($ips as $ip) {
 	    $tr = $adresyTab->create('tr');
-	    $tr->create('td')->setText($ip->ipAdresa);
+	    $tr->create('td')->setText($ip->ip_adresa);
 	    $tr->create('td')->setText($ip->hostname);
-	    $tr->create('td')->setText($ip->macAdresa);
-	    $tr->create('td')->setText((isset($ip->typZarizeni->text))?$ip->typZarizeni->text:"");
+	    $tr->create('td')->setText($ip->mac_adresa);
+	    $tr->create('td')->setText((isset($ip->TypZarizeni->text))?$ip->TypZarizeni->text:"");
 	    $attr = $tr->create('td');
 	    if($ip->internet)
 		$attr->create('span')->setClass('glyphicon glyphicon-transfer')->setTitle('IP je povolená do internetu')

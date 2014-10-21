@@ -15,7 +15,7 @@ class Subnet extends Table
     /**
     * @var string
     */
-    protected $tableName = 'subnet';
+    protected $tableName = 'Subnet';
 
     public function getSeznamSubnetu()
     {
