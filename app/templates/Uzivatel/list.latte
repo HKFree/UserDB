@@ -1,8 +1,8 @@
 {* This is the welcome page, you can delete it *}
 
 {block content}
-<h3 n:ifset="$ap">oblast {$ap->oblast->jmeno}, {$ap->jmeno}</h3>
-<a href="{link Ap:list id=>$ap->oblast->id}" class="btn btn-default btn-sm" role="button">Zobrazit ostatní AP v oblasti</a>
+<h3 n:ifset="$ap">oblast {$ap->Oblast->jmeno}, {$ap->jmeno}</h3>
+<a href="{link Ap:list id=>$ap->Oblast->id}" class="btn btn-default btn-sm" role="button">Zobrazit ostatní AP v oblasti</a>
 <a href="{link Ap:show id=>$ap->id}" class="btn btn-default btn-sm" role="button">Zobrazit podrobnosti</a>
 <br><br>
 {$table}

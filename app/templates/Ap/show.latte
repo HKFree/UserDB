@@ -1,7 +1,7 @@
 {block content}
 {ifset $ap}
 
-<h2>{$ap->oblast->jmeno}, {$ap->jmeno}</h2>
+<h2>{$ap->Oblast->jmeno}, {$ap->jmeno}</h2>
 <a href="{link Ap:edit id=>$ap->id}" class="btn btn-default btn-sm" role="button">Editovat</a>
 <a href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm" role="button">Zobrazit uživatele oblasti</a>
 <br><br>

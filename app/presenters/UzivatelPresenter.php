@@ -176,7 +176,7 @@ class UzivatelPresenter extends BasePresenter
 	      4 => 'info',
 	    );
 	    while($uzivatel = $uzivatele->fetch()) {
-		$tr = $table->create('tr')->setClass($barvy[$uzivatel->typClenstvi_id]);
+		$tr = $table->create('tr')->setClass($barvy[$uzivatel->TypClenstvi_id]);
 		$tr->create('td')->setText($uzivatel->id);
 		$tr->create('td')->setText($uzivatel->jmeno);
 		$tr->create('td')->setText($uzivatel->prijmeni);
