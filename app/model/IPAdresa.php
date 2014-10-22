@@ -16,7 +16,7 @@ class IPAdresa extends Table
     * @var string
     */
     protected $tableName = 'IPAdresa';
-
+    
     public function getSeznamIPAdres()
     {
 	//$row = $this->findAll();
@@ -34,6 +34,19 @@ class IPAdresa extends Table
 	    return($this->delete(array('id' => $ips)));
 	else
 	    return true;
+    }
+    
+    public function getIPForm(&$ip, $typyZarizeni) {	
+	$ip->addHidden('id')->setAttribute('class', 'ip');
+	$ip->addText('ip_adresa', 'IP Adresa',10)->setAttribute('class', 'ip')->setAttribute('placeholder', 'IP Adresa');
+	$ip->addText('hostname', 'Hostname',9)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Hostname');
+	$ip->addText('mac_adresa', 'MAC Adresa',18)->setAttribute('class', 'ip')->setAttribute('placeholder', 'MAC Adresa');
+	$ip->addSelect('TypZarizeni_id', 'Typ Zařízení', $typyZarizeni)->setAttribute('class', 'ip');
+	$ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'ip');
+	$ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'ip');
+	$ip->addText('login', 'Login',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Login');
+	$ip->addText('heslo', 'Heslo',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Heslo');
+	$ip->addText('popis', 'Popis', 30)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Popis');
     }
     
     public function getIPTable($ips) {

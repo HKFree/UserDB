@@ -32,3 +32,4 @@ services:
 	oblast: App\Model\Oblast
 	ap: App\Model\AP
 	subnet: App\Model\Subnet
+	typZarizeni: App\Model\TypZarizeni

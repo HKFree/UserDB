@@ -31,7 +31,12 @@ class Oblast extends Table
 	    }
 	}
 	return($aps);
-	
+    }
+    
+    public function getSeznamOblastiBezAP()
+    {
+	$oblasti = $this->getSeznamOblasti();
+	return($oblasti->fetchPairs('id', 'jmeno'));
     }
     
     public function getSeznamSpravcu($IDoblasti) {

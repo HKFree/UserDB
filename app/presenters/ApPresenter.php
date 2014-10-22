@@ -16,12 +16,14 @@ class ApPresenter extends BasePresenter {
     private $ap;
     private $ipAdresa;
     private $subnet;
+    private $typZarizeni;
 
-    function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet) {
+    function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni) {
 	$this->uzivatel = $uzivatel;       
 	$this->ap = $ap;
 	$this->ipAdresa = $ipAdresa;
 	$this->subnet = $subnet;
+	$this->typZarizeni = $typZarizeni;
 	//$this->oblast = $oblast;
 	
     }
@@ -100,19 +102,11 @@ class ApPresenter extends BasePresenter {
 	$form = new Form;
         $form->addHidden('id');
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
-	$form->addSelect('Oblast_id', 'Oblast', array(91=>91, 120=>120))->setRequired('Zadejte jméno oblasti');;
+	$form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');;
 	$form->addTextArea('poznamka', 'Poznámka', 24, 10);
         $ips = $form->addDynamic('ip', function (Container $ip) {
-                //$ip->addHidden('uzivatel_id')->setValue($this->getParam('id'));
-                $ip->addHidden('id')->setAttribute('class', 'ip');
-                $ip->addText('ip_adresa', 'IP Adresa',10)->setAttribute('class', 'ip')->setAttribute('placeholder', 'IP Adresa');
-                $ip->addText('hostname', 'Hostname',9)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Hostname');
-                $ip->addText('mac_adresa', 'MAC Adresa',18)->setAttribute('class', 'ip')->setAttribute('placeholder', 'MAC Adresa');
-                $ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'ip');
-                $ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'ip');
-                $ip->addText('login', 'Login',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Login');
-                $ip->addText('heslo', 'Heslo',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Heslo');
-                $ip->addText('popis', 'Popis', 30)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Popis');
+	    	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
+		$this->ipAdresa->getIPForm($ip, $typyZarizeni);
 
                 $ip->addSubmit('remove', '– Odstranit IP')
                         ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
@@ -150,7 +144,7 @@ class ApPresenter extends BasePresenter {
 	//\Tracy\Dumper::dump($values);
 	//return(true);
 
-	// Zpracujeme nejdriv uzivatele
+	// Zpracujeme nejdriv APcka
 	if(empty($values->id))
 	    $idAP = $this->ap->insert($values)->id;
 	else
@@ -162,7 +156,7 @@ class ApPresenter extends BasePresenter {
 	$newAPIPIDs = array();
 	foreach($ips as $ip)
 	{
-	    $ip->ap_id = $idAP;
+	    $ip->Ap_id = $idAP;
 	    $idIp = $ip->id;
 	    if(empty($ip->id))
 		$idIp = $this->ipAdresa->insert($ip)->id;
@@ -173,7 +167,7 @@ class ApPresenter extends BasePresenter {
 	}
 	
 	// A tady smazeme v DB ty ipcka co jsme smazali
-	$APIPIDs = array_keys($this->ap->getAP($idAP)->related('IPAdresa.Ap_id')->fetchPairs('id', 'IPAdresa'));
+	$APIPIDs = array_keys($this->ap->getAP($idAP)->related('IPAdresa.Ap_id')->fetchPairs('id', 'ip_adresa'));
 	$toDelete = array_values(array_diff($APIPIDs, $newAPIPIDs));
 	$this->ipAdresa->deleteIPAdresy($toDelete);
 	

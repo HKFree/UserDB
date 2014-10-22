@@ -3,10 +3,10 @@
 namespace App\Presenters;
 
 use Nette,
-	App\Model,
-        Nette\Application\UI\Form,
-        Nette\Forms\Container,
-	Nette\Utils\Html;
+    App\Model,
+    Nette\Application\UI\Form,
+    Nette\Forms\Container,
+    Nette\Utils\Html;
 use Nette\Forms\Controls\SubmitButton;
 /**
  * Uzivatel presenter.
@@ -18,104 +18,97 @@ class UzivatelPresenter extends BasePresenter
     private $uzivatel;
     private $ipAdresa;
     private $ap;
+    private $typZarizeni;
 
-    function __construct(Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
-	    $this->typClenstvi = $typClenstvi;
-	    $this->zpusobPripojeni = $zpusobPripojeni;
-	    $this->uzivatel = $uzivatel;
-	    $this->ipAdresa = $ipAdresa;  
-	    $this->ap = $ap;
+    function __construct(Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni) {	    $this->typClenstvi = $typClenstvi;
+	$this->zpusobPripojeni = $zpusobPripojeni;
+	$this->uzivatel = $uzivatel;
+	$this->ipAdresa = $ipAdresa;  
+	$this->ap = $ap;
+	$this->typZarizeni = $typZarizeni;
     }
 
     public function renderEdit()
     {
-	    $this->template->anyVariable = 'any value';
+	$this->template->anyVariable = 'any value';
     }
 
     protected function createComponentUzivatelForm() {
-	    $typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id','text');
-	    $zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id','text');
-	    $aps = $this->oblast->getSeznamOblastiSAP();
+	$typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id','text');
+	$zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id','text');
+	$aps = $this->oblast->getSeznamOblastiSAP();
 
-	    $form = new Form;
-            $form->addHidden('id');
-	    $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
-	    $form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
-	    $form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
-	    $form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');;
-	    $form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
-	    $form->addTextArea('adresa', 'Adresa (ulice čp, psč město)', 24)->setRequired('Zadejte adresu');
-	    $form->addText('rok_narozeni', 'Rok narození',30);
-	    $form->addSelect('Ap_id', 'Oblast - AP', $aps);
-	    $form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
-	    $form->addRadioList('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
-	    $form->addSelect('index_potizisty', 'Index potížisty', array(10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(50);
-	    $form->addTextArea('poznamka', 'Poznámka', 24, 10);
+	$form = new Form;
+	$form->addHidden('id');
+	$form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
+	$form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
+	$form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
+	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');;
+	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
+	$form->addTextArea('adresa', 'Adresa (ulice čp, psč město)', 24)->setRequired('Zadejte adresu');
+	$form->addText('rok_narozeni', 'Rok narození',30);
+	$form->addSelect('Ap_id', 'Oblast - AP', $aps);
+	$form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
+	$form->addRadioList('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
+	$form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(50);
+	$form->addTextArea('poznamka', 'Poznámka', 24, 10);
 
-            $ips = $form->addDynamic('ip', function (Container $ip) {
-		    //$ip->addHidden('uzivatel_id')->setValue($this->getParam('id'));
-                    $ip->addHidden('id')->setAttribute('class', 'ip');
-		    $ip->addText('ip_adresa', 'IP Adresa',10)->setAttribute('class', 'ip')->setAttribute('placeholder', 'IP Adresa');
-		    $ip->addText('hostname', 'Hostname',9)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Hostname');
-		    $ip->addText('mac_adresa', 'MAC Adresa',18)->setAttribute('class', 'ip')->setAttribute('placeholder', 'MAC Adresa');
-		    $ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'ip');
-                    $ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'ip');
-		    $ip->addText('login', 'Login',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Login');
-		    $ip->addText('heslo', 'Heslo',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Heslo');
-		    $ip->addText('popis', 'Popis', 30)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Popis');
+	$ips = $form->addDynamic('ip', function (Container $ip) {
+	    $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
+	    $this->ipAdresa->getIPForm($ip, $typyZarizeni);
 
-		    $ip->addSubmit('remove', '– Odstranit IP')
-			    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-			    ->setValidationScope(FALSE)
-			    ->addRemoveOnClick();
-	    }, ($this->getParam('id')>0?0:1));
-
-	    $ips->addSubmit('add', '+ Přidat další IP')
-		    ->setAttribute('class', 'btn btn-success btn-xs btn-white')
+	    $ip->addSubmit('remove', '– Odstranit IP')
+		    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
 		    ->setValidationScope(FALSE)
-		    ->addCreateOnClick(TRUE);
+		    ->addRemoveOnClick();
+	}, ($this->getParam('id')>0?0:1));
 
-	    $form->addSubmit('save', 'Uložit')
-		    ->setAttribute('class', 'btn btn-success btn-xs btn-white');
-	    $form->onSuccess[] = $this->uzivatelFormSucceded;
+	$ips->addSubmit('add', '+ Přidat další IP')
+		->setAttribute('class', 'btn btn-success btn-xs btn-white')
+		->setValidationScope(FALSE)
+		->addCreateOnClick(TRUE);
 
-	    // pokud editujeme, nacteme existujici ipadresy
-	    if($this->getParam('id')) {
-		$values = $this->uzivatel->getUzivatel($this->getParam('id'));
-		if($values) {
-		    foreach($values->related('IPAdresa.Uzivatel_id') as $ip_id => $ip_data) {
-			$form["ip"][$ip_id]->setValues($ip_data);
-		    }
-		    $form->setValues($values);
+	$form->addSubmit('save', 'Uložit')
+		->setAttribute('class', 'btn btn-success btn-xs btn-white');
+	$form->onSuccess[] = $this->uzivatelFormSucceded;
+
+	// pokud editujeme, nacteme existujici ipadresy
+	if($this->getParam('id')) {
+	    $values = $this->uzivatel->getUzivatel($this->getParam('id'));
+	    if($values) {
+		foreach($values->related('IPAdresa.Uzivatel_id') as $ip_id => $ip_data) {
+		    $form["ip"][$ip_id]->setValues($ip_data);
 		}
-	    }                
+		$form->setValues($values);
+	    }
+	}                
 /*
-            $renderer = $form->getRenderer();
-            $renderer->wrappers['controls']['container'] = NULL;
-            $renderer->wrappers['pair']['container'] = 'div class=form-group';
-            $renderer->wrappers['pair']['.error'] = 'has-error';
-            $renderer->wrappers['control']['container'] = 'div class=col-sm-9';
-            $renderer->wrappers['label']['container'] = 'div class="col-sm-3 control-label"';
-            $renderer->wrappers['control']['description'] = 'span class=help-block';
-            $renderer->wrappers['control']['errorcontainer'] = 'span class=help-block';
+	$renderer = $form->getRenderer();
+	$renderer->wrappers['controls']['container'] = NULL;
+	$renderer->wrappers['pair']['container'] = 'div class=form-group';
+	$renderer->wrappers['pair']['.error'] = 'has-error';
+	$renderer->wrappers['control']['container'] = 'div class=col-sm-9';
+	$renderer->wrappers['label']['container'] = 'div class="col-sm-3 control-label"';
+	$renderer->wrappers['control']['description'] = 'span class=help-block';
+	$renderer->wrappers['control']['errorcontainer'] = 'span class=help-block';
 
-            // make form and controls compatible with Twitter Bootstrap
-            $form->getElementPrototype()->class('form-horizontal');
+	// make form and controls compatible with Twitter Bootstrap
+	$form->getElementPrototype()->class('form-horizontal');
 
-            foreach ($form->getControls() as $control) {
-                    if ($control instanceof Controls\Button) {
-                            $control->getControlPrototype()->addClass(empty($usedPrimary) ? 'btn btn-primary' : 'btn btn-default');
-                            $usedPrimary = TRUE;
+	foreach ($form->getControls() as $control) {
+		if ($control instanceof Controls\Button) {
+			$control->getControlPrototype()->addClass(empty($usedPrimary) ? 'btn btn-primary' : 'btn btn-default');
+			$usedPrimary = TRUE;
 
-                    } elseif ($control instanceof Controls\TextBase || $control instanceof Controls\SelectBox || $control instanceof Controls\MultiSelectBox) {
-                            $control->getControlPrototype()->addClass('form-control');
+		} elseif ($control instanceof Controls\TextBase || $control instanceof Controls\SelectBox || $control instanceof Controls\MultiSelectBox) {
+			$control->getControlPrototype()->addClass('form-control');
 
-                    } elseif ($control instanceof Controls\Checkbox || $control instanceof Controls\CheckboxList || $control instanceof Controls\RadioList) {
-                            $control->getSeparatorPrototype()->setName('div')->addClass($control->getControlPrototype()->type);
-                    }
-            }
+		} elseif ($control instanceof Controls\Checkbox || $control instanceof Controls\CheckboxList || $control instanceof Controls\RadioList) {
+			$control->getSeparatorPrototype()->setName('div')->addClass($control->getControlPrototype()->type);
+		}
+	}
 */
-	    return $form;
+	return $form;
     }
     public function uzivatelFormSucceded($form, $values) {
 	$idUzivatele = $values->id;
@@ -143,7 +136,7 @@ class UzivatelPresenter extends BasePresenter
 	}
 
 	// A tady smazeme v DB ty ipcka co jsme smazali
-	$userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'IPAdresa'));
+	$userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
 	$toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
 	$this->ipAdresa->deleteIPAdresy($toDelete);
 	
