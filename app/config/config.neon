@@ -12,6 +12,9 @@ php:
 
 
 nette:
+	latte:
+		macros:
+			- App\Model\MyMacroSet
 	application:
 		errorPresenter: Error
 		mapping:
