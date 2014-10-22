@@ -1,0 +1,13 @@
+AuthName "HKfree - UserDB. Pouzij UID a HESLO z papiru o clenstvi (resp. do money)."
+
+AuthType shibboleth
+ShibRequestSetting requireSession 1
+
+    <Limit GET POST>
+	require valid-user
+    </Limit>
+
+DirectoryIndex index.php
+
+
+

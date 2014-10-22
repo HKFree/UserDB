@@ -104,9 +104,10 @@ class ApPresenter extends BasePresenter {
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
 	$form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');;
 	$form->addTextArea('poznamka', 'Poznámka', 24, 10);
-        $ips = $form->addDynamic('ip', function (Container $ip) {
-	    	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
-		$this->ipAdresa->getIPForm($ip, $typyZarizeni);
+	$data = $this->ipAdresa;
+	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
+	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni) {
+		$data->getIPForm($ip, $typyZarizeni);
 
                 $ip->addSubmit('remove', '– Odstranit IP')
                         ->setAttribute('class', 'btn btn-danger btn-xs btn-white')

@@ -20,7 +20,8 @@ class UzivatelPresenter extends BasePresenter
     private $ap;
     private $typZarizeni;
 
-    function __construct(Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni) {	    $this->typClenstvi = $typClenstvi;
+    function __construct(Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni) {
+	$this->typClenstvi = $typClenstvi;
 	$this->zpusobPripojeni = $zpusobPripojeni;
 	$this->uzivatel = $uzivatel;
 	$this->ipAdresa = $ipAdresa;  
@@ -53,9 +54,10 @@ class UzivatelPresenter extends BasePresenter
 	$form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(50);
 	$form->addTextArea('poznamka', 'Poznámka', 24, 10);
 
-	$ips = $form->addDynamic('ip', function (Container $ip) {
-	    $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
-	    $this->ipAdresa->getIPForm($ip, $typyZarizeni);
+	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
+	$data = $this->ipAdresa;
+	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni) {
+	    $data->getIPForm($ip, $typyZarizeni);
 
 	    $ip->addSubmit('remove', '– Odstranit IP')
 		    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
