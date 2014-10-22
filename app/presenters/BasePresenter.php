@@ -3,7 +3,8 @@
 namespace App\Presenters;
 
 use Nette,
-	App\Model;
+	App\Model,
+  Tracy\Debugger;
 
 
 /**
@@ -20,7 +21,17 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     
     public function startup() {
     	parent::startup();
-    	$this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
+
+      $uri = $this->getHttpRequest()->getUrl();
+      
+      if($uri->host == "userdb.hkfree.org")
+      {
+    	  $this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
+      }
+      else
+      { 
+        $this->getUser()->login(797, NULL);
+      }
     }
     
     protected function beforeRender() {
