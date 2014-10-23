@@ -34,7 +34,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
       }
       else
       { 
-        $this->getUser()->login(797, NULL);
+        $this->getUser()->login(666666, NULL);
       }
     }
     

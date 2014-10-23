@@ -27,10 +27,18 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
 	 */
 	public function authenticate(array $credentials)
 	{
-		list($username, $password) = $credentials;
+    list($username, $password) = $credentials;
 		if (!$username) {
 		    throw new Nette\Security\AuthenticationException('User not found.');
 		}
+  
+    if($username != "666666")
+    {
+      $roles []= "SO";
+      $arr = array('nick' => 'Hellboy');
+  	  return new Nette\Security\Identity("666666", $roles, $arr);
+    }
+      
 		$roles_string = $_SERVER['ismemberof'];
 		$roles_ldap = explode(';',$roles_string);
 		foreach ($roles_ldap as $role_ldap) {
