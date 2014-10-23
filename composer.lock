@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "a3fb659311bd1a40d29f79f1fb3062a1",
+    "hash": "0fe03aa9259307cf432eeb42e86b2152",
     "packages": [
         {
             "name": "dg/adminer-custom",
@@ -1179,16 +1179,16 @@
         },
         {
             "name": "o5/grido",
-            "version": "1.0.6",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/o5/grido.git",
-                "reference": "41e16269b76292d572f771cd60b9fa469b46eb68"
+                "reference": "be993b95bed1d3f03d261b7cd6cf4f28aa063cf0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/o5/grido/zipball/41e16269b76292d572f771cd60b9fa469b46eb68",
-                "reference": "41e16269b76292d572f771cd60b9fa469b46eb68",
+                "url": "https://api.github.com/repos/o5/grido/zipball/be993b95bed1d3f03d261b7cd6cf4f28aa063cf0",
+                "reference": "be993b95bed1d3f03d261b7cd6cf4f28aa063cf0",
                 "shasum": ""
             },
             "require": {
@@ -1197,14 +1197,18 @@
             },
             "require-dev": {
                 "dibi/dibi": "@dev",
+                "kdyby/doctrine": "@dev",
                 "mockery/mockery": "@dev",
-                "nella/doctrine": "@dev",
-                "nette/tester": "@dev"
+                "nette/tester": "@dev",
+                "squizlabs/php_codesniffer": "~1.5.0"
+            },
+            "suggest": {
+                "symfony/property-access": "Allows to use Grido\\PropertyAccessors\\SymfonyPropertyAccessor"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "Grido": ""
+                "psr-4": {
+                    "Grido\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1216,8 +1220,7 @@
             "authors": [
                 {
                     "name": "Petr Bugyík",
-                    "homepage": "http://petr.bugyik.cz/",
-                    "role": "Developer"
+                    "homepage": "http://petr.bugyik.cz/"
                 }
             ],
             "description": "Grido - DataGrid for Nette Framework",
@@ -1231,7 +1234,7 @@
                 "table",
                 "tablegrid"
             ],
-            "time": "2014-03-25 21:25:34"
+            "time": "2014-10-22 09:51:17"
         },
         {
             "name": "tracy/tracy",
@@ -1349,7 +1352,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "kdyby/forms-replicator": 20
+        "kdyby/forms-replicator": 20,
+        "o5/grido": 20
     },
     "prefer-stable": false,
     "platform": {

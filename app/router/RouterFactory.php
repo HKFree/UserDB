@@ -20,7 +20,8 @@ class RouterFactory
 	public function createRouter()
 	{
 		$router = new RouteList();
-		$router[] = new Route('<presenter>/<action>[/<id>]', 'Homepage:default', Route::SECURED);
+		$router[] = new Route('/userdb/<presenter>/list/<id>', 'Homepage:list', Route::SECURED);
+		$router[] = new Route('/userdb/<presenter>/<action>[/<id>]', 'Homepage:default', Route::SECURED);
 		return $router;
 	}
 

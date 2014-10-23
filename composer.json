@@ -19,7 +19,7 @@
 		"nette/nette": "~2.2.0",
 		"dg/adminer-custom": "~1.5",
 		"kdyby/forms-replicator": "@dev",
-		"o5/grido": "~1.0"
+		"o5/grido": "dev-master"
 	},
 	"require-dev": {
 		"nette/tester": "~1.0"

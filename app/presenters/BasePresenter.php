@@ -12,6 +12,10 @@ use Nette,
  */
 abstract class BasePresenter extends Nette\Application\UI\Presenter
 {
+
+    /** @persistent */
+    public $id;
+
     public $oblast;
 
     public function injectOblast(Model\Oblast $oblast)

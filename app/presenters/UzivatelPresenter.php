@@ -6,13 +6,14 @@ use Nette,
     App\Model,
     Nette\Application\UI\Form,
     Nette\Forms\Container,
-    Nette\Utils\Html;
+    Nette\Utils\Html,
+    Grido\Grid;
 use Nette\Forms\Controls\SubmitButton;
 /**
  * Uzivatel presenter.
  */
 class UzivatelPresenter extends BasePresenter
-{       
+{     
     private $typClenstvi;
     private $zpusobPripojeni;
     private $uzivatel;
@@ -146,6 +147,39 @@ class UzivatelPresenter extends BasePresenter
 	return true;
     }
 
+
+  protected function createComponentGrid($name)
+  {
+      $id = $this->getParam('id');
+      $grid = new \Grido\Grid($this, $name);
+      $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
+      $grid->setDefaultPerPage(100);
+      $grid->setDefaultSort(array('zalozen' => 'ASC'));
+      
+      $list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
+      $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
+
+      /*if($canseedetails)*/
+      {
+      $grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+      $grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
+      $grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();
+      $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
+      $grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
+      $grid->addColumnText('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
+      $grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
+      //$grid->addColumnText('ip4', 'IP adresy')->setSortable()->setFilterText();
+      //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
+      $grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
+      }
+      /*else
+      {
+        $grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+        $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('ip4', 'IP adresy')->setSortable()->setFilterText();
+      } */
+
+  }
 	
     public function renderList()
     {
@@ -153,17 +187,13 @@ class UzivatelPresenter extends BasePresenter
 	{
 	    $ob = $this->ap->getAP($this->getParam('id'));
 	    $this->template->ap = $ob;
+      
+      //$form->addHidden("id", $this->getParam('id'));
+      
 	    //$this->template->lokace["ap"] = $ob->jmeno;
 	    //$this->template->lokace["oblast"] = $ob->oblast->jmeno;
-	    $uzivatele = $this->uzivatel->getSeznamUzivateluZAP($this->getParam('id'));
-	    $table = Html::el('table')->setClass('table table-striped table-condensed');
-	    $tr = $table->create('tr');
-	    $tr->create('th')->setText('UID');
-	    $tr->create('th')->setText('Jméno');
-	    $tr->create('th')->setText('Přijmení');
-	    $tr->create('th')->setText('Email');
-	    $tr->create('th')->setText('Telefon');
-	    $tr->create('th')->setText('Akce');
+
+	    /*$tr->create('th')->setText('Akce');
 	    $barvy = array(
 	      1 => 'danger',
 	      2 => 'success',
@@ -172,15 +202,10 @@ class UzivatelPresenter extends BasePresenter
 	    );
 	    while($uzivatel = $uzivatele->fetch()) {
 		$tr = $table->create('tr')->setClass($barvy[$uzivatel->TypClenstvi_id]);
-		$tr->create('td')->setText($uzivatel->id);
-		$tr->create('td')->setText($uzivatel->jmeno);
-		$tr->create('td')->setText($uzivatel->prijmeni);
-		$tr->create('td')->setText($uzivatel->email);
-		$tr->create('td')->setText($uzivatel->telefon);
-		$tr->create('td')->create('a')->href($this->link('Uzivatel:edit', array('id'=>$uzivatel->id)))->setText('Editovat');
-	    }
 
-	    $this->template->table = $table;
+		$tr->create('td')->create('a')->href($this->link('Uzivatel:edit', array('id'=>$uzivatel->id)))->setText('Editovat');
+	    }    */
+
 	}
 	else {
 	   $this->template->table = 'Chyba, AP nenalezeno.'; 
