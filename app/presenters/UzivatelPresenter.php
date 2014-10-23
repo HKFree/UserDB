@@ -32,12 +32,31 @@ class UzivatelPresenter extends BasePresenter
   
     
     public function actionExportregform() {
-      $rtfdata = file_get_contents('./template/evidence.rtf', true);
-      /*$fileurl = $this->getHttpRequest()->getUrl()->getBasePath()."template/evidence.rtf";
-      $myfile = fopen($fileurl, "r") or die("Unable to open file!");
-      $rtfdata = fread($myfile,filesize($fileurl));   
-      fclose($myfile);    */
-      $this->sendResponse(new Model\ContentDownloadResponse($rtfdata, 'registrace.rtf'));
+      if($this->getParam('id'))
+    	{
+    	    if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+            $ipadresy = $this->ipAdresa->getIPTable($uzivatel->related('IPAdresa.Uzivatel_id'));
+            
+            $rtfdata = file_get_contents("./template/evidence.rtf", true);
+            
+            $rtfdata = str_replace("--jmeno--", iconv("UTF-8","windows-1250",$uzivatel->jmeno . " " . $uzivatel->prijmeni), $rtfdata);
+            $rtfdata = str_replace("--id--", $uzivatel->id, $rtfdata);
+            $rtfdata = str_replace("--nick--", iconv("UTF-8","windows-1250",$uzivatel->nick), $rtfdata);
+            $rtfdata = str_replace("--heslo--", iconv("UTF-8","windows-1250",$uzivatel->heslo), $rtfdata);
+            $rtfdata = str_replace("--email--", iconv("UTF-8","windows-1250",$uzivatel->email), $rtfdata);
+            $rtfdata = str_replace("--mobil--", $uzivatel->telefon, $rtfdata);
+            $rtfdata = str_replace("--adresa1--", iconv("UTF-8","windows-1250",$uzivatel->adresa), $rtfdata);
+            $rtfdata = str_replace("--typ--", iconv("UTF-8","windows-1250",$uzivatel->TypClenstvi->text), $rtfdata);
+            //$rtfdata = str_replace("--ip4--", , $rtfdata);
+            $rtfdata = str_replace("--pristimesic--", "TODO", $rtfdata);
+            $rtfdata = str_replace("--emailoblasti--", "TODO", $rtfdata);
+            $rtfdata = str_replace("--prvniplatba--", "TODO", $rtfdata);
+            $rtfdata = str_replace("--oblast--", "TODO", $rtfdata);
+            
+            $this->sendResponse(new Model\ContentDownloadResponse($rtfdata, "registrace-$uzivatel->id.rtf"));
+    	    }
+    	}
     }
 
     public function renderEdit()
