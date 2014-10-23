@@ -48,13 +48,13 @@ class UzivatelPresenter extends BasePresenter
             $rtfdata = str_replace("--mobil--", $uzivatel->telefon, $rtfdata);
             $rtfdata = str_replace("--adresa1--", iconv("UTF-8","windows-1250",$uzivatel->adresa), $rtfdata);
             $rtfdata = str_replace("--typ--", iconv("UTF-8","windows-1250",$uzivatel->TypClenstvi->text), $rtfdata);
-            //$rtfdata = str_replace("--ip4--", , $rtfdata);
+            $rtfdata = str_replace("--ip4--", "TODO", $rtfdata);
             $rtfdata = str_replace("--pristimesic--", "TODO", $rtfdata);
             $rtfdata = str_replace("--emailoblasti--", "TODO", $rtfdata);
             $rtfdata = str_replace("--prvniplatba--", "TODO", $rtfdata);
             $rtfdata = str_replace("--oblast--", "TODO", $rtfdata);
             
-            $this->sendResponse(new Model\ContentDownloadResponse($rtfdata, "registrace-$uzivatel->id.rtf"));
+            $this->sendResponse(new Model\ContentDownloadResponse($rtfdata, "hkfree-registrace-$uzivatel->id.rtf"));
     	    }
     	}
     }
