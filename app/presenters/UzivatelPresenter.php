@@ -143,43 +143,49 @@ class UzivatelPresenter extends BasePresenter
 	$toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
 	$this->ipAdresa->deleteIPAdresy($toDelete);
 	
-	$this->redirect('Uzivatel:edit', array('id'=>$idUzivatele)); 
+	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
 	return true;
     }
 
 
-  protected function createComponentGrid($name)
-  {
-      $id = $this->getParam('id');
-      $grid = new \Grido\Grid($this, $name);
-      $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
-      $grid->setDefaultPerPage(100);
-      $grid->setDefaultSort(array('zalozen' => 'ASC'));
-      
-      $list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
-      $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
+    protected function createComponentGrid($name)
+    {
+	$id = $this->getParam('id');
+	$grid = new \Grido\Grid($this, $name);
+	$grid->translator->setLang('cs');
+	$grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
+	$grid->setDefaultPerPage(100);
+	$grid->setDefaultSort(array('zalozen' => 'ASC'));
 
-      /*if($canseedetails)*/
-      {
-      $grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-      $grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
-      $grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();
-      $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
-      $grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
-      $grid->addColumnText('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
-      $grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
-      //$grid->addColumnText('ip4', 'IP adresy')->setSortable()->setFilterText();
-      //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
-      $grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
-      }
-      /*else
-      {
-        $grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-        $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('ip4', 'IP adresy')->setSortable()->setFilterText();
-      } */
+	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
+	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
 
-  }
+	/*if($canseedetails)*/
+	{
+	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+	$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
+	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();
+	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
+	$grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
+	$grid->addColumnText('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
+	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
+	//$grid->addColumnText('ip4', 'IP adresy')->setSortable()->setFilterText();
+	//$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
+	$grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
+	    
+	$grid->addActionHref('show', 'Zobrazit')
+	    ->setIcon('eye-open');
+	$grid->addActionHref('edit', 'Editovat')
+	    ->setIcon('pencil');
+	}
+	/*else
+	{
+	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
+	$grid->addColumnText('ip4', 'IP adresy')->setSortable()->setFilterText();
+	} */
+
+    }
 	
     public function renderList()
     {
@@ -209,6 +215,18 @@ class UzivatelPresenter extends BasePresenter
 	}
 	else {
 	   $this->template->table = 'Chyba, AP nenalezeno.'; 
+	}
+    }
+    
+    public function renderShow()
+    {
+	if($this->getParam('id'))
+	{
+	    if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+	    {
+		$this->template->u = $uzivatel;
+		$this->template->adresy = $this->ipAdresa->getIPTable($uzivatel->related('IPAdresa.Uzivatel_id'));
+	    }
 	}
     }
 
