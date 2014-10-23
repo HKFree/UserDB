@@ -17,6 +17,8 @@
                 {/if}
                 {if $field->name!='id'}
                     {input $field} {inputError $field}
+                {else}
+                    {input $field}
                 {/if}
                 {if $field->name=='remove'}
                     </td></tr>
