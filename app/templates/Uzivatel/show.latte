@@ -3,7 +3,9 @@
 
     <h3>{$u->jmeno} {$u->prijmeni} ({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     <a href="{link Uzivatel:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
-    <a href="{link Uzivatel:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button">Zpět do AP</a>
+    <a href="{link Uzivatel:exportregform id=>$u->id}" class="btn btn-default btn-sm" role="button">Registrační formulář</a>
+    <a href="{link Uzivatel:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button">Zpět do AP</a>    
+    
     <br><br>
     <style>
 	.table-nonfluid {

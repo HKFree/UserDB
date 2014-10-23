@@ -32,10 +32,12 @@ class UzivatelPresenter extends BasePresenter
   
     
     public function actionExportregform() {
-      $myfile = fopen("/template/evidence.rtf", "r") or die("Unable to open file!");
-      $rtfdata = fread($myfile,filesize("/template/evidence.rtf"));
-      fclose($myfile);
-      $this->terminate(new ContentDownloadResponse($rtfdata, 'registrace.rtf'));
+      $rtfdata = file_get_contents('./template/evidence.rtf', true);
+      /*$fileurl = $this->getHttpRequest()->getUrl()->getBasePath()."template/evidence.rtf";
+      $myfile = fopen($fileurl, "r") or die("Unable to open file!");
+      $rtfdata = fread($myfile,filesize($fileurl));   
+      fclose($myfile);    */
+      $this->sendResponse(new Model\ContentDownloadResponse($rtfdata, 'registrace.rtf'));
     }
 
     public function renderEdit()
