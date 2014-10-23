@@ -32,9 +32,9 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
 		    throw new Nette\Security\AuthenticationException('User not found.');
 		}
   
-    if($username != "666666")
+    if($username == "666666")
     {
-      $roles []= "SO";
+      $roles []= "SO-91";
       $arr = array('nick' => 'Hellboy');
   	  return new Nette\Security\Identity("666666", $roles, $arr);
     }
