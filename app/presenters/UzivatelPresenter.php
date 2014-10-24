@@ -198,7 +198,7 @@ class UzivatelPresenter extends BasePresenter
 	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();
 	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
 	$grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
-	$grid->addColumnText('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
+	$grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
 	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
 	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
         return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
