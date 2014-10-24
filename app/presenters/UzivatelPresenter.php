@@ -7,7 +7,9 @@ use Nette,
     Nette\Application\UI\Form,
     Nette\Forms\Container,
     Nette\Utils\Html,
-    Grido\Grid;
+    Grido\Grid,
+    Tracy\Debugger;
+    
 use Nette\Forms\Controls\SubmitButton;
 /**
  * Uzivatel presenter.
@@ -198,7 +200,12 @@ class UzivatelPresenter extends BasePresenter
 	$grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
 	$grid->addColumnText('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
 	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
-	//$grid->addColumnText('ip4', 'IP adresy')->setSortable()->setFilterText();
+	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
+        return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
+        //return $item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa;    //pouze prvni
+    })->setCustomRender(function($item){
+        return "<span title=".join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))).">".$item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa."</span>";
+    });
 	//$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
 	$grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
 	    
