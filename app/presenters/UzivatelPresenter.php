@@ -202,7 +202,6 @@ class UzivatelPresenter extends BasePresenter
 	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
 	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
         return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-        //return $item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa;    //pouze prvni
     })->setCustomRender(function($item){
         return "<span title=".join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))).">".$item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa."</span>";
     });
