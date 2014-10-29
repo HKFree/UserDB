@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Počítač: localhost
--- Vygenerováno: Pát 24. říj 2014, 13:58
+-- Vygenerováno: Stř 29. říj 2014, 14:50
 -- Verze MySQL: 5.5.35
 -- Verze PHP: 5.4.4-14+deb7u9
 
@@ -39,6 +39,23 @@ CREATE TABLE IF NOT EXISTS `Ap` (
 -- --------------------------------------------------------
 
 --
+-- Struktura tabulky `CestneClenstviUzivatele`
+--
+
+CREATE TABLE IF NOT EXISTS `CestneClenstviUzivatele` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `Uzivatel_id` int(11) NOT NULL,
+  `plati_od` date NOT NULL,
+  `plati_do` date DEFAULT NULL,
+  `schvaleno` tinyint(1) DEFAULT NULL,
+  `poznamka` text COLLATE utf8_czech_ci,
+  PRIMARY KEY (`id`),
+  KEY `Uzivatel_id` (`Uzivatel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
 -- Struktura tabulky `IPAdresa`
 --
 
@@ -49,6 +66,8 @@ CREATE TABLE IF NOT EXISTS `IPAdresa` (
   `ip_adresa` varchar(20) COLLATE utf8_czech_ci NOT NULL,
   `hostname` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   `mac_adresa` varchar(20) COLLATE utf8_czech_ci DEFAULT NULL,
+  `dhcp` tinyint(1) NOT NULL,
+  `mac_filter` tinyint(1) NOT NULL,
   `internet` tinyint(1) NOT NULL,
   `smokeping` tinyint(1) NOT NULL,
   `TypZarizeni_id` int(11) NOT NULL,
@@ -153,6 +172,18 @@ CREATE TABLE IF NOT EXISTS `TypClenstvi` (
 -- --------------------------------------------------------
 
 --
+-- Struktura tabulky `TypPravniFormyUzivatele`
+--
+
+CREATE TABLE IF NOT EXISTS `TypPravniFormyUzivatele` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `text` varchar(50) COLLATE utf8_czech_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=3 ;
+
+-- --------------------------------------------------------
+
+--
 -- Struktura tabulky `TypSpravceOblasti`
 --
 
@@ -196,11 +227,15 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `zalozen` datetime NOT NULL,
   `TypClenstvi_id` int(11) NOT NULL,
   `ZpusobPripojeni_id` int(11) NOT NULL,
+  `TypPravniFormyUzivatele_id` int(11) NOT NULL,
+  `firma_nazev` varchar(300) COLLATE utf8_czech_ci DEFAULT NULL,
+  `firma_ico` int(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nick` (`nick`),
   KEY `TypClenstvi_id` (`TypClenstvi_id`),
   KEY `ZpusobPripojeni_id` (`ZpusobPripojeni_id`),
-  KEY `Ap_id` (`Ap_id`)
+  KEY `Ap_id` (`Ap_id`),
+  KEY `TypPravniFormyUzivatele_id` (`TypPravniFormyUzivatele_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=3309 ;
 
 -- --------------------------------------------------------
@@ -224,6 +259,12 @@ CREATE TABLE IF NOT EXISTS `ZpusobPripojeni` (
 --
 ALTER TABLE `Ap`
   ADD CONSTRAINT `Ap_ibfk_1` FOREIGN KEY (`Oblast_id`) REFERENCES `Oblast` (`id`);
+
+--
+-- Omezení pro tabulku `CestneClenstviUzivatele`
+--
+ALTER TABLE `CestneClenstviUzivatele`
+  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`);
 
 --
 -- Omezení pro tabulku `IPAdresa`
@@ -264,6 +305,7 @@ ALTER TABLE `Subnet`
 -- Omezení pro tabulku `Uzivatel`
 --
 ALTER TABLE `Uzivatel`
+  ADD CONSTRAINT `Uzivatel_ibfk_4` FOREIGN KEY (`TypPravniFormyUzivatele_id`) REFERENCES `TypPravniFormyUzivatele` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_1` FOREIGN KEY (`TypClenstvi_id`) REFERENCES `TypClenstvi` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_2` FOREIGN KEY (`Ap_id`) REFERENCES `Ap` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_3` FOREIGN KEY (`ZpusobPripojeni_id`) REFERENCES `ZpusobPripojeni` (`id`);
