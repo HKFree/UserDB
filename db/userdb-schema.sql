@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Počítač: localhost
--- Vygenerováno: Pát 24. říj 2014, 13:58
+-- Vygenerováno: Stř 29. říj 2014, 14:24
 -- Verze MySQL: 5.5.35
 -- Verze PHP: 5.4.4-14+deb7u9
 
@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS `IPAdresa` (
   `ip_adresa` varchar(20) COLLATE utf8_czech_ci NOT NULL,
   `hostname` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   `mac_adresa` varchar(20) COLLATE utf8_czech_ci DEFAULT NULL,
+  `dhcp` tinyint(1) NOT NULL,
+  `mac_filter` tinyint(1) NOT NULL,
   `internet` tinyint(1) NOT NULL,
   `smokeping` tinyint(1) NOT NULL,
   `TypZarizeni_id` int(11) NOT NULL,
