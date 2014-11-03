@@ -24,23 +24,10 @@ class AP extends Table
     public function findAP(array $by) {
 	return($this->findBy($by));
     }
-    /*
-    public function getSeznamOblasti()
-    {
-        return($this->findAll());
+    
+    public function getSeznamSpravcuAP($idAP)
+    {    
+	   return($this->find($idAP)->ref('Oblast', 'Oblast_id')->related("SpravceOblasti.Oblast_id")->fetchPairs('Uzivatel_id','Uzivatel_id'));
     }
     
-    public function getSeznamOblastiSAP()
-    {
-	$aps = array();
-	$oblasti = $this->getSeznamOblasti();
-	while($oblast = $oblasti->fetch()) {
-	    foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-		$aps[$apid] = $oblast->jmeno.' - '.$ap->jmeno;
-	    }
-	}
-	return($aps);
-	
-    }
-*/
 }

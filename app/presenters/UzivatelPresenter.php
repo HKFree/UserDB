@@ -204,7 +204,9 @@ class UzivatelPresenter extends BasePresenter
 	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
 	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
 
-	/*if($canseedetails)*/
+  //Debugger::dump();
+  
+	if(in_array($this->getUser()->getIdentity()->getId(),$this->ap->getSeznamSpravcuAP($id)))
 	{
 	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
   $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
@@ -233,12 +235,16 @@ class UzivatelPresenter extends BasePresenter
 	$grid->addActionHref('edit', 'Editovat')
 	    ->setIcon('pencil');
 	}
-	/*else
+	else
 	{
 	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
 	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
-	$grid->addColumnText('ip4', 'IP adresy')->setSortable()->setFilterText();
-	} */
+	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
+        return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
+    })->setCustomRender(function($item){
+        return "<span title=".join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))).">".$item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa."</span>";
+    });
+	} 
 
     }
 	
