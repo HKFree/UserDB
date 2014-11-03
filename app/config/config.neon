@@ -30,6 +30,7 @@ services:
 	router: @App\RouterFactory::createRouter
 	uzivatel: App\Model\Uzivatel
 	typClenstvi: App\Model\TypClenstvi
+	typPravniFormyUzivatele: App\Model\TypPravniFormyUzivatele
 	zpusobPripojeni: App\Model\ZpusobPripojeni
 	ipAdresa: App\Model\IPAdresa
 	oblast: App\Model\Oblast

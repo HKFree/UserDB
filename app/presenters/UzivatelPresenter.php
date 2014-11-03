@@ -17,14 +17,16 @@ use Nette\Forms\Controls\SubmitButton;
 class UzivatelPresenter extends BasePresenter
 {     
     private $typClenstvi;
+    private $typPravniFormyUzivatele;
     private $zpusobPripojeni;
     private $uzivatel;
     private $ipAdresa;
     private $ap;
     private $typZarizeni;
 
-    function __construct(Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni) {
+    function __construct(Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni) {
 	$this->typClenstvi = $typClenstvi;
+  $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
 	$this->zpusobPripojeni = $zpusobPripojeni;
 	$this->uzivatel = $uzivatel;
 	$this->ipAdresa = $ipAdresa;  
@@ -94,23 +96,28 @@ class UzivatelPresenter extends BasePresenter
 
     protected function createComponentUzivatelForm() {
 	$typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id','text');
+  $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id','text');
 	$zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id','text');
 	$aps = $this->oblast->getSeznamOblastiSAP();
 
 	$form = new Form;
 	$form->addHidden('id');
-	$form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
+  $form->addSelect('Ap_id', 'Oblast - AP', $aps);
+	$form->addRadioList('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::FILLED, 'Vyberte typ právní formy');
+  $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte název firmy');
+  $form->addText('firma_ico', 'IČ', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte IČ');
+  //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
+  $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
 	$form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
 	$form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
 	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');;
 	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
 	$form->addTextArea('adresa', 'Adresa (ulice čp, psč město)', 24)->setRequired('Zadejte adresu');
-	$form->addText('rok_narozeni', 'Rok narození',30);
-	$form->addSelect('Ap_id', 'Oblast - AP', $aps);
+	$form->addText('rok_narozeni', 'Rok narození',30);	
 	$form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
-	$form->addRadioList('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
+  $form->addTextArea('poznamka', 'Poznámka', 24, 10);	
 	$form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(50);
-	$form->addTextArea('poznamka', 'Poznámka', 24, 10);
+	$form->addRadioList('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
 
 	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
 	$data = $this->ipAdresa;
@@ -131,6 +138,13 @@ class UzivatelPresenter extends BasePresenter
 	$form->addSubmit('save', 'Uložit')
 		->setAttribute('class', 'btn btn-success btn-xs btn-white');
 	$form->onSuccess[] = $this->uzivatelFormSucceded;
+
+  //if (!$form->isSubmitted()) {
+    $form->setDefaults(array(
+        'TypClenstvi_id' => 3,
+        'TypPravniFormyUzivatele_id' => 1,
+    ));
+  //}
 
 	// pokud editujeme, nacteme existujici ipadresy
 	if($this->getParam('id')) {
