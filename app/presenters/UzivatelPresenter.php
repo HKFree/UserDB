@@ -105,7 +105,7 @@ class UzivatelPresenter extends BasePresenter
   $form->addSelect('Ap_id', 'Oblast - AP', $aps);
 	$form->addRadioList('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::FILLED, 'Vyberte typ právní formy');
   $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte název firmy');
-  $form->addText('firma_ico', 'IČ', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte IČ');
+  $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte IČ');
   //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
   $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
 	$form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
@@ -139,12 +139,10 @@ class UzivatelPresenter extends BasePresenter
 		->setAttribute('class', 'btn btn-success btn-xs btn-white');
 	$form->onSuccess[] = $this->uzivatelFormSucceded;
 
-  //if (!$form->isSubmitted()) {
     $form->setDefaults(array(
         'TypClenstvi_id' => 3,
         'TypPravniFormyUzivatele_id' => 1,
     ));
-  //}
 
 	// pokud editujeme, nacteme existujici ipadresy
 	if($this->getParam('id')) {
@@ -156,32 +154,7 @@ class UzivatelPresenter extends BasePresenter
 		$form->setValues($values);
 	    }
 	}                
-/*
-	$renderer = $form->getRenderer();
-	$renderer->wrappers['controls']['container'] = NULL;
-	$renderer->wrappers['pair']['container'] = 'div class=form-group';
-	$renderer->wrappers['pair']['.error'] = 'has-error';
-	$renderer->wrappers['control']['container'] = 'div class=col-sm-9';
-	$renderer->wrappers['label']['container'] = 'div class="col-sm-3 control-label"';
-	$renderer->wrappers['control']['description'] = 'span class=help-block';
-	$renderer->wrappers['control']['errorcontainer'] = 'span class=help-block';
 
-	// make form and controls compatible with Twitter Bootstrap
-	$form->getElementPrototype()->class('form-horizontal');
-
-	foreach ($form->getControls() as $control) {
-		if ($control instanceof Controls\Button) {
-			$control->getControlPrototype()->addClass(empty($usedPrimary) ? 'btn btn-primary' : 'btn btn-default');
-			$usedPrimary = TRUE;
-
-		} elseif ($control instanceof Controls\TextBase || $control instanceof Controls\SelectBox || $control instanceof Controls\MultiSelectBox) {
-			$control->getControlPrototype()->addClass('form-control');
-
-		} elseif ($control instanceof Controls\Checkbox || $control instanceof Controls\CheckboxList || $control instanceof Controls\RadioList) {
-			$control->getSeparatorPrototype()->setName('div')->addClass($control->getControlPrototype()->type);
-		}
-	}
-*/
 	return $form;
     }
     public function uzivatelFormSucceded($form, $values) {
@@ -234,6 +207,13 @@ class UzivatelPresenter extends BasePresenter
 	/*if($canseedetails)*/
 	{
 	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+  $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
+        return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
+    })->setSortable()->setFilterSelect(array(
+                    "" => "",
+                    "1" => "Fyzická os.",
+                    "2" => "Právnická os.",
+                ));
 	$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
 	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();
 	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
