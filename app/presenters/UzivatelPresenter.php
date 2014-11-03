@@ -206,7 +206,7 @@ class UzivatelPresenter extends BasePresenter
 
   //Debugger::dump();
   
-	if(in_array($this->getUser()->getIdentity()->getId(),$this->ap->getSeznamSpravcuAP($id)))
+	if($this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId()))
 	{
 	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
   $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
