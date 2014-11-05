@@ -68,6 +68,10 @@ class UzivatelPresenter extends BasePresenter
             $pristimesic = str_replace($aj, $cz, date("F", strtotime("+1 month")));
 
             $rtfdata = file_get_contents("./template/evidence.rtf", true);
+            
+            $rtfdata = str_replace("--forma--", iconv("UTF-8","windows-1250",$uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text), $rtfdata);
+            $rtfdata = str_replace("--firma--", iconv("UTF-8","windows-1250",$uzivatel->firma_nazev), $rtfdata);
+            $rtfdata = str_replace("--ico--", $uzivatel->firma_ico, $rtfdata);
                         
             $rtfdata = str_replace("--jmeno--", iconv("UTF-8","windows-1250",$uzivatel->jmeno . " " . $uzivatel->prijmeni), $rtfdata);
             $rtfdata = str_replace("--id--", $uzivatel->id, $rtfdata);
