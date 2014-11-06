@@ -37,16 +37,18 @@ class IPAdresa extends Table
     }
     
     public function getIPForm(&$ip, $typyZarizeni) {	
-	$ip->addHidden('id')->setAttribute('class', 'ip');
-	$ip->addText('ip_adresa', 'IP Adresa',10)->setAttribute('class', 'ip')->setAttribute('placeholder', 'IP Adresa');
-	$ip->addText('hostname', 'Hostname',9)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Hostname');
-	$ip->addText('mac_adresa', 'MAC Adresa',18)->setAttribute('class', 'ip')->setAttribute('placeholder', 'MAC Adresa');
-	$ip->addSelect('TypZarizeni_id', 'Typ Zařízení', $typyZarizeni)->setAttribute('class', 'ip');
-	$ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'ip');
-	$ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'ip');
-	$ip->addText('login', 'Login',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Login');
-	$ip->addText('heslo', 'Heslo',8)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Heslo');
-	$ip->addText('popis', 'Popis', 30)->setAttribute('class', 'ip')->setAttribute('placeholder', 'Popis');
+	$ip->addHidden('id')->setAttribute('class', 'id ip');
+	$ip->addText('ip_adresa', 'IP Adresa',11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
+	$ip->addText('hostname', 'Hostname',11)->setAttribute('class', 'hostname ip')->setAttribute('placeholder', 'Hostname');
+	$ip->addSelect('TypZarizeni_id', 'Typ Zařízení', $typyZarizeni)->setAttribute('class', 'TypZarizeni_id ip');
+	$ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'internet ip');
+	$ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'smokeping ip');
+	$ip->addText('login', 'Login',11)->setAttribute('class', 'login ip')->setAttribute('placeholder', 'Login');
+	$ip->addText('heslo', 'Heslo',11)->setAttribute('class', 'heslo ip')->setAttribute('placeholder', 'Heslo');
+	$ip->addText('mac_adresa', 'MAC Adresa',24)->setAttribute('class', 'mac_adresa ip')->setAttribute('placeholder', 'MAC Adresa');
+	$ip->addCheckbox('mac_filter', 'MAC Filtr')->setAttribute('class', 'mac_filter ip');
+	$ip->addCheckbox('dhcp', 'DHCP')->setAttribute('class', 'dhcp ip');
+	$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
     }
     
     public function getIPTable($ips) {
