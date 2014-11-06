@@ -15,32 +15,18 @@ class AP extends Table
     * @var string
     */
     protected $tableName = 'Ap';
-    public $test = 'test';
        
     public function getAP($id) {
-	return($this->find($id));
+	   return($this->find($id));
     }
     
     public function findAP(array $by) {
-	return($this->findBy($by));
-    }
-    /*
-    public function getSeznamOblasti()
-    {
-        return($this->findAll());
+	   return($this->findBy($by));
     }
     
-    public function getSeznamOblastiSAP()
-    {
-	$aps = array();
-	$oblasti = $this->getSeznamOblasti();
-	while($oblast = $oblasti->fetch()) {
-	    foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-		$aps[$apid] = $oblast->jmeno.' - '.$ap->jmeno;
-	    }
-	}
-	return($aps);
-	
+    public function canViewOrEditAP($ApID, $UzivatelID)
+    {    
+	   return(in_array($UzivatelID,$this->find($ApID)->ref('Oblast', 'Oblast_id')->related("SpravceOblasti.Oblast_id")->fetchPairs('Uzivatel_id','Uzivatel_id')));
     }
-*/
+    
 }

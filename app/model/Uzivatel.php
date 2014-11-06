@@ -18,17 +18,21 @@ class Uzivatel extends Table
 
     public function getSeznamUzivatelu()
     {
-	//$row = $this->findAll();
-        return($this->findAll());
+      return($this->findAll());
     }
     
     public function getSeznamUzivateluZAP($idAP)
     {
-	return($this->findBy(array('Ap_id' => $idAP)));
+	    return($this->findBy(array('Ap_id' => $idAP)));
+    }
+    
+    public function getSeznamUIDUzivateluZAP($idAP)
+    {
+	    return($this->findBy(array('Ap_id' => $idAP))->fetchPairs('id','id'));
     }
 
     public function getUzivatel($id)
     {
-        return($this->find($id));
+      return($this->find($id));
     }
 }
