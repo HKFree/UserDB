@@ -25,6 +25,11 @@ class Uzivatel extends Table
     {
 	    return($this->findBy(array('Ap_id' => $idAP)));
     }
+    
+    public function getSeznamUIDUzivateluZAP($idAP)
+    {
+	    return($this->findBy(array('Ap_id' => $idAP))->fetchPairs('id','id'));
+    }
 
     public function getUzivatel($id)
     {
