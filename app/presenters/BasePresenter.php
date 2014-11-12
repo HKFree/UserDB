@@ -24,18 +24,18 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
     
     public function startup() {
-    	parent::startup();
+		parent::startup();
 
-      $uri = $this->getHttpRequest()->getUrl();
-      
-      if($uri->host == "userdb.hkfree.org")
-      {
-    	  $this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
-      }
-      else
-      { 
-        $this->getUser()->login(666666, NULL);
-      }
+		//$uri = $this->getHttpRequest()->getUrl();
+
+		if(!$this->context->parameters["dbg"])
+		{
+			$this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
+		}
+		else
+		{ 
+			$this->getUser()->login("DBG", NULL);
+		}
     }
     
     protected function beforeRender() {

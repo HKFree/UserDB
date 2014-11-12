@@ -26,7 +26,7 @@ class AP extends Table
     
     public function canViewOrEditAP($ApID, $UzivatelID)
     {    
-	   return(in_array($UzivatelID,$this->find($ApID)->ref('Oblast', 'Oblast_id')->related("SpravceOblasti.Oblast_id")->fetchPairs('Uzivatel_id','Uzivatel_id')));
+	   return(in_array($UzivatelID, $this->find($ApID)->ref('Oblast', 'Oblast_id')->related("SpravceOblasti.Oblast_id")->fetchPairs('Uzivatel_id','Uzivatel_id')));
     }
     
 }

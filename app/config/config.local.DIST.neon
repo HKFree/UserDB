@@ -1,0 +1,10 @@
+parameters:
+	dbg: false
+	urlPrefix: '/userdb'  # don't forget to edit www/.htaccess
+
+database:
+	dsn: 'mysql:host=xxxxxx;dbname=userdb'
+	user: 'userdb'
+	password: ''
+	options:
+		lazy: true
