@@ -102,7 +102,7 @@ class UzivatelPresenter extends BasePresenter
     	$typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id','text');
       $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id','text');
     	$zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id','text');
-    	$aps = $this->oblast->getSeznamOblastiSAP();
+    	$aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
     
     	$form = new Form;
     	$form->addHidden('id');
