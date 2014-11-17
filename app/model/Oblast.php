@@ -21,17 +21,14 @@ class Oblast extends Table
         return($this->findAll());
     }
     
+    /*
+     * DEPRECATED - pouzij formatujOblastiSAP(getSeznamOblasti());
     public function getSeznamOblastiSAP()
     {
-	   $aps = array();
-	   $oblasti = $this->getSeznamOblasti();
-	   while($oblast = $oblasti->fetch()) {
-	    foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-		    $aps[$apid] = $oblast->jmeno.' - '.$ap->jmeno;
-	    }
-	   }
-	   return($aps);
+        $oblasti = $this->getSeznamOblasti();
+        return($this->formatujOblastiSAP($oblasti));
     }
+    */
     
     public function getSeznamOblastiBezAP()
     {
@@ -42,5 +39,19 @@ class Oblast extends Table
     public function getSeznamSpravcu($IDoblasti) {
 	   return($this->find($IDoblasti)->related("SpravceOblasti.Oblast_id")->fetchPairs('Uzivatel_id','Uzivatel'));
     }
-
+    
+    public function formatujOblastiSAP($oblasti)
+    {
+        $aps = array();
+        foreach ($oblasti as $oblast) {
+			$apcka_oblasti = $oblast->related('Ap.Oblast_id');
+			foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
+				if(count($apcka_oblasti) == 1)
+					$aps[$apid] = $ap->jmeno;
+				else
+					$aps[$apid] = $oblast->jmeno.' - '.$ap->jmeno;
+			}
+		}
+		return($aps);
+    }
 }

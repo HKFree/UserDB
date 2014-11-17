@@ -10,18 +10,23 @@
 
         <table n:block="#controls" class="form">
         {foreach $group->controls as $field}
-            {if (($field->control->attrs!=NULL && array_key_exists('class', $field->control->attrs) && $field->control->attrs['class']=='ip')||$field->name=='internet'||$field->name=='smokeping'||$field->name=='remove' )}
-                
+            {if (($field->control->attrs!=NULL && array_key_exists('class', $field->control->attrs) && (strpos($field->control->attrs['class'],' ip')>0||$field->control->attrs['class']=='ip'))||$field->name=='internet'||$field->name=='smokeping'||$field->name=='mac_filter'||$field->name=='dhcp'||$field->name=='remove' )}
                 {if $field->name=='ip_adresa'}
-                    <tr><td colspan="4">
+                    <tr><td colspan="4"><table class="ipform">
+                {/if}
+                {if $field->name=='ip_adresa'||$field->name=='login'||$field->name=='popis'}
+                    <tr><td colspan="4" class="ip">
                 {/if}
                 {if $field->name!='id'}
                     {input $field} {inputError $field}
                 {else}
                     {input $field}
                 {/if}
-                {if $field->name=='remove'}
+                {if $field->name=='remove'||$field->name=='smokeping'||$field->name=='dhcp'}
                     </td></tr>
+                {/if}
+                {if $field->name=='remove'}
+                    </table>
                 {/if}
             {else}
                 <tr n:class="$field->required ? required" n:block="$field->name.'-row'">

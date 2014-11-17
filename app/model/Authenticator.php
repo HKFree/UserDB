@@ -27,30 +27,30 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
 	 */
 	public function authenticate(array $credentials)
 	{
-    list($username, $password) = $credentials;
-		if (!$username) {
-		    throw new Nette\Security\AuthenticationException('User not found.');
+		list($username, $password) = $credentials;
+			if (!$username) {
+				throw new Nette\Security\AuthenticationException('User not found.');
+			}
+
+		if($username == "DBG")			/// debuging identity
+		{
+			$roles []= "SO-124";
+			$arr = array('nick' => 'Hellboy');
+			return new Nette\Security\Identity("3306", $roles, $arr);
 		}
-  
-    if($username == "666666")
-    {
-      $roles []= "SO-91";
-      $arr = array('nick' => 'Hellboy');
-  	  return new Nette\Security\Identity("666666", $roles, $arr);
-    }
-      
+
 		$roles_string = $_SERVER['ismemberof'];
 		$roles_ldap = explode(';',$roles_string);
 		foreach ($roles_ldap as $role_ldap) {
-		    if (preg_match('/^cn=(.+?),ou=roles,dc=hkfree,dc=org$/', $role_ldap, $matches)) {
+			if (preg_match('/^cn=(.+?),ou=roles,dc=hkfree,dc=org$/', $role_ldap, $matches)) {
 				$role = $matches[1];
 				$roles []= $role;
 				if ($role == 'VV' || $role == 'MOBILADM') {
-				    $roles []= '@ADMIN';
+					$roles []= '@ADMIN';
 				}
-		    }
+			}
 		}
-		
+
 		$arr = array('nick' => $_SERVER['givenName']);
 		return new Nette\Security\Identity($username, $roles, $arr);
 	}

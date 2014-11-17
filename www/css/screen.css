@@ -163,3 +163,36 @@ body {
 pre.tracy-dump {
     padding-left: 20%;
 }
+.ipform {
+    margin: 5px 0;
+    padding: 5px;
+    border: 1px solid #ccc;
+    width: 560px;
+}
+.ipform tr td {
+    padding: 1px 3px;
+}
+.ipform tr:first-child td {
+    padding-top: 3px;
+}
+.ipform tr:last-child td {
+    padding-bottom: 3px;
+}
+.ip>.popis {
+    width: 358px;
+}
+.ip>.mac_adresa {
+    width: 150px;
+}
+.ip>.ip_adresa,.ip>.hostname,.ip>.login,.ip>.heslo {
+    width: 100px;
+}
+.ip>.TypZarizeni_id {
+    width: 150px;
+}
+.ip>label {
+    width: 90px;
+}
+.red {
+    color: #C22;
+}

@@ -27,7 +27,7 @@ nette:
 services:
 	authenticator: App\Model\Authenticator
 	- App\RouterFactory
-	router: @App\RouterFactory::createRouter
+	router: @App\RouterFactory::createRouter(%dbg%, %urlPrefix%)
 	uzivatel: App\Model\Uzivatel
 	typClenstvi: App\Model\TypClenstvi
 	typPravniFormyUzivatele: App\Model\TypPravniFormyUzivatele
@@ -37,3 +37,4 @@ services:
 	ap: App\Model\AP
 	subnet: App\Model\Subnet
 	typZarizeni: App\Model\TypZarizeni
+	spravceOblasti: App\Model\SpravceOblasti

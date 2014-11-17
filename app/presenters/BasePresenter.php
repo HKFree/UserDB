@@ -17,31 +17,39 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     public $id;
 
     public $oblast;
+    private $spravceOblasti;
 
-    public function injectOblast(Model\Oblast $oblast)
+    public function injectOblast(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti)
     {
         $this->oblast = $oblast;
+        $this->spravceOblasti = $spravceOblasti;
     }
     
     public function startup() {
-    	parent::startup();
+		parent::startup();
 
-      $uri = $this->getHttpRequest()->getUrl();
-      
-      if($uri->host == "userdb.hkfree.org")
-      {
-    	  $this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
-      }
-      else
-      { 
-        $this->getUser()->login(666666, NULL);
-      }
+		//$uri = $this->getHttpRequest()->getUrl();
+
+		if(!$this->context->parameters["dbg"])
+		{
+			$this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
+		}
+		else
+		{ 
+			$this->getUser()->login("DBG", NULL);
+		}
     }
     
     protected function beforeRender() {
         parent::__construct();
         parent::beforeRender();
-        $oblasti = $this->oblast->getSeznamOblastiSAP();
-        $this->template->oblasti = $oblasti;
+        
+        $this->template->oblasti = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
+        
+        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
+        if(count($oblastiSpravce) > 0)
+            $this->template->mojeOblasti = $this->oblast->formatujOblastiSAP($oblastiSpravce);
+        else
+            $this->template->mojeOblasti = false;
     }
 }

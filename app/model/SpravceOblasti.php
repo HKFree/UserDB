@@ -16,8 +16,12 @@ class SpravceOblasti extends Table
     */
     protected $tableName = 'SpravceOblasti';
 
-    public function getOblasti()
+    public function getOblastiSpravce($userID)
     {
-        return($this->findAll());
+        $OblastiSpravce = $this->findAll()->where('Uzivatel_id', $userID)->fetchAll();
+        foreach ($OblastiSpravce as $key => $value) {
+            $out[$key] = $value->Oblast;
+        }
+        return($out);
     }
 }
