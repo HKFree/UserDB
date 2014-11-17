@@ -210,7 +210,7 @@ class UzivatelPresenter extends BasePresenter
       //Debugger::dump();
       
       $uid = '58';
-      $heslo = 'xxx';
+      $heslo = 'mUKZ6vJJ';
  
       $client = new \SoapClient(
         'https://' . $uid . ':' . $heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
@@ -221,12 +221,9 @@ class UzivatelPresenter extends BasePresenter
                 )
         );
 
-      //Debugger::dump( $this->uzivatel->getSeznamUIDUzivateluZAP($id) );
-      //Debugger::dump( $client->hkfree_money_userGetAccountBalance(58) );
+      $moneycallresult = $client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
 
-
-      //Debugger::dump( $client->hkfree_money_userGetInfo(array(array(40, 58))) );
-
+      //Debugger::dump( $moneycallresult );
       
     	if($this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId()))
     	{
@@ -243,32 +240,30 @@ class UzivatelPresenter extends BasePresenter
             return "<span title=".join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))).">".$item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa."</span>";
         });
         
-      $grid->addColumnText('act', 'Aktivní')->setColumn(function($item){
+      $grid->addColumnText('act', 'Aktivní')->setColumn(function($item) use ($moneycallresult){
+            return ($moneycallresult[$item->id]->userIsActive->isActive == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsActive->isActive == 0) ? "NE" : "?");
+        })->setCustomRender(function($item) use ($moneycallresult){
+            return ($moneycallresult[$item->id]->userIsActive->isActive == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsActive->isActive == 0) ? "NE" : "?");
+        });        
+      $grid->addColumnText('deact', 'Deaktivace')->setColumn(function($item) use ($moneycallresult){
+            return ($moneycallresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
+        })->setCustomRender(function($item) use ($moneycallresult){
+            return ($moneycallresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
+        });        
+      $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item) use ($moneycallresult){
             return "TODO";
-        })->setCustomRender(function($item){
+        })->setCustomRender(function($item) use ($moneycallresult){
             return "TODO";
         });        
-      $grid->addColumnText('deact', 'Deaktivace')->setColumn(function($item){
+      $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function($item) use ($moneycallresult){
             return "TODO";
-        })->setCustomRender(function($item){
-            return "TODO";
-        });        
-      $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item){
-            return "TODO";
-        })->setCustomRender(function($item){
+        })->setCustomRender(function($item) use ($moneycallresult){
             return "TODO";
         });        
-      $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function($item){
-            return "TODO";
-        })->setCustomRender(function($item){
-            return "TODO";
-        });        
-      $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item) use ($client){
-            $arr = $client->hkfree_money_userGetAccountBalance($item->id);
-            return $arr[0];
-        })->setCustomRender(function($item) use ($client){
-            $arr = $client->hkfree_money_userGetAccountBalance($item->id);
-            return $arr[0];
+      $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item) use ($moneycallresult){
+            return ($moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
+        })->setCustomRender(function($item) use ($moneycallresult){
+            return ($moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
         });
     	    
     	$grid->addActionHref('show', 'Zobrazit')
