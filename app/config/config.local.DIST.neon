@@ -1,6 +1,8 @@
 parameters:
 	dbg: false
 	urlPrefix: '/userdb'  # don't forget to edit www/.htaccess
+	moneyLogin: 'uid'
+	moneyPassword: ''
 
 database:
 	dsn: 'mysql:host=xxxxxx;dbname=userdb'

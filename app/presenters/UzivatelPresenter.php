@@ -209,8 +209,8 @@ class UzivatelPresenter extends BasePresenter
     
       //Debugger::dump();
       
-      $uid = '58';
-      $heslo = 'mUKZ6vJJ';
+      $uid = $this->context->parameters["moneyLogin"];
+      $heslo = $this->context->parameters["moneyPassword"];
  
       $client = new \SoapClient(
         'https://' . $uid . ':' . $heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
