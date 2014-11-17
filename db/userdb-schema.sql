@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Počítač: localhost
--- Vygenerováno: Stř 29. říj 2014, 14:50
+-- Vygenerováno: Úte 18. lis 2014, 00:16
 -- Verze MySQL: 5.5.35
 -- Verze PHP: 5.4.4-14+deb7u9
 
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `Ap` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `jmeno` (`jmeno`),
   KEY `Oblast_id` (`Oblast_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=9 ;
 
 -- --------------------------------------------------------
 
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `IPAdresa` (
   KEY `Uzivatel_id` (`Uzivatel_id`),
   KEY `Ap_id` (`Ap_id`),
   KEY `TypZarizeni_id` (`TypZarizeni_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=16 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=14 ;
 
 -- --------------------------------------------------------
 
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `Oblast` (
   `datum_zalozeni` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `jmeno` (`jmeno`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=126 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=127 ;
 
 -- --------------------------------------------------------
 
@@ -220,9 +220,9 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `heslo` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   `email` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   `adresa` varchar(300) COLLATE utf8_czech_ci NOT NULL,
-  `rok_narozeni` decimal(4,0) NOT NULL,
+  `rok_narozeni` decimal(4,0) DEFAULT NULL,
   `telefon` varchar(20) COLLATE utf8_czech_ci NOT NULL,
-  `poznamka` text COLLATE utf8_czech_ci NOT NULL,
+  `poznamka` text COLLATE utf8_czech_ci,
   `index_potizisty` int(11) NOT NULL,
   `zalozen` datetime NOT NULL,
   `TypClenstvi_id` int(11) NOT NULL,
@@ -305,10 +305,10 @@ ALTER TABLE `Subnet`
 -- Omezení pro tabulku `Uzivatel`
 --
 ALTER TABLE `Uzivatel`
-  ADD CONSTRAINT `Uzivatel_ibfk_4` FOREIGN KEY (`TypPravniFormyUzivatele_id`) REFERENCES `TypPravniFormyUzivatele` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_1` FOREIGN KEY (`TypClenstvi_id`) REFERENCES `TypClenstvi` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_2` FOREIGN KEY (`Ap_id`) REFERENCES `Ap` (`id`),
-  ADD CONSTRAINT `Uzivatel_ibfk_3` FOREIGN KEY (`ZpusobPripojeni_id`) REFERENCES `ZpusobPripojeni` (`id`);
+  ADD CONSTRAINT `Uzivatel_ibfk_3` FOREIGN KEY (`ZpusobPripojeni_id`) REFERENCES `ZpusobPripojeni` (`id`),
+  ADD CONSTRAINT `Uzivatel_ibfk_4` FOREIGN KEY (`TypPravniFormyUzivatele_id`) REFERENCES `TypPravniFormyUzivatele` (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
