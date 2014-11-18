@@ -169,33 +169,86 @@ class UzivatelPresenter extends BasePresenter
     	return $form;
     }
     public function uzivatelFormSucceded($form, $values) {
+        $log = array();
     	$idUzivatele = $values->id;
     	$ips = $values->ip;
     	unset($values["ip"]);
     
     	// Zpracujeme nejdriv uzivatele
-    	if(empty($values->id))
+    	if(empty($values->id)) {
     	    $idUzivatele = $this->uzivatel->insert($values)->id;
-    	else
+            foreach($values as $uzivatel_id => $uzivatel_value) {
+                if(empty($uzivatel_value)) {
+                    $log[] = array(
+                        'sloupec'=>'Uzivatel.'.$uzivatel_id,
+                        'puvodni_hodnota'=>NULL,
+                        'nova_hodnota'=>$uzivatel_value,
+                            );
+                }
+            }
+        }
+    	else {
+            $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
     	    $this->uzivatel->update($idUzivatele, $values);
-    
+            foreach($values as $uzivatel_id => $uzivatel_value) {
+                if($uzivatel_value != $olduzivatel[$uzivatel_id]) {
+                    $log[] = array(
+                        'sloupec'=>'Uzivatel.'.$uzivatel_id,
+                        'puvodni_hodnota'=>$olduzivatel[$uzivatel_id],
+                        'nova_hodnota'=>$uzivatel_value,
+                            );
+                }
+            }
+        }
     	// Potom zpracujeme IPcka
     	$newUserIPIDs = array();
     	foreach($ips as $ip)
     	{
     	    $ip->uzivatel_id = $idUzivatele;
     	    $idIp = $ip->id;
-    	    if(empty($ip->id))
+    	    if(empty($ip->id)) {
     		$idIp = $this->ipAdresa->insert($ip)->id;
-    	    else
+                foreach($ip as $ip_key => $ip_value) {
+                    if(empty($ip_value)) {
+                        $log[] = array(
+                            'sloupec'=>'IPAdresa.'.$ip_key,
+                            'puvodni_hodnota'=>NULL,
+                            'nova_hodnota'=>$ip_value,
+                                );
+                    }
+                }                
+            }
+    	    else {
+                $oldip = $this->ipAdresa->getIPAdresa($idIp);
     		$this->ipAdresa->update($idIp, $ip);
-    
+                foreach($ip as $ip_key => $ip_value) {
+                    if($ip_value != $oldip[$ip_key]) {
+                        $log[] = array(
+                            'sloupec'=>'IPAdresa.'.$ip_key,
+                            'puvodni_hodnota'=>$oldip[$ip_key],
+                            'nova_hodnota'=>$ip_value,
+                                );
+                    }
+                }
+            }    
     	    $newUserIPIDs[] = intval($idIp);
     	}
     
     	// A tady smazeme v DB ty ipcka co jsme smazali
     	$userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
     	$toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
+        if(empty($toDelete)) {
+            foreach($toDelete as $idIp) {
+                $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                foreach($oldip as $ip_key => $ip_value) {
+                    $log[] = array(
+                        'sloupec'=>'IPAdresa'.$ip_key,
+                        'puvodni_hodnota'=>$ip_value,
+                        'nova_hodnota'=>NULL,
+                            );
+                }
+            }
+        }
     	$this->ipAdresa->deleteIPAdresy($toDelete);
     	
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
