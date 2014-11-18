@@ -109,18 +109,18 @@ class UzivatelPresenter extends BasePresenter
 
     protected function createComponentUzivatelForm() {
     	$typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id','text');
-      $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id','text');
+        $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id','text');
     	$zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id','text');
     	$aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
     
     	$form = new Form;
     	$form->addHidden('id');
-      $form->addSelect('Ap_id', 'Oblast - AP', $aps);
+        $form->addSelect('Ap_id', 'Oblast - AP', $aps);
     	$form->addRadioList('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::FILLED, 'Vyberte typ právní formy');
-      $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte název firmy');
-      $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte IČ');
-      //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
-      $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
+        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte název firmy');
+        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte IČ');
+        //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
+        $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
     	$form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
     	$form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
     	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');;
@@ -128,7 +128,7 @@ class UzivatelPresenter extends BasePresenter
     	$form->addTextArea('adresa', 'Adresa (ulice čp, psč město)', 24)->setRequired('Zadejte adresu');
     	$form->addText('rok_narozeni', 'Rok narození',30);	
     	$form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
-      $form->addTextArea('poznamka', 'Poznámka', 24, 10);	
+        $form->addTextArea('poznamka', 'Poznámka', 24, 10);	
     	$form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(50);
     	$form->addRadioList('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
     
@@ -188,8 +188,7 @@ class UzivatelPresenter extends BasePresenter
                             );
                 }
             }
-        }
-    	else {
+        } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
     	    $this->uzivatel->update($idUzivatele, $values);
             foreach($values as $uzivatel_id => $uzivatel_value) {
@@ -208,51 +207,54 @@ class UzivatelPresenter extends BasePresenter
     	{
     	    $ip->uzivatel_id = $idUzivatele;
     	    $idIp = $ip->id;
-    	    if(empty($ip->id)) {
-    		$idIp = $this->ipAdresa->insert($ip)->id;
-                foreach($ip as $ip_key => $ip_value) {
-                    if(empty($ip_value)) {
-                        $log[] = array(
-                            'sloupec'=>'IPAdresa.'.$ip_key,
-                            'puvodni_hodnota'=>NULL,
-                            'nova_hodnota'=>$ip_value,
-                                );
+            if(!empty($ip->ip_adresa)) {
+                if(empty($ip->id)) {
+                    $idIp = $this->ipAdresa->insert($ip)->id;
+                    foreach($ip as $ip_key => $ip_value) {
+                        if(!empty($ip_value)) {
+                            $log[] = array(
+                                'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
+                                'puvodni_hodnota'=>NULL,
+                                'nova_hodnota'=>$ip_value,
+                                    );
+                        }
+                    }                
+                } else {
+                    $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                    $this->ipAdresa->update($idIp, $ip);
+                    foreach($ip as $ip_key => $ip_value) {
+                        if($ip_key!='uzivatel_id' && $ip_value != $oldip[$ip_key]) {
+                            $log[] = array(
+                                'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
+                                'puvodni_hodnota'=>isset($oldip[$ip_key])?$oldip[$ip_key]:NULL,
+                                'nova_hodnota'=>$ip_value,
+                                    );
+                        }
                     }
-                }                
+                }    
+                $newUserIPIDs[] = intval($idIp);
             }
-    	    else {
-                $oldip = $this->ipAdresa->getIPAdresa($idIp);
-    		$this->ipAdresa->update($idIp, $ip);
-                foreach($ip as $ip_key => $ip_value) {
-                    if($ip_value != $oldip[$ip_key]) {
-                        $log[] = array(
-                            'sloupec'=>'IPAdresa.'.$ip_key,
-                            'puvodni_hodnota'=>$oldip[$ip_key],
-                            'nova_hodnota'=>$ip_value,
-                                );
-                    }
-                }
-            }    
-    	    $newUserIPIDs[] = intval($idIp);
     	}
     
     	// A tady smazeme v DB ty ipcka co jsme smazali
     	$userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
     	$toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
-        if(empty($toDelete)) {
+        if(!empty($toDelete)) {
             foreach($toDelete as $idIp) {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
                 foreach($oldip as $ip_key => $ip_value) {
                     $log[] = array(
-                        'sloupec'=>'IPAdresa'.$ip_key,
+                        'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
                         'puvodni_hodnota'=>$ip_value,
                         'nova_hodnota'=>NULL,
                             );
                 }
             }
         }
-    	$this->ipAdresa->deleteIPAdresy($toDelete);
+        $this->ipAdresa->deleteIPAdresy($toDelete);
     	
+        $this->log->loguj('Uzivatel', $idUzivatele, $log);
+        
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
     	return true;
     }

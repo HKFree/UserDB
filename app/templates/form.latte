@@ -11,10 +11,10 @@
         <table n:block="#controls" class="form">
         {foreach $group->controls as $field}
             {if (($field->control->attrs!=NULL && array_key_exists('class', $field->control->attrs) && (strpos($field->control->attrs['class'],' ip')>0||$field->control->attrs['class']=='ip'))||$field->name=='internet'||$field->name=='smokeping'||$field->name=='mac_filter'||$field->name=='dhcp'||$field->name=='remove' )}
-                {if $field->name=='ip_adresa'}
+                {if $field->name=='id'}
                     <tr><td colspan="4"><table class="ipform">
                 {/if}
-                {if $field->name=='ip_adresa'||$field->name=='login'||$field->name=='popis'}
+                {if $field->name=='id'||$field->name=='login'||$field->name=='popis'}
                     <tr><td colspan="4" class="ip">
                 {/if}
                 {if $field->name!='id'}

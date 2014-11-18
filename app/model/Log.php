@@ -26,11 +26,11 @@ class Log extends Table
         $out = true;
         $spolecne = array(
             'Uzivatel_id' => $this->userService->getId(),
-            'datum' => 'NOW()',
             'ip_adresa' => $_SERVER['REMOTE_ADDR'],
             'tabulka' => $tabulka,
             'tabulka_id' => $tabulka_id,
         );
+        //datum se nastavi triggerem before insert
         foreach($data as $radek)
         {
            $out = $out && $this->insert(array_merge($radek, $spolecne));

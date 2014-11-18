@@ -161,12 +161,14 @@ class ApPresenter extends BasePresenter {
 	{
 	    $ip->Ap_id = $idAP;
 	    $idIp = $ip->id;
-	    if(empty($ip->id))
-		$idIp = $this->ipAdresa->insert($ip)->id;
-	    else
-		$this->ipAdresa->update($idIp, $ip);
+            if(!empty($ip->ip_adresa)) {
+                if(empty($ip->id))
+                    $idIp = $this->ipAdresa->insert($ip)->id;
+                else
+                    $this->ipAdresa->update($idIp, $ip);
 
-	    $newAPIPIDs[] = intval($idIp);
+                $newAPIPIDs[] = intval($idIp);
+            }
 	}
 	
 	// A tady smazeme v DB ty ipcka co jsme smazali

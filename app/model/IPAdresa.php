@@ -40,7 +40,7 @@ class IPAdresa extends Table
 		$ip->addHidden('id')->setAttribute('class', 'id ip');
 		$ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
 		$ip->addText('hostname', 'Hostname', 11)->setAttribute('class', 'hostname ip')->setAttribute('placeholder', 'Hostname');
-		$ip->addSelect('TypZarizeni_id', 'Typ Zařízení', $typyZarizeni)->setAttribute('class', 'TypZarizeni_id ip');
+		$ip->addSelect('TypZarizeni_id', 'Typ Zařízení', $typyZarizeni)->setAttribute('class', 'TypZarizeni_id ip')->setPrompt('--Vyberte--');;
 		$ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'internet ip');
 		$ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'smokeping ip');
 		$ip->addText('login', 'Login', 11)->setAttribute('class', 'login ip')->setAttribute('placeholder', 'Login');
