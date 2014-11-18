@@ -1,7 +1,7 @@
 {block content}
 {ifset $u}
 
-    <h3>{$u->jmeno} {$u->prijmeni} ({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
+    <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     <a href="{link Uzivatel:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
     <a href="{link Uzivatel:exportregform id=>$u->id}" class="btn btn-default btn-sm" role="button">Registrační formulář</a>
     <a href="{link Uzivatel:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button">Zpět do AP</a>    
@@ -19,24 +19,28 @@
 	<tr><th>Typ členství</th><td>{$u->TypClenstvi->text}</td></tr>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	
+  
+  <tr><th>Přezdívka</th><td>{$u->nick}</td></tr>
+  {if $canViewOrEdit}
     <tr><th>Typ právní formy</th><td>{$u->TypPravniFormyUzivatele->text}</td></tr>
     <tr n:if="$u->TypPravniFormyUzivatele->text == 'Právnická osoba'"><th>Název firmy</th><td>{$u->firma_nazev}</td></tr>
     <tr n:if="isset($u->firma_ico) || ($u->TypPravniFormyUzivatele->text == 'Právnická osoba')"><th>IČO</th><td>{$u->firma_ico}</td></tr>
-	<tr><th>Jméno a příjmení</th><td>{$u->jmeno} {$u->prijmeni}</td></tr>
-	<tr><th>Přezdívka</th><td>{$u->nick}</td></tr>
-	<tr><th>Adresa</th><td>{$u->adresa}</td></tr>
-	<tr><th>Email</th><td>{$u->email}</td></tr>
-	<tr><th>Telefon</th><td>{$u->telefon}</td></tr>
-	<tr><td colspan="2">&nbsp;</td></tr>
-	
-	<tr><th>Rok narozeni</th><td>{$u->rok_narozeni}</td></tr>
-	<tr><th>Index potížisty</th><td>{$u->index_potizisty}</td></tr>
-	<tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>
+  	<tr><th>Jméno a příjmení</th><td>{$u->jmeno} {$u->prijmeni}</td></tr>
+  	
+  	<tr><th>Adresa</th><td>{$u->adresa}</td></tr>
+  	<tr><th>Email</th><td>{$u->email}</td></tr>
+  	<tr><th>Telefon</th><td>{$u->telefon}</td></tr>
+  	<tr><td colspan="2">&nbsp;</td></tr>
+  	
+  	<tr><th>Rok narozeni</th><td>{$u->rok_narozeni}</td></tr>
+  	<tr><th>Index potížisty</th><td>{$u->index_potizisty}</td></tr>
+  	<tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>
     </table>
     
     <h4>IP Adresy</h4>
     {$adresy}
-
+  
+  {/if}
 {/ifset}
 {/block}
 

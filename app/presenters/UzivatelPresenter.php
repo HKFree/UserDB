@@ -95,7 +95,14 @@ class UzivatelPresenter extends BasePresenter
 
     public function renderEdit()
     {
-	   $this->template->anyVariable = 'any value';
+        if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+    		    $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()->getIdentity()->getId());
+    	    }
+	        else
+          {
+            $this->template->canViewOrEdit = false;
+          }
     }
 
     protected function createComponentUzivatelForm() {
@@ -426,8 +433,10 @@ class UzivatelPresenter extends BasePresenter
     	{
     	    if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
-    		$this->template->u = $uzivatel;
-    		$this->template->adresy = $this->ipAdresa->getIPTable($uzivatel->related('IPAdresa.Uzivatel_id'));
+    		    $this->template->u = $uzivatel;
+    		    $this->template->adresy = $this->ipAdresa->getIPTable($uzivatel->related('IPAdresa.Uzivatel_id'));
+            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()->getIdentity()->getId());
+
     	    }
     	}
     }
