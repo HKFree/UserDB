@@ -298,9 +298,9 @@ class UzivatelPresenter extends BasePresenter
     	$id = $this->getParam('id');
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
-      if($id){
+      if($id){  
     	 $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
-       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId());
+       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId()); 
       }
       else
       {
@@ -360,10 +360,6 @@ class UzivatelPresenter extends BasePresenter
       $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());
     }
     
-    public function renderListorphans()
-    {
-      $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());
-    }
 	
     public function renderList()
     {

@@ -18,7 +18,7 @@ class Oblast extends Table
 
     public function getSeznamOblasti()
     {
-        return($this->findAll());
+        return($this->findAll()->order("jmeno"));
     }
     
     /*
