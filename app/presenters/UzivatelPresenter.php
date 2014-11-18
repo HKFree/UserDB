@@ -340,6 +340,8 @@ class UzivatelPresenter extends BasePresenter
     	    $ob = $this->ap->getAP($this->getParam('id'));
     	    $this->template->ap = $ob;
           
+          $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser()->getIdentity()->getId());
+          
           //$form->addHidden("id", $this->getParam('id'));
           
     	    //$this->template->lokace["ap"] = $ob->jmeno;

@@ -2,7 +2,9 @@
 {ifset $ap}
 
 <h2>{$ap->Oblast->jmeno}, {$ap->jmeno}</h2>
+{if $canViewOrEdit}
 <a href="{link Ap:edit id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
+{/if}
 <a href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm" role="button">Zobrazit uživatele oblasti</a>
 <br><br>
 <pre>
