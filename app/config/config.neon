@@ -38,3 +38,4 @@ services:
 	subnet: App\Model\Subnet
 	typZarizeni: App\Model\TypZarizeni
 	spravceOblasti: App\Model\SpravceOblasti
+	log: App\Model\Log

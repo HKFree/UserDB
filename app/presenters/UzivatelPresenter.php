@@ -23,15 +23,17 @@ class UzivatelPresenter extends BasePresenter
     private $ipAdresa;
     private $ap;
     private $typZarizeni;
+    private $log;
 
-    function __construct(Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni) {
+    function __construct(Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->typClenstvi = $typClenstvi;
-      $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
+        $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
     	$this->zpusobPripojeni = $zpusobPripojeni;
     	$this->uzivatel = $uzivatel;
     	$this->ipAdresa = $ipAdresa;  
     	$this->ap = $ap;
     	$this->typZarizeni = $typZarizeni;
+        $this->log = $log;
     }
   
     
@@ -304,10 +306,11 @@ class UzivatelPresenter extends BasePresenter
             return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
         })->setCustomRender(function($item){
             $el = Html::el('span');
-            if($item->related('IPAdresa.Uzivatel_id')->fetch())
+            $ipAdresy = $item->related('IPAdresa.Uzivatel_id');
+            if($ipAdresy->count() > 0)
             {
-              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
+              $el->title = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
+              $el->setText($ipAdresy->fetch()->ip_adresa);
             }
             return $el;
         });
@@ -389,10 +392,11 @@ class UzivatelPresenter extends BasePresenter
             return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
         })->setCustomRender(function($item){
             $el = Html::el('span');
-            if($item->related('IPAdresa.Uzivatel_id')->fetch())
+            $ipAdresy = $item->related('IPAdresa.Uzivatel_id');
+            if($ipAdresy->count() > 0)
             {
-              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
+              $el->title = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
+              $el->setText($ipAdresy->fetch()->ip_adresa);
             }
             return $el;
         });
