@@ -1,0 +1,13 @@
+{* This is the welcome page, you can delete it *}
+
+{block content}
+<h3>seznam členů</h3>
+{if $canViewOrEdit}
+<a href="{link Uzivatel:moneyall id=>NULL}" class="btn btn-default btn-sm" role="button">Informace z money</a>
+{/if}
+<br><br>
+
+{control grid}
+
+{/block}
+

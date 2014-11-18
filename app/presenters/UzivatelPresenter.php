@@ -197,21 +197,8 @@ class UzivatelPresenter extends BasePresenter
 
     protected function createComponentMoneygrid($name)
     {
-    	$id = $this->getParam('id');
-    	$grid = new \Grido\Grid($this, $name);
-    	$grid->translator->setLang('cs');
-    	$grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
-    	$grid->setDefaultPerPage(100);
-    	$grid->setDefaultSort(array('zalozen' => 'ASC'));
-    
-    	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
-    	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
-    
-      //Debugger::dump();
-      
       $uid = $this->context->parameters["moneyLogin"];
       $heslo = $this->context->parameters["moneyPassword"];
- 
       $client = new \SoapClient(
         'https://' . $uid . ':' . $heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
         array(
@@ -220,12 +207,30 @@ class UzivatelPresenter extends BasePresenter
                 'trace'         => 1,
                 )
         );
-
-      $moneycallresult = $client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
-
+    
+      $canViewOrEdit = false;
+    	$id = $this->getParam('id');
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+      if($id){
+    	 $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
+       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId());
+       $moneycallresult = $client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
+      }
+      else
+      {
+        $grid->setModel($this->uzivatel->getSeznamUzivatelu());
+        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());
+        $moneycallresult = $client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivatelu()));
+      }
       //Debugger::dump( $moneycallresult );
-      
-    	if($this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId()))
+    	$grid->setDefaultPerPage(100);
+    	$grid->setDefaultSort(array('zalozen' => 'ASC'));
+    
+    	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
+    	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
+
+    	if($canViewOrEdit)
     	{
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
     	$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
@@ -280,10 +285,19 @@ class UzivatelPresenter extends BasePresenter
 
     protected function createComponentGrid($name)
     {
+      $canViewOrEdit = false;
     	$id = $this->getParam('id');
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
-    	$grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
+      if($id){
+    	 $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
+       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId());
+      }
+      else
+      {
+        $grid->setModel($this->uzivatel->getSeznamUzivatelu());
+        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());   
+      }
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('zalozen' => 'ASC'));
     
@@ -292,7 +306,7 @@ class UzivatelPresenter extends BasePresenter
     
       //Debugger::dump();
       
-    	if($this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId()))
+    	if($canViewOrEdit)
     	{
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
       $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
@@ -331,6 +345,11 @@ class UzivatelPresenter extends BasePresenter
             return "<span title=".join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))).">".$item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa."</span>";
         });
 	    } 
+    }
+    
+    public function renderListall()
+    {
+      $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());
     }
 	
     public function renderList()
@@ -376,6 +395,11 @@ class UzivatelPresenter extends BasePresenter
     	else {
     	   $this->template->table = 'Chyba, AP nenalezeno.'; 
     	}
+    }
+    
+    public function renderMoneyall()
+    {
+    	
     }
     
     public function renderShow()
