@@ -14,10 +14,13 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
 	
 	/** @var Nette\Database\Connection */
 	protected $connection;
+    
+    private $fakeUser;
 	
-	public function __construct(Nette\Database\Connection $db)
+	public function __construct($fakeUser, Nette\Database\Connection $db)
 	{
 		$this->connection = $db;
+        $this->fakeUser = $fakeUser;
 	}
 			
 	/**
@@ -32,11 +35,13 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
 				throw new Nette\Security\AuthenticationException('User not found.');
 			}
 
-		if($username == "DBG")			/// debuging identity
+		if($this->fakeUser != false)			/// debuging identity
 		{
-			$roles []= "SO-124";
-			$arr = array('nick' => 'Hellboy');
-			return new Nette\Security\Identity("3306", $roles, $arr);
+			//$roles = array_merge();
+            if(is_array($this->fakeUser["userRoles"]))
+                $roles = $this->fakeUser["userRoles"];
+			$args = array('nick' => $this->fakeUser["userName"]);
+			return new Nette\Security\Identity($this->fakeUser["userID"], $roles, $args);
 		}
 
 		$roles_string = $_SERVER['ismemberof'];

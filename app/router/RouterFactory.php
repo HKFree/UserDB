@@ -17,11 +17,11 @@ class RouterFactory
 	/**
 	 * @return \Nette\Application\IRouter
 	 */
-	public function createRouter($dbg, $urlPrefix)
+	public function createRouter($https, $urlPrefix)
 	{
 		$router = new RouteList();
-		$router[] = new Route($urlPrefix.'/<presenter>/list/<id>', 'Homepage:list', ($dbg ? null : Route::SECURED));
-		$router[] = new Route($urlPrefix.'/<presenter>/<action>[/<id>]', 'Homepage:default', ($dbg ? null : Route::SECURED));
+		$router[] = new Route($urlPrefix.'/<presenter>/list/<id>', 'Homepage:list', ($https ? Route::SECURED : null));
+		$router[] = new Route($urlPrefix.'/<presenter>/<action>[/<id>]', 'Homepage:default', ($https ? Route::SECURED : null));
 		return $router;
 	}
 
