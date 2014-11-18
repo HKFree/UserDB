@@ -237,12 +237,13 @@ class UzivatelPresenter extends BasePresenter
     	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
     	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
 
+    	
+    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+      $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
     	if($canViewOrEdit)
     	{
-    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-    	$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
+      $grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
+    	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    	
     	$grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
     	$grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
     	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
@@ -289,11 +290,6 @@ class UzivatelPresenter extends BasePresenter
     	$grid->addActionHref('edit', 'Editovat')
     	    ->setIcon('pencil');
     	}
-    	else
-    	{
-    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-    	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
-	    } 
     }
 
     protected function createComponentGrid($name)
@@ -319,60 +315,52 @@ class UzivatelPresenter extends BasePresenter
     
       //Debugger::dump();
       
+    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+      $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
+      if($canViewOrEdit)
+    	{
+        $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
+              return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
+          })->setSortable()->setFilterSelect(array(
+                          "" => "",
+                          "1" => "Fyzická os.",
+                          "2" => "Právnická os.",
+                      ));
+      	$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
+      	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    	
+      	$grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
+      	$grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
+      	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
+      }
+    	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
+            return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
+        })->setCustomRender(function($item){
+            $el = Html::el('span');
+            if($item->related('IPAdresa.Uzivatel_id')->fetch())
+            {
+              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
+              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
+            }
+            return $el;
+        });
     	if($canViewOrEdit)
     	{
-    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-      $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
-            return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
-        })->setSortable()->setFilterSelect(array(
-                        "" => "",
-                        "1" => "Fyzická os.",
-                        "2" => "Právnická os.",
-                    ));
-    	$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
-    	$grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
-            return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-        })->setCustomRender(function($item){
-            $el = Html::el('span');
-            if($item->related('IPAdresa.Uzivatel_id')->fetch())
-            {
-              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
-            }
-            return $el;
-        });
-    	//$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
-    	$grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
-    	    
-    	$grid->addActionHref('show', 'Zobrazit')
-    	    ->setIcon('eye-open');
-    	$grid->addActionHref('edit', 'Editovat')
-    	    ->setIcon('pencil');
+        //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
+      	$grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
+      	    
+      	$grid->addActionHref('show', 'Zobrazit')
+      	    ->setIcon('eye-open');
+      	$grid->addActionHref('edit', 'Editovat')
+      	    ->setIcon('pencil');
     	}
-    	else
-    	{
-    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-    	$grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
-            return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-        })->setCustomRender(function($item){
-            $el = Html::el('span');
-            if($item->related('IPAdresa.Uzivatel_id')->fetch())
-            {
-              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
-            }
-            return $el;
-        });
-	    } 
     }
     
     public function renderListall()
+    {
+      $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());
+    }
+    
+    public function renderListorphans()
     {
       $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());
     }
