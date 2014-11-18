@@ -19,6 +19,7 @@ class SpravceOblasti extends Table
     public function getOblastiSpravce($userID)
     {
         $OblastiSpravce = $this->findAll()->where('Uzivatel_id', $userID)->fetchAll();
+        $out = array();
         foreach ($OblastiSpravce as $key => $value) {
             $out[$key] = $value->Oblast;
         }

@@ -95,6 +95,8 @@ class ApPresenter extends BasePresenter {
     }
 
     public function renderEdit() {
+    
+      $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser()->getIdentity()->getId());
 	//Render Edit
     }
     

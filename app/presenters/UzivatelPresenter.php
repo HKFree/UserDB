@@ -242,7 +242,13 @@ class UzivatelPresenter extends BasePresenter
     	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
             return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
         })->setCustomRender(function($item){
-            return "<span title=".join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))).">".$item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa."</span>";
+            $el = Html::el('span');
+            if($item->related('IPAdresa.Uzivatel_id')->fetch())
+            {
+              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
+              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
+            }
+            return $el;
         });
         
       $grid->addColumnText('act', 'Aktivní')->setColumn(function($item) use ($moneycallresult){
@@ -325,7 +331,13 @@ class UzivatelPresenter extends BasePresenter
     	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
             return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
         })->setCustomRender(function($item){
-            return "<span title=".join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))).">".$item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa."</span>";
+            $el = Html::el('span');
+            if($item->related('IPAdresa.Uzivatel_id')->fetch())
+            {
+              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
+              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
+            }
+            return $el;
         });
     	//$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
     	$grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
@@ -342,7 +354,13 @@ class UzivatelPresenter extends BasePresenter
     	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
             return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
         })->setCustomRender(function($item){
-            return "<span title=".join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))).">".$item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa."</span>";
+            $el = Html::el('span');
+            if($item->related('IPAdresa.Uzivatel_id')->fetch())
+            {
+              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
+              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
+            }
+            return $el;
         });
 	    } 
     }
