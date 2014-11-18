@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Počítač: localhost
--- Vygenerováno: Úte 18. lis 2014, 00:16
+-- Vygenerováno: Úte 18. lis 2014, 20:39
 -- Verze MySQL: 5.5.35
 -- Verze PHP: 5.4.4-14+deb7u9
 
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `Ap` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `jmeno` (`jmeno`),
   KEY `Oblast_id` (`Oblast_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=9 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=10 ;
 
 -- --------------------------------------------------------
 
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `IPAdresa` (
   `mac_filter` tinyint(1) NOT NULL,
   `internet` tinyint(1) NOT NULL,
   `smokeping` tinyint(1) NOT NULL,
-  `TypZarizeni_id` int(11) NOT NULL,
+  `TypZarizeni_id` int(11) DEFAULT NULL,
   `popis` varchar(200) COLLATE utf8_czech_ci DEFAULT NULL,
   `login` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   `heslo` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
@@ -79,7 +79,36 @@ CREATE TABLE IF NOT EXISTS `IPAdresa` (
   KEY `Uzivatel_id` (`Uzivatel_id`),
   KEY `Ap_id` (`Ap_id`),
   KEY `TypZarizeni_id` (`TypZarizeni_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=14 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=42 ;
+
+-- --------------------------------------------------------
+
+--
+-- Struktura tabulky `Log`
+--
+
+CREATE TABLE IF NOT EXISTS `Log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `Uzivatel_id` int(11) NOT NULL,
+  `datum` datetime NOT NULL,
+  `ip_adresa` varchar(45) COLLATE utf8_czech_ci NOT NULL,
+  `tabulka` varchar(30) COLLATE utf8_czech_ci NOT NULL,
+  `tabulka_id` int(11) NOT NULL,
+  `sloupec` varchar(50) COLLATE utf8_czech_ci NOT NULL,
+  `puvodni_hodnota` text COLLATE utf8_czech_ci,
+  `nova_hodnota` text COLLATE utf8_czech_ci,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=64 ;
+
+--
+-- Spouště `Log`
+--
+DROP TRIGGER IF EXISTS `Log_bi`;
+DELIMITER //
+CREATE TRIGGER `Log_bi` BEFORE INSERT ON `Log`
+ FOR EACH ROW SET NEW.datum = NOW()
+//
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -93,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `Oblast` (
   `datum_zalozeni` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `jmeno` (`jmeno`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=127 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=128 ;
 
 -- --------------------------------------------------------
 
@@ -236,7 +265,7 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   KEY `ZpusobPripojeni_id` (`ZpusobPripojeni_id`),
   KEY `Ap_id` (`Ap_id`),
   KEY `TypPravniFormyUzivatele_id` (`TypPravniFormyUzivatele_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=3309 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=3310 ;
 
 -- --------------------------------------------------------
 
