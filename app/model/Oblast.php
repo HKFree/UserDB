@@ -45,7 +45,7 @@ class Oblast extends Table
         $aps = array();
         foreach ($oblasti as $oblast) {
 			$apcka_oblasti = $oblast->related('Ap.Oblast_id');
-			foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
+			foreach($oblast->related('Ap.Oblast_id')->order("jmeno") as $apid => $ap) {
 				if(count($apcka_oblasti) == 1)
 					$aps[$apid] = $ap->jmeno;
 				else

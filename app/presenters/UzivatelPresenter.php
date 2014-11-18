@@ -251,10 +251,11 @@ class UzivatelPresenter extends BasePresenter
             return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
         })->setCustomRender(function($item){
             $el = Html::el('span');
-            if($item->related('IPAdresa.Uzivatel_id')->fetch())
+            $ipAdresy = $item->related('IPAdresa.Uzivatel_id');
+            if($ipAdresy->count() > 0)
             {
-              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
+              $el->title = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
+              $el->setText($ipAdresy->fetch()->ip_adresa);
             }
             return $el;
         });
@@ -336,10 +337,11 @@ class UzivatelPresenter extends BasePresenter
             return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
         })->setCustomRender(function($item){
             $el = Html::el('span');
-            if($item->related('IPAdresa.Uzivatel_id')->fetch())
+            $ipAdresy = $item->related('IPAdresa.Uzivatel_id');
+            if($ipAdresy->count() > 0)
             {
-              $el->title = join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-              $el->setText($item->related('IPAdresa.Uzivatel_id')->fetch()->ip_adresa);
+              $el->title = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
+              $el->setText($ipAdresy->fetch()->ip_adresa);
             }
             return $el;
         });
