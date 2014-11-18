@@ -25,9 +25,9 @@ nette:
 
 
 services:
-	authenticator: App\Model\Authenticator
+	authenticator: App\Model\Authenticator(%debug.fakeUser%)
 	- App\RouterFactory
-	router: @App\RouterFactory::createRouter(%dbg%, %urlPrefix%)
+	router: @App\RouterFactory::createRouter(%debug.https%, %urlPrefix%)
 	uzivatel: App\Model\Uzivatel
 	typClenstvi: App\Model\TypClenstvi
 	typPravniFormyUzivatele: App\Model\TypPravniFormyUzivatele

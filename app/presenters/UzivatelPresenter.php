@@ -206,8 +206,8 @@ class UzivatelPresenter extends BasePresenter
 
     protected function createComponentMoneygrid($name)
     {
-      $uid = $this->context->parameters["moneyLogin"];
-      $heslo = $this->context->parameters["moneyPassword"];
+      $uid = $this->context->parameters["money"]["login"];
+      $heslo = $this->context->parameters["money"]["password"];
       $client = new \SoapClient(
         'https://' . $uid . ':' . $heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
         array(

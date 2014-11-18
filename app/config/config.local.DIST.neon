@@ -1,8 +1,28 @@
+# DEVELOPEMENT
 parameters:
-	dbg: false
-	urlPrefix: '/userdb'  # don't forget to edit www/.htaccess
-	moneyLogin: 'uid'
-	moneyPassword: ''
+	urlPrefix: ''
+	debug:
+		https: false
+		fakeUser:
+			userID: 3306
+			userName: 'bkralik'
+			userRoles:
+				- 'SO-124'
+				- 'TECH'
+	money:
+		login: ''
+		password: ''
+
+# PRODUCTION
+parameters:
+	urlPrefix: '/userdb'   # don't forget to edit www/.htaccess
+	debug:
+		https: false
+		fakeUser: false
+	money:
+		login: ''
+		password: ''
+
 
 database:
 	dsn: 'mysql:host=xxxxxx;dbname=userdb'
