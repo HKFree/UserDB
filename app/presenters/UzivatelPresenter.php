@@ -23,15 +23,17 @@ class UzivatelPresenter extends BasePresenter
     private $ipAdresa;
     private $ap;
     private $typZarizeni;
+    private $log;
 
-    function __construct(Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni) {
+    function __construct(Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->typClenstvi = $typClenstvi;
-      $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
+        $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
     	$this->zpusobPripojeni = $zpusobPripojeni;
     	$this->uzivatel = $uzivatel;
     	$this->ipAdresa = $ipAdresa;  
     	$this->ap = $ap;
     	$this->typZarizeni = $typZarizeni;
+        $this->log = $log;
     }
   
     
