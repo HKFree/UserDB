@@ -30,6 +30,7 @@ services:
 	router: @App\RouterFactory::createRouter(%debug.https%, %urlPrefix%)
 	uzivatel: App\Model\Uzivatel
 	typClenstvi: App\Model\TypClenstvi
+	typSpravceOblasti: App\Model\TypSpravceOblasti
 	typPravniFormyUzivatele: App\Model\TypPravniFormyUzivatele
 	zpusobPripojeni: App\Model\ZpusobPripojeni
 	ipAdresa: App\Model\IPAdresa

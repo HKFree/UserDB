@@ -1,0 +1,10 @@
+{block content}
+
+{if $canViewOrEdit}
+{includeblock '../form.latte', form => uzivatelRightsForm}
+{else}
+<p>Na tuto operaci nemáte oprávnění!</p>
+{/if}
+
+{/block}
+

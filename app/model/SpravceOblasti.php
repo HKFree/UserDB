@@ -2,7 +2,9 @@
 
 namespace App\Model;
 
-use Nette;
+use Nette,
+    Nette\Application\UI\Form,
+    Nette\Utils\Html;
 
 
 
@@ -25,5 +27,18 @@ class SpravceOblasti extends Table
         }
         return($out);
     }
+    
+    public function deletePrava(array $rights)
+    {
+		if(count($rights)>0)
+			return($this->delete(array('id' => $rights)));
+		else
+			return true;
+    }
 
+    public function getRightsForm(&$right,$typRole,$obl) {	
+		$right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
+        $right->addSelect('TypSpravceOblasti_id', 'Typ práv', $typRole)->addRule(Form::FILLED, 'Vyberte typ práv')->setAttribute('class', 'typ ip');
+        $right->addSelect('Oblast_id', 'Oblast', $obl)->setPrompt('--Vyberte pouze pro SO/ZSO--')->setAttribute('class', 'oblast ip')->addConditionOn($right['TypSpravceOblasti_id'], Form::IS_IN, array(1,2))->setRequired('Zadejte oblast');//->toggle('oblast');    	
+    }
 }
