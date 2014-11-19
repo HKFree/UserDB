@@ -117,7 +117,7 @@ class UzivatelPresenter extends BasePresenter
     	$zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id','text');
     	$aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
     
-    	$form = new Form;
+    	$form = new Form($this, 'uzivatelForm');
     	$form->addHidden('id');
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
     	$form->addRadioList('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::FILLED, 'Vyberte typ právní formy');
@@ -154,7 +154,7 @@ class UzivatelPresenter extends BasePresenter
     
     	$form->addSubmit('save', 'Uložit')
     		->setAttribute('class', 'btn btn-success btn-xs btn-white');
-    	$form->onSuccess[] = $this->uzivatelFormSucceded;
+    	$form->onSuccess[] = array($this, 'uzivatelFormSucceded');
     
         $form->setDefaults(array(
             'TypClenstvi_id' => 3,
@@ -162,13 +162,14 @@ class UzivatelPresenter extends BasePresenter
         ));
     
     	// pokud editujeme, nacteme existujici ipadresy
-    	if($this->getParam('id')) {
+    	$submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
     	    $values = $this->uzivatel->getUzivatel($this->getParam('id'));
     	    if($values) {
-    		foreach($values->related('IPAdresa.Uzivatel_id') as $ip_id => $ip_data) {
-    		    $form["ip"][$ip_id]->setValues($ip_data);
-    		}
-    		$form->setValues($values);
+                foreach($values->related('IPAdresa.Uzivatel_id') as $ip_id => $ip_data) {
+                    $form["ip"][$ip_id]->setValues($ip_data);
+                }
+                $form->setValues($values);
     	    }
     	}                
     
@@ -211,7 +212,7 @@ class UzivatelPresenter extends BasePresenter
     	{
     	    $ip->uzivatel_id = $idUzivatele;
     	    $idIp = $ip->id;
-            if(!empty($ip->ip_adresa)) {
+            //if(!empty($ip->ip_adresa)) {
                 if(empty($ip->id)) {
                     $idIp = $this->ipAdresa->insert($ip)->id;
                     foreach($ip as $ip_key => $ip_value) {
@@ -237,7 +238,7 @@ class UzivatelPresenter extends BasePresenter
                     }
                 }    
                 $newUserIPIDs[] = intval($idIp);
-            }
+            //}
     	}
     
     	// A tady smazeme v DB ty ipcka co jsme smazali

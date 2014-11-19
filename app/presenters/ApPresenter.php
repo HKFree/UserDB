@@ -103,7 +103,7 @@ class ApPresenter extends BasePresenter {
     }
     
     protected function createComponentApForm() {
-	$form = new Form;
+	$form = new Form($this, 'apForm');
         $form->addHidden('id');
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
 	$form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');;
@@ -127,9 +127,10 @@ class ApPresenter extends BasePresenter {
 	$form->addSubmit('save', 'Uložit')
 		->setAttribute('class', 'btn btn-success btn-xs btn-white');
 	
-	$form->onSuccess[] = $this->apFormSucceded;
-	
-	if($this->getParam('id')) {
+	$form->onSuccess[] = array($this, 'apFormSucceded');
+    
+	$submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+    if($this->getParam('id') && !$submitujeSe) {
 	    $values = $this->ap->getAP($this->getParam('id'));
 	    if($values) {
 		foreach($values->related('IPAdresa.Ap_id') as $ip_id => $ip_data) {
@@ -183,7 +184,7 @@ class ApPresenter extends BasePresenter {
 	{
 	    $ip->Ap_id = $idAP;
 	    $idIp = $ip->id;
-            if(!empty($ip->ip_adresa)) {
+            //if(!empty($ip->ip_adresa)) {
                 if(empty($ip->id)) {
                     $idIp = $this->ipAdresa->insert($ip)->id;
                     foreach($ip as $ip_key => $ip_value) {
@@ -209,7 +210,7 @@ class ApPresenter extends BasePresenter {
                     }                    
                 }
                 $newAPIPIDs[] = intval($idIp);
-            }
+            //}
 	}
 	
 	// A tady smazeme v DB ty ipcka co jsme smazali
