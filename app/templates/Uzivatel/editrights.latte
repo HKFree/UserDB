@@ -1,9 +1,21 @@
 {block content}
 
+<h3>Editace skupin a oprávnění <small>uživatel {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
 {if $canViewOrEdit}
-{includeblock '../form.latte', form => uzivatelRightsForm}
+{form uzivatelRightsForm}  
+    <fieldset n:foreach="$form['rights']->containers as $right" class="ipform">
+        {$right['TypSpravceOblasti_id']->label} {$right['TypSpravceOblasti_id']->control}
+        {$right['Oblast_id']->label} {$right['Oblast_id']->control}
+        {$right['remove']->control}
+    </fieldset>
+    <ul class="errors" n:if="$form->hasErrors()">
+        <li n:foreach="$form->errors as $error">{$error}</li>
+    </ul>
+    
+    {$form['rights']['add']->control} {$form['save']->control}
+{/form}
 {else}
-<p>Na tuto operaci nemáte oprávnění!</p>
+    <p>Na tuto operaci nemáte oprávnění!</p>
 {/if}
 
 {/block}

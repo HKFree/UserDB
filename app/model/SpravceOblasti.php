@@ -28,6 +28,11 @@ class SpravceOblasti extends Table
         return($out);
     }
     
+    public function getPravo($id)
+    {
+        return($this->find($id));
+    }
+    
     public function deletePrava(array $rights)
     {
 		if(count($rights)>0)
@@ -36,9 +41,19 @@ class SpravceOblasti extends Table
 			return true;
     }
 
-    public function getRightsForm(&$right,$typRole,$obl) {	
+    public function getRightsForm(&$right, $typRole, $obl) {	
 		$right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
-        $right->addSelect('TypSpravceOblasti_id', 'Typ práv', $typRole)->addRule(Form::FILLED, 'Vyberte typ práv')->setAttribute('class', 'typ ip');
-        $right->addSelect('Oblast_id', 'Oblast', $obl)->setPrompt('--Vyberte pouze pro SO/ZSO--')->setAttribute('class', 'oblast ip')->addConditionOn($right['TypSpravceOblasti_id'], Form::IS_IN, array(1,2))->setRequired('Zadejte oblast');//->toggle('oblast');    	
+        $right->addHidden('id')->setAttribute('class', 'id ip');
+        
+        $right->addSelect('TypSpravceOblasti_id', 'Oprávnění', $typRole)
+              ->addRule(Form::FILLED, 'Vyberte oprávnění')
+              ->setAttribute('class', 'typ ip')
+              ->setPrompt('Vyberte');
+        
+        $right->addSelect('Oblast_id', 'Oblast', $obl)
+              ->setPrompt('-Vyberte pouze pro SO/ZSO-')
+              ->setAttribute('class', 'oblast ip')
+              ->addConditionOn($right['TypSpravceOblasti_id'], Form::IS_IN, array(1,2))
+              ->setRequired('Zadejte oblast');//->toggle('oblast');    	
     }
 }

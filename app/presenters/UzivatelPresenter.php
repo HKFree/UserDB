@@ -492,43 +492,46 @@ class UzivatelPresenter extends BasePresenter
     public function renderEditrights()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
+        $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
     }
     
     protected function createComponentUzivatelRightsForm() {
-    	$typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id','text');
+    	$typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
         $obl = $this->oblast->getSeznamOblasti()->fetchPairs('id', 'jmeno');
     
     	$form = new Form;
     	$form->addHidden('id');
             
         $data = $this->spravceOblasti;
-    	$rights = $form->addDynamic('rights', function (Container $right) use ($data,$typRole,$obl) {
-    	    $data->getRightsForm($right,$typRole,$obl);
+    	$rights = $form->addDynamic('rights', function (Container $right) use ($data, $typRole, $obl) {
+    	    $data->getRightsForm($right, $typRole, $obl);
     
     	    $right->addSubmit('remove', '– Odstranit oprávnění')
     		    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
     		    ->setValidationScope(FALSE)
     		    ->addRemoveOnClick();
-    	}, ($this->getParam('id')>0?0:1));
+    	}, 0, false);
     
     	$rights->addSubmit('add', '+ Přidat další oprávnění')
-    		->setAttribute('class', 'btn btn-success btn-xs btn-white')
-    		->setValidationScope(FALSE)
-    		->addCreateOnClick(TRUE);
+    		   ->setAttribute('class', 'btn btn-success btn-xs btn-white')
+    		   ->setValidationScope(FALSE)
+    		   ->addCreateOnClick(TRUE);
     
     	$form->addSubmit('save', 'Uložit')
-    		->setAttribute('class', 'btn btn-success btn-xs btn-white');
+    		 ->setAttribute('class', 'btn btn-success btn-xs btn-white');
+        
     	$form->onSuccess[] = $this->uzivatelRightsFormSucceded;
     
 
-    	// pokud editujeme, nacteme existujici ipadresy
+    	// pokud editujeme, nacteme existujici opravneni
     	if($this->getParam('id')) {
-            $values = $this->uzivatel->getUzivatel($this->getParam('id'));
-    		foreach($this->uzivatel->getUzivatel($this->getParam('id'))->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
+            $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+    		foreach($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
     		    $form["rights"][$rights_id]->setValues($rights_data);
     		}
-            if($values)
-    		{$form->setValues($values);}
+            if($user) {
+                $form->setValues($user);
+    	    }
     	}                
     
     	return $form;
@@ -536,49 +539,56 @@ class UzivatelPresenter extends BasePresenter
     public function uzivatelRightsFormSucceded($form, $values) {
         $log = array();
     	$idUzivatele = $values->id;
-    	$ips = $values->rights;
-
-    	// Potom zpracujeme IPcka
+    	$prava = $values->rights;
+        //\Tracy\Dumper::dump($prava);
+        //die();
+    	// Zpracujeme prava
     	$newUserIPIDs = array();
-    	foreach($ips as $ip)
+    	foreach($prava as $pravo)
     	{
-    	    $ip->uzivatel_id = $idUzivatele;
-    	    $idIp = $ip->id;
-            if(!empty($ip->ip_adresa)) {
-                if(empty($ip->id)) {
-                    $idIp = $this->ipAdresa->insert($ip)->id;
-                    foreach($ip as $ip_key => $ip_value) {
-                        if(!empty($ip_value)) {
-                            $log[] = array(
-                                'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
-                                'puvodni_hodnota'=>NULL,
-                                'nova_hodnota'=>$ip_value,
-                                    );
-                        }
-                    }                
-                } else {
-                    $oldip = $this->ipAdresa->getIPAdresa($idIp);
-                    $this->ipAdresa->update($idIp, $ip);
-                    foreach($ip as $ip_key => $ip_value) {
-                        if($ip_key!='uzivatel_id' && $ip_value != $oldip[$ip_key]) {
-                            $log[] = array(
-                                'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
-                                'puvodni_hodnota'=>isset($oldip[$ip_key])?$oldip[$ip_key]:NULL,
-                                'nova_hodnota'=>$ip_value,
-                                    );
-                        }
+    	    $pravo->Uzivatel_id = $idUzivatele;
+    	    $pravoId = $pravo->id;
+            if(empty($pravo->id)) {
+                $pravoId = $this->spravceOblasti->insert($pravo)->id;
+
+                /*foreach($ip as $ip_key => $ip_value) {
+                    if(!empty($ip_value)) {
+                        $log[] = array(
+                            'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
+                            'puvodni_hodnota'=>NULL,
+                            'nova_hodnota'=>$ip_value,
+                                );
                     }
-                }    
-                $newUserIPIDs[] = intval($idIp);
-            }
+                } */     
+
+            } else {
+                
+                $starePravo = $this->spravceOblasti->getPravo($pravoId);
+                $this->spravceOblasti->update($pravoId, $pravo);
+                
+                /*
+                foreach($ip as $ip_key => $ip_value) {
+                    if($ip_key!='uzivatel_id' && $ip_value != $oldip[$ip_key]) {
+                        $log[] = array(
+                            'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
+                            'puvodni_hodnota'=>isset($oldip[$ip_key])?$oldip[$ip_key]:NULL,
+                            'nova_hodnota'=>$ip_value,
+                                );
+                    }
+                }
+                */
+            }    
+            $novaPravaID[] = intval($pravoId);
     	}
     
     	// A tady smazeme v DB ty ipcka co jsme smazali
-    	$userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
-    	$toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
+    	$aktualniPravaID = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('SpravceOblasti.Uzivatel_id')->fetchPairs('id', 'id'));
+    	$toDelete = array_values(array_diff($aktualniPravaID, $novaPravaID));
         if(!empty($toDelete)) {
-            foreach($toDelete as $idIp) {
-                $oldip = $this->ipAdresa->getIPAdresa($idIp);
+            foreach($toDelete as $pravoId) {
+                //$oldip = $this->ipAdresa->getIPAdresa($idIp);
+                
+                /*
                 foreach($oldip as $ip_key => $ip_value) {
                     $log[] = array(
                         'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
@@ -586,6 +596,7 @@ class UzivatelPresenter extends BasePresenter
                         'nova_hodnota'=>NULL,
                             );
                 }
+                */
             }
         }
         $this->spravceOblasti->deletePrava($toDelete);
