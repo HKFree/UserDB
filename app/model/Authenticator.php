@@ -3,9 +3,9 @@
 namespace App\Model;
 
 use Nette,
-  App\Model,
-	Nette\Security,
-	Nette\Utils\Strings,
+    App\Model,
+    Nette\Security,
+    Nette\Utils\Strings,
     Tracy\Debugger;
 
 /**
@@ -13,47 +13,50 @@ use Nette,
  */
 class Authenticator extends Nette\Object implements Security\IAuthenticator
 {
-	protected $context;
-  private $fakeUser;
-  private $spravceOb;
-	
-	public function __construct($fakeUser, Nette\Database\Context $ctx)
-	{
-		$this->context = $ctx;
-    $this->fakeUser = $fakeUser;
-	}
-			
-	/**
-	 * Performs an authentication.
-	 * @return Nette\Security\Identity
-	 * @throws Nette\Security\AuthenticationException
-	 */
-	public function authenticate(array $credentials)
-	{
-		list($username, $password) = $credentials;
-			if (!$username) {
-				throw new Nette\Security\AuthenticationException('User not found.');
-			}
-      
-    $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $username)->fetchAll();
-    $roles = array();
-    foreach ($spravcepro as $key => $value) {
-      if($value->Oblast)
-        { $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text."-".$value->Oblast; }
-      else
-        { $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text; }
+    protected $context;
+    private $fakeUser;
+    private $spravceOb;
+    
+    public function __construct($fakeUser, Nette\Database\Context $ctx)
+    {
+        $this->context = $ctx;
+        $this->fakeUser = $fakeUser;
     }
-    //Debugger::dump( $roles );
+            
+    /**
+     * Performs an authentication.
+     * @return Nette\Security\Identity
+     * @throws Nette\Security\AuthenticationException
+     */
+    public function authenticate(array $credentials)
+    {
+        list($userID, $password) = $credentials;
+        if (!$userID) {
+            throw new Nette\Security\AuthenticationException('User not found.');
+        }
+      
+        if($this->fakeUser != false)            /// debuging identity
+        {
+            $userID = $this->fakeUser["userID"];
+            $args = array('nick' => $this->fakeUser["userName"]);
+        }
+        else
+        {
+            $args = array('nick' => $_SERVER['givenName']);
+        }
+                    
+        $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
+        $roles = array();
+        foreach ($spravcepro as $key => $value) {
+            if($value->Oblast) {
+                $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text."-".$value->Oblast;
+            } else {
+                $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
+            }
+        }
 
-		if($this->fakeUser != false)			/// debuging identity
-		{
-			$args = array('nick' => $this->fakeUser["userName"]);
-			return new Nette\Security\Identity($this->fakeUser["userID"], $roles, $args);
-		}
-
-		$arr = array('nick' => $_SERVER['givenName']);
-		return new Nette\Security\Identity($username, $roles, $arr);
-	}
-	
+        return new Nette\Security\Identity($userID, $roles, $args);
+    }
+    
 
 }
