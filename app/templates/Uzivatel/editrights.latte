@@ -6,6 +6,8 @@
     <fieldset n:foreach="$form['rights']->containers as $right" class="ipform">
         {$right['TypSpravceOblasti_id']->label} {$right['TypSpravceOblasti_id']->control}
         {$right['Oblast_id']->label} {$right['Oblast_id']->control}
+        {$right['od']->label} {$right['od']->control}
+        {$right['do']->label} {$right['do']->control}
         {$right['remove']->control}
     </fieldset>
     <ul class="errors" n:if="$form->hasErrors()">

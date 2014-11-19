@@ -55,5 +55,12 @@ class SpravceOblasti extends Table
               ->setAttribute('class', 'oblast ip')
               ->addConditionOn($right['TypSpravceOblasti_id'], Form::IS_IN, array(1,2))
               ->setRequired('Zadejte oblast');//->toggle('oblast');    	
+              
+        $right->addText('od', 'Platnost od:')
+             ->setType('date')
+             ->addRule(Form::FILLED, 'Vyberte datum');
+             
+        $right->addText('do', 'Platnost od:')
+             ->setType('date');
     }
 }
