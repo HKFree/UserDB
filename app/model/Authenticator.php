@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use Nette,
+    Nette\DateTime,
     App\Model,
     Nette\Security,
     Nette\Utils\Strings,
@@ -44,14 +45,18 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
         {
             $args = array('nick' => $_SERVER['givenName']);
         }
-                    
+               
+        $date = new DateTime();   
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
         $roles = array();
         foreach ($spravcepro as $key => $value) {
-            if($value->Oblast) {
-                $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text."-".$value->Oblast;
-            } else {
-                $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
+            if($value->od->getTimestamp() < $date->getTimestamp() && (!$value->do || $value->do->getTimestamp() > $date->getTimestamp()))
+            {
+                if($value->Oblast) {
+                    $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text."-".$value->Oblast;
+                } else {
+                    $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
+                }
             }
         }
 
