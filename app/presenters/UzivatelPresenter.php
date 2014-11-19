@@ -499,7 +499,8 @@ class UzivatelPresenter extends BasePresenter
     	$typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
         $obl = $this->oblast->getSeznamOblasti()->fetchPairs('id', 'jmeno');
     
-    	$form = new Form;
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "uzivatelRightsForm");
     	$form->addHidden('id');
             
         $data = $this->spravceOblasti;
@@ -520,14 +521,15 @@ class UzivatelPresenter extends BasePresenter
     	$form->addSubmit('save', 'Uložit')
     		 ->setAttribute('class', 'btn btn-success btn-xs btn-white');
         
-    	$form->onSuccess[] = $this->uzivatelRightsFormSucceded;
+    	$form->onSuccess[] = array($this, 'uzivatelRightsFormSucceded');
     
 
     	// pokud editujeme, nacteme existujici opravneni
-    	if($this->getParam('id')) {
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParam('id'));
     		foreach($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
-    		    $form["rights"][$rights_id]->setValues($rights_data);
+                $form["rights"][$rights_id]->setValues($rights_data);
     		}
             if($user) {
                 $form->setValues($user);
