@@ -99,7 +99,7 @@ class UzivatelPresenter extends BasePresenter
     {
         if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
-    		    $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()->getIdentity()->getId());
+    		    $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
     	    }
 	        else
           {
@@ -278,16 +278,17 @@ class UzivatelPresenter extends BasePresenter
     	$grid->translator->setLang('cs');
       if($id){
     	 $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
-       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId());
+       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
        $moneycallresult = $client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
       }
       else
       {
         $grid->setModel($this->uzivatel->getSeznamUzivatelu());
-        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());
+        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
         $moneycallresult = $client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivatelu()));
       }
-      //Debugger::dump( $moneycallresult );
+      //Debugger::dump( $this->getUser()->getIdentity()->getRoles() );
+      //Debugger::dump( $this->getUser()->isInRole('SO-17'));
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('zalozen' => 'ASC'));
     
@@ -358,12 +359,12 @@ class UzivatelPresenter extends BasePresenter
     	$grid->translator->setLang('cs');
       if($id){  
     	 $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
-       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser()->getIdentity()->getId()); 
+       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser()); 
       }
       else
       {
         $grid->setModel($this->uzivatel->getSeznamUzivatelu());
-        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());   
+        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());   
       }
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('zalozen' => 'ASC'));
@@ -416,7 +417,7 @@ class UzivatelPresenter extends BasePresenter
     
     public function renderListall()
     {
-      $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser()->getIdentity()->getId());
+      $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
     }
     
 	
@@ -427,7 +428,7 @@ class UzivatelPresenter extends BasePresenter
     	    $ob = $this->ap->getAP($this->getParam('id'));
     	    $this->template->ap = $ob;
           
-          $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser()->getIdentity()->getId());
+          $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
           
           //$form->addHidden("id", $this->getParam('id'));
           
@@ -478,7 +479,7 @@ class UzivatelPresenter extends BasePresenter
     	    {
     		    $this->template->u = $uzivatel;
     		    $this->template->adresy = $this->ipAdresa->getIPTable($uzivatel->related('IPAdresa.Uzivatel_id'));
-            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()->getIdentity()->getId());
+            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
 
     	    }
     	}

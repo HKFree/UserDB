@@ -3,24 +3,24 @@
 namespace App\Model;
 
 use Nette,
+  App\Model,
 	Nette\Security,
-	Nette\Utils\Strings;
+	Nette\Utils\Strings,
+    Tracy\Debugger;
 
 /**
  * Users authenticator.
  */
 class Authenticator extends Nette\Object implements Security\IAuthenticator
 {
+	protected $context;
+  private $fakeUser;
+  private $spravceOb;
 	
-	/** @var Nette\Database\Connection */
-	protected $connection;
-    
-    private $fakeUser;
-	
-	public function __construct($fakeUser, Nette\Database\Connection $db)
+	public function __construct($fakeUser, Nette\Database\Context $ctx)
 	{
-		$this->connection = $db;
-        $this->fakeUser = $fakeUser;
+		$this->context = $ctx;
+    $this->fakeUser = $fakeUser;
 	}
 			
 	/**
@@ -34,17 +34,28 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
 			if (!$username) {
 				throw new Nette\Security\AuthenticationException('User not found.');
 			}
+      
+    $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $username)->fetchAll();
+    $roles = array();
+    foreach ($spravcepro as $key => $value) {
+      if($value->Oblast)
+        { $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text."-".$value->Oblast; }
+      else
+        { $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text; }
+    }
+    //Debugger::dump( $roles );
 
 		if($this->fakeUser != false)			/// debuging identity
 		{
 			//$roles = array_merge();
-            if(is_array($this->fakeUser["userRoles"]))
-                $roles = $this->fakeUser["userRoles"];
+            /*if(is_array($this->fakeUser["userRoles"]))
+                $roles = $this->fakeUser["userRoles"];   */  //reseno na urovni DB
 			$args = array('nick' => $this->fakeUser["userName"]);
 			return new Nette\Security\Identity($this->fakeUser["userID"], $roles, $args);
 		}
 
-		$roles_string = $_SERVER['ismemberof'];
+    //role z LDAP
+		/*$roles_string = $_SERVER['ismemberof'];
 		$roles_ldap = explode(';',$roles_string);
 		foreach ($roles_ldap as $role_ldap) {
 			if (preg_match('/^cn=(.+?),ou=roles,dc=hkfree,dc=org$/', $role_ldap, $matches)) {
@@ -54,7 +65,7 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
 					$roles []= '@ADMIN';
 				}
 			}
-		}
+		}*/
 
 		$arr = array('nick' => $_SERVER['givenName']);
 		return new Nette\Security\Identity($username, $roles, $arr);

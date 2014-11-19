@@ -18,11 +18,12 @@ class SpravceOblasti extends Table
 
     public function getOblastiSpravce($userID)
     {
-        $OblastiSpravce = $this->findAll()->where('Uzivatel_id', $userID)->fetchAll();
+        $OblastiSpravce = $this->findAll()->where('Uzivatel_id', $userID)->where('Oblast_id IS NOT NULL')->fetchAll();
         $out = array();
         foreach ($OblastiSpravce as $key => $value) {
             $out[$key] = $value->Oblast;
         }
         return($out);
     }
+
 }

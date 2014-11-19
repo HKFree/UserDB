@@ -92,13 +92,13 @@ class ApPresenter extends BasePresenter {
 	    $this->template->ap = $ap;
 	    $this->template->adresy = $this->ipAdresa->getIPTable($ap->related('IPAdresa.Ap_id'));
 	    $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
-	    $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser()->getIdentity()->getId());
+	    $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
 	}
     }
 
     public function renderEdit() {
     
-      $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser()->getIdentity()->getId());
+      $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
 	//Render Edit
     }
     
