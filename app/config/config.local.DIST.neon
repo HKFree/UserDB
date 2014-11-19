@@ -6,9 +6,6 @@ parameters:
 		fakeUser:
 			userID: 3306
 			userName: 'bkralik'
-			userRoles:
-				- 'SO-124'
-				- 'TECH'
 	money:
 		login: ''
 		password: ''

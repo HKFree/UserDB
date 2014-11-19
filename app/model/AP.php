@@ -26,7 +26,9 @@ class AP extends Table
     
     public function canViewOrEditAP($ApID, $Uzivatel)
     {    
-	   return $Uzivatel->isInRole('TECH') || $Uzivatel->isInRole('VV') || in_array($Uzivatel->getIdentity()->getId(), $this->find($ApID)->ref('Oblast', 'Oblast_id')->related("SpravceOblasti.Oblast_id")->fetchPairs('Uzivatel_id','Uzivatel_id'));
+	   return $Uzivatel->isInRole('TECH') 
+          || $Uzivatel->isInRole('VV')
+          || $Uzivatel->isInRole('SO-'.$this->find($ApID)->Oblast_id);
     }
     
     public function canViewOrEditAll($Uzivatel)
