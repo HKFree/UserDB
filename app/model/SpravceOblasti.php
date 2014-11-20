@@ -57,10 +57,14 @@ class SpravceOblasti extends Table
               ->setRequired('Zadejte oblast');//->toggle('oblast');    	
               
         $right->addText('od', 'Platnost od:')
-             ->setType('date')
-             ->addRule(Form::FILLED, 'Vyberte datum');
+             //->setType('date')
+             ->addRule(Form::FILLED, 'Vyberte datum')
+             ->addCondition(Form::FILLED)
+             ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
              
         $right->addText('do', 'Platnost od:')
-             ->setType('date');
+             //->setType('date')
+             ->addCondition(Form::FILLED)
+             ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
     }
 }
