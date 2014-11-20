@@ -16,14 +16,27 @@
         <!-- Bootstrap -->
         <link href="{$basePath}/css/bootstrap.min.css" rel="stylesheet"> 
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>   
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>     
         <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script src="{$basePath}/js/bootstrap.min.js"></script>        
+        <script src="{$basePath}/js/bootstrap.min.js"></script>         
 
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css">      
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-	<link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
-	<link rel="shortcut icon" href="{$basePath}/favicon.ico">
+        <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
+        <link rel="shortcut icon" href="{$basePath}/favicon.ico">     
+        <script>
+            $(document).ready(function() {
+                $(".datepicker").change(function() {
+                  if($(this).val().indexOf("00:00:00") > -1) $(this).val($(this).val().replace(" 00:00:00", ""));
+                });
+                $(".datepicker").change();
+                $(".datepicker").off("change");
+                 
+                $(".datepicker").datepicker({ dateFormat: "yy-mm-dd" });
+            });
+        </script>    
 	{block head}{/block}
 </head>
 
@@ -85,10 +98,9 @@
       </div>
     </div>
 	{block scripts}
-	<script src="{$basePath}/js/jquery.js"></script>
 	<script src="{$basePath}/js/netteForms.js"></script>
 	<script src="{$basePath}/js/main.js"></script>
-  <script src="{$basePath}/js/grido.js"></script>
+    <script src="{$basePath}/js/grido.js"></script>
 	{/block}
 </body>
 </html>
