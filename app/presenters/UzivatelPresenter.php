@@ -543,14 +543,18 @@ class UzivatelPresenter extends BasePresenter
         $log = array();
     	$idUzivatele = $values->id;
     	$prava = $values->rights;
-        //\Tracy\Dumper::dump($prava);
-        //die();
+
     	// Zpracujeme prava
     	$newUserIPIDs = array();
     	foreach($prava as $pravo)
     	{
     	    $pravo->Uzivatel_id = $idUzivatele;
     	    $pravoId = $pravo->id;
+            
+            //osetreni aby prazdne pole od davalo null a ne 00-00-0000
+            if(empty($pravo->od)) $pravo->od = null; 
+            if(empty($pravo->do)) $pravo->do = null;
+            
             if(empty($pravo->id)) {
                 $pravoId = $this->spravceOblasti->insert($pravo)->id;
 
