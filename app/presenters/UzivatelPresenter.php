@@ -190,7 +190,7 @@ class UzivatelPresenter extends BasePresenter
                         'sloupec'=>'Uzivatel.'.$uzivatel_id,
                         'puvodni_hodnota'=>NULL,
                         'nova_hodnota'=>$uzivatel_value,
-                            );
+                        );
                 }
             }
         } else {
@@ -202,7 +202,7 @@ class UzivatelPresenter extends BasePresenter
                         'sloupec'=>'Uzivatel.'.$uzivatel_id,
                         'puvodni_hodnota'=>$olduzivatel[$uzivatel_id],
                         'nova_hodnota'=>$uzivatel_value,
-                            );
+                        );
                 }
             }
         }
@@ -221,7 +221,7 @@ class UzivatelPresenter extends BasePresenter
                                 'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
                                 'puvodni_hodnota'=>NULL,
                                 'nova_hodnota'=>$ip_value,
-                                    );
+                                );
                         }
                     }                
                 } else {
@@ -233,7 +233,7 @@ class UzivatelPresenter extends BasePresenter
                                 'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
                                 'puvodni_hodnota'=>isset($oldip[$ip_key])?$oldip[$ip_key]:NULL,
                                 'nova_hodnota'=>$ip_value,
-                                    );
+                                );
                         }
                     }
                 }    
@@ -252,7 +252,7 @@ class UzivatelPresenter extends BasePresenter
                         'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
                         'puvodni_hodnota'=>$ip_value,
                         'nova_hodnota'=>NULL,
-                            );
+                        );
                 }
             }
         }
@@ -480,14 +480,20 @@ class UzivatelPresenter extends BasePresenter
     {
     	if($this->getParam('id'))
     	{
-    	    if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+            $uid = $this->getParam('id');
+    	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
     		    $this->template->u = $uzivatel;
     		    $this->template->adresy = $this->ipAdresa->getIPTable($uzivatel->related('IPAdresa.Uzivatel_id'));
-            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
-
+                $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+                //$this->template->logy = $this->log->getLogyUzivatele($uid);
     	    }
     	}
+    }
+    
+    public function createComponentLogTable() {
+        $control = new \App\Components\LogTable($this, $this->ipAdresa, $this->log);
+        return $control;
     }
     
     public function renderEditrights()

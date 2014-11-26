@@ -27,6 +27,18 @@ class IPAdresa extends Table
     {
         return($this->find($id));
     }
+    
+    
+    /**
+     * Párová metoda k \App\Model\Log::getIPzLogu(), Vrati seznam idIp -> ipAdresa
+     * 
+     * @param array $ids ipId pro které chceme zjistit ipAdresy
+     * @return array pole ipId=>ipAdresa
+     */
+    public function getIPzDB(array $ids)
+    {
+        return($this->getTable()->where("id", $ids)->fetchPairs("id", "ip_adresa"));
+    }
 
     public function deleteIPAdresy(array $ips)
     {
