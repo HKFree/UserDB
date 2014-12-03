@@ -144,97 +144,54 @@ class ApPresenter extends BasePresenter {
     
     public function apFormSucceded($form, $values) {
         $log = array();
-	$idAP = $values->id;
-	$ips = $values->ip;
-	unset($values["ip"]);
-	
-	//\Tracy\Dumper::dump($values);
-	//return(true);
+        $idAP = $values->id;
+        $ips = $values->ip;
+        unset($values["ip"]);
 
-	// Zpracujeme nejdriv APcka
-	if(empty($values->id)) {
-	    $idAP = $this->ap->insert($values)->id;
-            foreach($values as $ap_id => $ap_value) {
-                if(!empty($ap_value)) {
-                    $log[] = array(
-                        'sloupec'=>'Ap.'.$ap_id,
-                        'puvodni_hodnota'=>NULL,
-                        'nova_hodnota'=>$ap_value,
-                            );
-                }
-            }            
+        // Zpracujeme nejdriv APcko
+        if(empty($values->id)) {
+            $idAP = $this->ap->insert($values)->id;
+            $this->log->logujInsert($values, 'Ap', $log);
+           
         } else {
             $oldap = $this->ap->getAP($idAP);
-	    $this->ap->update($idAP, $values);
-            foreach($values as $ap_id => $ap_value) {
-                if($ap_value != $oldap[$ap_id]) {
-                    $log[] = array(
-                        'sloupec'=>'Ap.'.$ap_id,
-                        'puvodni_hodnota'=>$oldap[$ap_id],
-                        'nova_hodnota'=>$ap_value,
-                            );
-                }
-            }            
+            $this->ap->update($idAP, $values);
+            $this->log->logujUpdate($oldap, $values, 'Ap', $log);           
         }
-	//return(true);
-	
-	// Potom zpracujeme IPcka
-	$newAPIPIDs = array();
-	foreach($ips as $ip)
-	{
-	    $ip->Ap_id = $idAP;
-	    $idIp = $ip->id;
-            //if(!empty($ip->ip_adresa)) {
-                if(empty($ip->id)) {
-                    $idIp = $this->ipAdresa->insert($ip)->id;
-                    foreach($ip as $ip_key => $ip_value) {
-                        if(!empty($ip_value)) {
-                            $log[] = array(
-                                'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
-                                'puvodni_hodnota'=>NULL,
-                                'nova_hodnota'=>$ip_value,
-                                    );
-                        }
-                    }                     
-                } else {
-                    $oldip = $this->ipAdresa->getIPAdresa($idIp);
-                    $this->ipAdresa->update($idIp, $ip);
-                    foreach($ip as $ip_key => $ip_value) {
-                        if($ip_key!='uzivatel_id' && $ip_value != $oldip[$ip_key]) {
-                            $log[] = array(
-                                'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
-                                'puvodni_hodnota'=>isset($oldip[$ip_key])?$oldip[$ip_key]:NULL,
-                                'nova_hodnota'=>$ip_value,
-                                    );
-                        }
-                    }                    
-                }
-                $newAPIPIDs[] = intval($idIp);
-            //}
-	}
-	
-	// A tady smazeme v DB ty ipcka co jsme smazali
-	$APIPIDs = array_keys($this->ap->getAP($idAP)->related('IPAdresa.Ap_id')->fetchPairs('id', 'ip_adresa'));
-	$toDelete = array_values(array_diff($APIPIDs, $newAPIPIDs));
-        if(!empty($toDelete)) {
-            foreach($toDelete as $idIp) {
+
+        // Potom zpracujeme IPcka
+        $newAPIPIDs = array();
+        foreach($ips as $ip)
+        {
+            $ip->Ap_id = $idAP;
+            $idIp = $ip->id;
+            if(empty($ip->id)) {
+                $idIp = $this->ipAdresa->insert($ip)->id;
+                $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);                    
+            } else {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
-                foreach($oldip as $ip_key => $ip_value) {
-                    $log[] = array(
-                        'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
-                        'puvodni_hodnota'=>$ip_value,
-                        'nova_hodnota'=>NULL,
-                            );
+                $this->ipAdresa->update($idIp, $ip);
+                $this->log->logujUpdate($oldip, $ip, 'IPAdresa['.$idIp.']', $log);                  
+            }
+            $newAPIPIDs[] = intval($idIp);
+        }
+
+        // A tady smazeme v DB ty ipcka co jsme smazali
+        $APIPIDs = array_keys($this->ap->getAP($idAP)->related('IPAdresa.Ap_id')->fetchPairs('id', 'ip_adresa'));
+        $toDelete = array_values(array_diff($APIPIDs, $newAPIPIDs));
+            if(!empty($toDelete)) {
+                foreach($toDelete as $idIp) {
+                    $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                    $this->log->logujDelete($oldip, 'IPAdresa['.$idIp.']', $log);
                 }
             }
-        }
-        
-	$this->ipAdresa->deleteIPAdresy($toDelete);
+
+        $this->ipAdresa->deleteIPAdresy($toDelete);
 
         $this->log->loguj('Ap', $idAP, $log);
 
-        
-	$this->redirect('Ap:show', array('id'=>$idAP)); 
-	return true;
+
+        $this->redirect('Ap:show', array('id'=>$idAP)); 
+        return true;
     }
 }
