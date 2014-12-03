@@ -39,4 +39,5 @@ services:
 	subnet: App\Model\Subnet
 	typZarizeni: App\Model\TypZarizeni
 	spravceOblasti: App\Model\SpravceOblasti
+	cestneClenstviUzivatele: App\Model\CestneClenstviUzivatele
 	log: App\Model\Log
