@@ -4,13 +4,17 @@ namespace App\Model;
 
 use Nette,
     Nette\Utils\Html;
-
  
 /**
  * @author 
  */
 class Log extends Table
 {
+    private $typZarizeni;
+    
+    public function __construct(Nette\Database\Connection $db, Nette\Security\User $user, TypZarizeni $t) {
+        parent::__construct($db, $user);
+    }
 
     /**
     * @var string
@@ -21,6 +25,50 @@ class Log extends Table
     {
         $logy = $this->findAll()->where("tabulka = ?", "uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
         return($logy);
+    }
+    
+    public function translateJmeno($jmeno)
+    {
+        $slovnikUzivatel = array(
+            "Ap_id" => "AP",
+            "jmeno" => "jméno",
+            "prijmeni" => "příjmení",
+            "nick" => "přezdívka",
+            "heslo" => "heslo",
+            "email" => "email",
+            "adresa" => "adresa",
+            "rok_narozeni" => "rok narození",
+            "telefon" => "telefon",
+            "poznamka" => "poznámka",
+            "index_potizisty" => "index potížisty",
+            "zalozen" => "založen",
+            "TypClenstvi_id" => "typ členství",
+            "ZpusobPripojeni_id" => "způsob připojení",
+            "TypPravniFormyUzivatele_id" => "právní forma",
+            "firma_nazev" => "název firmy",
+            "firma_ico" => "IČO firmy"            
+        ); 
+        
+        $slovnikIpAdresa = array(    
+            "hostname" => "hostname",
+            "mac_adresa" => "MAC adresa",
+            "mac_filter" => "povoleno v MAC filteru",
+            "internet" => "povoleno do internetu",
+            "smokeping" => "monitoring ve smokepingu",
+            "dhcp" => "povoleno v DHCP",
+            "TypZarizeni_id" => "typ zařízení",
+            "popis" => "popis",
+            "login" => "login",
+            "heslo" => "heslo"
+        );
+         
+        $slovnik = array_merge($slovnikUzivatel, $slovnikIpAdresa);
+        
+        if(isset($slovnik[$jmeno])) {
+            return($slovnik[$jmeno]);
+        } else {
+            return($jmeno);
+        }
     }
     
     /**
@@ -55,6 +103,48 @@ class Log extends Table
         }
        
         return($out);
+    }
+    
+    public function logujInsert($data, $sloupecPrefix, &$log)
+    {
+        foreach($data as $key => $value) {
+            if(!empty($value)) {
+                $log[] = array(
+                    'sloupec'=>$sloupecPrefix.'.'.$key,
+                    'puvodni_hodnota'=>NULL,
+                    'nova_hodnota'=>$value,
+                    'akce'=>'I'
+                );
+            }
+        }
+    }
+    
+    public function logujUpdate($staraData, $novaData, $sloupecPrefix, &$log)
+    {
+        foreach($novaData as $key => $value) {
+            if(!(isset($staraData[$key]) && $value == $staraData[$key])) {
+                $log[] = array(
+                    'sloupec'=>$sloupecPrefix.'.'.$key,
+                    'puvodni_hodnota'=>isset($staraData[$key])?$staraData[$key]:NULL,
+                    'nova_hodnota'=>$value,
+                    'akce'=>'U'
+                );
+            }
+        }
+    }
+    
+    public function logujDelete($staraData, $sloupecPrefix, &$log)
+    {
+        foreach($staraData as $key => $value) {
+            if(!empty($value)) {
+                $log[] = array(
+                    'sloupec'=>$sloupecPrefix.'.'.$key,
+                    'puvodni_hodnota'=>$value,
+                    'nova_hodnota'=>NULL,
+                    'akce'=>'D'
+                );
+            }
+        }
     }
     
     public function loguj($tabulka, $tabulka_id, $data)

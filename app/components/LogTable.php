@@ -14,6 +14,10 @@ class LogTable extends UI\Control
     const UZIVATEL = 1;
     const IPADRESA = 2;
     
+    const INSERT = "I";
+    const UPDATE = "U";
+    const DELETE = "D";
+    
     public function __construct($parentPresenter, \App\Model\IPAdresa $ipAdresa, \App\Model\Log $log)
     {
         parent::__construct();
@@ -22,6 +26,15 @@ class LogTable extends UI\Control
         $this->log = $log;
     }
     
+    /**
+     * Funkce parsující věci, co se vyskytují v poli "sloupec" v DB.
+     * 
+     * V případě Uživatele vrací "typ"=>UZIVATEL a "sloupec"
+     * V případě IPAdresy vrací "typ"=>IPADRESA, "ipId" a "sloupec"
+     * 
+     * @param string $sloupec IPAdresa.sloupec z DB
+     * @return array (typ, sloupec, ipId)
+     */
     private function parseSloupec($sloupec)
     {
         $out = false;
@@ -74,7 +87,46 @@ class LogTable extends UI\Control
         return($logyTab);
     }
     
-    private function tableProcessLine($table, $logy)
+    private function tableGetFooter(&$table)
+    {
+        $table->create('script')->setHTML('$(\'a\').tooltip();');
+        return($table);
+    }
+    
+    private function tableGetLineBegin(&$table, $line)
+    {
+        $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
+        
+        $tr = $table->create('tr');
+        $tr->create('td')->setText($line->datum);
+
+        $uzivatelUrl = $this->parentPresenter->link('Uzivatel:show', array('id' => $line->Uzivatel->id));
+        $uzivatelA = Html::el('a')->href($uzivatelUrl)
+                                  ->setText($line->Uzivatel->nick)
+                                  ->setTitle('editoval z IP '.$line->ip_adresa)
+                                  ->addAttributes($tooltips);
+        $tr->create('td')->setHtml($uzivatelA);
+        return($tr);
+    }
+    
+    private function tableGetLineEndUzivatel(&$tr, $line, $rozparsovano)
+    {
+        $sloupec = $this->log->translateJmeno($rozparsovano["sloupec"]);
+        $tr->create('td')->setText($sloupec);
+        
+        if($line->puvodni_hodnota == null)
+            $tr->create('td')->setText('----');
+        else
+            $tr->create('td')->setText($line->puvodni_hodnota);
+        
+        if($line->nova_hodnota == null)
+            $tr->create('td')->setText('----');
+        else
+            $tr->create('td')->setText($line->nova_hodnota);
+    }
+    
+    
+    private function tableProcessLines(&$table, $logy)
     {
         $ipVsechny = $this->getIPMapping($logy);
 
@@ -84,34 +136,19 @@ class LogTable extends UI\Control
         $toSkipString = implode("|", $toSkip);
         
         foreach ($logy as $key => $line) {
-            if(preg_match("/^uzivatel\.(.+)/i", $line->sloupec, $matches))
-            {
-                $sloupec = $matches[1];
-                $tr = $table->create('tr');
-                $tr->create('td')->setText($line->datum);
-
-                $uzivatelUrl = $this->parentPresenter->link('Uzivatel:show', array('id' => $line->Uzivatel->id));
-                $uzivatelA = Html::el('a')->href($uzivatelUrl)
-                                          ->setText($line->Uzivatel->nick);
-                $tr->create('td')->setHtml($uzivatelA);
-                $tr->create('td')->setText($sloupec);
-                if(empty($line->puvodni_hodnota))
-                    $tr->create('td')->setText('----');
-                else
-                    $tr->create('td')->setText($line->puvodni_hodnota);
-                if(empty($line->nova_hodnota))
-                    $tr->create('td')->setText('----');
-                else
-                    $tr->create('td')->setText($line->nova_hodnota);
+            if(($rozparsovano = $this->parseSloupec($line->sloupec)) === false)
+                continue;
+            
+            if($rozparsovano["typ"] == self::UZIVATEL) {
+                $tr = $this->tableGetLineBegin($table, $line);
+                $this->tableGetLineEndUzivatel($tr, $line, $rozparsovano);
             }
-
-            if(preg_match("/^ipadresa\[(\d+)\]\.(.+)/i", $line->sloupec, $matches))
-            {
-                
-                $id = $matches[1];
-                $sloupec = $matches[2];
+            elseif($rozparsovano["typ"] == self::IPADRESA) {
+                $id = $rozparsovano["ipId"];
+                $sloupec = $rozparsovano["sloupec"];
                 if(preg_match("/(".$toSkipString.")/i", $sloupec))
                     continue;
+                $sloupec = $this->log->translateJmeno($sloupec);
 
                 $datum = $line->datum;
                 $titulek = "IP ".$ipVsechny[$id];
@@ -119,34 +156,26 @@ class LogTable extends UI\Control
                 if($last !== false && $last[0]->getText() == $datum && $last[2]->getText() == $titulek)
                 {
                     $text = "";
-                    if($line->puvodni_hodnota === null)                 
-                        $text = $sloupec."=".$line->nova_hodnota.", ";
-                    elseif($line->nova_hodnota === null)
-                        $text2 = "IP Adresa byla smazána.";
-                    else
+                    if($line->akce === self::INSERT)                 
+                        $text = $sloupec." = ".$line->nova_hodnota.", ";
+                    elseif($line->akce === self::DELETE && $line->puvodni_hodnota!=null)
+                        $text = $sloupec." = ".$line->puvodni_hodnota.", ";
+                    elseif($line->akce === self::UPDATE)
                         $text = $sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
                     $last[3]->setText($last[3]->getText().$text);
                 }
                 else
                 {
-                    $last = $tr = $table->create('tr');
-                    
-                    $tr->create('td')->setText($datum);
+                    $last = $tr = $this->tableGetLineBegin($table, $line);
 
-                    $uzivatelUrl = $this->parentPresenter->link('Uzivatel:show', array('id' => $line->Uzivatel->id));
-                    $uzivatelA = Html::el('a')->href($uzivatelUrl)
-                                              ->setText($line->Uzivatel->nick);
-                    $tr->create('td')->setHtml($uzivatelA);
-
-                    
                     $tr->create('td')->setText($titulek);
                     
                     $text = "";
-                    if($line->puvodni_hodnota === null)                 
-                        $text = "Založení IP Adresy s parametry ".$sloupec."=".$line->nova_hodnota.", ";
-                    elseif($line->nova_hodnota === null)
-                        $text = "IP Adresa byla smazána.";
-                    else
+                    if($line->akce === self::INSERT)                 
+                        $text = "Založení IP Adresy s parametry ".$sloupec." = ".$line->nova_hodnota.", ";
+                    elseif($line->akce === self::DELETE)
+                        $text = "IP Adresa byla smazána. Parametry byly ".$sloupec." = ".$line->puvodni_hodnota.", ";
+                    elseif($line->akce === self::UPDATE)
                         $text = "Změna ".$sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
                         
                     $tr->create('td')->setText($text)->setColspan(2);
@@ -161,11 +190,12 @@ class LogTable extends UI\Control
         $template->setFile(__DIR__ . '/LogTable.latte');
 
         $tabulka = $this->tableGetHeader();
-
-        $this->tableProcessLine($tabulka, $this->log->getLogyUzivatele($uid)); 
+        $this->tableProcessLines($tabulka, $this->log->getLogyUzivatele($uid));
+        $this->tableGetFooter($tabulka);
         
         // vložíme do šablony nějaké parametry        
         $template->tabulka = $tabulka;
+        
         // a vykreslíme ji
         $template->render();
     }

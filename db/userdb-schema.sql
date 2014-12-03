@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Počítač: localhost
--- Vygenerováno: Stř 26. lis 2014, 12:05
+-- Vygenerováno: Stř 03. pro 2014, 13:26
 -- Verze MySQL: 5.5.35
 -- Verze PHP: 5.4.4-14+deb7u9
 
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `Ap` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `jmeno` (`jmeno`),
   KEY `Oblast_id` (`Oblast_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=10 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `CestneClenstviUzivatele` (
   `poznamka` text COLLATE utf8_czech_ci,
   PRIMARY KEY (`id`),
   KEY `Uzivatel_id` (`Uzivatel_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `IPAdresa` (
   KEY `Uzivatel_id` (`Uzivatel_id`),
   KEY `Ap_id` (`Ap_id`),
   KEY `TypZarizeni_id` (`TypZarizeni_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=47 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -91,8 +91,9 @@ CREATE TABLE IF NOT EXISTS `Log` (
   `sloupec` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   `puvodni_hodnota` text COLLATE utf8_czech_ci,
   `nova_hodnota` text COLLATE utf8_czech_ci,
+  `akce` enum('I','U','D') COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=162 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -106,7 +107,7 @@ CREATE TABLE IF NOT EXISTS `Oblast` (
   `datum_zalozeni` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `jmeno` (`jmeno`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=128 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -126,7 +127,7 @@ CREATE TABLE IF NOT EXISTS `SpravceOblasti` (
   KEY `Uzivatel_id` (`Uzivatel_id`),
   KEY `Oblast_id` (`Oblast_id`),
   KEY `TypSpravceOblasti_id` (`TypSpravceOblasti_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 --
 -- Spouště `SpravceOblasti`
@@ -150,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `Stitek` (
   `text` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `Oblast_id` (`Oblast_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -180,7 +181,7 @@ CREATE TABLE IF NOT EXISTS `Subnet` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `subnet` (`subnet`),
   KEY `Ap_id` (`Ap_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=4 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -204,7 +205,7 @@ CREATE TABLE IF NOT EXISTS `TypPravniFormyUzivatele` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `text` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -216,7 +217,7 @@ CREATE TABLE IF NOT EXISTS `TypSpravceOblasti` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `text` varchar(150) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -228,7 +229,7 @@ CREATE TABLE IF NOT EXISTS `TypZarizeni` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `text` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=8 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -261,7 +262,7 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   KEY `ZpusobPripojeni_id` (`ZpusobPripojeni_id`),
   KEY `Ap_id` (`Ap_id`),
   KEY `TypPravniFormyUzivatele_id` (`TypPravniFormyUzivatele_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=3310 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -273,7 +274,7 @@ CREATE TABLE IF NOT EXISTS `ZpusobPripojeni` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `text` varchar(150) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 --
 -- Omezení pro exportované tabulky
