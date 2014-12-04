@@ -514,6 +514,8 @@ class UzivatelPresenter extends BasePresenter
         $log = array();
     	$idUzivatele = $values->id;
     	$prava = $values->rights;
+        
+        $typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
 
     	// Zpracujeme prava
     	$newUserIPIDs = array();
@@ -523,39 +525,39 @@ class UzivatelPresenter extends BasePresenter
     	    $pravoId = $pravo->id;
             
             //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if(empty($pravo->od)) $pravo->od = null; 
-            if(empty($pravo->do)) $pravo->do = null;
+            if(empty($pravo->od)) 
+                $pravo->od = null; 
+            if(empty($pravo->do)) 
+                $pravo->do = null;
+            
+            $popisek = $this->spravceOblasti->getTypPravaPopisek($typRole[$pravo->TypSpravceOblasti_id], $pravo->Oblast_id);
             
             if(empty($pravo->id)) {
                 $pravoId = $this->spravceOblasti->insert($pravo)->id;
+                $novePravo = $this->spravceOblasti->getPravo($pravoId);
+                $this->log->logujInsert($novePravo, 'Pravo['.$popisek.']', $log);
             } else {
                 $starePravo = $this->spravceOblasti->getPravo($pravoId);
                 $this->spravceOblasti->update($pravoId, $pravo);
+                $novePravo = $this->spravceOblasti->getPravo($pravoId);
+                $this->log->logujUpdate($starePravo, $novePravo, 'Pravo['.$popisek.']', $log);
             }    
             $novaPravaID[] = intval($pravoId);
     	}
     
-    	// A tady smazeme v DB ty ipcka co jsme smazali
+    	// A tady smazeme v DB ty prava co jsme smazali
     	$aktualniPravaID = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('SpravceOblasti.Uzivatel_id')->fetchPairs('id', 'id'));
     	$toDelete = array_values(array_diff($aktualniPravaID, $novaPravaID));
         if(!empty($toDelete)) {
             foreach($toDelete as $pravoId) {
-                //$oldip = $this->ipAdresa->getIPAdresa($idIp);
-                
-                /*
-                foreach($oldip as $ip_key => $ip_value) {
-                    $log[] = array(
-                        'sloupec'=>'IPAdresa['.$idIp.'].'.$ip_key,
-                        'puvodni_hodnota'=>$ip_value,
-                        'nova_hodnota'=>NULL,
-                            );
-                }
-                */
+                $starePravo = $this->spravceOblasti->getPravo($pravoId);
+                $popisek = $this->spravceOblasti->getTypPravaPopisek($typRole[$starePravo->TypSpravceOblasti_id], $starePravo->Oblast_id);
+                $this->log->logujDelete($starePravo, 'Pravo['.$popisek.']', $log);
             }
         }
         $this->spravceOblasti->deletePrava($toDelete);
     	
-        //$this->log->loguj('Uzivatel', $idUzivatele, $log);
+        $this->log->loguj('Uzivatel', $idUzivatele, $log);
         
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
     	return true;

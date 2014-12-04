@@ -28,6 +28,15 @@ class SpravceOblasti extends Table
         return($out);
     }
     
+    public function getTypPravaPopisek($typPrava, $idOblasti)
+    {
+        if ($idOblasti == NULL || empty($idOblasti)) {
+            return($typPrava);
+        } else {
+            return($typPrava."-".$idOblasti);
+        }
+    }
+    
     public function getPravo($id)
     {
         return($this->find($id));
@@ -35,10 +44,11 @@ class SpravceOblasti extends Table
     
     public function deletePrava(array $rights)
     {
-		if(count($rights)>0)
-			return($this->delete(array('id' => $rights)));
-		else
-			return true;
+		if (count($rights) > 0) {
+            return($this->delete(array('id' => $rights)));
+        } else {
+            return true;
+        }
     }
 
     public function getRightsForm(&$right, $typRole, $obl) {	

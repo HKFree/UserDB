@@ -13,6 +13,7 @@ class LogTable extends UI\Control
     
     const UZIVATEL = 1;
     const IPADRESA = 2;
+    const PRAVO = 3;
     
     const INSERT = "I";
     const UPDATE = "U";
@@ -47,6 +48,12 @@ class LogTable extends UI\Control
         {
           $out["typ"] = self::IPADRESA;
           $out["ipId"] = $matches[1];
+          $out["sloupec"] = $matches[2];
+        }
+        elseif (preg_match("/^pravo\[(\d+)\]\.(.+)/i", $sloupec, $matches))
+        {
+          $out["typ"] = self::PRAVO;
+          $out["pravoId"] = $matches[1];
           $out["sloupec"] = $matches[2];
         }
         return($out);

@@ -122,7 +122,8 @@ class Log extends Table
     public function logujUpdate($staraData, $novaData, $sloupecPrefix, &$log)
     {
         foreach($novaData as $key => $value) {
-            if(!(isset($staraData[$key]) && $value == $staraData[$key])) {
+            $isSet = isset($staraData[$key]) || ($staraData[$key] == NULL);
+            if(!($isSet && $value == $staraData[$key])) {
                 $log[] = array(
                     'sloupec'=>$sloupecPrefix.'.'.$key,
                     'puvodni_hodnota'=>isset($staraData[$key])?$staraData[$key]:NULL,
@@ -149,7 +150,8 @@ class Log extends Table
     
     public function loguj($tabulka, $tabulka_id, $data)
     {
-        $out = true;
+        if(!is_array($data) || count($data) == 0)
+            return(true);
         
         // Je bezpodminecne nutne mit stejny cas pro vsechny polozky, proto se 
         // vytvari uz tady a ne az triggerem v DB!
