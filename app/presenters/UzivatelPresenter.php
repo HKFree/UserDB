@@ -297,14 +297,14 @@ class UzivatelPresenter extends BasePresenter
             return ($moneycallresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
         });        
       $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item) use ($moneycallresult){
-            return "TODO";
+            return ($moneycallresult[$item->id]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($moneycallresult[$item->id]->GetLastPayment->LastPaymentDate)) . " (" . $moneycallresult[$item->id]->GetLastPayment->LastPaymentAmount . ")");
         })->setCustomRender(function($item) use ($moneycallresult){
-            return "TODO";
+            return ($moneycallresult[$item->id]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($moneycallresult[$item->id]->GetLastPayment->LastPaymentDate)) . " (" . $moneycallresult[$item->id]->GetLastPayment->LastPaymentAmount . ")");
         });        
       $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function($item) use ($moneycallresult){
-            return "TODO";
+            return ($moneycallresult[$item->id]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($moneycallresult[$item->id]->GetLastActivation->LastActivationDate)) . " (" . $moneycallresult[$item->id]->GetLastActivation->LastActivationAmount . ")");
         })->setCustomRender(function($item) use ($moneycallresult){
-            return "TODO";
+            return ($moneycallresult[$item->id]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($moneycallresult[$item->id]->GetLastActivation->LastActivationDate)) . " (" . $moneycallresult[$item->id]->GetLastActivation->LastActivationAmount . ")");
         });        
       $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item) use ($moneycallresult){
             return ($moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
