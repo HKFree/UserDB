@@ -27,14 +27,19 @@ class Subnet extends Table
     {
         return($this->find($id));
     }
-
-    /*public function deleteSubnet(array $ips)
+    public function deleteSubnet(array $subnets)
     {
-	if(count($ips)>0)
-	    return($this->delete(array('id' => $ips)));
-	else
-	    return true;
-    }*/
+		if(count($subnets)>0)
+			return($this->delete(array('id' => $subnets)));
+		else
+			return true;
+    }
+
+    public function getSubnetForm(&$subnet) {	
+		$subnet->addHidden('id')->setAttribute('class', 'id subnet');
+		$subnet->addText('subnet', 'Subnet', 11)->setAttribute('class', 'subnet_text subnet')->setAttribute('placeholder', 'Subnet');
+		$subnet->addText('popis', 'Popis')->setAttribute('class', 'popis subnet')->setAttribute('placeholder', 'Popis');
+    }    
     
     public function getSubnetTable($subnets) {
 	$subnetyTab = Html::el('table')->setClass('table table-striped');

@@ -108,10 +108,10 @@ class ApPresenter extends BasePresenter {
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
 	$form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');;
 	$form->addTextArea('poznamka', 'Poznámka', 24, 10);
-	$data = $this->ipAdresa;
+	$dataIp = $this->ipAdresa;
 	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
-	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni) {
-		$data->getIPForm($ip, $typyZarizeni);
+	$ips = $form->addDynamic('ip', function (Container $ip) use ($dataIp,$typyZarizeni) {
+		$dataIp->getIPForm($ip, $typyZarizeni);
 
                 $ip->addSubmit('remove', '– Odstranit IP')
                         ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
@@ -123,18 +123,36 @@ class ApPresenter extends BasePresenter {
                 ->setAttribute('class', 'btn btn-success btn-xs btn-white')
                 ->setValidationScope(FALSE)
                 ->addCreateOnClick(TRUE);
-	
+        
+        $dataSubnet = $this->subnet;
+	$subnets = $form->addDynamic('subnet', function (Container $subnet) use ($dataSubnet) {
+		$dataSubnet->getSubnetForm($subnet);
+
+                $subnet->addSubmit('remove_subnet', '– Odstranit Subnet')
+                        ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+                        ->setValidationScope(FALSE)
+                        ->addRemoveOnClick();
+        }, ($this->getParam('id')>0?0:1));
+
+        $subnets->addSubmit('add_subnet', '+ Přidat další Subnet')
+                ->setAttribute('class', 'btn btn-success btn-xs btn-white')
+                ->setValidationScope(FALSE)
+                ->addCreateOnClick(TRUE);
+        
 	$form->addSubmit('save', 'Uložit')
 		->setAttribute('class', 'btn btn-success btn-xs btn-white');
 	
 	$form->onSuccess[] = array($this, 'apFormSucceded');
     
 	$submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-    if($this->getParam('id') && !$submitujeSe) {
+        if($this->getParam('id') && !$submitujeSe) {
 	    $values = $this->ap->getAP($this->getParam('id'));
 	    if($values) {
 		foreach($values->related('IPAdresa.Ap_id') as $ip_id => $ip_data) {
 		    $form["ip"][$ip_id]->setValues($ip_data);
+		}
+		foreach($values->related('Subnet.Ap_id') as $subnet_id => $subnet_data) {
+		    $form["subnet"][$subnet_id]->setValues($subnet_data);
 		}
 		$form->setValues($values);
 	    }
@@ -146,7 +164,9 @@ class ApPresenter extends BasePresenter {
         $log = array();
         $idAP = $values->id;
         $ips = $values->ip;
+        $subnets = $values->subnet;
         unset($values["ip"]);
+        unset($values["subnet"]);
 
         // Zpracujeme nejdriv APcko
         if(empty($values->id)) {
@@ -187,6 +207,36 @@ class ApPresenter extends BasePresenter {
             }
 
         $this->ipAdresa->deleteIPAdresy($toDelete);
+        unset($toDelete);
+        // Potom zpracujeme Subnety
+        $newAPSubnetIDs = array();
+        foreach($subnets as $subnet)
+        {
+            $subnet->Ap_id = $idAP;
+            $idSubnet = $subnet->id;
+            if(empty($subnet->id)) {
+                $idSubnet = $this->subnet->insert($subnet)->id;
+                $this->log->logujInsert($ip, 'Subnet['.$idSubnet.']', $log);                    
+            } else {
+                $oldsubnet = $this->subnet->getSubnet($idSubnet);
+                $this->subnet->update($idSubnet, $subnet);
+                $this->log->logujUpdate($oldsubnet, $subnet, 'Subnet['.$idSubnet.']', $log);                  
+            }
+            $newAPSubnetIDs[] = intval($idSubnet);
+        }
+
+        // A tady smazeme v DB ty ipcka co jsme smazali
+        $APSubnetIDs = array_keys($this->ap->getAP($idAP)->related('Subnet.Ap_id')->fetchPairs('id', 'subnet'));
+        $toDelete = array_values(array_diff($APSubnetIDs, $newAPSubnetIDs));
+            if(!empty($toDelete)) {
+                foreach($toDelete as $idSubnet) {
+                    $oldsubnet = $this->subnet->getSubnet($idSubnet);
+                    $this->log->logujDelete($oldsubnet, 'Subnet['.$idSubnet.']', $log);
+                }
+            }
+
+        $this->subnet->deleteSubnet($toDelete);
+        unset($toDelete);
 
         $this->log->loguj('Ap', $idAP, $log);
 
