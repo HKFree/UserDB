@@ -216,7 +216,7 @@ class ApPresenter extends BasePresenter {
             $idSubnet = $subnet->id;
             if(empty($subnet->id)) {
                 $idSubnet = $this->subnet->insert($subnet)->id;
-                $this->log->logujInsert($ip, 'Subnet['.$idSubnet.']', $log);                    
+                $this->log->logujInsert($subnet, 'Subnet['.$idSubnet.']', $log);                    
             } else {
                 $oldsubnet = $this->subnet->getSubnet($idSubnet);
                 $this->subnet->update($idSubnet, $subnet);
