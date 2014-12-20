@@ -1,10 +1,13 @@
 {block content}
-<h3 n:ifset="$ap">oblast {$ap->Oblast->jmeno}, {$ap->jmeno}</h3>
-<a href="{link Ap:list id=>$ap->Oblast->id}" class="btn btn-default btn-sm" role="button">Zobrazit ostatní AP v oblasti</a>
-<a href="{link Ap:show id=>$ap->id}" class="btn btn-default btn-sm" role="button">Zobrazit podrobnosti</a>
+<h3 n:ifset="$ap">oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno} <small>seznam uživatelů</small> </h3>
+<a href="{link Ap:list id=>$ap->Oblast->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zobrazit oblast</a>
+<a href="{link Ap:show id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-eye-open"></i> Zobrazit podrobnosti AP</a>
+
 {if $canViewOrEdit}
+&nbsp;&nbsp;
 <a href="{link Uzivatel:money id=>$ap->id}" class="btn btn-default btn-sm" role="button">Informace z money</a>
 {/if}
+
 <br><br>
 
 {control grid}
