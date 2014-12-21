@@ -109,7 +109,7 @@ class UzivatelPresenter extends BasePresenter
     	    }
 	        else
           {
-            $this->template->canViewOrEdit = false;
+            $this->template->canViewOrEdit = true;
           }
     }
 
