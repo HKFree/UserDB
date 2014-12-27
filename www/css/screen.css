@@ -196,6 +196,17 @@ pre.tracy-dump {
 .red {
     color: #C22;
 }
+.cestne>td {
+    background-color: #a0ffa0 !important;
+}
+.primarni>td
+{
+    background-color: #f0e0ed !important;
+}
+.neaktivni>td
+{
+    background-color: #ff0000 !important;
+}
 .subnet>.popis {
     width: 295px;
 }

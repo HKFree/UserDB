@@ -263,6 +263,23 @@ class UzivatelPresenter extends BasePresenter
     	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
     	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
 
+        $ccref = $this->cestneClenstviUzivatele;
+        $grid->setRowCallback(function ($item, $tr) use ($ccref,$moneycallresult){
+            if($moneycallresult[$item->id]->userIsActive->isActive != 1)
+            {
+                $tr->class[] = 'neaktivni';
+                return $tr;
+            }
+            if ($ccref->getHasCC($item->id)) {
+                $tr->class[] = 'cestne';
+                return $tr;
+            }
+            if($item->TypClenstvi_id == 2)
+            {
+                $tr->class[] = 'primarni';
+            }            
+            return $tr;
+        });
     	
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
       $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
@@ -341,6 +358,19 @@ class UzivatelPresenter extends BasePresenter
     	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
     
       //Debugger::dump();
+        
+        $ccref = $this->cestneClenstviUzivatele;
+        $grid->setRowCallback(function ($item, $tr) use ($ccref){
+            if ($ccref->getHasCC($item->id)) {
+                $tr->class[] = 'cestne';
+                return $tr;
+            }
+            if($item->TypClenstvi_id == 2)
+            {
+                $tr->class[] = 'primarni';
+            }            
+            return $tr;
+        });
       
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
       $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
@@ -449,6 +479,7 @@ class UzivatelPresenter extends BasePresenter
     		    $this->template->u = $uzivatel;
     		    $this->template->adresy = $this->ipAdresa->getIPTable($uzivatel->related('IPAdresa.Uzivatel_id'));
                 $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+                $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
                 //$this->template->logy = $this->log->getLogyUzivatele($uid);
     	    }
     	}

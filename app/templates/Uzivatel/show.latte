@@ -6,6 +6,7 @@
     <a href="{link Uzivatel:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat oprávnění</a>
     <a href="{link Uzivatel:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat čestné členství</a>
     <a href="{link Uzivatel:exportregform id=>$u->id}" class="btn btn-default btn-sm" role="button">Registrační formulář</a>
+    <a href="https://money.hkfree.org/user.php?a=1&b={$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> Money</a>
     <a href="{link Uzivatel:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>    
     
     <br><br>
@@ -18,7 +19,7 @@
     <table class="table table-nonfluid">
 	<tr><th>ID</th><td>{$u->id}</td></tr>
 	<tr><th>Oblast - AP</th><td><a n:href="Ap:list, id => $u->Ap->Oblast->id">{$u->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u->Ap->id">{$u->Ap->jmeno}</a></td></tr>
-	<tr><th>Typ členství</th><td>{$u->TypClenstvi->text}</td></tr>
+    <tr><th>Typ členství</th><td>{if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}</td></tr>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	
   

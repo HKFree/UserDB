@@ -19,14 +19,9 @@ class CestneClenstviUzivatele extends Table
     protected $tableName = 'CestneClenstviUzivatele';
 
     public function getHasCC($userID)
-    {
-        
-        $OblastiSpravce = $this->findAll()->where('Uzivatel_id', $userID)->where('schvaleno==1')->where('plati_od < NOW()')->where('plati_do IS NULL OR plati_do > NOW()')->fetchAll();
-        $out = array();
-        foreach ($OblastiSpravce as $key => $value) {
-            $out[$key] = $value->Oblast;
-        }
-        return($out);
+    {        
+        $PlatnaCestnaClenstvi = $this->findAll()->where('Uzivatel_id', $userID)->where('schvaleno=1')->where('plati_od < NOW()')->where('plati_do IS NULL OR plati_do > NOW()')->fetchAll();
+        return(count($PlatnaCestnaClenstvi)>0);
     }
     
     public function getCC($id)
