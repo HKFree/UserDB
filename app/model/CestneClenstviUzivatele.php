@@ -23,6 +23,11 @@ class CestneClenstviUzivatele extends Table
         $PlatnaCestnaClenstvi = $this->findAll()->where('Uzivatel_id', $userID)->where('schvaleno=1')->where('plati_od < NOW()')->where('plati_do IS NULL OR plati_do > NOW()')->fetchAll();
         return(count($PlatnaCestnaClenstvi)>0);
     }
+     
+    public function getNeschvalene()
+    {
+        return($this->findAll()->where('schvaleno=0')->order("plati_od"));
+    }
     
     public function getCC($id)
     {

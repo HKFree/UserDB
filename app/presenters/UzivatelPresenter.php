@@ -630,7 +630,13 @@ class UzivatelPresenter extends BasePresenter
                  $right->addText('poznamka', 'Poznámka:')
                  ->setAttribute('class', 'note ip');
                  
-                 $right->addCheckbox('schvaleno', 'Schváleno')->setAttribute('class', 'approve ip');
+                 //$right->addCheckbox('schvaleno', 'Schváleno')->setAttribute('class', 'approve ip');
+                 $schvalenoStates = array(
+                    0 => 'Nerozhodnuto',
+                    1 => 'Schváleno',
+                    2 => 'Zamítnuto');
+                 $right->addRadioList('schvaleno', 'Stav schválení: ', $schvalenoStates)
+                         ->getSeparatorPrototype()->setName(NULL);
 
     	}, 0, false);
     
@@ -674,6 +680,7 @@ class UzivatelPresenter extends BasePresenter
             //osetreni aby prazdne pole od davalo null a ne 00-00-0000
             if(empty($pravo->plati_od)) $pravo->plati_od = null; 
             if(empty($pravo->plati_do)) $pravo->plati_do = null;
+            if(empty($pravo->schvaleno)) $pravo->schvaleno = 0;
             
             if(empty($pravo->id)) {
                 $pravoId = $this->cestneClenstviUzivatele->insert($pravo)->id;
