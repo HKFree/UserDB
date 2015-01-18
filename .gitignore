@@ -8,7 +8,6 @@ vendor/*
 !log/.htaccess
 !temp/.htaccess
 
-
 .DS_Store
 !.gitignore
 !.htaccess
@@ -16,4 +15,4 @@ vendor/*
 app/config/config.local.neon
 
 composer.lock
-nbproject/*
+/nbproject/private/
