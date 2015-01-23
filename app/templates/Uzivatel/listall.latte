@@ -1,8 +1,11 @@
 {block content}
-<h3>seznam členů</h3>
+<h3>Kompletní seznam členů</h3>
+
 {if $canViewOrEdit}
-<a href="{link Uzivatel:moneyall id=>NULL}" class="btn btn-default btn-sm" role="button">Informace z money</a>
+  <a n:if="!$money" href="{link Uzivatel:listall id=>NULL, money=>1}" class="btn btn-default btn-sm" role="button">Informace z money</a>
 {/if}
+
+<a n:if="$money" href="{link Uzivatel:listall id=>NULL}" class="btn btn-default btn-sm" role="button">Bez informací z money</a>
 <br><br>
 
 {control grid}

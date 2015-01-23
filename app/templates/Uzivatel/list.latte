@@ -3,10 +3,11 @@
 <a href="{link Ap:list id=>$ap->Oblast->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zobrazit oblast</a>
 <a href="{link Ap:show id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-eye-open"></i> Zobrazit podrobnosti AP</a>
 
-{if $canViewOrEdit}
 &nbsp;&nbsp;
-<a href="{link Uzivatel:money id=>$ap->id}" class="btn btn-default btn-sm" role="button">Informace z money</a>
+{if $canViewOrEdit}
+<a n:if="!$money" href="{link Uzivatel:list id=>$ap->id, money=>1}" class="btn btn-default btn-sm" role="button">Informace z money</a>
 {/if}
+<a n:if="$money" href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm" role="button">Bez informací z money</a>
 
 <br><br>
 

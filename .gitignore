@@ -15,4 +15,4 @@ vendor/*
 app/config/config.local.neon
 
 composer.lock
-/nbproject/private/
+nbproject/private/

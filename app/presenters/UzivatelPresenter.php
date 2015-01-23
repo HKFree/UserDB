@@ -227,168 +227,98 @@ class UzivatelPresenter extends BasePresenter
     	return true;
     }
 
-    protected function createComponentMoneygrid($name)
-    {
-      $uid = $this->context->parameters["money"]["login"];
-      $heslo = $this->context->parameters["money"]["password"];
-      $client = new \SoapClient(
-        'https://' . $uid . ':' . $heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
-        array(
-                'login'         => $uid,
-                'password'      => $heslo,
-                'trace'         => 1,
-                )
-        );
-    
-      $canViewOrEdit = false;
-    	$id = $this->getParam('id');
-    	$grid = new \Grido\Grid($this, $name);
-    	$grid->translator->setLang('cs');
-      if($id){
-    	 $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
-       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
-       $moneycallresult = $client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
-      }
-      else
-      {
-        $grid->setModel($this->uzivatel->getSeznamUzivatelu());
-        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-        $moneycallresult = $client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivatelu()));
-      }
-      //Debugger::dump( $this->getUser()->getIdentity()->getRoles() );
-      //Debugger::dump( $this->getUser()->isInRole('SO-17'));
-    	$grid->setDefaultPerPage(100);
-    	$grid->setDefaultSort(array('zalozen' => 'ASC'));
-    
-    	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
-    	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
-
-        $ccref = $this->cestneClenstviUzivatele;
-        $grid->setRowCallback(function ($item, $tr) use ($ccref,$moneycallresult){
-            if($moneycallresult[$item->id]->userIsActive->isActive != 1)
-            {
-                $tr->class[] = 'neaktivni';
-                return $tr;
-            }
-            if ($ccref->getHasCC($item->id)) {
-                $tr->class[] = 'cestne';
-                return $tr;
-            }
-            if($item->TypClenstvi_id == 2)
-            {
-                $tr->class[] = 'primarni';
-            }            
-            return $tr;
-        });
-    	
-    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-      $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
-    	if($canViewOrEdit)
-    	{
-      $grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    	
-    	$grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
-    	$grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
-    	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
-            return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-        })->setCustomRender(function($item){
-            $el = Html::el('span');
-            $ipAdresy = $item->related('IPAdresa.Uzivatel_id');
-            if($ipAdresy->count() > 0)
-            {
-              $el->title = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
-              $el->setText($ipAdresy->fetch()->ip_adresa);
-            }
-            return $el;
-        });
-        
-      $grid->addColumnText('act', 'Aktivní')->setColumn(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->userIsActive->isActive == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsActive->isActive == 0) ? "NE" : "?");
-        })->setCustomRender(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->userIsActive->isActive == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsActive->isActive == 0) ? "NE" : "?");
-        });        
-      $grid->addColumnText('deact', 'Deaktivace')->setColumn(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
-        })->setCustomRender(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($moneycallresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
-        });        
-      $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($moneycallresult[$item->id]->GetLastPayment->LastPaymentDate)) . " (" . $moneycallresult[$item->id]->GetLastPayment->LastPaymentAmount . ")");
-        })->setCustomRender(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($moneycallresult[$item->id]->GetLastPayment->LastPaymentDate)) . " (" . $moneycallresult[$item->id]->GetLastPayment->LastPaymentAmount . ")");
-        });        
-      $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($moneycallresult[$item->id]->GetLastActivation->LastActivationDate)) . " (" . $moneycallresult[$item->id]->GetLastActivation->LastActivationAmount . ")");
-        })->setCustomRender(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($moneycallresult[$item->id]->GetLastActivation->LastActivationDate)) . " (" . $moneycallresult[$item->id]->GetLastActivation->LastActivationAmount . ")");
-        });        
-      $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
-        })->setCustomRender(function($item) use ($moneycallresult){
-            return ($moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $moneycallresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
-        });
-    	    
-    	$grid->addActionHref('show', 'Zobrazit')
-    	    ->setIcon('eye-open');
-    	$grid->addActionHref('edit', 'Editovat')
-    	    ->setIcon('pencil');
-    	}
-    }
-
     protected function createComponentGrid($name)
     {
-      $canViewOrEdit = false;
-    	$id = $this->getParam('id');
+        $canViewOrEdit = false;
+    	$id = $this->getParameter('id');
+        $money = $this->getParameter('money', false);
+        
+        if($money) {
+            $money_uid = $this->context->parameters["money"]["login"];
+            $money_heslo = $this->context->parameters["money"]["password"];
+            $money_client = new \SoapClient(
+                'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
+                array(
+                    'login'         => $money_uid,
+                    'password'      => $money_heslo,
+                    'trace'         => 1,
+                )
+            );
+        }
+        
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
-      if($id){  
-    	 $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
-       $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser()); 
-      }
-      else
-      {
-        $grid->setModel($this->uzivatel->getSeznamUzivatelu());
-        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());   
-      }
+        if($id){  
+            $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
+            $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
+            if ($money) {
+                $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
+            }
+        } else {
+            $grid->setModel($this->uzivatel->getSeznamUzivatelu());
+            $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+            if ($money) {
+                $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivatelu()));
+            }
+        }
+        
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('zalozen' => 'ASC'));
     
     	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
-    	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)->setDefaultValue('active')->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
-    
-      //Debugger::dump();
-        
+    	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
+             ->setDefaultValue('active')
+             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
+
         $ccref = $this->cestneClenstviUzivatele;
-        $grid->setRowCallback(function ($item, $tr) use ($ccref){
-            if ($ccref->getHasCC($item->id)) {
-                $tr->class[] = 'cestne';
+        if($money)
+        {
+            $grid->setRowCallback(function ($item, $tr) use ($ccref,$money_callresult){
+                if($money_callresult[$item->id]->userIsActive->isActive != 1) {
+                    $tr->class[] = 'neaktivni';
+                    return $tr;
+                }
+                if ($ccref->getHasCC($item->id)) {
+                    $tr->class[] = 'cestne';
+                    return $tr;
+                }
+                if($item->TypClenstvi_id == 2) {
+                    $tr->class[] = 'primarni';
+                }            
                 return $tr;
-            }
-            if($item->TypClenstvi_id == 2)
-            {
-                $tr->class[] = 'primarni';
-            }            
-            return $tr;
-        });
-      
+            });
+        } else {
+            $grid->setRowCallback(function ($item, $tr) use ($ccref){
+                if ($ccref->getHasCC($item->id)) {
+                    $tr->class[] = 'cestne';
+                    return $tr;
+                }
+                if($item->TypClenstvi_id == 2)
+                {
+                    $tr->class[] = 'primarni';
+                }            
+                return $tr;
+            });
+        }
+        
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-      $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
-      if($canViewOrEdit)
-    	{
-        $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
-              return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
-          })->setSortable()->setFilterSelect(array(
-                          "" => "",
-                          "1" => "Fyzická os.",
-                          "2" => "Právnická os.",
-                      ));
-      	$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
-      	$grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    	
-      	$grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
-      	$grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
-      	$grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
-      }
+        $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
+        
+        if($canViewOrEdit) {
+            $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
+                  return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
+              })->setSortable()->setFilterSelect(array(
+                              "" => "",
+                              "1" => "Fyzická os.",
+                              "2" => "Právnická os.",
+                          ));
+            $grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
+            $grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    	
+            $grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
+            $grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
+            $grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
+        }
+        
     	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
             return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
         })->setCustomRender(function($item){
@@ -401,72 +331,68 @@ class UzivatelPresenter extends BasePresenter
             }
             return $el;
         });
-    	if($canViewOrEdit)
-    	{
-        //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
-      	$grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
-      	    
-      	$grid->addActionHref('show', 'Zobrazit')
-      	    ->setIcon('eye-open');
-      	$grid->addActionHref('edit', 'Editovat')
-      	    ->setIcon('pencil');
+        
+    	if($canViewOrEdit) {
+            if($money) {
+                $grid->addColumnText('act', 'Aktivní')->setColumn(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->userIsActive->isActive == 1) ? "ANO" : (($money_callresult[$item->id]->userIsActive->isActive == 0) ? "NE" : "?");
+                })->setCustomRender(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->userIsActive->isActive == 1) ? "ANO" : (($money_callresult[$item->id]->userIsActive->isActive == 0) ? "NE" : "?");
+                }); 
+                
+                $grid->addColumnText('deact', 'Deaktivace')->setColumn(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
+                })->setCustomRender(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
+                });  
+                
+                $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$item->id]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$item->id]->GetLastPayment->LastPaymentAmount . ")");
+                })->setCustomRender(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$item->id]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$item->id]->GetLastPayment->LastPaymentAmount . ")");
+                });   
+                
+                $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$item->id]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$item->id]->GetLastActivation->LastActivationAmount . ")");
+                })->setCustomRender(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$item->id]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$item->id]->GetLastActivation->LastActivationAmount . ")");
+                }); 
+                
+                $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
+                })->setCustomRender(function($item) use ($money_callresult){
+                    return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
+                });
+            }
+            //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
+            $grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
+
+            $grid->addActionHref('show', 'Zobrazit')
+                ->setIcon('eye-open');
+            $grid->addActionHref('edit', 'Editovat')
+                ->setIcon('pencil');
     	}
     }
     
     public function renderListall()
     {
-      $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+        $this->template->money = $this->getParameter("money", false);
     }
     
-	
     public function renderList()
     {
-    	if($this->getParam('id'))
+        // otestujeme, jestli máme id APčka a ono existuje
+    	if($this->getParameter('id') && $apt = $this->ap->getAP($this->getParameter('id')))
     	{
-    	    $ob = $this->ap->getAP($this->getParam('id'));
-    	    $this->template->ap = $ob;
-          
-          $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
-          
-          //$form->addHidden("id", $this->getParam('id'));
-          
-    	    //$this->template->lokace["ap"] = $ob->jmeno;
-    	    //$this->template->lokace["oblast"] = $ob->oblast->jmeno;
-    
-    	    /*$tr->create('th')->setText('Akce');
-    	    $barvy = array(
-    	      1 => 'danger',
-    	      2 => 'success',
-    	      3 => '',
-    	      4 => 'info',
-    	    );
-    	    while($uzivatel = $uzivatele->fetch()) {
-    		$tr = $table->create('tr')->setClass($barvy[$uzivatel->TypClenstvi_id]);
-    
-    		$tr->create('td')->create('a')->href($this->link('Uzivatel:edit', array('id'=>$uzivatel->id)))->setText('Editovat');
-    	    }    */
-    
+    	    $this->template->ap = $apt;
+            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());  
+    	} else {
+            $this->flashMessage("Chyba, AP s tímto ID neexistuje.", "danger");
+            $this->redirect("Homepage:default", array("id"=>null)); // a přesměrujeme
     	}
-    	else {
-    	   $this->template->table = 'Chyba, AP nenalezeno.'; 
-    	}
-    }
-    
-    public function renderMoney()
-    {
-    	if($this->getParam('id'))
-    	{
-    	    $ob = $this->ap->getAP($this->getParam('id'));
-    	    $this->template->ap = $ob;
-    	}
-    	else {
-    	   $this->template->table = 'Chyba, AP nenalezeno.'; 
-    	}
-    }
-    
-    public function renderMoneyall()
-    {
-    	
+        
+        $this->template->money = $this->getParameter("money", false);
     }
     
     public function renderShow()

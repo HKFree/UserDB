@@ -91,7 +91,7 @@
 <!--          <h1 class="page-header">Dashboard</h1> -->
 	  <script> document.documentElement.className+=' js' </script>
 
-	  <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+	  <div n:foreach="$flashes as $flash" class="alert alert-{ifset $flash->type}{$flash->type}{elseifset $flash->type}info{/ifset}">{$flash->message}</div>
 
 	  {include content}
         </div>
