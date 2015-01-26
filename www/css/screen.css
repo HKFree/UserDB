@@ -213,3 +213,10 @@ pre.tracy-dump {
 .subnet>.subnet_text {
     width: 125px;
 }
+
+.error{
+    background-color: yellow;
+    color: red;
+    border: 3px solid black;
+    
+}

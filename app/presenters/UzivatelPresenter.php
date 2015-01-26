@@ -124,10 +124,9 @@ class UzivatelPresenter extends BasePresenter
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
         if (count($oblastiSpravce) > 0) {
             $aps0 = $this->oblast->formatujOblastiSAP($oblastiSpravce);
-            $aps = array_merge($aps0, $aps);
-            $aps = array_unique($aps);
+            $aps = $aps0 + $aps;
         }
-        
+        //\Tracy\Dumper::dump($aps);
     
     	$form = new Form($this, 'uzivatelForm');
     	$form->addHidden('id');
@@ -139,12 +138,13 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
     	$form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
     	$form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
-    	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');;
+    	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');
+        $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::FILLED)->addRule(Form::EMAIL, 'Musíte zadat platný email');
     	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
         $form->addText('cislo_clenske_karty', 'Číslo členské karty', 50);
     	$form->addText('ulice_cp', 'Adresa (ulice a čp)', 100)->setRequired('Zadejte ulici a čp');
         $form->addText('mesto', 'Adresa (město)', 100)->setRequired('Zadejte město');
-        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč');
+        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
     	$form->addText('rok_narozeni', 'Rok narození',30);	
     	$form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);	
@@ -170,6 +170,7 @@ class UzivatelPresenter extends BasePresenter
     	$form->addSubmit('save', 'Uložit')
     		->setAttribute('class', 'btn btn-success btn-xs btn-white');
     	$form->onSuccess[] = array($this, 'uzivatelFormSucceded');
+        $form->onValidate[] = array($this, 'validateUzivatelForm');
     
         $form->setDefaults(array(
             'TypClenstvi_id' => 3,
@@ -190,6 +191,32 @@ class UzivatelPresenter extends BasePresenter
     
     	return $form;
     }
+    
+    public function validateUzivatelForm($form)
+    {
+        $values = $form->getValues();
+
+        $duplMail = $this->uzivatel->getDuplicateEmailArea($values->email, $values->id);
+        
+        if ($duplMail) {
+            $form->addError('Tento email již v DB existuje v oblasti: ' . $duplMail);
+        }
+        
+        if(!empty($values->email2)) {
+            $duplMail2 = $this->uzivatel->getDuplicateEmailArea($values->email2, $values->id);
+
+            if ($duplMail2) {
+                $form->addError('Tento email již v DB existuje v oblasti: ' . $duplMail2);
+            }
+        }
+        
+        $duplPhone = $this->uzivatel->getDuplicatePhoneArea($values->telefon, $values->id);
+        
+        if ($duplPhone) {
+            $form->addError('Tento telefon již v DB existuje v oblasti: ' . $duplPhone);
+        }
+    }
+    
     public function uzivatelFormSucceded($form, $values) {
         $log = array();
     	$idUzivatele = $values->id;

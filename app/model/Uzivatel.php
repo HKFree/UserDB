@@ -40,4 +40,24 @@ class Uzivatel extends Table
     {
       return($this->find($id));
     }
+    
+    public function getDuplicateEmailArea($email, $id)
+    {
+        $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->fetch();
+        if($existujici)
+        {
+            return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
+        }
+        return null;
+    }
+    
+    public function getDuplicatePhoneArea($telefon, $id)
+    {
+        $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->fetch();
+        if($existujici)
+        {
+            return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
+        }
+        return null;
+    }
 }
