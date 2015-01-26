@@ -46,11 +46,12 @@ class Oblast extends Table
         foreach ($oblasti as $oblast) {
 			$apcka_oblasti = $oblast->related('Ap.Oblast_id');
 			foreach($oblast->related('Ap.Oblast_id')->order("jmeno") as $apid => $ap) {
-				if(count($apcka_oblasti) == 1)
-					$aps[$apid] = $ap->jmeno;
-				else
-					$aps[$apid] = $oblast->jmeno.' - '.$ap->jmeno;
-			}
+				if (count($apcka_oblasti) == 1) {
+                    $aps[$apid] = $ap->jmeno . ' (' . $ap->id . ')';
+                } else {
+                    $aps[$apid] = $oblast->jmeno . ' - ' . $ap->jmeno . ' (' . $ap->id . ')';
+                }
+            }
 		}
 		return($aps);
     }

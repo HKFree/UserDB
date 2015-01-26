@@ -47,9 +47,10 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->template->oblasti = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
         
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
-        if(count($oblastiSpravce) > 0)
+        if (count($oblastiSpravce) > 0) {
             $this->template->mojeOblasti = $this->oblast->formatujOblastiSAP($oblastiSpravce);
-        else
+        } else {
             $this->template->mojeOblasti = false;
+        }
     }
 }

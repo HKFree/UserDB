@@ -118,7 +118,16 @@ class UzivatelPresenter extends BasePresenter
     	$typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id','text');
         $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id','text');
     	$zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id','text');
+
     	$aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
+        
+        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
+        if (count($oblastiSpravce) > 0) {
+            $aps0 = $this->oblast->formatujOblastiSAP($oblastiSpravce);
+            $aps = array_merge($aps0, $aps);
+            $aps = array_unique($aps);
+        }
+        
     
     	$form = new Form($this, 'uzivatelForm');
     	$form->addHidden('id');
@@ -265,6 +274,9 @@ class UzivatelPresenter extends BasePresenter
             if ($money) {
                 $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivatelu()));
             }
+            $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
+                  return $item->ref('Ap', 'Ap_id')->jmeno;
+              })->setSortable();
         }
         
     	$grid->setDefaultPerPage(100);
