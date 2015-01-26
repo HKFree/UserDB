@@ -87,7 +87,8 @@ class UzivatelPresenter extends BasePresenter
             $rtfdata = str_replace("--heslo--", iconv("UTF-8","windows-1250",$uzivatel->heslo), $rtfdata);
             $rtfdata = str_replace("--email--", iconv("UTF-8","windows-1250",$uzivatel->email), $rtfdata);
             $rtfdata = str_replace("--mobil--", $uzivatel->telefon, $rtfdata);
-            $rtfdata = str_replace("--adresa1--", iconv("UTF-8","windows-1250",$uzivatel->adresa), $rtfdata);
+            $rtfdata = str_replace("--cisloclenskekarty--", $uzivatel->cislo_clenske_karty, $rtfdata);
+            $rtfdata = str_replace("--adresa1--", iconv("UTF-8","windows-1250",$uzivatel->ulice_cp) . ", " . iconv("UTF-8","windows-1250",$uzivatel->mesto) . ", " . $uzivatel->psc, $rtfdata);
             $rtfdata = str_replace("--typ--", iconv("UTF-8","windows-1250",$uzivatel->TypClenstvi->text), $rtfdata);
             $rtfdata = str_replace("--ip4--", join(",",array_values($uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))), $rtfdata);
             $rtfdata = str_replace("--oblast--", $uzivatel->Ap->Oblast->jmeno, $rtfdata);
@@ -131,7 +132,10 @@ class UzivatelPresenter extends BasePresenter
     	$form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
     	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');;
     	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
-    	$form->addTextArea('adresa', 'Adresa (ulice čp, psč město)', 24)->setRequired('Zadejte adresu');
+        $form->addText('cislo_clenske_karty', 'Číslo členské karty', 50);
+    	$form->addText('ulice_cp', 'Adresa (ulice a čp)', 100)->setRequired('Zadejte ulici a čp');
+        $form->addText('mesto', 'Adresa (město)', 100)->setRequired('Zadejte město');
+        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč');
     	$form->addText('rok_narozeni', 'Rok narození',30);	
     	$form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);	
@@ -248,6 +252,7 @@ class UzivatelPresenter extends BasePresenter
         
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
+        $grid->setExport('user_export');
         if($id){  
             $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
             $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
@@ -302,19 +307,19 @@ class UzivatelPresenter extends BasePresenter
         }
         
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-        $grid->addColumnText('nick', 'Nickname')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('nick', 'Nick')->setSortable()->setFilterText()->setSuggestion();
         
         if($canViewOrEdit) {
-            $grid->addColumnText('TypPravniFormyUzivatele_id', 'Právní forma')->setCustomRender(function($item){
+            $grid->addColumnText('TypPravniFormyUzivatele_id', 'PF')->setCustomRender(function($item){
                   return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
               })->setSortable()->setFilterSelect(array(
                               "" => "",
-                              "1" => "Fyzická os.",
-                              "2" => "Právnická os.",
+                              "1" => "FO",
+                              "2" => "PO",
                           ));
             $grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
             $grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    	
-            $grid->addColumnText('adresa', 'Adresa')->setSortable()->setFilterText();
+            $grid->addColumnText('ulice_cp', 'Ulice')->setSortable()->setFilterText();
             $grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
             $grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
         }
