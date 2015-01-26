@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 26, 2015 at 11:53 PM
+-- Generation Time: Jan 27, 2015 at 12:52 AM
 -- Server version: 5.5.38
 -- PHP Version: 5.4.4-14+deb7u14
 
@@ -240,6 +240,33 @@ CREATE TABLE IF NOT EXISTS `TypZarizeni` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `userdb`
+--
+CREATE TABLE IF NOT EXISTS `userdb` (
+`id` int(11)
+,`name` varchar(101)
+,`type` int(11)
+,`default_password` binary(0)
+,`nick` varchar(50)
+,`email` varchar(50)
+,`address` varchar(413)
+,`ip4` text
+,`year_of_birth` decimal(4,0)
+,`alt_at` datetime
+,`alt_by` varchar(7)
+,`creat_at` datetime
+,`creat_by` varchar(7)
+,`temp_enable` binary(0)
+,`area` int(11)
+,`phone` varchar(20)
+,`notes` varchar(7)
+,`wifi_user` int(11)
+,`dotace_ok` int(1)
+,`dotace_notes` varchar(7)
+);
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `Uzivatel`
 --
 
@@ -286,6 +313,15 @@ CREATE TABLE IF NOT EXISTS `ZpusobPripojeni` (
   `text` varchar(150) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `userdb`
+--
+DROP TABLE IF EXISTS `userdb`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`userdb`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,NULL AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',`U`.`psc`) AS `address`,group_concat(`I`.`ip_adresa` separator ',') AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (`Uzivatel` `U` join `IPAdresa` `I` on((`I`.`Uzivatel_id` = `U`.`id`))) group by `U`.`id`;
 
 --
 -- Constraints for dumped tables
