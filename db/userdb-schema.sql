@@ -1,23 +1,29 @@
 -- phpMyAdmin SQL Dump
--- version 3.4.11.1deb2
+-- version 3.4.11.1deb2+deb7u1
 -- http://www.phpmyadmin.net
 --
--- Počítač: localhost
--- Vygenerováno: Stř 03. pro 2014, 13:26
--- Verze MySQL: 5.5.35
--- Verze PHP: 5.4.4-14+deb7u9
+-- Host: localhost
+-- Generation Time: Jan 26, 2015 at 11:53 PM
+-- Server version: 5.5.38
+-- PHP Version: 5.4.4-14+deb7u14
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
 --
--- Databáze: `userdb`
+-- Database: `userdb`
 --
 
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `Ap`
+-- Table structure for table `Ap`
 --
 
 CREATE TABLE IF NOT EXISTS `Ap` (
@@ -33,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `Ap` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `CestneClenstviUzivatele`
+-- Table structure for table `CestneClenstviUzivatele`
 --
 
 CREATE TABLE IF NOT EXISTS `CestneClenstviUzivatele` (
@@ -45,12 +51,12 @@ CREATE TABLE IF NOT EXISTS `CestneClenstviUzivatele` (
   `poznamka` text COLLATE utf8_czech_ci,
   PRIMARY KEY (`id`),
   KEY `Uzivatel_id` (`Uzivatel_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `IPAdresa`
+-- Table structure for table `IPAdresa`
 --
 
 CREATE TABLE IF NOT EXISTS `IPAdresa` (
@@ -78,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `IPAdresa` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `Log`
+-- Table structure for table `Log`
 --
 
 CREATE TABLE IF NOT EXISTS `Log` (
@@ -98,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `Log` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `Oblast`
+-- Table structure for table `Oblast`
 --
 
 CREATE TABLE IF NOT EXISTS `Oblast` (
@@ -112,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `Oblast` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `SpravceOblasti`
+-- Table structure for table `SpravceOblasti`
 --
 
 CREATE TABLE IF NOT EXISTS `SpravceOblasti` (
@@ -130,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `SpravceOblasti` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 --
--- Spouště `SpravceOblasti`
+-- Triggers `SpravceOblasti`
 --
 DROP TRIGGER IF EXISTS `SpravceOblasti_bi`;
 DELIMITER //
@@ -142,7 +148,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `Stitek`
+-- Table structure for table `Stitek`
 --
 
 CREATE TABLE IF NOT EXISTS `Stitek` (
@@ -156,7 +162,7 @@ CREATE TABLE IF NOT EXISTS `Stitek` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `StitekUzivatele`
+-- Table structure for table `StitekUzivatele`
 --
 
 CREATE TABLE IF NOT EXISTS `StitekUzivatele` (
@@ -170,7 +176,7 @@ CREATE TABLE IF NOT EXISTS `StitekUzivatele` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `Subnet`
+-- Table structure for table `Subnet`
 --
 
 CREATE TABLE IF NOT EXISTS `Subnet` (
@@ -186,7 +192,7 @@ CREATE TABLE IF NOT EXISTS `Subnet` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `TypClenstvi`
+-- Table structure for table `TypClenstvi`
 --
 
 CREATE TABLE IF NOT EXISTS `TypClenstvi` (
@@ -198,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `TypClenstvi` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `TypPravniFormyUzivatele`
+-- Table structure for table `TypPravniFormyUzivatele`
 --
 
 CREATE TABLE IF NOT EXISTS `TypPravniFormyUzivatele` (
@@ -210,7 +216,7 @@ CREATE TABLE IF NOT EXISTS `TypPravniFormyUzivatele` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `TypSpravceOblasti`
+-- Table structure for table `TypSpravceOblasti`
 --
 
 CREATE TABLE IF NOT EXISTS `TypSpravceOblasti` (
@@ -222,7 +228,7 @@ CREATE TABLE IF NOT EXISTS `TypSpravceOblasti` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `TypZarizeni`
+-- Table structure for table `TypZarizeni`
 --
 
 CREATE TABLE IF NOT EXISTS `TypZarizeni` (
@@ -234,7 +240,7 @@ CREATE TABLE IF NOT EXISTS `TypZarizeni` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `Uzivatel`
+-- Table structure for table `Uzivatel`
 --
 
 CREATE TABLE IF NOT EXISTS `Uzivatel` (
@@ -245,7 +251,10 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `nick` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   `heslo` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   `email` varchar(50) COLLATE utf8_czech_ci NOT NULL,
-  `adresa` varchar(300) COLLATE utf8_czech_ci NOT NULL,
+  `email2` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  `ulice_cp` varchar(300) COLLATE utf8_czech_ci NOT NULL,
+  `mesto` varchar(100) COLLATE utf8_czech_ci NOT NULL,
+  `psc` int(5) NOT NULL,
   `rok_narozeni` decimal(4,0) DEFAULT NULL,
   `telefon` varchar(20) COLLATE utf8_czech_ci NOT NULL,
   `poznamka` text COLLATE utf8_czech_ci,
@@ -256,8 +265,10 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `TypPravniFormyUzivatele_id` int(11) NOT NULL,
   `firma_nazev` varchar(300) COLLATE utf8_czech_ci DEFAULT NULL,
   `firma_ico` int(10) DEFAULT NULL,
+  `cislo_clenske_karty` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nick` (`nick`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `telefon` (`telefon`),
   KEY `TypClenstvi_id` (`TypClenstvi_id`),
   KEY `ZpusobPripojeni_id` (`ZpusobPripojeni_id`),
   KEY `Ap_id` (`Ap_id`),
@@ -267,7 +278,7 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `ZpusobPripojeni`
+-- Table structure for table `ZpusobPripojeni`
 --
 
 CREATE TABLE IF NOT EXISTS `ZpusobPripojeni` (
@@ -277,23 +288,23 @@ CREATE TABLE IF NOT EXISTS `ZpusobPripojeni` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 --
--- Omezení pro exportované tabulky
+-- Constraints for dumped tables
 --
 
 --
--- Omezení pro tabulku `Ap`
+-- Constraints for table `Ap`
 --
 ALTER TABLE `Ap`
   ADD CONSTRAINT `Ap_ibfk_1` FOREIGN KEY (`Oblast_id`) REFERENCES `Oblast` (`id`);
 
 --
--- Omezení pro tabulku `CestneClenstviUzivatele`
+-- Constraints for table `CestneClenstviUzivatele`
 --
 ALTER TABLE `CestneClenstviUzivatele`
   ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`);
 
 --
--- Omezení pro tabulku `IPAdresa`
+-- Constraints for table `IPAdresa`
 --
 ALTER TABLE `IPAdresa`
   ADD CONSTRAINT `IPAdresa_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`),
@@ -301,7 +312,7 @@ ALTER TABLE `IPAdresa`
   ADD CONSTRAINT `IPAdresa_ibfk_3` FOREIGN KEY (`TypZarizeni_id`) REFERENCES `TypZarizeni` (`id`);
 
 --
--- Omezení pro tabulku `SpravceOblasti`
+-- Constraints for table `SpravceOblasti`
 --
 ALTER TABLE `SpravceOblasti`
   ADD CONSTRAINT `SpravceOblasti_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`),
@@ -309,29 +320,33 @@ ALTER TABLE `SpravceOblasti`
   ADD CONSTRAINT `SpravceOblasti_ibfk_3` FOREIGN KEY (`TypSpravceOblasti_id`) REFERENCES `TypSpravceOblasti` (`id`);
 
 --
--- Omezení pro tabulku `Stitek`
+-- Constraints for table `Stitek`
 --
 ALTER TABLE `Stitek`
   ADD CONSTRAINT `Stitek_ibfk_1` FOREIGN KEY (`Oblast_id`) REFERENCES `Oblast` (`id`);
 
 --
--- Omezení pro tabulku `StitekUzivatele`
+-- Constraints for table `StitekUzivatele`
 --
 ALTER TABLE `StitekUzivatele`
   ADD CONSTRAINT `StitekUzivatele_ibfk_1` FOREIGN KEY (`Stitek_id`) REFERENCES `Stitek` (`id`),
   ADD CONSTRAINT `StitekUzivatele_ibfk_2` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`);
 
 --
--- Omezení pro tabulku `Subnet`
+-- Constraints for table `Subnet`
 --
 ALTER TABLE `Subnet`
   ADD CONSTRAINT `Subnet_ibfk_1` FOREIGN KEY (`Ap_id`) REFERENCES `Ap` (`id`);
 
 --
--- Omezení pro tabulku `Uzivatel`
+-- Constraints for table `Uzivatel`
 --
 ALTER TABLE `Uzivatel`
   ADD CONSTRAINT `Uzivatel_ibfk_1` FOREIGN KEY (`TypClenstvi_id`) REFERENCES `TypClenstvi` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_2` FOREIGN KEY (`Ap_id`) REFERENCES `Ap` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_3` FOREIGN KEY (`ZpusobPripojeni_id`) REFERENCES `ZpusobPripojeni` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_4` FOREIGN KEY (`TypPravniFormyUzivatele_id`) REFERENCES `TypPravniFormyUzivatele` (`id`);
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
