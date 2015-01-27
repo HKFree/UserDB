@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 27, 2015 at 12:52 AM
+-- Generation Time: Jan 27, 2015 at 01:22 AM
 -- Server version: 5.5.38
 -- PHP Version: 5.4.4-14+deb7u14
 
@@ -36,6 +36,14 @@ CREATE TABLE IF NOT EXISTS `Ap` (
   KEY `Oblast_id` (`Oblast_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `cc`
+--
+CREATE TABLE IF NOT EXISTS `cc` (
+`Uzivatel_id` int(11)
+);
 -- --------------------------------------------------------
 
 --
@@ -313,6 +321,15 @@ CREATE TABLE IF NOT EXISTS `ZpusobPripojeni` (
   `text` varchar(150) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `cc`
+--
+DROP TABLE IF EXISTS `cc`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`userdb`@`%` SQL SECURITY DEFINER VIEW `cc` AS select distinct `CC`.`Uzivatel_id` AS `Uzivatel_id` from (`CestneClenstviUzivatele` `CC` join `Uzivatel` `U` on((`U`.`id` = `CC`.`Uzivatel_id`))) where (((`CC`.`schvaleno` = 1) and (`CC`.`plati_od` < now()) and (isnull(`CC`.`plati_do`) or (`CC`.`plati_do` > now()))) or (`U`.`zalozen` between cast(date_format(now(),'%Y-%m-01') as date) and now()));
 
 -- --------------------------------------------------------
 
