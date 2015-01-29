@@ -41,6 +41,8 @@
 
         <tr><th>Rok narození</th><td>{$u->rok_narozeni}</td></tr>
         <tr><th>Index potížisty</th><td>{$u->index_potizisty}</td></tr>
+        <tr><th>Technologie připojení</th><td>{$u->TechnologiePripojeni->text}</td></tr>
+        <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni->text}</td></tr>
         <tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>
         </table>
     {/if}

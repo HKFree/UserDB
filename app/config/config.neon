@@ -33,6 +33,7 @@ services:
 	typSpravceOblasti: App\Model\TypSpravceOblasti
 	typPravniFormyUzivatele: App\Model\TypPravniFormyUzivatele
 	zpusobPripojeni: App\Model\ZpusobPripojeni
+	technologiePripojeni: App\Model\TechnologiePripojeni
 	ipAdresa: App\Model\IPAdresa
 	oblast: App\Model\Oblast
 	ap: App\Model\AP

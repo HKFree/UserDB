@@ -7,14 +7,14 @@ use Nette;
 /**
  * @author 
  */
-class ZpusobPripojeni extends Table
+class TechnologiePripojeni extends Table
 {
     /**
     * @var string
     */
-    protected $tableName = 'ZpusobPripojeni';
+    protected $tableName = 'TechnologiePripojeni';
 
-    public function getZpusobyPripojeni()
+    public function getTechnologiePripojeni()
     {
         return($this->findAll());
     }

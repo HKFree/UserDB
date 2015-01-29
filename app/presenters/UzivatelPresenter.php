@@ -22,19 +22,21 @@ class UzivatelPresenter extends BasePresenter
     private $typPravniFormyUzivatele;
     private $typSpravceOblasti;
     private $zpusobPripojeni;
+    private $technologiePripojeni;
     private $uzivatel;
     private $ipAdresa;
     private $ap;
     private $typZarizeni;
     private $log;
 
-    function __construct(Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
         $this->typClenstvi = $typClenstvi;
         $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
     	$this->zpusobPripojeni = $zpusobPripojeni;
+        $this->technologiePripojeni = $technologiePripojeni;
     	$this->uzivatel = $uzivatel;
     	$this->ipAdresa = $ipAdresa;  
     	$this->ap = $ap;
@@ -118,6 +120,7 @@ class UzivatelPresenter extends BasePresenter
     	$typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id','text');
         $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id','text');
     	$zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id','text');
+        $technologiePripojeni = $this->technologiePripojeni->getTechnologiePripojeni()->fetchPairs('id','text');
 
     	$aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
         
@@ -148,9 +151,10 @@ class UzivatelPresenter extends BasePresenter
     	$form->addText('rok_narozeni', 'Rok narození',30);	
     	$form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);	
-    	$form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(50);
+    	$form->addRadioList('TechnologiePripojeni_id', 'Způsob připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
+        $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(0);
     	$form->addRadioList('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
-    
+            
     	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
     	$data = $this->ipAdresa;
     	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni) {
@@ -223,8 +227,26 @@ class UzivatelPresenter extends BasePresenter
     	$ips = $values->ip;
     	unset($values["ip"]);
     
+        if (empty($values->cislo_clenske_karty)) {
+                $values->cislo_clenske_karty = null;
+            }
+        if (empty($values->firma_nazev)) {
+                $values->firma_nazev = null;
+            }
+        if (empty($values->firma_ico)) {
+                $values->firma_ico = null;
+            }
+        if (empty($values->email2)) {
+                $values->email2 = null;
+            }
+        if (empty($values->poznamka)) {
+                $values->poznamka = null;
+            }
+        
     	// Zpracujeme nejdriv uzivatele
     	if(empty($values->id)) {
+            $values->zalozen = new Nette\Utils\DateTime;
+            $values->heslo = $this->uzivatel->generateStrongPassword();
             $values->id = $this->uzivatel->getNewID();
             $idUzivatele = $this->uzivatel->insert($values)->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
@@ -249,6 +271,15 @@ class UzivatelPresenter extends BasePresenter
             }
             if (empty($ip->mac_adresa)) {
                 $ip->mac_adresa = null;
+            }
+            if (empty($ip->popis)) {
+                $ip->popis = null;
+            }
+            if (empty($ip->login)) {
+                $ip->login = null;
+            }
+            if (empty($ip->heslo)) {
+                $ip->heslo = null;
             }
 
             if(empty($ip->id)) {
