@@ -225,7 +225,8 @@ class UzivatelPresenter extends BasePresenter
     
     	// Zpracujeme nejdriv uzivatele
     	if(empty($values->id)) {
-    	    $idUzivatele = $this->uzivatel->insert($values)->id;
+            $values->id = $this->uzivatel->getNewID();
+            $idUzivatele = $this->uzivatel->insert($values)->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);

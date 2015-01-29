@@ -2,7 +2,8 @@
 
 namespace App\Model;
 
-use Nette;
+use Nette,
+    Nette\Database\Context;
 
 
 
@@ -39,6 +40,16 @@ class Uzivatel extends Table
     public function getUzivatel($id)
     {
       return($this->find($id));
+    }
+    
+    public function getNewID()
+    {
+        $context = new Context($this->connection);
+        return $context->query('SELECT t1.id+1 AS Free 
+FROM Uzivatel AS t1 
+LEFT JOIN Uzivatel AS t2 ON t1.id+1 = t2.id 
+WHERE t2.id IS NULL AND t1.id>7370 
+ORDER BY t1.id LIMIT 1')->fetchField();
     }
     
     public function getDuplicateEmailArea($email, $id)
