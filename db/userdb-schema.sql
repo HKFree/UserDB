@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 29, 2015 at 01:02 AM
+-- Generation Time: Jan 29, 2015 at 02:06 PM
 -- Server version: 5.5.38
 -- PHP Version: 5.4.4-14+deb7u14
 
@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS `userdb` (
 `id` int(11)
 ,`name` varchar(101)
 ,`type` int(11)
-,`default_password` binary(0)
+,`default_password` varchar(50)
 ,`nick` varchar(50)
 ,`email` varchar(50)
 ,`address` varchar(413)
@@ -371,7 +371,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`userdb`@`%` SQL SECURITY DEFINER VIEW `cc` A
 --
 DROP TABLE IF EXISTS `userdb`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`userdb`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,NULL AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',`U`.`psc`) AS `address`,group_concat(`I`.`ip_adresa` separator ',') AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (`Uzivatel` `U` join `IPAdresa` `I` on((`I`.`Uzivatel_id` = `U`.`id`))) group by `U`.`id`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`userdb`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,`U`.`heslo` AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',`U`.`psc`) AS `address`,group_concat(`I`.`ip_adresa` separator ',') AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (`Uzivatel` `U` join `IPAdresa` `I` on((`I`.`Uzivatel_id` = `U`.`id`))) group by `U`.`id`;
 
 --
 -- Constraints for dumped tables
