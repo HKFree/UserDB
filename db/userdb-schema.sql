@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 29, 2015 at 02:06 PM
+-- Generation Time: Jan 30, 2015 at 12:34 AM
 -- Server version: 5.5.38
 -- PHP Version: 5.4.4-14+deb7u14
 
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `IPAdresa` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `Uzivatel_id` int(11) DEFAULT NULL,
   `Ap_id` int(11) DEFAULT NULL,
-  `ip_adresa` varchar(20) COLLATE utf8_czech_ci NOT NULL,
+  `ip_adresa` varchar(20) COLLATE utf8_czech_ci DEFAULT NULL,
   `hostname` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   `mac_adresa` varchar(20) COLLATE utf8_czech_ci DEFAULT NULL,
   `dhcp` tinyint(1) NOT NULL,
@@ -201,6 +201,18 @@ CREATE TABLE IF NOT EXISTS `Subnet` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `TechnologiePripojeni`
+--
+
+CREATE TABLE IF NOT EXISTS `TechnologiePripojeni` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `text` varchar(50) COLLATE utf8_czech_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `TypClenstvi`
 --
 
@@ -302,13 +314,15 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `firma_nazev` varchar(300) COLLATE utf8_czech_ci DEFAULT NULL,
   `firma_ico` int(10) DEFAULT NULL,
   `cislo_clenske_karty` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  `TechnologiePripojeni_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `telefon` (`telefon`),
   KEY `TypClenstvi_id` (`TypClenstvi_id`),
   KEY `ZpusobPripojeni_id` (`ZpusobPripojeni_id`),
   KEY `Ap_id` (`Ap_id`),
-  KEY `TypPravniFormyUzivatele_id` (`TypPravniFormyUzivatele_id`)
+  KEY `TypPravniFormyUzivatele_id` (`TypPravniFormyUzivatele_id`),
+  KEY `TechnologiePripojeni_id` (`TechnologiePripojeni_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
@@ -434,6 +448,7 @@ ALTER TABLE `Subnet`
 -- Constraints for table `Uzivatel`
 --
 ALTER TABLE `Uzivatel`
+  ADD CONSTRAINT `Uzivatel_ibfk_5` FOREIGN KEY (`TechnologiePripojeni_id`) REFERENCES `TechnologiePripojeni` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_1` FOREIGN KEY (`TypClenstvi_id`) REFERENCES `TypClenstvi` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_2` FOREIGN KEY (`Ap_id`) REFERENCES `Ap` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_3` FOREIGN KEY (`ZpusobPripojeni_id`) REFERENCES `ZpusobPripojeni` (`id`),

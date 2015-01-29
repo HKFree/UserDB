@@ -48,3 +48,16 @@ INSERT INTO `TypZarizeni` (`id`, `text`) VALUES
 INSERT INTO `ZpusobPripojeni` (`id`, `text`) VALUES
 (1, 'Není pøipojen vlastním zaøízením a/nebo nesplòuje podmínky.'),
 (2, 'Je pøipojen vlastním zaøízením a splòuje podmínky akce "3 mìsíce zdarma".');
+
+--
+-- Dumping data for table `TechnologiePripojeni`
+--
+
+INSERT INTO `TechnologiePripojeni` (`id`, `text`) VALUES
+(0, 'NEZJIŠTÌNO'),
+(1, 'Wi-Fi 2.4GHz'),
+(2, 'P2P Wi-Fi 2.4GHz'),
+(3, 'Wi-Fi 5GHz'),
+(4, 'P2P Wi-Fi 5GHz'),
+(5, 'LAN'),
+(6, 'OPTIKA');
