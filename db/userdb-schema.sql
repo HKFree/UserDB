@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 27, 2015 at 01:22 AM
+-- Generation Time: Jan 29, 2015 at 01:02 AM
 -- Server version: 5.5.38
 -- PHP Version: 5.4.4-14+deb7u14
 
@@ -106,7 +106,8 @@ CREATE TABLE IF NOT EXISTS `Log` (
   `puvodni_hodnota` text COLLATE utf8_czech_ci,
   `nova_hodnota` text COLLATE utf8_czech_ci,
   `akce` enum('I','U','D') COLLATE utf8_czech_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `Uzivatel_id` (`Uzivatel_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
@@ -300,7 +301,7 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `TypPravniFormyUzivatele_id` int(11) NOT NULL,
   `firma_nazev` varchar(300) COLLATE utf8_czech_ci DEFAULT NULL,
   `firma_ico` int(10) DEFAULT NULL,
-  `cislo_clenske_karty` varchar(50) COLLATE utf8_czech_ci NOT NULL,
+  `cislo_clenske_karty` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `telefon` (`telefon`),
@@ -309,6 +310,38 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   KEY `Ap_id` (`Ap_id`),
   KEY `TypPravniFormyUzivatele_id` (`TypPravniFormyUzivatele_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `UzivatelTrash`
+--
+
+CREATE TABLE IF NOT EXISTS `UzivatelTrash` (
+  `id` int(11) NOT NULL,
+  `Ap_id` int(11) DEFAULT NULL,
+  `jmeno` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  `prijmeni` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  `nick` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  `heslo` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  `email` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  `email2` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  `ulice_cp` varchar(300) COLLATE utf8_czech_ci DEFAULT NULL,
+  `mesto` varchar(100) COLLATE utf8_czech_ci DEFAULT NULL,
+  `psc` int(5) DEFAULT NULL,
+  `rok_narozeni` decimal(4,0) DEFAULT NULL,
+  `telefon` varchar(20) COLLATE utf8_czech_ci DEFAULT NULL,
+  `poznamka` text COLLATE utf8_czech_ci,
+  `index_potizisty` int(11) DEFAULT NULL,
+  `zalozen` datetime DEFAULT NULL,
+  `TypClenstvi_id` int(11) DEFAULT NULL,
+  `ZpusobPripojeni_id` int(11) DEFAULT NULL,
+  `TypPravniFormyUzivatele_id` int(11) DEFAULT NULL,
+  `firma_nazev` varchar(300) COLLATE utf8_czech_ci DEFAULT NULL,
+  `firma_ico` int(10) DEFAULT NULL,
+  `cislo_clenske_karty` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -363,6 +396,12 @@ ALTER TABLE `IPAdresa`
   ADD CONSTRAINT `IPAdresa_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`),
   ADD CONSTRAINT `IPAdresa_ibfk_2` FOREIGN KEY (`Ap_id`) REFERENCES `Ap` (`id`),
   ADD CONSTRAINT `IPAdresa_ibfk_3` FOREIGN KEY (`TypZarizeni_id`) REFERENCES `TypZarizeni` (`id`);
+
+--
+-- Constraints for table `Log`
+--
+ALTER TABLE `Log`
+  ADD CONSTRAINT `Log_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`);
 
 --
 -- Constraints for table `SpravceOblasti`
