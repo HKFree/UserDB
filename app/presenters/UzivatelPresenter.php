@@ -240,6 +240,17 @@ class UzivatelPresenter extends BasePresenter
     	{
     	    $ip->Uzivatel_id = $idUzivatele;
     	    $idIp = $ip->id;
+            
+            if (empty($ip->ip_adresa)) {
+                $ip->ip_adresa = null;
+            }
+            if (empty($ip->hostname)) {
+                $ip->hostname = null;
+            }
+            if (empty($ip->mac_adresa)) {
+                $ip->mac_adresa = null;
+            }
+
             if(empty($ip->id)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);               
