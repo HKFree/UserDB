@@ -316,6 +316,9 @@ class UzivatelPresenter extends BasePresenter
     	$id = $this->getParameter('id');
         $money = $this->getParameter('money', false);
         
+        $search = $this->getParameter('search', false);
+        //\Tracy\Dumper::dump($search);
+        
         if($money) {
             $money_uid = $this->context->parameters["money"]["login"];
             $money_heslo = $this->context->parameters["money"]["password"];
@@ -339,8 +342,17 @@ class UzivatelPresenter extends BasePresenter
                 $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
             }
         } else {
-            $grid->setModel($this->uzivatel->getSeznamUzivatelu());
-            $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+            
+            if($search)
+            {
+                $grid->setModel($this->uzivatel->findUserByFulltext($search));
+            }
+            else
+            {
+                $grid->setModel($this->uzivatel->getSeznamUzivatelu());
+                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+            }           
+            
             if ($money) {
                 $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivatelu()));
             }
@@ -465,6 +477,7 @@ class UzivatelPresenter extends BasePresenter
     {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
         $this->template->money = $this->getParameter("money", false);
+        $this->template->search = $this->getParameter('search', false);
     }
     
     public function renderList()
@@ -509,8 +522,6 @@ class UzivatelPresenter extends BasePresenter
         $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
     }
     
-    
-    
     protected function createComponentUzivatelRightsForm() {
     	$typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
         $obl = $this->oblast->getSeznamOblasti()->fetchPairs('id', 'jmeno');
@@ -554,6 +565,7 @@ class UzivatelPresenter extends BasePresenter
     
     	return $form;
     }
+    
     public function uzivatelRightsFormSucceded($form, $values) {
         $log = array();
     	$idUzivatele = $values->id;
@@ -678,6 +690,7 @@ class UzivatelPresenter extends BasePresenter
     
     	return $form;
     }
+    
     public function uzivatelCCFormSucceded($form, $values) {
         $log = array();
     	$idUzivatele = $values->id;

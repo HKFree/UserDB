@@ -8,6 +8,10 @@
 <a n:if="$money" href="{link Uzivatel:listall id=>NULL}" class="btn btn-default btn-sm" role="button">Bez informací z money</a>
 <br><br>
 
+{if $search}
+  <p>Fulltextové vyhledávání (vždy pouze první nalezený záznam): {$search}</p>
+{/if}
+
 {control grid}
 
 {/block}

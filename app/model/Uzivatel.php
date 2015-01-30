@@ -22,6 +22,42 @@ class Uzivatel extends Table
       return($this->findAll());
     }
     
+    public function findUserByFulltext($search)
+    {
+        //mobil a email pouze pro ty co maji prava
+        
+        $context = new Context($this->connection);
+        $completeMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
+                                            LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id 
+                                            WHERE (
+                                            Uzivatel.id = '$search'
+                                            OR  telefon = '$search'
+                                            OR  email = '$search'
+                                            OR  email2 = '$search'
+                                            OR  IPAdresa.ip_adresa = '$search'
+                                            ) LIMIT 1")->fetchField();
+        if(!empty($completeMatchId))
+        {
+            return($this->findBy(array('id' => $completeMatchId)));
+        }
+        //\Tracy\Dumper::dump($search);
+        $partialMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
+                                            LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id 
+                                            WHERE (
+                                            Uzivatel.id LIKE '$search%'
+                                            OR  telefon LIKE '$search%'
+                                            OR  email LIKE '$search%'
+                                            OR  email2 LIKE '$search%'
+                                            OR  IPAdresa.ip_adresa LIKE '$search%'
+                                            ) LIMIT 1")->fetchField();
+        if(!empty($partialMatchId))
+        {
+            return($this->findBy(array('id' => $partialMatchId)));
+        }
+        
+        return null;
+    }
+    
     public function getSeznamUzivateluZAP($idAP)
     {
 	    return($this->findBy(array('Ap_id' => $idAP)));

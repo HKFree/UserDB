@@ -4,7 +4,8 @@ namespace App\Presenters;
 
 use Nette,
 	App\Model,
-  Tracy\Debugger;
+    Nette\Application\UI\Form,
+    Tracy\Debugger;
 
 
 /**
@@ -52,5 +53,20 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         } else {
             $this->template->mojeOblasti = false;
         }
+    }
+    
+    protected function createComponentSearchForm() {
+        $form = new Form;
+        $form->getElementPrototype()->class('navbar-form navbar-right');
+        $form->addText('search','Vyhledej:')->setAttribute('class', 'form-control')->setAttribute('placeholder', 'Hledat...');
+        $form->addSubmit('send', 'Vyhledat');
+
+        $form->onSuccess[] = array($this, 'searchFormSucceeded');
+        return $form;
+        }
+
+    public function searchFormSucceeded(Form $form) {
+        $values = $form->getValues();
+        $this->redirect('Uzivatel:listall', array('search' => $values->search, 'id' => null));
     }
 }
