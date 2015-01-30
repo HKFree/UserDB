@@ -22,18 +22,17 @@ class Uzivatel extends Table
       return($this->findAll());
     }
     
-    public function findUserByFulltext($search)
+    public function findUserByFulltext($search, $Uzivatel)
     {
         //mobil a email pouze pro ty co maji prava
+        
+        
         
         $context = new Context($this->connection);
         $completeMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
                                             LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id 
                                             WHERE (
                                             Uzivatel.id = '$search'
-                                            OR  telefon = '$search'
-                                            OR  email = '$search'
-                                            OR  email2 = '$search'
                                             OR  IPAdresa.ip_adresa = '$search'
                                             ) LIMIT 1")->fetchField();
         if(!empty($completeMatchId))
@@ -45,9 +44,6 @@ class Uzivatel extends Table
                                             LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id 
                                             WHERE (
                                             Uzivatel.id LIKE '$search%'
-                                            OR  telefon LIKE '$search%'
-                                            OR  email LIKE '$search%'
-                                            OR  email2 LIKE '$search%'
                                             OR  IPAdresa.ip_adresa LIKE '$search%'
                                             ) LIMIT 1")->fetchField();
         if(!empty($partialMatchId))
@@ -55,7 +51,23 @@ class Uzivatel extends Table
             return($this->findBy(array('id' => $partialMatchId)));
         }
         
-        return null;
+        if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV')) {
+            $uid = $Uzivatel->getIdentity()->getId();
+            $restriction = " AND (SpravceOblasti.Uzivatel_id = $uid AND od<NOW() AND (do IS NULL OR do>NOW()))";
+        }
+        $secureMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
+                                            JOIN Ap ON Ap.id = Uzivatel.Ap_id
+                                            JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
+                                            WHERE (
+                                            telefon LIKE '$search%'
+                                            OR  email LIKE '$search%'
+                                            OR  email2 LIKE '$search%'
+                                            )$restriction LIMIT 1")->fetchField();
+        if(!empty($secureMatchId))
+        {
+            return($this->findBy(array('id' => $secureMatchId)));
+        }
+        return($this->findBy(array('id' => 0)));
     }
     
     public function getSeznamUzivateluZAP($idAP)

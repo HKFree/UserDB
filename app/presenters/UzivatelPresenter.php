@@ -345,7 +345,7 @@ class UzivatelPresenter extends BasePresenter
             
             if($search)
             {
-                $grid->setModel($this->uzivatel->findUserByFulltext($search));
+                $grid->setModel($this->uzivatel->findUserByFulltext($search,$this->getUser()));
             }
             else
             {
@@ -365,9 +365,21 @@ class UzivatelPresenter extends BasePresenter
     	$grid->setDefaultSort(array('zalozen' => 'ASC'));
     
     	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
-    	$grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
-             ->setDefaultValue('active')
+    	
+        // pri fulltextu vyhledavat i ve zrusenych
+        if($search)
+        {
+            $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
+             ->setDefaultValue('all')
              ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
+        }
+        else
+        {
+          $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
+             ->setDefaultValue('active')
+             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));  
+        }
+        
 
         $ccref = $this->cestneClenstviUzivatele;
         if($money)
@@ -465,12 +477,12 @@ class UzivatelPresenter extends BasePresenter
             }
             //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
             $grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
-
-            $grid->addActionHref('show', 'Zobrazit')
-                ->setIcon('eye-open');
-            $grid->addActionHref('edit', 'Editovat')
-                ->setIcon('pencil');
     	}
+        
+        $grid->addActionHref('show', 'Zobrazit')
+                ->setIcon('eye-open');
+            /*$grid->addActionHref('edit', 'Editovat')
+                ->setIcon('pencil');*/
     }
     
     public function renderListall()
@@ -503,7 +515,19 @@ class UzivatelPresenter extends BasePresenter
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
     		    $this->template->u = $uzivatel;
-    		    $this->template->adresy = $this->ipAdresa->getIPTable($uzivatel->related('IPAdresa.Uzivatel_id'));
+                
+                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');
+                
+    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy);
+                                
+                if($ipAdresy->count() > 0)
+                {
+                    $this->template->adresyline = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
+                }
+                else
+                {
+                    $this->template->adresyline = null;
+                }
                 $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
                 //$this->template->logy = $this->log->getLogyUzivatele($uid);
