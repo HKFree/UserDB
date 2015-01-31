@@ -19,6 +19,7 @@ class UzivatelPresenter extends BasePresenter
     private $spravceOblasti; 
     private $cestneClenstviUzivatele;  
     private $typClenstvi;
+    private $typCestnehoClenstvi;
     private $typPravniFormyUzivatele;
     private $typSpravceOblasti;
     private $zpusobPripojeni;
@@ -29,11 +30,12 @@ class UzivatelPresenter extends BasePresenter
     private $typZarizeni;
     private $log;
 
-    function __construct(Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
         $this->typClenstvi = $typClenstvi;
+        $this->typCestnehoClenstvi = $typCestnehoClenstvi;
         $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
     	$this->zpusobPripojeni = $zpusobPripojeni;
         $this->technologiePripojeni = $technologiePripojeni;
@@ -645,7 +647,7 @@ class UzivatelPresenter extends BasePresenter
 
     public function renderEditcc()
     {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
         $this->template->canApprove = $this->getUser()->isInRole('VV');
         $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
     }
@@ -654,12 +656,17 @@ class UzivatelPresenter extends BasePresenter
          // Tohle je nutne abychom mohli zjistit isSubmited
     	$form = new Form($this, "uzivatelCCForm");
     	$form->addHidden('id');
-            
+        
+        $typCC = $this->typCestnehoClenstvi->getTypCestnehoClenstvi()->fetchPairs('id','text');
+        
         $data = $this->cestneClenstviUzivatele;
-    	$rights = $form->addDynamic('rights', function (Container $right) use ($data) {
-    	    
+    	$rights = $form->addDynamic('rights', function (Container $right) use ($data, $typCC) {
+
+            $right->addHidden('zadost_podal')->setAttribute('class', 'id ip');
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
             $right->addHidden('id')->setAttribute('class', 'id ip');
+            
+            $right->addSelect('TypCestnehoClenstvi_id', 'Typ čestného členství', $typCC)->addRule(Form::FILLED, 'Vyberte typ čestného členství');
                   
             $right->addText('plati_od', 'Platnost od:')
                  //->setType('date')
@@ -686,9 +693,15 @@ class UzivatelPresenter extends BasePresenter
                     2 => 'Zamítnuto');
                  $right->addRadioList('schvaleno', 'Stav schválení: ', $schvalenoStates)
                          ->getSeparatorPrototype()->setName(NULL);
+                 
+                 $right->setDefaults(array(
+                        'TypCestnehoClenstvi_id' => 0,
+                    ));
 
     	}, 0, false);
     
+        
+        
     	$rights->addSubmit('add', '+ Přidat další období ČČ')
     		   ->setAttribute('class', 'btn btn-success btn-xs btn-white')
     		   ->setValidationScope(FALSE)
@@ -725,6 +738,7 @@ class UzivatelPresenter extends BasePresenter
     	foreach($prava as $pravo)
     	{
     	    $pravo->Uzivatel_id = $idUzivatele;
+            $pravo->zadost_podal = $this->getUser()->getIdentity()->getId();
     	    $pravoId = $pravo->id;
             
             //osetreni aby prazdne pole od davalo null a ne 00-00-0000

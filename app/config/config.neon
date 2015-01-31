@@ -34,6 +34,7 @@ services:
 	typPravniFormyUzivatele: App\Model\TypPravniFormyUzivatele
 	zpusobPripojeni: App\Model\ZpusobPripojeni
 	technologiePripojeni: App\Model\TechnologiePripojeni
+	typCestnehoClenstvi: App\Model\TypCestnehoClenstvi
 	ipAdresa: App\Model\IPAdresa
 	oblast: App\Model\Oblast
 	ap: App\Model\AP

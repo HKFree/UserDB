@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 30, 2015 at 01:26 PM
+-- Generation Time: Jan 31, 2015 at 02:08 AM
 -- Server version: 5.5.38
 -- PHP Version: 5.4.4-14+deb7u14
 
@@ -59,8 +59,12 @@ CREATE TABLE IF NOT EXISTS `CestneClenstviUzivatele` (
   `plati_do` date DEFAULT NULL,
   `schvaleno` tinyint(1) DEFAULT NULL,
   `poznamka` text COLLATE utf8_czech_ci,
+  `TypCestnehoClenstvi_id` int(11) NOT NULL,
+  `zadost_podal` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `Uzivatel_id` (`Uzivatel_id`)
+  KEY `Uzivatel_id` (`Uzivatel_id`),
+  KEY `TypCestnehoClenstvi_id` (`TypCestnehoClenstvi_id`),
+  KEY `zadost_podal` (`zadost_podal`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
@@ -207,6 +211,18 @@ CREATE TABLE IF NOT EXISTS `Subnet` (
 --
 
 CREATE TABLE IF NOT EXISTS `TechnologiePripojeni` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `text` varchar(50) COLLATE utf8_czech_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `TypCestnehoClenstvi`
+--
+
+CREATE TABLE IF NOT EXISTS `TypCestnehoClenstvi` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `text` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
@@ -403,7 +419,9 @@ ALTER TABLE `Ap`
 -- Constraints for table `CestneClenstviUzivatele`
 --
 ALTER TABLE `CestneClenstviUzivatele`
-  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`);
+  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_3` FOREIGN KEY (`zadost_podal`) REFERENCES `Uzivatel` (`id`),
+  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`),
+  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_2` FOREIGN KEY (`TypCestnehoClenstvi_id`) REFERENCES `TypCestnehoClenstvi` (`id`);
 
 --
 -- Constraints for table `IPAdresa`
