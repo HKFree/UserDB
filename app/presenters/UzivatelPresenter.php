@@ -687,7 +687,7 @@ class UzivatelPresenter extends BasePresenter
                  ->addCondition(Form::FILLED)
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
                  
-                 $right->addText('poznamka', 'Poznámka:')
+                 $right->addTextArea('poznamka', 'Poznámka:', 72, 5)
                  ->setAttribute('class', 'note ip');
                  
                  //$right->addCheckbox('schvaleno', 'Schváleno')->setAttribute('class', 'approve ip');
