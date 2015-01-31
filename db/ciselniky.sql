@@ -61,3 +61,14 @@ INSERT INTO `TechnologiePripojeni` (`id`, `text`) VALUES
 (4, 'P2P Wi-Fi 5GHz'),
 (5, 'LAN'),
 (6, 'OPTIKA');
+
+--
+-- Dumping data for table `TypCestnehoClenstvi`
+--
+
+INSERT INTO `TypCestnehoClenstvi` (`id`, `text`) VALUES
+(0, 'Ostatní'),
+(1, 'HKFree do škol'),
+(2, 'Majitel objektu'),
+(3, 'Správce oblasti'),
+(4, 'Zástupce správce oblasti');
