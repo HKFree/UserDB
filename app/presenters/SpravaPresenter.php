@@ -57,19 +57,6 @@ class SpravaPresenter extends BasePresenter
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
         $grid->addColumnText('plati_od', 'Platnost od')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText()->setSuggestion();
-        
-    	/*$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
-            return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-        })->setCustomRender(function($item){
-            $el = Html::el('span');
-            $ipAdresy = $item->related('IPAdresa.Uzivatel_id');
-            if($ipAdresy->count() > 0)
-            {
-              $el->title = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
-              $el->setText($ipAdresy->fetch()->ip_adresa);
-            }
-            return $el;
-        });*/
     }
 
     protected function createComponentSpravaCCForm() {

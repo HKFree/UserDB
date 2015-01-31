@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 31, 2015 at 03:02 PM
+-- Generation Time: Jan 31, 2015 at 11:45 PM
 -- Server version: 5.5.38
 -- PHP Version: 5.4.4-14+deb7u14
 
@@ -198,6 +198,7 @@ CREATE TABLE IF NOT EXISTS `Subnet` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `Ap_id` int(11) NOT NULL,
   `subnet` varchar(20) COLLATE utf8_czech_ci NOT NULL,
+  `gateway` varchar(16) COLLATE utf8_czech_ci NOT NULL,
   `popis` varchar(100) COLLATE utf8_czech_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `subnet` (`subnet`),
@@ -334,8 +335,6 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `cislo_clenske_karty` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   `TechnologiePripojeni_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `telefon` (`telefon`),
   KEY `TypClenstvi_id` (`TypClenstvi_id`),
   KEY `ZpusobPripojeni_id` (`ZpusobPripojeni_id`),
   KEY `Ap_id` (`Ap_id`),
