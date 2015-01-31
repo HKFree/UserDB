@@ -38,6 +38,7 @@ services:
 	ipAdresa: App\Model\IPAdresa
 	oblast: App\Model\Oblast
 	ap: App\Model\AP
+	cc: App\Model\cc
 	subnet: App\Model\Subnet
 	typZarizeni: App\Model\TypZarizeni
 	spravceOblasti: App\Model\SpravceOblasti

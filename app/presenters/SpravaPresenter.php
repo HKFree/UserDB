@@ -17,11 +17,13 @@ use Nette\Forms\Controls\SubmitButton;
 class SpravaPresenter extends BasePresenter
 {  
     private $cestneClenstviUzivatele;  
+    private $platneCC;
     private $uzivatel;
     private $log;
 
-    function __construct(Model\CestneClenstviUzivatele $cc, Model\Uzivatel $uzivatel, Model\Log $log) {
+    function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log) {
         $this->cestneClenstviUzivatele = $cc;
+        $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
         $this->log = $log;
     }
@@ -34,6 +36,40 @@ class SpravaPresenter extends BasePresenter
     public function renderSchvalovanicc()
     {
         $this->template->canApproveCC = $this->getUser()->isInRole('VV');
+    }
+    
+    public function renderPrehledcc()
+    {
+        //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
+    }
+    
+    protected function createComponentGrid($name)
+    {
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        $grid->setExport('cc_export');
+        
+        $grid->setModel($this->platneCC->getCC());
+        
+    	$grid->setDefaultPerPage(100);
+    	$grid->setDefaultSort(array('plati_od' => 'DESC'));
+         
+    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+        $grid->addColumnText('plati_od', 'Platnost od')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText()->setSuggestion();
+        
+    	/*$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
+            return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
+        })->setCustomRender(function($item){
+            $el = Html::el('span');
+            $ipAdresy = $item->related('IPAdresa.Uzivatel_id');
+            if($ipAdresy->count() > 0)
+            {
+              $el->title = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
+              $el->setText($ipAdresy->fetch()->ip_adresa);
+            }
+            return $el;
+        });*/
     }
 
     protected function createComponentSpravaCCForm() {
