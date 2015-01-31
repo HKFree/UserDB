@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 31, 2015 at 02:08 AM
+-- Generation Time: Jan 31, 2015 at 03:02 PM
 -- Server version: 5.5.38
 -- PHP Version: 5.4.4-14+deb7u14
 
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `Ap` (
 CREATE TABLE IF NOT EXISTS `cc` (
 `id` int(11)
 ,`plati_od` datetime
-,`plati_do` varchar(29)
+,`plati_do` varchar(19)
 );
 -- --------------------------------------------------------
 
@@ -394,7 +394,7 @@ CREATE TABLE IF NOT EXISTS `ZpusobPripojeni` (
 --
 DROP TABLE IF EXISTS `cc`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`userdb`@`%` SQL SECURITY DEFINER VIEW `cc` AS select distinct `U`.`id` AS `id`,(case when (`CC`.`id` is not null) then `CC`.`plati_od` else `U`.`zalozen` end) AS `plati_od`,(case when (`CC`.`id` is not null) then (case when (`CC`.`plati_do` is not null) then `CC`.`plati_do` else date_format(now(),'2100-12-31 23:59:59') end) else (case when (`U`.`ZpusobPripojeni_id` = 2) then last_day((`U`.`zalozen` + interval 2 month)) when (`U`.`zalozen` >= (curdate() + interval -(7) day)) then (`U`.`zalozen` + interval 7 day) else last_day(curdate()) end) end) AS `plati_do` from (`Uzivatel` `U` left join `CestneClenstviUzivatele` `CC` on((`U`.`id` = `CC`.`Uzivatel_id`))) where (((`CC`.`schvaleno` = 1) and (`CC`.`plati_od` < now()) and (isnull(`CC`.`plati_do`) or (`CC`.`plati_do` > now()))) or (case when (`U`.`ZpusobPripojeni_id` = 2) then (`U`.`zalozen` between date_format((curdate() + interval -(2) month),'%Y-%m-01') and now()) when (`U`.`zalozen` >= (curdate() + interval -(7) day)) then (`U`.`zalozen` between (curdate() + interval -(7) day) and now()) else (`U`.`zalozen` between cast(date_format(now(),'%Y-%m-01') as date) and now()) end));
+CREATE ALGORITHM=UNDEFINED DEFINER=`userdb`@`%` SQL SECURITY DEFINER VIEW `cc` AS select distinct `U`.`id` AS `id`,(case when (`CC`.`id` is not null) then `CC`.`plati_od` else `U`.`zalozen` end) AS `plati_od`,(case when (`CC`.`id` is not null) then (case when (`CC`.`plati_do` is not null) then date_format(`CC`.`plati_do`,'%Y-%m-%d 23:59:59') else date_format(now(),'2100-12-31 23:59:59') end) else (case when (`U`.`ZpusobPripojeni_id` = 2) then date_format(last_day((`U`.`zalozen` + interval 2 month)),'%Y-%m-%d 23:59:59') when (`U`.`zalozen` >= (curdate() + interval -(7) day)) then date_format((`U`.`zalozen` + interval 7 day),'%Y-%m-%d 23:59:59') else date_format(last_day(curdate()),'%Y-%m-%d 23:59:59') end) end) AS `plati_do` from (`Uzivatel` `U` left join `CestneClenstviUzivatele` `CC` on((`U`.`id` = `CC`.`Uzivatel_id`))) where (((`CC`.`schvaleno` = 1) and (`CC`.`plati_od` < now()) and (isnull(`CC`.`plati_do`) or (`CC`.`plati_do` > now()))) or (case when (`U`.`ZpusobPripojeni_id` = 2) then (`U`.`zalozen` between date_format((curdate() + interval -(2) month),'%Y-%m-01') and now()) when (`U`.`zalozen` >= (curdate() + interval -(7) day)) then (`U`.`zalozen` between (curdate() + interval -(7) day) and now()) else (`U`.`zalozen` between cast(date_format(now(),'%Y-%m-01') as date) and now()) end));
 
 -- --------------------------------------------------------
 
