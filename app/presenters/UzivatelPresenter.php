@@ -409,7 +409,11 @@ class UzivatelPresenter extends BasePresenter
                 if($item->TypClenstvi_id == 2)
                 {
                     $tr->class[] = 'primarni';
-                }            
+                }
+                if($item->TypClenstvi_id == 1)
+                {
+                    $tr->class[] = 'zrusene';
+                }
                 return $tr;
             });
         }

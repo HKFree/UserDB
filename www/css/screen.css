@@ -203,7 +203,15 @@ pre.tracy-dump {
 {
     background-color: #f0e0ed !important;
 }
-.neaktivni>td
+.zrusene>td
+{
+    background-color: #808080 !important;
+}
+.neaktivni>td:nth-child(10),
+.neaktivni>td:nth-child(11),
+.neaktivni>td:nth-child(12),
+.neaktivni>td:nth-child(13),
+.neaktivni>td:nth-child(14)
 {
     background-color: #ff0000 !important;
 }
