@@ -139,7 +139,7 @@ class UzivatelPresenter extends BasePresenter
     	$form = new Form($this, 'uzivatelForm');
     	$form->addHidden('id');
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
-    	$form->addRadioList('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::FILLED, 'Vyberte typ právní formy');
+    	$form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::FILLED, 'Vyberte typ právní formy');
         $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte název firmy');
         $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte IČ');
         //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
@@ -149,16 +149,16 @@ class UzivatelPresenter extends BasePresenter
     	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');
         $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::FILLED)->addRule(Form::EMAIL, 'Musíte zadat platný email');
     	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
-        $form->addText('cislo_clenske_karty', 'Číslo členské karty', 50);
-    	$form->addText('ulice_cp', 'Adresa (ulice a čp)', 100)->setRequired('Zadejte ulici a čp');
-        $form->addText('mesto', 'Adresa (město)', 100)->setRequired('Zadejte město');
+        $form->addText('cislo_clenske_karty', 'Číslo členské karty', 30);
+    	$form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
+        $form->addText('mesto', 'Adresa (město)', 30)->setRequired('Zadejte město');
         $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
     	$form->addText('rok_narozeni', 'Rok narození',30);	
-    	$form->addRadioList('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
-        $form->addTextArea('poznamka', 'Poznámka', 24, 10);	
-    	$form->addRadioList('TechnologiePripojeni_id', 'Způsob připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
-        $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(0);
-    	$form->addRadioList('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
+    	$form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
+        $form->addTextArea('poznamka', 'Poznámka', 50, 12);	
+    	$form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
+        $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,1=>1,2=>2,3=>3,4=>4,5=>5))->setDefaultValue(0);
+    	$form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
             
     	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
     	$data = $this->ipAdresa;

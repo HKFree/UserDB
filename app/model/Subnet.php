@@ -38,6 +38,7 @@ class Subnet extends Table
     public function getSubnetForm(&$subnet) {	
 		$subnet->addHidden('id')->setAttribute('class', 'id subnet');
 		$subnet->addText('subnet', 'Subnet', 11)->setAttribute('class', 'subnet_text subnet')->setAttribute('placeholder', 'Subnet');
+		$subnet->addText('gateway', 'Gateway', 11)->setAttribute('class', 'gateway_text subnet')->setAttribute('placeholder', 'Subnet');
 		$subnet->addText('popis', 'Popis')->setAttribute('class', 'popis subnet')->setAttribute('placeholder', 'Popis');
     }    
     
@@ -45,11 +46,13 @@ class Subnet extends Table
         $subnetyTab = Html::el('table')->setClass('table table-striped');
         $tr = $subnetyTab->create('tr');
         $tr->create('th')->setText('Subnet');
+        $tr->create('th')->setText('Gateway');
         $tr->create('th')->setText('Popis');
 
         foreach ($subnets as $subnet) {
             $tr = $subnetyTab->create('tr');
             $tr->create('td')->setText($subnet->subnet);
+            $tr->create('td')->setText($subnet->gateway);
             $tr->create('td')->setText($subnet->popis);
         } 
         return($subnetyTab);
@@ -69,6 +72,10 @@ class Subnet extends Table
             $subnets[] = $subnet."/".$mask;
         }
         return($subnets);
+    }
+    
+    public function CIDRToMask($cidr) {
+        return(long2ip(pow(2, 32) - pow(2, 32-$cidr)));
     }
     
 }
