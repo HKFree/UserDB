@@ -20,20 +20,37 @@ class ApiPresenter extends BasePresenter
     }
 
 	/**
-	 * @param  Exception
-	 * @return void
-	 */
+     *  Najde subnet a gateway k příslušné IP adrese
+     * 
+     *  @param string $ip Hledaná IP adresa
+     *  @return type Description
+     */
 	public function renderGetIpDetails()
 	{        
         $ip = $this->getParameter("ip");
-        $ap = $this->getParameter("ap");
-        $subnets = $this->subnet->getSubnetOfIP($ip, $ap);
-        if(count($subnets) == 1) {
-            $subnet = $subnets->fetch();
-            $out = array('subnet' => $subnet->subnet, 'gateway' => $subnet->gateway);
+        if(!filter_var($ip, FILTER_VALIDATE_IP)){
+            $out = array('error' => "Neplatná IP adresa");
         } else {
-            $out = array('subnet' => null, 'gateway' => null);
+            $subnets = $this->subnet->getSubnetOfIP($ip);
+            if(count($subnets) == 1) {
+                $subnet = $subnets->fetch();
+                if(empty($subnet->subnet)) {
+                    $out = array('error' => "Podsíť pro tuto IP není v databázi!");
+                } elseif( empty($subnet->gateway)) {
+                    $out = array('error' => "Brána pro tuto IP není v databázi!");
+                } else {
+                    $out = array('subnet' => $subnet->subnet, 'gateway' => $subnet->gateway);  
+                }
+            } else {
+                $out = array('error' => "Podsíť a brána pro tuto IP není v databázi!");
+            }
         }
+        
+        // featura pro javascript
+        if($reqid = $this->getParameter("reqid")) {
+            $out["reqid"] = $reqid;
+        }
+        
         $this->sendResponse(new JsonResponse($out));	
 	}
 

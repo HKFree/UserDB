@@ -191,8 +191,13 @@ pre.tracy-dump {
     width: 150px;
 }
 .ip>label {
-    width: 90px;
+    width: 93px;
 }
+
+.ip.details, .ip.editsubnet {
+    font-size: smaller;
+}
+
 .red {
     color: #C22;
 }

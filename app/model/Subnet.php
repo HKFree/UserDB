@@ -55,9 +55,9 @@ class Subnet extends Table
         return($subnetyTab);
     }
     
-    public function getSubnetOfIP($ip, $ap) {
+    public function getSubnetOfIP($ip) {
         $subnets = $this->genSubnets($ip);
-        return($this->findAll()->where("subnet", $subnets)->where("Ap_id", $ap));
+        return($this->findAll()->where("subnet", $subnets));
     }
     
     private function genSubnets($ip) {

@@ -26,6 +26,19 @@
                     </td></tr>
                 {/if}
                 {if $field->name=='remove'}
+                    <tr>
+                        <td>
+                            <span class="ip details" data-reqid="1" style="display: none">
+                                Subnet: <span class="ip subnet">---</span>
+                                &nbsp;|&nbsp;
+                                Gateway: <span class="ip gateway">---</span>
+                            </span>
+                            <span class="ip errors red" style="display: none">
+                                IP adresa není validní!
+                            </span>
+                            <a class="ip editsubnet" style="display: none"> - Editovat</a>
+                        </td>
+                    </tr>
                     </table>
                 {/if}
             {else} 
