@@ -10,6 +10,7 @@ use Nette,
     Grido\Grid,
     Tracy\Debugger,
     Nette\Mail\Message,
+    Nette\Utils\Validators,
     Nette\Mail\SendmailMailer;
     
 use Nette\Forms\Controls\SubmitButton;
@@ -837,7 +838,7 @@ class UzivatelPresenter extends BasePresenter
     public function renderEmailall()
     {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
-        $this->template->ap = $this->ap->getAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id);
+        $this->template->ap = $this->ap->getAP($this->getParam('id'));
     }
 
     protected function createComponentEmailallForm() {
@@ -846,7 +847,7 @@ class UzivatelPresenter extends BasePresenter
     	$form->addHidden('id');
 
         $form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
-        $form->addTextArea('email', 'Příjemce', 70, 10)->setDisabled(TRUE);
+        $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(TRUE);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
 
@@ -857,12 +858,16 @@ class UzivatelPresenter extends BasePresenter
     	// pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
-            $ap = $this->ap->getAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id);
-            $emaily = $ap->related('Uzivatel.Ap_id');
-            if($emaily->count() > 0)
+            $ap = $this->ap->getAP($this->getParam('id'));
+            $emaily = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'email');
+            
+            foreach($emaily as $email)
             {
-              $tolist = join(";",array_values($emaily->fetchPairs('id', 'email')));
+                if(Validators::isEmail($email)){
+                    $validni[]=$email;            
+                }
             }
+            $tolist = join(";",array_values($validni));
             
             $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
             if($ap) {
@@ -870,7 +875,7 @@ class UzivatelPresenter extends BasePresenter
                 $form->setDefaults(array(
                         'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
                         'email' => $tolist,
-                        'subject' => 'Zpráva od správce HKFree',
+                        'subject' => 'Zpráva od správce HKFree oblasti '.$ap->jmeno,
                     ));
     	    }
     	}                
@@ -881,7 +886,7 @@ class UzivatelPresenter extends BasePresenter
     public function emailallFormSucceded($form, $values) {
     	$idUzivatele = $values->id;
         
-        $ap = $this->ap->getAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id);
+        $ap = $this->ap->getAP($this->getParam('id'));
         $emaily = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'email');
         $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
         
@@ -890,9 +895,12 @@ class UzivatelPresenter extends BasePresenter
             ->setSubject($values->subject)
             ->setBody($values->message);
         
-        foreach($email as $emaily)
+        //TODO: check if mail is valid
+        foreach($emaily as $email)
         {
-            $mail->addBcc($email);            
+            if(Validators::isEmail($email)){
+                $mail->addBcc($email);            
+            }
         }
         
         $mailer = new SendmailMailer;
