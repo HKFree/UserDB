@@ -115,6 +115,7 @@ class UzivatelPresenter extends BasePresenter
     	    }
     	}
     }
+    
     public function actionExportPdf() {
       if($this->getParam('id'))
     	{
@@ -122,6 +123,8 @@ class UzivatelPresenter extends BasePresenter
     	    {
                 $template = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $template->oblast = $uzivatel->Ap->Oblast->jmeno;
+                $oblastid = $uzivatel->Ap->Oblast->id; 
+                $template->oblastemail = "oblast$oblastid@hkfree.org";
                 $template->jmeno = $uzivatel->jmeno;
                 $template->prijmeni = $uzivatel->prijmeni;
                 $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
@@ -135,6 +138,7 @@ class UzivatelPresenter extends BasePresenter
                 $template->mesto = $uzivatel->mesto;
                 $template->psc = $uzivatel->psc;
                 $template->clenstvi = $uzivatel->TypClenstvi->text;
+                $template->ips = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchAll();
                 $pdf = new PDFResponse($template);
                 $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
                 $pdf->pageFormat = "A4";
