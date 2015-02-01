@@ -132,9 +132,9 @@
         <h1>Parametry pro připojení k síti</h1>
         <table class="ipcka">
             <tr>
-                <td>IP adresa</td>
-                <td>Maska sítě</td>
-                <td>Výchozí brána</td>
+                <th>IP adresa</th>
+                <th>Maska sítě</th>
+                <th>Výchozí brána</th>
             </tr>
             {foreach $ips as $ip}
                 <tr>
@@ -143,6 +143,18 @@
                     <td>{$ip['gateway']}</td>
                 </tr>
             {/foreach}            
+        </table>
+        <table class="ipcka">
+            <tr>
+                <th>Primární DNS</th>
+                <th>Sekundární DNS</th>
+                <th>SMTP server (server odchozí pošty)</th>
+            </tr>            
+            <tr>
+                <td>10.107.4.100</td>
+                <td>10.107.4.129</td>
+                <td>smtp.hkfree.org</td>
+            </tr>          
         </table>
         
         <h1>Informace o placení členských příspěvků</h1>
