@@ -49,6 +49,12 @@ class UzivatelPresenter extends BasePresenter
         $this->log = $log;
     }
   
+    public function actionExportandsendregform() {
+        if($this->getParam('id'))
+        {
+        
+        }
+    }
     
     public function actionExportregform() {
       if($this->getParam('id'))
