@@ -163,6 +163,12 @@ body {
 pre.tracy-dump {
     padding-left: 20%;
 }
+.form tr td, .form tr th {
+    padding: 2px 0px;
+}
+.form tr th {
+    padding-right: 10px;
+}
 .ipform, .subnetform {
     margin: 5px 0;
     padding: 5px;
