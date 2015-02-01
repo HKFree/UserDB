@@ -37,6 +37,16 @@ class SpravceOblasti extends Table
         }
     }
     
+    public function getUserRole($userid, $ap)
+    {
+        $existujici = $this->findAll()->where('Uzivatel_id = ?', $userid)->where('Oblast_id = ?', $ap)->fetch();
+        if($existujici)
+        {
+            return $existujici->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
+        }
+        return null;
+    }
+    
     public function getPravo($id)
     {
         return($this->find($id));

@@ -6,12 +6,14 @@ use Nette,
 	App\Model,
         Nette\Application\UI\Form,
         Nette\Forms\Container,
+        Tracy\Debugger,
         Nette\Utils\Html;
 use Nette\Forms\Controls\SubmitButton;
 /**
  * Ap presenter.
  */
-class ApPresenter extends BasePresenter {       
+class ApPresenter extends BasePresenter {    
+    private $spravceOblasti; 
     private $uzivatel;
     private $ap;
     private $ipAdresa;
@@ -19,8 +21,9 @@ class ApPresenter extends BasePresenter {
     private $typZarizeni;
     private $log;
 
-    function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log) {
-	$this->uzivatel = $uzivatel;       
+    function __construct(Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+	$this->spravceOblasti = $prava;
+    $this->uzivatel = $uzivatel;       
 	$this->ap = $ap;
 	$this->ipAdresa = $ipAdresa;
 	$this->subnet = $subnet;
@@ -76,7 +79,10 @@ class ApPresenter extends BasePresenter {
 		$tr = $spravciTab->create('tr');
 		$tr->create('td')->setText($spravce->jmeno.' '.$spravce->prijmeni);
 		$tr->create('td')->setText($spravce->nick);
-		$tr->create('td')->setText('TODO');
+        $role = $this->spravceOblasti->getUserRole($spravce->id,$this->getParam('id'));
+        $tr->create('td')->setText($role);
+        //\Tracy\Dumper::dump($role);
+
 		//$tr->create('td')->setText($spravce->ref('jeSpravce', 'uzivatel_id'));
 		//\Tracy\Dumper::dump($spravce->ref('jeSpravce', 'uzivatel_id'));
 	    }

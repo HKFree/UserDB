@@ -99,7 +99,7 @@ class UzivatelPresenter extends BasePresenter
             $rtfdata = str_replace("--adresa1--", iconv("UTF-8","windows-1250",$uzivatel->ulice_cp) . ", " . iconv("UTF-8","windows-1250",$uzivatel->mesto) . ", " . $uzivatel->psc, $rtfdata);
             $rtfdata = str_replace("--typ--", iconv("UTF-8","windows-1250",$uzivatel->TypClenstvi->text), $rtfdata);
             $rtfdata = str_replace("--ip4--", join(",",array_values($uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))), $rtfdata);
-            $rtfdata = str_replace("--oblast--", $uzivatel->Ap->Oblast->jmeno, $rtfdata);
+            $rtfdata = str_replace("--oblast--", iconv("UTF-8","windows-1250",$uzivatel->Ap->Oblast->jmeno), $rtfdata);
             $oblastid = $uzivatel->Ap->Oblast->id; 
             $rtfdata = str_replace("--emailoblasti--", "oblast$oblastid@hkfree.org", $rtfdata);
             $rtfdata = str_replace("--pristimesic--", iconv("UTF-8","windows-1250",$pristimesic), $rtfdata);
