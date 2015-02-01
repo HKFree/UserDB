@@ -814,7 +814,6 @@ class UzivatelPresenter extends BasePresenter
     }
     
     public function emailFormSucceded($form, $values) {
-        $log = array();
     	$idUzivatele = $values->id;
         
         $user = $this->uzivatel->getUzivatel($this->getParam('id'));
@@ -826,6 +825,76 @@ class UzivatelPresenter extends BasePresenter
             ->setSubject($values->subject)
             ->setBody($values->message);
 
+        $mailer = new SendmailMailer;
+        $mailer->send($mail);
+        
+        $this->flashMessage('E-mail byl odeslán.');
+        
+    	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
+    	return true;
+    }
+    
+    public function renderEmailall()
+    {
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->ap = $this->ap->getAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id);
+    }
+
+    protected function createComponentEmailallForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "emailallForm");
+    	$form->addHidden('id');
+
+        $form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
+        $form->addTextArea('email', 'Příjemce', 70, 10)->setDisabled(TRUE);
+        $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
+        $form->addTextArea('message', 'Text', 72, 10);
+
+    	$form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'emailallFormSucceded');
+
+    	// pokud editujeme, nacteme existujici opravneni
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
+            $ap = $this->ap->getAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id);
+            $emaily = $ap->related('Uzivatel.Ap_id');
+            if($emaily->count() > 0)
+            {
+              $tolist = join(";",array_values($emaily->fetchPairs('id', 'email')));
+            }
+            
+            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            if($ap) {
+                $form->setValues($ap);
+                $form->setDefaults(array(
+                        'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
+                        'email' => $tolist,
+                        'subject' => 'Zpráva od správce HKFree',
+                    ));
+    	    }
+    	}                
+    
+    	return $form;
+    }
+    
+    public function emailallFormSucceded($form, $values) {
+    	$idUzivatele = $values->id;
+        
+        $ap = $this->ap->getAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id);
+        $emaily = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'email');
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        
+        $mail = new Message;
+        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+            ->setSubject($values->subject)
+            ->setBody($values->message);
+        
+        foreach($email as $emaily)
+        {
+            $mail->addBcc($email);            
+        }
+        
         $mailer = new SendmailMailer;
         $mailer->send($mail);
         
