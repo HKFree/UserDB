@@ -112,7 +112,7 @@ class UzivatelPresenter extends BasePresenter
             $rtfdata = str_replace("--emailoblasti--", "oblast$oblastid@hkfree.org", $rtfdata);
             $rtfdata = str_replace("--pristimesic--", iconv("UTF-8","windows-1250",$pristimesic), $rtfdata);
             $rtfdata = str_replace("--prvniplatba--", iconv("UTF-8","windows-1250",$prvniplatba), $rtfdata);
-            
+
             $this->sendResponse(new Model\ContentDownloadResponse($rtfdata, "hkfree-registrace-$uzivatel->id.rtf"));
     	    }
     	}
@@ -158,7 +158,6 @@ class UzivatelPresenter extends BasePresenter
                         $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
                     }
                 }
-
                 $template->ips = $out;
                 $pdf = new PDFResponse($template);
                 $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
