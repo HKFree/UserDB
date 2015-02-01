@@ -775,4 +775,63 @@ class UzivatelPresenter extends BasePresenter
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
     	return true;
     }
+    
+    public function renderEmail()
+    {
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
+    }
+
+    protected function createComponentEmailForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "emailForm");
+    	$form->addHidden('id');
+
+        $form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
+        $form->addText('email', 'Příjemce', 70)->setDisabled(TRUE);
+        $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
+        $form->addTextArea('message', 'Text', 72, 10);
+
+    	$form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'emailFormSucceded');
+
+    	// pokud editujeme, nacteme existujici opravneni
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
+            $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            if($user) {
+                $form->setValues($user);
+                $form->setDefaults(array(
+                        'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
+                        'subject' => 'Zpráva od správce HKFree',
+                    ));
+    	    }
+    	}                
+    
+    	return $form;
+    }
+    
+    public function emailFormSucceded($form, $values) {
+        $log = array();
+    	$idUzivatele = $values->id;
+        
+        $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        
+        $mail = new Message;
+        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+            ->addTo($user->email)
+            ->setSubject($values->subject)
+            ->setBody($values->message);
+
+        $mailer = new SendmailMailer;
+        $mailer->send($mail);
+        
+        $this->flashMessage('E-mail byl odeslán.');
+        
+    	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
+    	return true;
+    }
 }
