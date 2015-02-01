@@ -1,0 +1,109 @@
+<html>
+    <head>
+        <style type="text/css">
+            body {
+              font-size: 9pt; 
+            }
+            h1 {
+              font-size: 12pt; 
+            }
+            .info-sdruzeni {
+              padding: 10px; 
+              background: #ccc; 
+              width: 100%; 
+              border-bottom: 1px solid black; 
+              border-top: 1px solid black;  
+            }
+            .info-sdruzeni td {
+                width: 50%;
+            }
+            .udaje {
+                width: 100%;
+            }
+            .udaje th.nadpis {
+                text-align: left;
+                font-size: 11pt;
+                padding: 10px 0;
+                border-bottom: 0px;
+            }
+            .udaje th {
+                text-align: left;
+                width: 20%;
+                border-bottom: 1px solid #ccc;
+            }
+            .udaje td {
+                width: 80%;
+                border-bottom: 1px solid #ccc;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Evidence člena hkfree.org z.s. v oblasti: {$oblast}</h1>
+        <table class="info-sdruzeni">
+            <tr>
+                <td>
+                    <strong>hkfree.org z.s.</strong><br>
+                    Heyrovského 1178<br>
+                    500 02  Hradec Králové<br>
+                    IČO: 266 59 573<br>
+                </td>
+                <td>
+                    Linka technické podpory<br>
+                    <strong>Tel.: 608 10 10 70 (pracovní dny 9-19 hodin)</strong><br>
+                    <strong>e-mail: <a href="mailto:podpora@hkfree.org">podpora@hkfree.org</a></strong><br>
+                    web: <a href="http://www.hkfree.org">http://www.hkfree.org</a><br>
+                </td>
+            </tr>
+        </table>
+        <table class="udaje">
+            <tr>
+                <th class="nadpis" colspan=2>Údaje o členu zapsaného spolku</th>
+            </tr>
+            <tr>
+                <th>Jméno a příjmení:</td>
+                <td>{$jmeno} {$prijmeni}</td>
+            </tr>
+            <tr>
+                <th>Právní forma:</td>
+                <td>{$forma}</td>
+            </tr>
+            <tr>
+                <th>Název firmy:</td>
+                <td>{$firma}</td>
+            </tr>
+            <tr>
+                <th>IČO:</td>
+                <td>{$ico}</td>
+            </tr>
+            <tr>
+                <th>Nickname:</td>
+                <td>{$nickname}</td>
+            </tr>
+            <tr>
+                <th>Identifikační číslo:</td>
+                <td>{$uid}</td>
+            </tr>
+            <tr>
+                <th>Heslo:</td>
+                <td>{$heslo}</td>
+            </tr>
+            <tr>
+                <th>E-mailová adresa:</td>
+                <td>{$email}</td>
+            </tr>
+            <tr>
+                <th>Mobilní telefon:</td>
+                <td>{$telefon}</td>
+            </tr>
+            <tr>
+                <th>Kontaktní adresa:</td>
+                <td>{$ulice}, {if $psc!=0}{$psc}{/if} {$mesto}</td>
+            </tr>
+            <tr>
+                <th>Typ členství:</td>
+                <td>{$clenstvi}</td>
+            </tr>
+        </table>
+        
+    </body>
+</html>

@@ -20,7 +20,8 @@
 		"dg/adminer-custom": "~1.5",
 		"kdyby/forms-replicator": "@dev",
 		"o5/grido": "dev-master",
-                "mpdf/mpdf": ">= 5.6.5"
+                "mpdf/mpdf": ">= 5.6.5",
+		"jkuchar/pdfresponse": "dev-master"
 	},
 	"require-dev": {
 		"nette/tester": "~1.0"
