@@ -8,7 +8,10 @@ use Nette,
     Nette\Forms\Container,
     Nette\Utils\Html,
     Grido\Grid,
-    Tracy\Debugger;
+    Tracy\Debugger,
+    Nette\Mail\Message,
+    Nette\Utils\Validators,
+    Nette\Mail\SendmailMailer;
     
 use Nette\Forms\Controls\SubmitButton;
 /**
@@ -200,7 +203,8 @@ class UzivatelPresenter extends BasePresenter
     
     public function validateUzivatelForm($form)
     {
-        $values = $form->getValues();
+        //pole uz nejsou UNIQUE ... postrada smysl ... leda formou varovani
+        /*$values = $form->getValues();
 
         $duplMail = $this->uzivatel->getDuplicateEmailArea($values->email, $values->id);
         
@@ -220,7 +224,7 @@ class UzivatelPresenter extends BasePresenter
         
         if ($duplPhone) {
             $form->addError('Tento telefon již v DB existuje v oblasti: ' . $duplPhone);
-        }
+        }*/
     }
     
     public function uzivatelFormSucceded($form, $values) {
@@ -752,13 +756,157 @@ class UzivatelPresenter extends BasePresenter
             
             if(empty($pravo->id)) {
                 $pravoId = $this->cestneClenstviUzivatele->insert($pravo)->id;
+                
+                $mail = new Message;
+                $mail->setFrom('UserDB <userdb@hkfree.org>')
+                    ->addTo('vv@hkfree.org')
+                    ->setSubject('Nová žádost o ČČ')
+                    ->setBody("Dobrý den,\nbyla vytvořena nová žádost o ČČ.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\nhttps://userdb.hkfree.org/userdb/sprava/schvalovanicc");
+
+                $mailer = new SendmailMailer;
+                $mailer->send($mail);
             } else {
                 $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
             }
     	}
-    	
+
         //$this->log->loguj('Uzivatel', $idUzivatele, $log);
+        
+    	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
+    	return true;
+    }
+    
+    public function renderEmail()
+    {
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
+    }
+
+    protected function createComponentEmailForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "emailForm");
+    	$form->addHidden('id');
+
+        $form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
+        $form->addText('email', 'Příjemce', 70)->setDisabled(TRUE);
+        $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
+        $form->addTextArea('message', 'Text', 72, 10);
+
+    	$form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'emailFormSucceded');
+
+    	// pokud editujeme, nacteme existujici opravneni
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
+            $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            if($user) {
+                $form->setValues($user);
+                $form->setDefaults(array(
+                        'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
+                        'subject' => 'Zpráva od správce HKFree',
+                    ));
+    	    }
+    	}                
+    
+    	return $form;
+    }
+    
+    public function emailFormSucceded($form, $values) {
+    	$idUzivatele = $values->id;
+        
+        $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        
+        $mail = new Message;
+        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+            ->addTo($user->email)
+            ->setSubject($values->subject)
+            ->setBody($values->message);
+
+        $mailer = new SendmailMailer;
+        $mailer->send($mail);
+        
+        $this->flashMessage('E-mail byl odeslán.');
+        
+    	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
+    	return true;
+    }
+    
+    public function renderEmailall()
+    {
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->ap = $this->ap->getAP($this->getParam('id'));
+    }
+
+    protected function createComponentEmailallForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "emailallForm");
+    	$form->addHidden('id');
+
+        $form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
+        $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(TRUE);
+        $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
+        $form->addTextArea('message', 'Text', 72, 10);
+
+    	$form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'emailallFormSucceded');
+
+    	// pokud editujeme, nacteme existujici opravneni
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
+            $ap = $this->ap->getAP($this->getParam('id'));
+            $emaily = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'email');
+            
+            foreach($emaily as $email)
+            {
+                if(Validators::isEmail($email)){
+                    $validni[]=$email;            
+                }
+            }
+            $tolist = join(";",array_values($validni));
+            
+            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            if($ap) {
+                $form->setValues($ap);
+                $form->setDefaults(array(
+                        'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
+                        'email' => $tolist,
+                        'subject' => 'Zpráva od správce HKFree oblasti '.$ap->jmeno,
+                    ));
+    	    }
+    	}                
+    
+    	return $form;
+    }
+    
+    public function emailallFormSucceded($form, $values) {
+    	$idUzivatele = $values->id;
+        
+        $ap = $this->ap->getAP($this->getParam('id'));
+        $emaily = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'email');
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        
+        $mail = new Message;
+        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+            ->setSubject($values->subject)
+            ->setBody($values->message);
+        
+        //TODO: check if mail is valid
+        foreach($emaily as $email)
+        {
+            if(Validators::isEmail($email)){
+                $mail->addBcc($email);            
+            }
+        }
+        
+        $mailer = new SendmailMailer;
+        $mailer->send($mail);
+        
+        $this->flashMessage('E-mail byl odeslán.');
         
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
     	return true;
