@@ -837,7 +837,7 @@ class UzivatelPresenter extends BasePresenter
     
     public function renderEmailall()
     {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
         $this->template->ap = $this->ap->getAP($this->getParam('id'));
     }
 
@@ -875,7 +875,7 @@ class UzivatelPresenter extends BasePresenter
                 $form->setDefaults(array(
                         'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
                         'email' => $tolist,
-                        'subject' => 'Zpráva od správce HKFree oblasti '.$ap->jmeno,
+                        'subject' => 'HKFree - Zpráva od správce oblasti '.$ap->jmeno,
                     ));
     	    }
     	}                
