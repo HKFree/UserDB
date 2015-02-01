@@ -8,7 +8,9 @@ use Nette,
     Nette\Forms\Container,
     Nette\Utils\Html,
     Grido\Grid,
-    Tracy\Debugger;
+    Tracy\Debugger,
+    Nette\Mail\Message,
+    Nette\Mail\SendmailMailer;
     
 use Nette\Forms\Controls\SubmitButton;
 /**
@@ -753,12 +755,21 @@ class UzivatelPresenter extends BasePresenter
             
             if(empty($pravo->id)) {
                 $pravoId = $this->cestneClenstviUzivatele->insert($pravo)->id;
+                
+                $mail = new Message;
+                $mail->setFrom('UserDB <userdb@hkfree.org>')
+                    ->addTo('vv@hkfree.org')
+                    ->setSubject('Nová žádost o ČČ')
+                    ->setBody("Dobrý den,\nbyla vytvořena nová žádost o ČČ.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\nhttps://userdb.hkfree.org/userdb/sprava/schvalovanicc");
+
+                $mailer = new SendmailMailer;
+                $mailer->send($mail);
             } else {
                 $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
             }
     	}
-    	
+
         //$this->log->loguj('Uzivatel', $idUzivatele, $log);
         
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
