@@ -71,4 +71,8 @@ class Subnet extends Table
         return($subnets);
     }
     
+    public function CIDRToMask($cidr) {
+        return(long2ip(pow(2, 32) - pow(2, 32-$cidr)));
+    }
+    
 }

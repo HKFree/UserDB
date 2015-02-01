@@ -39,7 +39,8 @@ class ApiPresenter extends BasePresenter
                 } elseif( empty($subnet->gateway)) {
                     $out = array('error' => "Brána pro tuto IP není v databázi!");
                 } else {
-                    $out = array('subnet' => $subnet->subnet, 'gateway' => $subnet->gateway);  
+                    list($network, $cidr) = explode("/", $subnet->subnet);
+                    $out = array('subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
                 }
             } else {
                 $out = array('error' => "Podsíť a brána pro tuto IP není v databázi!");
