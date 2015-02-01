@@ -22,14 +22,23 @@
         var target = $(t);
         var ip = target.val();      
         var tbody = t.parentNode.parentNode.parentNode; 
-        
         var detailsspan = $(tbody).find(".ip.details");
+        
+        if(!ipValidate(ip)) {
+            var errorsspan = $(tbody).find(".ip.errors");
+            errorsspan.show();
+            detailsspan.hide();
+           
+            errorsspan.text("Neplatná IP adresa");
+            return(false);
+        }            
+                
         var reqid = detailsspan.data("reqid") + 1;
         detailsspan.data("reqid", reqid);
         
         $.ajax({
             type: "GET",
-            url: {plink Api:GetIpDetails , id => null},
+            url: {link Api:GetIpDetails , id => null},
             data: { ip: ip, reqid: reqid },
             success: ipAjaxCallback.bind(tbody),
             dataType: "json"
@@ -37,26 +46,38 @@
     }
     
     function ipAjaxCallback(d) { 
-       var detailsspan = $(this).find(".ip.details");
-       var errorsspan = $(this).find(".ip.errors");
-       if(detailsspan.data("reqid") != d.reqid){
-           // data jdouci moc pozde zahodime
-           return(0);
-       }
-       
-       if(d.error) {
-           errorsspan.show();
-           detailsspan.hide();
-           
-           errorsspan.text(d.error);
-       } else {
-           errorsspan.hide();
-           detailsspan.show();
-           
-           detailsspan.find(".subnet").text(d.subnet);
-           detailsspan.find(".gateway").text(d.gateway);
-       }
+        var detailsspan = $(this).find(".ip.details");
+        var errorsspan = $(this).find(".ip.errors");
+        var editsubnet = $(this).find(".ip.editsubnet");
+                
+        if(detailsspan.data("reqid") != d.reqid){
+            // data jdouci moc pozde zahodime
+            return(false);
+        }
+        
+        var apid = $("#frm-uzivatelForm-Ap_id").val();        
+        editsubnet.find("a").attr("href", {link Ap:show , id => null} + "/" + apid);
+        editsubnet.show();
+                
+        if(d.error) {
+            errorsspan.text(d.error);
+            
+            errorsspan.show();
+            detailsspan.hide();           
+        } else {
+            detailsspan.find(".subnet").text(d.subnet);
+            detailsspan.find(".gateway").text(d.gateway);
+            
+            errorsspan.hide();
+            detailsspan.show();
+        }
     }
+    
+    function ipValidate(ip)   
+    {  
+        var rx = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        return(rx.test(ip));
+    }  
 </script>
 
 {else}
