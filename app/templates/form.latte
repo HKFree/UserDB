@@ -27,7 +27,7 @@
                 {/if}
                 {if $field->name=='remove'}
                     <tr>
-                        <td>
+                        <td data-toggle="tooltip" data-placement="top" title="Pokud brána a maska neodpovídají realitě a chcete mít v pořádku registrační formulář, upravte prosím subnety své oblasti.">
                             <span class="ip details" data-reqid="1" style="display: none">
                                 Subnet: <span class="ip subnet">---</span>
                                 &nbsp;|&nbsp;
@@ -41,7 +41,6 @@
                             <span class="ip editsubnet" style="display: none">
                                 &nbsp; - &nbsp;<a href="#" target="_blank">Editovat subnety</a>
                             </span>
-                            
                         </td>
                     </tr>
                     </table>

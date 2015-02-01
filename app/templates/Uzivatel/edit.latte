@@ -8,6 +8,8 @@
         $(".ip_adresa.ip").click(ipClickCallback);
         
         $(".ip_adresa.ip").each(ipStartCallback);
+        
+        $('[data-toggle="tooltip"]').tooltip();
     });
     
     function ipClickCallback(e) {
@@ -23,6 +25,11 @@
         var ip = target.val();      
         var tbody = t.parentNode.parentNode.parentNode; 
         var detailsspan = $(tbody).find(".ip.details");
+        
+        var editsubnet = $(tbody).find(".ip.editsubnet");
+        var apid = $("#frm-uzivatelForm-Ap_id").val();        
+        editsubnet.find("a").attr("href", {link Ap:show , id => null} + "/" + apid);
+        editsubnet.show();
         
         if(!ipValidate(ip)) {
             var errorsspan = $(tbody).find(".ip.errors");
@@ -48,16 +55,11 @@
     function ipAjaxCallback(d) { 
         var detailsspan = $(this).find(".ip.details");
         var errorsspan = $(this).find(".ip.errors");
-        var editsubnet = $(this).find(".ip.editsubnet");
-                
+                        
         if(detailsspan.data("reqid") != d.reqid){
             // data jdouci moc pozde zahodime
             return(false);
-        }
-        
-        var apid = $("#frm-uzivatelForm-Ap_id").val();        
-        editsubnet.find("a").attr("href", {link Ap:show , id => null} + "/" + apid);
-        editsubnet.show();
+        }      
                 
         if(d.error) {
             errorsspan.text(d.error);
