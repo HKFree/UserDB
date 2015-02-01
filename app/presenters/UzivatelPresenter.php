@@ -33,8 +33,9 @@ class UzivatelPresenter extends BasePresenter
     private $ap;
     private $typZarizeni;
     private $log;
+    private $subnet;
 
-    function __construct(Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -48,6 +49,7 @@ class UzivatelPresenter extends BasePresenter
     	$this->ap = $ap;
     	$this->typZarizeni = $typZarizeni;
         $this->log = $log;
+        $this->subnet = $subnet;
     }
   
     public function actionExportandsendregform() {
@@ -138,7 +140,26 @@ class UzivatelPresenter extends BasePresenter
                 $template->mesto = $uzivatel->mesto;
                 $template->psc = $uzivatel->psc;
                 $template->clenstvi = $uzivatel->TypClenstvi->text;
-                $template->ips = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchAll();
+                $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
+                foreach($ipadrs as $ip)
+                {
+                    $subnets = $this->subnet->getSubnetOfIP($ip);
+                    if(count($subnets) == 1) {
+                        $subnet = $subnets->fetch();
+                        if(empty($subnet->subnet)) {
+                            $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                        } elseif( empty($subnet->gateway)) {
+                            $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                        } else {
+                            list($network, $cidr) = explode("/", $subnet->subnet);
+                            $out[] = array('ip' => $ip, 'subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
+                        }
+                    } else {
+                        $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                    }
+                }
+
+                $template->ips = $out;
                 $pdf = new PDFResponse($template);
                 $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
                 $pdf->pageFormat = "A4";

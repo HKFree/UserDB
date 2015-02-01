@@ -138,9 +138,9 @@
             </tr>
             {foreach $ips as $ip}
                 <tr>
-                    <td>{$ip->ip_adresa}</td>
-                    <td></td>
-                    <td></td>
+                    <td>{$ip->ip}</td>
+                    <td>{$ip->mask}</td>
+                    <td>{$ip->gateway}</td>
                 </tr>
             {/foreach}            
         </table>
