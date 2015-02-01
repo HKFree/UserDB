@@ -42,16 +42,33 @@ class Subnet extends Table
     }    
     
     public function getSubnetTable($subnets) {
-	$subnetyTab = Html::el('table')->setClass('table table-striped');
-	$tr = $subnetyTab->create('tr');
-	$tr->create('th')->setText('Subnet');
-	$tr->create('th')->setText('Popis');
+        $subnetyTab = Html::el('table')->setClass('table table-striped');
+        $tr = $subnetyTab->create('tr');
+        $tr->create('th')->setText('Subnet');
+        $tr->create('th')->setText('Popis');
 
-	foreach ($subnets as $subnet) {
-	    $tr = $subnetyTab->create('tr');
-	    $tr->create('td')->setText($subnet->subnet);
-	    $tr->create('td')->setText($subnet->popis);
-	} 
-	return($subnetyTab);
+        foreach ($subnets as $subnet) {
+            $tr = $subnetyTab->create('tr');
+            $tr->create('td')->setText($subnet->subnet);
+            $tr->create('td')->setText($subnet->popis);
+        } 
+        return($subnetyTab);
     }
+    
+    public function getSubnetOfIP($ip, $ap) {
+        $subnets = $this->genSubnets($ip);
+        return($this->findAll()->where("subnet", $subnets)->where("Ap_id", $ap));
+    }
+    
+    private function genSubnets($ip) {
+        $lip = ip2long($ip);
+        $subnets = array();
+        for($mask = 32; $mask >= 16; $mask--) {
+            $lmask = pow(2, 32-$mask);
+            $subnet = long2ip(floor($lip/$lmask)*$lmask);
+            $subnets[] = $subnet."/".$mask;
+        }
+        return($subnets);
+    }
+    
 }
