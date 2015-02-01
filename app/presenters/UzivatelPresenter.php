@@ -11,7 +11,8 @@ use Nette,
     Tracy\Debugger,
     Nette\Mail\Message,
     Nette\Utils\Validators,
-    Nette\Mail\SendmailMailer;
+    Nette\Mail\SendmailMailer,
+    PdfResponse\PdfResponse;
     
 use Nette\Forms\Controls\SubmitButton;
 /**
@@ -113,6 +114,37 @@ class UzivatelPresenter extends BasePresenter
             $this->sendResponse(new Model\ContentDownloadResponse($rtfdata, "hkfree-registrace-$uzivatel->id.rtf"));
     	    }
     	}
+    }
+    public function actionExportPdf() {
+      if($this->getParam('id'))
+    	{
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+                $template = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
+                $template->oblast = $uzivatel->Ap->Oblast->jmeno;
+                $template->jmeno = $uzivatel->jmeno;
+                $template->prijmeni = $uzivatel->prijmeni;
+                $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
+                $template->firma = $uzivatel->firma_nazev;
+                $template->nick = $uzivatel->nick;
+                $template->uid = $uzivatel->id;
+                $template->heslo = $uzivatel->heslo;
+                $template->email = $uzivatel->email;
+                $template->telefon = $uzivatel->telefon;
+                $template->ulice = $uzivatel->ulice_cp;
+                $template->mesto = $uzivatel->mesto;
+                $template->psc = $uzivatel->psc;
+                $template->clenstvi = $uzivatel->TypClenstvi->text;
+                $pdf = new PDFResponse($template);
+                $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
+                $pdf->pageFormat = "A4";
+                $pdf->pageMargins = "5,5,5,5,20,60";
+                $pdf->documentTitle = "hkfree-registrace-".$this->getParam('id');
+                $pdf->documentAuthor = "hkfree.org z.s.";
+
+                $this->sendResponse($pdf);    	  
+            }
+        }
     }
 
     public function renderEdit()
