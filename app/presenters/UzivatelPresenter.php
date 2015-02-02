@@ -106,7 +106,7 @@ class UzivatelPresenter extends BasePresenter
                 $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                     ->addTo($uzivatel->email)
                     ->setSubject('Registrační formulář HKFREE')
-                    ->setBody('Dobrý den,\n zasíláme Vám registrační formulář.\n\nHKFREE z.s.');
+                    ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem HKFREE z.s.');
 
                 $temp_file = tempnam(sys_get_temp_dir(), 'registrace');                
                 $pdf->outputName = $temp_file;
