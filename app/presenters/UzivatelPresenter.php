@@ -55,7 +55,73 @@ class UzivatelPresenter extends BasePresenter
     public function actionExportandsendregform() {
         if($this->getParam('id'))
         {
+        if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+                $template = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
+                $template->oblast = $uzivatel->Ap->Oblast->jmeno;
+                $oblastid = $uzivatel->Ap->Oblast->id; 
+                $template->oblastemail = "oblast$oblastid@hkfree.org";
+                $template->jmeno = $uzivatel->jmeno;
+                $template->prijmeni = $uzivatel->prijmeni;
+                $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
+                $template->firma = $uzivatel->firma_nazev;
+                $template->nick = $uzivatel->nick;
+                $template->uid = $uzivatel->id;
+                $template->heslo = $uzivatel->heslo;
+                $template->email = $uzivatel->email;
+                $template->telefon = $uzivatel->telefon;
+                $template->ulice = $uzivatel->ulice_cp;
+                $template->mesto = $uzivatel->mesto;
+                $template->psc = $uzivatel->psc;
+                $template->clenstvi = $uzivatel->TypClenstvi->text;
+                $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
+                foreach($ipadrs as $ip)
+                {
+                    $subnets = $this->subnet->getSubnetOfIP($ip);
+                    if(count($subnets) == 1) {
+                        $subnet = $subnets->fetch();
+                        if(empty($subnet->subnet)) {
+                            $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                        } elseif( empty($subnet->gateway)) {
+                            $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                        } else {
+                            list($network, $cidr) = explode("/", $subnet->subnet);
+                            $out[] = array('ip' => $ip, 'subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
+                        }
+                    } else {
+                        $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                    }
+                }
+                $template->ips = $out;
+                $pdf = new PDFResponse($template);
+                $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
+                $pdf->pageFormat = "A4";
+                $pdf->pageMargins = "5,5,5,5,20,60";
+                $pdf->documentTitle = "hkfree-registrace-".$this->getParam('id');
+                $pdf->documentAuthor = "hkfree.org z.s.";
+
+                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
         
+                $mail = new Message;
+                $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+                    ->addTo($uzivatel->email)
+                    ->setSubject('Registrační formulář HKFREE')
+                    ->setBody('Dobrý den,\n zasíláme Vám registrační formulář.\n\nHKFREE z.s.');
+
+                $temp_file = tempnam(sys_get_temp_dir(), 'registrace');                
+                $pdf->outputName = $temp_file;
+                $pdf->outputDestination = PdfResponse::OUTPUT_FILE;
+                $pdf->send($this->getHttpRequest(), $this->getHttpResponse());
+                $mail->addAttachment('hkfree-registrace-'.$uzivatel->id.'.pdf', file_get_contents($temp_file));
+                                
+                $mailer = new SendmailMailer;
+                $mailer->send($mail);
+
+                $this->flashMessage('E-mail byl odeslán.');
+
+                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
+            }
+
         }
     }
     
