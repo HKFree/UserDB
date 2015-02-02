@@ -20,12 +20,14 @@ class SpravaPresenter extends BasePresenter
     private $platneCC;
     private $uzivatel;
     private $log;
+    private $ap;
 
-    function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log) {
+    function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
         $this->log = $log;
+        $this->ap = $ap;
     }
 
     public function renderNastroje()
@@ -45,11 +47,19 @@ class SpravaPresenter extends BasePresenter
     
     protected function createComponentGrid($name)
     {
+        $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+        
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
         $grid->setExport('cc_export');
         
-        $grid->setModel($this->platneCC->getCC());
+        if($canViewOrEdit)
+        {
+            $grid->setModel($this->platneCC->getCCWithNamesVV());
+        }
+        else {
+            $grid->setModel($this->platneCC->getCCWithNames());
+        }
         
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('plati_od' => 'DESC'));
@@ -57,6 +67,14 @@ class SpravaPresenter extends BasePresenter
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
         $grid->addColumnText('plati_od', 'Platnost od')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('name', 'Jméno a příjmení')->setSortable()->setFilterText()->setSuggestion();
+        
+        $grid->addActionHref('show', 'Zobrazit')
+                ->setIcon('eye-open');
+    }
+    
+    public function actionShow($id) {
+        $this->redirect('Uzivatel:show', array('id'=>$id)); 
     }
 
     protected function createComponentSpravaCCForm() {

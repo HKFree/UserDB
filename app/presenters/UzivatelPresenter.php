@@ -607,9 +607,9 @@ class UzivatelPresenter extends BasePresenter
                 }); 
                 
                 $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
+                    return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
                 })->setCustomRender(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance > 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
+                    return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
                 });
             }
             //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
