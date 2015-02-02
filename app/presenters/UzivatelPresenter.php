@@ -331,8 +331,7 @@ class UzivatelPresenter extends BasePresenter
     
     public function validateUzivatelForm($form)
     {
-        //pole uz nejsou UNIQUE ... postrada smysl ... leda formou varovani
-        /*$values = $form->getValues();
+        $values = $form->getValues();
 
         $duplMail = $this->uzivatel->getDuplicateEmailArea($values->email, $values->id);
         
@@ -348,7 +347,7 @@ class UzivatelPresenter extends BasePresenter
             }
         }
         
-        $duplPhone = $this->uzivatel->getDuplicatePhoneArea($values->telefon, $values->id);
+        /*$duplPhone = $this->uzivatel->getDuplicatePhoneArea($values->telefon, $values->id);
         
         if ($duplPhone) {
             $form->addError('Tento telefon již v DB existuje v oblasti: ' . $duplPhone);
