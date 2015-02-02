@@ -51,7 +51,7 @@ class UzivatelPresenter extends BasePresenter
         $this->log = $log;
         $this->subnet = $subnet;
     }
-  
+
     public function actionExportandsendregform() {
         if($this->getParam('id'))
         {
@@ -74,6 +74,9 @@ class UzivatelPresenter extends BasePresenter
                 $template->mesto = $uzivatel->mesto;
                 $template->psc = $uzivatel->psc;
                 $template->clenstvi = $uzivatel->TypClenstvi->text;
+                $template->nthmesic = $uzivatel->ZpusobPripojeni_id==2 ? "třetího" : "prvního";
+                $template->nthmesicname = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicName($uzivatel->zalozen,3) : $this->uzivatel->mesicName($uzivatel->zalozen,1);
+                $template->nthmesicdate = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicDate($uzivatel->zalozen,2) : $this->uzivatel->mesicDate($uzivatel->zalozen,0);
                 $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
                 foreach($ipadrs as $ip)
                 {
@@ -91,6 +94,10 @@ class UzivatelPresenter extends BasePresenter
                     } else {
                         $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
                     }
+                }
+                if(count($ipadrs) == 0)
+                {
+                    $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');                
                 }
                 $template->ips = $out;
                 $pdf = new PDFResponse($template);
@@ -124,66 +131,7 @@ class UzivatelPresenter extends BasePresenter
 
         }
     }
-    
-    public function actionExportregform() {
-      if($this->getParam('id'))
-    	{
-    	    if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
-    	    {
-
-            $today = getdate();
-            $dayinmonth = $today["mday"];
-            $numofdaysinmonth = cal_days_in_month(CAL_GREGORIAN, $today["mon"], $today["year"]);
-            
-            if($dayinmonth < 17)
-            {
-                $prvniplatba="17.".$today["mon"].".".$today["year"];
-            }
-            else if ($dayinmonth <= ($numofdaysinmonth-7))
-            {
-              $prvniplatba="co nejdříve (do konce měsíce)";
-            }
-            else
-            {
-              $platit_d = $today["mday"]+7;
-              $platit_m = $today["mon"];
-              $platit_y = $today["year"];
-              if ( $platit_d > $numofdaysinmonth ) { $platit_d-=$numofdaysinmonth; $platit_m++; }
-              if ( $platit_m > 12 ) { $platit_m = 1; $platit_y++; }
-              $prvniplatba="co nejdříve, vaše členství je bezplatné do $platit_d.$platit_m.$platit_y";
-            }
-            
-            $aj = array("January","February","March","April","May","June","July","August","September","October","November","December");
-            $cz = array("leden","únor","březen","duben","květen","červen","červenec","srpen","září","říjen","listopad","prosinec");
-            $pristimesic = str_replace($aj, $cz, date("F", strtotime("+1 month")));
-
-            $rtfdata = file_get_contents("./template/evidence.rtf", true);
-            
-            $rtfdata = str_replace("--forma--", iconv("UTF-8","windows-1250",$uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text), $rtfdata);
-            $rtfdata = str_replace("--firma--", iconv("UTF-8","windows-1250",$uzivatel->firma_nazev), $rtfdata);
-            $rtfdata = str_replace("--ico--", $uzivatel->firma_ico, $rtfdata);
-                        
-            $rtfdata = str_replace("--jmeno--", iconv("UTF-8","windows-1250",$uzivatel->jmeno . " " . $uzivatel->prijmeni), $rtfdata);
-            $rtfdata = str_replace("--id--", $uzivatel->id, $rtfdata);
-            $rtfdata = str_replace("--nick--", iconv("UTF-8","windows-1250",$uzivatel->nick), $rtfdata);
-            $rtfdata = str_replace("--heslo--", iconv("UTF-8","windows-1250",$uzivatel->heslo), $rtfdata);
-            $rtfdata = str_replace("--email--", iconv("UTF-8","windows-1250",$uzivatel->email), $rtfdata);
-            $rtfdata = str_replace("--mobil--", $uzivatel->telefon, $rtfdata);
-            $rtfdata = str_replace("--cisloclenskekarty--", $uzivatel->cislo_clenske_karty, $rtfdata);
-            $rtfdata = str_replace("--adresa1--", iconv("UTF-8","windows-1250",$uzivatel->ulice_cp) . ", " . iconv("UTF-8","windows-1250",$uzivatel->mesto) . ", " . $uzivatel->psc, $rtfdata);
-            $rtfdata = str_replace("--typ--", iconv("UTF-8","windows-1250",$uzivatel->TypClenstvi->text), $rtfdata);
-            $rtfdata = str_replace("--ip4--", join(",",array_values($uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'))), $rtfdata);
-            $rtfdata = str_replace("--oblast--", iconv("UTF-8","windows-1250",$uzivatel->Ap->Oblast->jmeno), $rtfdata);
-            $oblastid = $uzivatel->Ap->Oblast->id; 
-            $rtfdata = str_replace("--emailoblasti--", "oblast$oblastid@hkfree.org", $rtfdata);
-            $rtfdata = str_replace("--pristimesic--", iconv("UTF-8","windows-1250",$pristimesic), $rtfdata);
-            $rtfdata = str_replace("--prvniplatba--", iconv("UTF-8","windows-1250",$prvniplatba), $rtfdata);
-
-            $this->sendResponse(new Model\ContentDownloadResponse($rtfdata, "hkfree-registrace-$uzivatel->id.rtf"));
-    	    }
-    	}
-    }
-    
+        
     public function actionExportPdf() {
       if($this->getParam('id'))
     	{
@@ -206,6 +154,9 @@ class UzivatelPresenter extends BasePresenter
                 $template->mesto = $uzivatel->mesto;
                 $template->psc = $uzivatel->psc;
                 $template->clenstvi = $uzivatel->TypClenstvi->text;
+                $template->nthmesic = $uzivatel->ZpusobPripojeni_id==2 ? "třetího" : "prvního";
+                $template->nthmesicname = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicName($uzivatel->zalozen,3) : $this->uzivatel->mesicName($uzivatel->zalozen,1);
+                $template->nthmesicdate = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicDate($uzivatel->zalozen,2) : $this->uzivatel->mesicDate($uzivatel->zalozen,0);
                 $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
                 foreach($ipadrs as $ip)
                 {
@@ -224,6 +175,11 @@ class UzivatelPresenter extends BasePresenter
                         $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
                     }
                 }
+                if(count($ipadrs) == 0)
+                {
+                    $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');                
+                }
+                
                 $template->ips = $out;
                 $pdf = new PDFResponse($template);
                 $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;

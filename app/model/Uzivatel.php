@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use Nette,
+        DateInterval,
     Nette\Database\Context;
 
 
@@ -176,5 +177,22 @@ ORDER BY t1.id LIMIT 1')->fetchField();
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
         }
         return null;
+    }
+    
+    public function mesicName($indate, $addmonth){
+        $date = new Nette\Utils\DateTime($indate);
+        $date->add(new \DateInterval('P'.$addmonth.'M'));
+        $datestr = $date->format('F');
+        
+        $aj = array("January","February","March","April","May","June","July","August","September","October","November","December");
+        $cz = array("leden","únor","březen","duben","květen","červen","červenec","srpen","září","říjen","listopad","prosinec");
+        $datum = str_replace($aj, $cz, $datestr);
+        return $datum;
+    }
+    
+    public function mesicDate($indate, $addmonth){
+        $date = new Nette\Utils\DateTime($indate);
+        $date->add(new \DateInterval('P'.$addmonth.'M'));
+        return $date->format('17.m.Y');
     }
 }
