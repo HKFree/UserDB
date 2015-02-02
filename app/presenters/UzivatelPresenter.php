@@ -442,9 +442,11 @@ class UzivatelPresenter extends BasePresenter
                 $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
             }           
             
+            //nepouzitelne - potreba implementovat efektivneji - nacita se vse a pritom stranka zobrazuje male procento
             if ($money) {
                 $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivatelu()));
             }
+            
             $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
                   return $item->ref('Ap', 'Ap_id')->jmeno;
               })->setSortable();
