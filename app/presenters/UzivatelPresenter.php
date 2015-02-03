@@ -113,8 +113,8 @@ class UzivatelPresenter extends BasePresenter
                 $mail = new Message;
                 $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                     ->addTo($uzivatel->email)
-                    ->setSubject('Registrační formulář HKFREE')
-                    ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem HKFREE z.s.');
+                    ->setSubject('Registrační formulář člena hkfree.org z.s.')
+                    ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem hkfree.org z.s.');
 
                 $temp_file = tempnam(sys_get_temp_dir(), 'registrace');                
                 $pdf->outputName = $temp_file;
@@ -904,7 +904,7 @@ class UzivatelPresenter extends BasePresenter
                 $form->setValues($user);
                 $form->setDefaults(array(
                         'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
-                        'subject' => 'Zpráva od správce HKFree',
+                        'subject' => 'Zpráva od správce sítě hkfree.org',
                     ));
     	    }
     	}                
@@ -973,7 +973,7 @@ class UzivatelPresenter extends BasePresenter
                 $form->setDefaults(array(
                         'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
                         'email' => $tolist,
-                        'subject' => 'HKFree - Zpráva od správce oblasti '.$ap->jmeno,
+                        'subject' => 'Zpráva od správce sítě hkfree.org',
                     ));
     	    }
     	}                
