@@ -52,89 +52,100 @@ class UzivatelPresenter extends BasePresenter
         $this->log = $log;
         $this->subnet = $subnet;
     }
+    
+    public function generatePdf($uzivatel)
+    {
+        $template = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
+        $template->oblast = $uzivatel->Ap->Oblast->jmeno;
+        $oblastid = $uzivatel->Ap->Oblast->id; 
+        $template->oblastemail = "oblast$oblastid@hkfree.org";
+        $template->jmeno = $uzivatel->jmeno;
+        $template->prijmeni = $uzivatel->prijmeni;
+        $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
+        $template->firma = $uzivatel->firma_nazev;
+        $template->nick = $uzivatel->nick;
+        $template->uid = $uzivatel->id;
+        $template->heslo = $uzivatel->regform_downloaded_password_sent==0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
+        $template->email = $uzivatel->email;
+        $template->telefon = $uzivatel->telefon;
+        $template->ulice = $uzivatel->ulice_cp;
+        $template->mesto = $uzivatel->mesto;
+        $template->psc = $uzivatel->psc;
+        $template->clenstvi = $uzivatel->TypClenstvi->text;
+        $template->nthmesic = $uzivatel->ZpusobPripojeni_id==2 ? "třetího" : "prvního";
+        $template->nthmesicname = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicName($uzivatel->zalozen,3) : $this->uzivatel->mesicName($uzivatel->zalozen,1);
+        $template->nthmesicdate = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicDate($uzivatel->zalozen,2) : $this->uzivatel->mesicDate($uzivatel->zalozen,0);
+        $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
+        foreach($ipadrs as $ip)
+        {
+            $subnets = $this->subnet->getSubnetOfIP($ip);
+            if(count($subnets) == 1) {
+                $subnet = $subnets->fetch();
+                if(empty($subnet->subnet)) {
+                    $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                } elseif( empty($subnet->gateway)) {
+                    $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                } else {
+                    list($network, $cidr) = explode("/", $subnet->subnet);
+                    $out[] = array('ip' => $ip, 'subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
+                }
+            } else {
+                $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+            }
+        }
+        if(count($ipadrs) == 0)
+        {
+            $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');                
+        }
+        $template->ips = $out;
+        $pdf = new PDFResponse($template);
+        $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
+        $pdf->pageFormat = "A4";
+        $pdf->pageMargins = "5,5,5,5,20,60";
+        $pdf->documentTitle = "hkfree-registrace-".$this->getParam('id');
+        $pdf->documentAuthor = "hkfree.org z.s.";
 
-    public function actionExportandsendregform() {
+        return $pdf;
+    }
+    
+    public function mailPdf($pdf, $uzivatel)
+    {
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        
+        $mail = new Message;
+        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+            ->addTo($uzivatel->email)
+            ->setSubject('Registrační formulář člena hkfree.org z.s.')
+            ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem hkfree.org z.s.');
+
+        $temp_file = tempnam(sys_get_temp_dir(), 'registrace');                
+        $pdf->outputName = $temp_file;
+        $pdf->outputDestination = PdfResponse::OUTPUT_FILE;
+        $pdf->send($this->getHttpRequest(), $this->getHttpResponse());
+        $mail->addAttachment('hkfree-registrace-'.$uzivatel->id.'.pdf', file_get_contents($temp_file));
+
+        $mailer = new SendmailMailer;
+        $mailer->send($mail);
+
+        if($uzivatel->regform_downloaded_password_sent==0)
+        {
+            $this->uzivatel->update($uzivatel->id, array('regform_downloaded_password_sent'=>1));
+        }
+    }
+
+    public function actionExportAndSendRegForm() {
         if($this->getParam('id'))
         {
-        if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
-                $template = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                $template->oblast = $uzivatel->Ap->Oblast->jmeno;
-                $oblastid = $uzivatel->Ap->Oblast->id; 
-                $template->oblastemail = "oblast$oblastid@hkfree.org";
-                $template->jmeno = $uzivatel->jmeno;
-                $template->prijmeni = $uzivatel->prijmeni;
-                $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
-                $template->firma = $uzivatel->firma_nazev;
-                $template->nick = $uzivatel->nick;
-                $template->uid = $uzivatel->id;
-                $template->heslo = $uzivatel->regform_downloaded_password_sent==0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
-                $template->email = $uzivatel->email;
-                $template->telefon = $uzivatel->telefon;
-                $template->ulice = $uzivatel->ulice_cp;
-                $template->mesto = $uzivatel->mesto;
-                $template->psc = $uzivatel->psc;
-                $template->clenstvi = $uzivatel->TypClenstvi->text;
-                $template->nthmesic = $uzivatel->ZpusobPripojeni_id==2 ? "třetího" : "prvního";
-                $template->nthmesicname = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicName($uzivatel->zalozen,3) : $this->uzivatel->mesicName($uzivatel->zalozen,1);
-                $template->nthmesicdate = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicDate($uzivatel->zalozen,2) : $this->uzivatel->mesicDate($uzivatel->zalozen,0);
-                $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
-                foreach($ipadrs as $ip)
-                {
-                    $subnets = $this->subnet->getSubnetOfIP($ip);
-                    if(count($subnets) == 1) {
-                        $subnet = $subnets->fetch();
-                        if(empty($subnet->subnet)) {
-                            $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                        } elseif( empty($subnet->gateway)) {
-                            $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                        } else {
-                            list($network, $cidr) = explode("/", $subnet->subnet);
-                            $out[] = array('ip' => $ip, 'subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
-                        }
-                    } else {
-                        $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                    }
-                }
-                if(count($ipadrs) == 0)
-                {
-                    $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');                
-                }
-                $template->ips = $out;
-                $pdf = new PDFResponse($template);
-                $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
-                $pdf->pageFormat = "A4";
-                $pdf->pageMargins = "5,5,5,5,20,60";
-                $pdf->documentTitle = "hkfree-registrace-".$this->getParam('id');
-                $pdf->documentAuthor = "hkfree.org z.s.";
+                $pdf = $this->generatePdf($uzivatel);
 
-                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-        
-                $mail = new Message;
-                $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-                    ->addTo($uzivatel->email)
-                    ->setSubject('Registrační formulář člena hkfree.org z.s.')
-                    ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem hkfree.org z.s.');
-
-                $temp_file = tempnam(sys_get_temp_dir(), 'registrace');                
-                $pdf->outputName = $temp_file;
-                $pdf->outputDestination = PdfResponse::OUTPUT_FILE;
-                $pdf->send($this->getHttpRequest(), $this->getHttpResponse());
-                $mail->addAttachment('hkfree-registrace-'.$uzivatel->id.'.pdf', file_get_contents($temp_file));
-                                
-                $mailer = new SendmailMailer;
-                $mailer->send($mail);
-
-                if($uzivatel->regform_downloaded_password_sent==0)
-                {
-                    $this->uzivatel->update($uzivatel->id, array('regform_downloaded_password_sent'=>1));
-                }
+                $this->mailPdf($pdf, $uzivatel);
                 
                 $this->flashMessage('E-mail byl odeslán.');
 
                 $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
             }
-
         }
     }
         
@@ -143,57 +154,7 @@ class UzivatelPresenter extends BasePresenter
     	{
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
-                $template = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                $template->oblast = $uzivatel->Ap->Oblast->jmeno;
-                $oblastid = $uzivatel->Ap->Oblast->id; 
-                $template->oblastemail = "oblast$oblastid@hkfree.org";
-                $template->jmeno = $uzivatel->jmeno;
-                $template->prijmeni = $uzivatel->prijmeni;
-                $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
-                $template->firma = $uzivatel->firma_nazev;
-                $template->nick = $uzivatel->nick;
-                $template->uid = $uzivatel->id;
-                $template->heslo = $uzivatel->regform_downloaded_password_sent==0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
-                $template->email = $uzivatel->email;
-                $template->telefon = $uzivatel->telefon;
-                $template->ulice = $uzivatel->ulice_cp;
-                $template->mesto = $uzivatel->mesto;
-                $template->psc = $uzivatel->psc;
-                $template->clenstvi = $uzivatel->TypClenstvi->text;
-                $template->nthmesic = $uzivatel->ZpusobPripojeni_id==2 ? "třetího" : "prvního";
-                $template->nthmesicname = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicName($uzivatel->zalozen,3) : $this->uzivatel->mesicName($uzivatel->zalozen,1);
-                $template->nthmesicdate = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicDate($uzivatel->zalozen,2) : $this->uzivatel->mesicDate($uzivatel->zalozen,0);
-                $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
-                foreach($ipadrs as $ip)
-                {
-                    $subnets = $this->subnet->getSubnetOfIP($ip);
-                    if(count($subnets) == 1) {
-                        $subnet = $subnets->fetch();
-                        if(empty($subnet->subnet)) {
-                            $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                        } elseif( empty($subnet->gateway)) {
-                            $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                        } else {
-                            list($network, $cidr) = explode("/", $subnet->subnet);
-                            $out[] = array('ip' => $ip, 'subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
-                        }
-                    } else {
-                        $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                    }
-                }
-                if(count($ipadrs) == 0)
-                {
-                    $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');                
-                }
-                
-                $template->ips = $out;
-                $pdf = new PDFResponse($template);
-                $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
-                $pdf->pageFormat = "A4";
-                $pdf->pageMargins = "5,5,5,5,20,60";
-                $pdf->documentTitle = "hkfree-registrace-".$this->getParam('id');
-                $pdf->documentAuthor = "hkfree.org z.s.";
-
+                $pdf = $this->generatePdf($uzivatel);
                 $this->sendResponse($pdf);    	  
             }
         }
@@ -209,6 +170,28 @@ class UzivatelPresenter extends BasePresenter
           {
             $this->template->canViewOrEdit = true;
           }
+    }
+    
+    public function renderConfirm()
+    {
+        if($this->getParam('id'))
+        {
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+                $pdf = $this->generatePdf($uzivatel);
+
+                $this->mailPdf($pdf, $uzivatel);
+                
+    		    $this->template->stav = true;
+    	    }
+	        else
+            {
+              $this->template->stav = false;
+            }
+        }
+        else {
+            $this->template->stav = false;
+        }
     }
 
     protected function createComponentUzivatelForm() {
@@ -346,6 +329,20 @@ class UzivatelPresenter extends BasePresenter
             $values->id = $this->uzivatel->getNewID();
             $idUzivatele = $this->uzivatel->insert($values)->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
+            
+            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());        
+            $mail = new Message;
+            $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+                ->addTo($values->email)
+                ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
+                ->setBody('Dobrý den,\n\npro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '
+                        . 'následující odkaz:\n\nhttp://userdb.hkfree.org/userdb/uzivatel/confirm/'.$values->id
+                        . '\n\nS pozdravem hkfree.org z.s.');
+            $mailer = new SendmailMailer;
+            $mailer->send($mail);
+
+            $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
+            
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
     	    $this->uzivatel->update($idUzivatele, $values);
