@@ -12,6 +12,7 @@ use Nette,
     Nette\Mail\Message,
     Nette\Utils\Validators,
     Nette\Mail\SendmailMailer,
+    Nette\Utils\Strings,
     PdfResponse\PdfResponse;
     
 use Nette\Forms\Controls\SubmitButton;
@@ -571,7 +572,11 @@ class UzivatelPresenter extends BasePresenter
                 });
             }
             //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
-            $grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();
+            
+            //$grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();            
+            $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
+                    return Strings::truncate($item->poznamka, 50, $append='…');
+                })->setSortable()->setFilterText();            
     	}
         
         $grid->addActionHref('show', 'Zobrazit')
