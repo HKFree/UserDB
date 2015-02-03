@@ -84,7 +84,7 @@ class LogTable extends UI\Control
     
     private function tableGetHeader()
     {
-        $logyTab = Html::el('table')->setClass('table table-striped');
+        $logyTab = Html::el('table')->setClass('table table-striped logstable');
 		$tr = $logyTab->create('tr');
         
         $sloupce = array('Kdy', 'Kdo', 'Co', 'Z', 'Na');

@@ -59,7 +59,17 @@
         {/if}  
         
     {if $canViewOrEdit}
-        <h4>Změny</h4>
+        <script>
+            $(document).ready(function( $ ) {
+                $("#logsHeader").click(function(){
+                    $(".logstable").toggle();
+                });
+                $(".logstable").hide();
+            });
+        
+        </script>
+        <h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
+        
         {control logTable, $u->id} 
 
     {/if}
