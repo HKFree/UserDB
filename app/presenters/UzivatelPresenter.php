@@ -68,7 +68,7 @@ class UzivatelPresenter extends BasePresenter
                 $template->firma = $uzivatel->firma_nazev;
                 $template->nick = $uzivatel->nick;
                 $template->uid = $uzivatel->id;
-                $template->heslo = $uzivatel->heslo;
+                $template->heslo = $uzivatel->regform_downloaded_password_sent==0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
                 $template->email = $uzivatel->email;
                 $template->telefon = $uzivatel->telefon;
                 $template->ulice = $uzivatel->ulice_cp;
@@ -125,6 +125,11 @@ class UzivatelPresenter extends BasePresenter
                 $mailer = new SendmailMailer;
                 $mailer->send($mail);
 
+                if($uzivatel->regform_downloaded_password_sent==0)
+                {
+                    $this->uzivatel->update($uzivatel->id, array('regform_downloaded_password_sent'=>1));
+                }
+                
                 $this->flashMessage('E-mail byl odeslán.');
 
                 $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
@@ -148,7 +153,7 @@ class UzivatelPresenter extends BasePresenter
                 $template->firma = $uzivatel->firma_nazev;
                 $template->nick = $uzivatel->nick;
                 $template->uid = $uzivatel->id;
-                $template->heslo = $uzivatel->heslo;
+                $template->heslo = $uzivatel->regform_downloaded_password_sent==0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
                 $template->email = $uzivatel->email;
                 $template->telefon = $uzivatel->telefon;
                 $template->ulice = $uzivatel->ulice_cp;
@@ -335,6 +340,7 @@ class UzivatelPresenter extends BasePresenter
         
     	// Zpracujeme nejdriv uzivatele
     	if(empty($values->id)) {
+            $values->regform_downloaded_password_sent = 0;
             $values->zalozen = new Nette\Utils\DateTime;
             $values->heslo = $this->uzivatel->generateStrongPassword();
             $values->id = $this->uzivatel->getNewID();

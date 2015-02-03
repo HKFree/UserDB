@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 3.4.11.1deb2+deb7u1
+-- version 3.3.7deb7
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 31, 2015 at 11:45 PM
--- Server version: 5.5.38
--- PHP Version: 5.4.4-14+deb7u14
+-- Generation Time: Feb 03, 2015 at 11:45 PM
+-- Server version: 5.1.66
+-- PHP Version: 5.3.3-7+squeeze16
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -17,7 +16,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Database: `userdb`
+-- Database: `userdb_v2`
 --
 
 -- --------------------------------------------------------
@@ -172,7 +171,7 @@ CREATE TABLE IF NOT EXISTS `Stitek` (
   `text` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `Oblast_id` (`Oblast_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -289,8 +288,8 @@ CREATE TABLE IF NOT EXISTS `userdb` (
 ,`default_password` varchar(50)
 ,`nick` varchar(50)
 ,`email` varchar(50)
-,`address` varchar(413)
-,`ip4` text
+,`address` varchar(452)
+,`ip4` varchar(341)
 ,`year_of_birth` decimal(4,0)
 ,`alt_at` datetime
 ,`alt_by` varchar(7)
@@ -334,6 +333,7 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `firma_ico` int(10) DEFAULT NULL,
   `cislo_clenske_karty` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   `TechnologiePripojeni_id` int(11) NOT NULL DEFAULT '0',
+  `regform_downloaded_password_sent` tinyint(4) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `TypClenstvi_id` (`TypClenstvi_id`),
   KEY `ZpusobPripojeni_id` (`ZpusobPripojeni_id`),
@@ -402,7 +402,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `cc
 --
 DROP TABLE IF EXISTS `userdb`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,`U`.`heslo` AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',`U`.`psc`) AS `address`,group_concat(`I`.`ip_adresa` separator ',') AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (`Uzivatel` `U` join `IPAdresa` `I` on((`I`.`Uzivatel_id` = `U`.`id`))) group by `U`.`id`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,`U`.`heslo` AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',cast(`U`.`psc` as char(50) charset utf8)) AS `address`,group_concat(`I`.`ip_adresa` separator ',') AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (`Uzivatel` `U` join `IPAdresa` `I` on((`I`.`Uzivatel_id` = `U`.`id`))) group by `U`.`id`;
 
 --
 -- Constraints for dumped tables
@@ -418,9 +418,9 @@ ALTER TABLE `Ap`
 -- Constraints for table `CestneClenstviUzivatele`
 --
 ALTER TABLE `CestneClenstviUzivatele`
-  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_3` FOREIGN KEY (`zadost_podal`) REFERENCES `Uzivatel` (`id`),
   ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`),
-  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_2` FOREIGN KEY (`TypCestnehoClenstvi_id`) REFERENCES `TypCestnehoClenstvi` (`id`);
+  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_2` FOREIGN KEY (`TypCestnehoClenstvi_id`) REFERENCES `TypCestnehoClenstvi` (`id`),
+  ADD CONSTRAINT `CestneClenstviUzivatele_ibfk_3` FOREIGN KEY (`zadost_podal`) REFERENCES `Uzivatel` (`id`);
 
 --
 -- Constraints for table `IPAdresa`
@@ -467,12 +467,8 @@ ALTER TABLE `Subnet`
 -- Constraints for table `Uzivatel`
 --
 ALTER TABLE `Uzivatel`
-  ADD CONSTRAINT `Uzivatel_ibfk_5` FOREIGN KEY (`TechnologiePripojeni_id`) REFERENCES `TechnologiePripojeni` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_1` FOREIGN KEY (`TypClenstvi_id`) REFERENCES `TypClenstvi` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_2` FOREIGN KEY (`Ap_id`) REFERENCES `Ap` (`id`),
   ADD CONSTRAINT `Uzivatel_ibfk_3` FOREIGN KEY (`ZpusobPripojeni_id`) REFERENCES `ZpusobPripojeni` (`id`),
-  ADD CONSTRAINT `Uzivatel_ibfk_4` FOREIGN KEY (`TypPravniFormyUzivatele_id`) REFERENCES `TypPravniFormyUzivatele` (`id`);
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+  ADD CONSTRAINT `Uzivatel_ibfk_4` FOREIGN KEY (`TypPravniFormyUzivatele_id`) REFERENCES `TypPravniFormyUzivatele` (`id`),
+  ADD CONSTRAINT `Uzivatel_ibfk_5` FOREIGN KEY (`TechnologiePripojeni_id`) REFERENCES `TechnologiePripojeni` (`id`);
