@@ -405,6 +405,7 @@ class UzivatelPresenter extends BasePresenter
         $canViewOrEdit = false;
     	$id = $this->getParameter('id');
         $money = $this->getParameter('money', false);
+        $fullnotes = $this->getParameter('fullnotes', false);
         
         $search = $this->getParameter('search', false);
         //\Tracy\Dumper::dump($search);
@@ -573,10 +574,16 @@ class UzivatelPresenter extends BasePresenter
             }
             //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
             
-            //$grid->addColumnText('poznamka', 'Poznámka')->setSortable()->setFilterText();            
-            $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
-                    return Strings::truncate($item->poznamka, 50, $append='…');
-                })->setSortable()->setFilterText();            
+            if($fullnotes)   
+            {
+                $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable()->setFilterText();            
+            }
+            else
+            {
+                $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
+                        return Strings::truncate($item->poznamka, 50, $append='…');
+                    })->setSortable()->setFilterText();   
+            } 
     	}
         
         $grid->addActionHref('show', 'Zobrazit')
@@ -605,6 +612,7 @@ class UzivatelPresenter extends BasePresenter
     	}
         
         $this->template->money = $this->getParameter("money", false);
+        $this->template->fullnotes = $this->getParameter("fullnotes", false);
     }
     
     public function renderShow()
