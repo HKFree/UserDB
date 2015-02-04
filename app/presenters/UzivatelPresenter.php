@@ -176,7 +176,7 @@ class UzivatelPresenter extends BasePresenter
     {
         if($this->getParam('id'))
         {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+            if($uzivatel = $this->uzivatel->getUzivatel(base64_decode($this->getParam('id'))))
     	    {
                 $pdf = $this->generatePdf($uzivatel);
 
@@ -336,7 +336,7 @@ class UzivatelPresenter extends BasePresenter
                 ->addTo($values->email)
                 ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
                 ->setBody('Dobrý den,\n\npro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '
-                        . 'následující odkaz:\n\nhttp://userdb.hkfree.org/userdb/uzivatel/confirm/'.$values->id
+                        . 'následující odkaz:\n\nhttp://userdb.hkfree.org/userdb/uzivatel/confirm/'.base64_encode($values->id)
                         . '\n\nS pozdravem hkfree.org z.s.');
             $mailer = new SendmailMailer;
             $mailer->send($mail);
