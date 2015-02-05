@@ -1,14 +1,3 @@
-AuthName "HKfree - UserDB. Pouzij UID a HESLO z papiru o clenstvi (resp. do money)."
-
-<IfModule mod_shib.cpp>
-AuthType shibboleth
-ShibRequestSetting requireSession 1
-
-    <Limit GET POST>
-	require valid-user
-    </Limit>
-</IfModule>
-
 DirectoryIndex index.php
 
 

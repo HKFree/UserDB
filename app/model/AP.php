@@ -28,7 +28,8 @@ class AP extends Table
     {    
 	   return $Uzivatel->isInRole('TECH') 
           || $Uzivatel->isInRole('VV')
-          || $Uzivatel->isInRole('SO-'.$this->find($ApID)->Oblast_id);
+          || $Uzivatel->isInRole('SO-'.$this->find($ApID)->Oblast_id)
+          || $Uzivatel->isInRole('ZSO-'.$this->find($ApID)->Oblast_id);
     }
     
     public function canViewOrEditAll($Uzivatel)

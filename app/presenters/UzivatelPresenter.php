@@ -336,7 +336,7 @@ class UzivatelPresenter extends BasePresenter
                 ->addTo($values->email)
                 ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
                 ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '
-                        . 'následující odkaz:<br><br><a href="http://userdb.hkfree.org/userdb/uzivatel/confirm/">http://userdb.hkfree.org/userdb/uzivatel/confirm/'.base64_encode($values->id).'</a><br><br>S pozdravem hkfree.org z.s.');
+                        . 'následující odkaz:<br><br><a href="http://userdb.hkfree.org/user/uzivatel/confirm/">http://userdb.hkfree.org/user/uzivatel/confirm/'.base64_encode($values->id).'</a><br><br>S pozdravem hkfree.org z.s.');
             $mailer = new SendmailMailer;
             $mailer->send($mail);
 
