@@ -4,7 +4,8 @@ namespace App\Model;
 
 use Nette,
     Nette\Application\UI\Form,
-    Nette\Utils\Html;
+    Nette\Utils\Html,
+    Nette\Database\Context;
 
 
 
@@ -22,6 +23,20 @@ class CestneClenstviUzivatele extends Table
     {        
         $PlatnaCestnaClenstvi = $this->findAll()->where('Uzivatel_id', $userID)->where('schvaleno=1')->where('plati_od < NOW()')->where('plati_do IS NULL OR plati_do > NOW()')->fetchAll();
         return(count($PlatnaCestnaClenstvi)>0);
+    }
+    
+    public function getListCCOfAP($apID)
+    {        
+        $context = new Context($this->connection);
+        return $context->query('SELECT CC.id,CC.Uzivatel_id FROM CestneClenstviUzivatele CC JOIN Uzivatel U ON CC.Uzivatel_id=U.id WHERE U.Ap_id='.$apID.' AND CC.schvaleno=1 AND CC.plati_od < NOW() AND (CC.plati_do IS NULL OR CC.plati_do > NOW())')
+                        ->fetchPairs('id', 'Uzivatel_id');
+    }
+    
+    public function getListCC()
+    {        
+        $context = new Context($this->connection);
+        return $context->query('SELECT CC.id,CC.Uzivatel_id FROM CestneClenstviUzivatele CC WHERE CC.schvaleno=1 AND CC.plati_od < NOW() AND (CC.plati_do IS NULL OR CC.plati_do > NOW())')
+                        ->fetchPairs('id', 'Uzivatel_id');
     }
      
     public function getNeschvalene()

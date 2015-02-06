@@ -336,7 +336,7 @@ class UzivatelPresenter extends BasePresenter
                 ->addTo($values->email)
                 ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
                 ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '
-                        . 'následující odkaz:<br><br><a href="http://userdb.hkfree.org/user/uzivatel/confirm/">http://userdb.hkfree.org/user/uzivatel/confirm/'.base64_encode($values->id).'</a><br><br>S pozdravem hkfree.org z.s.');
+                        . 'následující odkaz:<br><br><a href="http://userdb.hkfree.org/user/uzivatel/confirm/'.base64_encode($values->id).'">http://userdb.hkfree.org/user/uzivatel/confirm/'.base64_encode($values->id).'</a><br><br>S pozdravem hkfree.org z.s.');
             $mailer = new SendmailMailer;
             $mailer->send($mail);
 
@@ -428,8 +428,11 @@ class UzivatelPresenter extends BasePresenter
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
         $grid->setExport('user_export');
+        
         if($id){  
-            $grid->setModel($this->uzivatel->getSeznamUzivateluZAP($id));
+            $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
+            $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
+
             $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
             if ($money) {
                 $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
@@ -438,11 +441,13 @@ class UzivatelPresenter extends BasePresenter
             
             if($search)
             {
-                $grid->setModel($this->uzivatel->findUserByFulltext($search,$this->getUser()));
+                $seznamUzivatelu = $this->uzivatel->findUserByFulltext($search,$this->getUser());
+                $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC(); //TODO
             }
             else
             {
-                $grid->setModel($this->uzivatel->getSeznamUzivatelu());
+                $seznamUzivatelu = $this->uzivatel->getSeznamUzivatelu();
+                $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC();
                 $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
             }           
             
@@ -455,6 +460,8 @@ class UzivatelPresenter extends BasePresenter
                   return $item->ref('Ap', 'Ap_id')->jmeno;
               })->setSortable();
         }
+        
+        $grid->setModel($seznamUzivatelu);
         
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('zalozen' => 'ASC'));
@@ -476,15 +483,14 @@ class UzivatelPresenter extends BasePresenter
         }
         
 
-        $ccref = $this->cestneClenstviUzivatele;
         if($money)
         {
-            $grid->setRowCallback(function ($item, $tr) use ($ccref,$money_callresult){
+            $grid->setRowCallback(function ($item, $tr) use ($money_callresult,$seznamUzivateluCC){
                 if($money_callresult[$item->id]->userIsActive->isActive != 1) {
                     $tr->class[] = 'neaktivni';
                     return $tr;
                 }
-                if ($ccref->getHasCC($item->id)) {
+                if(in_array($item->id, $seznamUzivateluCC)){
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
@@ -494,8 +500,8 @@ class UzivatelPresenter extends BasePresenter
                 return $tr;
             });
         } else {
-            $grid->setRowCallback(function ($item, $tr) use ($ccref){
-                if ($ccref->getHasCC($item->id)) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC){
+                if(in_array($item->id, $seznamUzivateluCC)){
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
@@ -596,6 +602,18 @@ class UzivatelPresenter extends BasePresenter
     
     public function renderListall()
     {
+        $search = $this->getParameter('search', false);
+        if(!$search)
+            {
+                $this->template->u_celkem = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",1)->count("*");
+                $this->template->u_celkemz = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",0)->count("*");
+                $this->template->u_aktivnich = -1; //TODO
+                $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",1)->count("*");        
+                $this->template->u_primarnich = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",2)->count("*");
+                $this->template->u_radnych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",3)->count("*");
+                $this->template->u_cestnych = count($this->cestneClenstviUzivatele->getListCC());
+            } 
+        
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
         $this->template->money = $this->getParameter("money", false);
         $this->template->search = $this->getParameter('search', false);
@@ -606,9 +624,19 @@ class UzivatelPresenter extends BasePresenter
         // otestujeme, jestli máme id APčka a ono existuje
     	if($this->getParameter('id') && $apt = $this->ap->getAP($this->getParameter('id')))
     	{
+            $id=$this->getParameter('id');
+            $this->template->u_celkem = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",1)->count("*");
+            $this->template->u_celkemz = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",0)->count("*");
+            $this->template->u_aktivnich = -1; //TODO
+            $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",1)->count("*");        
+            $this->template->u_primarnich = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",2)->count("*");
+            $this->template->u_radnych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",3)->count("*");
+            $this->template->u_cestnych = count($this->cestneClenstviUzivatele->getListCCOfAP($id));
+
+            
     	    $this->template->ap = $apt;
             $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());  
-    	} else {
+    	} else {            
             $this->flashMessage("Chyba, AP s tímto ID neexistuje.", "danger");
             $this->redirect("Homepage:default", array("id"=>null)); // a přesměrujeme
     	}

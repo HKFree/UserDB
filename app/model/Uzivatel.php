@@ -56,6 +56,9 @@ class Uzivatel extends Table
             $uid = $Uzivatel->getIdentity()->getId();
             $restriction = " AND (SpravceOblasti.Uzivatel_id = $uid AND od<NOW() AND (do IS NULL OR do>NOW()))";
         }
+        else{
+            $restriction = "";
+        }
         $secureMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id
                                             JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
