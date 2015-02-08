@@ -230,7 +230,7 @@ class UzivatelPresenter extends BasePresenter
     	$form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 50, 12);	
     	$form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
-        $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,1=>1,2=>2,3=>3,4=>4,5=>5))->setDefaultValue(0);
+        $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,1=>1,2=>2,3=>3,4=>4,5=>5,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(0);
     	$form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
             
     	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
@@ -463,7 +463,8 @@ class UzivatelPresenter extends BasePresenter
         
         $grid->setModel($seznamUzivatelu);
         
-    	$grid->setDefaultPerPage(100);
+    	$grid->setDefaultPerPage(500);
+        $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
     	$grid->setDefaultSort(array('zalozen' => 'ASC'));
     
     	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
@@ -482,7 +483,8 @@ class UzivatelPresenter extends BasePresenter
              ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));  
         }
         
-
+        $presenter = $this;
+        
         if($money)
         {
             $grid->setRowCallback(function ($item, $tr) use ($money_callresult,$seznamUzivateluCC){
@@ -500,7 +502,10 @@ class UzivatelPresenter extends BasePresenter
                 return $tr;
             });
         } else {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC){
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter){
+                
+                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
+                
                 if(in_array($item->id, $seznamUzivateluCC)){
                     $tr->class[] = 'cestne';
                     return $tr;
@@ -517,22 +522,31 @@ class UzivatelPresenter extends BasePresenter
             });
         }
         
-    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-        $grid->addColumnText('nick', 'Nick')->setSortable()->setFilterText()->setSuggestion();
+        
+        $presenter = $this;
+    	$grid->addColumnText('id', 'UID')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('a')
+            ->href($presenter->link('Uzivatel:show', array('id'=>$item->id)))
+            ->title($item->id)
+            ->setText($item->id);})->setSortable();
+        $grid->addColumnText('nick', 'Nick')->setSortable();
         
         if($canViewOrEdit) {
-            $grid->addColumnText('TypPravniFormyUzivatele_id', 'PF')->setCustomRender(function($item){
+            /*$grid->addColumnText('TypPravniFormyUzivatele_id', 'PF')->setCustomRender(function($item){
                   return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
               })->setSortable()->setFilterSelect(array(
                               "" => "",
                               "1" => "FO",
                               "2" => "PO",
-                          ));
-            $grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
-            $grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    	
-            $grid->addColumnText('ulice_cp', 'Ulice')->setSortable()->setFilterText();
-            $grid->addColumnEmail('email', 'E-mail')->setSortable()->setFilterText()->setSuggestion();
-            $grid->addColumnText('telefon', 'Telefon')->setSortable()->setFilterText()->setSuggestion();
+                          ));*/
+            /*$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
+            $grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    */
+            $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function($item){                
+                return $item->jmeno . ' '. $item->prijmeni;
+            })->setSortable();
+            $grid->addColumnText('ulice_cp', 'Ulice')->setTruncate(15, $append='…')->setSortable()->setFilterText();
+            $grid->addColumnEmail('email', 'E-mail')->setSortable();
+            $grid->addColumnText('telefon', 'Telefon')->setSortable();
         }
         
     	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
@@ -588,15 +602,13 @@ class UzivatelPresenter extends BasePresenter
             }
             else
             {
-                $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
-                        return Strings::truncate($item->poznamka, 50, $append='…');
-                    })->setSortable()->setFilterText();   
+                $grid->addColumnText('poznamka', 'Poznámka')->setTruncate(20, $append='…')->setSortable()->setFilterText();   
             } 
     	}
         
-        $grid->addActionHref('show', 'Zobrazit')
+        /*$grid->addActionHref('show', 'Zobrazit')
                 ->setIcon('eye-open');
-            /*$grid->addActionHref('edit', 'Editovat')
+            $grid->addActionHref('edit', 'Editovat')
                 ->setIcon('pencil');*/
     }
     

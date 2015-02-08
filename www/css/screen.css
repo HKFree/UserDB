@@ -105,6 +105,14 @@ body {
   }
 }
 
+.col-md-2 {
+width: 200px;
+}
+
+.col-md-offset-2 {
+margin-left: 170px;
+}
+
 /* Sidebar navigation */
 .nav-sidebar {
   margin-right: -21px; /* 20px padding + 1px border */
@@ -112,8 +120,10 @@ body {
   margin-left: -20px;
 }
 .nav-sidebar > li > a {
-  padding-right: 20px;
-  padding-left: 20px;
+  padding-right: 10px;
+  padding-left: 10px;
+  font-size: 11px;
+  line-height: 0.2;
 }
 .nav-sidebar > .active > a,
 .nav-sidebar > .active > a:hover,
@@ -128,7 +138,7 @@ body {
  */
 
 .main {
-  padding: 20px;
+  padding: 0px;
 }
 @media (min-width: 768px) {
   .main {
@@ -238,4 +248,19 @@ pre.tracy-dump {
     color: red;
     border: 3px solid black;
     
+}
+
+.table>thead>tr>th, 
+.table>tbody>tr>th, 
+.table>tfoot>tr>th, 
+.table>thead>tr>td, 
+.table>tbody>tr>td, 
+.table>tfoot>tr>td {
+line-height: 1.0 !important;
+font-size: 11px;
+padding: 2px !important;
+}
+
+.grido .filter.outer .items {
+width: 70% !important;
 }
