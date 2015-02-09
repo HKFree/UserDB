@@ -57,9 +57,9 @@
     border-width: 0 1px 1px 0;
     height: 30px;
 }
-
+/* zabraneni fixni sirky sloupce
 .grido th.column {width: 7%}
-
+*/
 .grido thead {font-size: 1.15em}
 .grido tfoot {font-size: 1.1em}
 
