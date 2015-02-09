@@ -68,7 +68,7 @@ class Uzivatel extends Table
             }
         }
         else{
-            return $this->findAll()->where("telefon LIKE ? OR email LIKE ? OR email2 LIKE ? OR jmeno LIKE ? OR prijmeni LIKE ? OR CONVERT(ulice_cp USING utf8) LIKE ?", '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%')->fetchAll();
+            return $this->findAll()->where("telefon LIKE ? OR email LIKE ? OR email2 LIKE ? OR CONVERT(jmeno USING utf8) LIKE ? OR CONVERT(prijmeni USING utf8) LIKE ? OR CONVERT(ulice_cp USING utf8) LIKE ?", '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%')->fetchAll();
         }
         
         
