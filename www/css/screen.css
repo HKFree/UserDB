@@ -2,6 +2,48 @@
 body {
 	color: black !important;
     font-family: Verdana, Arial, Helvetica, sans-serif !important;
+    font-size: 11px;
+}
+.navbar-inverse .navbar-nav>li>a {
+    font-size: 15px;
+    margin: 5px 4px 2px 4px;
+}
+h4, .h4 {
+    font-size: 16px;
+}
+.col-md-2 {
+    width: 180px;
+}
+
+.col-md-offset-2 {
+    margin-left: 170px;
+}
+@media (min-width: 1300px) {
+    h4, .h4 {
+        font-size: 18px;
+    }    
+    body {
+        font-size: 12px;
+    }
+    .col-md-2 {
+        width: 200px;
+    }
+
+    .col-md-offset-2 {
+        margin-left: 190px;
+    }
+}
+@media (min-width: 1610px) {
+    body {
+        font-size: 13px;
+    }
+    .col-md-2 {
+        width: 210px;
+    }
+
+    .col-md-offset-2 {
+        margin-left: 200px;
+    }
 }
 /*
 h1 {
@@ -85,10 +127,6 @@ body {
 
 /* Hide for mobile, show later */
 .sidebar {
-  display: none;
-}
-@media (min-width: 768px) {
-  .sidebar {
     position: fixed;
     top: 51px;
     bottom: 0;
@@ -100,16 +138,11 @@ body {
     overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
     background-color: #f5f5f5;
     border-right: 1px solid #eee;
-  }
+}
+.nav>li>a, .col-md-2 .nav-sidebar > li > a {
+    padding: 10px 5px;
 }
 
-.col-md-2 {
-width: 220px;
-}
-
-.col-md-offset-2 {
-margin-left: 190px;
-}
 
 /* Sidebar navigation */
 .nav-sidebar {
@@ -120,7 +153,6 @@ margin-left: 190px;
 .nav-sidebar > li > a {
   padding-right: 10px;
   padding-left: 10px;
-  font-size: 11px;
   line-height: 0.2;
 }
 .nav-sidebar > .active > a,
@@ -135,15 +167,7 @@ margin-left: 190px;
  * Main content
  */
 
-.main {
-  padding: 0px;
-}
-@media (min-width: 768px) {
-  .main {
-    padding-right: 40px;
-    padding-left: 40px;
-  }
-}
+
 .main .page-header {
   margin-top: 0;
 }
@@ -261,7 +285,6 @@ pre.tracy-dump {
 .table>tbody>tr>td, 
 .table>tfoot>tr>td {
 line-height: 1.0 !important;
-font-size: 11px;
 padding: 2px !important;
 }
 
@@ -273,4 +296,8 @@ width: 70% !important;
 padding: 2px 4px;
 font-size: 12px;
 line-height: 1.2;
+}
+
+.grido>.table>tbody>tr>td {
+    line-height: 1.2 !important;
 }
