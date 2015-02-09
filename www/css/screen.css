@@ -12,11 +12,11 @@ h4, .h4 {
     font-size: 16px;
 }
 .col-md-2 {
-    width: 180px;
+    width: 190px;
 }
 
 .col-md-offset-2 {
-    margin-left: 170px;
+    margin-left: 180px;
 }
 @media (min-width: 1300px) {
     h4, .h4 {
@@ -26,11 +26,11 @@ h4, .h4 {
         font-size: 12px;
     }
     .col-md-2 {
-        width: 200px;
+        width: 210px;
     }
 
     .col-md-offset-2 {
-        margin-left: 190px;
+        margin-left: 200px;
     }
 }
 @media (min-width: 1610px) {
@@ -38,11 +38,11 @@ h4, .h4 {
         font-size: 13px;
     }
     .col-md-2 {
-        width: 210px;
+        width: 220px;
     }
 
     .col-md-offset-2 {
-        margin-left: 200px;
+        margin-left: 210px;
     }
 }
 /*
@@ -300,4 +300,29 @@ line-height: 1.2;
 
 .grido>.table>tbody>tr>td {
     line-height: 1.2 !important;
+}
+
+
+.br-widget {
+    height: 64px;
+}
+
+.br-widget a {
+    background: url('../images/skull-icon-min.png');
+    width: 64px;
+    height: 64px;
+    display: block;
+    float: left;
+    background-position: 0 128px;
+}
+
+.br-widget a:hover,
+.br-widget a.br-active,
+.br-widget a.br-selected {
+    background-position: 0 0px;
+}
+.br-widget a:first-child,
+.br-widget a:first-child.br-active,
+.br-widget a:first-child.br-selected {
+    background-position: 0 64px;
 }

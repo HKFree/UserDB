@@ -20,13 +20,20 @@
         <link rel="stylesheet" href="{$basePath}/css/jquery-ui.css" />
         <script src="{$basePath}/js/jquery-ui.min.js"></script>     
         <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script src="{$basePath}/js/bootstrap.min.js"></script>         
+        <script src="{$basePath}/js/bootstrap.min.js"></script>   
+        <!-- Bar Rating ( https://github.com/antennaio/jquery-bar-rating ) -->
+        <script src="{$basePath}/js/jquery.barrating.min.js"></script>         
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css">      
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">     
-        <script>
+        <script type="text/javascript">
+            $(function () {
+                    $('#frm-uzivatelForm-index_potizisty').barrating({ showSelectedRating:false });
+            });
+        </script>
+        <script type="text/javascript">
             $(document).ready(function() {
                 $(".datepicker").change(function() {
                   if($(this).val().indexOf("00:00:00") > -1) $(this).val($(this).val().replace(" 00:00:00", ""));
