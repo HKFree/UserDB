@@ -495,7 +495,6 @@ class UzivatelPresenter extends BasePresenter
                 
                 if($money_callresult[$item->id]->userIsActive->isActive != 1) {
                     $tr->class[] = 'neaktivni';
-                    return $tr;
                 }
                 if(in_array($item->id, $seznamUzivateluCC)){
                     $tr->class[] = 'cestne';
@@ -634,7 +633,7 @@ class UzivatelPresenter extends BasePresenter
             {
                 $this->template->u_celkem = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",1)->count("*");
                 $this->template->u_celkemz = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",0)->count("*");
-                $this->template->u_aktivnich = -1; //TODO
+                $this->template->u_aktivnich = "TODO";
                 $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",1)->count("*");        
                 $this->template->u_primarnich = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",2)->count("*");
                 $this->template->u_radnych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",3)->count("*");
@@ -654,7 +653,7 @@ class UzivatelPresenter extends BasePresenter
             $id=$this->getParameter('id');
             $this->template->u_celkem = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",1)->count("*");
             $this->template->u_celkemz = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",0)->count("*");
-            $this->template->u_aktivnich = -1; //TODO
+            $this->template->u_aktivnich = "TODO";
             $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",1)->count("*");        
             $this->template->u_primarnich = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",2)->count("*");
             $this->template->u_radnych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",3)->count("*");
