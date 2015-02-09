@@ -224,8 +224,14 @@ pre.tracy-dump {
 }
 .zrusene>td
 {
-    background-color: #808080 !important;
+    background-color: #808080 !important;   
+    color: white !important;
 }
+.zrusene>td a
+{
+    color: white !important;    
+}
+
 .neaktivni>td:nth-child(10),
 .neaktivni>td:nth-child(11),
 .neaktivni>td:nth-child(12),

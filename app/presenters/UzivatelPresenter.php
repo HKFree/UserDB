@@ -178,10 +178,12 @@ class UzivatelPresenter extends BasePresenter
         {
             if($uzivatel = $this->uzivatel->getUzivatel(base64_decode($this->getParam('id'))))
     	    {
-                $pdf = $this->generatePdf($uzivatel);
+                if($uzivatel->regform_downloaded_password_sent==0)
+                {
+                    $pdf = $this->generatePdf($uzivatel);
 
-                $this->mailPdf($pdf, $uzivatel);
-                
+                    $this->mailPdf($pdf, $uzivatel);
+                }
     		    $this->template->stav = true;
     	    }
 	        else
@@ -230,7 +232,7 @@ class UzivatelPresenter extends BasePresenter
     	$form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 50, 12);	
     	$form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
-        $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,1=>1,2=>2,3=>3,4=>4,5=>5,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(0);
+        $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,10=>10,20=>20,30=>30,40=>40,50=>50,60=>60,70=>70,80=>80,90=>90,100=>100))->setDefaultValue(0);
     	$form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
             
     	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
@@ -487,7 +489,10 @@ class UzivatelPresenter extends BasePresenter
         
         if($money)
         {
-            $grid->setRowCallback(function ($item, $tr) use ($money_callresult,$seznamUzivateluCC){
+            $grid->setRowCallback(function ($item, $tr) use ($money_callresult,$seznamUzivateluCC, $presenter){
+                
+                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
+                
                 if($money_callresult[$item->id]->userIsActive->isActive != 1) {
                     $tr->class[] = 'neaktivni';
                     return $tr;
