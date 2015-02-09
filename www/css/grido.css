@@ -55,6 +55,8 @@
 {
     border:1px solid #CACACA;
     border-width: 0 1px 1px 0;
+}
+.grido th {
     height: 30px;
 }
 /* zabraneni fixni sirky sloupce
@@ -173,8 +175,6 @@
 }
 .grido tbody tr td, .grido tfoot tr td {
     vertical-align: middle;
-    height: 20px;
-    padding: 5px;
 }
 
 .grido input.text, .grido select {
