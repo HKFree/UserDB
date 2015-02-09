@@ -176,9 +176,11 @@ class UzivatelPresenter extends BasePresenter
     {
         if($this->getParam('id'))
         {
-            if($uzivatel = $this->uzivatel->getUzivatel(base64_decode($this->getParam('id'))))
+            list($uid, $hash) = split('-', base64_decode($this->getParam('id')));
+            
+            if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
-                if($uzivatel->regform_downloaded_password_sent==0)
+                if($uzivatel->regform_downloaded_password_sent==0 && $hash == md5($this->context->parameters["salt"].$uzivatel->zalozen))
                 {
                     $pdf = $this->generatePdf($uzivatel);
 
@@ -332,13 +334,15 @@ class UzivatelPresenter extends BasePresenter
             $idUzivatele = $this->uzivatel->insert($values)->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
             
+            $hash = base64_encode($values->id.'-'.md5($this->context->parameters["salt"].$values->zalozen));
+            
             $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());        
             $mail = new Message;
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                 ->addTo($values->email)
                 ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
                 ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '
-                        . 'následující odkaz:<br><br><a href="http://userdb.hkfree.org/user/uzivatel/confirm/'.base64_encode($values->id).'">http://userdb.hkfree.org/user/uzivatel/confirm/'.base64_encode($values->id).'</a><br><br>S pozdravem hkfree.org z.s.');
+                        . 'následující odkaz:<br><br><a href="http://userdb.hkfree.org/user/uzivatel/confirm/'.$hash.'">http://userdb.hkfree.org/user/uzivatel/confirm/'.base64_encode($values->id).'</a><br><br>S pozdravem hkfree.org z.s.');
             $mailer = new SendmailMailer;
             $mailer->send($mail);
 

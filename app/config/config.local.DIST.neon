@@ -13,6 +13,7 @@ parameters:
 # PRODUCTION
 parameters:
 	urlPrefix: '/userdb'   # don't forget to edit www/.htaccess
+	salt: 'saltvalue'   # don't forget to edit www/.htaccess
 	debug:
 		https: false
 		fakeUser: false
