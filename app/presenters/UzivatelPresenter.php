@@ -212,7 +212,7 @@ class UzivatelPresenter extends BasePresenter
             $aps = $aps0 + $aps;
         }
         //\Tracy\Dumper::dump($aps);
-    
+
     	$form = new Form($this, 'uzivatelForm');
     	$form->addHidden('id');
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
@@ -449,19 +449,15 @@ class UzivatelPresenter extends BasePresenter
             {
                 $seznamUzivatelu = $this->uzivatel->findUserByFulltext($search,$this->getUser());
                 $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC(); //TODO
+                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
             }
             else
             {
                 $seznamUzivatelu = $this->uzivatel->getSeznamUzivatelu();
                 $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC();
                 $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-            }           
-            
-            //nepouzitelne - potreba implementovat efektivneji - nacita se vse a pritom stranka zobrazuje male procento
-            if ($money) {
-                $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivatelu()));
             }
-            
+                        
             $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
                   return $item->ref('Ap', 'Ap_id')->jmeno;
               })->setSortable();
@@ -553,7 +549,12 @@ class UzivatelPresenter extends BasePresenter
             $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function($item){                
                 return $item->jmeno . ' '. $item->prijmeni;
             })->setSortable();
-            $grid->addColumnText('ulice_cp', 'Ulice')->setTruncate(15, $append='…')->setSortable()->setFilterText();
+            $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function($item){
+                $el = Html::el('span');
+                $el->title = $item->ulice_cp;
+                $el->setText(Strings::truncate($item->ulice_cp, 20, $append='…'));
+                return $el;
+            })->setSortable()->setFilterText();
             $grid->addColumnEmail('email', 'E-mail')->setSortable();
             $grid->addColumnText('telefon', 'Telefon')->setSortable();
         }
@@ -611,7 +612,12 @@ class UzivatelPresenter extends BasePresenter
             }
             else
             {
-                $grid->addColumnText('poznamka', 'Poznámka')->setTruncate(20, $append='…')->setSortable()->setFilterText();   
+                $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
+                $el = Html::el('span');
+                $el->title = $item->poznamka;
+                $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
+                return $el;
+                })->setSortable()->setFilterText();
             } 
     	}
         
@@ -673,6 +679,24 @@ class UzivatelPresenter extends BasePresenter
             $uid = $this->getParam('id');
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
+                $money_uid = $this->context->parameters["money"]["login"];
+                $money_heslo = $this->context->parameters["money"]["password"];
+                $money_client = new \SoapClient(
+                    'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
+                    array(
+                        'login'         => $money_uid,
+                        'password'      => $money_heslo,
+                        'trace'         => 1,
+                    )
+                );
+                $money_callresult = $money_client->hkfree_money_userGetInfo($uid);                
+                $this->template->money_act = ($money_callresult[$uid]->userIsActive->isActive == 1) ? "ANO" : (($money_callresult[$uid]->userIsActive->isActive == 0) ? "NE" : "?");
+                $this->template->money_dis = ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
+                $this->template->money_lastpay = ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$uid]->GetLastPayment->LastPaymentAmount . ")");
+                $this->template->money_lastact = ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$uid]->GetLastActivation->LastActivationAmount . ")");
+                $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : "?";
+                
+                
     		    $this->template->u = $uzivatel;
                 
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');

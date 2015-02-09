@@ -54,23 +54,24 @@ class Uzivatel extends Table
         
         if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV')) {
             $uid = $Uzivatel->getIdentity()->getId();
-            $restriction = " AND (SpravceOblasti.Uzivatel_id = $uid AND od<NOW() AND (do IS NULL OR do>NOW()))";
-        }
-        else{
-            $restriction = "";
-        }
-        $secureMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
+            $secureMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id
                                             JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
                                             WHERE (
                                             telefon LIKE '$search%'
                                             OR  email LIKE '$search%'
                                             OR  email2 LIKE '$search%'
-                                            )$restriction LIMIT 1")->fetchField();
-        if(!empty($secureMatchId))
-        {
-            return($this->findBy(array('id' => $secureMatchId)));
+                                            ) AND (SpravceOblasti.Uzivatel_id = $uid AND od<NOW() AND (do IS NULL OR do>NOW())) LIMIT 1")->fetchField();
+            if(!empty($secureMatchId))
+            {
+                return($this->findBy(array('id' => $secureMatchId)));
+            }
         }
+        else{
+            return $this->findAll()->where("telefon LIKE ? OR email LIKE ? OR email2 LIKE ? OR jmeno LIKE ? OR prijmeni LIKE ? OR ulice_cp LIKE ?", '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%')->fetchAll();
+        }
+        
+        
         return($this->findBy(array('id' => 0)));
     }
     

@@ -47,7 +47,16 @@
         <tr><th>Index potížisty</th><td><div class="br-widget-show"><span class="lebka-zluta"></span>{for $i=1;$i<6;$i++}{if $i<=$u->index_potizisty}<span class="lebka-cervena"></span>{else}<span class="lebka-seda"></span>{/if}{/for}</div></td></tr>
         <tr><th>Technologie připojení</th><td>{$u->TechnologiePripojeni->text}</td></tr>
         <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni->text}</td></tr>
-        <tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>        
+        <tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>     
+        <tr><td colspan="2">&nbsp;</td></tr>
+
+        <tr><th>Aktivní</th><td>{$money_act}</td></tr>
+        <tr><th>Deaktivace</th><td>{$money_dis}</td></tr>
+        <tr><th>Poslední platba</th><td>{$money_lastpay}</td></tr>
+        <tr><th>Poslední aktivace</th><td>{$money_lastact}</td></tr>
+        <tr><th>Stav účtu</th><td>{$money_bal}</td></tr>    
+        <tr><td colspan="2">&nbsp;</td></tr>
+ 
     {/if}
     </table>
         
