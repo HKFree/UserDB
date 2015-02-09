@@ -1,6 +1,7 @@
 # DEVELOPEMENT
 parameters:
 	urlPrefix: ''
+	salt: 'saltvalue'
 	debug:
 		https: false
 		fakeUser:
@@ -13,7 +14,7 @@ parameters:
 # PRODUCTION
 parameters:
 	urlPrefix: '/userdb'   # don't forget to edit www/.htaccess
-	salt: 'saltvalue'   # don't forget to edit www/.htaccess
+	salt: 'saltvalue'   # randomize!
 	debug:
 		https: false
 		fakeUser: false
