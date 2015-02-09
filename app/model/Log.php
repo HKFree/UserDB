@@ -47,7 +47,13 @@ class Log extends Table
             "TypPravniFormyUzivatele_id" => "právní forma",
             "firma_nazev" => "název firmy",
             "firma_ico" => "IČO firmy",
-            "oldlog" => "importované logy"
+            "oldlog" => "importované logy",
+            "TechnologiePripojeni_id" => "technologie připojení",
+            "cislo_clenske_karty" => "číslo členské karty",
+            "email2" => "sekundární email",
+            "ulice_cp" => "ulice a č.p.",
+            "psc" => "PSČ",
+            "mesto" => "město"
         ); 
         
         $slovnikIpAdresa = array(    

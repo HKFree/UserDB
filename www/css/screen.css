@@ -284,24 +284,23 @@ pre.tracy-dump {
 .table>thead>tr>td, 
 .table>tbody>tr>td, 
 .table>tfoot>tr>td {
-line-height: 1.0 !important;
-padding: 2px !important;
+    /* line-height: 1.0 !important; */
+    padding: 2px 4px !important;
 }
 
 .grido .filter.outer .items {
-width: 70% !important;
+    width: 70% !important;
 }
 
 .btn-sm, .btn-group-sm>.btn {
-padding: 2px 4px;
-font-size: 12px;
-line-height: 1.2;
+    padding: 2px 4px;
+    font-size: 12px;
+    line-height: 1.2;
 }
 
 .grido>.table>tbody>tr>td {
     line-height: 1.2 !important;
 }
-
 
 .br-widget, .br-widget-show {
     height: 32px;

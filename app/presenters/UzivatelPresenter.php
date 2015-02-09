@@ -335,6 +335,7 @@ class UzivatelPresenter extends BasePresenter
             $this->log->logujInsert($values, 'Uzivatel', $log);
             
             $hash = base64_encode($values->id.'-'.md5($this->context->parameters["salt"].$values->zalozen));
+            $link = "http://userdb.hkfree.org/user/uzivatel/confirm/".$hash;
             
             $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());        
             $mail = new Message;
@@ -342,7 +343,7 @@ class UzivatelPresenter extends BasePresenter
                 ->addTo($values->email)
                 ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
                 ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '
-                        . 'následující odkaz:<br><br><a href="http://userdb.hkfree.org/user/uzivatel/confirm/'.$hash.'">http://userdb.hkfree.org/user/uzivatel/confirm/'.$hash.'</a><br><br>S pozdravem hkfree.org z.s.');
+                        . 'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>S pozdravem hkfree.org z.s.');
             $mailer = new SendmailMailer;
             $mailer->send($mail);
 
