@@ -3,9 +3,9 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 03, 2015 at 11:45 PM
--- Server version: 5.1.66
--- PHP Version: 5.3.3-7+squeeze16
+-- Generation Time: Feb 09, 2015 at 03:01 PM
+-- Server version: 5.1.73
+-- PHP Version: 5.3.3-7+squeeze19
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 
@@ -319,8 +319,8 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `email` varchar(50) COLLATE utf8_czech_ci NOT NULL,
   `email2` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   `ulice_cp` varchar(300) COLLATE utf8_czech_ci NOT NULL,
-  `mesto` varchar(100) COLLATE utf8_czech_ci NOT NULL,
-  `psc` int(5) NOT NULL,
+  `mesto` varchar(100) COLLATE utf8_czech_ci DEFAULT NULL,
+  `psc` int(5) DEFAULT NULL,
   `rok_narozeni` decimal(4,0) DEFAULT NULL,
   `telefon` varchar(20) COLLATE utf8_czech_ci NOT NULL,
   `poznamka` text COLLATE utf8_czech_ci,
