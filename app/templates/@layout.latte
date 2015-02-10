@@ -41,7 +41,18 @@
                 $(".datepicker").off("change");
                  
                 $(".datepicker").datepicker({ dateFormat: "yy-mm-dd" });
+                
+                $("#navareas").click(function(){
+                    $(".sidebar").toggle();                    
+                    if($(".sidebar").is(":visible")) $(".main").css( { marginLeft : "210px" } );
+                    else $(".main").css( { marginLeft : "0px" } );
+                });
+                if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+                    $(".sidebar").hide();
+                    $(".main").css( { marginLeft : "0px" } );
+                }
             });
+              
         </script>    
 	{block head}{/block}
 </head>
@@ -68,6 +79,9 @@
           {/form}
 		<ul class="nav navbar-nav navbar-right">
             <li><a href="{link Uzivatel:edit id=>null}">Přidat uživatele</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-left">
+            <li><a id="navareas" href="#">Skrýt/zobrazit seznam oblastí</a></li>
           </ul>
         </div>
       </div>
