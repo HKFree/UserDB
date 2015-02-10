@@ -74,6 +74,49 @@ class Subnet extends Table
         return($subnets);
     }
     
+    public function getOverlapingSubnet($s) {
+        list($network, $cidr) = explode("/", $s);
+        $bigCidr = floor($cidr / 8);
+        
+        $bigNetwork = long2ip(ip2long($network) & ip2long($this->CIDRToMask($bigCidr*8)));
+        
+        $bigNetworkExploded = explode(".", $bigNetwork);
+        for($i=0; $i<=3; $i++) {
+            if($i >= $bigCidr) {
+                $bigNetworkExploded[$i] = "%";
+            }
+        }
+        
+        $bigNetworkLike = implode(".", $bigNetworkExploded)."/%";
+        
+        $posiblyColiding = $this->findAll()->where("subnet LIKE ?", $bigNetworkLike);
+        $out = array();
+        foreach($posiblyColiding as $colSubnet) {
+            //$out[] = $colSubnet->subnet;
+            $this->checkColision($colSubnet->subnet, $s);
+        }
+        
+        return($out);
+    }
+    
+    private function checkColision($s1, $s2) {
+        list($n1, $c1) = explode("/", $s1);
+        list($n2, $c2) = explode("/", $s2);
+    }
+    
+    public function validateSubnet($s) {
+        list($network, $cidr) = explode("/", $s);
+        
+        // TODO - validate network part
+        if(!is_numeric($cidr) || $cidr < 0 || $cidr > 32) {
+            return(false);
+        }
+        
+        $lnet = ip2long($network);
+        $lmask = pow(2, 32 - $cidr);
+        return(($lnet % $lmask) == 0);
+    }
+    
     public function CIDRToMask($cidr) {
         return(long2ip(pow(2, 32) - pow(2, 32-$cidr)));
     }
