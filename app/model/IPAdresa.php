@@ -71,6 +71,9 @@ class IPAdresa extends Table
 		$ip->addCheckbox('mac_filter', 'MAC Filtr')->setAttribute('class', 'mac_filter ip');
 		$ip->addCheckbox('dhcp', 'DHCP')->setAttribute('class', 'dhcp ip');
 		$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
+        $ip->setDefaults(array(
+            'internet' => 1,
+        ));
     }
     
     public function getIPTable($ips) {
