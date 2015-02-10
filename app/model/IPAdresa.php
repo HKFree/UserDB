@@ -28,6 +28,16 @@ class IPAdresa extends Table
         return($this->find($id));
     }
     
+    public function getDuplicateIP($ip, $id)
+    {
+        $existujici = $this->findAll()->where('ip_adresa = ?', $ip)->where('id != ?', $id)->fetch();
+        if($existujici)
+        {
+            return $existujici->ip_adresa;//$existujici->ref('Uzivatel', 'Uzivatel_id')->id;
+        }
+        return null;
+    }
+    
     
     /**
      * Párová metoda k \App\Model\Log::getIPzLogu(), Vrati seznam idIp -> ipAdresa
