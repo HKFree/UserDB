@@ -63,7 +63,7 @@ class IPAdresa extends Table
 		$ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
 		$ip->addText('hostname', 'Hostname', 11)->setAttribute('class', 'hostname ip')->setAttribute('placeholder', 'Hostname');
 		$ip->addSelect('TypZarizeni_id', 'Typ Zařízení', $typyZarizeni)->setAttribute('class', 'TypZarizeni_id ip')->setPrompt('--Vyberte--');;
-		$ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'internet ip');
+		$ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'internet ip')->setDefaultValue(1);
 		$ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'smokeping ip');
 		$ip->addText('login', 'Login', 11)->setAttribute('class', 'login ip')->setAttribute('placeholder', 'Login');
 		$ip->addText('heslo', 'Heslo', 11)->setAttribute('class', 'heslo ip')->setAttribute('placeholder', 'Heslo');
@@ -71,9 +71,9 @@ class IPAdresa extends Table
 		$ip->addCheckbox('mac_filter', 'MAC Filtr')->setAttribute('class', 'mac_filter ip');
 		$ip->addCheckbox('dhcp', 'DHCP')->setAttribute('class', 'dhcp ip');
 		$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
-        $ip->setDefaults(array(
+        /*$ip->setDefaults(array(
             'internet' => 1,
-        ));
+        ));*/
     }
     
     public function getIPTable($ips) {
