@@ -287,6 +287,7 @@ class UzivatelPresenter extends BasePresenter
     	{
             $duplIp = $this->ipAdresa->getDuplicateIP($ip->ip_adresa, $ip->id);
             if ($duplIp) {
+                //\Tracy\Dumper::dump($values);
                 $form->addError('Tato IP adresa již existuje: ' . $duplIp);
             }
         }
@@ -688,7 +689,7 @@ class UzivatelPresenter extends BasePresenter
             $uid = $this->getParam('id');
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
-                /*$money_uid = $this->context->parameters["money"]["login"];
+                $money_uid = $this->context->parameters["money"]["login"];
                 $money_heslo = $this->context->parameters["money"]["password"];
                 $money_client = new \SoapClient(
                     'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
@@ -704,13 +705,12 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->money_lastpay = ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$uid]->GetLastPayment->LastPaymentAmount . ")");
                 $this->template->money_lastact = ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$uid]->GetLastActivation->LastActivationAmount . ")");
                 $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : "?";
-                */
-                
-                $this->template->money_act=0;
+                                
+                /*$this->template->money_act=0;
                 $this->template->money_dis=0;
                 $this->template->money_lastpay=0;
                 $this->template->money_lastact=0;
-                $this->template->money_bal=0;
+                $this->template->money_bal=0;*/
                 
     		    $this->template->u = $uzivatel;
                 
