@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 09, 2015 at 03:01 PM
+-- Generation Time: Feb 10, 2015 at 10:04 AM
 -- Server version: 5.1.73
 -- PHP Version: 5.3.3-7+squeeze19
 
@@ -35,6 +35,16 @@ CREATE TABLE IF NOT EXISTS `Ap` (
   KEY `Oblast_id` (`Oblast_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `areas`
+--
+CREATE TABLE IF NOT EXISTS `areas` (
+`id` int(11)
+,`name` varchar(50)
+,`admin` int(11)
+);
 -- --------------------------------------------------------
 
 --
@@ -385,6 +395,15 @@ CREATE TABLE IF NOT EXISTS `ZpusobPripojeni` (
   `text` varchar(150) COLLATE utf8_czech_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `areas`
+--
+DROP TABLE IF EXISTS `areas`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `areas` AS select `O`.`id` AS `id`,`O`.`jmeno` AS `name`,`S`.`Uzivatel_id` AS `admin` from (`Oblast` `O` join `SpravceOblasti` `S` on((`O`.`id` = `S`.`Oblast_id`)));
 
 -- --------------------------------------------------------
 
