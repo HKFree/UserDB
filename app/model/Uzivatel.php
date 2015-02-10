@@ -165,7 +165,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
     
     public function getDuplicateEmailArea($email, $id)
     {
-        $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->fetch();
+        $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where('TypClenstvi_id > 1')->fetch();
         if($existujici)
         {
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
@@ -175,7 +175,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
     
     public function getDuplicatePhoneArea($telefon, $id)
     {
-        $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->fetch();
+        $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where('TypClenstvi_id > 1')->fetch();
         if($existujici)
         {
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
