@@ -42,7 +42,14 @@ class ApiPresenter extends BasePresenter
                     list($network, $cidr) = explode("/", $subnet->subnet);
                     $out = array('subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
                 }
-            } else {
+            } elseif(count($subnets) > 1) {
+                $error_subnets = array();
+                while($subnet = $subnets->fetch()) {
+                    $error_subnets[] = $subnet->subnet;
+                }
+                $error_text = "Chyba! Pro tuto IP existuje více subnetů (".implode(", ", $error_subnets).")";
+                $out = array('error' => $error_text);
+            } else {    
                 $out = array('error' => "Podsíť a brána pro tuto IP není v databázi!");
             }
         }
