@@ -149,6 +149,7 @@ class ApPresenter extends BasePresenter {
 		->setAttribute('class', 'btn btn-success btn-xs btn-white');
 	
 	$form->onSuccess[] = array($this, 'apFormSucceded');
+    $form->onValidate[] = array($this, 'validateApForm');
     
 	$submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
@@ -164,6 +165,21 @@ class ApPresenter extends BasePresenter {
 	    }
 	} 	
 	return($form);
+    }
+    
+    public function validateApForm($form)
+    {
+        $values = $form->getValues();
+
+        $ips = $form->httpData['ip'];
+        foreach($ips as $ip)
+    	{
+            $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
+            if ($duplIp && !isset($ip['remove'])) {
+                //\Tracy\Dumper::dump($ip);
+                $form->addError('Tato IP adresa již existuje: ' . $duplIp);
+            }
+        }
     }
     
     public function apFormSucceded($form, $values) {

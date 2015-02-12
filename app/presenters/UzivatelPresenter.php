@@ -228,7 +228,7 @@ class UzivatelPresenter extends BasePresenter
     	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
         $form->addText('cislo_clenske_karty', 'Číslo členské karty', 30);
     	$form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
-        $form->addText('mesto', 'Adresa (město)', 30)->setRequired('Zadejte město');
+        $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
         $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
     	$form->addText('rok_narozeni', 'Rok narození',30);	
     	$form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
@@ -292,25 +292,28 @@ class UzivatelPresenter extends BasePresenter
             }
         }
         
-        $duplMail = $this->uzivatel->getDuplicateEmailArea($values->email, $values->id);
-        
-        if ($duplMail) {
-            $form->addError('Tento email již v DB existuje v oblasti: ' . $duplMail);
-        }
-        
-        if(!empty($values->email2)) {
-            $duplMail2 = $this->uzivatel->getDuplicateEmailArea($values->email2, $values->id);
+        if($values->TypClenstvi_id > 1)
+        {
+            $duplMail = $this->uzivatel->getDuplicateEmailArea($values->email, $values->id);
 
-            if ($duplMail2) {
-                $form->addError('Tento email již v DB existuje v oblasti: ' . $duplMail2);
+            if ($duplMail) {
+                $form->addError('Tento email již v DB existuje v oblasti: ' . $duplMail);
             }
+
+            if(!empty($values->email2)) {
+                $duplMail2 = $this->uzivatel->getDuplicateEmailArea($values->email2, $values->id);
+
+                if ($duplMail2) {
+                    $form->addError('Tento email již v DB existuje v oblasti: ' . $duplMail2);
+                }
+            }
+
+            /*$duplPhone = $this->uzivatel->getDuplicatePhoneArea($values->telefon, $values->id);
+
+            if ($duplPhone) {
+                $form->addError('Tento telefon již v DB existuje v oblasti: ' . $duplPhone);
+            }*/
         }
-        
-        /*$duplPhone = $this->uzivatel->getDuplicatePhoneArea($values->telefon, $values->id);
-        
-        if ($duplPhone) {
-            $form->addError('Tento telefon již v DB existuje v oblasti: ' . $duplPhone);
-        }*/
     }
     
     public function uzivatelFormSucceded($form, $values) {
@@ -559,12 +562,21 @@ class UzivatelPresenter extends BasePresenter
             $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function($item){                
                 return $item->jmeno . ' '. $item->prijmeni;
             })->setSortable();
-            $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function($item){
+            if($fullnotes)   
+            {
+                $grid->addColumnText('ulice_cp', 'Ulice')->setSortable()->setFilterText();
+                $grid->addColumnText('mesto', 'Obec')->setSortable()->setFilterText();
+                $grid->addColumnText('psc', 'PSČ')->setSortable()->setFilterText();
+            }
+            else{
+                $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function($item){
                 $el = Html::el('span');
                 $el->title = $item->ulice_cp;
-                $el->setText(Strings::truncate($item->ulice_cp, 20, $append='…'));
+                $el->setText(Strings::truncate($item->ulice_cp, 50, $append='…'));
                 return $el;
             })->setSortable()->setFilterText();
+            }
+            
             $grid->addColumnEmail('email', 'E-mail')->setSortable();
             $grid->addColumnText('telefon', 'Telefon')->setSortable();
         }

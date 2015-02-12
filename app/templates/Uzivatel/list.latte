@@ -10,8 +10,8 @@
 {/if}
 <a n:if="$money" href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm" role="button">Bez informací z money</a>
 
-<a n:if="$fullnotes" href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm" role="button">Zkrácené poznámky</a>
-<a n:if="!$fullnotes" href="{link Uzivatel:list id=>$ap->id, fullnotes=>1}" class="btn btn-default btn-sm" role="button">Kompletní poznámky</a>
+<a n:if="$fullnotes" href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm" role="button">Zkrácené poznámky a adresy</a>
+<a n:if="!$fullnotes" href="{link Uzivatel:list id=>$ap->id, fullnotes=>1}" class="btn btn-default btn-sm" role="button">Kompletní poznámky a adresy</a>
 
 <br><br>
 
