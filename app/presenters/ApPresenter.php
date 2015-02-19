@@ -146,7 +146,7 @@ class ApPresenter extends BasePresenter {
                 ->addCreateOnClick(TRUE);
 
         $form->addSubmit('save', 'Uložit')
-             ->setAttribute('class', 'btn btn-success btn-xs btn-white');
+             ->setAttribute('class', 'btn btn-success btn-xs btn-white default');
 
         $form->onSuccess[] = array($this, 'apFormSucceded');
         $form->onValidate[] = array($this, 'validateApForm');

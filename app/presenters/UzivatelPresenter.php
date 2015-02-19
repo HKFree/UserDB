@@ -254,7 +254,7 @@ class UzivatelPresenter extends BasePresenter
     		->addCreateOnClick(TRUE);
     
     	$form->addSubmit('save', 'Uložit')
-    		->setAttribute('class', 'btn btn-success btn-xs btn-white');
+    		->setAttribute('class', 'btn btn-success btn-xs btn-white default');
     	$form->onSuccess[] = array($this, 'uzivatelFormSucceded');
         $form->onValidate[] = array($this, 'validateUzivatelForm');
     

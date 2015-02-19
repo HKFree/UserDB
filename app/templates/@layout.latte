@@ -52,7 +52,22 @@
                     $(".main").css( { marginLeft : "0px" } );
                 }
             });
-              
+            
+            // EXTREMNI prasarna pro "nastaveni" defaultniho inputu ve formulari
+            $(document).ready(function() {        
+                $('form').each(function () {
+                    var thisform = $(this);
+                    var clonebutton = thisform.find('input.default');
+                    var newID = clonebutton.attr('id') + "x";
+                    thisform.prepend(clonebutton.clone().css({
+                        position: 'absolute',
+                        left: '-2000px',
+                        top: '-2000px',
+                        height: 0,
+                        width: 0
+                    }).attr('id', newID));
+                });
+            });          
         </script>    
 	{block head}{/block}
 </head>
