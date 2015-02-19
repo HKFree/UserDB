@@ -78,7 +78,7 @@ class Subnet extends Table
      * Používá se k dotazům do DB v getSubnetOfIP()
      * 
      * @param string $ip IP adresa
-     * @return array Subnety
+     * @return string[] Subnety
      */
     private function genSubnets($ip) {
         $lip = ip2long($ip);
@@ -94,13 +94,17 @@ class Subnet extends Table
     /**
      * Najde kolidující/překrývající-se subnety v DB
      * 
-     * @param type $s Subnet
-     * @return mixed(boolean/array) false pokud zadaný subnet nekoliduje, 
+     * @param string $s Subnet
+     * @param integer $apId ID testovaného subnetu - určené k vyhnutí se
+     * @return boolean|string[] false pokud zadaný subnet nekoliduje, 
      *               pole kolidujících subnetů pokud koliduje
      */
-    public function getOverlapingSubnet($s) {
+    public function getOverlapingSubnet($s, $apId = NULL) {
         $posiblyColiding = $this->getPossiblyColiding($s);
-        
+        if (!is_null($apId)) {
+            $posiblyColiding = $posiblyColiding->where("Ap_id != ?", $apId);
+        }
+            
         $coliding = array();
         foreach($posiblyColiding as $colSubnet) {
             if($this->checkColision($colSubnet->subnet, $s)) {
@@ -122,8 +126,8 @@ class Subnet extends Table
      * 
      * Používá se, protože DB neumí se subnety přímo pracovat.
      * 
-     * @param type $s Subnet
-     * @return Nette\Database\Table\ActiveRow Možné kolidující subnety
+     * @param string $s Subnet
+     * @return Nette\Database\Table\Selection Možné kolidující subnety
      */
     private function getPossiblyColiding($s) {
         list($network, $cidr) = explode("/", $s);
@@ -146,8 +150,8 @@ class Subnet extends Table
     /**
      * Zjistí, zda dva subnety kolidují
      * 
-     * @param type $s1 Testovaný subnet 1
-     * @param type $s2 Testovaný subnet 2
+     * @param string $s1 Testovaný subnet 1
+     * @param string $s2 Testovaný subnet 2
      * @return boolean false když subnety nekolidují, 
      *                 true  když kolidují.
      */
@@ -173,20 +177,58 @@ class Subnet extends Table
     }
     
     /**
+     * Pro zadané pole subnetů zjistí, jestli se nějaké nepřekrývají
+     * 
+     * @param string[] $subnets Pole subnetů ke kontrole
+     * @return boolean|string[] false pokud se žádné dva subnety nepřekrývají
+     *                          string[] pokud se překrývají
+     */
+    public function checkColisions($subnets) {
+        $collisions = array();
+        foreach ($subnets as $id1 => $subnet1) {
+            foreach ($subnets as $id2 => $subnet2) {
+                // Projizdime jenom trojuhelnik misto ctverce
+                if($id1 <= $id2) {
+                    continue(1);
+                }
+                
+                $colides = $this->checkColision($subnet1, $subnet2);
+                if($colides) {
+                    $collisions[] = $subnet1." - ".$subnet2;
+                }
+            } 
+        }
+        
+        if(count($collisions) == 0) {
+            return(false);
+        } else {
+            return($collisions);
+        }
+    }
+    
+    /**
      * Validuje subnet (x.x.x.x/y)
      * 
-     * 10.107.0.0/16 => true
-     * 10.107.0.64/16 => false
-     * 10.107.0.64/26 => true
+     * Dává pozor, jestli jde opravdu o subnet nebo IP s maskou
+     * - 10.107.0.0/16 => true
+     * - 10.107.0.64/16 => false
+     * - 10.107.0.64/26 => true
      * 
      * @param string $subnet Validovaný subnet
      * @return boolean Výsledek validace
      */
     public function validateSubnet($subnet) {
-        list($network, $cidr) = explode("/", $subnet);
+        $disected_subnet = explode("/", $subnet); 
+        
+        // Zkontrolujeme jestli máme přesně jedno lomítko
+        if(count($disected_subnet) != 2) {
+            return(false);
+        }
+        
+        list($network, $cidr) = $disected_subnet;
         
         // Zkontroluje validitu adresy sítě
-        if(!filter_var($ip, FILTER_VALIDATE_IP)) {
+        if(!filter_var($network, FILTER_VALIDATE_IP)) {
             return(false);
         }
         
@@ -194,9 +236,16 @@ class Subnet extends Table
         if(!is_numeric($cidr) || $cidr < 0 || $cidr > 32) {
             return(false);
         }
+                
+        $lnet = ip2long($network);
+        
+        // Zkontrolujeme síť 0.0.0.0/0 (cokoliv jiného/0 zahodíme)
+        // (hlavně protože % nemá rádo 2^32, musíme to vyfiltrovat tady)
+        if($cidr == 0){
+            return($lnet == 0);
+        }            
         
         // Zkontroluje jestli opravdu jde o subnet a ne IP/maska
-        $lnet = ip2long($network);
         $lmask = pow(2, 32 - $cidr);
         return(($lnet % $lmask) == 0);
     }

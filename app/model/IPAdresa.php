@@ -58,6 +58,10 @@ class IPAdresa extends Table
 			return true;
     }
     
+    public function validateIP($ip) {
+        return(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
+    }
+    
     public function getIPForm(&$ip, $typyZarizeni) {	
 		$ip->addHidden('id')->setAttribute('class', 'id ip');
 		$ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
