@@ -280,17 +280,44 @@ class UzivatelPresenter extends BasePresenter
     
     public function validateUzivatelForm($form)
     {
-        $values = $form->getValues();
+        $data = $form->getHttpData();
 
-        $ips = $form->httpData['ip'];
-        foreach($ips as $ip)
-    	{
-            $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
-            if ($duplIp && !isset($ip['remove'])) {
-                //\Tracy\Dumper::dump($ip);
-                $form->addError('Tato IP adresa již existuje: ' . $duplIp);
+        // Validujeme jenom při uložení formuláře
+        if(!isset($data["save"])) {
+            return(0);
+        }
+        
+        if(isset($data['ip'])) {
+            $formIPs = array();
+            foreach($data['ip'] as $ip) {
+                if(!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
+                    $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
+                }
+                
+                $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
+                if ($duplIp) {
+                    $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
+                }
+                
+                $formIPs[] = $ip['ip_adresa'];
+            }
+
+            // Tohle prohledá duplikátní IP přímo v formuláři
+            // protože na ty se nepřijde pomocí getDuplicateIP
+            $formDuplicates = array();
+            foreach(array_count_values($formIPs) as $val => $c) {
+                if($c > 1) {
+                    $formDuplicates[] = $val;
+                }
+            }
+            
+            if(count($formDuplicates) != 0) {
+                $formDuplicatesReadible = implode(", ", $formDuplicates);
+                $form->addError('IP adresa '.$formDuplicatesReadible.' je v tomto formuláři vícekrát!');
             }
         }
+        
+        $values = $form->getValues();
         
         if($values->TypClenstvi_id > 1)
         {
@@ -300,7 +327,7 @@ class UzivatelPresenter extends BasePresenter
                 $form->addError('Tento email již v DB existuje v oblasti: ' . $duplMail);
             }
 
-            if(!empty($values->email2)) {
+            if (!empty($values->email2)) {
                 $duplMail2 = $this->uzivatel->getDuplicateEmailArea($values->email2, $values->id);
 
                 if ($duplMail2) {

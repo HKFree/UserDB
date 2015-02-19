@@ -177,6 +177,7 @@ class ApPresenter extends BasePresenter {
         }
         
         if(isset($data['ip'])) {
+            $formIPs = array();
             foreach($data['ip'] as $ip) {
                 if(!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
                     $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
@@ -186,6 +187,22 @@ class ApPresenter extends BasePresenter {
                 if ($duplIp) {
                     $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
                 }
+                
+                $formIPs[] = $ip['ip_adresa'];
+            }
+
+            // Tohle prohledá duplikátní IP přímo v formuláři
+            // protože na ty se nepřijde pomocí getDuplicateIP
+            $formDuplicates = array();
+            foreach(array_count_values($formIPs) as $val => $c) {
+                if($c > 1) {
+                    $formDuplicates[] = $val;
+                }
+            }
+            
+            if(count($formDuplicates) != 0) {
+                $formDuplicatesReadible = implode(", ", $formDuplicates);
+                $form->addError('IP adresa '.$formDuplicatesReadible.' je v tomto formuláři vícekrát!');
             }
         }
         
