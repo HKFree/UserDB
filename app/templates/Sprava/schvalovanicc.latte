@@ -7,6 +7,15 @@
 
 {form spravaCCForm}  
     <fieldset n:foreach="$form['rights']->containers as $right" class="ipform">
+        {var $uzivatel_id = $right['Uzivatel_id']->value}
+        {var $podavatel_id = $right['zadost_podal']->value}
+        <h4>{$uzivatele[$uzivatel_id]->jmeno} {$uzivatele[$uzivatel_id]->prijmeni}
+            (<a n:href="uzivatel:show, id=>$uzivatel_id">{$uzivatele[$uzivatel_id]->nick}</a>)
+            <small>Oblast {$uzivatele[$uzivatel_id]->Ap->jmeno}, AP {$uzivatele[$uzivatel_id]->Ap->Oblast->jmeno}</small>
+        </h4>
+        žádost podal {$uzivatele[$podavatel_id]->jmeno}  {$uzivatele[$podavatel_id]->prijmeni} 
+        (<a n:href="uzivatel:show, id=>$podavatel_id">{$uzivatele[$podavatel_id]->nick}</a>)
+        <br><br>
         {$right['plati_od']->label} {$right['plati_od']->control}
         {$right['plati_do']->label} {$right['plati_do']->control}<br>
         {$right['poznamka']->label} {$right['poznamka']->control}<br>

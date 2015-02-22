@@ -38,6 +38,13 @@ class SpravaPresenter extends BasePresenter
     public function renderSchvalovanicc()
     {
         $this->template->canApproveCC = $this->getUser()->isInRole('VV');
+        $uzivatele = array();
+        foreach($this->cestneClenstviUzivatele->getNeschvalene() as $cc_id => $cc_data) {
+            $uzivatele[] = $cc_data->Uzivatel_id;
+            $uzivatele[] = $cc_data->zadost_podal;
+        }
+        $uzivatele = array_unique($uzivatele);
+        $this->template->uzivatele = $this->uzivatel->findBy(array("id" => $uzivatele));
     }
     
     public function renderPrehledcc()
@@ -102,16 +109,17 @@ class SpravaPresenter extends BasePresenter
                  ->addCondition(Form::FILLED)
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
                  
-                 $right->addText('poznamka', 'Poznámka:')
+            $right->addText('poznamka', 'Poznámka:')
                  ->setAttribute('class', 'note ip');
                  
-                 $schvalenoStates = array(
-                    0 => 'Nerozhodnuto',
-                    1 => 'Schváleno',
-                    2 => 'Zamítnuto');
-                 $right->addRadioList('schvaleno', 'Stav schválení: ', $schvalenoStates)
-                       ->getSeparatorPrototype()->setName("span")->style('margin-right', '7px');
-                 //$right->addCheckbox('schvaleno', 'Schváleno')->setAttribute('class', 'approve ip');
+            $schvalenoStates = array(
+                0 => 'Nerozhodnuto',
+                1 => 'Schváleno',
+                2 => 'Zamítnuto');
+            $right->addRadioList('schvaleno', 'Stav schválení: ', $schvalenoStates)
+                  ->getSeparatorPrototype()->setName("span")->style('margin-right', '7px');
+
+            $right->addHidden('zadost_podal');
 
     	}, 0, false);
     
