@@ -83,7 +83,7 @@ class UzivatelPresenter extends BasePresenter
                 $subnet = $subnets->fetch();
                 if(empty($subnet->subnet)) {
                     $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                } elseif( empty($subnet->gateway)) {
+                } elseif(empty($subnet->gateway)) {
                     $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
                 } else {
                     list($network, $cidr) = explode("/", $subnet->subnet);
@@ -927,7 +927,7 @@ class UzivatelPresenter extends BasePresenter
                     1 => 'Schváleno',
                     2 => 'Zamítnuto');
                  $right->addRadioList('schvaleno', 'Stav schválení: ', $schvalenoStates)
-                         ->getSeparatorPrototype()->setName(NULL);
+                       ->getSeparatorPrototype()->setName("span")->style('margin-right', '7px');
                  
                  $right->setDefaults(array(
                         'TypCestnehoClenstvi_id' => 0,

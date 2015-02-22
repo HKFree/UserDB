@@ -110,7 +110,7 @@ class SpravaPresenter extends BasePresenter
                     1 => 'Schváleno',
                     2 => 'Zamítnuto');
                  $right->addRadioList('schvaleno', 'Stav schválení: ', $schvalenoStates)
-                         ->getSeparatorPrototype()->setName(NULL);
+                       ->getSeparatorPrototype()->setName("span")->style('margin-right', '7px');
                  //$right->addCheckbox('schvaleno', 'Schváleno')->setAttribute('class', 'approve ip');
 
     	}, 0, false);
