@@ -8,6 +8,8 @@ use Nette,
     Nette\Forms\Container,
     Nette\Utils\Html,
     Grido\Grid,
+    Nette\Mail\Message,
+    Nette\Mail\SendmailMailer,
     Tracy\Debugger;
     
 use Nette\Forms\Controls\SubmitButton;
@@ -109,7 +111,7 @@ class SpravaPresenter extends BasePresenter
                  ->addCondition(Form::FILLED)
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
                  
-            $right->addText('poznamka', 'Poznámka:')
+            $right->addTextArea('poznamka', 'Poznámka:', 72, 5)
                  ->setAttribute('class', 'note ip');
                  
             $schvalenoStates = array(
@@ -138,6 +140,10 @@ class SpravaPresenter extends BasePresenter
     
     	return $form;
     }
+    
+    /**
+    * Schválení čestného členství
+    */
     public function spravaCCFormSucceded($form, $values) {
         $log = array();
     	$prava = $values->rights;
@@ -151,10 +157,28 @@ class SpravaPresenter extends BasePresenter
             if(empty($pravo->plati_od)) $pravo->plati_od = null; 
             if(empty($pravo->plati_do)) $pravo->plati_do = null;
             if(empty($pravo->schvaleno)) $pravo->schvaleno = 0;
-            
+
             if(!empty($pravo->id)) {                
                 $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
+                
+                if($starePravo->schvaleno != $pravo->schvaleno && ($pravo->schvaleno == 1 || $pravo->schvaleno == 2))
+                {
+                    $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
+                    $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
+
+                    $stav = $pravo->schvaleno == 1 ? "schválena" : "zamítnuta";
+
+                    $mail = new Message;
+                    $mail->setFrom('UserDB <userdb@hkfree.org>')
+                        ->addTo($navrhovatel->email)
+                        ->addTo($schvaleny->email)
+                        ->setSubject('Žádost o čestné členství')
+                        ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $pravo->plati_od - $pravo->plati_do.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
+
+                    $mailer = new SendmailMailer;
+                    $mailer->send($mail);
+                }
             }
     	}
     	

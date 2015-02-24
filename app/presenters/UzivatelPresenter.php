@@ -993,7 +993,7 @@ class UzivatelPresenter extends BasePresenter
                 $mailer = new SendmailMailer;
                 $mailer->send($mail);
             } else {
-                $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
+                //$starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
             }
     	}
