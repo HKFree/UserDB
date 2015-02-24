@@ -109,75 +109,137 @@ class ApPresenter extends BasePresenter {
     }
     
     protected function createComponentApForm() {
-	$form = new Form($this, 'apForm');
+        $form = new Form($this, 'apForm');
         $form->addHidden('id');
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
-	$form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');;
-	$form->addTextArea('poznamka', 'Poznámka', 24, 10);
-	$dataIp = $this->ipAdresa;
-	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
-	$ips = $form->addDynamic('ip', function (Container $ip) use ($dataIp,$typyZarizeni) {
-		$dataIp->getIPForm($ip, $typyZarizeni);
+        $form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');;
+        $form->addTextArea('poznamka', 'Poznámka', 24, 10);
+        $dataIp = $this->ipAdresa;
+        $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
+        $ips = $form->addDynamic('ip', function (Container $ip) use ($dataIp,$typyZarizeni) {
+            $dataIp->getIPForm($ip, $typyZarizeni);
 
-                $ip->addSubmit('remove', '– Odstranit IP')
-                        ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-                        ->setValidationScope(FALSE)
-                        ->addRemoveOnClick();
+                    $ip->addSubmit('remove', '– Odstranit IP')
+                            ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+                            ->setValidationScope(FALSE)
+                            ->addRemoveOnClick();
         }, ($this->getParam('id')>0?0:1));
 
         $ips->addSubmit('add', '+ Přidat další IP')
-                ->setAttribute('class', 'btn btn-success btn-xs btn-white')
-                ->setValidationScope(FALSE)
-                ->addCreateOnClick(TRUE);
-        
-        $dataSubnet = $this->subnet;
-	$subnets = $form->addDynamic('subnet', function (Container $subnet) use ($dataSubnet) {
-		$dataSubnet->getSubnetForm($subnet);
+            ->setAttribute('class', 'btn btn-success btn-xs btn-white')
+            ->setValidationScope(FALSE)
+            ->addCreateOnClick(TRUE);
 
-                $subnet->addSubmit('remove_subnet', '– Odstranit Subnet')
-                        ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-                        ->setValidationScope(FALSE)
-                        ->addRemoveOnClick();
+        $dataSubnet = $this->subnet;
+        $subnets = $form->addDynamic('subnet', function (Container $subnet) use ($dataSubnet) {
+            $dataSubnet->getSubnetForm($subnet);
+
+                    $subnet->addSubmit('remove_subnet', '– Odstranit Subnet')
+                            ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+                            ->setValidationScope(FALSE)
+                            ->addRemoveOnClick();
         }, ($this->getParam('id')>0?0:1));
 
         $subnets->addSubmit('add_subnet', '+ Přidat další Subnet')
                 ->setAttribute('class', 'btn btn-success btn-xs btn-white')
                 ->setValidationScope(FALSE)
                 ->addCreateOnClick(TRUE);
-        
-	$form->addSubmit('save', 'Uložit')
-		->setAttribute('class', 'btn btn-success btn-xs btn-white');
-	
-	$form->onSuccess[] = array($this, 'apFormSucceded');
-    $form->onValidate[] = array($this, 'validateApForm');
-    
-	$submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+
+        $form->addSubmit('save', 'Uložit')
+             ->setAttribute('class', 'btn btn-success btn-xs btn-white default');
+
+        $form->onSuccess[] = array($this, 'apFormSucceded');
+        $form->onValidate[] = array($this, 'validateApForm');
+
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
-	    $values = $this->ap->getAP($this->getParam('id'));
-	    if($values) {
-		foreach($values->related('IPAdresa.Ap_id') as $ip_id => $ip_data) {
-		    $form["ip"][$ip_id]->setValues($ip_data);
-		}
-		foreach($values->related('Subnet.Ap_id') as $subnet_id => $subnet_data) {
-		    $form["subnet"][$subnet_id]->setValues($subnet_data);
-		}
-		$form->setValues($values);
-	    }
-	} 	
-	return($form);
+            $values = $this->ap->getAP($this->getParam('id'));
+            if($values) {
+                foreach($values->related('IPAdresa.Ap_id') as $ip_id => $ip_data) {
+                    $form["ip"][$ip_id]->setValues($ip_data);
+                }
+                foreach($values->related('Subnet.Ap_id') as $subnet_id => $subnet_data) {
+                    $form["subnet"][$subnet_id]->setValues($subnet_data);
+                }
+                $form->setValues($values);
+            }
+        } 	
+        return($form);
     }
-    
+   
     public function validateApForm($form)
     {
-        $values = $form->getValues();
+        $data = $form->getHttpData();
 
-        $ips = $form->httpData['ip'];
-        foreach($ips as $ip)
-    	{
-            $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
-            if ($duplIp && !isset($ip['remove'])) {
-                //\Tracy\Dumper::dump($ip);
-                $form->addError('Tato IP adresa již existuje: ' . $duplIp);
+        // Validujeme jenom při uložení formuláře
+        if(!isset($data["save"])) {
+            return(0);
+        }
+        
+        if(isset($data['ip'])) {
+            $formIPs = array();
+            foreach($data['ip'] as $ip) {
+                if(!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
+                    $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
+                }
+                
+                $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
+                if ($duplIp) {
+                    $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
+                }
+                
+                $formIPs[] = $ip['ip_adresa'];
+            }
+
+            // Tohle prohledá duplikátní IP přímo v formuláři
+            // protože na ty se nepřijde pomocí getDuplicateIP
+            $formDuplicates = array();
+            foreach(array_count_values($formIPs) as $val => $c) {
+                if($c > 1) {
+                    $formDuplicates[] = $val;
+                }
+            }
+            
+            if(count($formDuplicates) != 0) {
+                $formDuplicatesReadible = implode(", ", $formDuplicates);
+                $form->addError('IP adresa '.$formDuplicatesReadible.' je v tomto formuláři vícekrát!');
+            }
+        }
+        
+        // Jak se validují subnety?
+        // Jednoduše! Nejprve zkontrolujeme samotné subnety, pak gatewaye
+        // a potom zkontrolujeme, jestli každý subnet už neexistuje V JINÉM AP.
+        // Nakonec zkontrolujeme subnety mezi sebou ve formuláři.
+        if(isset($data['subnet'])) {
+            $formSubnets = array();
+            foreach($data['subnet'] as $subnet) {
+                if(!$this->subnet->validateSubnet($subnet['subnet'])) {
+                    $form->addError('Subnet '.$subnet['subnet'].' není validní IPv4 subnet!');
+                }
+                
+                if(!$this->ipAdresa->validateIP($subnet['gateway'])) {
+                    $form->addError('Gateway '.$subnet['gateway'].' u subnetu '.$subnet['subnet'].' není validní IPv4 adresa!');
+                }
+                
+                if(isset($data['id'])) {
+                    $idAP = $data['id'];
+                } else {
+                    $idAP = NULL;
+                }
+                
+                $overlapping = $this->subnet->getOverlapingSubnet($subnet['subnet'], $idAP);
+                if($overlapping !== false) {
+                    $overlappingReadible = implode(", ", $overlapping);
+                    $form->addError('Subnet '.$subnet['subnet'].' se překrývá s již existujícím subnetem '.$overlappingReadible.' !');
+                }
+                
+                $formSubnets[] = $subnet['subnet'];
+            }
+            
+            $formColisions = $this->subnet->checkColisions($formSubnets);
+            if($formColisions !== false) {
+                $formColisionsReadible = implode(", ", $formColisions);
+                $form->addError('Subnety '.$formColisionsReadible.' v tomto formuláři se překrývají!');
             }
         }
     }
