@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 10, 2015 at 11:21 PM
+-- Generation Time: Feb 24, 2015 at 08:30 PM
 -- Server version: 5.1.73
 -- PHP Version: 5.3.3-7+squeeze19
 
@@ -421,7 +421,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `cc
 --
 DROP TABLE IF EXISTS `userdb`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,`U`.`heslo` AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',cast(`U`.`psc` as char(50) charset utf8)) AS `address`,cast(group_concat(`I`.`ip_adresa` separator ',') as char(2000) charset utf8) AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (`Uzivatel` `U` join `IPAdresa` `I` on((`I`.`Uzivatel_id` = `U`.`id`))) group by `U`.`id`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,`U`.`heslo` AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',cast(`U`.`psc` as char(50) charset utf8)) AS `address`,cast(group_concat(`I`.`ip_adresa` separator ',') as char(2000) charset utf8) AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (`Uzivatel` `U` left join `IPAdresa` `I` on((`I`.`Uzivatel_id` = `U`.`id`))) group by `U`.`id`;
 
 --
 -- Constraints for dumped tables
