@@ -46,7 +46,7 @@
                     </table>
                 {/if}
             {else} 
-                {if (($field->control->attrs!=NULL && array_key_exists('class', $field->control->attrs) && (strpos($field->control->attrs['class'],' subnet')>0))||$field->name=='remove_subnet' )}
+                {if (($field->control->attrs!=NULL && array_key_exists('class', $field->control->attrs) && (strpos($field->control->attrs['class'],' subnet')>0))||$field->name=='remove_subnet'||$field->name=='arp_proxy' )}
                     {if $field->name=='id'}
                         <tr><td colspan="4"><table class="subnetform">
                     {/if}

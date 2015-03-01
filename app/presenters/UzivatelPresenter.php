@@ -77,7 +77,7 @@ class UzivatelPresenter extends BasePresenter
         $template->nthmesicdate = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicDate($uzivatel->zalozen,2) : $this->uzivatel->mesicDate($uzivatel->zalozen,0);
         $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
         foreach($ipadrs as $ip) {
-            $subnet = $this->subnet->getSubnetOfIP($ip, $uzivatel->Ap_id);
+            $subnet = $this->subnet->getSubnetOfIP($ip);
             
             if(isset($subnet["error"])) {
                 $errorText = 'subnet není v databázi';

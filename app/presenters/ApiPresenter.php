@@ -36,17 +36,11 @@ class ApiPresenter extends BasePresenter
         );
         
         $ip = $this->getParameter("ip");
-        $apid = $this->getParameter("apid", -2);
-        
-        $ARPProxy = false;
         
         if(!filter_var($ip, FILTER_VALIDATE_IP)){
             $out["error"] = "Neplatná IP adresa!";
         } else {
-            if($ap = $this->ap->getAP($apid)) {
-                $ARPProxy = $ap->proxy_arp;
-            }
-            $subnet = $this->subnet->getSubnetOfIP($ip, $ARPProxy);
+            $subnet = $this->subnet->getSubnetOfIP($ip);
             
             if(isset($subnet["error"])) {
                 $out["error"] = $errorTable[$subnet["error"]];

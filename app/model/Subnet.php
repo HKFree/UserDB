@@ -19,6 +19,9 @@ class Subnet extends Table
     const ARP_PROXY_SUBNET = "89.248.240.0/20";
     const ARP_PROXY_GW = "89.248.255.254";
     
+    const ARP_PROXY_DESCRIPTION = "Při zapnuté ARP Proxy se veřejné IP adrese z daného subnetu automaticky nastaví subnet 89.248.240/20 s bránou 89.248.255.254";
+
+    
     /**
     * @var string
     */
@@ -46,19 +49,33 @@ class Subnet extends Table
 		$subnet->addText('subnet', 'Subnet', 11)->setAttribute('class', 'subnet_text subnet')->setAttribute('placeholder', 'Subnet');
 		$subnet->addText('gateway', 'Gateway', 11)->setAttribute('class', 'gateway_text subnet')->setAttribute('placeholder', 'Gateway');
 		$subnet->addText('popis', 'Popis')->setAttribute('class', 'popis subnet')->setAttribute('placeholder', 'Popis');
+        $subnet->addCheckbox('arp_proxy', 'ARP Proxy')->setAttribute('class', 'arp_proxy_check subnet');
     }    
     
     public function getSubnetTable($subnets) {
+        $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
+        
         $subnetyTab = Html::el('table')->setClass('table table-striped');
         $tr = $subnetyTab->create('tr');
         $tr->create('th')->setText('Subnet');
         $tr->create('th')->setText('Gateway');
+        $tr->create('th')->setText('ARP Proxy');
         $tr->create('th')->setText('Popis');
 
         foreach ($subnets as $subnet) {
             $tr = $subnetyTab->create('tr');
             $tr->create('td')->setText($subnet->subnet);
             $tr->create('td')->setText($subnet->gateway);
+            $arpProxy = $tr->create('td')->create('span');
+            $arpProxy->setTitle(Subnet::ARP_PROXY_DESCRIPTION)
+                     ->addAttributes($tooltips);
+            if($subnet->arp_proxy) {
+                $arpProxy->setClass('label label-success');
+                $arpProxy->setText("zapnuto");
+            } else {
+                $arpProxy->setClass('label label-default');
+                $arpProxy->setText("vypnuto");
+            }
             $tr->create('td')->setText($subnet->popis);
         } 
         return($subnetyTab);
@@ -71,10 +88,9 @@ class Subnet extends Table
      * a udělám WHERE subnet IN ...
      * 
      * @param string $ip IP adresa
-     * @param boolean $arpProxy Je povolena ARP proxy?
      * @return string[] Subnet a informace o něm
      */
-    public function getSubnetOfIP($ip, $arpProxy = false) {
+    public function getSubnetOfIP($ip) {
         $possibleSubnets = $this->genSubnets($ip);
         $subnets = $this->findAll()->where("subnet", $possibleSubnets);
                 
@@ -86,21 +102,20 @@ class Subnet extends Table
         
         if(count($subnets) == 1) {
             $subnet = $subnets->fetch();
-            $out = $this->parseSubnet($subnet->subnet);
-
-            if(empty($subnet->gateway)) {
-                $out["error"] = Subnet::ERR_NO_GW;
+            
+            if($subnet->arp_proxy) {
+                $out = $this->parseSubnet(Subnet::ARP_PROXY_SUBNET);
+                $out["gateway"] = Subnet::ARP_PROXY_GW;
             } else {
-                $out["gateway"] = $subnet->gateway;
+                $out = $this->parseSubnet($subnet->subnet);
+
+                if(empty($subnet->gateway)) {
+                    $out["error"] = Subnet::ERR_NO_GW;
+                } else {
+                    $out["gateway"] = $subnet->gateway;
+                }
             }
             
-            return($out);
-        }
-        
-        // Pokud pouzivame ARP proxy a IP je ve spravnem subnetu
-        if($arpProxy && $this->inSubnet($ip, Subnet::ARP_PROXY_SUBNET)) {
-            $out = $this->parseSubnet(Subnet::ARP_PROXY_SUBNET);
-            $out["gateway"] = Subnet::ARP_PROXY_GW;
             return($out);
         }
         
@@ -215,7 +230,7 @@ class Subnet extends Table
      * @return boolean false když subnety nekolidují, 
      *                 true  když kolidují.
      */
-    private function checkColision($s1, $s2) {
+    public function checkColision($s1, $s2) {
         list($n1, $c1) = explode("/", $s1);
         list($n2, $c2) = explode("/", $s2);
         
@@ -243,7 +258,7 @@ class Subnet extends Table
      * @param string $subnet Testovaný subnet
      * @return boolean
      */
-    private function inSubnet($ip, $subnet) {
+    public function inSubnet($ip, $subnet) {
         if($subnet == "0.0.0.0/0") {
             return(true);
         }

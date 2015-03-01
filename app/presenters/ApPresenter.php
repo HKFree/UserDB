@@ -21,8 +21,6 @@ class ApPresenter extends BasePresenter {
     private $typZarizeni;
     private $log;
     
-    private $proxy_arp_popis = "Při zapnuté ProxyARP se každé veřejné IP adrese bez definovaného subnetu automaticky přidělí subnet 89.248.240/20 s bránou 89.248.255.254";
-
     function __construct(Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;       
@@ -94,7 +92,6 @@ class ApPresenter extends BasePresenter {
             $this->template->adresy = $this->ipAdresa->getIPTable($ap->related('IPAdresa.Ap_id'));
             $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
             $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
-            $this->template->proxy_arp_popis = $this->proxy_arp_popis;
         }
     }
 
@@ -106,8 +103,7 @@ class ApPresenter extends BasePresenter {
         $form = new Form($this, 'apForm');
         $form->addHidden('id');
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
-        $form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');
-        $form->addCheckbox('proxy_arp', 'ARP proxy');        
+        $form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');     
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);
         $dataIp = $this->ipAdresa;
         $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
@@ -226,6 +222,12 @@ class ApPresenter extends BasePresenter {
                 if($overlapping !== false) {
                     $overlappingReadible = implode(", ", $overlapping);
                     $form->addError('Subnet '.$subnet['subnet'].' se překrývá s již existujícím subnetem '.$overlappingReadible.' !');
+                }
+                
+                if($this->subnet->validateSubnet($subnet['subnet'])
+                    && !$this->subnet->checkColision($subnet['subnet'], \App\Model\Subnet::ARP_PROXY_SUBNET)
+                    && isset($subnet['arp_proxy'])) {
+                    $form->addError('ARP Proxy může být zapnuté pouze u veřejných subnetů!');
                 }
                 
                 $formSubnets[] = $subnet['subnet'];
