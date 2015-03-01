@@ -12,6 +12,13 @@ use Nette,
  */
 class Subnet extends Table
 {
+    const ERR_NOT_FOUND = 1;
+    const ERR_NO_GW = 2;
+    const ERR_MULTIPLE_GW = 3;
+    
+    const ARP_PROXY_SUBNET = "89.248.240.0/20";
+    const ARP_PROXY_GW = "89.248.255.254";
+    
     /**
     * @var string
     */
@@ -64,11 +71,64 @@ class Subnet extends Table
      * a udělám WHERE subnet IN ...
      * 
      * @param string $ip IP adresa
-     * @return string Subnet
+     * @param boolean $arpProxy Je povolena ARP proxy?
+     * @return string[] Subnet a informace o něm
      */
-    public function getSubnetOfIP($ip) {
-        $subnets = $this->genSubnets($ip);
-        return($this->findAll()->where("subnet", $subnets));
+    public function getSubnetOfIP($ip, $arpProxy = false) {
+        $possibleSubnets = $this->genSubnets($ip);
+        $subnets = $this->findAll()->where("subnet", $possibleSubnets);
+                
+        if(count($subnets) > 1) {
+            $out["error"] = Subnet::ERR_MULTIPLE_GW;
+            $out["multiple_subnets"] = $subnets->fetchPairs("id", "subnet");
+            return($out);
+        }
+        
+        if(count($subnets) == 1) {
+            $subnet = $subnets->fetch();
+            $out = $this->parseSubnet($subnet->subnet);
+
+            if(empty($subnet->gateway)) {
+                $out["error"] = Subnet::ERR_NO_GW;
+            } else {
+                $out["gateway"] = $subnet->gateway;
+            }
+            
+            return($out);
+        }
+        
+        // Pokud pouzivame ARP proxy a IP je ve spravnem subnetu
+        if($arpProxy && $this->inSubnet($ip, Subnet::ARP_PROXY_SUBNET)) {
+            $out = $this->parseSubnet(Subnet::ARP_PROXY_SUBNET);
+            $out["gateway"] = Subnet::ARP_PROXY_GW;
+            return($out);
+        }
+        
+        $out["error"] = Subnet::ERR_NOT_FOUND;
+        return($out);
+    }
+    
+    /**
+     * Funkce která ze stringu ve tvaru x.y.z.w/c rozparsuje položky
+     * 
+     * Vrací pole 
+     *  - subnet (x.y.z.w/c)
+     *  - network (x.y.z.w)
+     *  - cidr (c)
+     *  - mask (c->mask)
+     * 
+     * @param string $subnet Vstupní subnet
+     * @return string[] Pole s položkami
+     */
+    private function parseSubnet($subnet) {
+        list($network, $cidr) = explode("/", $subnet);
+        
+        $out["subnet"] = $subnet;
+        $out["network"] = $network;
+        $out["cidr"] = $cidr;
+        $out["mask"] = $this->CIDRToMask($cidr);
+        
+        return($out);
     }
     
     /**
@@ -174,6 +234,20 @@ class Subnet extends Table
         }
         
         return(true);
+    }
+    
+    /**
+     * Funkce testující, nachází-li se IP v daném subnetu
+     * 
+     * @param string $ip Testovaná IP
+     * @param string $subnet Testovaný subnet
+     * @return boolean
+     */
+    private function inSubnet($ip, $subnet) {
+        if($subnet == "0.0.0.0/0") {
+            return(true);
+        }
+        return($this->checkColision($ip."/32", $subnet));
     }
     
     /**
