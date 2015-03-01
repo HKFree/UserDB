@@ -76,28 +76,22 @@ class UzivatelPresenter extends BasePresenter
         $template->nthmesicname = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicName($uzivatel->zalozen,3) : $this->uzivatel->mesicName($uzivatel->zalozen,1);
         $template->nthmesicdate = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicDate($uzivatel->zalozen,2) : $this->uzivatel->mesicDate($uzivatel->zalozen,0);
         $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
-        foreach($ipadrs as $ip)
-        {
-            $subnets = $this->subnet->getSubnetOfIP($ip);
-            if(count($subnets) == 1) {
-                $subnet = $subnets->fetch();
-                if(empty($subnet->subnet)) {
-                    $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                } elseif(empty($subnet->gateway)) {
-                    $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
-                } else {
-                    list($network, $cidr) = explode("/", $subnet->subnet);
-                    $out[] = array('ip' => $ip, 'subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
-                }
+        foreach($ipadrs as $ip) {
+            $subnet = $this->subnet->getSubnetOfIP($ip, $uzivatel->Ap_id);
+            
+            if(isset($subnet["error"])) {
+                $errorText = 'subnet není v databázi';
+                $out[] = array('ip' => $ip, 'subnet' => $errorText, 'gateway' => $errorText, 'mask' => $errorText); 
             } else {
-                $out[] = array('ip' => $ip, 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi'); 
+                $out[] = array('ip' => $ip, 'subnet' => $subnet["subnet"], 'gateway' => $subnet["gateway"], 'mask' => $subnet["mask"]);
             }
         }
-        if(count($ipadrs) == 0)
-        {
+        
+        if(count($ipadrs) == 0) {
             $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');                
         }
         $template->ips = $out;
+        
         $pdf = new PDFResponse($template);
         $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
         $pdf->pageFormat = "A4";

@@ -46,7 +46,7 @@
         $.ajax({
             type: "GET",
             url: {link Api:GetIpDetails , id => null},
-            data: { ip: ip, reqid: reqid },
+            data: { ip: ip, reqid: reqid, apid: apid },
             success: ipAjaxCallback.bind(tbody),
             dataType: "json"
         });    

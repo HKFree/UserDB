@@ -10,7 +10,13 @@
 <pre>
 {$ap->poznamka}
 </pre>
-<br>
+
+{if ($ap->proxy_arp == TRUE)}
+    <span class="label label-success" data-toggle="tooltip" data-placement="right" title="{$proxy_arp_popis}">ARP proxy zapnuto</span>
+{else}
+    <span class="label label-default" data-toggle="tooltip" data-placement="right" title="{$proxy_arp_popis}">ARP proxy vypnuto</span>
+{/if}
+<br><br>
 
 <h4>IP Adresy <small>na AP</small></h4>
 {$adresy}
@@ -18,6 +24,11 @@
 <h4>Subnety <small>na AP</small></h4>
 {$subnety}
 
+<script>
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+});
+</script>
 {/ifset}
 {/block}
 

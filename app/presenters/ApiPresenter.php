@@ -5,7 +5,7 @@ namespace App\Presenters;
 use Nette,
 	App\Model,
 	Tracy\Debugger,
-    Nette\Application\Responses\JsonResponse    ;
+    Nette\Application\Responses\JsonResponse;
 
 
 /**
@@ -14,9 +14,11 @@ use Nette,
 class ApiPresenter extends BasePresenter
 {    
     private $subnet;
+    private $ap;
     
-    function __construct(Model\Subnet $subnet) {
+    function __construct(Model\Subnet $subnet, Model\AP $ap) {
         $this->subnet = $subnet;
+        $this->ap = $ap;
     }
 
 	/**
@@ -26,31 +28,34 @@ class ApiPresenter extends BasePresenter
      *  @return type Description
      */
 	public function renderGetIpDetails()
-	{        
+	{       
+        $errorTable = array(
+            Model\Subnet::ERR_NOT_FOUND => "Podsíť a brána pro tuto IP není v databázi!",
+            Model\Subnet::ERR_NO_GW => "Brána pro tuto IP není v databázi!",
+            Model\Subnet::ERR_MULTIPLE_GW => "Chyba! Pro tuto IP existuje více subnetů! ",
+        );
+        
         $ip = $this->getParameter("ip");
+        $apid = $this->getParameter("apid", -2);
+        
+        $ARPProxy = false;
+        
         if(!filter_var($ip, FILTER_VALIDATE_IP)){
-            $out = array('error' => "Neplatná IP adresa");
+            $out["error"] = "Neplatná IP adresa!";
         } else {
-            $subnets = $this->subnet->getSubnetOfIP($ip);
-            if(count($subnets) == 1) {
-                $subnet = $subnets->fetch();
-                if(empty($subnet->subnet)) {
-                    $out = array('error' => "Podsíť pro tuto IP není v databázi!");
-                } elseif( empty($subnet->gateway)) {
-                    $out = array('error' => "Brána pro tuto IP není v databázi!");
-                } else {
-                    list($network, $cidr) = explode("/", $subnet->subnet);
-                    $out = array('subnet' => $subnet->subnet, 'gateway' => $subnet->gateway, 'mask' => $this->subnet->CIDRToMask($cidr));  
+            if($ap = $this->ap->getAP($apid)) {
+                $ARPProxy = $ap->proxy_arp;
+            }
+            $subnet = $this->subnet->getSubnetOfIP($ip, $ARPProxy);
+            
+            if(isset($subnet["error"])) {
+                $out["error"] = $errorTable[$subnet["error"]];
+                
+                if($subnet["error"] == Model\Subnet::ERR_MULTIPLE_GW) {
+                    $out["error"] .= implode(", ", $subnet["multiple_subnets"]);
                 }
-            } elseif(count($subnets) > 1) {
-                $error_subnets = array();
-                while($subnet = $subnets->fetch()) {
-                    $error_subnets[] = $subnet->subnet;
-                }
-                $error_text = "Chyba! Pro tuto IP existuje více subnetů (".implode(", ", $error_subnets).")";
-                $out = array('error' => $error_text);
-            } else {    
-                $out = array('error' => "Podsíť a brána pro tuto IP není v databázi!");
+            } else {
+                $out = $subnet;
             }
         }
         
@@ -59,7 +64,6 @@ class ApiPresenter extends BasePresenter
             $out["reqid"] = $reqid;
         }
         
-        $this->sendResponse(new JsonResponse($out));	
+        $this->sendResponse(new JsonResponse($out));
 	}
-
 }

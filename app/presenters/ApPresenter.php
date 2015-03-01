@@ -20,99 +20,94 @@ class ApPresenter extends BasePresenter {
     private $subnet;
     private $typZarizeni;
     private $log;
+    
+    private $proxy_arp_popis = "Při zapnuté ProxyARP se každé veřejné IP adrese bez definovaného subnetu automaticky přidělí subnet 89.248.240/20 s bránou 89.248.255.254";
 
     function __construct(Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log) {
-	$this->spravceOblasti = $prava;
-    $this->uzivatel = $uzivatel;       
-	$this->ap = $ap;
-	$this->ipAdresa = $ipAdresa;
-	$this->subnet = $subnet;
-	$this->typZarizeni = $typZarizeni;
+        $this->spravceOblasti = $prava;
+        $this->uzivatel = $uzivatel;       
+        $this->ap = $ap;
+        $this->ipAdresa = $ipAdresa;
+        $this->subnet = $subnet;
+        $this->typZarizeni = $typZarizeni;
         $this->log = $log;        
-	//$this->oblast = $oblast;
-	
     }
 
     public function renderList() {
-	if($this->getParam('id'))
-	{
-	    $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParam('id'))));
-	    if($apcka->count() == 0) {
-		$this->template->table = 'Chyba, zadaná oblast neexistuje nebo nemá žádná AP.';
-		return true;
-	    }
-	    $this->template->oblast = $this->oblast->find($this->getParam('id'))->jmeno;
-		
-	    $table = Html::el('table')->setClass('table table-striped');
-	    $tr = $table->create('tr');
-	    $tr->create('th')->setText('ID AP');
-	    $tr->create('th')->setText('Jméno AP');
-	    $tr->create('th')->setText('Poznámka');
-	    $tr->create('th')->setText('Akce')->setColspan('2');
+        if($this->getParam('id'))
+        {
+            $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParam('id'))));
+            if($apcka->count() == 0) {
+            $this->template->table = 'Chyba, zadaná oblast neexistuje nebo nemá žádná AP.';
+            return true;
+            }
+            $this->template->oblast = $this->oblast->find($this->getParam('id'))->jmeno;
 
-	    while($ap = $apcka->fetch()) {
-		$tr = $table->create('tr');
-		$tr->create('td')->setText($ap->id);
-		$tr->create('td')->setText($ap->jmeno);
-		$tr->create('td')->setText($ap->poznamka);
-		$tdAkce = $tr->create('td');
-		
-		
-		$tdAkce->create('a')->href($this->link('Ap:show', array('id'=>$ap->id)))->setText('Zobrazit podrobnosti');
-		$tdAkce->add(' - ');
-		$tdAkce->create('a')->href($this->link('Ap:edit', array('id'=>$ap->id)))->setText('Editovat');
-		$tdAkce->add(' - ');
-		$tdAkce->create('a')->href($this->link('Uzivatel:list', array('id'=>$ap->id)))->setText('Zobrazit uživatele');
-	    }
+            $table = Html::el('table')->setClass('table table-striped');
+            $tr = $table->create('tr');
+            $tr->create('th')->setText('ID AP');
+            $tr->create('th')->setText('Jméno AP');
+            $tr->create('th')->setText('Poznámka');
+            $tr->create('th')->setText('Akce')->setColspan('2');
 
-	    $this->template->table = $table;
-	    
-	    
-	    $spravciTab = Html::el('table')->setClass('table table-striped');
-	    $tr = $spravciTab->create('tr');
-	    $tr->create('th')->setText('Jméno');
-	    $tr->create('th')->setText('Nickname');
-	    $tr->create('th')->setText('Funkce');
-	    
-	    $spravci = $this->oblast->getSeznamSpravcu($this->getParam('id'));
-	    foreach($spravci as $spravce) {
-		$tr = $spravciTab->create('tr');
-		$tr->create('td')->setText($spravce->jmeno.' '.$spravce->prijmeni);
-		$tr->create('td')->setText($spravce->nick);
-        $role = $this->spravceOblasti->getUserRole($spravce->id,$this->getParam('id'));
-        $tr->create('td')->setText($role);
-        //\Tracy\Dumper::dump($role);
+            while($ap = $apcka->fetch()) {
+                $tr = $table->create('tr');
+                $tr->create('td')->setText($ap->id);
+                $tr->create('td')->setText($ap->jmeno);
+                $tr->create('td')->setText($ap->poznamka);
+                $tdAkce = $tr->create('td');
 
-		//$tr->create('td')->setText($spravce->ref('jeSpravce', 'uzivatel_id'));
-		//\Tracy\Dumper::dump($spravce->ref('jeSpravce', 'uzivatel_id'));
-	    }
-	    $this->template->spravci = $spravciTab;
-	}
-	else {
-	   $this->template->table = 'Prosím, zadejte oblast.'; 
-	}
+
+                $tdAkce->create('a')->href($this->link('Ap:show', array('id'=>$ap->id)))->setText('Zobrazit podrobnosti');
+                $tdAkce->add(' - ');
+                $tdAkce->create('a')->href($this->link('Ap:edit', array('id'=>$ap->id)))->setText('Editovat');
+                $tdAkce->add(' - ');
+                $tdAkce->create('a')->href($this->link('Uzivatel:list', array('id'=>$ap->id)))->setText('Zobrazit uživatele');
+            }
+
+            $this->template->table = $table;
+
+
+            $spravciTab = Html::el('table')->setClass('table table-striped');
+            $tr = $spravciTab->create('tr');
+            $tr->create('th')->setText('Jméno');
+            $tr->create('th')->setText('Nickname');
+            $tr->create('th')->setText('Funkce');
+
+            $spravci = $this->oblast->getSeznamSpravcu($this->getParam('id'));
+            foreach($spravci as $spravce) {
+                $tr = $spravciTab->create('tr');
+                $tr->create('td')->setText($spravce->jmeno.' '.$spravce->prijmeni);
+                $tr->create('td')->setText($spravce->nick);
+                $role = $this->spravceOblasti->getUserRole($spravce->id, $this->getParam('id'));
+                $tr->create('td')->setText($role);
+            }
+            $this->template->spravci = $spravciTab;
+        } else {
+           $this->template->table = 'Prosím, zadejte oblast.'; 
+        }
     }
     
     public function renderShow() {
-	if($this->getParam('id') && $ap = $this->ap->getAP($this->getParam('id'))) {
-	    $this->template->ap = $ap;
-	    $this->template->adresy = $this->ipAdresa->getIPTable($ap->related('IPAdresa.Ap_id'));
-	    $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
-	    $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
-	}
+        if($this->getParam('id') && $ap = $this->ap->getAP($this->getParam('id'))) {
+            $this->template->ap = $ap;
+            $this->template->adresy = $this->ipAdresa->getIPTable($ap->related('IPAdresa.Ap_id'));
+            $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
+            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
+            $this->template->proxy_arp_popis = $this->proxy_arp_popis;
+        }
     }
 
     public function renderEdit() {
-    
-      $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
-	//Render Edit
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
     }
     
     protected function createComponentApForm() {
         $form = new Form($this, 'apForm');
         $form->addHidden('id');
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
-        $form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');;
+        $form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');
+        $form->addCheckbox('proxy_arp', 'ARP proxy');        
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);
         $dataIp = $this->ipAdresa;
         $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
