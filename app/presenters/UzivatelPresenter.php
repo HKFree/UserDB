@@ -465,10 +465,12 @@ class UzivatelPresenter extends BasePresenter
             $money_client = new \SoapClient(
                 'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
                 array(
-                    'login'         => $money_uid,
-                    'password'      => $money_heslo,
-                    'trace'         => 1,
-                )
+                        'login'         => $money_uid,
+                        'password'      => $money_heslo,
+                        'trace'         => 0,
+                        'exceptions'    => 0,
+                        'connection_timeout'=> 15
+                    )
             );
         }
         
@@ -483,6 +485,10 @@ class UzivatelPresenter extends BasePresenter
             $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
             if ($money) {
                 $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
+                if (is_soap_fault($money_callresult)) {
+                    $money = false;
+                    //TODO zobrazit info ze money jsou offline
+                }
             }
         } else {
             
@@ -681,13 +687,14 @@ class UzivatelPresenter extends BasePresenter
         $search = $this->getParameter('search', false);
         if(!$search)
             {
+            $cestnych = count($this->cestneClenstviUzivatele->getListCC());
                 $this->template->u_celkem = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",1)->count("*");
                 $this->template->u_celkemz = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",0)->count("*");
                 $this->template->u_aktivnich = "TODO";
                 $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",1)->count("*");        
                 $this->template->u_primarnich = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",2)->count("*");
-                $this->template->u_radnych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",3)->count("*");
-                $this->template->u_cestnych = count($this->cestneClenstviUzivatele->getListCC());
+                $this->template->u_radnych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",3)->count("*")-$cestnych;
+                $this->template->u_cestnych = $cestnych;
             } 
         
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
@@ -701,13 +708,14 @@ class UzivatelPresenter extends BasePresenter
     	if($this->getParameter('id') && $apt = $this->ap->getAP($this->getParameter('id')))
     	{
             $id=$this->getParameter('id');
+            $cestnych = count($this->cestneClenstviUzivatele->getListCCOfAP($id));
             $this->template->u_celkem = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",1)->count("*");
             $this->template->u_celkemz = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",0)->count("*");
             $this->template->u_aktivnich = "TODO";
             $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",1)->count("*");        
             $this->template->u_primarnich = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",2)->count("*");
-            $this->template->u_radnych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",3)->count("*");
-            $this->template->u_cestnych = count($this->cestneClenstviUzivatele->getListCCOfAP($id));
+            $this->template->u_radnych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",3)->count("*")-$cestnych;
+            $this->template->u_cestnych = $cestnych;
 
             
     	    $this->template->ap = $apt;
@@ -735,21 +743,28 @@ class UzivatelPresenter extends BasePresenter
                     array(
                         'login'         => $money_uid,
                         'password'      => $money_heslo,
-                        'trace'         => 1,
+                        'trace'         => 0,
+                        'exceptions'    => 0,
+                        'connection_timeout'=> 15
                     )
                 );
-                $money_callresult = $money_client->hkfree_money_userGetInfo($uid);                
-                $this->template->money_act = ($money_callresult[$uid]->userIsActive->isActive == 1) ? "ANO" : (($money_callresult[$uid]->userIsActive->isActive == 0) ? "NE" : "?");
-                $this->template->money_dis = ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
-                $this->template->money_lastpay = ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$uid]->GetLastPayment->LastPaymentAmount . ")");
-                $this->template->money_lastact = ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$uid]->GetLastActivation->LastActivationAmount . ")");
-                $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : "?";
-                               
-                /*$this->template->money_act=0;
-                $this->template->money_dis=0;
-                $this->template->money_lastpay=0;
-                $this->template->money_lastact=0;
-                $this->template->money_bal=0;*/
+                $money_callresult = $money_client->hkfree_money_userGetInfo($uid);   
+                if (!is_soap_fault($money_callresult)) {
+                    $this->template->money_act = ($money_callresult[$uid]->userIsActive->isActive == 1) ? "ANO" : (($money_callresult[$uid]->userIsActive->isActive == 0) ? "NE" : "?");
+                    $this->template->money_dis = ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
+                    $this->template->money_lastpay = ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$uid]->GetLastPayment->LastPaymentAmount . ")");
+                    $this->template->money_lastact = ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$uid]->GetLastActivation->LastActivationAmount . ")");
+                    $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : "?";
+                }
+                else
+                {
+                    $this->flashMessage('MONEY JSOU OFFLINE');
+                    $this->template->money_act = "MONEY OFFLINE";
+                    $this->template->money_dis = "MONEY OFFLINE";
+                    $this->template->money_lastpay = "MONEY OFFLINE";
+                    $this->template->money_lastact = "MONEY OFFLINE";
+                    $this->template->money_bal = "MONEY OFFLINE"; 
+                }
                 
     		    $this->template->u = $uzivatel;
                 
