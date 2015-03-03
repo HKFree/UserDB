@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 24, 2015 at 08:30 PM
+-- Generation Time: Mar 03, 2015 at 11:49 PM
 -- Server version: 5.1.73
 -- PHP Version: 5.3.3-7+squeeze19
 
@@ -209,6 +209,7 @@ CREATE TABLE IF NOT EXISTS `Subnet` (
   `subnet` varchar(20) COLLATE utf8_czech_ci NOT NULL,
   `gateway` varchar(16) COLLATE utf8_czech_ci NOT NULL,
   `popis` varchar(100) COLLATE utf8_czech_ci DEFAULT NULL,
+  `arp_proxy` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `subnet` (`subnet`),
   KEY `Ap_id` (`Ap_id`)
@@ -421,7 +422,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `cc
 --
 DROP TABLE IF EXISTS `userdb`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,`U`.`heslo` AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',cast(`U`.`psc` as char(50) charset utf8)) AS `address`,cast(group_concat(`I`.`ip_adresa` separator ',') as char(2000) charset utf8) AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (`Uzivatel` `U` left join `IPAdresa` `I` on((`I`.`Uzivatel_id` = `U`.`id`))) group by `U`.`id`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`userdb_v2`@`%` SQL SECURITY DEFINER VIEW `userdb` AS select `U`.`id` AS `id`,concat(`U`.`jmeno`,' ',`U`.`prijmeni`) AS `name`,`U`.`TypClenstvi_id` AS `type`,`U`.`heslo` AS `default_password`,`U`.`nick` AS `nick`,`U`.`email` AS `email`,concat(`U`.`ulice_cp`,' ',`U`.`mesto`,' ',cast(`U`.`psc` as char(50) charset utf8)) AS `address`,concat_ws(',',cast(group_concat(distinct `I`.`ip_adresa` separator ',') as char(2000) charset utf8),cast(group_concat(distinct `II`.`ip_adresa` separator ',') as char(2000) charset utf8)) AS `ip4`,`U`.`rok_narozeni` AS `year_of_birth`,`U`.`zalozen` AS `alt_at`,'db_view' AS `alt_by`,`U`.`zalozen` AS `creat_at`,'db_view' AS `creat_by`,NULL AS `temp_enable`,`U`.`Ap_id` AS `area`,`U`.`telefon` AS `phone`,'db_view' AS `notes`,`U`.`ZpusobPripojeni_id` AS `wifi_user`,0 AS `dotace_ok`,'db_view' AS `dotace_notes` from (((((`Uzivatel` `U` left join `IPAdresa` `I` on(((`I`.`Uzivatel_id` = `U`.`id`) and (`I`.`internet` = 1)))) left join `SpravceOblasti` `S` on(((`S`.`Uzivatel_id` = `U`.`id`) and (`S`.`TypSpravceOblasti_id` = 1)))) left join `Oblast` `O` on((`S`.`Oblast_id` = `O`.`id`))) left join `Ap` `A` on((`O`.`id` = `A`.`Oblast_id`))) left join `IPAdresa` `II` on(((`A`.`id` = `II`.`Ap_id`) and (`II`.`internet` = 1)))) group by `U`.`id`;
 
 --
 -- Constraints for dumped tables
