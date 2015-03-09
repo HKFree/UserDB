@@ -1,0 +1,12 @@
+{block content}
+
+<h3>Odeslání sms <small>uživatelům AP {$ap->jmeno}</small></h3>
+
+{if $canViewOrEdit}
+{includeblock '../form.latte', form => smsallForm}
+{else}
+<p>Na tuto operaci nemáte oprávnění!</p>
+{/if}
+
+{/block}
+

@@ -1074,12 +1074,88 @@ class UzivatelPresenter extends BasePresenter
     	return true;
     }
     
-    public function renderEmailall()
+    public function renderSmsall()
     {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
         $this->template->ap = $this->ap->getAP($this->getParam('id'));
     }
+    
+    protected function createComponentSmsallForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "smsallForm");
+    	$form->addHidden('id');
 
+        //$form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
+        $form->addTextArea('komu', 'Příjemce', 72, 20)->setDisabled(TRUE);
+        $form->addTextArea('message', 'Text', 72, 10);
+
+    	$form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'smsallFormSucceded');
+
+    	// pokud editujeme, nacteme existujici opravneni
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
+            $ap = $this->ap->getAP($this->getParam('id'));
+            $telefony = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'telefon');
+            foreach($telefony as $tl)
+            {
+                if(!empty($tl) && $tl!='missing')
+                {
+                    $validni[]=$tl; 
+                }
+            }
+            $tls = join(",",array_values($validni));
+            
+            //$so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            if($ap) {
+                $form->setValues($ap);
+                $form->setDefaults(array(
+                        //'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
+                        'komu' => $tls,
+                        //'subject' => 'Zpráva od správce sítě hkfree.org',
+                    ));
+    	    }
+    	}                
+    
+    	return $form;
+    }
+    
+    public function smsallFormSucceded($form, $values) {
+    	$idUzivatele = $values->id;
+        
+        $ap = $this->ap->getAP($this->getParam('id'));        
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        
+        $telefony = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'telefon');
+        foreach($telefony as $tl)
+        {
+            if(!empty($tl) && $tl!='missing')
+            {
+                $validni[]=$tl; 
+            }
+        }
+        $tls = join(",",array_values($validni));
+        //$tls="+420608214292";
+        
+        $locale = 'cs_CZ.UTF-8';
+        setlocale(LC_ALL, $locale);
+        putenv('LC_ALL='.$locale);
+        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.$so->heslo.' -d '.$tls.' "'.$values->message.'"');
+        $output = shell_exec($command);
+        
+        $this->flashMessage('SMS byly odeslány. Output: ' . $output);
+        
+    	$this->redirect('Uzivatel:list', array('id'=>$this->getParam('id'))); 
+    	return true;
+    }
+    
+    public function renderEmailall()
+    {
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
+        $this->template->ap = $this->ap->getAP($this->getParam('id'));
+    }  
+    
     protected function createComponentEmailallForm() {
          // Tohle je nutne abychom mohli zjistit isSubmited
     	$form = new Form($this, "emailallForm");
@@ -1147,7 +1223,7 @@ class UzivatelPresenter extends BasePresenter
         
         $this->flashMessage('E-mail byl odeslán.');
         
-    	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele)); 
+    	$this->redirect('Uzivatel:list', array('id'=>$this->getParam('id'))); 
     	return true;
     }
 }
