@@ -730,6 +730,9 @@ class UzivatelPresenter extends BasePresenter
             $uid = $this->getParam('id');
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
+                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+                $this->template->heslo = $so->heslo;
+                
                 $money_uid = $this->context->parameters["money"]["login"];
                 $money_heslo = $this->context->parameters["money"]["password"];
                 $money_client = new \SoapClient(

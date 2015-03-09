@@ -7,6 +7,15 @@
     <a href="{link Uzivatel:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat oprávnění</a>
     <a href="{link Uzivatel:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat čestné členství</a>
     <a href="{link Uzivatel:email id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Odeslat E-mail</a>
+    <form action="https://aweg3.maternacz.com/profil/index.php" method="POST" style="display:inline" target="_blank">
+    <input type="hidden" name="language" value="">
+    <input type="hidden" name="username" value="hkf{$user->getIdentity()->getId()}-{$user->getIdentity()->nick}">
+    <input type="hidden" name="password" value="{$heslo}">
+    <input type="hidden" name="destination" value="{$u->telefon}">
+    <input type="hidden" name="login" value="send">
+    <input type="Submit" name="submitx" value="Odeslat SMS na {$u->telefon}" class="btn btn-default btn-sm">
+    <input type="hidden" name="submit" value="Přihlásit">
+    </form>
     <a href="{link Uzivatel:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button">Registrační formulář</a>
     <a href="{link Uzivatel:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>
     <a href="https://money.hkfree.org/user.php?a=1&b={$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> Money</a>
