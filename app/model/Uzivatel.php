@@ -107,7 +107,7 @@ class Uzivatel extends Table
     * Note: the $add_dashes option will increase the length of the password by
     * floor(sqrt(N)) characters.
     */
-    public function generateStrongPassword($length = 9, $add_dashes = false, $available_sets = 'luds')
+    public function generateStrongPassword($length = 9, $add_dashes = false, $available_sets = 'lud')
     {
         $sets = array();
         if (strpos($available_sets, 'l') !== false) {
