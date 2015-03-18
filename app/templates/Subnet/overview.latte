@@ -1,0 +1,134 @@
+{block content}
+
+<style>
+    table {
+        border: 0;
+        font-size: 10pt;
+        font-family: Verdana;
+	}
+    th {
+        background-color: #3D6A83; color:#FFFFFF
+    }
+    .fullsubnet {
+        background-color: #FF9900;
+        text-align: center
+    }
+</style>
+
+<h3>přehled subnetů pro {$prefix}</h3>
+<a href="{link Subnet:detail id=>$prefix}" class="btn btn-default btn-sm" role="button"> Zobrazit detaily ip adres</a>
+
+<table cellspacing="0" cellpadding="0" style="width:100%; height:100%; margin-top: 20px;">
+	<tr>
+		<td valign="top" height="100%">
+
+            <table cellspacing='9' cellpadding='9' border='0' width='100%'>
+                <tr>
+                    <td align="center">
+                        <table border='1'>
+                            <tr>
+                                <th>Sub<br />net</th>
+                                <th align="right" width="200">Mask<br />Len</th>
+                                <th>252<br />30</th>
+                                <th>248<br />29</th>
+                                <th>240<br />28</th>
+                                <th>224<br />27</th>
+                                <th>192<br />26</th>
+                                <th>128<br />25</th>
+                                <th>0<br />24</th>
+                            </tr>
+                            
+                            {var $lastindex = 0}
+                            {var $lastlenght = 0}
+                            {for $i = 0; $i < 32; $i++}
+                                <tr>
+                                    <td>{$i * 4}</td>
+                                    {if array_key_exists(($i * 4),$networks)}
+                                        <td rowspan='{$networks[$i * 4]/4}'>{$captions[$i * 4]}</td>
+                                        {var $lastindex = $i * 4}
+                                        {var $lastlenght = $networks[$i * 4]}
+                                    {/if}  
+                                    {if $lastlenght==0 || ($lastindex + $lastlenght -1 < ($i * 4))}
+                                        <td>FREE</td>
+                                    {/if}
+                                    <td class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==4}fullsubnet{else}center{/if}'>4</td>
+                                    {if ($i % 2 === 0)} 
+                                        <td rowspan='2' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==8}fullsubnet{else}center{/if}'>8</td>
+                                    {/if}
+                                    {if ($i % 4 === 0)}
+                                        <td rowspan='4' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==16}fullsubnet{else}center{/if}'>16</td>
+                                    {/if}
+                                    {if ($i % 8 === 0)}  
+                                        <td rowspan='8' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==32}fullsubnet{else}center{/if}'>32</td>
+                                    {/if}
+                                    {if ($i % 16 === 0)} 
+                                        <td rowspan='16' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==64}fullsubnet{else}center{/if}'>64</td>
+                                    {/if} 
+                                    {if ($i % 32 === 0)} 
+                                        <td rowspan='32' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==128}fullsubnet{else}center{/if}'>128</td>
+                                        <td rowspan='32' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==256}fullsubnet{else}center{/if}'>256</td>
+                                    {/if} 
+                                </tr>
+                            {/for}
+                            
+                            
+                        </table>
+                    </td>
+                    <td align="center">
+                        <table border='1'>
+                            <tr>
+                                <th>Sub<br />net</th>
+                                <th align="right" width="200">Mask<br />Len</th>
+                                <th>252<br />30</th>
+                                <th>248<br />29</th>
+                                <th>240<br />28</th>
+                                <th>224<br />27</th>
+                                <th>192<br />26</th>
+                                <th>128<br />25</th>
+                                <th>0<br />24</th>
+                            </tr>
+                            
+                            {for $i = 32; $i < 64; $i++}
+                                <tr>
+                                    <td>{$i * 4}</td>
+                                    {if array_key_exists(($i * 4),$networks)}
+                                        <td rowspan='{$networks[$i * 4]/4}'>{$captions[$i * 4]}</td>
+                                        {var $lastindex = $i * 4}
+                                        {var $lastlenght = $networks[$i * 4]}
+                                    {/if}  
+                                    {if $i == 32 && array_key_exists(0,$networks) && $networks[0]==256}
+                                        <td rowspan='{$networks[0]/4}'>{$captions[0]}</td>
+                                        {var $lastindex = 0}
+                                        {var $lastlenght = $networks[0]}
+                                    {/if}  
+                                    {if $lastlenght==0 || ($lastindex + $lastlenght -1 < ($i * 4))}
+                                        <td>FREE</td>
+                                    {/if}                                  
+                                    <td class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==4}fullsubnet{else}center{/if}'>4</td>
+                                    {if ($i % 2 === 0)} 
+                                        <td rowspan='2' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==8}fullsubnet{else}center{/if}'>8</td>
+                                    {/if}
+                                    {if ($i % 4 === 0)} 
+                                        <td rowspan='4' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==16}fullsubnet{else}center{/if}'>16</td>
+                                    {/if}
+                                    {if ($i % 8 === 0)}   
+                                        <td rowspan='8' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==32}fullsubnet{else}center{/if}'>32</td>
+                                    {/if}
+                                    {if ($i % 16 === 0)} 
+                                        <td rowspan='16' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==64}fullsubnet{else}center{/if}'>64</td>
+                                    {/if} 
+                                    {if ($i % 32 === 0)} 
+                                        <td rowspan='32' class='{if array_key_exists(($i * 4),$networks) && $networks[$i * 4]==128}fullsubnet{else}center{/if}'>128</td>
+                                        <td rowspan='32' class='{if (array_key_exists(($i * 4),$networks) && $networks[$i * 4]==256) || (array_key_exists(0,$networks) && $networks[0]==256)}fullsubnet{else}center{/if}'>256</td>
+                                    {/if}
+                                </tr>
+                            {/for}
+                            
+                            
+                        </table>
+                    </td>
+                </tr>
+            </table>               
+        </td>
+    </tr>
+</table>

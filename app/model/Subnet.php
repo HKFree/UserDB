@@ -31,6 +31,11 @@ class Subnet extends Table
     {
         return($this->findAll());
     }
+    
+    public function getSeznamSubnetuZacinajicich($prefix)
+    {
+        return $this->findAll()->where("subnet LIKE ?", $prefix.'%')->fetchAll();
+    }
 
     public function getSubnet($id)
     {
@@ -51,6 +56,28 @@ class Subnet extends Table
 		$subnet->addText('popis', 'Popis')->setAttribute('class', 'popis subnet')->setAttribute('placeholder', 'Popis');
         $subnet->addCheckbox('arp_proxy', 'ARP Proxy')->setAttribute('class', 'arp_proxy_check subnet');
     }    
+    
+    /**
+     * Funkce která ze seznamu subnetů vrátí jejich C verze
+     * 
+     * Vrací pole (x.y.z, x.y.z, x.y.z)
+     * 
+     * Př: vstup 10.107.17.0/26 , 10.107.17.64/26
+     *     výstup 10.107.17
+     * 
+     * @param string $subnet Vstupní subnet
+     * @return string[] Pole s položkami
+     */
+    public function getAPCSubnets($subnets) {
+        foreach ($subnets as $subnet) {
+            $out = $this->parseSubnet($subnet->subnet);
+            //\Tracy\Dumper::dump(explode(".", $out["network"]));
+            list($a, $b, $c, $d) = explode(".", $out["network"]);
+            $resultnet = $a .".". $b .".". $c .".";
+            $results[] = $resultnet;
+        } 
+        return(array_unique($results));
+    }
     
     public function getSubnetTable($subnets) {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
@@ -135,7 +162,7 @@ class Subnet extends Table
      * @param string $subnet Vstupní subnet
      * @return string[] Pole s položkami
      */
-    private function parseSubnet($subnet) {
+    public function parseSubnet($subnet) {
         list($network, $cidr) = explode("/", $subnet);
         
         $out["subnet"] = $subnet;
