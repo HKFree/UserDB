@@ -76,7 +76,38 @@ class SubnetPresenter extends BasePresenter
     {
     	if($this->getParam('id'))
     	{
+            $existujiciSubnety = $this->subnet->getSeznamSubnetuZacinajicich($this->getParameter('id'));
             
+            foreach ($existujiciSubnety as $snet) {
+                $out = $this->subnet->parseSubnet($snet->subnet);            
+                list($a, $b, $c, $d) = explode(".", $out["network"]);
+                $networks[$d] = 1 << (32 - $out["cidr"]); //calculates number of ips in cidr
+            }
+            
+            $existujiciIP = $this->ipAdresa->getSeznamIPAdresZacinajicich($this->getParameter('id'));
+            
+            $users = array();
+            $aps = array();
+            foreach ($existujiciIP as $ip) {          
+                list($a, $b, $c, $d) = explode(".", $ip->ip_adresa);
+                if(!empty($ip->Uzivatel_id))
+                {
+                    $ips[$d] = "UID: ".$ip->ref('Uzivatel')->id." Nick: ". $ip->ref('Uzivatel')->nick;
+                    $users[$d] = $ip->Uzivatel_id;
+                }
+                else
+                {
+                    $ips[$d] = "AP: ".$ip->ref('Ap')->jmeno." (".$ip->ref('Ap')->id.")";
+                    $aps[$d] = $ip->Ap_id;
+                }
+            }
+            //\Tracy\Dumper::dump($ips);
+            
+            $this->template->prefix = $this->getParameter('id');
+            $this->template->networks = $networks;
+            $this->template->ips = $ips;
+            $this->template->users = $users;
+            $this->template->aps = $aps;
     	}
     }
     

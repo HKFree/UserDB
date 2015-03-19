@@ -1,3 +1,109 @@
-{* Latte template *}
-
 {block content}
+
+<style>
+    table {
+        border: 0;
+        font-size: 10pt;
+        font-family: Verdana;
+	}
+    th {
+        background-color: #3D6A83; color:#FFFFFF
+    }
+    .fullsubnet {
+        background-color: #FF9900;
+        text-align: center
+    }
+</style>
+
+<h3>přehled ip pro {$prefix}</h3>
+<a href="{link Subnet:overview id=>$prefix}" class="btn btn-default btn-sm" role="button"> Zobrazit přehled subnetů</a>
+
+<table cellspacing="0" cellpadding="0" style="width:100%; height:100%; margin-top: 20px; margin-bottom: 40px;">
+	<tr>
+		<td valign="top" height="100%">
+
+            <table cellspacing='9' cellpadding='9' border='0' width='100%'>
+                <tr>
+                    <td align="center">
+                        <table border='1'>
+                            <tr>
+                                <th>IP</th>
+                                <th width="200">Popis</th>
+                                <th>IPs</th>
+                            </tr>
+                            
+                            {var $lastindex = 0}
+                            {var $lastlenght = 0}
+                            
+                            {for $i = 0; $i < 128; $i++}                                
+                                <tr>
+                                    <td>{$prefix}{$i}</td>
+                                    {if array_key_exists($i,$ips)}
+                                        {if array_key_exists($i,$users)}
+                                            <td><a href="{link Uzivatel:show id=>$users[$i]}" role="button">{$ips[$i]}</a></td>
+                                        {elseif array_key_exists($i,$aps)}
+                                            <td><a href="{link Ap:show id=>$aps[$i]}" role="button">{$ips[$i]}</a></td>
+                                        {/if}
+                                    {else}
+                                        <td></td>
+                                    {/if}
+
+                                    {if array_key_exists($i,$networks)}
+                                        <td rowspan='{$networks[$i]}' class='fullsubnet'>{$networks[$i]}</td>
+                                        {var $lastindex = $i}
+                                        {var $lastlenght = $networks[$i]}
+                                    {/if}  
+                                    {if $lastlenght==0 || ($lastindex + $lastlenght -1 < $i)}
+                                        <td></td>
+                                    {/if}   
+                                </tr>
+                            {/for}
+                            
+                            
+                        </table>
+                    </td>
+                    <td align="center">
+                        <table border='1'>
+                            <tr>
+                                <th>IP</th>
+                                <th width="200">Popis</th>
+                                <th>IPs</th>
+                            </tr>
+                            
+                            {for $i = 128; $i < 256; $i++}
+                                <tr>
+                                    <td>{$prefix}{$i}</td>
+                                    {if array_key_exists($i,$ips)}
+                                        {if array_key_exists($i,$users)}
+                                            <td><a href="{link Uzivatel:show id=>$users[$i]}" role="button">{$ips[$i]}</a></td>
+                                        {elseif array_key_exists($i,$aps)}
+                                            <td><a href="{link Ap:show id=>$aps[$i]}" role="button">{$ips[$i]}</a></td>
+                                        {/if}
+                                    {else}
+                                        <td></td>
+                                    {/if}
+
+                                    {if array_key_exists($i,$networks)}
+                                        <td rowspan='{$networks[$i]}' class='fullsubnet'>{$networks[$i]}</td>
+                                        {var $lastindex = $i}
+                                        {var $lastlenght = $networks[$i]}
+                                    {/if}  
+                                    {if $i == 128 && array_key_exists(0,$networks) && $networks[0]==256}
+                                        <td rowspan='{$networks[0]/2}' class='fullsubnet'>{$networks[0]}</td>
+                                        {var $lastindex = 0}
+                                        {var $lastlenght = $networks[0]}
+                                    {/if}  
+                                    {if $lastlenght==0 || ($lastindex + $lastlenght -1 < $i)}
+                                        <td></td>
+                                    {/if}   
+                                </tr>
+                            {/for}
+                            
+                            
+                        </table>
+                    </td>
+                </tr>
+            </table>               
+        </td>
+    </tr>
+</table>

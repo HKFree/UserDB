@@ -22,6 +22,11 @@ class IPAdresa extends Table
 	//$row = $this->findAll();
         return($this->findAll());
     }
+    
+    public function getSeznamIPAdresZacinajicich($prefix)
+    {
+        return $this->findAll()->where("ip_adresa LIKE ?", $prefix.'%')->fetchAll();
+    }
 
     public function getIPAdresa($id)
     {

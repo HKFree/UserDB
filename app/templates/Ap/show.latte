@@ -14,7 +14,7 @@
 
 <h4>Přehledy subnetů použitých na AP</h4>
 {foreach $csubnety as $cs}
-    <p><a href="{link Subnet:overview id=>$cs}" class="btn btn-default btn-sm" role="button"> Zobrazit {$cs}</a></p>
+    <p><a href="{link Subnet:overview id=>$cs}" class="btn btn-default btn-sm" role="button"> Zobrazit subnety {$cs}</a> <a href="{link Subnet:detail id=>$cs}" class="btn btn-default btn-sm" role="button"> Zobrazit ip {$cs}</a></p>
 {/foreach}
 <br>
 
