@@ -735,7 +735,7 @@ class UzivatelPresenter extends BasePresenter
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
                 $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-                $this->template->heslo = $so->heslo;
+                $this->template->heslo = base64_decode($_SERVER['initials']);
                 
                 $money_uid = $this->context->parameters["money"]["login"];
                 $money_heslo = $this->context->parameters["money"]["password"];
@@ -1078,6 +1078,63 @@ class UzivatelPresenter extends BasePresenter
     	return true;
     }
     
+    public function renderSms()
+    {
+        $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($user->Ap_id, $this->getUser());
+        $this->template->uziv = $this->uzivatel->getUzivatel($this->getParam('id'));
+    }
+    
+    protected function createComponentSmsForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+        $form = new Form($this, "smsForm");
+    	$form->addHidden('id');
+
+        //$form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
+        $form->addText('komu', 'Příjemce', 20)->setDisabled(TRUE);
+        $form->addTextArea('message', 'Text', 72, 10);
+
+        $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+        
+        if(!empty($user->telefon) && $user->telefon!='missing')
+        {
+            $form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+            $form->onSuccess[] = array($this, 'smsFormSucceded');
+        }
+    	// pokud editujeme, nacteme existujici opravneni
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
+            
+
+            //$so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            if($user) {
+                $form->setValues($user);
+                $form->setDefaults(array(
+                        //'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
+                        'komu' => $user->telefon,
+                        //'subject' => 'Zpráva od správce sítě hkfree.org',
+                    ));
+    	    }
+    	}                
+    
+    	return $form;
+    }
+    
+    public function smsFormSucceded($form, $values) {
+    	$user = $this->uzivatel->getUzivatel($this->getParam('id'));
+
+        $locale = 'cs_CZ.UTF-8';
+        setlocale(LC_ALL, $locale);
+        putenv('LC_ALL='.$locale);
+        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$user->telefon.' "'.$values->message.'"');
+        $output = shell_exec($command);
+        
+        $this->flashMessage('SMS byla odeslána. Output: ' . $output);
+        
+    	$this->redirect('Uzivatel:show', array('id'=>$this->getParam('id'))); 
+    	return true;
+    }
+    
     public function renderSmsall()
     {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
@@ -1126,10 +1183,7 @@ class UzivatelPresenter extends BasePresenter
     }
     
     public function smsallFormSucceded($form, $values) {
-    	$idUzivatele = $values->id;
-        
-        $ap = $this->ap->getAP($this->getParam('id'));        
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+    	$ap = $this->ap->getAP($this->getParam('id'));        
         
         $telefony = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'telefon');
         foreach($telefony as $tl)
@@ -1145,7 +1199,7 @@ class UzivatelPresenter extends BasePresenter
         $locale = 'cs_CZ.UTF-8';
         setlocale(LC_ALL, $locale);
         putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.$so->heslo.' -d '.$tls.' "'.$values->message.'"');
+        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$tls.' "'.$values->message.'"');
         $output = shell_exec($command);
         
         $this->flashMessage('SMS byly odeslány. Output: ' . $output);
