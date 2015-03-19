@@ -97,7 +97,7 @@ class SubnetPresenter extends BasePresenter
                 }
                 else
                 {
-                    $ips[$d] = "AP: ".$ip->ref('Ap')->jmeno." (".$ip->ref('Ap')->id.")";
+                    $ips[$d] = "AP: ".$ip->ref('Ap')->jmeno." (".$ip->ref('Ap')->id.") Hostname:". $ip->hostname;
                     $aps[$d] = $ip->Ap_id;
                 }
             }
