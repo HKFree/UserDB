@@ -88,6 +88,7 @@ class SubnetPresenter extends BasePresenter
             
             $users = array();
             $aps = array();
+            $poznamky = array();
             foreach ($existujiciIP as $ip) {          
                 list($a, $b, $c, $d) = explode(".", $ip->ip_adresa);
                 if(!empty($ip->Uzivatel_id))
@@ -100,6 +101,7 @@ class SubnetPresenter extends BasePresenter
                     $ips[$d] = "AP: ".$ip->ref('Ap')->jmeno." (".$ip->ref('Ap')->id.") Hostname:". $ip->hostname;
                     $aps[$d] = $ip->Ap_id;
                 }
+                $poznamky[$d] = $ip->popis;
             }
             //\Tracy\Dumper::dump($ips);
             
@@ -108,6 +110,7 @@ class SubnetPresenter extends BasePresenter
             $this->template->ips = $ips;
             $this->template->users = $users;
             $this->template->aps = $aps;
+            $this->template->poznamky = $poznamky;
     	}
     }
     
