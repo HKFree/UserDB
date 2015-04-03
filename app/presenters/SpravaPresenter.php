@@ -122,6 +122,7 @@ class SpravaPresenter extends BasePresenter
                   ->getSeparatorPrototype()->setName("span")->style('margin-right', '7px');
 
             $right->addHidden('zadost_podal');
+            $right->addHidden('zadost_podana');
 
     	}, 0, false);
     

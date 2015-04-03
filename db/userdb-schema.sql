@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS `CestneClenstviUzivatele` (
   `poznamka` text COLLATE utf8_czech_ci,
   `TypCestnehoClenstvi_id` int(11) NOT NULL,
   `zadost_podal` int(11) NOT NULL,
+  `zadost_podana` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `Uzivatel_id` (`Uzivatel_id`),
   KEY `TypCestnehoClenstvi_id` (`TypCestnehoClenstvi_id`),

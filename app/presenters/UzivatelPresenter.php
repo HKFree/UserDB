@@ -914,6 +914,7 @@ class UzivatelPresenter extends BasePresenter
     	$rights = $form->addDynamic('rights', function (Container $right) use ($data, $typCC) {
 
             $right->addHidden('zadost_podal')->setAttribute('class', 'id ip');
+            $right->addHidden('zadost_podana')->setAttribute('class', 'id ip');
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
             $right->addHidden('id')->setAttribute('class', 'id ip');
             
@@ -990,6 +991,7 @@ class UzivatelPresenter extends BasePresenter
     	{
     	    $pravo->Uzivatel_id = $idUzivatele;
             $pravo->zadost_podal = $this->getUser()->getIdentity()->getId();
+            $pravo->zadost_podana = new Nette\Utils\DateTime;
     	    $pravoId = $pravo->id;
             
             //osetreni aby prazdne pole od davalo null a ne 00-00-0000
