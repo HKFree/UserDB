@@ -139,7 +139,7 @@ class IPAdresa extends Table
 			$tr->create('td')->setText($ip->login);
 			$tr->create('td')->setText($ip->heslo);
 		} 
-		$adresyTab->create('script')->setHTML('$(\'span\').tooltip();');
+
 		return($adresyTab);
     }
 }
