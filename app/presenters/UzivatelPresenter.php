@@ -230,10 +230,10 @@ class UzivatelPresenter extends BasePresenter
     	$form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
         $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,1=>1,2=>2,3=>3,4=>4,5=>5))->setDefaultValue(0);
     	$form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
-            
+
     	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
     	$data = $this->ipAdresa;
-    	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni) {
+    	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni,$form) {
     	    $data->getIPForm($ip, $typyZarizeni);
     
     	    $ip->addSubmit('remove', '– Odstranit IP')
@@ -245,7 +245,10 @@ class UzivatelPresenter extends BasePresenter
     	$ips->addSubmit('add', '+ Přidat další IP')
     		->setAttribute('class', 'btn btn-success btn-xs btn-white')
     		->setValidationScope(FALSE)
-    		->addCreateOnClick(TRUE);
+    		->addCreateOnClick(TRUE, function (Container $replicator, Container $ip) {
+                        $ip->setValues(array('internet'=>1));
+						//\Tracy\Dumper::dump($ip);
+				  });
     
     	$form->addSubmit('save', 'Uložit')
     		->setAttribute('class', 'btn btn-success btn-xs btn-white default');
