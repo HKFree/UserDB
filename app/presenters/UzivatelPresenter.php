@@ -221,6 +221,7 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::FILLED)->addRule(Form::EMAIL, 'Musíte zadat platný email');
     	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
         $form->addText('cislo_clenske_karty', 'Číslo členské karty', 30);
+        $form->addText('kauce_mobil', 'Kauce na mobilní tarify', 30);
     	$form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
         $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
         $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
@@ -665,9 +666,15 @@ class UzivatelPresenter extends BasePresenter
                 }); 
                 
                 $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
+                    if($item->kauce_mobil > 0)
+                        return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')' : "?";
+                    else
+                        return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
                 })->setCustomRender(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
+                    if($item->kauce_mobil > 0)
+                        return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')' : "?";
+                    else
+                        return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
                 });
             }
             //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
@@ -768,7 +775,13 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->money_dis = ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
                     $this->template->money_lastpay = ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$uid]->GetLastPayment->LastPaymentAmount . ")");
                     $this->template->money_lastact = ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$uid]->GetLastActivation->LastActivationAmount . ")");
-                    $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : "?";
+                    if($uzivatel->kauce_mobil > 0)
+                    {
+                        $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')' : "?";
+                    }
+                    else{
+                        $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : "?";
+                    }
                 }
                 else
                 {
