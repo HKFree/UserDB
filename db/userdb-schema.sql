@@ -346,6 +346,7 @@ CREATE TABLE IF NOT EXISTS `Uzivatel` (
   `cislo_clenske_karty` varchar(50) COLLATE utf8_czech_ci DEFAULT NULL,
   `TechnologiePripojeni_id` int(11) NOT NULL DEFAULT '0',
   `regform_downloaded_password_sent` tinyint(4) NOT NULL DEFAULT '1',
+  `kauce_mobil` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `TypClenstvi_id` (`TypClenstvi_id`),
   KEY `ZpusobPripojeni_id` (`ZpusobPripojeni_id`),
