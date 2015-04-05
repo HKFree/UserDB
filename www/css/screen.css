@@ -327,3 +327,60 @@ pre.tracy-dump {
 .br-widget-show span.lebka-zluta {
     background-position: 0 32px;
 }
+
+.conntype0 {
+    background: url('../images/conntype0.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype1 {
+    background: url('../images/conntype1.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype2 {
+    background: url('../images/conntype2.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype3 {
+    background: url('../images/conntype3.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype4 {
+    background: url('../images/conntype4.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype5 {
+    background: url('../images/conntype5.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype6 {
+    background: url('../images/conntype6.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}

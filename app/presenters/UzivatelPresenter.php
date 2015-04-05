@@ -583,6 +583,11 @@ class UzivatelPresenter extends BasePresenter
             ->setText($item->id);})->setSortable();
         $grid->addColumnText('nick', 'Nick')->setSortable();
         
+        $grid->addColumnText('TechnologiePripojeni_id', 'Tech')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('span class="conntype'.$item->TechnologiePripojeni_id.'"')
+            ->alt($item->TechnologiePripojeni_id);})->setSortable();
+        
+        
         if($canViewOrEdit) {
             /*$grid->addColumnText('TypPravniFormyUzivatele_id', 'PF')->setCustomRender(function($item){
                   return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
