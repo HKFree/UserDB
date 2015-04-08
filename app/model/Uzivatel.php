@@ -22,6 +22,18 @@ class Uzivatel extends Table
     {
       return($this->findAll());
     }
+
+    public function getSeznamAktivnichUzivatelu()
+    {
+        $context = new Context($this->connection);
+        $number = $context->query("SELECT COUNT(CacheMoney.active) 
+FROM `Uzivatel` 
+LEFT JOIN `CacheMoney` ON `Uzivatel`.`id` = `CacheMoney`.`Uzivatel_id` 
+WHERE (TypClenstvi_id>1) 
+GROUP BY CacheMoney.active 
+HAVING `CacheMoney`.`active` = 1")->fetchField();                
+	    return $number;
+    }
     
     public function findUserByFulltext($search, $Uzivatel)
     {
@@ -80,9 +92,28 @@ class Uzivatel extends Table
 	    return($this->findBy(array('Ap_id' => $idAP)));
     }
     
+    public function getSeznamAktivnichUzivateluZAP($idAP)
+    {
+        $context = new Context($this->connection);
+        $number = $context->query("SELECT COUNT(CacheMoney.active) 
+FROM `Uzivatel` 
+LEFT JOIN `CacheMoney` ON `Uzivatel`.`id` = `CacheMoney`.`Uzivatel_id` 
+WHERE (`Ap_id` = '$idAP' AND TypClenstvi_id>1) 
+GROUP BY CacheMoney.active 
+HAVING `CacheMoney`.`active` = 1")->fetchField();
+                
+	    return $number;
+    }
+    
     public function getSeznamUIDUzivateluZAP($idAP)
     {
 	    return($this->findBy(array('Ap_id' => $idAP))->fetchPairs('id','id'));
+    }
+    
+    public function getExpiredSeznamUIDUzivateluZAP($idAP)
+    {
+	    return($this->findBy(array('Ap_id' => $idAP))->group('Uzivatel.id')
+          ->having('MAX(:CacheMoney.cache_date) < DATE_ADD(CURDATE(), INTERVAL -1 HOUR) OR COUNT(:CacheMoney.id) = 0')->fetchPairs('id','id'));
     }
     
     public function getSeznamUIDUzivatelu()

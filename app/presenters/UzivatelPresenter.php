@@ -35,8 +35,9 @@ class UzivatelPresenter extends BasePresenter
     private $typZarizeni;
     private $log;
     private $subnet;
+    private $cacheMoney;
 
-    function __construct(Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -51,6 +52,7 @@ class UzivatelPresenter extends BasePresenter
     	$this->typZarizeni = $typZarizeni;
         $this->log = $log;
         $this->subnet = $subnet;
+        $this->cacheMoney = $cacheMoney;
     }
     
     public function generatePdf($uzivatel)
@@ -486,10 +488,44 @@ class UzivatelPresenter extends BasePresenter
 
             $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
             if ($money) {
-                $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $this->uzivatel->getSeznamUIDUzivateluZAP($id)));
+                set_time_limit(360);
+                $seznamU = $this->uzivatel->getExpiredSeznamUIDUzivateluZAP($id);
+                //\Tracy\Dumper::dump($seznamU);
+                $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $seznamU));
                 if (is_soap_fault($money_callresult)) {
                     $money = false;
                     //TODO zobrazit info ze money jsou offline
+                }
+                else
+                {
+                    foreach($seznamU as $uid) {                                    
+                        unset($moneyResult);
+                        $moneyResult = array(
+                            'Uzivatel_id' => $uid,
+                            'cache_date' => new Nette\Utils\DateTime,
+                            'active' => ($money_callresult[$uid]->userIsActive->isActive == 1) ? 1 : (($money_callresult[$uid]->userIsActive->isActive == 0) ? 0 : null),
+                            'disabled' => ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? 1 : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? 0 : null),
+                            'last_payment' => ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)),
+                            'last_payment_amount' => ($money_callresult[$uid]->GetLastPayment->LastPaymentAmount == "null") ? null : $money_callresult[$uid]->GetLastPayment->LastPaymentAmount,
+                            'last_activation' => ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)),
+                            'last_activation_amount' => ($money_callresult[$uid]->GetLastActivation->LastActivationAmount == "null") ? null : $money_callresult[$uid]->GetLastActivation->LastActivationAmount,
+                            'account_balance' => ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : null
+                        );  
+
+                        if(!$this->cacheMoney->getIsCached($uid))
+                        {
+                            $toInsert[] = $moneyResult;                                
+                        }
+                        else {
+                            $expired = $this->cacheMoney->getCacheItem($uid);
+                            $this->cacheMoney->update($expired->id, $moneyResult);
+                        }
+                    }
+                    
+                    if(isset($toInsert))
+                    {
+                        $this->cacheMoney->insert($toInsert);
+                    }
                 }
             }
         } else {
@@ -541,9 +577,11 @@ class UzivatelPresenter extends BasePresenter
             $grid->setRowCallback(function ($item, $tr) use ($money_callresult,$seznamUzivateluCC, $presenter){
                 
                 $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
-                
-                if($money_callresult[$item->id]->userIsActive->isActive != 1) {
-                    $tr->class[] = 'neaktivni';
+                                
+                $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                if($moneycache->count() > 0 && $moneycache->fetch()->active != 1)
+                {
+                  $tr->class[] = 'neaktivni';
                 }
                 if(in_array($item->id, $seznamUzivateluCC)){
                     $tr->class[] = 'cestne';
@@ -583,17 +621,7 @@ class UzivatelPresenter extends BasePresenter
             ->title($item->id)
             ->setText($item->id);})->setSortable();
         $grid->addColumnText('nick', 'Nick')->setSortable();
-        
-        $grid->addColumnText('TechnologiePripojeni_id', 'Tech')->setCustomRender(function($item) {
-            return Html::el('span')
-                    ->setClass('conntype'.$item->TechnologiePripojeni_id)
-                    ->alt($item->TechnologiePripojeni_id)
-                    ->setTitle($item->TechnologiePripojeni->text)
-                    ->data("toggle", "tooltip")
-                    ->data("placement", "right");
-        })->setSortable();
-        
-        
+
         if($canViewOrEdit) {
             /*$grid->addColumnText('TypPravniFormyUzivatele_id', 'PF')->setCustomRender(function($item){
                   return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
@@ -641,43 +669,112 @@ class UzivatelPresenter extends BasePresenter
         
     	if($canViewOrEdit) {
             if($money) {
-                $grid->addColumnText('act', 'Aktivní')->setColumn(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->userIsActive->isActive == 1) ? "ANO" : (($money_callresult[$item->id]->userIsActive->isActive == 0) ? "NE" : "?");
-                })->setCustomRender(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->userIsActive->isActive == 1) ? "ANO" : (($money_callresult[$item->id]->userIsActive->isActive == 0) ? "NE" : "?");
+                $grid->addColumnText('act', 'Aktivní')->setColumn(function($item){                    
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');                    
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      return ($moneyData->active == 1) ? "ANO" : (($moneyData->active == 0) ? "NE" : "?");
+                    }
+                    return "?";
+                })->setCustomRender(function($item){                    
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      return ($moneyData->active == 1) ? "ANO" : (($moneyData->active == 0) ? "NE" : "?");
+                    }
+                    return "?";
                 }); 
                 
-                $grid->addColumnText('deact', 'Deaktivace')->setColumn(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
-                })->setCustomRender(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$item->id]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
+                $grid->addColumnText('deact', 'Deaktivace')->setColumn(function($item){
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      return ($moneyData->disabled == 1) ? "ANO" : (($moneyData->disabled == 0) ? "NE" : "?");
+                    }
+                    return "?";
+                })->setCustomRender(function($item){
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      return ($moneyData->disabled == 1) ? "ANO" : (($moneyData->disabled == 0) ? "NE" : "?");
+                    }
+                    return "?";
                 });  
                 
-                $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$item->id]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$item->id]->GetLastPayment->LastPaymentAmount . ")");
-                })->setCustomRender(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$item->id]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$item->id]->GetLastPayment->LastPaymentAmount . ")");
+                $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item){
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      return ($moneyData->last_payment == null) ? "NIKDY" : ($moneyData->last_payment->format('d.m.Y') . " (" . $moneyData->last_payment_amount . ")");
+                    }
+                    return "?";                    
+                })->setCustomRender(function($item){
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      return ($moneyData->last_payment == null) ? "NIKDY" : ($moneyData->last_payment->format('d.m.Y') . " (" . $moneyData->last_payment_amount . ")");
+                    }
+                    return "?";
                 });   
                 
-                $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$item->id]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$item->id]->GetLastActivation->LastActivationAmount . ")");
-                })->setCustomRender(function($item) use ($money_callresult){
-                    return ($money_callresult[$item->id]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$item->id]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$item->id]->GetLastActivation->LastActivationAmount . ")");
+                $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function($item){
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      return ($moneyData->last_activation == null) ? "NIKDY" : ($moneyData->last_activation->format('d.m.Y') . " (" . $moneyData->last_activation_amount . ")");
+                    }
+                    return "?";
+                })->setCustomRender(function($item){
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      return ($moneyData->last_activation == null) ? "NIKDY" : ($moneyData->last_activation->format('d.m.Y') . " (" . $moneyData->last_activation_amount . ")");
+                    }
+                    return "?";
                 }); 
                 
-                $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item) use ($money_callresult){
-                    if($item->kauce_mobil > 0)
-                        return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')' : "?";
+                $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item){
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      if($item->kauce_mobil > 0)
+                        return ($moneyData->account_balance >= 0) ? ($moneyData->account_balance - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')' : "?";
                     else
-                        return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
-                })->setCustomRender(function($item) use ($money_callresult){
-                    if($item->kauce_mobil > 0)
-                        return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')' : "?";
-                    else
-                        return ($money_callresult[$item->id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$item->id]->GetAccountBalance->GetAccountBalance : "?";
+                        return ($moneyData->account_balance >= 0) ? $moneyData->account_balance : "?";
+                    }
+                    return "?";                    
+                })->setCustomRender(function($item){
+                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
+                    if($moneycache->count() > 0)
+                    {
+                      $moneyData = $moneycache->fetch();
+                      if($item->kauce_mobil > 0)
+                        return ($moneyData->account_balance >= 0) ? ($moneyData->account_balance - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')' : "?";
+                      else
+                        return ($moneyData->account_balance >= 0) ? $moneyData->account_balance : "?";
+                    }
+                    return "?";
                 });
             }
             //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
+            
+            $grid->addColumnText('TechnologiePripojeni_id', 'Tech')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->setClass('conntype'.$item->TechnologiePripojeni_id)
+                    ->alt($item->TechnologiePripojeni_id)
+                    ->setTitle($item->TechnologiePripojeni->text)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
             
             if($fullnotes)   
             {
@@ -708,7 +805,7 @@ class UzivatelPresenter extends BasePresenter
             $cestnych = count($this->cestneClenstviUzivatele->getListCC());
                 $this->template->u_celkem = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",1)->count("*");
                 $this->template->u_celkemz = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",0)->count("*");
-                $this->template->u_aktivnich = "TODO";
+                $this->template->u_aktivnich = $this->uzivatel->getSeznamAktivnichUzivatelu();
                 $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",1)->count("*");        
                 $this->template->u_primarnich = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",2)->count("*");
                 $this->template->u_radnych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",3)->count("*")-$cestnych;
@@ -729,7 +826,7 @@ class UzivatelPresenter extends BasePresenter
             $cestnych = count($this->cestneClenstviUzivatele->getListCCOfAP($id));
             $this->template->u_celkem = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",1)->count("*");
             $this->template->u_celkemz = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",0)->count("*");
-            $this->template->u_aktivnich = "TODO";
+            $this->template->u_aktivnich = $this->uzivatel->getSeznamAktivnichUzivateluZAP($id);
             $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",1)->count("*");        
             $this->template->u_primarnich = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",2)->count("*");
             $this->template->u_radnych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",3)->count("*")-$cestnych;
@@ -757,30 +854,60 @@ class UzivatelPresenter extends BasePresenter
                 $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
                 $this->template->heslo = base64_decode($_SERVER['initials']);
                 
-                $money_uid = $this->context->parameters["money"]["login"];
-                $money_heslo = $this->context->parameters["money"]["password"];
-                $money_client = new \SoapClient(
-                    'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
-                    array(
-                        'login'         => $money_uid,
-                        'password'      => $money_heslo,
-                        'trace'         => 0,
-                        'exceptions'    => 0,
-                        'connection_timeout'=> 15
-                    )
-                );
-                $money_callresult = $money_client->hkfree_money_userGetInfo($uid);   
-                if (!is_soap_fault($money_callresult)) {
-                    $this->template->money_act = ($money_callresult[$uid]->userIsActive->isActive == 1) ? "ANO" : (($money_callresult[$uid]->userIsActive->isActive == 0) ? "NE" : "?");
-                    $this->template->money_dis = ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? "ANO" : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? "NE" : "?");
-                    $this->template->money_lastpay = ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)) . " (" . $money_callresult[$uid]->GetLastPayment->LastPaymentAmount . ")");
-                    $this->template->money_lastact = ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? "NIKDY" : (date("d.m.Y",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)) . " (" . $money_callresult[$uid]->GetLastActivation->LastActivationAmount . ")");
+                if(!$this->cacheMoney->getIsCacheValid($uid))
+                {
+                    $money_uid = $this->context->parameters["money"]["login"];
+                    $money_heslo = $this->context->parameters["money"]["password"];
+                    $money_client = new \SoapClient(
+                        'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
+                        array(
+                            'login'         => $money_uid,
+                            'password'      => $money_heslo,
+                            'trace'         => 0,
+                            'exceptions'    => 0,
+                            'connection_timeout'=> 15
+                        )
+                    );
+                    $money_callresult = $money_client->hkfree_money_userGetInfo($uid);   
+                    if (!is_soap_fault($money_callresult)) {                        
+                 
+                        $moneyResult = array(
+                            'cache_date' => new Nette\Utils\DateTime,
+                            'active' => ($money_callresult[$uid]->userIsActive->isActive == 1) ? 1 : (($money_callresult[$uid]->userIsActive->isActive == 0) ? 0 : null),
+                            'disabled' => ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? 1 : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? 0 : null),
+                            'last_payment' => ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)),
+                            'last_payment_amount' => ($money_callresult[$uid]->GetLastPayment->LastPaymentAmount == "null") ? null : $money_callresult[$uid]->GetLastPayment->LastPaymentAmount,
+                            'last_activation' => ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)),
+                            'last_activation_amount' => ($money_callresult[$uid]->GetLastActivation->LastActivationAmount == "null") ? null : $money_callresult[$uid]->GetLastActivation->LastActivationAmount,
+                            'account_balance' => ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : null
+                        );  
+                        
+                        if(!$this->cacheMoney->getIsCached($uid))
+                        {
+                            $userarr = array('Uzivatel_id' => $uid);
+                            $toInsert[] = array_merge($moneyResult, $userarr);
+                            $cacheId = $this->cacheMoney->insert($toInsert)->id;
+                        }
+                        else {
+                            $expired = $this->cacheMoney->getCacheItem($uid);
+                            $this->cacheMoney->update($expired->id, $moneyResult);
+                        }
+                    }
+                }
+                                
+                if($this->cacheMoney->getIsCached($uid))
+                {
+                    $cachedItem = $this->cacheMoney->getCacheItem($uid);
+                    $this->template->money_act = ($cachedItem->active == 1) ? "ANO" : (($cachedItem->active == 0) ? "NE" : "?");
+                    $this->template->money_dis = ($cachedItem->disabled == 1) ? "ANO" : (($cachedItem->disabled == 0) ? "NE" : "?");
+                    $this->template->money_lastpay = ($cachedItem->last_payment == null) ? "NIKDY" : ($cachedItem->last_payment->format('d.m.Y') . " (" . $cachedItem->last_payment_amount . ")");
+                    $this->template->money_lastact = ($cachedItem->last_activation == null) ? "NIKDY" : ($cachedItem->last_activation->format('d.m.Y') . " (" . $cachedItem->last_activation_amount . ")");
                     if($uzivatel->kauce_mobil > 0)
                     {
-                        $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')' : "?";
+                        $this->template->money_bal = ($cachedItem->account_balance >= 0) ? ($cachedItem->account_balance - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')' : "?";
                     }
                     else{
-                        $this->template->money_bal = ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : "?";
+                        $this->template->money_bal = ($cachedItem->account_balance >= 0) ? $cachedItem->account_balance : "?";
                     }
                 }
                 else
