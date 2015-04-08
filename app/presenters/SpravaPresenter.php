@@ -39,6 +39,14 @@ class SpravaPresenter extends BasePresenter
 
     public function renderSchvalovanicc()
     {
+        /*** clear old registration files ***/
+        foreach (glob(sys_get_temp_dir()."/registrace*") as $file) {
+        /*** if file is 7 days old then delete it ***/
+        if (filemtime($file) < time() - 604800) {
+            unlink($file);
+            }
+        }
+        
         $this->template->canApproveCC = $this->getUser()->isInRole('VV');
         $uzivatele = array();
         foreach($this->cestneClenstviUzivatele->getNeschvalene() as $cc_id => $cc_data) {
