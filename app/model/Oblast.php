@@ -21,6 +21,11 @@ class Oblast extends Table
         return($this->findAll()->order("jmeno"));
     }
     
+    public function getOblast($id)
+    {
+      return($this->find($id));
+    }
+    
     /*
      * DEPRECATED - pouzij formatujOblastiSAP(getSeznamOblasti());
     public function getSeznamOblastiSAP()
@@ -52,6 +57,18 @@ class Oblast extends Table
                     $aps[$apid] = $oblast->jmeno . ' - ' . $ap->jmeno . ' (' . $oblast->id . ')';
                 }
             }
+		}
+		return($aps);
+    }
+    
+    /**
+    * seznam oblasti pro vytvareni noveho AP
+    */
+    public function formatujOblasti($oblasti)
+    {
+        $aps = array();
+        foreach ($oblasti as $oblast) {
+            $aps[$oblast->id] = $oblast->jmeno . ' (' . $oblast->id . ')';
 		}
 		return($aps);
     }

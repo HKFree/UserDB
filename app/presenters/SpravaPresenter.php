@@ -23,13 +23,15 @@ class SpravaPresenter extends BasePresenter
     private $uzivatel;
     private $log;
     private $ap;
+    public $oblast;
 
-    function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap) {
+    function __construct(Model\Oblast $oblast, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
         $this->log = $log;
         $this->ap = $ap;
+        $this->oblast = $oblast;
     }
 
     public function renderNastroje()
@@ -194,6 +196,98 @@ class SpravaPresenter extends BasePresenter
         //$this->log->loguj('Uzivatel', $idUzivatele, $log);
         
     	$this->redirect('Sprava:schvalovanicc'); 
+    	return true;
+    }
+    
+    public function renderNovaoblast()
+    {
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
+    }
+
+    protected function createComponentNovaoblastForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "novaoblastForm");
+    	$form->addHidden('id');
+
+        $form->addText('jmeno', 'Název oblasti', 50)->setRequired('Zadejte název oblasti');
+
+    	$form->addSubmit('send', 'Vytvořit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'novaoblastFormSucceded');
+
+    	// pokud editujeme, nacteme existujici
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
+            $existujiciOblast = $this->oblast->getOblast($this->getParam('id'));
+            if($existujiciOblast) {
+                $form->setValues($existujiciOblast);
+    	    }
+    	}                
+    
+    	return $form;
+    }
+    
+    public function novaoblastFormSucceded($form, $values) {
+
+        $idOblasti = $values->id;
+        
+        if(empty($values->id)) {
+            $values->datum_zalozeni = new Nette\Utils\DateTime;
+            $this->oblast->insert($values);
+            $this->flashMessage('Oblast byla vytvořena.');            
+        } else {
+    	    $this->oblast->update($idOblasti, $values);
+        }
+            	
+    	$this->redirect('Sprava:nastroje'); 
+    	return true;
+    }
+    
+    public function renderNoveap()
+    {
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
+    }
+
+    protected function createComponentNoveapForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "noveapForm");
+    	$form->addHidden('id');
+
+        $aps = $this->oblast->formatujOblasti($this->oblast->getSeznamOblasti());
+        
+        $form->addSelect('Oblast_id', 'Oblast', $aps);
+        
+        $form->addText('jmeno', 'Název AP', 50)->setRequired('Zadejte název AP');
+        $form->addTextArea('poznamka', 'Poznámka', 72, 10);
+
+    	$form->addSubmit('send', 'Vytvořit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'noveapFormSucceded');
+
+    	// pokud editujeme, nacteme existujici
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if($this->getParam('id') && !$submitujeSe) {
+            $existujiciAp = $this->ap->getAP($this->getParam('id'));
+            if($existujiciAp) {
+                $form->setValues($existujiciAp);
+    	    }
+    	}                
+    
+    	return $form;
+    }
+    
+    public function noveapFormSucceded($form, $values) {
+
+        $idAp = $values->id;
+        
+        if(empty($values->id)) {
+            $this->ap->insert($values);
+            $this->flashMessage('AP bylo vytvořeno.');            
+        } else {
+    	    $this->ap->update($idAp, $values);
+        }
+            	
+    	$this->redirect('Sprava:nastroje'); 
     	return true;
     }
 }
