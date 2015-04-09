@@ -25,15 +25,19 @@ class SpravaPresenter extends BasePresenter
     private $ap;
     public $oblast;
     private $cacheMoney;
+    private $ipAdresa;
+    private $sloucenyUzivatel;
 
-    function __construct(Model\CacheMoney $cacheMoney, Model\Oblast $oblast, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap) {
+    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
         $this->log = $log;
         $this->ap = $ap;
-        $this->oblast = $oblast;
+        $this->oblast = $ob;
         $this->cacheMoney = $cacheMoney;
+        $this->ipAdresa = $ipAdresa; 
+        $this->sloucenyUzivatel = $slUzivatel; 
     }
 
     public function renderNastroje()
@@ -473,6 +477,8 @@ class SpravaPresenter extends BasePresenter
                     ));
         
     	$form->onSuccess[] = array($this, 'slucovaniFormSucceded');
+        
+        //TODO: udelat confirmation dialog na slouceni
 
     	// pokud editujeme, nacteme existujici
         /*$submitujeSe = ($form->isAnchored() && $form->isSubmitted());
@@ -487,24 +493,68 @@ class SpravaPresenter extends BasePresenter
     }
     
     public function slucovaniFormSucceded($form, $values) {
-
+        
         //\Tracy\Dumper::dump($form->isSubmitted()->name);
         
         if($form->isSubmitted()->name == "nahled")
         {
+            if($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id,$values->slouceny_uzivatel))
+            {
+                $this->flashMessage('Takové sloučení již existuje.');
+            }
+            if($this->sloucenyUzivatel->getIsAlreadyMaster($values->slouceny_uzivatel))
+            {
+                $this->flashMessage('Uživatel ke zrušení již figuruje jako hlavní uživatel v jiném sloučení.'); 
+            }
+            if($this->sloucenyUzivatel->getIsAlreadySlave($values->Uzivatel_id))
+            {
+                $this->flashMessage('Uživatel který má zůstat aktivní již figuruje jako sloučený uživatel v jiném sloučení.'); 
+            }
             $this->redirect('Sprava:slucovani', array('u1'=>$values->Uzivatel_id, 'u2'=>$values->slouceny_uzivatel)); 
         }
         
         if($form->isSubmitted()->name == "slouceni")
         {
-            /*$idAp = $values->id;
-
+            //$u1 = $this->uzivatel->getUzivatel($values->Uzivatel_id);
+            $u2 = $this->uzivatel->getUzivatel($values->slouceny_uzivatel);
+            
+            
+            if($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id,$values->slouceny_uzivatel))
+            {
+                $this->flashMessage('Takové sloučení již existuje.'); 
+                return true;
+            }
+            if($this->sloucenyUzivatel->getIsAlreadyMaster($values->slouceny_uzivatel))
+            {
+                $this->flashMessage('Uživatel ke zrušení již figuruje jako hlavní uživatel v jiném sloučení.'); 
+                return true;
+            }
+            if($this->sloucenyUzivatel->getIsAlreadySlave($values->Uzivatel_id))
+            {
+                $this->flashMessage('Uživatel který má zůstat aktivní již figuruje jako sloučený uživatel v jiném sloučení.'); 
+                return true;
+            }
+            
+            $idSlouceni = $values->id;
+            
             if(empty($values->id)) {
-                $this->ap->insert($values);
-                $this->flashMessage('AP bylo vytvořeno.');            
+                $this->sloucenyUzivatel->insert($values);
             } else {
-                $this->ap->update($idAp, $values);
-            }*/
+                //$this->sloucenyUzivatel->update($idSlouceni, $values);
+            }
+            
+            //prevest IP z $values->slouceny_uzivatel do $values->Uzivatel_id
+            $ipAdresyu2 = $u2->related('IPAdresa.Uzivatel_id');
+            foreach ($ipAdresyu2 as $ip) {
+                $this->ipAdresa->update($ip->id, array('Uzivatel_id'=>$values->Uzivatel_id));
+            }
+            //zrusit slouceneho 
+            $this->uzivatel->update($values->slouceny_uzivatel, array('TypClenstvi_id'=>1));
+            
+            $this->flashMessage('Uživatelé byli sloučeni.');  
+            
+            $this->redirect('Uzivatel:edit', array('id'=>$values->Uzivatel_id)); 
+            
         }       
         
     	return true;
