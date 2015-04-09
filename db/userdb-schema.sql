@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Apr 08, 2015 at 02:32 AM
+-- Generation Time: Apr 10, 2015 at 12:44 AM
 -- Server version: 5.5.40
 -- PHP Version: 5.4.36-0+deb7u1
 
@@ -162,6 +162,24 @@ CREATE TABLE IF NOT EXISTS `Oblast` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `jmeno` (`jmeno`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `SloucenyUzivatel`
+--
+
+CREATE TABLE IF NOT EXISTS `SloucenyUzivatel` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `Uzivatel_id` int(11) NOT NULL,
+  `slouceny_uzivatel` int(11) NOT NULL,
+  `datum_slouceni` datetime NOT NULL,
+  `sloucil` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `Uzivatel_id` (`Uzivatel_id`),
+  KEY `SloucenyUzivatel_id` (`slouceny_uzivatel`),
+  KEY `sloucil` (`sloucil`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------
 
@@ -486,6 +504,14 @@ ALTER TABLE `IPAdresa`
 --
 ALTER TABLE `Log`
   ADD CONSTRAINT `Log_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`);
+
+--
+-- Constraints for table `SloucenyUzivatel`
+--
+ALTER TABLE `SloucenyUzivatel`
+  ADD CONSTRAINT `SloucenyUzivatel_ibfk_3` FOREIGN KEY (`sloucil`) REFERENCES `Uzivatel` (`id`),
+  ADD CONSTRAINT `SloucenyUzivatel_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`),
+  ADD CONSTRAINT `SloucenyUzivatel_ibfk_2` FOREIGN KEY (`slouceny_uzivatel`) REFERENCES `Uzivatel` (`id`);
 
 --
 -- Constraints for table `SpravceOblasti`

@@ -1,0 +1,130 @@
+{block content}
+
+<h3>Sloučení uživatelů</h3>
+    
+<a href="{link Sprava:nastroje}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Zpět na nástroje správy</a>
+
+{if $canViewOrEdit}
+    <table cellspacing="0" cellpadding="0" style="width:100%; height:100%; margin-top: 20px; margin-bottom: 40px;">
+    {form slucovaniForm}
+	<tr>
+        <td valign="top" height="10%" style="width:45%;">{label Uzivatel_id /}</td>
+        <td valign="top" height="10%" style="width:10%;text-align: center;"></td>
+        <td valign="top" height="10%" style="width:45%;">{label slouceny_uzivatel /}</td>
+    </tr>
+    <tr>
+        <td valign="top" height="10%">{input Uzivatel_id}</td>
+        <td valign="top" height="10%" style="text-align: center;">{input nahled}</td>
+        <td valign="top" height="10%">{input slouceny_uzivatel}</td>
+    </tr>
+    <tr>
+        <td colspan="2" valign="top" height="10%" style="text-align: center;">
+            <h4 n:if="$form->hasErrors()">Chyby</h4>
+            <ul class="errors" n:if="$form->hasErrors()">
+                <li n:foreach="$form->errors as $error">{$error}</li>
+            </ul>
+        </td>
+    </tr>
+    {/form}
+    <tr>
+        <td valign="top" height="80%">
+            <table class="table table-nonfluid">
+                <tr><th>ID</th><td>{$u1->id}</td></tr>
+                <tr><th>Oblast - AP</th><td><a n:href="Ap:list, id => $u1->Ap->Oblast->id">{$u1->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u1->Ap->id">{$u1->Ap->jmeno}</a></td></tr>
+                <tr><th>Typ členství</th><td>{if $u1hasCC}platné čestné členství{else}{$u1->TypClenstvi->text}{/if}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+
+                <tr><th>Přezdívka</th><td>{$u1->nick}</td></tr>
+                <tr><th>Typ právní formy</th><td>{$u1->TypPravniFormyUzivatele->text}</td></tr>
+                <tr n:if="$u1->TypPravniFormyUzivatele->text == 'PO'"><th>Název firmy</th><td>{$u1->firma_nazev}</td></tr>
+                <tr n:if="isset($u1->firma_ico) || ($u1->TypPravniFormyUzivatele->text == 'PO')"><th>IČO</th><td>{$u1->firma_ico}</td></tr>
+                <tr><th>Číslo členské karty</th><td>{$u1->cislo_clenske_karty}</td></tr>
+                <tr><th>Jméno a příjmení</th><td>{$u1->jmeno} {$u1->prijmeni}</td></tr>
+
+                <tr><th>Ulice a č.p.</th><td>{$u1->ulice_cp}</td></tr>
+                <tr><th>Obec</th><td>{$u1->mesto}</td></tr>
+                <tr><th>PSČ</th><td>{$u1->psc}</td></tr>
+                <tr><th>Email</th><td>{$u1->email}</td></tr>
+                <tr><th>Sekundární email</th><td>{$u1->email2}</td></tr>
+                <tr><th>Telefon</th><td>{$u1->telefon}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+
+                <tr><th>Rok narození</th><td>{$u1->rok_narozeni}</td></tr>
+                <tr><th>Index potížisty</th><td><div class="br-widget-show"><span class="lebka-zluta"></span>{for $i=1;$i<6;$i++}{if $i<=$u1->index_potizisty}<span class="lebka-cervena"></span>{else}<span class="lebka-seda"></span>{/if}{/for}</div></td></tr>
+                <tr><th>Technologie připojení</th><td>{$u1->TechnologiePripojeni->text}</td></tr>
+                <tr><th>Způsob připojení</th><td>{$u1->ZpusobPripojeni->text}</td></tr>
+                
+                <tr><th>Založen</th><td>{$u1->zalozen}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+
+                <tr><th>Kauce na mobilní tarify</th><td>{$u1->kauce_mobil}</td></tr> 
+                <tr><th>Aktivní</th><td>{$u1money_act}</td></tr>
+                <tr><th>Deaktivace</th><td>{$u1money_dis}</td></tr>
+                <tr><th>Poslední platba</th><td>{$u1money_lastpay}</td></tr>
+                <tr><th>Poslední aktivace</th><td>{$u1money_lastact}</td></tr>
+                <tr><th>Stav účtu</th><td>{$u1money_bal}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+
+                <tr><th>IP adresy</th><td>{$u1adresyline}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+                
+                <tr><th>Poznámka</th><td><pre class="well well-sm">{$u1->poznamka}</pre></td></tr>     
+            </table>
+        </td>
+        <td valign="top" height="10%"></td>
+        <td valign="top" height="80%">
+            <table class="table table-nonfluid">
+                <tr><th>ID</th><td>{$u2->id}</td></tr>
+                <tr><th>Oblast - AP</th><td><a n:href="Ap:list, id => $u2->Ap->Oblast->id">{$u2->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u2->Ap->id">{$u2->Ap->jmeno}</a></td></tr>
+                <tr><th>Typ členství</th><td>{if $u2hasCC}platné čestné členství{else}{$u2->TypClenstvi->text}{/if}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+
+                <tr><th>Přezdívka</th><td>{$u2->nick}</td></tr>
+                <tr><th>Typ právní formy</th><td>{$u2->TypPravniFormyUzivatele->text}</td></tr>
+                <tr n:if="$u2->TypPravniFormyUzivatele->text == 'PO'"><th>Název firmy</th><td>{$u2->firma_nazev}</td></tr>
+                <tr n:if="isset($u2->firma_ico) || ($u2->TypPravniFormyUzivatele->text == 'PO')"><th>IČO</th><td>{$u2->firma_ico}</td></tr>
+                <tr><th>Číslo členské karty</th><td>{$u2->cislo_clenske_karty}</td></tr>
+                <tr><th>Jméno a příjmení</th><td>{$u2->jmeno} {$u2->prijmeni}</td></tr>
+
+                <tr><th>Ulice a č.p.</th><td>{$u2->ulice_cp}</td></tr>
+                <tr><th>Obec</th><td>{$u2->mesto}</td></tr>
+                <tr><th>PSČ</th><td>{$u2->psc}</td></tr>
+                <tr><th>Email</th><td>{$u2->email}</td></tr>
+                <tr><th>Sekundární email</th><td>{$u2->email2}</td></tr>
+                <tr><th>Telefon</th><td>{$u2->telefon}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+
+                <tr><th>Rok narození</th><td>{$u2->rok_narozeni}</td></tr>
+                <tr><th>Index potížisty</th><td><div class="br-widget-show"><span class="lebka-zluta"></span>{for $i=1;$i<6;$i++}{if $i<=$u2->index_potizisty}<span class="lebka-cervena"></span>{else}<span class="lebka-seda"></span>{/if}{/for}</div></td></tr>
+                <tr><th>Technologie připojení</th><td>{$u2->TechnologiePripojeni->text}</td></tr>
+                <tr><th>Způsob připojení</th><td>{$u2->ZpusobPripojeni->text}</td></tr>
+                    
+                <tr><th>Založen</th><td>{$u2->zalozen}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+
+                <tr><th>Kauce na mobilní tarify</th><td>{$u2->kauce_mobil}</td></tr> 
+                <tr><th>Aktivní</th><td>{$u2money_act}</td></tr>
+                <tr><th>Deaktivace</th><td>{$u2money_dis}</td></tr>
+                <tr><th>Poslední platba</th><td>{$u2money_lastpay}</td></tr>
+                <tr><th>Poslední aktivace</th><td>{$u2money_lastact}</td></tr>
+                <tr><th>Stav účtu</th><td>{$u2money_bal}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+                
+                <tr><th>IP adresy</th><td>{$u2adresyline}</td></tr>
+                <tr><td colspan="2">&nbsp;</td></tr>
+                
+                <tr><th>Poznámka</th><td><pre class="well well-sm">{$u2->poznamka}</pre></td></tr> 
+            </table>
+        </td>
+    </tr>    
+     <tr>
+        <td valign="top" height="10%"></td>
+        <td valign="top" height="10%" style="text-align: center;">{input slouceni}</td>
+        <td valign="top" height="10%"></td>
+    </tr>
+    </table>
+    
+{else}
+    <p>Na tuto operaci nemáte oprávnění!</p>
+{/if}
+{/block}

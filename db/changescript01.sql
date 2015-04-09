@@ -24,3 +24,28 @@ CREATE TABLE IF NOT EXISTS `CacheMoney` (
 --
 ALTER TABLE `CacheMoney`
   ADD CONSTRAINT `CacheMoney_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`);
+  
+--
+-- Table structure for table `SloucenyUzivatel`
+--
+
+CREATE TABLE IF NOT EXISTS `SloucenyUzivatel` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `Uzivatel_id` int(11) NOT NULL,
+  `slouceny_uzivatel` int(11) NOT NULL,
+  `datum_slouceni` datetime NOT NULL,
+  `sloucil` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `Uzivatel_id` (`Uzivatel_id`),
+  KEY `SloucenyUzivatel_id` (`slouceny_uzivatel`),
+  KEY `sloucil` (`sloucil`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
+  
+  
+  --
+-- Constraints for table `SloucenyUzivatel`
+--
+ALTER TABLE `SloucenyUzivatel`
+  ADD CONSTRAINT `SloucenyUzivatel_ibfk_3` FOREIGN KEY (`sloucil`) REFERENCES `Uzivatel` (`id`),
+  ADD CONSTRAINT `SloucenyUzivatel_ibfk_1` FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel` (`id`),
+  ADD CONSTRAINT `SloucenyUzivatel_ibfk_2` FOREIGN KEY (`slouceny_uzivatel`) REFERENCES `Uzivatel` (`id`);

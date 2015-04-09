@@ -22,6 +22,16 @@ class Uzivatel extends Table
     {
       return($this->findAll());
     }
+    
+    public function getFormatovanySeznamNezrusenychUzivatelu()
+    {
+      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->fetchAll();
+      $uss = array();
+        foreach ($vsichni as $uzivatel) {
+            $uss[$uzivatel->id] = $uzivatel->id . ' - ' . $uzivatel->nick . ' - ' . $uzivatel->jmeno . ' ' . $uzivatel->prijmeni;
+		}
+		return($uss);
+    }
 
     public function getSeznamAktivnichUzivatelu()
     {
