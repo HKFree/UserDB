@@ -466,7 +466,7 @@ class SpravaPresenter extends BasePresenter
         $users = $this->uzivatel->getFormatovanySeznamNezrusenychUzivatelu();
         
         $form->addSelect('Uzivatel_id', 'Ponechaný uživatel (zůstane aktivní)', $users);
-        $form->addSelect('slouceny_uzivatel', 'Sloučený uživatel (bude zrušen)', $users);
+        $form->addSelect('slouceny_uzivatel', 'Sloučený uživatel (bude zrušen a jeho IP budou převedeny aktivnímu)', $users);
 
     	$form->addSubmit('nahled', 'Náhled')->setAttribute('class', 'btn btn-success btn-xs btn-white');
         $form->addSubmit('slouceni', 'Sloučit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
@@ -538,6 +538,8 @@ class SpravaPresenter extends BasePresenter
             $idSlouceni = $values->id;
             
             if(empty($values->id)) {
+                $values->datum_slouceni = new Nette\Utils\DateTime;
+                $values->sloucil = $this->getUser()->getIdentity()->getId();
                 $this->sloucenyUzivatel->insert($values);
             } else {
                 //$this->sloucenyUzivatel->update($idSlouceni, $values);
