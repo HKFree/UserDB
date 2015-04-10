@@ -67,7 +67,6 @@ HAVING `CacheMoney`.`active` = 1")->fetchField();
                                             LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id 
                                             WHERE (
                                             Uzivatel.id LIKE '$search%'
-                                            OR  IPAdresa.ip_adresa LIKE '$search%'
                                             ) LIMIT 1")->fetchField();
         if(!empty($partialMatchId))
         {
