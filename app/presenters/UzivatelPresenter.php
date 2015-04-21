@@ -1081,7 +1081,7 @@ class UzivatelPresenter extends BasePresenter
                  ->addCondition(Form::FILLED)
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
                  
-            $right->addText('plati_do', 'Platnost od:')
+            $right->addText('plati_do', 'Platnost do:')
                  //->setType('date')
                  ->setAttribute('class', 'datepicker ip')
                  ->setAttribute('data-date-format', 'YYYY/MM/DD')
@@ -1163,6 +1163,8 @@ class UzivatelPresenter extends BasePresenter
 
                 $mailer = new SendmailMailer;
                 $mailer->send($mail);
+                
+                $this->flashMessage('E-mail VV byl odeslán. Vyčkejte, než VV žádost potvrdí.');
             } else {
                 //$starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
@@ -1313,7 +1315,7 @@ class UzivatelPresenter extends BasePresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
             $ap = $this->ap->getAP($this->getParam('id'));
-            $telefony = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'telefon');
+            $telefony = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'telefon');
             foreach($telefony as $tl)
             {
                 if(!empty($tl) && $tl!='missing')
@@ -1340,7 +1342,7 @@ class UzivatelPresenter extends BasePresenter
     public function smsallFormSucceded($form, $values) {
     	$ap = $this->ap->getAP($this->getParam('id'));        
         
-        $telefony = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'telefon');
+        $telefony = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'telefon');
         foreach($telefony as $tl)
         {
             if(!empty($tl) && $tl!='missing')
@@ -1387,7 +1389,7 @@ class UzivatelPresenter extends BasePresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
             $ap = $this->ap->getAP($this->getParam('id'));
-            $emaily = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'email');
+            $emaily = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'email');
             
             foreach($emaily as $email)
             {
@@ -1415,7 +1417,7 @@ class UzivatelPresenter extends BasePresenter
     	$idUzivatele = $values->id;
         
         $ap = $this->ap->getAP($this->getParam('id'));
-        $emaily = $ap->related('Uzivatel.Ap_id')->fetchPairs('id', 'email');
+        $emaily = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'email');
         $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
         
         $mail = new Message;

@@ -120,7 +120,7 @@ class SpravaPresenter extends BasePresenter
                  ->addCondition(Form::FILLED)
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
                  
-            $right->addText('plati_do', 'Platnost od:')
+            $right->addText('plati_do', 'Platnost do:')
                  //->setType('date')
                  ->setAttribute('class', 'datepicker ip')
                  ->setAttribute('data-date-format', 'YYYY/MM/DD')
