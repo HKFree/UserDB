@@ -37,6 +37,16 @@ class SloucenyUzivatel extends Table
         return(count($validniZaznamy)>0);
     }
     
+    public function getMaster($userID)
+    {        
+        return $this->findAll()->where('slouceny_uzivatel', $userID)->fetch()->ref('Uzivatel', 'Uzivatel_id');
+    }
+    
+    public function getSlaves($userID)
+    {        
+        return $this->findAll()->where('Uzivatel_id', $userID)->fetchPairs('id','slouceny_uzivatel');
+    }
+    
     public function getSlouceni($slID)
     {
         return($this->find($slID));

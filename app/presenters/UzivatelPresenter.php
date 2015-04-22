@@ -36,8 +36,9 @@ class UzivatelPresenter extends BasePresenter
     private $log;
     private $subnet;
     private $cacheMoney;
+    private $sloucenyUzivatel;
 
-    function __construct(Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -53,6 +54,7 @@ class UzivatelPresenter extends BasePresenter
         $this->log = $log;
         $this->subnet = $subnet;
         $this->cacheMoney = $cacheMoney;
+        $this->sloucenyUzivatel = $slUzivatel; 
     }
     
     public function generatePdf($uzivatel)
@@ -918,6 +920,26 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->money_lastpay = "MONEY OFFLINE";
                     $this->template->money_lastact = "MONEY OFFLINE";
                     $this->template->money_bal = "MONEY OFFLINE"; 
+                }
+                
+                if($this->sloucenyUzivatel->getIsAlreadyMaster($uid))
+                {
+                    $this->flashMessage('Uživatel má pod sebou sloučené uživatele.');
+                    $this->template->slaves = $this->sloucenyUzivatel->getSlaves($uid);
+                }
+                else 
+                {
+                    $this->template->slaves = null;
+                }
+                if($this->sloucenyUzivatel->getIsAlreadySlave($uid))
+                {
+                    $this->flashMessage('Uživatel byl sloučen pod jiného uživatele.');
+                    $this->template->master = $this->sloucenyUzivatel->getMaster($uid);
+                    //\Tracy\Dumper::dump($this->sloucenyUzivatel->getMaster($uid));
+                }
+                else 
+                {
+                    $this->template->master = null;
                 }
                 
     		    $this->template->u = $uzivatel;

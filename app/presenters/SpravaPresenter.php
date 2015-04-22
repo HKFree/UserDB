@@ -65,6 +65,33 @@ class SpravaPresenter extends BasePresenter
         $this->template->uzivatele = $this->uzivatel->findBy(array("id" => $uzivatele));
     }
     
+    public function renderSlouceni()
+    {
+        //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
+    }
+    
+    protected function createComponentSlouceniGrid($name)
+    {
+        //$canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+        
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        $grid->setExport('slouceni_export');
+        
+        $grid->setModel($this->sloucenyUzivatel->getAll());
+        
+    	$grid->setDefaultPerPage(100);
+    	$grid->setDefaultSort(array('Uzivatel_id' => 'ASC'));
+         
+    	$grid->addColumnText('Uzivatel_id', 'Sloučeno pod')->setSortable()->setFilterText();
+        $grid->addColumnText('slouceny_uzivatel', 'Sloučený uživatel')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('datum_slouceni', 'Datum sloučení')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('sloucil', 'Sloučil')->setSortable()->setFilterText()->setSuggestion();
+        
+        /*$grid->addActionHref('show', 'Zobrazit')
+                ->setIcon('eye-open');*/
+    }
+    
     public function renderPrehledcc()
     {
         //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
@@ -552,6 +579,16 @@ class SpravaPresenter extends BasePresenter
             }
             //zrusit slouceneho 
             $this->uzivatel->update($values->slouceny_uzivatel, array('TypClenstvi_id'=>1));
+            
+            //zalogovat udalost ke sloucenemu
+            $log = array();
+            $log[] = array(
+                    'sloupec'=>'Uzivatel.id',
+                    'puvodni_hodnota'=>NULL,
+                    'nova_hodnota'=>'sloučen pod '. $values->Uzivatel_id,
+                    'akce'=>'U'
+                );
+            $this->log->loguj('Uzivatel', $values->slouceny_uzivatel, $log);
             
             $this->flashMessage('Uživatelé byli sloučeni.');  
             
