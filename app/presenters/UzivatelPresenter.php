@@ -236,6 +236,9 @@ class UzivatelPresenter extends BasePresenter
         $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,1=>1,2=>2,3=>3,4=>4,5=>5))->setDefaultValue(0);
     	$form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
 
+        $form->addText('ipsubnet', 'Přidat subnet (x.y.z.w/c)',20);
+        $form->addText('iprange', 'Přidat rozsah ip (x.y.z.w-x.y.z.w)',32);
+        
     	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
     	$data = $this->ipAdresa;
     	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni,$form) {
@@ -287,6 +290,19 @@ class UzivatelPresenter extends BasePresenter
         // Validujeme jenom při uložení formuláře
         if(!isset($data["save"])) {
             return(0);
+        }
+        
+        if(isset($data['ipsubnet']) && !empty($data['ipsubnet']))
+        {
+            if (!preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $data['ipsubnet'])) {
+                $form->addError('IP subnet není validní!');
+            }
+        }
+        if(isset($data['iprange']) && !empty($data['iprange']))
+        {
+            if (!preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $data['iprange'])) {
+                $form->addError('IP rozsah není validní!');
+            }
         }
         
         if(isset($data['ip'])) {
@@ -349,8 +365,59 @@ class UzivatelPresenter extends BasePresenter
         $log = array();
     	$idUzivatele = $values->id;
     	$ips = $values->ip;
+        $ipsubnet = $values->ipsubnet;
+        $iprange = $values->iprange;
+        //\Tracy\Dumper::dump($ips);exit;
     	unset($values["ip"]);
-    
+        unset($values["ipsubnet"]);
+        unset($values["iprange"]);
+        
+        $genaddresses = array();
+        
+        $newUserIPIDs = array();
+    	                
+        if(isset($ipsubnet) && !empty($ipsubnet))
+        {  
+            if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $ipsubnet)) {
+                @list($sip, $slen) = explode('/', $ipsubnet);
+                if (($smin = ip2long($sip)) !== false) {
+                  $smax = ($smin | (1<<(32-$slen))-1);
+                  for ($i = $smin; $i < $smax; $i++)
+                    $genaddresses[] = long2ip($i);
+                }                 
+            }
+        }
+        if(isset($iprange) && !empty($iprange))
+        {
+            if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $iprange)) {
+                $temp = preg_split("/-/",$iprange, -1, PREG_SPLIT_NO_EMPTY); 
+                $QRange1 = $temp[0]; 
+                $QRange2 = $temp[1];
+                $start = ip2long($QRange1);
+                $end = ip2long($QRange2);
+                $range = range($start, $end);
+                $genips = array_map('long2ip', $range);
+                $genaddresses = array_merge($genaddresses,$genips);               
+            }
+        }
+        foreach ($genaddresses as $gi)
+            {          
+                $duplIp = $this->ipAdresa->getDuplicateIP($gi, 0);
+                if (!$duplIp) {       
+                    $rngip = array(
+                    'ip_adresa'=>$gi,
+                    'internet'=>TRUE,
+                    'smokeping'=>FALSE,
+                    'mac_filter'=>FALSE,
+                    'dhcp'=>FALSE,
+                    'Uzivatel_id'=>$idUzivatele
+                    ); 
+                   $idrngip = $this->ipAdresa->insert($rngip)->id;                      
+                   $this->log->logujInsert($rngip, 'IPAdresa['.$idrngip.']', $log);
+                   $newUserIPIDs[] = intval($idrngip);
+                }                    
+            }
+            
         if (empty($values->cislo_clenske_karty)) {
                 $values->cislo_clenske_karty = null;
             }
@@ -400,9 +467,8 @@ class UzivatelPresenter extends BasePresenter
     	    $this->uzivatel->update($idUzivatele, $values);
             $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
         }
-        
+
     	// Potom zpracujeme IPcka
-    	$newUserIPIDs = array();
     	foreach($ips as $ip)
     	{
     	    $ip->Uzivatel_id = $idUzivatele;
@@ -944,7 +1010,7 @@ class UzivatelPresenter extends BasePresenter
                 
     		    $this->template->u = $uzivatel;
                 
-                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');
+                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');//->order("IPAdresa.ip_adresa");
                 
     		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy);
                                 
