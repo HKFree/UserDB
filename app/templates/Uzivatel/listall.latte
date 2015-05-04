@@ -3,6 +3,15 @@
 
 {if $search}
   <p>Fulltextové vyhledávání (vždy pouze první nalezený záznam): {$search}</p>
+
+&nbsp;&nbsp;
+{if $canViewOrEdit}
+<a n:if="!$money" href="{link Uzivatel:listall search=>$search, money=>1}" class="btn btn-default btn-sm" role="button">Informace z money</a>
+{/if}
+<a n:if="$money" href="{link Uzivatel:listall search=>$search}" class="btn btn-default btn-sm" role="button">Bez informací z money</a>
+
+<br><br>
+
 {/if}
 
 {control grid}
