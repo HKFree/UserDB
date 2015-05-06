@@ -113,6 +113,7 @@ class UzivatelPresenter extends BasePresenter
         $mail = new Message;
         $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->addTo($uzivatel->email)
+            ->addTo($so->email)
             ->setSubject('Registrační formulář člena hkfree.org z.s.')
             ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem hkfree.org z.s.');
 
@@ -236,7 +237,7 @@ class UzivatelPresenter extends BasePresenter
         $form->addSelect('index_potizisty', 'Index potížisty', array(0=>0,1=>1,2=>2,3=>3,4=>4,5=>5))->setDefaultValue(0);
     	$form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
 
-        $form->addText('ipsubnet', 'Přidat subnet (x.y.z.w/c)',20);
+        $form->addText('ipsubnet', 'Přidat všechny ip ze subnetu (x.y.z.w/c)',20);
         $form->addText('iprange', 'Přidat rozsah ip (x.y.z.w-x.y.z.w)',32);
         
     	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
@@ -450,6 +451,7 @@ class UzivatelPresenter extends BasePresenter
             $mail = new Message;
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                 ->addTo($values->email)
+                ->addTo($so->email)
                 ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
                 ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '. 
                               'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
