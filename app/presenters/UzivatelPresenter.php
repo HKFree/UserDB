@@ -125,13 +125,49 @@ class UzivatelPresenter extends BasePresenter
 
         $mailer = new SendmailMailer;
         $mailer->send($mail);
-
-        if($uzivatel->regform_downloaded_password_sent==0)
-        {
-            $this->uzivatel->update($uzivatel->id, array('regform_downloaded_password_sent'=>1));
-        }
     }
 
+    public function actionSendRegActivation() {
+        if($this->getParam('id'))
+        {
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+                $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
+                $link = "http://userdb.hkfree.org/user/uzivatel/confirm/".$hash;
+
+                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());        
+                $mail = new Message;
+                $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+                    ->addTo($uzivatel->email)
+                    ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
+                    ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '. 
+                                  'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
+                                  'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
+                                  'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
+                                  'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
+                                  'S pozdravem hkfree.org z.s.');
+                $mailer = new SendmailMailer;
+                $mailer->send($mail);
+
+                $mailso = new Message;
+                $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+                    ->addTo($so->email)
+                    ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s.')
+                    ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '. 
+                                  'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel.....<br><br>'.
+                                  'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
+                                  'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
+                                  'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
+                                  'S pozdravem hkfree.org z.s.');
+                $mailer->send($mailso);
+
+                $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
+
+                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
+            }
+        }
+    }
+    
     public function actionExportAndSendRegForm() {
         if($this->getParam('id'))
         {
@@ -451,7 +487,6 @@ class UzivatelPresenter extends BasePresenter
             $mail = new Message;
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                 ->addTo($values->email)
-                ->addTo($so->email)
                 ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
                 ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '. 
                               'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
@@ -461,6 +496,18 @@ class UzivatelPresenter extends BasePresenter
                               'S pozdravem hkfree.org z.s.');
             $mailer = new SendmailMailer;
             $mailer->send($mail);
+            
+            $mailso = new Message;
+            $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+                ->addTo($so->email)
+                ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s.')
+                ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '. 
+                              'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel.....<br><br>'.
+                              'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
+                              'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
+                              'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
+                              'S pozdravem hkfree.org z.s.');
+            $mailer->send($mailso);
 
             $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
             
