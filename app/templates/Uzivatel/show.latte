@@ -9,9 +9,10 @@
     <a href="{link Uzivatel:email id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Odeslat E-mail</a>
     <a href="{link Uzivatel:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Odeslat SMS</a>
     <a href="{link Uzivatel:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button">Registrační formulář</a>
-    <a href="{link Uzivatel:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>
     {if $u->regform_downloaded_password_sent==0}
     <a href="{link Uzivatel:sendRegActivation id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat znovu aktivační link e-mailem</a>
+    {else}
+    <a href="{link Uzivatel:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>    
     {/if}
     <a href="https://money.hkfree.org/user.php?a=1&b={$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> Money</a>
     <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Materna</a>
