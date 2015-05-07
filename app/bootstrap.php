@@ -4,8 +4,11 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $configurator = new Nette\Configurator;
 
-$configurator->setDebugMode(false); // enable for your remote IP
-$configurator->enableDebugger(__DIR__ . '/../log');
+//$configurator->setDebugMode(true); // enable for all IP
+//$configurator->setDebugMode(false); // disable for all IP (incl. localhost)
+//$configurator->setDebugMode('8.8.8.8'); // enable for IP 8.8.8.8
+
+$configurator->enableDebugger(__DIR__ . '/../log','userdbteam@hkfree.org');
 
 $configurator->setTempDirectory(__DIR__ . '/../temp');
 
