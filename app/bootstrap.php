@@ -8,7 +8,7 @@ $configurator = new Nette\Configurator;
 //$configurator->setDebugMode(false); // disable for all IP (incl. localhost)
 //$configurator->setDebugMode('8.8.8.8'); // enable for IP 8.8.8.8
 
-$configurator->enableDebugger(__DIR__ . '/../log','userdbteam@hkfree.org');
+$configurator->enableDebugger(__DIR__ . '/../log','is@hkfree.org');
 
 $configurator->setTempDirectory(__DIR__ . '/../temp');
 
