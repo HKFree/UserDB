@@ -1,0 +1,61 @@
++ userdb
+menu = userdb
+title = generovano z userdb
+
+{foreach $oblasti as $id_oblast => $oblast}
+{foreach $aps[$id_oblast] as $id_ap => $ap}
+{if isset($aps_ips[$id_oblast][$id_ap]) || (isset($users[$id_oblast][$id_ap]) && isset($users_ips[$id_oblast][$id_ap]))}
+++ userdb-{Nette\Utils\Strings::webalize($oblast)}-{$id_ap}
+{if Nette\Utils\Strings::toAscii($oblast) == Nette\Utils\Strings::toAscii($ap)}
+menu = {Nette\Utils\Strings::toAscii($oblast)}
+title = {Nette\Utils\Strings::toAscii($oblast)}
+{else}
+menu = {Nette\Utils\Strings::toAscii($oblast)} - {Nette\Utils\Strings::toAscii($ap)}
+title = {Nette\Utils\Strings::toAscii($oblast)} - {Nette\Utils\Strings::toAscii($ap)}
+{/if}
+
+{if isset($aps_ips[$id_oblast][$id_ap])}
++++ userdb-{Nette\Utils\Strings::webalize($ap)}-{$id_ap}
+menu = ---AP---
+title = ---AP---
+
+{foreach $aps_ips[$id_oblast][$id_ap] as $id_ap_ip => $ap_ip}
+++++ userdb-{Nette\Utils\Strings::webalize($ap)}-AP-IP-{$id_ap_ip}
+{if (($ap_ip->popis?$ap_ip->popis:$ap_ip->hostname))!=''}
+menu = {Nette\Utils\Strings::toAscii((($ap_ip->popis?$ap_ip->popis:$ap_ip->hostname)))}
+title = {Nette\Utils\Strings::toAscii((($ap_ip->popis?$ap_ip->popis:$ap_ip->hostname)))}
+{else}
+menu = AP-IP-{$id_ap_ip}
+title = AP-IP-{$id_ap_ip}
+{/if}    
+host = {$ap_ip->ip_adresa}
+
+{/foreach}
+
+{/if}
+{if isset($users[$id_oblast][$id_ap]) && isset($users_ips[$id_oblast][$id_ap])}
+{foreach $users[$id_oblast][$id_ap] as $id_user => $user}
+{if isset($users_ips[$id_oblast][$id_ap][$id_user])}
++++ userdb-{Nette\Utils\Strings::webalize($ap)}-{$id_user}
+menu = {$user->id}-{Nette\Utils\Strings::toAscii($user->nick)}
+title = {$user->id}-{Nette\Utils\Strings::toAscii($user->nick)}
+
+{foreach $users_ips[$id_oblast][$id_ap][$id_user] as $id_user_ip => $user_ip}
+++++ userdb-{Nette\Utils\Strings::webalize($ap)}-USER-IP-{$id_user_ip}
+{if (($user_ip->popis?$user_ip->popis:$user_ip->hostname))!=''}
+menu = {Nette\Utils\Strings::toAscii((($user_ip->popis?$user_ip->popis:$user_ip->hostname)))}
+title = {Nette\Utils\Strings::toAscii((($user_ip->popis?$user_ip->popis:$user_ip->hostname)))}
+{else}
+menu = USER-IP-{$id_user_ip}
+title = USER-IP-{$id_user_ip}
+{/if}    
+host = {$user_ip->ip_adresa}
+
+{/foreach}
+{/if}
+{/foreach}
+{/if}
+{/if}
+{/foreach}
+{/foreach}
+   
