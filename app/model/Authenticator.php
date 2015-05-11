@@ -35,18 +35,22 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
         if (!$userID) {
             throw new Nette\Security\AuthenticationException('User not found.');
         }
-      
-        if($this->fakeUser != false)            /// debuging identity
-        {
-            $userID = $this->fakeUser["userID"];
-            $args = array('nick' => $this->fakeUser["userName"]);
-            $_SERVER['initials']="password";
-        }
-        else
-        {
-            $args = array('nick' => $_SERVER['givenName']);
-        }
-               
+        if($userID == 'NOLOGIN') {
+                $userID = 1;
+                $args = array('nick' => 'SYSTEM');
+                $_SERVER['initials']="password";
+        } else {
+            if($this->fakeUser != false)            /// debuging identity
+            {
+                $userID = $this->fakeUser["userID"];
+                $args = array('nick' => $this->fakeUser["userName"]);
+                $_SERVER['initials']="password";
+            }
+            else
+            {
+                $args = array('nick' => $_SERVER['givenName']);
+            }
+        }               
         $date = new DateTime();   
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
         $roles = array();
