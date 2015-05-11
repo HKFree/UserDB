@@ -691,7 +691,7 @@ class UzivatelPresenter extends BasePresenter
         
         if($money)
         {
-            $grid->setRowCallback(function ($item, $tr) use ($money_callresult,$seznamUzivateluCC, $presenter){
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter){
                 
                 $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
                                 
@@ -730,8 +730,6 @@ class UzivatelPresenter extends BasePresenter
             });
         }
         
-        
-        $presenter = $this;
     	$grid->addColumnText('id', 'UID')->setCustomRender(function($item) use ($presenter)
         {return Html::el('a')
             ->href($presenter->link('Uzivatel:show', array('id'=>$item->id)))
