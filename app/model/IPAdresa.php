@@ -96,28 +96,10 @@ class IPAdresa extends Table
 		$tr->create('th')->setText('Login');
 		$tr->create('th')->setText('Heslo');
 
-        $firstip = 0;
-        $lastip = 0;
-        $iprange = 0;
-        $lasttd;
-        
 		foreach ($ips as $ip) {
             
-            if($lastip + 1 == ip2long($ip->ip_adresa))
-            {
-                $lastip = ip2long($ip->ip_adresa);
-                $iprange++;
-                continue;
-            }
-            else if($iprange > 0)
-            {
-                $lasttd->setText(long2ip($firstip)." - ".long2ip($lastip));
-                $iprange = 0;
-            }
-
 			$tr = $adresyTab->create('tr');
-			$lasttd = $tr->create('td');
-            $lasttd->setText($ip->ip_adresa);
+            $tr->create('td')->setText($ip->ip_adresa);
 			$tr->create('td')->setText($ip->hostname);
 			$tr->create('td')->setText($ip->mac_adresa);
 			$tr->create('td')->setText((isset($ip->TypZarizeni->text))?$ip->TypZarizeni->text:"");
@@ -157,15 +139,7 @@ class IPAdresa extends Table
 			$tr->create('td')->setText($ip->popis);
 			$tr->create('td')->setText($ip->login);
 			$tr->create('td')->setText($ip->heslo);
-            
-            $firstip = ip2long($ip->ip_adresa);
-            $lastip = ip2long($ip->ip_adresa);
 		} 
-        if($iprange > 0)
-        {
-            $lasttd->setText(long2ip($firstip)." - ".long2ip($lastip));
-            $iprange = 0;
-        }
 
 		return($adresyTab);
     }
