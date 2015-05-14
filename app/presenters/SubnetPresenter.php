@@ -51,7 +51,13 @@ class SubnetPresenter extends BasePresenter
     {
     	if($this->getParameter('id'))
     	{
-            $existujici = $this->subnet->getSeznamSubnetuZacinajicich($this->getParameter('id'));
+            $targetSubnet = $this->getParameter('id');
+            if(substr($targetSubnet, -1) != ".")
+            {
+                $targetSubnet .= ".";
+            }
+            
+            $existujici = $this->subnet->getSeznamSubnetuZacinajicich($targetSubnet);
             //\Tracy\Dumper::dump($existujici);
             
             foreach ($existujici as $snet) {
@@ -62,7 +68,7 @@ class SubnetPresenter extends BasePresenter
             }
             
             //\Tracy\Dumper::dump($networks);
-            $this->template->prefix = $this->getParameter('id');
+            $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;
             $this->template->captions = $captions;
             
@@ -76,7 +82,13 @@ class SubnetPresenter extends BasePresenter
     {
     	if($this->getParam('id'))
     	{
-            $existujiciSubnety = $this->subnet->getSeznamSubnetuZacinajicich($this->getParameter('id'));
+            $targetSubnet = $this->getParam('id');
+            if(substr($targetSubnet, -1) != ".")
+            {
+                $targetSubnet .= ".";
+            }
+            
+            $existujiciSubnety = $this->subnet->getSeznamSubnetuZacinajicich($targetSubnet);
             
             foreach ($existujiciSubnety as $snet) {
                 $out = $this->subnet->parseSubnet($snet->subnet);            
@@ -84,7 +96,7 @@ class SubnetPresenter extends BasePresenter
                 $networks[$d] = 1 << (32 - $out["cidr"]); //calculates number of ips in cidr
             }
             
-            $existujiciIP = $this->ipAdresa->getSeznamIPAdresZacinajicich($this->getParameter('id'));
+            $existujiciIP = $this->ipAdresa->getSeznamIPAdresZacinajicich($targetSubnet);
             
             $users = array();
             $aps = array();
@@ -105,7 +117,7 @@ class SubnetPresenter extends BasePresenter
             }
             //\Tracy\Dumper::dump($ips);
             
-            $this->template->prefix = $this->getParameter('id');
+            $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;
             $this->template->ips = $ips;
             $this->template->users = $users;
