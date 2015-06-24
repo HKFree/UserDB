@@ -119,6 +119,7 @@ class SpravaPresenter extends BasePresenter
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
         $grid->addColumnText('plati_od', 'Platnost od')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('typcc', 'Typ CC')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('name', 'Jméno a příjmení')->setSortable()->setFilterText()->setSuggestion();
         
         $grid->addActionHref('show', 'Zobrazit')
@@ -234,7 +235,7 @@ class SpravaPresenter extends BasePresenter
     
     public function renderNovaoblast()
     {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
     protected function createComponentNovaoblastForm() {
@@ -278,7 +279,7 @@ class SpravaPresenter extends BasePresenter
     
     public function renderNoveap()
     {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
     protected function createComponentNoveapForm() {

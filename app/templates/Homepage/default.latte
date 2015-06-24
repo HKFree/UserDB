@@ -2,10 +2,25 @@
 
 <h1>Databáze členů z.s. HKFree.org</h1>
 
-<h2>Jak funguje registrační proces ?</h2>
-<img src="{$basePath}/images/diagram-reg.png">
+<script>
+            $(document).ready(function( $ ) {
+                $("#regHeader").click(function(){
+                    $(".regimg").toggle();
+                });
+                $(".regimg").hide();
+            });
+            $(document).ready(function( $ ) {
+                $("#netHeader").click(function(){
+                    $(".netimg").toggle();
+                });
+                $(".netimg").hide();
+            });
+</script>
 
-<h2>Do kdy platí internet zdarma ?</h2>
-<img src="{$basePath}/images/diagram-free.png">
+<h2><a id="regHeader">Jak funguje registrační proces ? (kliknutím rozbalíte)</a></h2>
+<img class="regimg" src="{$basePath}/images/diagram-reg.png">
+
+<h2><a id="netHeader">Do kdy platí internet zdarma ? (kliknutím rozbalíte)</a></h2>
+<img class="netimg" src="{$basePath}/images/diagram-free.png">
 
 {/block}

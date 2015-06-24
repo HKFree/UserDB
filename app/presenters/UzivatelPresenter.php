@@ -487,7 +487,7 @@ class UzivatelPresenter extends BasePresenter
             $mail = new Message;
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                 ->addTo($values->email)
-                ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
+                ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
                 ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '. 
                               'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
                               'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
@@ -500,16 +500,16 @@ class UzivatelPresenter extends BasePresenter
             $mailso = new Message;
             $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                 ->addTo($so->email)
-                ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s.')
+                ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
                 ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '. 
-                              'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel.....<br><br>'.
+                              'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID '.$idUzivatele.'<br><br>'.
                               'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
                               'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
                               'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
                               'S pozdravem hkfree.org z.s.');
             $mailer->send($mailso);
 
-            $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
+            $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. INTERNET BUDE FUNGOVAT DO 15 MINUT.');
             
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
