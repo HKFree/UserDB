@@ -76,7 +76,14 @@ class Subnet extends Table
             $resultnet = $a .".". $b .".". $c .".";
             $results[] = $resultnet;
         } 
-        return(array_unique($results));
+        if(isset($results))
+        {
+            return(array_unique($results));
+        }
+        else
+        {
+            return array();
+        }
     }
     
     public function getSubnetTable($subnets) {
