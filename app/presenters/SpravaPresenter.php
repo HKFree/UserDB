@@ -43,6 +43,7 @@ class SpravaPresenter extends BasePresenter
     public function renderNastroje()
     {
     	$this->template->canApproveCC = $this->getUser()->isInRole('VV');
+        $this->template->canCreateArea = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
     public function renderSchvalovanicc()
