@@ -19,7 +19,7 @@ h4, .h4 {
     margin-left: 180px;
 }
 
-@media (max-width: 990px) {
+/*@media (max-width: 990px) {
     .navbar-header {
         float: none;
     }
@@ -44,7 +44,7 @@ h4, .h4 {
         padding-top: 10px;
         padding-bottom: 10px;
     }
-}
+}*/
 
 @media (min-width: 1300px) {
     h4, .h4 {
