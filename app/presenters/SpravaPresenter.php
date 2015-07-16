@@ -39,6 +39,12 @@ class SpravaPresenter extends BasePresenter
         $this->ipAdresa = $ipAdresa; 
         $this->sloucenyUzivatel = $slUzivatel; 
     }
+    
+    public function actionLogout() {
+        $this->getUser()->logout();
+        header("Location: https://userdb.hkfree.org/Shibboleth.sso/Logout?return=https://idp.hkfree.org/idp/logout?return=http://www.hkfree.org");
+        die();
+    }
 
     public function renderNastroje()
     {

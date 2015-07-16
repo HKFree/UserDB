@@ -90,7 +90,8 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             <li><a href="{link Uzivatel:show id=>$user->getIdentity()->getId()}">{$user->getIdentity()->nick} ({$user->getIdentity()->getId()})</a></li>
-            <li><a href="{link Sprava:nastroje id=>null}">Nástroje správy</a></li>
+            <li><a href="{link Sprava:nastroje id=>null}">Nástroje</a></li>
+            <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
           </ul>
           {form searchForm}  
                 {$form['search']->control}
