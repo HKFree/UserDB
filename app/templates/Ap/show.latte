@@ -1,7 +1,7 @@
 {block content}
 {ifset $ap}
 
-<h3>oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno} {if $ap->gps}<small>GPS: {$ap->gps} <a href="http://mapa.hkfree.org/?lat={$ap->gps|replace:',','&lon='}">hkfree</a> <a href="http://maps.google.com/maps?q={$ap->gps|replace:',','+'}">google</a></small>{/if}</h3>
+<h3>oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno} {if $ap->gps}<small>GPS: {$ap->gps} <a href="http://mapa.hkfree.org/?lat={$ap->gps|replace:',','&lon='}">hkfree mapa</a> <a href="http://maps.google.com/maps?q={$ap->gps|replace:',','+'}">google mapa</a></small>{/if}</h3>
 {if $canViewOrEdit}
 <a href="{link Ap:edit id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
 {/if}
