@@ -1145,6 +1145,7 @@ class UzivatelPresenter extends BasePresenter
 
     	// Zpracujeme prava
     	$newUserIPIDs = array();
+      $novaPravaID = array();
     	foreach($prava as $pravo)
     	{
     	    $pravo->Uzivatel_id = $idUzivatele;
