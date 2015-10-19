@@ -1,7 +1,7 @@
 {block content}
 {ifset $ap}
 
-<h3>oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno}</h3>
+<h3>oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno} {if $ap->gps}<small>GPS: <a href="http://maps.google.com/maps?q={$ap->gps|replace:',','+'}">{$ap->gps}</a></small>{/if}</h3>
 {if $canViewOrEdit}
 <a href="{link Ap:edit id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
 {/if}

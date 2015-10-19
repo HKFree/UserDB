@@ -696,9 +696,14 @@ class UzivatelPresenter extends BasePresenter
                 $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
                                 
                 $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                if($moneycache->count() > 0 && $moneycache->fetch()->active != 1)
+                $moneyCacheItem = $moneycache->fetch();
+                if($moneycache->count() > 0 && $moneyCacheItem->active != 1)
                 {
                   $tr->class[] = 'neaktivni';
+                }
+                if($moneycache->count() > 0 && ($moneyCacheItem->account_balance - $item->kauce_mobil) > 3480)
+                {
+                  $tr->class[] = 'preplatek';
                 }
                 if(in_array($item->id, $seznamUzivateluCC)){
                     $tr->class[] = 'cestne';

@@ -237,6 +237,11 @@ pre.tracy-dump {
     font-size: smaller;
 }
 
+.legend td
+{
+    padding: 3px;    
+}
+
 .red {
     color: #C22;
 }
@@ -265,6 +270,16 @@ pre.tracy-dump {
 {
     background-color: #ff0000 !important;
 }
+
+/*.preplatek>td:nth-child(10),
+.preplatek>td:nth-child(11),
+.preplatek>td:nth-child(8),
+.preplatek>td:nth-child(9),*/
+.preplatek>td:nth-child(12)
+{
+    background-color: #ff00ff !important;
+}
+
 .subnet>.popis {
     width: 295px;
 }
