@@ -1328,8 +1328,12 @@ class UzivatelPresenter extends BasePresenter
          // Tohle je nutne abychom mohli zjistit isSubmited
     	$form = new Form($this, "emailForm");
     	$form->addHidden('id');
-
-        $form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
+        
+        $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>'oblast'.$user->Ap_id.'@hkfree.org'))->setDefaultValue(0);
+        
+        //$form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
         $form->addText('email', 'Příjemce', 70)->setDisabled(TRUE);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
@@ -1341,12 +1345,12 @@ class UzivatelPresenter extends BasePresenter
     	// pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
-            $user = $this->uzivatel->getUzivatel($this->getParam('id'));
-            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            
+            
             if($user) {
                 $form->setValues($user);
                 $form->setDefaults(array(
-                        'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
+                        'from' => 0,
                         'subject' => 'Zpráva od správce sítě hkfree.org',
                     ));
     	    }
@@ -1359,13 +1363,25 @@ class UzivatelPresenter extends BasePresenter
     	$idUzivatele = $values->id;
         
         $user = $this->uzivatel->getUzivatel($this->getParam('id'));
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-        
+    
         $mail = new Message;
-        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+        
+        if($values->from == 0)
+        {
+           $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId()); 
+           $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->addTo($user->email)
             ->setSubject($values->subject)
             ->setBody($values->message);
+        }
+        else
+        {
+          $mail->setFrom('oblast'.$user->Ap_id.'@hkfree.org')
+            ->addTo($user->email)
+            ->setSubject($values->subject)
+            ->setBody($values->message);   
+        }
+        
 
         $mailer = new SendmailMailer;
         $mailer->send($mail);
@@ -1517,7 +1533,14 @@ class UzivatelPresenter extends BasePresenter
     	$form = new Form($this, "emailallForm");
     	$form->addHidden('id');
 
-        $form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
+        if($this->getParam('id')) {
+            $ap = $this->ap->getAP($this->getParam('id'));
+            $oblastMail='oblast'.$ap->id.'@hkfree.org';
+        }
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>$oblastMail))->setDefaultValue(0);
+                
+        //$form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
         $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(TRUE);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
@@ -1529,9 +1552,7 @@ class UzivatelPresenter extends BasePresenter
     	// pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
-            $ap = $this->ap->getAP($this->getParam('id'));
-            $emaily = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'email');
-            
+            $emaily = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'email');            
             foreach($emaily as $email)
             {
                 if(Validators::isEmail($email)){
@@ -1539,12 +1560,11 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
             $tolist = join(";",array_values($validni));
-            
-            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+                        
             if($ap) {
                 $form->setValues($ap);
                 $form->setDefaults(array(
-                        'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
+                        'from' => 0,
                         'email' => $tolist,
                         'subject' => 'Zpráva od správce sítě hkfree.org',
                     ));
@@ -1559,12 +1579,23 @@ class UzivatelPresenter extends BasePresenter
         
         $ap = $this->ap->getAP($this->getParam('id'));
         $emaily = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'email');
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        
         
         $mail = new Message;
-        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+        if($values->from == 0)
+        {
+           $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+           $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->setSubject($values->subject)
             ->setBody($values->message);
+        }
+        else
+        {
+          $mail->setFrom('oblast'.$ap->id.'@hkfree.org')
+            ->setSubject($values->subject)
+            ->setBody($values->message);
+        }
+        
         
         //TODO: check if mail is valid
         foreach($emaily as $email)

@@ -90,6 +90,7 @@ class SubnetPresenter extends BasePresenter
             
             $existujiciSubnety = $this->subnet->getSeznamSubnetuZacinajicich($targetSubnet);
             
+            $networks = array();
             foreach ($existujiciSubnety as $snet) {
                 $out = $this->subnet->parseSubnet($snet->subnet);            
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
@@ -98,6 +99,7 @@ class SubnetPresenter extends BasePresenter
             
             $existujiciIP = $this->ipAdresa->getSeznamIPAdresZacinajicich($targetSubnet);
             
+            $ips = array();
             $users = array();
             $aps = array();
             $poznamky = array();
