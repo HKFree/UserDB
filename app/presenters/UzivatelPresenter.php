@@ -743,15 +743,6 @@ class UzivatelPresenter extends BasePresenter
         $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if($canViewOrEdit) {
-            /*$grid->addColumnText('TypPravniFormyUzivatele_id', 'PF')->setCustomRender(function($item){
-                  return $item->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
-              })->setSortable()->setFilterSelect(array(
-                              "" => "",
-                              "1" => "FO",
-                              "2" => "PO",
-                          ));*/
-            /*$grid->addColumnText('jmeno', 'Jméno')->setSortable()->setFilterText()->setSuggestion();
-            $grid->addColumnText('prijmeni', 'Příjmení')->setSortable()->setFilterText()->setSuggestion();    */
             $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function($item){                
                 return $item->jmeno . ' '. $item->prijmeni;
             })->setSortable();
@@ -885,8 +876,7 @@ class UzivatelPresenter extends BasePresenter
                     return "?";
                 });
             }
-            //$grid->addColumnText('wifi_user', 'Vlastní WI-FI')->setSortable()->setReplacement(array('2' => Html::el('b')->setText('ANO'),'1' => Html::el('b')->setText('NE')));
-            
+
             $grid->addColumnText('TechnologiePripojeni_id', 'Tech')->setCustomRender(function($item) {
             return Html::el('span')
                     ->setClass('conntype'.$item->TechnologiePripojeni_id)
@@ -910,11 +900,6 @@ class UzivatelPresenter extends BasePresenter
                 })->setSortable()->setFilterText();
             } 
     	}
-        
-        /*$grid->addActionHref('show', 'Zobrazit')
-                ->setIcon('eye-open');
-            $grid->addActionHref('edit', 'Editovat')
-                ->setIcon('pencil');*/
     }
     
     public function renderListall()

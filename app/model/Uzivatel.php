@@ -79,13 +79,19 @@ HAVING `CacheMoney`.`active` = 1")->fetchField();
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id
                                             JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
                                             WHERE (
-                                            telefon LIKE '$search%'
-                                            OR  email LIKE '$search%'
-                                            OR  email2 LIKE '$search%'
-                                            ) AND (SpravceOblasti.Uzivatel_id = $uid AND od<NOW() AND (do IS NULL OR do>NOW())) LIMIT 1")->fetchField();
+                                            Uzivatel.telefon LIKE '%$search%'
+                                            OR Uzivatel.email LIKE '%$search%'
+                                            OR Uzivatel.email2 LIKE '%$search%'
+                                            OR CONVERT(Uzivatel.jmeno USING utf8) LIKE '%$search%' 
+                                            OR CONVERT(Uzivatel.prijmeni USING utf8) LIKE '%$search%'
+                                            OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE '%$search%'
+                                            ) AND (SpravceOblasti.Uzivatel_id = $uid AND od<NOW() AND (do IS NULL OR do>NOW()))")->fetchPairs('id','id');
+            
             if(!empty($secureMatchId))
             {
-                return($this->findBy(array('id' => $secureMatchId)));
+                //\Tracy\Dumper::dump($secureMatchId);
+                //\Tracy\Dumper::dump(array_values($secureMatchId));
+                return($this->findBy(array('id' => array_values($secureMatchId))));
             }
         }
         else{
