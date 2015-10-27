@@ -82,7 +82,7 @@ class IPAdresa extends Table
 		$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
     }
 
-    public function getIPTable($ips) {
+    public function getIPTable($ips, $canViewCredentials) {
 		$tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
 		$adresyTab = Html::el('table')->setClass('table table-striped');
@@ -93,8 +93,11 @@ class IPAdresa extends Table
 		$tr->create('th')->setText('Zařízení');
 		$tr->create('th')->setText('Atributy');
 		$tr->create('th')->setText('Popis');
-		$tr->create('th')->setText('Login');
-		$tr->create('th')->setText('Heslo');
+        if($canViewCredentials)
+        {
+            $tr->create('th')->setText('Login');
+            $tr->create('th')->setText('Heslo');
+        }
 
 		foreach ($ips as $ip) {
             
@@ -137,8 +140,11 @@ class IPAdresa extends Table
 			}
 
 			$tr->create('td')->setText($ip->popis);
-			$tr->create('td')->setText($ip->login);
-			$tr->create('td')->setText($ip->heslo);
+            if($canViewCredentials)
+            {
+                $tr->create('td')->setText($ip->login);
+                $tr->create('td')->setText($ip->heslo);
+            }
 		} 
 
 		return($adresyTab);

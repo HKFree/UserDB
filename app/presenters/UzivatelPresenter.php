@@ -1064,7 +1064,7 @@ class UzivatelPresenter extends BasePresenter
                 
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');//->order("IPAdresa.ip_adresa");
                 
-    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy);
+    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true);
                                 
                 if($ipAdresy->count() > 0)
                 {

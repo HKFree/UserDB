@@ -89,7 +89,7 @@ class ApPresenter extends BasePresenter {
     public function renderShow() {
         if($this->getParam('id') && $ap = $this->ap->getAP($this->getParam('id'))) {
             $this->template->ap = $ap;
-            $this->template->adresy = $this->ipAdresa->getIPTable($ap->related('IPAdresa.Ap_id'));
+            $this->template->adresy = $this->ipAdresa->getIPTable($ap->related('IPAdresa.Ap_id'), $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser()));
             $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
             $this->template->csubnety = $this->subnet->getAPCSubnets($ap->related('Subnet.Ap_id'));            
             $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
