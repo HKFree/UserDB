@@ -1331,9 +1331,8 @@ class UzivatelPresenter extends BasePresenter
         
         $user = $this->uzivatel->getUzivatel($this->getParam('id'));
         $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-        $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>'oblast'.$user->Ap_id.'@hkfree.org'))->setDefaultValue(0);
+        $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>'oblast'.$user->Ap->Oblast_id.'@hkfree.org'))->setDefaultValue(0);
         
-        //$form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
         $form->addText('email', 'Příjemce', 70)->setDisabled(TRUE);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
@@ -1376,7 +1375,7 @@ class UzivatelPresenter extends BasePresenter
         }
         else
         {
-          $mail->setFrom('oblast'.$user->Ap_id.'@hkfree.org')
+          $mail->setFrom('oblast'.$user->Ap->Oblast_id.'@hkfree.org')
             ->addTo($user->email)
             ->setSubject($values->subject)
             ->setBody($values->message);   
@@ -1535,7 +1534,7 @@ class UzivatelPresenter extends BasePresenter
 
         if($this->getParam('id')) {
             $ap = $this->ap->getAP($this->getParam('id'));
-            $oblastMail='oblast'.$ap->id.'@hkfree.org';
+            $oblastMail='oblast'.$ap->Oblast_id.'@hkfree.org';
         }
         $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
         $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>$oblastMail))->setDefaultValue(0);
@@ -1591,7 +1590,7 @@ class UzivatelPresenter extends BasePresenter
         }
         else
         {
-          $mail->setFrom('oblast'.$ap->id.'@hkfree.org')
+          $mail->setFrom('oblast'.$ap->Oblast_id.'@hkfree.org')
             ->setSubject($values->subject)
             ->setBody($values->message);
         }
