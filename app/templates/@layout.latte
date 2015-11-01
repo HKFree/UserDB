@@ -21,10 +21,12 @@
         <!-- Include all compiled plugins (below), or include individual files as needed -->
         <script src="{$basePath}/js/bootstrap.min.js"></script>   
         <!-- Bar Rating ( https://github.com/antennaio/jquery-bar-rating ) -->
-        <script src="{$basePath}/js/jquery.barrating.min.js"></script>         
+        <script src="{$basePath}/js/jquery.barrating.min.js"></script>
+        <script src="{$basePath}/js/jquery.bonsai.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v2">      
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">     
         <script type="text/javascript">
@@ -70,7 +72,13 @@
                         width: 0
                     }).attr('id', newID));
                 });
-            });          
+            }); 
+            
+            // INICIALIZATOR pro JSTREE
+            $(document).ready(function() {
+              $('#oblastitree').bonsai();
+              $('#oblastitree').collapseAll();
+            });
         </script>    
 	{block head}{/block}
 </head>
@@ -96,7 +104,7 @@
           {form searchForm}  
                 {$form['search']->control}
           {/form}
-		<ul class="nav navbar-nav navbar-right">
+          <ul class="nav navbar-nav navbar-right">
             <li><a href="{link Uzivatel:edit id=>null}">Přidat uživatele</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-left">
@@ -109,22 +117,34 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
-            {if $mojeOblasti}
-			<h4>Moje oblasti</h4>
-			<ul class="nav nav-sidebar">
-				{foreach $mojeOblasti as $idoblast => $oblast}
-					<li id="oblast-{$idoblast}"><a href="{link Uzivatel:list id=>$idoblast}">{$oblast}</a></li>
-				{/foreach}
-			</ul>
-            {/if}
-            {if $oblasti}
-			<h4><a href="{link Uzivatel:listall id=>NULL}">Všechny oblasti</a></h4>
-			<ul class="nav nav-sidebar" n:if="$oblasti">
-				{foreach $oblasti as $idoblast => $oblast}
-					<li id="oblast-{$idoblast}"><a href="{link Uzivatel:list id=>$idoblast}">{$oblast}</a></li>
-				{/foreach}
-			</ul> 
-            {/if}
+          {if $mojeOblasti}
+            <h4>Moje oblasti</h4>
+            <ul class="nav nav-sidebar">
+              {foreach $mojeOblasti as $idoblast => $oblast}
+                <li id="oblast-{$idoblast}"><a href="{link Uzivatel:list id=>$idoblast}">{$oblast}</a></li>
+              {/foreach}
+            </ul>
+          {/if}
+          {if $oblasti}
+            <h4><a href="{link Uzivatel:listall id=>NULL}">Všechny oblasti</a></h4>
+            <ul class="nav nav-sidebar" n:if="$oblasti" id="oblastitree">
+              {foreach $oblasti as $idoblast => $oblast}
+                {var $apcka = $oblast->related('Ap.Oblast_id')->order("jmeno")}
+                {if count($apcka) == 1}
+                  {var $ap = $apcka->fetch()}
+                  <li><a n:href="Uzivatel:list id=>$ap->id">{$ap->jmeno} ({$oblast->id})</a></li>
+                {else}
+                  <li><a n:href="Ap:list id=>$oblast->id">{$oblast->jmeno} ({$oblast->id})</a>
+                    <ul class="nav">
+                    {foreach $apcka as $idap => $ap}
+                      <li><a n:href="Uzivatel:list id=>$ap->id">{$ap->jmeno}</a></li>
+                    {/foreach}
+                    </ul>
+                  </li>
+                {/if}
+              {/foreach}
+            </ul> 
+          {/if}
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 <!--          <h1 class="page-header">Dashboard</h1> -->
@@ -137,8 +157,8 @@
       </div>
     </div>
 	{block scripts}
-	<script src="{$basePath}/js/netteForms.js"></script>
-	<script src="{$basePath}/js/main.js"></script>
+    <script src="{$basePath}/js/netteForms.js"></script>
+    <script src="{$basePath}/js/main.js"></script>
     <script src="{$basePath}/js/grido.js"></script>
 	{/block}
 </body>
