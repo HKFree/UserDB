@@ -360,3 +360,6 @@ ALTER TABLE `IPAdresaZarizeni`
 ALTER TABLE `IPAdresaZarizeni`
 ADD CONSTRAINT `IPAdresaZarizeni_ibfk_1` FOREIGN KEY (`Zarizeni_id`) REFERENCES `Zarizeni` (`id`),
 ADD CONSTRAINT `IPAdresaZarizeni_ibfk_2` FOREIGN KEY (`IPAdresa_id`) REFERENCES `IPAdresa` (`id`);
+
+
+INSERT INTO `userdb_v2`.`TypCestnehoClenstvi` (`id`, `text`) VALUES ('5', 'Doèasná aktivace pøes SMS');
