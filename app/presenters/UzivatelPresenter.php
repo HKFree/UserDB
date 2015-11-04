@@ -37,8 +37,9 @@ class UzivatelPresenter extends BasePresenter
     private $subnet;
     private $cacheMoney;
     private $sloucenyUzivatel;
+    private $uzivatelskeKonto;
 
-    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -55,6 +56,7 @@ class UzivatelPresenter extends BasePresenter
         $this->subnet = $subnet;
         $this->cacheMoney = $cacheMoney;
         $this->sloucenyUzivatel = $slUzivatel; 
+        $this->uzivatelskeKonto = $konto; 
     }
     
     public function generatePdf($uzivatel)
@@ -1596,5 +1598,86 @@ class UzivatelPresenter extends BasePresenter
         
     	$this->redirect('Uzivatel:list', array('id'=>$this->getParam('id'))); 
     	return true;
+    }
+    
+    public function renderAccount()
+    {
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
+    }
+    
+    protected function createComponentAccountgrid($name)
+    {
+        $canViewOrEdit = false;
+    	$id = $this->getParameter('id');
+        
+        //\Tracy\Dumper::dump($search);
+
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        $grid->setExport('account_export');
+        
+        if($id){  
+            $seznamTransakci = $this->uzivatelskeKonto->getUzivatelskeKontoUzivatele($id);
+
+            $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
+            
+        } else {
+            
+            /*if($search)
+            {
+                $seznamTransakci = $this->uzivatel->findUserByFulltext($search,$this->getUser());
+                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+            }
+            else
+            {
+                $seznamUzivatelu = $this->uzivatel->getSeznamUzivatelu();
+                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+            }
+                        
+            $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
+                  return $item->ref('Ap', 'Ap_id')->jmeno;
+              })->setSortable();*/
+        }
+        
+        $grid->setModel($seznamTransakci);
+        
+    	$grid->setDefaultPerPage(500);
+        $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
+    	$grid->setDefaultSort(array('id' => 'ASC'));
+
+        $presenter = $this;
+                        
+    	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('a')
+            ->href($presenter->link('Uzivatel:show', array('id'=>$item->Uzivatel_id)))
+            ->title($item->Uzivatel_id)
+            ->setText($item->Uzivatel_id);})->setSortable();*/
+            
+        /*$grid->addColumnText('PrichoziPlatba_id', 'Příchozí platba')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('a')
+            ->href($presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id)))
+            ->title($item->PrichoziPlatba_id)
+            ->setText($item->PrichoziPlatba_id);})->setSortable();*/
+            
+        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
+        
+        $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
+        
+        $grid->addColumnText('TypPohybuNaUctu_id', 'Typ')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->TypPohybuNaUctu_id)
+                    ->setTitle($item->TypPohybuNaUctu->text)
+                    ->setText($item->TypPohybuNaUctu->text)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+        
+        $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
+                $el = Html::el('span');
+                $el->title = $item->poznamka;
+                $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
+                return $el;
+                })->setSortable()->setFilterText();
     }
 }

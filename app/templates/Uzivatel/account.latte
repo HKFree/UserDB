@@ -1,0 +1,9 @@
+{block content}
+<h3>Přehled plateb pro: {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
+
+<br><br>
+{if $canViewOrEdit}
+{control accountgrid}
+{else}
+    <p>Na tuto operaci nemáte oprávnění!</p>
+{/if}
