@@ -38,8 +38,9 @@ class UzivatelPresenter extends BasePresenter
     private $cacheMoney;
     private $sloucenyUzivatel;
     private $uzivatelskeKonto;
+    private $prichoziPlatba;
 
-    function __construct(Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -57,6 +58,7 @@ class UzivatelPresenter extends BasePresenter
         $this->cacheMoney = $cacheMoney;
         $this->sloucenyUzivatel = $slUzivatel; 
         $this->uzivatelskeKonto = $konto; 
+        $this->prichoziPlatba = $platba;
     }
     
     public function generatePdf($uzivatel)
@@ -1600,6 +1602,15 @@ class UzivatelPresenter extends BasePresenter
     	return true;
     }
     
+    public function renderPlatba()
+    {
+        $id = $this->getParameter('id');
+        $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id)));
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
+        $this->template->u = $pohyb->Uzivatel;
+        $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParam('id'));
+    }
+    
     public function renderAccount()
     {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
@@ -1620,7 +1631,7 @@ class UzivatelPresenter extends BasePresenter
         if($id){  
             $seznamTransakci = $this->uzivatelskeKonto->getUzivatelskeKontoUzivatele($id);
 
-            $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
+            $canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
             
         } else {
             
@@ -1644,9 +1655,16 @@ class UzivatelPresenter extends BasePresenter
         
     	$grid->setDefaultPerPage(500);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
-    	$grid->setDefaultSort(array('id' => 'ASC'));
-
+    	$grid->setDefaultSort(array('id' => 'DESC'));
+        
         $presenter = $this;
+        $grid->setRowCallback(function ($item, $tr) use ($presenter){  
+                if($item->PrichoziPlatba_id)
+                {
+                    $tr->onclick = "window.location='".$presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id))."'";
+                }
+                return $tr;
+            });
                         
     	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
         {return Html::el('a')

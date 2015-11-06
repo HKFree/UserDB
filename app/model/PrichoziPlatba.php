@@ -18,4 +18,8 @@ class PrichoziPlatba extends Table
     {
         return($this->findAll());
     }
+    
+    public function getPrichoziPlatba($id) {
+	   return($this->find($id));
+    }
 }

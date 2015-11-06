@@ -23,4 +23,9 @@ class UzivatelskeKonto extends Table
     {
 	    return($this->findBy(array('Uzivatel_id' => $idUzivatele))->fetchAll());
     }
+    
+    public function findPohyb(array $by) {
+	   return($this->findOneBy($by));
+    }
+    
 }

@@ -32,6 +32,7 @@ services:
 	cacheMoney: App\Model\CacheMoney
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
+	prichoziPlatba: App\Model\PrichoziPlatba
 	typClenstvi: App\Model\TypClenstvi
 	typSpravceOblasti: App\Model\TypSpravceOblasti
 	typPravniFormyUzivatele: App\Model\TypPravniFormyUzivatele
