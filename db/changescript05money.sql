@@ -1,0 +1,1 @@
+ALTER TABLE `UzivatelskeKonto` CHANGE `Uzivatel_id` `Uzivatel_id` INT(11) NULL;
