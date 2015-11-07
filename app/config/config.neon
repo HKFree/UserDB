@@ -33,6 +33,7 @@ services:
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
 	prichoziPlatba: App\Model\PrichoziPlatba
+	uzivatelListGrid: App\Model\UzivatelListGrid
 	typClenstvi: App\Model\TypClenstvi
 	typSpravceOblasti: App\Model\TypSpravceOblasti
 	typPravniFormyUzivatele: App\Model\TypPravniFormyUzivatele
