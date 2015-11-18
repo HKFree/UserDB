@@ -390,7 +390,10 @@ pre.tracy-dump {
     float: left;
     background-position: 0 32px;
 }
-.conntype5 {
+.conntype5,
+.conntype7,
+.conntype8,
+.conntype9 {
     background: url('../images/conntype5.png');
     width: 16px;
     height: 16px;

@@ -1,0 +1,35 @@
+{block content}
+{ifset $u}
+
+    <h3>Příchozí platba pro: {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
+    <a href="{link Uzivatel:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět na přehled plateb</a>
+    <br><br>
+    <style>
+	.table-nonfluid {
+	    width: auto;
+	 }
+    </style>
+ 
+    {if $canViewOrEdit}    
+    <table class="table table-nonfluid">
+        <tr><th>Datum</th><td>{$p->datum|date:'%d.%m.%Y'}</td></tr>
+        <tr><th>Číslo účtu</th><td>{$p->cislo_uctu}</td></tr>
+        <tr><th>Název účtu</th><td>{$p->nazev_uctu}</td></tr>
+        <tr><th>VS</th><td>{$p->vs}</td></tr>
+        <tr><th>SS</th><td>{$p->ss}</td></tr>
+        <tr><td colspan="2">&nbsp;</td></tr>
+
+        <tr><th>Částka</th><td>{$p->castka}</td></tr>
+        <tr n:if="$p->kod_cilove_banky == 2010"><th>Cílová banka</th><td>FIO</td></tr>
+        <tr n:if="$p->kod_cilove_banky == 800"><th>Cílová banka</th><td>ČS</td></tr>
+        <tr><th>Zpráva příjemci</th><td>{$p->zprava_prijemci}</td></tr>
+        <tr><th>Identifikace uživatele</th><td>{$p->identifikace_uzivatele}</td></tr>
+        <tr><th>Info od banky</th><td>{$p->info_od_banky}</td></tr>
+        <tr><td colspan="2">&nbsp;</td></tr>  
+    </table>
+    {else}
+    <p>Na tuto operaci nemáte oprávnění!</p>
+    {/if}
+{/ifset}
+{/block}
+

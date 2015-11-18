@@ -26,6 +26,8 @@ class AP extends Table
     
     public function canViewOrEditAP($ApID, $Uzivatel)
     {    
+       //\Tracy\Dumper::dump($ApID);
+       //\Tracy\Dumper::dump($Uzivatel);
 	   return $Uzivatel->isInRole('TECH') 
           || $Uzivatel->isInRole('VV')
           || $Uzivatel->isInRole('SO-'.$this->find($ApID)->Oblast_id)

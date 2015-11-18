@@ -37,8 +37,11 @@ class UzivatelPresenter extends BasePresenter
     private $subnet;
     private $cacheMoney;
     private $sloucenyUzivatel;
+    private $uzivatelskeKonto;
+    private $prichoziPlatba;
+    private $tabulkaUzivatelu;
 
-    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -55,6 +58,9 @@ class UzivatelPresenter extends BasePresenter
         $this->subnet = $subnet;
         $this->cacheMoney = $cacheMoney;
         $this->sloucenyUzivatel = $slUzivatel; 
+        $this->uzivatelskeKonto = $konto; 
+        $this->prichoziPlatba = $platba;        
+        $this->tabulkaUzivatelu = $ULGrid; 
     }
     
     public function generatePdf($uzivatel)
@@ -572,334 +578,20 @@ class UzivatelPresenter extends BasePresenter
 
     protected function createComponentGrid($name)
     {
-        $canViewOrEdit = false;
-    	$id = $this->getParameter('id');
-        $money = $this->getParameter('money', false);
-        $fullnotes = $this->getParameter('fullnotes', false);
+        $this->tabulkaUzivatelu->getListOfUsersGrid($this,
+                                            $name,
+                                            $this->getUser(),
+                                            $this->getParameter('id'),                 
+                                            $this->getParameter('money', false), 
+                                            $this->getParameter('fullnotes', false),
+                                            $this->getParameter('search', false),
+                                            $this->uzivatel,
+                                            $this->cestneClenstviUzivatele,
+                                            $this->ap,
+                                            $this->cacheMoney,
+                                            $this->cestneClenstviUzivatele
+                                            );       
         
-        $search = $this->getParameter('search', false);
-        //\Tracy\Dumper::dump($search);
-        
-        if($money) {
-            $money_uid = $this->context->parameters["money"]["login"];
-            $money_heslo = $this->context->parameters["money"]["password"];
-            $money_client = new \SoapClient(
-                'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
-                array(
-                        'login'         => $money_uid,
-                        'password'      => $money_heslo,
-                        'trace'         => 0,
-                        'exceptions'    => 0,
-                        'connection_timeout'=> 15
-                    )
-            );
-        }
-        
-    	$grid = new \Grido\Grid($this, $name);
-    	$grid->translator->setLang('cs');
-        $grid->setExport('user_export');
-        
-        if($id){  
-            $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
-            $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
-
-            $canViewOrEdit = $this->ap->canViewOrEditAP($id, $this->getUser());
-            if ($money) {
-                set_time_limit(360);
-                $seznamU = $this->uzivatel->getExpiredSeznamUIDUzivateluZAP($id);
-                //\Tracy\Dumper::dump($seznamU);
-                $money_callresult = $money_client->hkfree_money_userGetInfo(implode(",", $seznamU));
-                if (is_soap_fault($money_callresult)) {
-                    $money = false;
-                    //TODO zobrazit info ze money jsou offline
-                }
-                else
-                {
-                    foreach($seznamU as $uid) {                                    
-                        unset($moneyResult);
-                        $moneyResult = array(
-                            'Uzivatel_id' => $uid,
-                            'cache_date' => new Nette\Utils\DateTime,
-                            'active' => ($money_callresult[$uid]->userIsActive->isActive == 1) ? 1 : (($money_callresult[$uid]->userIsActive->isActive == 0) ? 0 : null),
-                            'disabled' => ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? 1 : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? 0 : null),
-                            'last_payment' => ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)),
-                            'last_payment_amount' => ($money_callresult[$uid]->GetLastPayment->LastPaymentAmount == "null") ? null : $money_callresult[$uid]->GetLastPayment->LastPaymentAmount,
-                            'last_activation' => ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)),
-                            'last_activation_amount' => ($money_callresult[$uid]->GetLastActivation->LastActivationAmount == "null") ? null : $money_callresult[$uid]->GetLastActivation->LastActivationAmount,
-                            'account_balance' => ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : null
-                        );  
-
-                        if(!$this->cacheMoney->getIsCached($uid))
-                        {
-                            $toInsert[] = $moneyResult;                                
-                        }
-                        else {
-                            $expired = $this->cacheMoney->getCacheItem($uid);
-                            $this->cacheMoney->update($expired->id, $moneyResult);
-                        }
-                    }
-                    
-                    if(isset($toInsert))
-                    {
-                        $this->cacheMoney->insert($toInsert);
-                    }
-                }
-            }
-        } else {
-            
-            if($search)
-            {
-                $seznamUzivatelu = $this->uzivatel->findUserByFulltext($search,$this->getUser());
-                $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC(); //TODO
-                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-            }
-            else
-            {
-                $seznamUzivatelu = $this->uzivatel->getSeznamUzivatelu();
-                $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC();
-                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-            }
-                        
-            $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
-                  return $item->ref('Ap', 'Ap_id')->jmeno;
-              })->setSortable();
-        }
-        
-        $grid->setModel($seznamUzivatelu);
-        
-    	$grid->setDefaultPerPage(500);
-        $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
-    	$grid->setDefaultSort(array('zalozen' => 'ASC'));
-    
-    	$list = array('active' => 'bez zrušených', 'all' => 'včetně zrušených');
-    	
-        // pri fulltextu vyhledavat i ve zrusenych
-        if($search)
-        {
-            $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
-             ->setDefaultValue('all')
-             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));
-        }
-        else
-        {
-          $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
-             ->setDefaultValue('active')
-             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '> ?', '0') ));  
-        }
-        
-        $presenter = $this;
-        
-        if($money)
-        {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter){
-                
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
-                                
-                $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                $moneyCacheItem = $moneycache->fetch();
-                if($moneycache->count() > 0 && $moneyCacheItem->active != 1)
-                {
-                  $tr->class[] = 'neaktivni';
-                }
-                if($moneycache->count() > 0 && ($moneyCacheItem->account_balance - $item->kauce_mobil) > 3480)
-                {
-                  $tr->class[] = 'preplatek';
-                }
-                if(in_array($item->id, $seznamUzivateluCC)){
-                    $tr->class[] = 'cestne';
-                    return $tr;
-                }
-                if($item->TypClenstvi_id == 2) {
-                    $tr->class[] = 'primarni';
-                }            
-                return $tr;
-            });
-        } else {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter){
-                
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
-                
-                if(in_array($item->id, $seznamUzivateluCC)){
-                    $tr->class[] = 'cestne';
-                    return $tr;
-                }
-                if($item->TypClenstvi_id == 2)
-                {
-                    $tr->class[] = 'primarni';
-                }
-                if($item->TypClenstvi_id == 1)
-                {
-                    $tr->class[] = 'zrusene';
-                }
-                return $tr;
-            });
-        }
-        
-    	$grid->addColumnText('id', 'UID')->setCustomRender(function($item) use ($presenter)
-        {return Html::el('a')
-            ->href($presenter->link('Uzivatel:show', array('id'=>$item->id)))
-            ->title($item->id)
-            ->setText($item->id);})->setSortable();
-        $grid->addColumnText('nick', 'Nick')->setSortable();
-
-        if($canViewOrEdit) {
-            $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function($item){                
-                return $item->jmeno . ' '. $item->prijmeni;
-            })->setSortable();
-            if($fullnotes)   
-            {
-                $grid->addColumnText('ulice_cp', 'Ulice')->setSortable()->setFilterText();
-                $grid->addColumnText('mesto', 'Obec')->setSortable()->setFilterText();
-                $grid->addColumnText('psc', 'PSČ')->setSortable()->setFilterText();
-            }
-            else{
-                $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function($item){
-                $el = Html::el('span');
-                $el->title = $item->ulice_cp;
-                $el->setText(Strings::truncate($item->ulice_cp, 50, $append='…'));
-                return $el;
-            })->setSortable()->setFilterText();
-            }
-            
-            $grid->addColumnEmail('email', 'E-mail')->setSortable();
-            $grid->addColumnText('telefon', 'Telefon')->setSortable();
-        }
-        
-    	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
-            return join(",",array_values($item->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa')));
-        })->setCustomRender(function($item){
-            $el = Html::el('span');
-            $ipAdresy = $item->related('IPAdresa.Uzivatel_id');
-            if($ipAdresy->count() > 0)
-            {
-              $el->title = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
-              $el->setText($ipAdresy->fetch()->ip_adresa);
-            }
-            return $el;
-        });
-        
-    	if($canViewOrEdit) {
-            if($money) {
-                $grid->addColumnText('act', 'Aktivní')->setColumn(function($item){                    
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');                    
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      return ($moneyData->active == 1) ? "ANO" : (($moneyData->active == 0) ? "NE" : "?");
-                    }
-                    return "?";
-                })->setCustomRender(function($item){                    
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      return ($moneyData->active == 1) ? "ANO" : (($moneyData->active == 0) ? "NE" : "?");
-                    }
-                    return "?";
-                }); 
-                
-                $grid->addColumnText('deact', 'Deaktivace')->setColumn(function($item){
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      return ($moneyData->disabled == 1) ? "ANO" : (($moneyData->disabled == 0) ? "NE" : "?");
-                    }
-                    return "?";
-                })->setCustomRender(function($item){
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      return ($moneyData->disabled == 1) ? "ANO" : (($moneyData->disabled == 0) ? "NE" : "?");
-                    }
-                    return "?";
-                });  
-                
-                $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item){
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      return ($moneyData->last_payment == null) ? "NIKDY" : ($moneyData->last_payment->format('d.m.Y') . " (" . $moneyData->last_payment_amount . ")");
-                    }
-                    return "?";                    
-                })->setCustomRender(function($item){
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      return ($moneyData->last_payment == null) ? "NIKDY" : ($moneyData->last_payment->format('d.m.Y') . " (" . $moneyData->last_payment_amount . ")");
-                    }
-                    return "?";
-                });   
-                
-                $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function($item){
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      return ($moneyData->last_activation == null) ? "NIKDY" : ($moneyData->last_activation->format('d.m.Y') . " (" . $moneyData->last_activation_amount . ")");
-                    }
-                    return "?";
-                })->setCustomRender(function($item){
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      return ($moneyData->last_activation == null) ? "NIKDY" : ($moneyData->last_activation->format('d.m.Y') . " (" . $moneyData->last_activation_amount . ")");
-                    }
-                    return "?";
-                }); 
-                
-                $grid->addColumnText('acc', 'Stav účtu')->setColumn(function($item){
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      if($item->kauce_mobil > 0)
-                        return ($moneyData->account_balance >= 0) ? ($moneyData->account_balance - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')' : "?";
-                    else
-                        return ($moneyData->account_balance >= 0) ? $moneyData->account_balance : "?";
-                    }
-                    return "?";                    
-                })->setCustomRender(function($item){
-                    $moneycache = $item->related('CacheMoney.Uzivatel_id');
-                    if($moneycache->count() > 0)
-                    {
-                      $moneyData = $moneycache->fetch();
-                      if($item->kauce_mobil > 0)
-                        return ($moneyData->account_balance >= 0) ? ($moneyData->account_balance - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')' : "?";
-                      else
-                        return ($moneyData->account_balance >= 0) ? $moneyData->account_balance : "?";
-                    }
-                    return "?";
-                });
-            }
-
-            $grid->addColumnText('TechnologiePripojeni_id', 'Tech')->setCustomRender(function($item) {
-            return Html::el('span')
-                    ->setClass('conntype'.$item->TechnologiePripojeni_id)
-                    ->alt($item->TechnologiePripojeni_id)
-                    ->setTitle($item->TechnologiePripojeni->text)
-                    ->data("toggle", "tooltip")
-                    ->data("placement", "right");
-            })->setSortable();
-            
-            if($fullnotes)   
-            {
-                $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable()->setFilterText();            
-            }
-            else
-            {
-                $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
-                $el = Html::el('span');
-                $el->title = $item->poznamka;
-                $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
-                return $el;
-                })->setSortable()->setFilterText();
-            } 
-    	}
     }
     
     public function renderListall()
@@ -1596,5 +1288,102 @@ class UzivatelPresenter extends BasePresenter
         
     	$this->redirect('Uzivatel:list', array('id'=>$this->getParam('id'))); 
     	return true;
+    }
+    
+    public function renderPlatba()
+    {
+        $id = $this->getParameter('id');
+        $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id)));
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
+        $this->template->u = $pohyb->Uzivatel;
+        $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParam('id'));
+    }
+    
+    public function renderAccount()
+    {
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
+    }
+    
+    protected function createComponentAccountgrid($name)
+    {
+        $canViewOrEdit = false;
+    	$id = $this->getParameter('id');
+        
+        //\Tracy\Dumper::dump($search);
+
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        $grid->setExport('account_export');
+        
+        if($id){  
+            $seznamTransakci = $this->uzivatelskeKonto->getUzivatelskeKontoUzivatele($id);
+
+            $canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+            
+        } else {
+            
+            /*if($search)
+            {
+                $seznamTransakci = $this->uzivatel->findUserByFulltext($search,$this->getUser());
+                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+            }
+            else
+            {
+                $seznamUzivatelu = $this->uzivatel->getSeznamUzivatelu();
+                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
+            }
+                        
+            $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
+                  return $item->ref('Ap', 'Ap_id')->jmeno;
+              })->setSortable();*/
+        }
+        
+        $grid->setModel($seznamTransakci);
+        
+    	$grid->setDefaultPerPage(500);
+        $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
+    	$grid->setDefaultSort(array('id' => 'DESC'));
+        
+        $presenter = $this;
+        $grid->setRowCallback(function ($item, $tr) use ($presenter){  
+                if($item->PrichoziPlatba_id)
+                {
+                    $tr->onclick = "window.location='".$presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id))."'";
+                }
+                return $tr;
+            });
+                        
+    	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('a')
+            ->href($presenter->link('Uzivatel:show', array('id'=>$item->Uzivatel_id)))
+            ->title($item->Uzivatel_id)
+            ->setText($item->Uzivatel_id);})->setSortable();*/
+            
+        /*$grid->addColumnText('PrichoziPlatba_id', 'Příchozí platba')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('a')
+            ->href($presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id)))
+            ->title($item->PrichoziPlatba_id)
+            ->setText($item->PrichoziPlatba_id);})->setSortable();*/
+            
+        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
+        
+        $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
+        
+        $grid->addColumnText('TypPohybuNaUctu_id', 'Typ')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->TypPohybuNaUctu_id)
+                    ->setTitle($item->TypPohybuNaUctu->text)
+                    ->setText($item->TypPohybuNaUctu->text)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+        
+        $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
+                $el = Html::el('span');
+                $el->title = $item->poznamka;
+                $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
+                return $el;
+                })->setSortable()->setFilterText();
     }
 }
