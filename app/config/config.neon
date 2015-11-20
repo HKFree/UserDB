@@ -29,7 +29,6 @@ services:
 	- App\RouterFactory
 	router: @App\RouterFactory::createRouter(%debug.https%, %urlPrefix%)
 	uzivatel: App\Model\Uzivatel
-	cacheMoney: App\Model\CacheMoney
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
 	prichoziPlatba: App\Model\PrichoziPlatba

@@ -7,9 +7,6 @@ parameters:
 		fakeUser:
 			userID: 3306
 			userName: 'bkralik'
-	money:
-		login: ''
-		password: ''
 
 # PRODUCTION
 parameters:
@@ -18,9 +15,6 @@ parameters:
 	debug:
 		https: false
 		fakeUser: false
-	money:
-		login: ''
-		password: ''
 
 
 database:

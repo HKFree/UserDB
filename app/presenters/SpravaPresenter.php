@@ -24,18 +24,16 @@ class SpravaPresenter extends BasePresenter
     private $log;
     private $ap;
     public $oblast;
-    private $cacheMoney;
     private $ipAdresa;
     private $sloucenyUzivatel;
 
-    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
+    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
         $this->log = $log;
         $this->ap = $ap;
         $this->oblast = $ob;
-        $this->cacheMoney = $cacheMoney;
         $this->ipAdresa = $ipAdresa; 
         $this->sloucenyUzivatel = $slUzivatel; 
     }
@@ -347,19 +345,6 @@ class SpravaPresenter extends BasePresenter
             $u2id = $this->getParam('u2');
         }
         
-        $money_uid = $this->context->parameters["money"]["login"];
-        $money_heslo = $this->context->parameters["money"]["password"];
-        $money_client = new \SoapClient(
-            'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
-            array(
-                'login'         => $money_uid,
-                'password'      => $money_heslo,
-                'trace'         => 0,
-                'exceptions'    => 0,
-                'connection_timeout'=> 15
-            )
-        );
-
         $u1 = $this->uzivatel->getUzivatel($u1id);
         $this->template->u1 = $u1;
         $this->template->u1hasCC = $this->cestneClenstviUzivatele->getHasCC($u1id);
@@ -372,59 +357,37 @@ class SpravaPresenter extends BasePresenter
         {
             $this->template->u1adresyline = null;
         }
-                if(!$this->cacheMoney->getIsCacheValid($u1id))
-                {                    
-                    $money_callresult = $money_client->hkfree_money_userGetInfo($u1id);   
-                    if (!is_soap_fault($money_callresult)) {                        
-                 
-                        $moneyResult = array(
-                            'cache_date' => new Nette\Utils\DateTime,
-                            'active' => ($money_callresult[$u1id]->userIsActive->isActive == 1) ? 1 : (($money_callresult[$u1id]->userIsActive->isActive == 0) ? 0 : null),
-                            'disabled' => ($money_callresult[$u1id]->userIsDisabled->isDisabled == 1) ? 1 : (($money_callresult[$u1id]->userIsDisabled->isDisabled == 0) ? 0 : null),
-                            'last_payment' => ($money_callresult[$u1id]->GetLastPayment->LastPaymentDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$u1id]->GetLastPayment->LastPaymentDate)),
-                            'last_payment_amount' => ($money_callresult[$u1id]->GetLastPayment->LastPaymentAmount == "null") ? null : $money_callresult[$u1id]->GetLastPayment->LastPaymentAmount,
-                            'last_activation' => ($money_callresult[$u1id]->GetLastActivation->LastActivationDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$u1id]->GetLastActivation->LastActivationDate)),
-                            'last_activation_amount' => ($money_callresult[$u1id]->GetLastActivation->LastActivationAmount == "null") ? null : $money_callresult[$u1id]->GetLastActivation->LastActivationAmount,
-                            'account_balance' => ($money_callresult[$u1id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$u1id]->GetAccountBalance->GetAccountBalance : null
-                        );  
-                        
-                        if(!$this->cacheMoney->getIsCached($u1id))
-                        {
-                            $userarr = array('Uzivatel_id' => $u1id);
-                            $toInsert[] = array_merge($moneyResult, $userarr);
-                            $this->cacheMoney->insert($toInsert);
-                        }
-                        else {
-                            $expired = $this->cacheMoney->getCacheItem($u1id);
-                            $this->cacheMoney->update($expired->id, $moneyResult);
-                        }
-                    }
-                }
-                                
-                if($this->cacheMoney->getIsCached($u1id))
-                {
-                    $cachedItem = $this->cacheMoney->getCacheItem($u1id);
-                    $this->template->u1money_act = ($cachedItem->active == 1) ? "ANO" : (($cachedItem->active == 0) ? "NE" : "?");
-                    $this->template->u1money_dis = ($cachedItem->disabled == 1) ? "ANO" : (($cachedItem->disabled == 0) ? "NE" : "?");
-                    $this->template->u1money_lastpay = ($cachedItem->last_payment == null) ? "NIKDY" : ($cachedItem->last_payment->format('d.m.Y') . " (" . $cachedItem->last_payment_amount . ")");
-                    $this->template->u1money_lastact = ($cachedItem->last_activation == null) ? "NIKDY" : ($cachedItem->last_activation->format('d.m.Y') . " (" . $cachedItem->last_activation_amount . ")");
-                    if($u1->kauce_mobil > 0)
-                    {
-                        $this->template->u1money_bal = ($cachedItem->account_balance >= 0) ? ($cachedItem->account_balance - $u1->kauce_mobil) . ' (kauce: ' . $u1->kauce_mobil . ')' : "?";
-                    }
-                    else{
-                        $this->template->u1money_bal = ($cachedItem->account_balance >= 0) ? $cachedItem->account_balance : "?";
-                    }
-                }
-                else
-                {
-                    $this->flashMessage('MONEY JSOU OFFLINE');
-                    $this->template->u1money_act = "MONEY OFFLINE";
-                    $this->template->u1money_dis = "MONEY OFFLINE";
-                    $this->template->u1money_lastpay = "MONEY OFFLINE";
-                    $this->template->u1money_lastact = "MONEY OFFLINE";
-                    $this->template->u1money_bal = "MONEY OFFLINE"; 
-                }
+  
+        $this->template->u1money_act = ($u1->money_aktivni == 1) ? "ANO" : "NE";
+        $this->template->u1money_dis = ($u1->money_deaktivace == 1) ? "ANO" : "NE";
+        $posledniPlatba = $u1->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',1)->order('id DESC')->limit(1);
+        if($posledniPlatba->count() > 0)
+            {
+                $posledniPlatbaData = $posledniPlatba->fetch();
+                $this->template->u1money_lastpay = ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+            }
+            else
+            {
+                $this->template->u1money_lastpay = "?";
+            }
+        $posledniAktivace = $u1->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',array(4, 5))->order('id DESC')->limit(1);
+        if($posledniAktivace->count() > 0)
+            {
+                $posledniAktivaceData = $posledniAktivace->fetch();
+                $this->template->u1money_lastact = ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
+            }
+            else
+            {
+                $this->template->u1money_lastact = "?";
+            }
+        $stavUctu = $u1->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
+        if($u1->kauce_mobil > 0)
+        {
+            $this->template->u1money_bal = ($stavUctu - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
+        }
+        else{
+            $this->template->u1money_bal = $stavUctu;
+        }
 
         $u2 = $this->uzivatel->getUzivatel($u2id);
         $this->template->u2 = $u2;
@@ -438,59 +401,37 @@ class SpravaPresenter extends BasePresenter
         {
             $this->template->u2adresyline = null;
         }
-                if(!$this->cacheMoney->getIsCacheValid($u2id))
-                {                    
-                    $money_callresult = $money_client->hkfree_money_userGetInfo($u2id);   
-                    if (!is_soap_fault($money_callresult)) {                        
-                 
-                        $moneyResult = array(
-                            'cache_date' => new Nette\Utils\DateTime,
-                            'active' => ($money_callresult[$u2id]->userIsActive->isActive == 1) ? 1 : (($money_callresult[$u2id]->userIsActive->isActive == 0) ? 0 : null),
-                            'disabled' => ($money_callresult[$u2id]->userIsDisabled->isDisabled == 1) ? 1 : (($money_callresult[$u2id]->userIsDisabled->isDisabled == 0) ? 0 : null),
-                            'last_payment' => ($money_callresult[$u2id]->GetLastPayment->LastPaymentDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$u2id]->GetLastPayment->LastPaymentDate)),
-                            'last_payment_amount' => ($money_callresult[$u2id]->GetLastPayment->LastPaymentAmount == "null") ? null : $money_callresult[$u2id]->GetLastPayment->LastPaymentAmount,
-                            'last_activation' => ($money_callresult[$u2id]->GetLastActivation->LastActivationDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$u2id]->GetLastActivation->LastActivationDate)),
-                            'last_activation_amount' => ($money_callresult[$u2id]->GetLastActivation->LastActivationAmount == "null") ? null : $money_callresult[$u2id]->GetLastActivation->LastActivationAmount,
-                            'account_balance' => ($money_callresult[$u2id]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$u2id]->GetAccountBalance->GetAccountBalance : null
-                        );  
-                        
-                        if(!$this->cacheMoney->getIsCached($u2id))
-                        {
-                            $userarr = array('Uzivatel_id' => $u2id);
-                            $toInsert[] = array_merge($moneyResult, $userarr);
-                            $this->cacheMoney->insert($toInsert);
-                        }
-                        else {
-                            $expired = $this->cacheMoney->getCacheItem($u2id);
-                            $this->cacheMoney->update($expired->id, $moneyResult);
-                        }
-                    }
-                }
-                                
-                if($this->cacheMoney->getIsCached($u2id))
-                {
-                    $cachedItem = $this->cacheMoney->getCacheItem($u2id);
-                    $this->template->u2money_act = ($cachedItem->active == 1) ? "ANO" : (($cachedItem->active == 0) ? "NE" : "?");
-                    $this->template->u2money_dis = ($cachedItem->disabled == 1) ? "ANO" : (($cachedItem->disabled == 0) ? "NE" : "?");
-                    $this->template->u2money_lastpay = ($cachedItem->last_payment == null) ? "NIKDY" : ($cachedItem->last_payment->format('d.m.Y') . " (" . $cachedItem->last_payment_amount . ")");
-                    $this->template->u2money_lastact = ($cachedItem->last_activation == null) ? "NIKDY" : ($cachedItem->last_activation->format('d.m.Y') . " (" . $cachedItem->last_activation_amount . ")");
-                    if($u2->kauce_mobil > 0)
-                    {
-                        $this->template->u2money_bal = ($cachedItem->account_balance >= 0) ? ($cachedItem->account_balance - $u2->kauce_mobil) . ' (kauce: ' . $u2->kauce_mobil . ')' : "?";
-                    }
-                    else{
-                        $this->template->u2money_bal = ($cachedItem->account_balance >= 0) ? $cachedItem->account_balance : "?";
-                    }
-                }
-                else
-                {
-                    $this->flashMessage('MONEY JSOU OFFLINE');
-                    $this->template->u2money_act = "MONEY OFFLINE";
-                    $this->template->u2money_dis = "MONEY OFFLINE";
-                    $this->template->u2money_lastpay = "MONEY OFFLINE";
-                    $this->template->u2money_lastact = "MONEY OFFLINE";
-                    $this->template->u2money_bal = "MONEY OFFLINE"; 
-                }
+             
+        $this->template->u2money_act = ($u2->money_aktivni == 1) ? "ANO" : "NE";
+        $this->template->u2money_dis = ($u2->money_deaktivace == 1) ? "ANO" : "NE";
+        $posledniPlatba2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',1)->order('id DESC')->limit(1);
+        if($posledniPlatba2->count() > 0)
+            {
+                $posledniPlatbaData2 = $posledniPlatba2->fetch();
+                $this->template->u2money_lastpay = ($posledniPlatbaData2->datum == null) ? "NIKDY" : ($posledniPlatbaData2->datum->format('d.m.Y') . " (" . $posledniPlatbaData2->castka . ")");
+            }
+            else
+            {
+                $this->template->u2money_lastpay = "?";
+            }
+        $posledniAktivace2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',array(4, 5))->order('id DESC')->limit(1);
+        if($posledniAktivace2->count() > 0)
+            {
+                $posledniAktivaceData2 = $posledniAktivace2->fetch();
+                $this->template->u2money_lastact = ($posledniAktivaceData2->datum == null) ? "NIKDY" : ($posledniAktivaceData2->datum->format('d.m.Y') . " (" . $posledniAktivaceData2->castka . ")");
+            }
+            else
+            {
+                $this->template->u2money_lastact = "?";
+            }
+        $stavUctu2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
+        if($u2->kauce_mobil > 0)
+        {
+            $this->template->u2money_bal = ($stavUctu2 - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
+        }
+        else{
+            $this->template->u2money_bal = $stavUctu2;
+        }
     }
     
     protected function createComponentSlucovaniForm() {

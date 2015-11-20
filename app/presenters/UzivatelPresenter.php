@@ -35,13 +35,12 @@ class UzivatelPresenter extends BasePresenter
     private $typZarizeni;
     private $log;
     private $subnet;
-    private $cacheMoney;
     private $sloucenyUzivatel;
     private $uzivatelskeKonto;
     private $prichoziPlatba;
     private $tabulkaUzivatelu;
 
-    function __construct(Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\CacheMoney $cacheMoney, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -56,7 +55,6 @@ class UzivatelPresenter extends BasePresenter
     	$this->typZarizeni = $typZarizeni;
         $this->log = $log;
         $this->subnet = $subnet;
-        $this->cacheMoney = $cacheMoney;
         $this->sloucenyUzivatel = $slUzivatel; 
         $this->uzivatelskeKonto = $konto; 
         $this->prichoziPlatba = $platba;        
@@ -588,7 +586,6 @@ class UzivatelPresenter extends BasePresenter
                                             $this->uzivatel,
                                             $this->cestneClenstviUzivatele,
                                             $this->ap,
-                                            $this->cacheMoney,
                                             $this->cestneClenstviUzivatele
                                             );       
         
@@ -602,7 +599,7 @@ class UzivatelPresenter extends BasePresenter
             $cestnych = count($this->cestneClenstviUzivatele->getListCC());
                 $this->template->u_celkem = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",1)->count("*");
                 $this->template->u_celkemz = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",0)->count("*");
-                $this->template->u_aktivnich = $this->uzivatel->getSeznamAktivnichUzivatelu();
+                $this->template->u_aktivnich = $this->uzivatel->getSeznamUzivatelu()->where("money_aktivni=?",1)->count("*");
                 $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",1)->count("*");        
                 $this->template->u_primarnich = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",2)->count("*");
                 $this->template->u_radnych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",3)->count("*")-$cestnych;
@@ -623,7 +620,7 @@ class UzivatelPresenter extends BasePresenter
             $cestnych = count($this->cestneClenstviUzivatele->getListCCOfAP($id));
             $this->template->u_celkem = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",1)->count("*");
             $this->template->u_celkemz = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",0)->count("*");
-            $this->template->u_aktivnich = $this->uzivatel->getSeznamAktivnichUzivateluZAP($id);
+            $this->template->u_aktivnich = $this->uzivatel->getSeznamUzivateluZAP($id)->where("money_aktivni=?",1)->count("*");
             $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",1)->count("*");        
             $this->template->u_primarnich = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",2)->count("*");
             $this->template->u_radnych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",3)->count("*")-$cestnych;
@@ -650,73 +647,38 @@ class UzivatelPresenter extends BasePresenter
     	    {
                 $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
                 $this->template->heslo = base64_decode($_SERVER['initials']);
-                
-                if(!$this->cacheMoney->getIsCacheValid($uid))
-                {
-                    $money_uid = $this->context->parameters["money"]["login"];
-                    $money_heslo = $this->context->parameters["money"]["password"];
-                    $money_client = new \SoapClient(
-                        'https://' . $money_uid . ':' . $money_heslo . '@money.hkfree.org/wsdl/moneyAPI.wsdl',
-                        array(
-                            'login'         => $money_uid,
-                            'password'      => $money_heslo,
-                            'trace'         => 0,
-                            'exceptions'    => 0,
-                            'connection_timeout'=> 15
-                        )
-                    );
-                    $money_callresult = $money_client->hkfree_money_userGetInfo($uid);   
-                    if (!is_soap_fault($money_callresult)) {                        
-                 
-                        $moneyResult = array(
-                            'cache_date' => new Nette\Utils\DateTime,
-                            'active' => ($money_callresult[$uid]->userIsActive->isActive == 1) ? 1 : (($money_callresult[$uid]->userIsActive->isActive == 0) ? 0 : null),
-                            'disabled' => ($money_callresult[$uid]->userIsDisabled->isDisabled == 1) ? 1 : (($money_callresult[$uid]->userIsDisabled->isDisabled == 0) ? 0 : null),
-                            'last_payment' => ($money_callresult[$uid]->GetLastPayment->LastPaymentDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$uid]->GetLastPayment->LastPaymentDate)),
-                            'last_payment_amount' => ($money_callresult[$uid]->GetLastPayment->LastPaymentAmount == "null") ? null : $money_callresult[$uid]->GetLastPayment->LastPaymentAmount,
-                            'last_activation' => ($money_callresult[$uid]->GetLastActivation->LastActivationDate == "null") ? null : date("Y-m-d",strtotime($money_callresult[$uid]->GetLastActivation->LastActivationDate)),
-                            'last_activation_amount' => ($money_callresult[$uid]->GetLastActivation->LastActivationAmount == "null") ? null : $money_callresult[$uid]->GetLastActivation->LastActivationAmount,
-                            'account_balance' => ($money_callresult[$uid]->GetAccountBalance->GetAccountBalance >= 0) ? $money_callresult[$uid]->GetAccountBalance->GetAccountBalance : null
-                        );  
-                        
-                        if(!$this->cacheMoney->getIsCached($uid))
-                        {
-                            $userarr = array('Uzivatel_id' => $uid);
-                            $toInsert[] = array_merge($moneyResult, $userarr);
-                            $cacheId = $this->cacheMoney->insert($toInsert)->id;
-                        }
-                        else {
-                            $expired = $this->cacheMoney->getCacheItem($uid);
-                            $this->cacheMoney->update($expired->id, $moneyResult);
-                        }
-                    }
-                }
-                                
-                if($this->cacheMoney->getIsCached($uid))
-                {
-                    $cachedItem = $this->cacheMoney->getCacheItem($uid);
-                    $this->template->money_act = ($cachedItem->active == 1) ? "ANO" : (($cachedItem->active == 0) ? "NE" : "?");
-                    $this->template->money_dis = ($cachedItem->disabled == 1) ? "ANO" : (($cachedItem->disabled == 0) ? "NE" : "?");
-                    $this->template->money_lastpay = ($cachedItem->last_payment == null) ? "NIKDY" : ($cachedItem->last_payment->format('d.m.Y') . " (" . $cachedItem->last_payment_amount . ")");
-                    $this->template->money_lastact = ($cachedItem->last_activation == null) ? "NIKDY" : ($cachedItem->last_activation->format('d.m.Y') . " (" . $cachedItem->last_activation_amount . ")");
-                    if($uzivatel->kauce_mobil > 0)
+
+                $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
+                $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
+                $posledniPlatba = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',1)->order('id DESC')->limit(1);
+                if($posledniPlatba->count() > 0)
                     {
-                        $this->template->money_bal = ($cachedItem->account_balance >= 0) ? ($cachedItem->account_balance - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')' : "?";
+                        $posledniPlatbaData = $posledniPlatba->fetch();
+                        $this->template->money_lastpay = ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
                     }
-                    else{
-                        $this->template->money_bal = ($cachedItem->account_balance >= 0) ? $cachedItem->account_balance : "?";
+                    else
+                    {
+                        $this->template->money_lastpay = "?";
                     }
-                }
-                else
+                $posledniAktivace = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',array(4, 5))->order('id DESC')->limit(1);
+                if($posledniAktivace->count() > 0)
+                    {
+                        $posledniAktivaceData = $posledniAktivace->fetch();
+                        $this->template->money_lastact = ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
+                    }
+                    else
+                    {
+                        $this->template->money_lastact = "?";
+                    }
+                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
+                if($uzivatel->kauce_mobil > 0)
                 {
-                    $this->flashMessage('MONEY JSOU OFFLINE');
-                    $this->template->money_act = "MONEY OFFLINE";
-                    $this->template->money_dis = "MONEY OFFLINE";
-                    $this->template->money_lastpay = "MONEY OFFLINE";
-                    $this->template->money_lastact = "MONEY OFFLINE";
-                    $this->template->money_bal = "MONEY OFFLINE"; 
+                    $this->template->money_bal = ($stavUctu - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
                 }
-                
+                else{
+                    $this->template->money_bal = $stavUctu;
+                }
+
                 if($this->sloucenyUzivatel->getIsAlreadyMaster($uid))
                 {
                     $this->flashMessage('Uživatel má pod sebou sloučené uživatele.');
