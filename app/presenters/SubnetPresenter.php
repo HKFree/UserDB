@@ -91,40 +91,90 @@ class SubnetPresenter extends BasePresenter
             $existujiciSubnety = $this->subnet->getSeznamSubnetuZacinajicich($targetSubnet);
             
             $networks = array();
-            foreach ($existujiciSubnety as $snet) {
+            $gateways = array();
+            foreach ($existujiciSubnety as $snet)
+            {
                 $out = $this->subnet->parseSubnet($snet->subnet);            
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
-                $networks[$d] = 1 << (32 - $out["cidr"]); //calculates number of ips in cidr
+                $networks[$d] = array(
+                    'ips' => 1 << (32 - $out["cidr"]), //calculates number of ips in cidr
+                    'cidr' => $out['cidr'],
+                    'popis' => $snet->popis,
+                    'subnet' => $snet->subnet,
+                );
+                $gateways[$snet->gateway] = 1;
             }
             
             $existujiciIP = $this->ipAdresa->getSeznamIPAdresZacinajicich($targetSubnet);
-            
-            $ips = array();
-            $users = array();
-            $aps = array();
-            $poznamky = array();
-            foreach ($existujiciIP as $ip) {          
-                list($a, $b, $c, $d) = explode(".", $ip->ip_adresa);
-                if(!empty($ip->Uzivatel_id))
-                {
-                    $ips[$d] = "UID: ".$ip->ref('Uzivatel')->id." Nick: ". $ip->ref('Uzivatel')->nick;
-                    $users[$d] = $ip->Uzivatel_id;
+
+            $adresyTab = Html::el('table')->setClass('table table-striped');
+
+            $this->ipAdresa->addIPTableHeader($adresyTab, false, true);
+
+            $lastindex = 0;
+            $lastlenght = 0;
+
+            for ($i = 0; $i < 256; $i++)
+            {
+                $ipAdresa = $targetSubnet.$i;
+                $ipAdresaTitle = $ipAdresa;
+                if (array_key_exists($ipAdresa, $gateways)) $ipAdresaTitle .= ' (GW)';
+                $tr = null;
+
+                $networkBroadcastAddrClass = '';
+                if (array_key_exists($i,$networks) || $i==($lastindex + $lastlenght - 1)) {
+                    $networkBroadcastAddrClass = 'danger';
                 }
-                else
+
+                if (array_key_exists($ipAdresa, $existujiciIP))
                 {
-                    $ips[$d] = "AP: ".$ip->ref('Ap')->jmeno." (".$ip->ref('Ap')->id.") Hostname:". $ip->hostname;
-                    $aps[$d] = $ip->Ap_id;
+                    $ip = $existujiciIP[$ipAdresa];
+                    list($a, $b, $c, $d) = explode(".", $ip->ip_adresa);
+                    $subnetInfo = null;
+                    if (!empty($ip->Uzivatel_id)) {
+                        $subnetInfo = array(
+                            'type' => 'Uzivatel',
+                            'id' => $ip->ref('Uzivatel')->id,
+                            'nick' => $ip->ref('Uzivatel')->nick,
+                            'canViewOrEdit' => $this->ap->canViewOrEditAP($ip->ref('Uzivatel')->Ap_id, $this->getUser()),
+                            'link' => $this->link('Uzivatel:show', array('id' => $ip->ref('Uzivatel')->id)).'#ip'.$ipAdresa,
+                            'rowClass' => $networkBroadcastAddrClass,
+                            'ipTitle' => $ipAdresaTitle,
+                        );
+                    } else {
+                        $subnetInfo = array(
+                            'type' => 'Ap',
+                            'id' => $ip->ref('Ap')->id,
+                            'jmeno' => $ip->ref('Ap')->jmeno,
+                            'canViewOrEdit' => $this->ap->canViewOrEditAP($ip->ref('Ap')->id, $this->getUser()),
+                            'link' => $this->link('Ap:show', array('id' => $ip->ref('Ap')->id)).'#ip'.$ipAdresa,
+                            'rowClass' => $networkBroadcastAddrClass,
+                            'ipTitle' => $ipAdresaTitle,
+                        );
+                    }
+                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo);
+                } else
+                {
+                    // nevyuzita IP
+                    $tr = $this->ipAdresa->addIPTableRow(null, false, $adresyTab, array(
+                        'ipAdresa' => $ipAdresa,
+                        'rowClass' => $networkBroadcastAddrClass,
+                        'ipTitle' => $ipAdresaTitle,
+                    ));
                 }
-                $poznamky[$d] = $ip->popis;
+
+                if (array_key_exists($i,$networks))
+                {
+                    $tr->create('td')->setRowspan($networks[$i]['ips'])->setClass('fullsubnet')->setText($networks[$i]['subnet']."\n".$networks[$i]['ips']."\n".$networks[$i]['popis']);
+                    $lastindex = $i;
+                    $lastlenght = $networks[$i]['ips'];
+                }
             }
             //\Tracy\Dumper::dump($ips);
             
             $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;
-            $this->template->ips = $ips;
-            $this->template->users = $users;
-            $this->template->aps = $aps;
-            $this->template->poznamky = $poznamky;
+            $this->template->adresyTab = $adresyTab;
     	}
     }
     

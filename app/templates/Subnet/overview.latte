@@ -15,8 +15,14 @@
     }
 </style>
 
-<h3>přehled subnetů pro {$prefix}</h3>
-<a href="{link Subnet:detail id=>$prefix}" class="btn btn-default btn-sm" role="button"> Zobrazit detaily ip adres</a>
+<h3>Prefix {$prefix}</h3>
+
+<ul class="nav nav-tabs">
+  <li role="presentation" class="active"><a href="#">Přehled subnetů</a></li>
+  <li role="presentation"><a href="{link Subnet:detail id=>$prefix}">Detaily jednotlivých IP</a></li>
+</ul>
+
+<br>
 
 <table cellspacing="0" cellpadding="0" style="width:100%; height:100%; margin-top: 20px;">
 	<tr>

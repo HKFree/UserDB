@@ -25,7 +25,7 @@ class IPAdresa extends Table
     
     public function getSeznamIPAdresZacinajicich($prefix)
     {
-        return $this->findAll()->where("ip_adresa LIKE ?", $prefix.'%')->fetchAll();
+        return $this->findAll()->where("ip_adresa LIKE ?", $prefix.'%')->fetchPairs('ip_adresa');
     }
 
     public function getIPAdresa($id)
@@ -82,71 +82,143 @@ class IPAdresa extends Table
 		$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
     }
 
-    public function getIPTable($ips, $canViewCredentials) {
-		$tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
-
+    public function getIPTable($ips, $canViewCredentials)
+	{
 		$adresyTab = Html::el('table')->setClass('table table-striped');
+
+		$this->addIPTableHeader($adresyTab, $canViewCredentials);
+
+		foreach ($ips as $ip)
+		{
+			$this->addIPTableRow($ip, $canViewCredentials, $adresyTab);
+		}
+
+		return $adresyTab;
+	}
+
+	public function addIPTableHeader($adresyTab, $canViewCredentials, $subnetMode=false)
+	{
 		$tr = $adresyTab->create('tr');
+
 		$tr->create('th')->setText('IP');
+		if ($subnetMode) {
+			$tr->create('th')->setText('UID');
+			$tr->create('th')->setText('Nick');
+		}
 		$tr->create('th')->setText('Hostname');
 		$tr->create('th')->setText('MAC Adresa');
 		$tr->create('th')->setText('Zařízení');
 		$tr->create('th')->setText('Atributy');
 		$tr->create('th')->setText('Popis');
-        if($canViewCredentials)
-        {
-            $tr->create('th')->setText('Login');
-            $tr->create('th')->setText('Heslo');
-        }
+		if ($canViewCredentials) {
+			$tr->create('th')->setText('Login');
+			$tr->create('th')->setText('Heslo');
+		}
+		if ($subnetMode)
+		{
+			$tr->create('th')->setText('Subnet');
+		}
+	}
 
-		foreach ($ips as $ip) {
-            
-			$tr = $adresyTab->create('tr');
-            $tr->create('td')->setText($ip->ip_adresa);
-			$tr->create('td')->setText($ip->hostname);
-			$tr->create('td')->setText($ip->mac_adresa);
-			$tr->create('td')->setText((isset($ip->TypZarizeni->text))?$ip->TypZarizeni->text:"");
-			$attr = $tr->create('td');
-			if($ip->internet) {
-				$attr->create('span')
-					 ->setClass('glyphicon glyphicon-transfer')
-					 ->setTitle('IP je povolená do internetu')
-					 ->addAttributes($tooltips);	
-				$attr->add(' ');
+	public function addIPTableRow($ip, $canViewCredentials, $adresyTab, $subnetModeInfo=null)
+	{
+		$tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
+
+		$tr = $adresyTab->create('tr');
+		if ($subnetModeInfo && array_key_exists('rowClass', $subnetModeInfo)) $tr->setClass($subnetModeInfo['rowClass']);
+
+		$ipTitle = $subnetModeInfo ? $subnetModeInfo['ipTitle'] : $ip->ip_adresa;
+
+		$tr->create('td')->setText($ipTitle);
+
+		if ($ip)
+		{
+			if ($subnetModeInfo) {
+				if ($subnetModeInfo['type'] == 'Uzivatel')
+				{
+					$tr->create('td')->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['id']); // UID
+					$tr->create('td')->setText($subnetModeInfo['nick']); // nick
+				}
+				elseif ($subnetModeInfo['type'] == 'Ap')
+				{
+					// nazev AP + cislo (pres 2 bunky, aby se to nepletlo s UID+nick)
+					$tr->create('td')->setColspan(2)->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['jmeno'] . ' (' . $subnetModeInfo['id'] . ')');
+				}
 			}
+			if (!$subnetModeInfo || $subnetModeInfo['canViewOrEdit'])
+			{
+				$tr->create('td')->setText($ip->hostname); // hostname
+				$tr->create('td')->setText($ip->mac_adresa); // MAC
+				$tr->create('td')->setText((isset($ip->TypZarizeni->text)) ? $ip->TypZarizeni->text : ""); // typ zarizeni
+				$attr = $tr->create('td'); // atributy
+				if ($ip->internet) {
+					$attr->create('span')
+						->setClass('glyphicon glyphicon-transfer')
+						->setTitle('IP je povolená do internetu')
+						->addAttributes($tooltips);
+					$attr->add(' ');
+				}
 
-			if($ip->smokeping) {
-				$attr->create('span')
-					 ->setClass('glyphicon glyphicon-eye-open')
-					 ->setTitle('IP je sledovaná ve smokepingu')
-					 ->addAttributes($tooltips);
-				$attr->add(' ');
+				if ($ip->smokeping) {
+					$attr->create('span')
+						->setClass('glyphicon glyphicon-eye-open')
+						->setTitle('IP je sledovaná ve smokepingu')
+						->addAttributes($tooltips);
+					$attr->add(' ');
+				}
+
+				if ($ip->dhcp) {
+					$attr->create('span')
+						->setClass('glyphicon glyphicon-open')
+						->setTitle('IP se exportuje do DHCP')
+						->addAttributes($tooltips);
+					$attr->add(' ');
+				}
+
+				if ($ip->mac_filter) {
+					$attr->create('span')
+						->setClass('glyphicon glyphicon glyphicon-filter')
+						->setTitle('IP exportuje do MAC filteru')
+						->addAttributes($tooltips);
+					$attr->add(' ');
+				}
+
+				$tr->create('td')->setText($ip->popis); // popis
+				if ($canViewCredentials) {
+					$tr->create('td')->setText($ip->login);
+					$tr->create('td')->setText($ip->heslo);
+				}
+			} else {
+				// subnet mode, nesmi videt detaily
+				$tr->create('td')
+					->create('span')
+					->setText('---')
+					->setTitle('Nemáte právo vidět detaily') // hostname
+					->addAttributes($tooltips);
+				$tr->create('td'); // MAC
+				$tr->create('td'); // typ zarizeni
+				$tr->create('td'); // atributy
+				$tr->create('td'); // popis
+				if ($canViewCredentials) {
+					$tr->create('td'); // login
+					$tr->create('td'); // heslo
+				}
 			}
-
-			if($ip->dhcp) {
-				$attr->create('span')
-					 ->setClass('glyphicon glyphicon-open')
-					 ->setTitle('IP se exportuje do DHCP')
-					 ->addAttributes($tooltips);	
-				$attr->add(' ');
+		} else if ($subnetModeInfo) {
+			// empty row
+			$tr->create('td');
+			$tr->create('td');
+			$tr->create('td');
+			$tr->create('td');
+			$tr->create('td');
+			$tr->create('td');
+			$tr->create('td');
+			if ($canViewCredentials) {
+				$tr->create('td')->setText(''); // login
+				$tr->create('td')->setText(''); // heslo
 			}
+		}
 
-			if($ip->mac_filter) {
-				$attr->create('span')
-					 ->setClass('glyphicon glyphicon glyphicon-filter')
-					 ->setTitle('IP exportuje do MAC filteru')
-					 ->addAttributes($tooltips);	
-				$attr->add(' ');
-			}
-
-			$tr->create('td')->setText($ip->popis);
-            if($canViewCredentials)
-            {
-                $tr->create('td')->setText($ip->login);
-                $tr->create('td')->setText($ip->heslo);
-            }
-		} 
-
-		return($adresyTab);
+		return $tr;
     }
 }
