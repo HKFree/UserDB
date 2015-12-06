@@ -292,7 +292,7 @@ class UzivatelPresenter extends BasePresenter
     	}, ($this->getParam('id')>0?0:1));
     
     	$ips->addSubmit('add', '+ Přidat další IP')
-    		->setAttribute('class', 'btn btn-success btn-xs btn-white')
+    		->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
     		->setValidationScope(FALSE)
     		->addCreateOnClick(TRUE, function (Container $replicator, Container $ip) {
                         $ip->setValues(array('internet'=>1));
@@ -300,7 +300,7 @@ class UzivatelPresenter extends BasePresenter
 				  });
     
     	$form->addSubmit('save', 'Uložit')
-    		->setAttribute('class', 'btn btn-success btn-xs btn-white default');
+    		->setAttribute('class', 'btn btn-success btn-white default btn-edit-save');
     	$form->onSuccess[] = array($this, 'uzivatelFormSucceded');
         $form->onValidate[] = array($this, 'validateUzivatelForm');
     

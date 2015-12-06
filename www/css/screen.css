@@ -213,6 +213,7 @@ pre.tracy-dump {
     padding: 5px;
     border: 1px solid #ccc;
     width: 570px;
+    background-color: #f4f4f4;
 }
 .ipform tr td, .subnetform tr td {
     padding: 1px 3px;
@@ -241,6 +242,20 @@ pre.tracy-dump {
 
 .ip.details, .ip.editsubnet {
     font-size: smaller;
+}
+
+.ip-subnet-form-add {
+    min-width: 570px;
+    height: 50px;
+    background-color: #EDFFED;
+    color: black;
+    border-color: silver;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.ip-subnet-form-add:hover {
+    background-color: #CAF7CA;
 }
 
 .legend td
@@ -434,4 +449,9 @@ pre.tracy-dump {
 
 .btn-in-table:hover {
     border-color: #ccc;
+}
+
+.btn-edit-save {
+    margin-bottom: 20px;
+    margin-top: 20px;
 }

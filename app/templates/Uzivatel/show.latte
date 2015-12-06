@@ -4,11 +4,11 @@
     <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     {if $canViewOrEdit}
     <a href="{link Uzivatel:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
-    <a href="{link Uzivatel:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat oprávnění</a>
-    <a href="{link Uzivatel:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat čestné členství</a>
-    <a href="{link Uzivatel:email id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Odeslat E-mail</a>
-    <a href="{link Uzivatel:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Odeslat SMS</a>
-    <a href="{link Uzivatel:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button">Registrační formulář</a>
+    <a href="{link Uzivatel:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a>
+    <a href="{link Uzivatel:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a>
+    <a href="{link Uzivatel:email id=>$u->id}" class="btn btn-default btn-sm" role="button"><b>@</b> Odeslat E-mail</a>
+    <a href="{link Uzivatel:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS</a>
+    <a href="{link Uzivatel:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-file"></i> Registrační formulář</a>
     {if $u->regform_downloaded_password_sent==0}
     <a href="{link Uzivatel:sendRegActivation id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat znovu aktivační link e-mailem</a>
     {else}
@@ -19,7 +19,7 @@
     {/if}
     <a href="{link Uzivatel:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>    
     
-    <a href="{link Uzivatel:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Přehled plateb</a>
+    <a href="{link Uzivatel:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Přehled plateb</a>
     
     <br><br>
     <style>
