@@ -24,7 +24,7 @@
         <script src="{$basePath}/js/jquery.barrating.min.js"></script>
         <script src="{$basePath}/js/jquery.bonsai.js"></script>
 
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v6">      
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v7">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
@@ -78,7 +78,27 @@
             $(document).ready(function() {
               $('#oblastitree').bonsai();
             });
-        </script>    
+
+            // Scroll na objekt odkazovany ve fragmentu (napr. "#ip10.107.12.1")
+            // a zvyrazneni objektu (id musi byt napr. 'highlightable-ip10.107.12.1')
+            $(document).ready(function() {
+                var elem = document.getElementById('highlightable-' + window.location.hash.replace('#', ''));
+                if (elem) {
+                    console.log(elem);
+                    // nastavit vyrazne zvyrazneni
+                    $(elem).addClass('highlighted');
+                    // po chvili nastavit (v CSS animovane) slabsi zvyrazneni
+                    setTimeout(function() {
+                        $(elem).addClass('highlighted-fadeout');
+                    }, 1000);
+                    // scrollovat k elementu (musime odscrollovat trochu min, protoze nahore je fixni navbar-header)
+                    // scrollovat tak, aby element byl v prvni tretine obrazovky
+                    $('html, body').animate({
+                        scrollTop: $(elem).offset().top - $('.navbar-header').height() - ($(window).height()-$('.navbar-header').height())/3
+                    }, 1000);
+                }
+            });
+        </script>
 	{block head}{/block}
 </head>
 

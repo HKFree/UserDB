@@ -70,4 +70,19 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $values = $form->getValues();
         $this->redirect('Uzivatel:listall', array('search' => $values->search, 'id' => null));
     }
+
+    protected function getSubnetLinkFromIpAddress($ipAddress) {
+        list($a, $b, $c, $d) = explode(".", $ipAddress);
+        $resultnet = $a .".". $b .".". $c .".";
+        return $this->link('Subnet:detail', array('id' => $resultnet)).'#ip'.$ipAddress;
+    }
+
+    protected function getSubnetLinksFromIPs($ips) {
+        $result = array();
+        foreach ($ips as $ip)
+        {
+            $result[$ip->ip_adresa] = $this->getSubnetLinkFromIpAddress($ip->ip_adresa);
+        }
+        return $result;
+    }
 }

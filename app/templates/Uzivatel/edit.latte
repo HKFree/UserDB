@@ -70,6 +70,7 @@
             detailsspan.find(".subnet").text(d.subnet);
             detailsspan.find(".gateway").text(d.gateway);
             detailsspan.find(".mask").text(d.mask);
+            detailsspan.find(".subnetlink").attr('href', d.subnetLink);
             
             errorsspan.hide();
             detailsspan.show();

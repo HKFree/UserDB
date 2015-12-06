@@ -50,6 +50,7 @@ class ApiPresenter extends BasePresenter
                 }
             } else {
                 $out = $subnet;
+                $out['subnetLink'] = $this->getSubnetLinkFromIpAddress($ip);
             }
         }
         

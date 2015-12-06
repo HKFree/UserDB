@@ -284,7 +284,7 @@ class UzivatelPresenter extends BasePresenter
     	$data = $this->ipAdresa;
     	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni,$form) {
     	    $data->getIPForm($ip, $typyZarizeni);
-    
+
     	    $ip->addSubmit('remove', '– Odstranit IP')
     		    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
     		    ->setValidationScope(FALSE)
@@ -702,8 +702,10 @@ class UzivatelPresenter extends BasePresenter
     		    $this->template->u = $uzivatel;
                 
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');//->order("IPAdresa.ip_adresa");
-                
-    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true);
+
+                $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
+
+    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks);
                                 
                 if($ipAdresy->count() > 0)
                 {

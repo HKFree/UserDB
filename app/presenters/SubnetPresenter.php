@@ -138,6 +138,7 @@ class SubnetPresenter extends BasePresenter
                             'nick' => $ip->ref('Uzivatel')->nick,
                             'canViewOrEdit' => $this->ap->canViewOrEditAP($ip->ref('Uzivatel')->Ap_id, $this->getUser()),
                             'link' => $this->link('Uzivatel:show', array('id' => $ip->ref('Uzivatel')->id)).'#ip'.$ipAdresa,
+                            'editLink' => $this->link('Uzivatel:edit', array('id' => $ip->ref('Uzivatel')->id)).'#ip'.$ipAdresa,
                             'rowClass' => $networkBroadcastAddrClass,
                             'ipTitle' => $ipAdresaTitle,
                         );
@@ -148,6 +149,7 @@ class SubnetPresenter extends BasePresenter
                             'jmeno' => $ip->ref('Ap')->jmeno,
                             'canViewOrEdit' => $this->ap->canViewOrEditAP($ip->ref('Ap')->id, $this->getUser()),
                             'link' => $this->link('Ap:show', array('id' => $ip->ref('Ap')->id)).'#ip'.$ipAdresa,
+                            'editLink' => $this->link('Ap:edit', array('id' => $ip->ref('Ap')->id)).'#ip'.$ipAdresa,
                             'rowClass' => $networkBroadcastAddrClass,
                             'ipTitle' => $ipAdresaTitle,
                         );

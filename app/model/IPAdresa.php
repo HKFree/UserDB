@@ -82,7 +82,7 @@ class IPAdresa extends Table
 		$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
     }
 
-    public function getIPTable($ips, $canViewCredentials)
+    public function getIPTable($ips, $canViewCredentials, $subnetLinks)
 	{
 		$adresyTab = Html::el('table')->setClass('table table-striped');
 
@@ -90,7 +90,8 @@ class IPAdresa extends Table
 
 		foreach ($ips as $ip)
 		{
-			$this->addIPTableRow($ip, $canViewCredentials, $adresyTab);
+			$subnetLink = $subnetLinks[$ip->ip_adresa];
+			$this->addIPTableRow($ip, $canViewCredentials, $adresyTab, null, $subnetLink);
 		}
 
 		return $adresyTab;
@@ -102,6 +103,7 @@ class IPAdresa extends Table
 
 		$tr->create('th')->setText('IP');
 		if ($subnetMode) {
+			$tr->create('th')->setText(''); // edit button
 			$tr->create('th')->setText('UID');
 			$tr->create('th')->setText('Nick');
 		}
@@ -120,27 +122,57 @@ class IPAdresa extends Table
 		}
 	}
 
-	public function addIPTableRow($ip, $canViewCredentials, $adresyTab, $subnetModeInfo=null)
+	public function addIPTableRow($ip, $canViewCredentials, $adresyTab, $subnetModeInfo=null, $subnetLink=null)
 	{
 		$tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
-		$tr = $adresyTab->create('tr');
-		if ($subnetModeInfo && array_key_exists('rowClass', $subnetModeInfo)) $tr->setClass($subnetModeInfo['rowClass']);
-
 		$ipTitle = $subnetModeInfo ? $subnetModeInfo['ipTitle'] : $ip->ip_adresa;
 
-		$tr->create('td')->setText($ipTitle);
+		$tr = $adresyTab->create('tr');
+		$tr->setId('highlightable-ip'.($ip ? $ip->ip_adresa : $subnetModeInfo['ipAdresa']));
+		if ($subnetModeInfo && array_key_exists('rowClass', $subnetModeInfo)) $tr->setClass($subnetModeInfo['rowClass']);
+
+		if ($subnetLink) {
+			// IP jako link do subnets z beznych agend (uzivatel, AP)
+			$tr->create('td')->create('a')->setHref($subnetLink)->setTarget('_blank')->setText($ipTitle);
+		} else {
+			// zobrazit IP jen jako text
+			$tr->create('td')->setText($ipTitle);
+		}
 
 		if ($ip)
 		{
 			if ($subnetModeInfo) {
 				if ($subnetModeInfo['type'] == 'Uzivatel')
 				{
+					if ($subnetModeInfo['canViewOrEdit']) {
+						$tr->create('td')
+							->create('a')
+								->setHref($subnetModeInfo['editLink'])
+								->setClass('btn btn-default btn-xs btn-in-table')
+								->setTitle('Editovat')
+								->create('span')
+									->setClass('glyphicon glyphicon-pencil'); // edit button
+					} else {
+						$tr->create('td'); //  nema edit button
+					}
 					$tr->create('td')->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['id']); // UID
 					$tr->create('td')->setText($subnetModeInfo['nick']); // nick
 				}
 				elseif ($subnetModeInfo['type'] == 'Ap')
 				{
+					if ($subnetModeInfo['canViewOrEdit']) {
+						$tr->create('td')
+							->create('a')
+								->setHref($subnetModeInfo['editLink'])
+							->setHref($subnetModeInfo['editLink'])
+							->setClass('btn btn-default btn-xs btn-in-table')
+							->setTitle('Editovat')
+							->create('span')
+							->setClass('glyphicon glyphicon-pencil'); // edit button
+					} else {
+						$tr->create('td'); //  nema edit button
+					}
 					// nazev AP + cislo (pres 2 bunky, aby se to nepletlo s UID+nick)
 					$tr->create('td')->setColspan(2)->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['jmeno'] . ' (' . $subnetModeInfo['id'] . ')');
 				}
@@ -206,6 +238,7 @@ class IPAdresa extends Table
 			}
 		} else if ($subnetModeInfo) {
 			// empty row
+			$tr->create('td');
 			$tr->create('td');
 			$tr->create('td');
 			$tr->create('td');

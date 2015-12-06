@@ -409,3 +409,27 @@ pre.tracy-dump {
     float: left;
     background-position: 0 32px;
 }
+
+.highlighted, .highlighted td {
+    background-color: #ffa100 !important;
+}
+
+.highlighted-fadeout, .highlighted-fadeout td {
+    background-color: rgb(255, 251, 122) !important;
+    -webkit-transition: background-color 1000ms linear;
+    -moz-transition: background-color 1000ms linear;
+    -o-transition: background-color 1000ms linear;
+    -ms-transition: background-color 1000ms linear;
+    transition: background-color 1000ms linear;
+}
+
+.btn-in-table {
+    line-height: 1;
+    padding: 0px 5px;
+    border-color: transparent;
+    background: inherit;
+}
+
+.btn-in-table:hover {
+    border-color: #ccc;
+}

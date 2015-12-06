@@ -12,7 +12,7 @@
         {foreach $group->controls as $field}
             {if (($field->control->attrs!=NULL && array_key_exists('class', $field->control->attrs) && (strpos($field->control->attrs['class'],' ip')>0||$field->control->attrs['class']=='ip'))||$field->name=='internet'||$field->name=='smokeping'||$field->name=='mac_filter'||$field->name=='dhcp'||$field->name=='remove' )}
                 {if $field->name=='id'}
-                    <tr><td colspan="4"><table class="ipform">
+                    <tr><td colspan="4"><table class="ipform" id="highlightable-ip{$field->parent->values['ip_adresa']}">
                 {/if}
                 {if $field->name=='id'||$field->name=='login'||$field->name=='popis'}
                     <tr><td colspan="4" class="ip">
@@ -29,6 +29,8 @@
                     <tr>
                         <td colspan="4" data-toggle="tooltip" data-placement="top" title="Pokud brána a maska neodpovídají realitě a chcete mít v pořádku registrační formulář, upravte prosím subnety své oblasti.">
                             <span class="ip details" data-reqid="1" style="display: none">
+                                <a href="#" target="_blank" class="subnetlink">Subnets</a>
+                                &nbsp;|&nbsp
                                 Subnet: <span class="ip subnet">---</span>
                                 &nbsp;|&nbsp;
                                 Maska: <span class="ip mask">---</span>
