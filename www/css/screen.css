@@ -428,6 +428,8 @@ pre.tracy-dump {
     padding: 0px 5px;
     border-color: transparent;
     background: inherit;
+    position: relative;
+    top: -1px;
 }
 
 .btn-in-table:hover {

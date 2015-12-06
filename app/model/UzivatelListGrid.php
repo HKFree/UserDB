@@ -112,11 +112,26 @@ class UzivatelListGrid extends Nette\Object
             });
         }
         
-    	$grid->addColumnText('id', 'UID')->setCustomRender(function($item) use ($presenter)
-        {return Html::el('a')
+    	$grid->addColumnText('id', 'UID')->setCustomRender(function($item) use ($presenter, $canViewOrEdit)
+        {
+            $uidLink = Html::el('a')
             ->href($presenter->link('Uzivatel:show', array('id'=>$item->id)))
             ->title($item->id)
-            ->setText($item->id);})->setSortable();
+            ->setText($item->id);
+
+            if ($canViewOrEdit)
+            {
+                // edit button
+                $btn = Html::el('span')->setClass('glyphicon glyphicon-pencil');
+                $anchor = Html::el('a', $btn)
+                            ->setHref($presenter->link('Uzivatel:edit', array('id'=>$item->id)))
+                            ->setTitle('Editovat')
+                            ->setClass('btn btn-default btn-xs btn-in-table pull-right');
+                $uidLink .= $anchor;
+            }
+
+            return $uidLink;
+        })->setSortable();
         $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if($canViewOrEdit) {
