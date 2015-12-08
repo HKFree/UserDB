@@ -68,8 +68,20 @@ class UzivatelPresenter extends BasePresenter
         {
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
+                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
                 
-                $this->flashMessage('Účet byl aktivován.');
+                if($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku())
+                {
+                    $this->uzivatel->update($uzivatel->id, array('money_aktivni'=>1));   
+
+                    $this->uzivatelskeKonto->insert(array('Uzivatel_id'=>$uzivatel->id,
+                                                            'TypPohybuNaUctu_id'=>9,
+                                                            'castka'=>-($this->parameters->getVyseClenskehoPrispevku()),
+                                                            'datum'=>new Nette\Utils\DateTime,
+                                                            'poznamka'=>'Aktivace od ['.$this->getUser()->getIdentity()->getId().']'));
+
+                    $this->flashMessage('Účet byl aktivován.');
+                }
 
                 $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
             }
@@ -81,8 +93,32 @@ class UzivatelPresenter extends BasePresenter
         {
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
+                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
                 
-                $this->flashMessage('Účet byl reaktivován.');
+                if($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku())
+                {
+                    $this->uzivatel->update($uzivatel->id, array('money_aktivni'=>1,'money_deaktivace'=>0));
+                    
+                    $this->uzivatelskeKonto->insert(array('Uzivatel_id'=>$uzivatel->id,
+                                                        'TypPohybuNaUctu_id'=>8,
+                                                        'castka'=>-($this->parameters->getVyseClenskehoPrispevku()),
+                                                        'datum'=>new Nette\Utils\DateTime,
+                                                        'poznamka'=>'Reaktivace od ['.$this->getUser()->getIdentity()->getId().']'));
+                    
+                    $this->flashMessage('Účet byl reaktivován.');
+                }
+                
+                if($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1)
+                {
+                    $this->uzivatel->update($uzivatel->id, array('money_deaktivace'=>0));
+                    
+                    $this->uzivatelskeKonto->insert(array('Uzivatel_id'=>$uzivatel->id,
+                                                        'TypPohybuNaUctu_id'=>9,
+                                                        'datum'=>new Nette\Utils\DateTime,
+                                                        'poznamka'=>'Zruseni Deaktivace od ['.$this->getUser()->getIdentity()->getId().']'));
+                    
+                    $this->flashMessage('Deaktivace byla zrušena.');
+                }
 
                 $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
             }
@@ -94,6 +130,12 @@ class UzivatelPresenter extends BasePresenter
         {
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
+                $this->uzivatel->update($uzivatel->id, array('money_aktivni'=>1,'money_deaktivace'=>1));   
+                
+                $this->uzivatelskeKonto->insert(array('Uzivatel_id'=>$uzivatel->id,
+                                                        'TypPohybuNaUctu_id'=>6,
+                                                        'datum'=>new Nette\Utils\DateTime,
+                                                        'poznamka'=>'Deaktivace od ['.$this->getUser()->getIdentity()->getId().']'));
                 
                 $this->flashMessage('Účet byl deaktivován.');
 
