@@ -63,7 +63,7 @@ class UzivatelPresenter extends BasePresenter
         $this->parameters = $parameters;
     }
     
-    public function moneyActivate() {
+    public function actionMoneyActivate() {
         if($this->getParam('id'))
         {
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
@@ -88,7 +88,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
     
-    public function moneyReactivate() {
+    public function actionMoneyReactivate() {
         if($this->getParam('id'))
         {
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
@@ -125,7 +125,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
     
-    public function moneyDeactivate() {
+    public function actionMoneyDeactivate() {
         if($this->getParam('id'))
         {
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
