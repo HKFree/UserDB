@@ -14,12 +14,14 @@
     {else}
     <a href="{link Uzivatel:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>    
     {/if}
-    <a href="https://money.hkfree.org/user.php?a=1&b={$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> Money</a>
     <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Materna</a>
     {/if}
     <a href="{link Uzivatel:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>    
-    
+    <br />
     <a href="{link Uzivatel:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Přehled plateb</a>
+    {if $activaceVisible}<a href="{link Uzivatel:moneyActivate id=>$u->id}" class="btn btn-default btn-sm btn-green" role="button">Aktivace</a>{/if}
+    {if $reactivaceVisible}<a href="{link Uzivatel:moneyReactivate id=>$u->id}" class="btn btn-default btn-sm btn-green" role="button">Reaktivace</a>{/if}
+    {if $deactivaceVisible}<a href="{link Uzivatel:moneyDeactivate id=>$u->id}" class="btn btn-default btn-sm btn-red" role="button">Deaktivace</a>{/if}
     
     <br><br>
     <style>

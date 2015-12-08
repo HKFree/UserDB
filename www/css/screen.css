@@ -451,7 +451,24 @@ pre.tracy-dump {
     border-color: #ccc;
 }
 
+.btn-red {
+    border-color: red;
+}
+
+.btn-green {
+    border-color: green;
+}
+
 .btn-edit-save {
     margin-bottom: 20px;
     margin-top: 20px;
+}
+
+.navbar-brand {
+  color: #FFFFFF !important;
+}
+.navbar-brand:hover,
+.navbar-brand:focus {
+  color: #FFFFFF !important;
+  background-color: transparent;
 }

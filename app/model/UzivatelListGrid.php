@@ -11,7 +11,7 @@ use Nette,
  */
 class UzivatelListGrid extends Nette\Object
 {
-    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search, $uzivatelModel, $ccModel, $apModel) {
+    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search, $uzivatelModel, $ccModel, $apModel, $params) {
         //\Tracy\Dumper::dump($search);
         
         $canViewOrEdit = false;
@@ -69,7 +69,7 @@ class UzivatelListGrid extends Nette\Object
         
         if($money)
         {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter){
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $params){
                 
                 $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
                                 
@@ -78,7 +78,7 @@ class UzivatelListGrid extends Nette\Object
                 {
                   $tr->class[] = 'neaktivni';
                 }
-                if(($konto->sum('castka') - $item->kauce_mobil) > 3480)
+                if(($konto->sum('castka') - $item->kauce_mobil) > ($params->getVyseClenskehoPrispevku()*12))
                 {
                   $tr->class[] = 'preplatek';
                 }

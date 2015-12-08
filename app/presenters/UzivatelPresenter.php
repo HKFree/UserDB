@@ -39,8 +39,9 @@ class UzivatelPresenter extends BasePresenter
     private $uzivatelskeKonto;
     private $prichoziPlatba;
     private $tabulkaUzivatelu;
+    private $parameters;
 
-    function __construct(Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\Parameters $parameters, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -59,6 +60,46 @@ class UzivatelPresenter extends BasePresenter
         $this->uzivatelskeKonto = $konto; 
         $this->prichoziPlatba = $platba;        
         $this->tabulkaUzivatelu = $ULGrid; 
+        $this->parameters = $parameters;
+    }
+    
+    public function moneyActivate() {
+        if($this->getParam('id'))
+        {
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+                
+                $this->flashMessage('Účet byl aktivován.');
+
+                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
+            }
+        }
+    }
+    
+    public function moneyReactivate() {
+        if($this->getParam('id'))
+        {
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+                
+                $this->flashMessage('Účet byl reaktivován.');
+
+                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
+            }
+        }
+    }
+    
+    public function moneyDeactivate() {
+        if($this->getParam('id'))
+        {
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+    	    {
+                
+                $this->flashMessage('Účet byl deaktivován.');
+
+                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
+            }
+        }
     }
     
     public function generatePdf($uzivatel)
@@ -586,7 +627,7 @@ class UzivatelPresenter extends BasePresenter
                                             $this->uzivatel,
                                             $this->cestneClenstviUzivatele,
                                             $this->ap,
-                                            $this->cestneClenstviUzivatele
+                                            $this->parameters
                                             );       
         
     }
@@ -718,6 +759,11 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
                 //$this->template->logy = $this->log->getLogyUzivatele($uid);
+                
+                $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku();
+                $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku())
+                                                        || ($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1);
+                $this->template->deactivaceVisible = $uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 0;
     	    }
     	}
     }
