@@ -358,7 +358,7 @@ class UzivatelPresenter extends BasePresenter
         if($this->getParam('id') && !$submitujeSe) {
     	    $values = $this->uzivatel->getUzivatel($this->getParam('id'));
     	    if($values) {
-                foreach($values->related('IPAdresa.Uzivatel_id') as $ip_id => $ip_data) {
+                foreach($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
                     $form["ip"][$ip_id]->setValues($ip_data);
                 }
                 $form->setValues($values);
@@ -461,7 +461,7 @@ class UzivatelPresenter extends BasePresenter
         $newUserIPIDs = array();
     	
         //generovani ip pro vlozeni ze subnetu
-        $genaddresses = $this->ipAdresa->getListOfIPFrom($ipsubnet);
+        $genaddresses = $this->ipAdresa->getListOfIPFromSubnet($ipsubnet);
         //generovani ip pro vlozeni z rozsahu        
         $genaddresses = array_merge($genaddresses,$this->ipAdresa->getListOfIPFromRange($iprange));
 
