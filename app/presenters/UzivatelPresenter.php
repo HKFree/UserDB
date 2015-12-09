@@ -40,8 +40,9 @@ class UzivatelPresenter extends BasePresenter
     private $prichoziPlatba;
     private $tabulkaUzivatelu;
     private $parameters;
+    private $accountActivation;
 
-    function __construct(Model\Parameters $parameters, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -61,86 +62,46 @@ class UzivatelPresenter extends BasePresenter
         $this->prichoziPlatba = $platba;        
         $this->tabulkaUzivatelu = $ULGrid; 
         $this->parameters = $parameters;
+        $this->accountActivation = $accActivation;
     }
     
     public function actionMoneyActivate() {
-        if($this->getParam('id'))
+        $id = $this->getParameter('id');
+        if($id)
         {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
-    	    {
-                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
-                
-                if($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku())
-                {
-                    $this->uzivatel->update($uzivatel->id, array('money_aktivni'=>1));   
-
-                    $this->uzivatelskeKonto->insert(array('Uzivatel_id'=>$uzivatel->id,
-                                                            'TypPohybuNaUctu_id'=>9,
-                                                            'castka'=>-($this->parameters->getVyseClenskehoPrispevku()),
-                                                            'datum'=>new Nette\Utils\DateTime,
-                                                            'poznamka'=>'Aktivace od ['.$this->getUser()->getIdentity()->getId().']'));
-
-                    $this->flashMessage('Účet byl aktivován.');
-                }
-
-                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
+            if($this->accountActivation->activateAccount($this->getUser(), $id))
+            {
+                $this->flashMessage('Účet byl aktivován.');
             }
+            
+            $this->redirect('Uzivatel:show', array('id'=>$id));            
         }
     }
     
     public function actionMoneyReactivate() {
-        if($this->getParam('id'))
+        $id = $this->getParameter('id');
+        if($id)
         {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
-    	    {
-                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
-                
-                if($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku())
-                {
-                    $this->uzivatel->update($uzivatel->id, array('money_aktivni'=>1,'money_deaktivace'=>0));
-                    
-                    $this->uzivatelskeKonto->insert(array('Uzivatel_id'=>$uzivatel->id,
-                                                        'TypPohybuNaUctu_id'=>8,
-                                                        'castka'=>-($this->parameters->getVyseClenskehoPrispevku()),
-                                                        'datum'=>new Nette\Utils\DateTime,
-                                                        'poznamka'=>'Reaktivace od ['.$this->getUser()->getIdentity()->getId().']'));
-                    
-                    $this->flashMessage('Účet byl reaktivován.');
-                }
-                
-                if($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1)
-                {
-                    $this->uzivatel->update($uzivatel->id, array('money_deaktivace'=>0));
-                    
-                    $this->uzivatelskeKonto->insert(array('Uzivatel_id'=>$uzivatel->id,
-                                                        'TypPohybuNaUctu_id'=>9,
-                                                        'datum'=>new Nette\Utils\DateTime,
-                                                        'poznamka'=>'Zruseni Deaktivace od ['.$this->getUser()->getIdentity()->getId().']'));
-                    
-                    $this->flashMessage('Deaktivace byla zrušena.');
-                }
-
-                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
+            $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
+            if($result != '')
+            {
+                $this->flashMessage($result);
             }
+            
+            $this->redirect('Uzivatel:show', array('id'=>$id));  
         }
     }
     
     public function actionMoneyDeactivate() {
-        if($this->getParam('id'))
+        $id = $this->getParameter('id');
+        if($id)
         {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
-    	    {
-                $this->uzivatel->update($uzivatel->id, array('money_aktivni'=>1,'money_deaktivace'=>1));   
-                
-                $this->uzivatelskeKonto->insert(array('Uzivatel_id'=>$uzivatel->id,
-                                                        'TypPohybuNaUctu_id'=>6,
-                                                        'datum'=>new Nette\Utils\DateTime,
-                                                        'poznamka'=>'Deaktivace od ['.$this->getUser()->getIdentity()->getId().']'));
-                
-                $this->flashMessage('Účet byl deaktivován.');
-
-                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));  	  
+            if($this->accountActivation->deactivateAccount($this->getUser(), $id))
+            {
+                $this->flashMessage('Účet byl deaktivován.'); 
             }
+            
+            $this->redirect('Uzivatel:show', array('id'=>$id));  
         }
     }
     

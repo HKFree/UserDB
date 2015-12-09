@@ -48,4 +48,5 @@ services:
 	spravceOblasti: App\Model\SpravceOblasti
 	cestneClenstviUzivatele: App\Model\CestneClenstviUzivatele
 	log: App\Model\Log
+	accountActivation: App\Model\AccountActivation
 	parameters: App\Model\Parameters(%clenskyPrispevek%)

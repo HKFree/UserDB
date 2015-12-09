@@ -11,6 +11,8 @@ use Nette,
  */
 class UzivatelListGrid extends Nette\Object
 {
+    //TODO: DI in contructor
+    
     public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search, $uzivatelModel, $ccModel, $apModel, $params) {
         //\Tracy\Dumper::dump($search);
         
