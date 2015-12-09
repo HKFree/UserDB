@@ -10,15 +10,13 @@ use Nette;
 class AccountActivation extends Nette\Object
 {
     private $uzivatel;
-    private $log;
     private $uzivatelskeKonto;
     private $prichoziPlatba;
     private $parameters;
 
-    function __construct(Parameters $parameters, PrichoziPlatba $platba, UzivatelskeKonto $konto, Uzivatel $uzivatel, Log $log) {
+    function __construct(Parameters $parameters, PrichoziPlatba $platba, UzivatelskeKonto $konto, Uzivatel $uzivatel) {
     	
-    	$this->uzivatel = $uzivatel;
-    	$this->log = $log;        
+    	$this->uzivatel = $uzivatel;       
         $this->uzivatelskeKonto = $konto; 
         $this->prichoziPlatba = $platba;   
         $this->parameters = $parameters;

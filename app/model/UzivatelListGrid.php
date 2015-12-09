@@ -11,9 +11,20 @@ use Nette,
  */
 class UzivatelListGrid extends Nette\Object
 {
-    //TODO: DI in contructor
+    private $uzivatel;
+    private $ap;
+    private $cestneClenstviUzivatele;
+    private $parameters;
+
+    function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel) {
+    	
+    	$this->uzivatel = $uzivatel;       
+        $this->ap = $ap;
+        $this->cestneClenstviUzivatele = $cc; 
+        $this->parameters = $parameters;
+    }
     
-    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search, $uzivatelModel, $ccModel, $apModel, $params) {
+    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
         //\Tracy\Dumper::dump($search);
         
         $canViewOrEdit = false;
@@ -23,23 +34,22 @@ class UzivatelListGrid extends Nette\Object
         $grid->setExport('user_export');
         
         if($id){  
-            $seznamUzivatelu = $uzivatelModel->getSeznamUzivateluZAP($id);
-            $seznamUzivateluCC = $ccModel->getListCCOfAP($id);
-
-            $canViewOrEdit = $apModel->canViewOrEditAP($id, $loggedUser);
+            $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
+            $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
+            $canViewOrEdit = $this->ap->canViewOrEditAP($id, $loggedUser);
         } else {
             
             if($search)
             {
-                $seznamUzivatelu = $uzivatelModel->findUserByFulltext($search,$loggedUser);
-                $seznamUzivateluCC = $ccModel->getListCC(); //TODO
-                $canViewOrEdit = $apModel->canViewOrEditAll($loggedUser);
+                $seznamUzivatelu = $this->uzivatel->findUserByFulltext($search,$loggedUser);
+                $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC(); //TODO
+                $canViewOrEdit = $this->ap->canViewOrEditAll($loggedUser);
             }
             else
             {
-                $seznamUzivatelu = $uzivatelModel->getSeznamUzivatelu();
-                $seznamUzivateluCC = $ccModel->getListCC();
-                $canViewOrEdit = $apModel->canViewOrEditAll($loggedUser);
+                $seznamUzivatelu = $this->uzivatel->getSeznamUzivatelu();
+                $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC();
+                $canViewOrEdit = $this->ap->canViewOrEditAll($loggedUser);
             }
                         
             $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
@@ -71,7 +81,7 @@ class UzivatelListGrid extends Nette\Object
         
         if($money)
         {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $params){
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter){
                 
                 $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
                                 
@@ -80,7 +90,7 @@ class UzivatelListGrid extends Nette\Object
                 {
                   $tr->class[] = 'neaktivni';
                 }
-                if(($konto->sum('castka') - $item->kauce_mobil) > ($params->getVyseClenskehoPrispevku()*12))
+                if(($konto->sum('castka') - $item->kauce_mobil) > ($this->parameters->getVyseClenskehoPrispevku()*12))
                 {
                   $tr->class[] = 'preplatek';
                 }

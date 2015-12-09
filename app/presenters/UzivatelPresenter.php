@@ -626,11 +626,7 @@ class UzivatelPresenter extends BasePresenter
                                             $this->getParameter('id'),                 
                                             $this->getParameter('money', false), 
                                             $this->getParameter('fullnotes', false),
-                                            $this->getParameter('search', false),
-                                            $this->uzivatel,
-                                            $this->cestneClenstviUzivatele,
-                                            $this->ap,
-                                            $this->parameters
+                                            $this->getParameter('search', false)
                                             );       
         
     }
