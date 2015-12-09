@@ -213,12 +213,15 @@ class ApPresenter extends BasePresenter {
         if(isset($data['subnet'])) {
             $formSubnets = array();
             foreach($data['subnet'] as $subnet) {
+                
                 if(!$this->subnet->validateSubnet($subnet['subnet'])) {
                     $form->addError('Subnet '.$subnet['subnet'].' není validní IPv4 subnet!');
+                    return;
                 }
                 
                 if(!$this->ipAdresa->validateIP($subnet['gateway'])) {
                     $form->addError('Gateway '.$subnet['gateway'].' u subnetu '.$subnet['subnet'].' není validní IPv4 adresa!');
+                    return;
                 }
                 
                 if(isset($data['id'])) {
@@ -231,12 +234,14 @@ class ApPresenter extends BasePresenter {
                 if($overlapping !== false) {
                     $overlappingReadible = implode(", ", $overlapping);
                     $form->addError('Subnet '.$subnet['subnet'].' se překrývá s již existujícím subnetem '.$overlappingReadible.' !');
+                    return;
                 }
                 
                 if($this->subnet->validateSubnet($subnet['subnet'])
                     && !$this->subnet->checkColision($subnet['subnet'], \App\Model\Subnet::ARP_PROXY_SUBNET)
                     && isset($subnet['arp_proxy'])) {
                     $form->addError('ARP Proxy může být zapnuté pouze u veřejných subnetů!');
+                    return;
                 }
                 
                 $formSubnets[] = $subnet['subnet'];
