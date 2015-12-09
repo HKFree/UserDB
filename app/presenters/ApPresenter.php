@@ -155,7 +155,7 @@ class ApPresenter extends BasePresenter {
         if($this->getParam('id') && !$submitujeSe) {
             $values = $this->ap->getAP($this->getParam('id'));
             if($values) {
-                foreach($values->related('IPAdresa.Ap_id') as $ip_id => $ip_data) {
+                foreach($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
                     $form["ip"][$ip_id]->setValues($ip_data);
                 }
                 foreach($values->related('Subnet.Ap_id') as $subnet_id => $subnet_data) {
