@@ -457,35 +457,14 @@ class UzivatelPresenter extends BasePresenter
         unset($values["ipsubnet"]);
         unset($values["iprange"]);
         
-        $genaddresses = array();
-        
+        $genaddresses = array();        
         $newUserIPIDs = array();
-    	                
-        if(isset($ipsubnet) && !empty($ipsubnet))
-        {  
-            if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $ipsubnet)) {
-                @list($sip, $slen) = explode('/', $ipsubnet);
-                if (($smin = ip2long($sip)) !== false) {
-                  $smax = ($smin | (1<<(32-$slen))-1);
-                  for ($i = $smin; $i < $smax; $i++)
-                    $genaddresses[] = long2ip($i);
-                }                 
-            }
-        }
-        if(isset($iprange) && !empty($iprange))
-        {
-            if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $iprange)) {
-                $temp = preg_split("/-/",$iprange, -1, PREG_SPLIT_NO_EMPTY); 
-                $QRange1 = $temp[0]; 
-                $QRange2 = $temp[1];
-                $start = ip2long($QRange1);
-                $end = ip2long($QRange2);
-                $range = range($start, $end);
-                $genips = array_map('long2ip', $range);
-                $genaddresses = array_merge($genaddresses,$genips);               
-            }
-        }
-        
+    	
+        //generovani ip pro vlozeni ze subnetu
+        $genaddresses = $this->ipAdresa->getListOfIPFrom($ipsubnet);
+        //generovani ip pro vlozeni z rozsahu        
+        $genaddresses = array_merge($genaddresses,$this->ipAdresa->getListOfIPFromRange($iprange));
+
             
         if (empty($values->cislo_clenske_karty)) {
                 $values->cislo_clenske_karty = null;
@@ -584,6 +563,7 @@ class UzivatelPresenter extends BasePresenter
             }    
             $newUserIPIDs[] = intval($idIp);
     	}
+        // rozsahy ip adres
         foreach ($genaddresses as $gi)
         {          
             $duplIp = $this->ipAdresa->getDuplicateIP($gi, 0);
