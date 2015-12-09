@@ -451,18 +451,6 @@ pre.tracy-dump {
     border-color: #ccc;
 }
 
-.btn-red {
-    color: yellow;
-    border-color: #ff0000;
-    background-color: #ff0000;
-}
-
-.btn-green {
-    color: blue;
-    border-color: #00ff00;
-    background-color: #00ff00;
-}
-
 .btn-edit-save {
     margin-bottom: 20px;
     margin-top: 20px;
