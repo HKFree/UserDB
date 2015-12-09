@@ -90,7 +90,7 @@ class ApPresenter extends BasePresenter {
         if($this->getParam('id') && $ap = $this->ap->getAP($this->getParam('id'))) {
             $this->template->ap = $ap;
             $canViewCredentials = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
-            $ips = $ap->related('IPAdresa.Ap_id');
+            $ips = $ap->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)');
             $subnetLinks = $this->getSubnetLinksFromIPs($ips);
             $this->template->adresy = $this->ipAdresa->getIPTable($ips, $canViewCredentials, $subnetLinks);
             $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));

@@ -722,7 +722,7 @@ class UzivatelPresenter extends BasePresenter
                 
     		    $this->template->u = $uzivatel;
                 
-                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');//->order("IPAdresa.ip_adresa");
+                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
 
                 $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
 
