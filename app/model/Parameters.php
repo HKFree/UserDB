@@ -9,6 +9,9 @@ use Nette;
  */
 class Parameters extends Nette\Object
 {
+    /**
+    * @var int
+    */
     protected $clenskyPrispevek;
     
     public function __construct($clenskyPrispevek)
