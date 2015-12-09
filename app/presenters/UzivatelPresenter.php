@@ -246,13 +246,13 @@ class UzivatelPresenter extends BasePresenter
     public function renderEdit()
     {
         if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
-    	    {
-    		    $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
-    	    }
-	        else
-          {
-            $this->template->canViewOrEdit = true;
-          }
+        {
+            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+        }
+        else
+        {
+          $this->template->canViewOrEdit = true;
+        }
     }
     
     public function renderConfirm()
@@ -485,23 +485,7 @@ class UzivatelPresenter extends BasePresenter
                 $genaddresses = array_merge($genaddresses,$genips);               
             }
         }
-        foreach ($genaddresses as $gi)
-            {          
-                $duplIp = $this->ipAdresa->getDuplicateIP($gi, 0);
-                if (!$duplIp) {       
-                    $rngip = array(
-                    'ip_adresa'=>$gi,
-                    'internet'=>TRUE,
-                    'smokeping'=>FALSE,
-                    'mac_filter'=>FALSE,
-                    'dhcp'=>FALSE,
-                    'Uzivatel_id'=>$idUzivatele
-                    ); 
-                   $idrngip = $this->ipAdresa->insert($rngip)->id;                      
-                   $this->log->logujInsert($rngip, 'IPAdresa['.$idrngip.']', $log);
-                   $newUserIPIDs[] = intval($idrngip);
-                }                    
-            }
+        
             
         if (empty($values->cislo_clenske_karty)) {
                 $values->cislo_clenske_karty = null;
@@ -600,6 +584,23 @@ class UzivatelPresenter extends BasePresenter
             }    
             $newUserIPIDs[] = intval($idIp);
     	}
+        foreach ($genaddresses as $gi)
+        {          
+            $duplIp = $this->ipAdresa->getDuplicateIP($gi, 0);
+            if (!$duplIp) {       
+                $rngip = array(
+                'ip_adresa'=>$gi,
+                'internet'=>TRUE,
+                'smokeping'=>FALSE,
+                'mac_filter'=>FALSE,
+                'dhcp'=>FALSE,
+                'Uzivatel_id'=>$idUzivatele
+                ); 
+               $idrngip = $this->ipAdresa->insert($rngip)->id;                      
+               $this->log->logujInsert($rngip, 'IPAdresa['.$idrngip.']', $log);
+               $newUserIPIDs[] = intval($idrngip);
+            }                    
+        }
     
     	// A tady smazeme v DB ty ipcka co jsme smazali
     	$userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
