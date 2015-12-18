@@ -96,10 +96,11 @@ class ApPresenter extends BasePresenter {
     public function renderShow() {
         if($this->getParam('id') && $ap = $this->ap->getAP($this->getParam('id'))) {
             $this->template->ap = $ap;
-            $canViewCredentials = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
+            $canViewCredentialsOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
             $ips = $ap->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)');
             $subnetLinks = $this->getSubnetLinksFromIPs($ips);
-            $this->template->adresy = $this->ipAdresa->getIPTable($ips, $canViewCredentials, $subnetLinks);
+            $apEditLink = $this->link('Ap:edit', array('id' => $ap->id));
+            $this->template->adresy = $this->ipAdresa->getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $apEditLink);
             $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
             $this->template->csubnety = $this->subnet->getAPCSubnets($ap->related('Subnet.Ap_id'));            
             $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());

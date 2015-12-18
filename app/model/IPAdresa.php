@@ -82,28 +82,38 @@ class IPAdresa extends Table
 		$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
     }
 
-    public function getIPTable($ips, $canViewCredentials, $subnetLinks)
+	/**
+	 * @param $ips zaznamy z tabulky IpAdresa
+	 * @param $canViewCredentialsOrEdit zda vygenerovat tabulku, kde budou zobrazena hesla a odkazy primo
+	 * 							na editaci dane IP (at uz do AP nebo Uzivatele, podle toho, kde je pouzita)
+	 * @param $subnetLinks asoc. pole ip -> odkaz do subnet zobrazeni (do tabulky s IP adresami v danem C subnetu)
+	 * @param null $editLink link na editaci AP nebo Uzivatele, pokud zobrazujeme tabulku v detailu APcka nebo Uzivatele, jinak null
+	 * @return mixed
+	 */
+    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $editLink=null)
 	{
 		$adresyTab = Html::el('table')->setClass('table table-striped');
 
-		$this->addIPTableHeader($adresyTab, $canViewCredentials);
+		$this->addIPTableHeader($adresyTab, $canViewCredentialsOrEdit);
 
 		foreach ($ips as $ip)
 		{
 			$subnetLink = $subnetLinks[$ip->ip_adresa];
-			$this->addIPTableRow($ip, $canViewCredentials, $adresyTab, null, $subnetLink);
+			$this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $editLink);
 		}
 
 		return $adresyTab;
 	}
 
-	public function addIPTableHeader($adresyTab, $canViewCredentials, $subnetMode=false)
+	public function addIPTableHeader($adresyTab, $canViewCredentialsOrEdit=false, $subnetMode=false)
 	{
 		$tr = $adresyTab->create('tr');
 
 		$tr->create('th')->setText('IP');
-		if ($subnetMode) {
+		if ($canViewCredentialsOrEdit) {
 			$tr->create('th')->setText(''); // edit button
+		}
+		if ($subnetMode) {
 			$tr->create('th')->setText('UID');
 			$tr->create('th')->setText('Nick');
 		}
@@ -112,7 +122,7 @@ class IPAdresa extends Table
 		$tr->create('th')->setText('Zařízení');
 		$tr->create('th')->setText('Atributy');
 		$tr->create('th')->setText('Popis');
-		if ($canViewCredentials) {
+		if ($canViewCredentialsOrEdit) {
 			$tr->create('th')->setText('Login');
 			$tr->create('th')->setText('Heslo');
 		}
@@ -122,7 +132,7 @@ class IPAdresa extends Table
 		}
 	}
 
-	public function addIPTableRow($ip, $canViewCredentials, $adresyTab, $subnetModeInfo=null, $subnetLink=null)
+	public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo=null, $subnetLink=null, $editLink=null)
 	{
 		$tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
@@ -164,7 +174,6 @@ class IPAdresa extends Table
 					if ($subnetModeInfo['canViewOrEdit']) {
 						$tr->create('td')
 							->create('a')
-								->setHref($subnetModeInfo['editLink'])
 							->setHref($subnetModeInfo['editLink'])
 							->setClass('btn btn-default btn-xs btn-in-table')
 							->setTitle('Editovat')
@@ -176,6 +185,14 @@ class IPAdresa extends Table
 					// nazev AP + cislo (pres 2 bunky, aby se to nepletlo s UID+nick)
 					$tr->create('td')->setColspan(2)->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['jmeno'] . ' (' . $subnetModeInfo['id'] . ')');
 				}
+			} else if ($canViewCredentialsOrEdit && $editLink) {
+				$tr->create('td')
+					->create('a')
+					->setHref($editLink.'#ip'.$ip->ip_adresa)
+					->setClass('btn btn-default btn-xs btn-in-table')
+					->setTitle('Editovat')
+					->create('span')
+					->setClass('glyphicon glyphicon-pencil'); // edit button
 			}
 			if (!$subnetModeInfo || $subnetModeInfo['canViewOrEdit'])
 			{
@@ -216,7 +233,7 @@ class IPAdresa extends Table
 				}
 
 				$tr->create('td')->setText($ip->popis); // popis
-				if ($canViewCredentials) {
+				if ($canViewCredentialsOrEdit) {
 					$tr->create('td')->setText($ip->login);
 					$tr->create('td')->setText($ip->heslo);
 				}
@@ -231,7 +248,7 @@ class IPAdresa extends Table
 				$tr->create('td'); // typ zarizeni
 				$tr->create('td'); // atributy
 				$tr->create('td'); // popis
-				if ($canViewCredentials) {
+				if ($canViewCredentialsOrEdit) {
 					$tr->create('td'); // login
 					$tr->create('td'); // heslo
 				}
@@ -246,7 +263,7 @@ class IPAdresa extends Table
 			$tr->create('td');
 			$tr->create('td');
 			$tr->create('td');
-			if ($canViewCredentials) {
+			if ($canViewCredentialsOrEdit) {
 				$tr->create('td')->setText(''); // login
 				$tr->create('td')->setText(''); // heslo
 			}
