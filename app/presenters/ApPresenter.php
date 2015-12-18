@@ -4,11 +4,11 @@ namespace App\Presenters;
 
 use Nette,
 	App\Model,
-        Nette\Application\UI\Form,
-        Nette\Forms\Container,
-        Tracy\Debugger,
-        Nette\Utils\Html;
-use Nette\Forms\Controls\SubmitButton;
+    Nette\Application\UI\Form,
+    Nette\Forms\Container,
+    Nette\Utils\Html,
+    Nette\Forms\Controls\SubmitButton,
+    App\Components;
 /**
  * Ap presenter.
  */
@@ -21,6 +21,9 @@ class ApPresenter extends BasePresenter {
     private $typZarizeni;
     private $log;
     
+    /** @var Components\LogTableFactory @inject */
+    public $logTableFactory;
+    
     function __construct(Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;       
@@ -29,6 +32,10 @@ class ApPresenter extends BasePresenter {
         $this->subnet = $subnet;
         $this->typZarizeni = $typZarizeni;
         $this->log = $log;        
+    }
+    
+    public function createComponentLogTable() {
+        return $this->logTableFactory->create($this);
     }
 
     public function renderList() {

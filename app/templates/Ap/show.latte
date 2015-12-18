@@ -24,6 +24,18 @@
 <h4>Subnety <small>na AP</small></h4>
 {$subnety}
 
+<h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
+<script>
+  $(document).ready(function( $ ) {
+      $("#logsHeader").click(function(){
+          $(".logstable").toggle();
+      });
+      $(".logstable").hide();
+  });
+
+</script>
+{control logTable, $ap->id, "ap"}     
+
 {/ifset}
 {/block}
 

@@ -45,7 +45,7 @@ class IPAdresa extends Table
     
     
     /**
-     * Párová metoda k \App\Model\Log::getIPzLogu(), Vrati seznam idIp -> ipAdresa
+     * Párová metoda k \App\Model\Log::getAdvancedzLogu(), Vrati seznam idIp -> ipAdresa
      * 
      * @param array $ids ipId pro které chceme zjistit ipAdresy
      * @return array pole ipId=>ipAdresa
