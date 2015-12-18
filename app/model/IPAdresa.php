@@ -173,7 +173,8 @@ class IPAdresa extends Table
 					->addAttributes($tooltips)
 					->add(Html::el('span')
 						->setClass('glyphicon glyphicon-globe')); // web button
-				if ($canViewCredentialsOrEdit && isset($ip->TypZarizeni->text) && isset($ip->heslo) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+				if (($canViewCredentialsOrEdit || ($subnetModeInfo && $subnetModeInfo['canViewOrEdit']))
+						&& isset($ip->TypZarizeni->text) && isset($ip->heslo) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 					// routerboard, smim videt heslo a heslo je vyplneno
 					// -> otevrit primo zalogovany webfig
 					$webButton->setOnclick('return openMikrotikWebfig('.json_encode($ip->ip_adresa).','.json_encode($ip->login).','.json_encode($ip->heslo).')');
