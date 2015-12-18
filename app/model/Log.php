@@ -23,7 +23,13 @@ class Log extends Table
                
     public function getLogyUzivatele($uid)
     {
-        $logy = $this->findAll()->where("tabulka = ?", "uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
+        $logy = $this->findAll()->where("tabulka = ?", "Uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
+        return($logy);
+    }
+                   
+    public function getLogyAP($Apid)
+    {
+        $logy = $this->findAll()->where("tabulka = ?", "Ap")->where("tabulka_id = ?", $Apid)->order("datum DESC, sloupec DESC");
         return($logy);
     }
     
@@ -79,34 +85,46 @@ class Log extends Table
     }
     
     /**
-     * Tahle funkce má za úkol získat už neexistující ip adresy podle jejich
-     * starého ID
+     * Tahle funkce má za úkol získat už neexistující ip adresy / subnety podle
+     * jejich starého ID
      * 
      * takhle blbě je to řešené, protože mysql neumí sort-before-groupby
      * 
-     * @param array $ipId ipId pro které chceme zjistit ipAdresy
+     * @param int[] $ids ipId pro které chceme zjistit ipAdresy / subnety
+     * @param string $type Typ objektu pro který zjišťujeme - ip / subnet
      * @return array pole ipId=>ipAdresa
      */
-    public function getIPzLogu(array $ipIds)
+    public function getAdvancedzLogu(array $ids, $type = "ip")
     {
-        $ipNames = array();
-        foreach ($ipIds as $ipId) {
-            $ipNames[] = "IPAdresa[".$ipId."].ip_adresa";
+        $names = array();
+        foreach ($ids as $id) {
+            if($type == "ip") {
+                $names[] = "IPAdresa[".$id."].ip_adresa";
+            } elseif ($type == "subnet") {
+                $names[] = "Subnet[".$id."].subnet";
+            }
         }
         
-        $logy = $this->findAll()->where("sloupec", $ipNames)->order("datum ASC");
+        $logy = $this->findAll()->where("sloupec", $names)->order("datum ASC");
         
         $out = array();
         foreach($logy as $log)
         {
-            preg_match("/^ipadresa\[(\d+)\]\.ip_adresa/i", $log->sloupec, $matches);
-            $ipId = $matches[1];
+            if($type == "ip") {
+                preg_match("/^ipadresa\[(\d+)\]\.ip_adresa/i", $log->sloupec, $matches);
+            } elseif ($type == "subnet") {
+                preg_match("/^subnet\[(\d+)\]\.subnet/i", $log->sloupec, $matches);
+            }
             
-            if($log->puvodni_hodnota !== null)
-                $out[$ipId] = $log->puvodni_hodnota;
+            $id = $matches[1];
             
-            if($log->nova_hodnota !== null)
-                $out[$ipId] = $log->nova_hodnota;
+            if($log->puvodni_hodnota !== null) {
+                $out[$id] = $log->puvodni_hodnota;
+            }
+            
+            if($log->nova_hodnota !== null) {
+                $out[$id] = $log->nova_hodnota;
+            }
         }
        
         return($out);

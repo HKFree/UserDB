@@ -13,7 +13,8 @@ use Nette,
     Nette\Utils\Validators,
     Nette\Mail\SendmailMailer,
     Nette\Utils\Strings,
-    PdfResponse\PdfResponse;
+    PdfResponse\PdfResponse,
+    App\Components;
     
 use Nette\Forms\Controls\SubmitButton;
 /**
@@ -42,6 +43,9 @@ class UzivatelPresenter extends BasePresenter
     private $parameters;
     private $accountActivation;
 
+    /** @var Components\LogTableFactory @inject **/
+    public $logTableFactory;
+    
     function __construct(Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -749,8 +753,7 @@ class UzivatelPresenter extends BasePresenter
     }
     
     public function createComponentLogTable() {
-        $control = new \App\Components\LogTable($this, $this->ipAdresa, $this->log);
-        return $control;
+        return $this->logTableFactory->create($this);
     }
     
     public function renderEditrights()
