@@ -405,12 +405,33 @@ pre.tracy-dump {
     float: left;
     background-position: 0 32px;
 }
-.conntype5,
-.conntype7,
-.conntype8,
-.conntype9 {
+.conntype5 {
     background: url('../images/conntype5.png');
     width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype7 {
+    background: url('../images/conntype7.png');
+    width: 32px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype8 {
+    background: url('../images/conntype8.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+.conntype9 {
+    background: url('../images/conntype9.png');
+    width: 32px;
     height: 16px;
     display: block;
     float: left;
