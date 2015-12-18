@@ -110,9 +110,7 @@ class IPAdresa extends Table
 		$tr = $adresyTab->create('tr');
 
 		$tr->create('th')->setText('IP');
-		if ($canViewCredentialsOrEdit) {
-			$tr->create('th')->setText(''); // edit button
-		}
+		$tr->create('th')->setText(''); // action buttons
 		if ($subnetMode) {
 			$tr->create('th')->setText('UID');
 			$tr->create('th')->setText('Nick');
@@ -129,6 +127,17 @@ class IPAdresa extends Table
 		if ($subnetMode)
 		{
 			$tr->create('th')->setText('Subnet');
+		}
+	}
+
+	/**
+	 * @param Nette\Utils\Html $tr
+	 * @param  Nette\Utils\Html[] $buttons
+	 */
+	private function addActionButtonsTd($tr, $buttons) {
+		$td = $tr->create('td');
+		foreach ($buttons as $b) {
+			$td->add($b);
 		}
 	}
 
@@ -152,47 +161,97 @@ class IPAdresa extends Table
 
 		if ($ip)
 		{
+			// action buttons
+			$buttons = array();
+			// web button
+			if (isset($ip->TypZarizeni->text) && $ip->TypZarizeni->id != 1) {
+				$webButton = Html::el('a')
+					->setHref('http://' . $ip->ip_adresa)
+					->setTarget('_blank')
+					->setClass('btn btn-default btn-xs btn-in-table')
+					->setTitle('Otevřít web')
+					->addAttributes($tooltips)
+					->add(Html::el('span')
+						->setClass('glyphicon glyphicon-globe')); // web button
+				if ($canViewCredentialsOrEdit && isset($ip->TypZarizeni->text) && isset($ip->heslo) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+					// routerboard, smim videt heslo a heslo je vyplneno
+					// -> otevrit primo zalogovany webfig
+					$webButton->setOnclick('return openMikrotikWebfig('.json_encode($ip->ip_adresa).','.json_encode($ip->login).','.json_encode($ip->heslo).')');
+					$webButton->setTitle('Otevřít Mikrotik WebFig');
+				}
+				$buttons[]= $webButton;
+			}
+			// winbox button
+			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+				$link = 'winbox:'.$ip->ip_adresa;
+				if ($canViewCredentialsOrEdit) {
+					$link .= ';'.$ip->login.';'.$ip->heslo;
+				}
+				$winboxButton = Html::el('a')
+					->setHref($link)
+					->setTarget('_blank')
+					->setTitle('Otevřít Mikrotik Winbox')
+					->addAttributes($tooltips)
+					->setClass('btn btn-default btn-xs btn-in-table')
+					->add(Html::el('span')
+						->setClass('glyphicon glyphicon-cog')); // winbox button
+				$buttons[]= $winboxButton;
+				$buttons[] = Html::el('a')
+								->add(Html::el('sup')->setText('?'))
+								->setTarget('_blank')
+								->setTitle('Jak zprovoznit otevření Winboxu z prohlížeče?')
+								->addAttributes($tooltips)
+								->setHref('http://wiki.hkfree.org/Winbox_URI');
+			}
+			// edit button, etc.
 			if ($subnetModeInfo) {
 				if ($subnetModeInfo['type'] == 'Uzivatel')
 				{
 					if ($subnetModeInfo['canViewOrEdit']) {
-						$tr->create('td')
-							->create('a')
+						array_unshift($buttons,
+							Html::el('a')
 								->setHref($subnetModeInfo['editLink'])
 								->setClass('btn btn-default btn-xs btn-in-table')
 								->setTitle('Editovat')
-								->create('span')
-									->setClass('glyphicon glyphicon-pencil'); // edit button
-					} else {
-						$tr->create('td'); //  nema edit button
-					}
+								->addAttributes($tooltips)
+								->add(Html::el('span')
+									->setClass('glyphicon glyphicon-pencil'))
+						); // edit button
+					} // jinak nema edit button
+					$this->addActionButtonsTd($tr, $buttons);
 					$tr->create('td')->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['id']); // UID
 					$tr->create('td')->setText($subnetModeInfo['nick']); // nick
 				}
 				elseif ($subnetModeInfo['type'] == 'Ap')
 				{
 					if ($subnetModeInfo['canViewOrEdit']) {
-						$tr->create('td')
-							->create('a')
+						array_unshift($buttons,
+							Html::el('a')
 							->setHref($subnetModeInfo['editLink'])
 							->setClass('btn btn-default btn-xs btn-in-table')
 							->setTitle('Editovat')
-							->create('span')
-							->setClass('glyphicon glyphicon-pencil'); // edit button
-					} else {
-						$tr->create('td'); //  nema edit button
-					}
+							->addAttributes($tooltips)
+							->add(Html::el('span')
+								->setClass('glyphicon glyphicon-pencil'))
+						); // edit button
+					} // jinak nema edit button
+					$this->addActionButtonsTd($tr, $buttons);
 					// nazev AP + cislo (pres 2 bunky, aby se to nepletlo s UID+nick)
 					$tr->create('td')->setColspan(2)->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['jmeno'] . ' (' . $subnetModeInfo['id'] . ')');
 				}
-			} else if ($canViewCredentialsOrEdit && $editLink) {
-				$tr->create('td')
-					->create('a')
-					->setHref($editLink.'#ip'.$ip->ip_adresa)
-					->setClass('btn btn-default btn-xs btn-in-table')
-					->setTitle('Editovat')
-					->create('span')
-					->setClass('glyphicon glyphicon-pencil'); // edit button
+			} else {
+				if ($canViewCredentialsOrEdit && $editLink) {
+					array_unshift($buttons,
+						Html::el('a')
+						->setHref($editLink . '#ip' . $ip->ip_adresa)
+						->setClass('btn btn-default btn-xs btn-in-table')
+						->setTitle('Editovat')
+						->addAttributes($tooltips)
+						->add(Html::el('span')
+							->setClass('glyphicon glyphicon-pencil'))
+					); // edit button
+				}
+				$this->addActionButtonsTd($tr, $buttons);
 			}
 			if (!$subnetModeInfo || $subnetModeInfo['canViewOrEdit'])
 			{
