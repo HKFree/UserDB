@@ -116,7 +116,7 @@ class LogTable extends UI\Control
         }
         
         $subnetZDB = $this->subnet->getSubnetzDB(array_keys($subnetsKProhlednuti));
-        $subnetZLogu = $this->log->getAdvancedzLogu(array_keys($subnetsKProhlednuti));
+        $subnetZLogu = $this->log->getAdvancedzLogu(array_keys($subnetsKProhlednuti), 'subnet');
         // Bacha na poradi!
         return($subnetZDB + $subnetZLogu + $subnetsKProhlednuti);
     }
