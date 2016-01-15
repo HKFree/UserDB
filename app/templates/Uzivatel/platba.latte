@@ -13,7 +13,7 @@
     {if $canViewOrEdit}    
     <table class="table table-nonfluid">
         <tr><th>Datum</th><td>{$p->datum|date:'%d.%m.%Y'}</td></tr>
-        <tr><th>Číslo účtu</th><td>{$p->cislo_uctu}</td></tr>
+        {if $canViewOrEditCU}<tr><th>Číslo účtu</th><td>{$p->cislo_uctu}</td></tr>{/if}
         <tr><th>Název účtu</th><td>{$p->nazev_uctu}</td></tr>
         <tr><th>VS</th><td>{$p->vs}</td></tr>
         <tr><th>SS</th><td>{$p->ss}</td></tr>

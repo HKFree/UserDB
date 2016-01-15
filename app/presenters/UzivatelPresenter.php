@@ -1289,6 +1289,7 @@ class UzivatelPresenter extends BasePresenter
         $id = $this->getParameter('id');
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id)));
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
+        $this->template->canViewOrEditCU = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         $this->template->u = $pohyb->Uzivatel;
         $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParam('id'));
     }
