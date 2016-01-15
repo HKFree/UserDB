@@ -81,7 +81,8 @@ class UzivatelListGrid extends Nette\Object
         
         if($money)
         {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter){
+            $thisparams = $this->parameters;
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams){
                 
                 $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
                                 
@@ -90,7 +91,7 @@ class UzivatelListGrid extends Nette\Object
                 {
                   $tr->class[] = 'neaktivni';
                 }
-                if(($konto->sum('castka') - $item->kauce_mobil) > ($this->parameters->getVyseClenskehoPrispevku()*12))
+                if(($konto->sum('castka') - $item->kauce_mobil) > ($thisparams->getVyseClenskehoPrispevku()*12))
                 {
                   $tr->class[] = 'preplatek';
                 }
