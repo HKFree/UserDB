@@ -22,6 +22,9 @@ use Nette\Forms\Controls\SubmitButton;
  */
 class UzivatelPresenter extends BasePresenter
 {  
+    /** @persistent */
+    public $money = 0;
+    
     private $spravceOblasti; 
     private $cestneClenstviUzivatele;  
     private $typClenstvi;

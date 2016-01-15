@@ -167,7 +167,7 @@ class UzivatelListGrid extends Nette\Object
             }
             
             $grid->addColumnEmail('email', 'E-mail')->setSortable();
-            $grid->addColumnText('telefon', 'Telefon')->setSortable();
+            $grid->addColumnText('telefon', 'Telefon')->setSortable();            
         }
         
     	$grid->addColumnText('IPAdresa', 'IP adresy')->setColumn(function($item){
@@ -185,15 +185,9 @@ class UzivatelListGrid extends Nette\Object
         
     	if($canViewOrEdit) {
             if($money) {
-                $grid->addColumnText('money_aktivni', 'Aktivní')->setSortable()->setCustomRender(function($item){                    
-                    return ($item->money_aktivni == 1) ? "ANO" : "NE";
-                }); 
-                
-                $grid->addColumnText('money_deaktivace', 'Deaktivace')->setSortable()->setCustomRender(function($item){                    
-                    return ($item->money_deaktivace == 1) ? "ANO" : "NE";
-                });
-                                
-                
+                $grid->addColumnText('money_aktivni', 'Aktivní')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
+                $grid->addColumnText('money_deaktivace', 'Deaktivace')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
+
                 $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function($item){
                     $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',1)->order('id DESC')->limit(1);
                     if($posledniPlatba->count() > 0)
