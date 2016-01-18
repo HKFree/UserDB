@@ -492,6 +492,7 @@ class UzivatelPresenter extends BasePresenter
     	// Zpracujeme nejdriv uzivatele
     	if(empty($values->id)) {
             $values->regform_downloaded_password_sent = 0;
+            $values->money_aktivni = 1;
             $values->zalozen = new Nette\Utils\DateTime;
             $values->heslo = $this->uzivatel->generateStrongPassword();
             $values->id = $this->uzivatel->getNewID();
@@ -699,6 +700,8 @@ class UzivatelPresenter extends BasePresenter
                         $this->template->money_lastact = "?";
                     }
                 $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
+                if(!$stavUctu || $stavUctu=='') $stavUctu=0;
+                
                 if($uzivatel->kauce_mobil > 0)
                 {
                     $this->template->money_bal = ($stavUctu - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
