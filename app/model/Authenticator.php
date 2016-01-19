@@ -64,6 +64,11 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
                 }
             }
         }
+        
+        if(count($roles) < 1)
+        {
+            throw new Nette\Security\AuthenticationException('User not allowed.');
+        }
 
         return new Nette\Security\Identity($userID, $roles, $args);
     }
