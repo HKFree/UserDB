@@ -751,8 +751,8 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
                 //$this->template->logy = $this->log->getLogyUzivatele($uid);
                 
-                $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku();
-                $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku())
+                $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
+                $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
                                                         || ($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1);
                 $this->template->deactivaceVisible = $uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 0;
     	    }

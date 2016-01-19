@@ -30,7 +30,7 @@ class AccountActivation extends Nette\Object
 
             if($uzivatel->money_aktivni == 0 
                     && $uzivatel->money_deaktivace == 0 
-                    && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku())
+                    && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
             {
                 $this->uzivatel->update($uzivatel->id, array('money_aktivni'=>1));   
 
@@ -54,7 +54,7 @@ class AccountActivation extends Nette\Object
 
             if($uzivatel->money_aktivni == 0 
                     && $uzivatel->money_deaktivace == 1 
-                    && ($stavUctu - $uzivatel->kauce_mobil) > $this->parameters->getVyseClenskehoPrispevku())
+                    && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
             {
                 $this->uzivatel->update($uzivatel->id, array('money_aktivni'=>1,'money_deaktivace'=>0));
 
