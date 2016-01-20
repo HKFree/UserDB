@@ -316,6 +316,10 @@ class UzivatelPresenter extends BasePresenter
     	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');
         $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::FILLED)->addRule(Form::EMAIL, 'Musíte zadat platný email');
     	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
+        if(count($this->spravceOblasti->getOblastiSpravce($this->getParam('id'))) > 0)
+        {
+            $form->addCheckBox('publicPhone', 'Telefon je viditelný pro členy', 30)->setDefaultValue(true);
+        }
         $form->addText('cislo_clenske_karty', 'Číslo členské karty', 30);
         $form->addText('kauce_mobil', 'Kauce na mobilní tarify', 30);
     	$form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
