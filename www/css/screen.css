@@ -250,6 +250,7 @@ pre.tracy-dump {
     background-color: #EDFFED;
     color: black;
     border-color: silver;
+    border-style: dashed;
     margin-top: 15px;
     margin-bottom: 15px;
 }
@@ -484,4 +485,18 @@ pre.tracy-dump {
 .navbar-brand:focus {
   color: #FFFFFF !important;
   background-color: transparent;
+}
+
+.table>tbody>tr>td.fullsubnet {
+    background-color: #FFBA52;
+    text-align: center;
+    border-bottom: 1px solid black;
+}
+
+.table>tbody>tr.subnet-ip-network-row>td {
+    border-top: 1px solid black;
+}
+
+.table>tbody>tr.subnet-ip-broadcast-row>td {
+    border-bottom: 1px solid black;
 }

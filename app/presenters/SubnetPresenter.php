@@ -122,8 +122,10 @@ class SubnetPresenter extends BasePresenter
                 $tr = null;
 
                 $networkBroadcastAddrClass = '';
-                if (array_key_exists($i,$networks) || $i==($lastindex + $lastlenght - 1)) {
-                    $networkBroadcastAddrClass = 'danger';
+                if (array_key_exists($i,$networks)) {
+                    $networkBroadcastAddrClass = 'danger subnet-ip-network-row';
+                } else if ($i==($lastindex + $lastlenght - 1)) {
+                    $networkBroadcastAddrClass = 'danger subnet-ip-broadcast-row';
                 }
 
                 if (array_key_exists($ipAdresa, $existujiciIP))
