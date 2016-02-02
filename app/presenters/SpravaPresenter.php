@@ -634,7 +634,7 @@ class SpravaPresenter extends BasePresenter
         
     	$grid->setDefaultPerPage(500);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
-    	$grid->setDefaultSort(array('datum' => 'DESC'));
+    	$grid->setDefaultSort(array('datum' => 'DESC', 'id' => 'DESC'));
         
         $presenter = $this;
         $grid->setRowCallback(function ($item, $tr) use ($presenter){  
@@ -706,6 +706,15 @@ class SpravaPresenter extends BasePresenter
                     ->alt($item->PrichoziPlatba->zprava_prijemci)
                     ->setTitle($item->PrichoziPlatba->zprava_prijemci)
                     ->setText($item->PrichoziPlatba->zprava_prijemci)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+        
+        $grid->addColumnText('info_od_banky', 'Info banky')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->PrichoziPlatba->info_od_banky)
+                    ->setTitle($item->PrichoziPlatba->info_od_banky)
+                    ->setText($item->PrichoziPlatba->info_od_banky)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             })->setSortable();
