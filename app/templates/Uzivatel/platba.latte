@@ -1,8 +1,11 @@
 {block content}
-{ifset $u}
 
+
+    {ifset $u}
     <h3>Příchozí platba pro: {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     <a href="{link Uzivatel:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět na přehled plateb</a>
+    {/ifset}
+    
     <br><br>
     <style>
 	.table-nonfluid {
@@ -30,6 +33,6 @@
     {else}
     <p>Na tuto operaci nemáte oprávnění!</p>
     {/if}
-{/ifset}
+
 {/block}
 

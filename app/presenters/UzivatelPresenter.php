@@ -1298,7 +1298,14 @@ class UzivatelPresenter extends BasePresenter
     {
         $id = $this->getParameter('id');
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id)));
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
+        if($pohyb->Uzivatel_id)
+        {
+            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
+        }
+        else
+        {
+            $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        }
         $this->template->canViewOrEditCU = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         $this->template->u = $pohyb->Uzivatel;
         $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParam('id'));
@@ -1348,7 +1355,7 @@ class UzivatelPresenter extends BasePresenter
         
     	$grid->setDefaultPerPage(500);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
-    	$grid->setDefaultSort(array('id' => 'DESC'));
+    	$grid->setDefaultSort(array('datum' => 'DESC'));
         
         $presenter = $this;
         $grid->setRowCallback(function ($item, $tr) use ($presenter){  

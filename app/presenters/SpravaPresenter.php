@@ -9,6 +9,7 @@ use Nette,
     Nette\Utils\Html,
     Grido\Grid,
     Nette\Mail\Message,
+    Nette\Utils\Strings,
     Nette\Mail\SendmailMailer,
     Tracy\Debugger;
     
@@ -580,7 +581,7 @@ class SpravaPresenter extends BasePresenter
         
     	$grid->setDefaultPerPage(25);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
-    	$grid->setDefaultSort(array('id' => 'DESC'));
+    	$grid->setDefaultSort(array('datum' => 'DESC'));
         
         /*$presenter = $this;
         $grid->setRowCallback(function ($item, $tr) use ($presenter){  
@@ -633,7 +634,7 @@ class SpravaPresenter extends BasePresenter
         
     	$grid->setDefaultPerPage(500);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
-    	$grid->setDefaultSort(array('id' => 'DESC'));
+    	$grid->setDefaultSort(array('datum' => 'DESC'));
         
         $presenter = $this;
         $grid->setRowCallback(function ($item, $tr) use ($presenter){  
@@ -643,19 +644,7 @@ class SpravaPresenter extends BasePresenter
                 }
                 return $tr;
             });
-                        
-    	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
-        {return Html::el('a')
-            ->href($presenter->link('Uzivatel:show', array('id'=>$item->Uzivatel_id)))
-            ->title($item->Uzivatel_id)
-            ->setText($item->Uzivatel_id);})->setSortable();*/
-            
-        /*$grid->addColumnText('PrichoziPlatba_id', 'Příchozí platba')->setCustomRender(function($item) use ($presenter)
-        {return Html::el('a')
-            ->href($presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id)))
-            ->title($item->PrichoziPlatba_id)
-            ->setText($item->PrichoziPlatba_id);})->setSortable();*/
-            
+   
         $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
         
         $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
@@ -675,5 +664,50 @@ class SpravaPresenter extends BasePresenter
                 $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
                 return $el;
                 })->setSortable()->setFilterText();
+                
+        $grid->addColumnText('cu', 'Číslo účtu')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->PrichoziPlatba->cislo_uctu)
+                    ->setTitle($item->PrichoziPlatba->cislo_uctu)
+                    ->setText($item->PrichoziPlatba->cislo_uctu)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+            
+        $grid->addColumnText('vs', 'VS')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->PrichoziPlatba->vs)
+                    ->setTitle($item->PrichoziPlatba->vs)
+                    ->setText($item->PrichoziPlatba->vs)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+            
+        $grid->addColumnText('ss', 'SS')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->PrichoziPlatba->ss)
+                    ->setTitle($item->PrichoziPlatba->ss)
+                    ->setText($item->PrichoziPlatba->ss)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+            
+        $grid->addColumnText('nazev_uctu', 'Název účtu')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->PrichoziPlatba->nazev_uctu)
+                    ->setTitle($item->PrichoziPlatba->nazev_uctu)
+                    ->setText($item->PrichoziPlatba->nazev_uctu)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+        
+        $grid->addColumnText('zprava_prijemci', 'Zpráva')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->PrichoziPlatba->zprava_prijemci)
+                    ->setTitle($item->PrichoziPlatba->zprava_prijemci)
+                    ->setText($item->PrichoziPlatba->zprava_prijemci)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
     }
 }
