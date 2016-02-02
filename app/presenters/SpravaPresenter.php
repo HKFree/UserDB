@@ -26,8 +26,10 @@ class SpravaPresenter extends BasePresenter
     public $oblast;
     private $ipAdresa;
     private $sloucenyUzivatel;
+    private $uzivatelskeKonto;
+    private $prichoziPlatba;
 
-    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
+    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
@@ -36,6 +38,8 @@ class SpravaPresenter extends BasePresenter
         $this->oblast = $ob;
         $this->ipAdresa = $ipAdresa; 
         $this->sloucenyUzivatel = $slUzivatel; 
+        $this->uzivatelskeKonto = $konto; 
+        $this->prichoziPlatba = $platba;  
     }
     
     public function actionLogout() {
@@ -48,6 +52,7 @@ class SpravaPresenter extends BasePresenter
     {
     	$this->template->canApproveCC = $this->getUser()->isInRole('VV');
         $this->template->canCreateArea = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canSeePayments = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
     public function renderSchvalovanicc()
@@ -546,5 +551,129 @@ class SpravaPresenter extends BasePresenter
         }       
         
     	return true;
+    }
+    
+    public function renderPlatbycu()
+    {
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->cu = "";
+    }
+    
+    public function renderNesparovane()
+    {
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    }
+    
+    protected function createComponentPaymentgrid($name)
+    {
+    	$id = $this->getParameter('type');
+        
+        //\Tracy\Dumper::dump($search);
+
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        $grid->setExport('payment_export');
+        
+        $prichoziPlatby = $this->prichoziPlatba->getPrichoziPlatby();
+        
+        $grid->setModel($prichoziPlatby);
+        
+    	$grid->setDefaultPerPage(25);
+        $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
+    	$grid->setDefaultSort(array('id' => 'DESC'));
+        
+        /*$presenter = $this;
+        $grid->setRowCallback(function ($item, $tr) use ($presenter){  
+                if($item->PrichoziPlatba_id)
+                {
+                    $tr->onclick = "window.location='".$presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id))."'";
+                }
+                return $tr;
+            });*/
+                        
+    	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('a')
+            ->href($presenter->link('Uzivatel:show', array('id'=>$item->Uzivatel_id)))
+            ->title($item->Uzivatel_id)
+            ->setText($item->Uzivatel_id);})->setSortable();*/
+          
+        $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
+        $grid->addColumnText('cislo_uctu', 'Číslo účtu')->setSortable()->setFilterText();
+        $grid->addColumnText('vs', 'VS')->setSortable()->setFilterText();
+        $grid->addColumnText('ss', 'SS')->setSortable()->setFilterText();
+        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();   
+        $grid->addColumnText('nazev_uctu', 'Název účtu')->setSortable()->setFilterText();  
+        $grid->addColumnText('zprava_prijemci', 'Zpráva pro příjemce')->setSortable()->setFilterText(); 
+        $grid->addColumnText('kod_cilove_banky', 'Cílová banka')->setSortable()->setFilterText(); 
+        $grid->addColumnText('identifikace_uzivatele', 'Identifikace')->setSortable()->setFilterText(); 
+        $grid->addColumnText('info_od_banky', 'Info banky')->setSortable()->setFilterText(); 
+        
+        
+        $grid->addColumnText('TypPrichoziPlatby_id', 'Typ')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->TypPrichoziPlatby_id)
+                    ->setTitle($item->TypPrichoziPlatby->text)
+                    ->setText($item->TypPrichoziPlatby->text)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+    }
+    
+    protected function createComponentAccountgrid($name)
+    {
+        //\Tracy\Dumper::dump($search);
+
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        $grid->setExport('account_export');
+        
+        $seznamTransakci = $this->uzivatelskeKonto->getSeznamNesparovanych();
+        
+        $grid->setModel($seznamTransakci);
+        
+    	$grid->setDefaultPerPage(500);
+        $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
+    	$grid->setDefaultSort(array('id' => 'DESC'));
+        
+        $presenter = $this;
+        $grid->setRowCallback(function ($item, $tr) use ($presenter){  
+                if($item->PrichoziPlatba_id)
+                {
+                    $tr->onclick = "window.location='".$presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id))."'";
+                }
+                return $tr;
+            });
+                        
+    	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('a')
+            ->href($presenter->link('Uzivatel:show', array('id'=>$item->Uzivatel_id)))
+            ->title($item->Uzivatel_id)
+            ->setText($item->Uzivatel_id);})->setSortable();*/
+            
+        /*$grid->addColumnText('PrichoziPlatba_id', 'Příchozí platba')->setCustomRender(function($item) use ($presenter)
+        {return Html::el('a')
+            ->href($presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id)))
+            ->title($item->PrichoziPlatba_id)
+            ->setText($item->PrichoziPlatba_id);})->setSortable();*/
+            
+        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
+        
+        $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
+        
+        $grid->addColumnText('TypPohybuNaUctu_id', 'Typ')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->TypPohybuNaUctu_id)
+                    ->setTitle($item->TypPohybuNaUctu->text)
+                    ->setText($item->TypPohybuNaUctu->text)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            })->setSortable();
+        
+        $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
+                $el = Html::el('span');
+                $el->title = $item->poznamka;
+                $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
+                return $el;
+                })->setSortable()->setFilterText();
     }
 }

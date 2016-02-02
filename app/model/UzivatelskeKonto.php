@@ -19,6 +19,11 @@ class UzivatelskeKonto extends Table
         return($this->findAll());
     }
     
+    public function getSeznamNesparovanych()
+    {
+	    return($this->findBy(array('Uzivatel_id' => null)));
+    }
+    
     public function getUzivatelskeKontoUzivatele($idUzivatele)
     {
 	    return($this->findBy(array('Uzivatel_id' => $idUzivatele))->fetchAll());
