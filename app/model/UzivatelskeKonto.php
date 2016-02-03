@@ -21,7 +21,7 @@ class UzivatelskeKonto extends Table
     
     public function getSeznamNesparovanych()
     {
-	    return($this->findBy(array('Uzivatel_id' => null)));
+	    return($this->findBy(array('Uzivatel_id IS NULL AND PrichoziPlatba_id NOT IN (SELECT PrichoziPlatba_id FROM `UzivatelskeKonto` WHERE `Uzivatel_id` IS NULL AND PrichoziPlatba_id IS NOT NULL GROUP BY PrichoziPlatba_id HAVING Count(id)>1)')));
     }
     
     public function getUzivatelskeKontoUzivatele($idUzivatele)
