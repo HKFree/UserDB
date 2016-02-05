@@ -504,7 +504,7 @@ class UzivatelPresenter extends BasePresenter
             $this->log->logujInsert($values, 'Uzivatel', $log);
             
             $hash = base64_encode($values->id.'-'.md5($this->context->parameters["salt"].$values->zalozen));
-            $link = "http://userdb.hkfree.org/user/uzivatel/confirm/".$hash;
+            $link = "http://moje.hkfree.org/uzivatel/confirm/".$hash;
             
             $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());        
             $mail = new Message;
