@@ -13,8 +13,15 @@
         <a href="{link Sprava:slouceni id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Sloučení uživatelé</a>
         <br><br>
         <a href="{link Sprava:schvalovanicc id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Schvalování čestného členství</a>
+        
     {/if}
-    
     <a href="{link Sprava:prehledcc id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Přehled platných čestných členství</a>
+    <br><br>
+    
+    {if $canSeePayments}
+        <a href="{link Sprava:platbycu id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Platby z Č.Ú.</a>
+        <a href="{link Sprava:nesparovane id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Nespárované platby</a>
+        <br><br>
+    {/if}
     
 {/block}
