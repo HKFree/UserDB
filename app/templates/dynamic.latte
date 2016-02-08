@@ -1,0 +1,17 @@
+{foreach $component->components as $inContainerComponent}
+    {if $inContainerComponent instanceof \Nette\Forms\Container}
+        {* kontejner s jednim zaznamem a jeho souvisejicimi polozkami *}
+        <tr>
+            <td colspan="4">
+                {include $recordTemplate, recordContainer => $inContainerComponent}
+            </td>
+        </tr>
+    {else}
+        {* nejaky samostatny ovladaci prvek v ramci kontejneru - typicky tlacitko "pridat dalsi" *}
+        <tr>
+            <td colspan="3">
+                {input $inContainerComponent}
+            </td>
+        </tr>
+    {/if}
+{/foreach}

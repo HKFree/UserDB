@@ -4,80 +4,28 @@
         <li n:foreach="$form->ownErrors as $error">{$error}</li>
     </ul>
 
-    <fieldset n:foreach="$form->groups as $group" n:if="$group->controls" n:block="#group">
-        <legend n:ifset="$group->options[label]">{$group->options[label]}</legend>
-        <p n:ifset="$group->options[description]">{$group->options[description]}</p>
-
-        <table n:block="#controls" class="form">
-        {foreach $group->controls as $field}
-            {if (($field->control->attrs!=NULL && array_key_exists('class', $field->control->attrs) && (strpos($field->control->attrs['class'],' ip')>0||$field->control->attrs['class']=='ip'))||$field->name=='internet'||$field->name=='smokeping'||$field->name=='mac_filter'||$field->name=='dhcp'||$field->name=='remove' )}
-                {if $field->name=='id'}
-                    <tr><td colspan="4"><table class="ipform" id="highlightable-ip{$field->parent->values['ip_adresa']}">
-                {/if}
-                {if $field->name=='id'||$field->name=='login'||$field->name=='popis'}
-                    <tr><td colspan="4" class="ip">
-                {/if}
-                {if $field->name!='id'}
-                    {input $field} {inputError $field}
+    <table n:block="#controls" class="form">
+        {foreach $form->components as $component}
+            {if $component instanceof \Nette\Forms\Container}
+                {* kontejner, obsluha nekterych specialnich pripadu *}
+                {if $component->name =='ip'}
+                    {include 'dynamic.latte', recordTemplate => 'ipform.latte', component => $component}
+                {elseif $component->name =='subnet'}
+                    {include 'dynamic.latte', recordTemplate => 'subnetform.latte', component => $component}
                 {else}
-                    {input $field}
+                    {* vychozi zpusob vypisu component uvnitr kontejneru *}
+                    {foreach $component->controls as $field}
+                        {label $field /}{!$field->required ? '<span class="red">*</span>'} {input $field} {inputError $field} <br />
+                    {/foreach}
                 {/if}
-                {if $field->name=='remove'||$field->name=='smokeping'||$field->name=='dhcp'}
-                    </td></tr>
-                {/if}
-                {if $field->name=='remove'}
-                    <tr>
-                        <td colspan="4" data-toggle="tooltip" data-placement="top" title="Pokud brána a maska neodpovídají realitě a chcete mít v pořádku registrační formulář, upravte prosím subnety své oblasti.">
-                            <span class="ip details" data-reqid="1" style="display: none">
-                                <a href="#" target="_blank" class="subnetlink">Subnets</a>
-                                &nbsp;|&nbsp
-                                Subnet: <span class="ip subnet">---</span>
-                                &nbsp;|&nbsp;
-                                Maska: <span class="ip mask">---</span>
-                                &nbsp;|&nbsp;
-                                Gateway: <span class="ip gateway">---</span>
-                            </span>
-                            <span class="ip errors red" style="display: none">
-                                IP adresa není validní!
-                            </span>
-                            <span class="ip editsubnet" style="display: none">
-                                &nbsp; - &nbsp;<a href="#" target="_blank">Editovat subnety</a>
-                            </span>
-                        </td>
-                    </tr>
-                    </table>
-                {/if}
-            {else} 
-                {if (($field->control->attrs!=NULL && array_key_exists('class', $field->control->attrs) && (strpos($field->control->attrs['class'],' subnet')>0))||$field->name=='remove_subnet'||$field->name=='arp_proxy' )}
-                    {if $field->name=='id'}
-                        <tr><td colspan="4"><table class="subnetform">
-                    {/if}
-                    {if $field->name=='id'}
-                        <tr><td colspan="4" class="subnet">
-                    {/if}
-                    {if $field->name!='id'}
-                        {input $field} {inputError $field}
-                    {else}
-                        {input $field}
-                    {/if}
-                    {if $field->name=='remove_subnet'}
-                        </td></tr>
-                    {/if}
-                    {if $field->name=='remove_subnet'}
-                        </table>
-                    {/if}
-                {else}
-                    <tr n:class="$field->required ? required" n:block="$field->name.'-row'">
-                        <th n:block="#label">{label $field /}{!$field->required ? '<span class="red">*</span>'}</th>
-
-                        <td n:block="#control" colspan="3">{input $field} {inputError $field}</td>
-                    </tr>
-                {dump $field}
-                {/if}
+            {else}
+                {* normalni ovladaci prvek ve formulari *}
+                <tr>
+                    <th>{label $component /}{!$component->required ? '<span class="red">*</span>'}</th>
+                    <td colspan="3">{input $component} {inputError $component}</td>
+                </tr>
             {/if}
         {/foreach}
-        </table>
-    </fieldset>
+    </table>
 
-    {include #controls, group => $form}
 </form>
