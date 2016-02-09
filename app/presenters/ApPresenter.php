@@ -125,7 +125,7 @@ class ApPresenter extends BasePresenter {
         $dataIp = $this->ipAdresa;
         $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
         $ips = $form->addDynamic('ip', function (Container $ip) use ($dataIp,$typyZarizeni) {
-            $dataIp->getIPForm($ip, $typyZarizeni);
+            $dataIp->getIPForm($ip, $typyZarizeni, true);
 
                     $ip->addSubmit('remove', '– Odstranit IP')
                             ->setAttribute('class', 'btn btn-danger btn-xs btn-white')

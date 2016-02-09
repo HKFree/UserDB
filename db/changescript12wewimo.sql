@@ -1,0 +1,1 @@
+ALTER TABLE `ipadresa` ADD `wewimo` TINYINT(1) NOT NULL DEFAULT '0' AFTER `smokeping`;

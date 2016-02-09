@@ -21,7 +21,9 @@
 		"kdyby/forms-replicator": "@dev",
 		"o5/grido": "dev-master",
                 "mpdf/mpdf": ">= 5.6.5",
-		"jkuchar/pdfresponse": "dev-master"
+		"jkuchar/pdfresponse": "dev-master",
+	  	"pear2/net_transmitter": ">=1.0.0a4",
+		"pear2/net_routeros": "dev-master"
 	},
 	"require-dev": {
 		"nette/tester": "~1.0"

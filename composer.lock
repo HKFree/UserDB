@@ -1,10 +1,11 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0fe03aa9259307cf432eeb42e86b2152",
+    "hash": "058949fe0f9929246bf23bffd0240a37",
+    "content-hash": "d516260c550fd88292d57d77f2b62402",
     "packages": [
         {
             "name": "dg/adminer-custom",
@@ -26,6 +27,44 @@
             "time": "2014-08-05 16:59:07"
         },
         {
+            "name": "jkuchar/pdfresponse",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jkuchar/PdfResponse.git",
+                "reference": "5133fbefc82ce7d59146b24e766614c7815808e3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jkuchar/PdfResponse/zipball/5133fbefc82ce7d59146b24e766614c7815808e3",
+                "reference": "5133fbefc82ce7d59146b24e766614c7815808e3",
+                "shasum": ""
+            },
+            "require": {
+                "mpdf/mpdf": ">= 5.0",
+                "nette/nette": ">= 2.0",
+                "php": ">= 5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL"
+            ],
+            "authors": [
+                {
+                    "name": "Jan Kuchař",
+                    "homepage": "http://www.jankuchar.cz"
+                }
+            ],
+            "description": "PdfResponse is wrapper of mPDF for Nette.",
+            "time": "2015-03-22 08:57:02"
+        },
+        {
             "name": "kdyby/forms-replicator",
             "version": "dev-master",
             "source": {
@@ -35,7 +74,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/Replicator/zipball/9e799d34291d6726832f50b56acf80b4022d1e38",
+                "url": "https://api.github.com/repos/Kdyby/Replicator/zipball/0223962bbfaf608e2ca39c7ac10d4835e6eecf89",
                 "reference": "9e799d34291d6726832f50b56acf80b4022d1e38",
                 "shasum": ""
             },
@@ -157,6 +196,49 @@
                 "twig"
             ],
             "time": "2014-08-24 18:26:48"
+        },
+        {
+            "name": "mpdf/mpdf",
+            "version": "v6.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mpdf/mpdf.git",
+                "reference": "a15743d030ce3b5b7be36c6e83f76589b27c3f2c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mpdf/mpdf/zipball/a15743d030ce3b5b7be36c6e83f76589b27c3f2c",
+                "reference": "a15743d030ce3b5b7be36c6e83f76589b27c3f2c",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": ">=4.3.10"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "mpdf.php",
+                    "classes"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-1.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Ian Back"
+                }
+            ],
+            "description": "A PHP class to generate PDF files from HTML with Unicode/UTF-8 and CJK support",
+            "homepage": "http://www.mpdf1.com/mpdf/index.php",
+            "keywords": [
+                "pdf",
+                "php",
+                "utf-8"
+            ],
+            "time": "2015-03-01 10:27:49"
         },
         {
             "name": "nette/application",
@@ -1187,7 +1269,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/o5/grido/zipball/be993b95bed1d3f03d261b7cd6cf4f28aa063cf0",
+                "url": "https://api.github.com/repos/o5/grido/zipball/cec1976480780520bef796daf83798095b9ea1e3",
                 "reference": "be993b95bed1d3f03d261b7cd6cf4f28aa063cf0",
                 "shasum": ""
             },
@@ -1235,6 +1317,131 @@
                 "tablegrid"
             ],
             "time": "2014-10-22 09:51:17"
+        },
+        {
+            "name": "pear2/net_routeros",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pear2/Net_RouterOS.git",
+                "reference": "db24b8c4cd63d593dc8387987a954926d96cafb8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pear2/Net_RouterOS/zipball/db24b8c4cd63d593dc8387987a954926d96cafb8",
+                "reference": "db24b8c4cd63d593dc8387987a954926d96cafb8",
+                "shasum": ""
+            },
+            "require": {
+                "pear2/net_transmitter": ">=1.0.0a5",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "pear2/cache_shm": "dev-develop",
+                "pear2/console_color": "dev-develop",
+                "pear2/console_commandline": "dev-master",
+                "phpunit/phpunit": "@stable",
+                "squizlabs/php_codesniffer": "@stable"
+            },
+            "suggest": {
+                "ext-apc": "This or Wincache is required for persistent connections.",
+                "ext-openssl": "Enables encrypted connections.",
+                "ext-wincache": "This or APC is required for persistent connections. Reccomended instead of APC on Windows.",
+                "pear2/cache_shm": "Enables persistent connections.",
+                "pear2/console_color": "Enables colors in the console",
+                "pear2/console_commandline": "Enables the console"
+            },
+            "bin": [
+                "scripts/roscon.php"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "PEAR2\\Net\\RouterOS\\": "src/",
+                    "PEAR2\\Net\\Transmitter\\": "vendor/pear2/net_transmitter/src/",
+                    "PEAR2\\Cache\\SHM": "vendor/pear2/cache_shm/src/",
+                    "PEAR2\\Console\\Color": "vendor/pear2/console_color/src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1"
+            ],
+            "authors": [
+                {
+                    "name": "Vasil Rangelov",
+                    "email": "boen.robot@gmail.com",
+                    "role": "lead"
+                }
+            ],
+            "description": "This package allows you to read and write information from a RouterOS host using MikroTik's RouterOS API.",
+            "homepage": "http://pear2.github.com/Net_RouterOS/",
+            "keywords": [
+                "api",
+                "mikrotik",
+                "package",
+                "pear2",
+                "router",
+                "routeros"
+            ],
+            "time": "2014-11-04 12:52:46"
+        },
+        {
+            "name": "pear2/net_transmitter",
+            "version": "1.0.0a5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pear2/Net_Transmitter.git",
+                "reference": "ac4d5fe6b7fd1a25f9a45c4454a8e85462837370"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pear2/Net_Transmitter/zipball/ac4d5fe6b7fd1a25f9a45c4454a8e85462837370",
+                "reference": "ac4d5fe6b7fd1a25f9a45c4454a8e85462837370",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "pear2/cache_shm": "dev-develop",
+                "phpunit/phpunit": "@stable"
+            },
+            "suggest": {
+                "ext-apc": ">=3.0.13",
+                "ext-openssl": "*",
+                "ext-wincache": ">=1.1.0",
+                "pear2/cache_shm": ">=0.1.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "PEAR2\\Net\\Transmitter\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1"
+            ],
+            "authors": [
+                {
+                    "name": "Vasil Rangelov",
+                    "email": "boen.robot@gmail.com",
+                    "role": "lead"
+                }
+            ],
+            "description": "A stream wrapper that ensures data integrity. Particularly useful for sockets.",
+            "homepage": "http://pear2.github.com/Net_Transmitter/",
+            "keywords": [
+                "Socket",
+                "integrity",
+                "network",
+                "networking",
+                "package",
+                "pear2",
+                "sockets"
+            ],
+            "time": "2014-11-02 05:04:39"
         },
         {
             "name": "tracy/tracy",
@@ -1353,9 +1560,13 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "kdyby/forms-replicator": 20,
-        "o5/grido": 20
+        "o5/grido": 20,
+        "jkuchar/pdfresponse": 20,
+        "pear2/net_transmitter": 15,
+        "pear2/net_routeros": 20
     },
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": {
         "php": ">= 5.3.3"
     },

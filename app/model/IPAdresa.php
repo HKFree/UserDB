@@ -67,7 +67,7 @@ class IPAdresa extends Table
         return(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
     }
     
-    public function getIPForm(&$ip, $typyZarizeni) {	
+    public function getIPForm(&$ip, $typyZarizeni, $apMode=false) {
 		$ip->addHidden('id')->setAttribute('class', 'id ip');
 		$ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
 		$ip->addText('hostname', 'Hostname', 11)->setAttribute('class', 'hostname ip')->setAttribute('placeholder', 'Hostname');
@@ -79,6 +79,9 @@ class IPAdresa extends Table
 		$ip->addText('mac_adresa', 'MAC Adresa', 24)->setAttribute('class', 'mac_adresa ip')->setAttribute('placeholder', 'MAC Adresa');
 		$ip->addCheckbox('mac_filter', 'MAC Filtr')->setAttribute('class', 'mac_filter ip');
 		$ip->addCheckbox('dhcp', 'DHCP')->setAttribute('class', 'dhcp ip');
+		if ($apMode) {
+			$ip->addCheckbox('wewimo', 'Wewimo')->setAttribute('class', 'wewimo ip');
+		}
 		$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
     }
 
@@ -286,8 +289,16 @@ class IPAdresa extends Table
 
 				if ($ip->mac_filter) {
 					$attr->create('span')
-						->setClass('glyphicon glyphicon glyphicon-filter')
+						->setClass('glyphicon glyphicon-filter')
 						->setTitle('IP exportuje do MAC filteru')
+						->addAttributes($tooltips);
+					$attr->add(' ');
+				}
+
+				if ($ip->wewimo) {
+					$attr->create('span')
+						->setClass('glyphicon glyphicon-signal')
+						->setTitle('Zobrazovat signály klientů ve Wewimo')
 						->addAttributes($tooltips);
 					$attr->add(' ');
 				}
@@ -376,4 +387,17 @@ class IPAdresa extends Table
         }
         return $genaddresses;
     }
+
+	/**
+	 * @param string[] $macs
+	 * @return object[] asic. pole mac => zaznam pro danou mac adresu
+	 */
+	public function getIpsByMacsMap(array $macs) {
+		return $this->getTable()->where('mac_adresa', $macs)->fetchPairs('mac_adresa');
+	}
+
+	public function getIpsMap(array $ips) {
+		return $this->getTable()->where('ip_adresa', $ips)->fetchPairs('ip_adresa');
+	}
+
 }

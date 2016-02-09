@@ -21,6 +21,9 @@
     <tr>
         <td class="ip">
             {$recordContainer['popis']->control}
+            {if $recordContainer->getComponent('wewimo', false)}
+                {$recordContainer['wewimo']->control}
+            {/if}
             {$recordContainer['remove']->control}
         </td>
     </tr>

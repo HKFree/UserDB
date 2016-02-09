@@ -51,3 +51,4 @@ services:
 	accountActivation: App\Model\AccountActivation
 	logTableFactory: App\Components\LogTableFactory
 	parameters: App\Model\Parameters(%clenskyPrispevek%)
+	wewimo: App\Model\Wewimo

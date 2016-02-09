@@ -1,0 +1,207 @@
+{block content}
+<h3>Wewimo {$ap->jmeno}</h3>
+<label for="refresh"><input type="checkbox" name="refresh" id="refresh"> Aktualizovat</label>
+{snippet wewimoContainer}
+    <table class="table table-striped">
+        {foreach $wewimo as $wewimoOneDevice}
+            <tbody n:snippet="'wewimoDevice-'.$wewimoOneDevice['ip']" class="oneDevice" data-ip="{$wewimoOneDevice['ip']}">
+                        <tr>
+                            <td colspan="20">
+                                <div class="wewimo-iface-header">
+                                        {if $wewimoOneDevice['error']}
+                                            <div class="alert alert-danger" role="alert">
+                                                {$wewimoOneDevice['error']} {$wewimoOneDevice['ip']} (ujistěte se, že máte v RB povoleno API v IP - Services)
+                                            </div>
+                                        {else}
+                                            {$wewimoOneDevice['ip']}
+                                            {$wewimoOneDevice['hostname']}
+                                        {/if}
+                                </div>
+                            </td>
+                        </tr>
+                {foreach $wewimoOneDevice['interfaces'] as $interfaceName => $interface}
+                    {if count($interface['stations']) > 0}
+                        <tr>
+                            <td colspan="20">
+                                <div class="wewimo-iface-header">
+                                        {$interfaceName} |
+                                        SSID: {$interface['ssid']} |
+                                        {$interface['frequency']} MHz |
+                                        {$interface['wireless-protocol']}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="wewimo-table-header">
+                            <th>MAC</th>
+                            <th>MAC host</th>
+                            <th>Radio name</th>
+                            <th>Identity</th>
+                            <th>RX signal</th>
+                            <th>TX signal</th>
+                            <th>SNR</th>
+                            <th>RX CCQ</th>
+                            <th>TX CCQ</th>
+                            <th>RX rt.</th>
+                            <th>TX rt.</th>
+                            <th>RX bytes</th>
+                            <th>TX bytes</th>
+                            <th>Device</th>
+                            <th>OS</th>
+                            <th>Last IP</th>
+                            <th>Last IP host</th>
+                        </tr>
+                        {foreach $interface['stations'] as $row}
+                            <tr>
+                                <td>
+                                    {if $row['xx-mac-link']}
+                                        <a href="{$row['xx-mac-link']}">{$row['mac-address']}</a>
+                                    {else}
+                                        {$row['mac-address']}
+                                    {/if}
+                                </td>
+                                <td>{$row['xx-mac-host']}</td>
+                                <td>{$row['radio-name']}</td>
+                                <td>{$row['x-identity']}</td>
+                                <td class="wewimo-sig">
+                                    {if $row['x-signal-strength']}
+                                        <div class="progress progress-inline progress-wewimo">
+                                          <div class="progress-bar" role="progressbar" aria-valuenow="{$row['x-signal-strength']}" aria-valuemin="0" aria-valuemax="100" style="width: {$row['x-signal-strength-pct']}%;">
+                                            {$row['x-signal-strength']}
+                                          </div>
+                                        </div>
+                                    {/if}
+                                </td>
+                                <td class="wewimo-sig">
+                                    {if $row['x-tx-signal-strength']}
+                                        <div class="progress progress-inline progress-wewimo">
+                                          <div class="progress-bar" role="progressbar" aria-valuenow="{$row['x-tx-signal-strength']}" aria-valuemin="0" aria-valuemax="100" style="width: {$row['x-tx-signal-strength-pct']}%;">
+                                            {$row['x-tx-signal-strength']}
+                                          </div>
+                                        </div>
+                                    {/if}
+                                </td>
+                                <td class="wewimo-sig">
+                                    {if $row['x-signal-to-noise']}
+                                        <div class="progress progress-inline progress-wewimo">
+                                          <div class="progress-bar" role="progressbar" aria-valuenow="{$row['x-signal-to-noise']}" aria-valuemin="0" aria-valuemax="100" style="width: {$row['x-signal-to-noise-pct']}%;">
+                                            {$row['x-signal-to-noise']}
+                                          </div>
+                                        </div>
+                                    {/if}
+                                </td>
+                                <td class="wewimo-ccq">
+                                    {if $row['rx-ccq']}
+                                        <div class="progress progress-inline progress-wewimo">
+                                          <div class="progress-bar" role="progressbar" aria-valuenow="{$row['rx-ccq']}" aria-valuemin="0" aria-valuemax="100" style="width: {$row['rx-ccq']}%;">
+                                            {$row['rx-ccq']}%
+                                          </div>
+                                        </div>
+                                    {/if}
+                                </td>
+                                <td class="wewimo-ccq">
+                                    {if $row['tx-ccq']}
+                                        <div class="progress progress-inline progress-wewimo">
+                                          <div class="progress-bar" role="progressbar" aria-valuenow="{$row['tx-ccq']}" aria-valuemin="0" aria-valuemax="100" style="width: {$row['tx-ccq']}%;">
+                                            {$row['tx-ccq']}%
+                                          </div>
+                                        </div>
+                                    {/if}
+                                </td>
+                                <td>{$row['x-rx-rate']}</td>
+                                <td>{$row['x-tx-rate']}</td>
+                                <td>{$row['x-rx-bytes']}</td>
+                                <td>{$row['x-tx-bytes']}</td>
+                                <td>{$row['x-device-type']}</td>
+                                <td>{$row['routeros-version']}</td>
+                                <td>
+                                    {if $row['xx-last-ip-link']}
+                                        <a href="{$row['xx-last-ip-link']}">{$row['last-ip']}</a>
+                                    {else}
+                                        {$row['last-ip']}
+                                    {/if}
+                                </td>
+                                <td>{$row['xx-last-ip-host']}</td>
+                            </tr>
+                        {/foreach}
+                    {/if}
+                {/foreach}
+            </tbody>
+         {/foreach}
+    </table>
+{/snippet}
+
+{if !$wewimo}
+    <div class="well">
+        U žádné IP na AP není nastaven příznak Wewimo.
+        <a n:href="Ap:edit id => $ap->id">Nastavte si u AP</a> (zatržítko Wewimo u IP), ze kterých Routerboardů má Wewimo zobrazovat připojené klienty.
+        Routerboardy musí mít zapnuto API (viz Winbox: IP - Services) a zadáno uživatelské jméno a heslo v userdb.
+    </div>
+{/if}
+
+<p>
+    <small>
+        MAC je klikací a pojmenovaná (host), pokud je zadána u nějakého zařízení v databázi; dodržte tvar 01:02:AA:BB:CC.
+        Last IP je klikací a pojmenovaná (host), pokud je zadána u nějakého zařízení v databázi.
+        Údaje Identity a Device se čtou z Neighbours - pokud je chcete vidět, ujistěte se, že klientské zařízení posílá MikroTik Neighbor Discovery (MNDP/CDP) packety na rozhraní směrem k AP; viz nastavení IP - Neighbors - Discovery Interfaces.
+        Některé citlivé údaje vidíte pouze ve vaší oblasti, v cizí oblasti se zobrazují nickname uživatelů místo konkrétních hostname a MAC adresy jsou anonymizované.
+    </small>
+</p>
+
+<script>
+$(function(){
+    $.nette.init();
+
+    var refreshDelay = 1000;
+
+    var timerByIp = {};
+    var requestByIp = {};
+
+    $("#refresh").change(function() {
+        if(this.checked) {
+            // prave zaskrtnut checkbox, nastartovat automaticke aktualizovani pres AJAX
+            $(".oneDevice").each(function() {
+                var ip = $(this).data('ip');
+                refreshIp(ip);
+            });
+        } else {
+            // prave odskrtnut checkbox, zrusit vsechny bezici casovace a rozjete AJAXy
+            $.each(timerByIp, function( ip, timer ) {
+                clearTimeout(timer);
+                console.log('clearing timer', ip, timer);
+            });
+            $.each(requestByIp, function( ip, xhr ) {
+                console.log('aborting xhr', ip, xhr);
+                xhr.abort();
+            });
+        }
+    });
+
+
+    function refreshIp(ip) {
+        console.log('xhr starting', ip);
+        requestByIp[ip] = $.nette.ajax({
+            url: "?do=update&ip="+ip,
+            complete: function (jqXHR, textStatus) {
+                console.log('xhr completed', ip, textStatus);
+                if (textStatus !== 'abort') {
+                    // pokud je jeste zaskrtnut checkbox, (s odkladem) zahajit dalsi aktualizaci
+                    if ($("#refresh").prop('checked')) {
+                        timerByIp[ip] = setTimeout(function() {
+                            refreshIp(ip);
+                        }, refreshDelay);
+                        console.log('timer scheduled', ip, timerByIp[ip]);
+                    }
+                }
+            },
+            // zakazat cancel predchoziho pozadavku (chceme posilat paralelne pozadavky na ruzne IP),
+            // aby nesly dva pozadavky na jednu IP zaroven je zajisteno tim, ze novy pozadavek na tutez IP
+            // se posila az po complete predchoziho pozadavku na danou IP
+            off: ['unique']
+        });
+    }
+});
+
+</script>
+
+
+{/block}
