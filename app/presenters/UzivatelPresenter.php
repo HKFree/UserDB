@@ -152,7 +152,7 @@ class UzivatelPresenter extends BasePresenter
         $template->ips = $out;
         
         $pdf = new PDFResponse($template);
-        $pdf->pageOrientaion = PDFResponse::ORIENTATION_PORTRAIT;
+        $pdf->pageOrientation = PDFResponse::ORIENTATION_PORTRAIT;
         $pdf->pageFormat = "A4";
         $pdf->pageMargins = "5,5,5,5,20,60";
         $pdf->documentTitle = "hkfree-registrace-".$this->getParam('id');
