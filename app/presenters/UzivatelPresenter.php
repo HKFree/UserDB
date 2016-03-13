@@ -188,7 +188,7 @@ class UzivatelPresenter extends BasePresenter
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
                 $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
-                $link = "http://userdb.hkfree.org/user/uzivatel/confirm/".$hash;
+                $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
 
                 $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());        
                 $mail = new Message;

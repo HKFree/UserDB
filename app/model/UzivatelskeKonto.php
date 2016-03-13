@@ -29,6 +29,11 @@ class UzivatelskeKonto extends Table
 	    return($this->findBy(array('Uzivatel_id' => $idUzivatele))->fetchAll());
     }
     
+    public function getUzivatelskeKontoByPrichoziPlatba($idPlatby)
+    {
+	    return($this->findBy(array('PrichoziPlatba_id' => $idPlatby))->order('id DESC')->fetch());
+    }
+    
     public function findPohyb(array $by) {
 	   return($this->findOneBy($by));
     }
