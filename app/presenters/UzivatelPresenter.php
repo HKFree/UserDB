@@ -1307,6 +1307,7 @@ class UzivatelPresenter extends BasePresenter
             $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         }
         $this->template->canViewOrEditCU = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canTransfer = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         $this->template->u = $pohyb->Uzivatel;
         $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParam('id'));
     }
