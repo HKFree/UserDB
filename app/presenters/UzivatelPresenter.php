@@ -1297,7 +1297,8 @@ class UzivatelPresenter extends BasePresenter
     public function renderPlatba()
     {
         $id = $this->getParameter('id');
-        $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id)));
+        $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
+        //\Tracy\Dumper::dump($pohyb->Uzivatel);
         if($pohyb->Uzivatel_id)
         {
             $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
