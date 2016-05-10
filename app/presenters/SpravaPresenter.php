@@ -29,8 +29,10 @@ class SpravaPresenter extends BasePresenter
     private $sloucenyUzivatel;
     private $uzivatelskeKonto;
     private $prichoziPlatba;
+    private $odchoziPlatba;
+    private $stavBankovnihoUctu;
 
-    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
+    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
@@ -41,6 +43,8 @@ class SpravaPresenter extends BasePresenter
         $this->sloucenyUzivatel = $slUzivatel; 
         $this->uzivatelskeKonto = $konto; 
         $this->prichoziPlatba = $platba;  
+        $this->odchoziPlatba = $odchplatba; 
+        $this->stavBankovnihoUctu = $stavuctu;
     }
     
     public function actionLogout() {
@@ -822,5 +826,58 @@ class SpravaPresenter extends BasePresenter
         }
         
     	return true;
+    }
+    
+    public function renderOdchoziplatby()
+    {
+        
+    }
+    
+    protected function createComponentOdchplatby($name)
+    {
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        $grid->setExport('op_export');
+        
+        $grid->setModel($this->odchoziPlatba->getOdchoziPlatby());
+        
+    	$grid->setDefaultPerPage(100);
+    	$grid->setDefaultSort(array('datum' => 'DESC'));
+         
+    	$grid->addColumnText('datum', 'Datum dokladu')->setSortable()->setFilterText();
+        $grid->addColumnText('firma', 'Firma')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('popis', 'Popis')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('typ', 'Typ')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('kategorie', 'Kategorie')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('datum_platby', 'Datum platby')->setSortable()->setFilterText()->setSuggestion();
+
+    }
+    
+    public function renderUcty()
+    {
+        
+    }
+    
+    protected function createComponentStavyuctu($name)
+    {
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        
+        $grid->setModel($this->stavBankovnihoUctu->getAktualniStavyBankovnihoUctu());
+        
+    	$grid->setDefaultPerPage(10);
+    	$grid->setDefaultSort(array('datum' => 'DESC'));
+         
+    	$grid->addColumnDate('datum', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE);   
+        $grid->addColumnText('BankovniUcet_id', 'Bankovní účet')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->BankovniUcet_id)
+                    ->setText($item->BankovniUcet->text)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            });
+        $grid->addColumnNumber('castka', 'Částka', 2, '.', ' ');
+
     }
 }
