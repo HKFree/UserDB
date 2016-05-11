@@ -1,0 +1,1 @@
+ALTER TABLE `BankovniUcet` ADD `popis` VARCHAR(255) NOT NULL ;

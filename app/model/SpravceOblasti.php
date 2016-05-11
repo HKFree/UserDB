@@ -91,4 +91,14 @@ class SpravceOblasti extends Table
              ->addCondition(Form::FILLED)
              ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
     }
+    
+    public function getSO()
+    {
+        return($this->findAll()->where('TypSpravceOblasti_id=1 AND od < NOW() AND (do IS NULL OR do > NOW())'));
+    }
+    
+    public function getZSO()
+    {
+        return($this->findAll()->where('TypSpravceOblasti_id=2 AND od < NOW() AND (do IS NULL OR do > NOW())'));
+    }
 }

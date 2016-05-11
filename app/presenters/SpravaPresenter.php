@@ -19,6 +19,7 @@ use Nette\Forms\Controls\SubmitButton;
  */
 class SpravaPresenter extends BasePresenter
 {  
+    private $spravceOblasti; 
     private $cestneClenstviUzivatele;  
     private $platneCC;
     private $uzivatel;
@@ -32,7 +33,7 @@ class SpravaPresenter extends BasePresenter
     private $odchoziPlatba;
     private $stavBankovnihoUctu;
 
-    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
+    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\SpravceOblasti $sob, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
@@ -45,6 +46,7 @@ class SpravaPresenter extends BasePresenter
         $this->prichoziPlatba = $platba;  
         $this->odchoziPlatba = $odchplatba; 
         $this->stavBankovnihoUctu = $stavuctu;
+        $this->spravceOblasti = $sob;
     }
     
     public function actionLogout() {
@@ -872,12 +874,72 @@ class SpravaPresenter extends BasePresenter
     	$grid->addColumnDate('datum', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE);   
         $grid->addColumnText('BankovniUcet_id', 'Bankovní účet')->setCustomRender(function($item) {
             return Html::el('span')
-                    ->alt($item->BankovniUcet_id)
+                    ->alt($item->BankovniUcet->text)
                     ->setText($item->BankovniUcet->text)
+                    ->data("toggle", "tooltip")
+                    ->data("placement", "right");
+            });
+        $grid->addColumnText('popis', 'Popis')->setCustomRender(function($item) {
+            return Html::el('span')
+                    ->alt($item->BankovniUcet->popis)
+                    ->setText($item->BankovniUcet->popis)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             });
         $grid->addColumnNumber('castka', 'Částka', 2, '.', ' ');
 
+    }
+    
+    public function renderSms()
+    {
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    }
+    
+    protected function createComponentSmsForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "smsForm");
+    	$form->addHidden('id');
+
+        $form->addSelect('komu', 'Příjemce', array(0=>'SO',1=>'ZSO'))->setDefaultValue(0);
+        $form->addTextArea('message', 'Text', 72, 10);
+
+    	$form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'smsFormSucceded');
+
+    	return $form;
+    }
+    
+    public function smsFormSucceded($form, $values) {
+
+        if($values->komu == 0)
+        {
+           $sos = $this->spravceOblasti->getSO();
+        }
+        else
+        {
+          $sos = $this->spravceOblasti->getZSO();
+        }
+        
+        foreach($sos as $so)
+        {
+            $tl = $so->Uzivatel->telefon;
+            if(!empty($tl) && $tl!='missing')
+            {
+                $validni[]=$tl; 
+            }
+        }
+        $tls = join(",",array_values($validni));
+        
+        $locale = 'cs_CZ.UTF-8';
+        setlocale(LC_ALL, $locale);
+        putenv('LC_ALL='.$locale);
+        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$tls.' "'.$values->message.'"');
+        $output = shell_exec($command);
+        
+        $this->flashMessage('SMS byly odeslány. Output: ' . $output);
+        
+    	$this->redirect('Sprava:nastroje', array('id'=>null)); 
+    	return true;
     }
 }
