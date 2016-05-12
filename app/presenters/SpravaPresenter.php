@@ -846,14 +846,27 @@ class SpravaPresenter extends BasePresenter
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('datum' => 'DESC'));
          
-    	$grid->addColumnText('datum', 'Datum dokladu')->setSortable()->setFilterText();
+        $grid->setRowCallback(function ($item, $tr){
+
+            if($item->datum_platby == null)
+                {
+                  $tr->class[] = 'primarni';
+                }
+                       
+                return $tr;
+            });
+        
+    	$grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText(); 
+        $grid->getColumn('datum')->headerPrototype->style['width'] = '10%';
         $grid->addColumnText('firma', 'Firma')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('popis', 'Popis')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('typ', 'Typ')->setSortable()->setFilterText()->setSuggestion();
+        $grid->getColumn('typ')->headerPrototype->style['width'] = '10%';
         $grid->addColumnText('kategorie', 'Kategorie')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('datum_platby', 'Datum platby')->setSortable()->setFilterText()->setSuggestion();
-
+        $grid->addColumnNumber('castka', 'Částka', 2, ',', ' ')->setSortable()->setFilterText()->setSuggestion();
+        $grid->getColumn('castka')->headerPrototype->style['width'] = '10%';
+        $grid->addColumnDate('datum_platby', 'Datum platby')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText()->setSuggestion();
+        $grid->getColumn('datum_platby')->headerPrototype->style['width'] = '10%';
     }
     
     public function renderUcty()
@@ -886,7 +899,7 @@ class SpravaPresenter extends BasePresenter
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             });
-        $grid->addColumnNumber('castka', 'Částka', 2, '.', ' ');
+        $grid->addColumnNumber('castka', 'Částka', 2, ',', ' ');
 
     }
     

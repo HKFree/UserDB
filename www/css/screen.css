@@ -532,6 +532,10 @@ pre.tracy-dump {
     margin-bottom: 0px;
 }
 
+.grid-cell-castka {
+	text-align: right;
+}
+
 tbody > tr.wewimo-table-header > th {
     color: white;
     background-color: #666666 !important;
