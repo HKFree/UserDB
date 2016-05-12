@@ -885,20 +885,8 @@ class SpravaPresenter extends BasePresenter
     	$grid->setDefaultSort(array('datum' => 'DESC'));
          
     	$grid->addColumnDate('datum', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE);   
-        $grid->addColumnText('BankovniUcet_id', 'Bankovní účet')->setCustomRender(function($item) {
-            return Html::el('span')
-                    ->alt($item->BankovniUcet->text)
-                    ->setText($item->BankovniUcet->text)
-                    ->data("toggle", "tooltip")
-                    ->data("placement", "right");
-            });
-        $grid->addColumnText('popis', 'Popis')->setCustomRender(function($item) {
-            return Html::el('span')
-                    ->alt($item->BankovniUcet->popis)
-                    ->setText($item->BankovniUcet->popis)
-                    ->data("toggle", "tooltip")
-                    ->data("placement", "right");
-            });
+        $grid->addColumnText('text', 'Bankovní účet');
+        $grid->addColumnText('popis', 'Popis');
         $grid->addColumnNumber('castka', 'Částka', 2, ',', ' ');
 
     }
