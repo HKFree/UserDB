@@ -301,6 +301,11 @@ pre.tracy-dump {
     background-color: #ff00ff !important;
 }
 
+.invalidemail>td:nth-child(5)
+{
+    background-color: #ff0000 !important;
+}
+
 .subnet>.popis {
     width: 295px;
 }

@@ -536,6 +536,12 @@ class UzivatelPresenter extends BasePresenter
             
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
+            
+            if($olduzivatel->email != $values->email || $olduzivatel->email2 != $values->email2)
+            {
+                $values->email_invalid=0;
+            }
+            
     	    $this->uzivatel->update($idUzivatele, $values);
             $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
         }

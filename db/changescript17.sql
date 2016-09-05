@@ -1,0 +1,1 @@
+ALTER TABLE `Uzivatel` ADD `email_invalid` TINYINT(1) NOT NULL DEFAULT '0' ;

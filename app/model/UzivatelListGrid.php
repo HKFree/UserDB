@@ -109,6 +109,10 @@ class UzivatelListGrid extends Nette\Object
                 
                 $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id'=>$item->id))."'";
                 
+                if($item->email_invalid == 1)
+                {
+                    $tr->class[] = 'invalidemail';
+                }                
                 if(in_array($item->id, $seznamUzivateluCC)){
                     $tr->class[] = 'cestne';
                     return $tr;
@@ -120,7 +124,7 @@ class UzivatelListGrid extends Nette\Object
                 if($item->TypClenstvi_id == 1)
                 {
                     $tr->class[] = 'zrusene';
-                }
+                }                
                 return $tr;
             });
         }
