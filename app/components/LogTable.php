@@ -161,15 +161,22 @@ class LogTable extends UI\Control
         $sloupec = $this->log->translateJmeno($rozparsovano["sloupec"]);
         $tr->create('td')->setText($sloupec);
         
-        if($line->puvodni_hodnota == null)
-            $tr->create('td')->setText('----');
+        if($sloupec == 'heslo')
+        {
+            $tr->create('td')->setText('N/A');
+        }
         else
-            $tr->create('td')->setText($line->puvodni_hodnota);
-        
-        if($line->nova_hodnota == null)
-            $tr->create('td')->setText('----');
-        else
-            $tr->create('td')->setText($line->nova_hodnota);
+        {
+            if($line->puvodni_hodnota == null)
+                $tr->create('td')->setText('----');
+            else
+                $tr->create('td')->setText($line->puvodni_hodnota);
+
+            if($line->nova_hodnota == null)
+                $tr->create('td')->setText('----');
+            else
+                $tr->create('td')->setText($line->nova_hodnota);
+        }
     }
     
     
@@ -185,6 +192,9 @@ class LogTable extends UI\Control
         
         foreach ($logy as $key => $line) {
             if(($rozparsovano = $this->parseSloupec($line->sloupec)) === false)
+                continue;
+            
+            if($rozparsovano["sloupec"]=='heslo')
                 continue;
             
             if($rozparsovano["typ"] == self::UZIVATEL) {

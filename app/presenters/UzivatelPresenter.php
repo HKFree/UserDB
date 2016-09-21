@@ -122,6 +122,7 @@ class UzivatelPresenter extends BasePresenter
         $template->prijmeni = $uzivatel->prijmeni;
         $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
         $template->firma = $uzivatel->firma_nazev;
+        $template->ico = $uzivatel->firma_ico;
         $template->nick = $uzivatel->nick;
         $template->uid = $uzivatel->id;
         $template->heslo = $uzivatel->regform_downloaded_password_sent==0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
@@ -517,9 +518,14 @@ class UzivatelPresenter extends BasePresenter
                               'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
                               'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
                               'S pozdravem hkfree.org z.s.');
+            if (!empty($values->email2))
+            {
+               $mail->addTo($values->email2); 
+            }            
             $mailer = new SendmailMailer;
             $mailer->send($mail);
             
+            $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($idUzivatele);
             $mailso = new Message;
             $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                 ->addTo($so->email)
@@ -530,6 +536,13 @@ class UzivatelPresenter extends BasePresenter
                               'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
                               'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
                               'S pozdravem hkfree.org z.s.');
+            if (!empty($so->email2))
+            {
+               $mailso->addTo($so->email2); 
+            }
+            foreach ($seznamSpravcu as $sou) {
+                $mail->addTo($sou->email);
+            }
             $mailer->send($mailso);
 
             $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. INTERNET BUDE FUNGOVAT DO 15 MINUT.');
@@ -1305,17 +1318,26 @@ class UzivatelPresenter extends BasePresenter
         $id = $this->getParameter('id');
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
         //\Tracy\Dumper::dump($pohyb->Uzivatel);
-        if($pohyb->Uzivatel_id)
+        if($pohyb)
         {
-            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
+            if($pohyb->Uzivatel_id)
+            {
+                $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
+            }
+            else
+            {
+                $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+            }
+            $this->template->u = $pohyb->Uzivatel;
         }
         else
         {
-            $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+            $this->template->canViewOrEdit = false;
+            $this->template->u = null;
         }
+        
         $this->template->canViewOrEditCU = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
-        $this->template->canTransfer = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
-        $this->template->u = $pohyb->Uzivatel;
+        $this->template->canTransfer = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');        
         $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParam('id'));
     }
     

@@ -60,6 +60,8 @@ class SubnetPresenter extends BasePresenter
             $existujici = $this->subnet->getSeznamSubnetuZacinajicich($targetSubnet);
             //\Tracy\Dumper::dump($existujici);
             
+            $networks = array();
+            $captions = array();
             foreach ($existujici as $snet) {
                 $out = $this->subnet->parseSubnet($snet->subnet);            
                 list($a, $b, $c, $d) = explode(".", $out["network"]);

@@ -73,7 +73,11 @@ class Wewimo extends Nette\Object
                 if ($row['platform'] != 'MikroTik') $row['x-device-type'] .= ' '.$row['version'];
                 //Debugger::dump($row);
                 $neighborsByMac[$row['mac-address']] = $row;
-                $neighborsByIp[$row['address']] = $row;
+                
+                if(in_array('address', $row))
+                {
+                    $neighborsByIp[$row['address']] = $row;
+                }
             }
         }
 
