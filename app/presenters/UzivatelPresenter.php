@@ -760,7 +760,7 @@ class UzivatelPresenter extends BasePresenter
                 $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
 
                 $uzivatelEditLink = $this->link('Uzivatel:edit', array('id' => $uid));
-    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $uzivatelEditLink);
+    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $uzivatelEditLink, true);
                                 
                 if($ipAdresy->count() > 0)
                 {

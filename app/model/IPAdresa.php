@@ -93,7 +93,7 @@ class IPAdresa extends Table
 	 * @param null $editLink link na editaci AP nebo Uzivatele, pokud zobrazujeme tabulku v detailu APcka nebo Uzivatele, jinak null
 	 * @return mixed
 	 */
-    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $editLink=null)
+    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $editLink=null, $igwCheck=false)
 	{
 		$adresyTab = Html::el('table')->setClass('table table-striped');
 
@@ -102,7 +102,7 @@ class IPAdresa extends Table
 		foreach ($ips as $ip)
 		{
 			$subnetLink = $subnetLinks[$ip->ip_adresa];
-			$this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $editLink);
+			$this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $editLink, $igwCheck);
 		}
 
 		return $adresyTab;
@@ -113,6 +113,10 @@ class IPAdresa extends Table
 		$tr = $adresyTab->create('tr');
 
 		$tr->create('th')->setText('IP');
+        if (!$subnetMode)
+		{
+            $tr->create('th')->setText('IGW');
+        }
 		$tr->create('th')->setText(''); // action buttons
 		if ($subnetMode) {
 			$tr->create('th')->setText('UID');
@@ -143,8 +147,23 @@ class IPAdresa extends Table
 			$td->add($b);
 		}
 	}
+    
+    public function file_get_contents_curl($url) {
+        $ch = curl_init();
 
-	public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo=null, $subnetLink=null, $editLink=null)
+        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);       
+
+        $data = curl_exec($ch);
+        curl_close($ch);
+
+        return $data;
+    }
+
+	public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo=null, $subnetLink=null, $editLink=null, $igwCheck=false)
 	{
 		$tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
@@ -161,6 +180,27 @@ class IPAdresa extends Table
 			// zobrazit IP jen jako text
 			$tr->create('td')->setText($ipTitle);
 		}
+        
+        if ($igwCheck && $ip)
+		{
+            $igw1resp = $this->file_get_contents_curl('http://10.107.0.1:8080/ip4info/'.$ip->ip_adresa);
+            $igw2resp = $this->file_get_contents_curl('http://10.107.0.2:8080/ip4info/'.$ip->ip_adresa);
+            if (strpos($igw1resp, $ip->ip_adresa.' 1') !== false || strpos($igw2resp, $ip->ip_adresa.' 1') !== false) {
+                $attr = $tr->create('td');
+    			$attr->create('span')
+                    ->setClass('glyphicon glyphicon-ok')
+                    ->setTitle('IP je povolená do internetu na IGW')
+                    ->addAttributes($tooltips);
+            }
+            else
+            {
+                $attr = $tr->create('td');
+    			$attr->create('span')
+                    ->setClass('glyphicon glyphicon-remove')
+                    ->setTitle('IP není povolená do internetu na IGW')
+                    ->addAttributes($tooltips);
+            }
+        }
 
 		if ($ip)
 		{

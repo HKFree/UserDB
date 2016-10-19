@@ -158,7 +158,7 @@ class SubnetPresenter extends BasePresenter
                             'ipTitle' => $ipAdresaTitle,
                         );
                     }
-                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo);
+                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo, true);
                 } else
                 {
                     // nevyuzita IP
@@ -166,7 +166,7 @@ class SubnetPresenter extends BasePresenter
                         'ipAdresa' => $ipAdresa,
                         'rowClass' => $networkBroadcastAddrClass,
                         'ipTitle' => $ipAdresaTitle,
-                    ));
+                    ), true);
                 }
 
                 if (array_key_exists($i,$networks))
