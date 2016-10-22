@@ -13,6 +13,10 @@ cp app/config/config.local.DIST.neon app/config/config.local.neon
 vi app/config/config.local.neon www/.htaccess
 ```
 
+##Developing
+
+- Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig.org/#download)
+
 ##License
 
 - Nette: New BSD License or GPL 2.0 or 3.0 (http://nette.org/license)
