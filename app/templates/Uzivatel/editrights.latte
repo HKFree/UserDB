@@ -2,8 +2,8 @@
 
 <h3>Editace skupin a oprávnění <small>uživatel {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
 {if $canViewOrEdit}
-{form uzivatelRightsForm}  
-    <fieldset n:foreach="$form['rights']->containers as $right" class="ipform">
+{form uzivatelRightsForm}
+    <fieldset n:foreach="$form['rights']->getContainers() as $right" class="ipform">
         {$right['TypSpravceOblasti_id']->label} {$right['TypSpravceOblasti_id']->control}
         {$right['Oblast_id']->label} {$right['Oblast_id']->control}<br>
         {$right['od']->label} {$right['od']->control}
@@ -14,7 +14,7 @@
     <ul class="errors" n:if="$form->hasErrors()">
         <li n:foreach="$form->errors as $error">{$error}</li>
     </ul>
-    
+
     {$form['rights']['add']->control} {$form['save']->control}
 {/form}
 {else}

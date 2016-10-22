@@ -4,15 +4,15 @@ namespace App\Model;
 
 use Nette,
     Nette\Utils\Html;
- 
+
 /**
- * @author 
+ * @author
  */
 class Log extends Table
 {
     private $typZarizeni;
-    
-    public function __construct(Nette\Database\Connection $db, Nette\Security\User $user, TypZarizeni $t) {
+
+    public function __construct(Nette\Database\Context $db, Nette\Security\User $user, TypZarizeni $t) {
         parent::__construct($db, $user);
     }
 
@@ -20,19 +20,19 @@ class Log extends Table
     * @var string
     */
     protected $tableName = 'Log';
-               
+
     public function getLogyUzivatele($uid)
     {
         $logy = $this->findAll()->where("tabulka = ?", "Uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
         return($logy);
     }
-                   
+
     public function getLogyAP($Apid)
     {
         $logy = $this->findAll()->where("tabulka = ?", "Ap")->where("tabulka_id = ?", $Apid)->order("datum DESC, sloupec DESC");
         return($logy);
     }
-    
+
     public function translateJmeno($jmeno)
     {
         $slovnikUzivatel = array(
@@ -60,9 +60,9 @@ class Log extends Table
             "ulice_cp" => "ulice a č.p.",
             "psc" => "PSČ",
             "mesto" => "město"
-        ); 
-        
-        $slovnikIpAdresa = array(    
+        );
+
+        $slovnikIpAdresa = array(
             "hostname" => "hostname",
             "mac_adresa" => "MAC adresa",
             "mac_filter" => "povoleno v MAC filteru",
@@ -74,22 +74,22 @@ class Log extends Table
             "login" => "login",
             "heslo" => "heslo"
         );
-         
+
         $slovnik = array_merge($slovnikUzivatel, $slovnikIpAdresa);
-        
+
         if(isset($slovnik[$jmeno])) {
             return($slovnik[$jmeno]);
         } else {
             return($jmeno);
         }
     }
-    
+
     /**
      * Tahle funkce má za úkol získat už neexistující ip adresy / subnety podle
      * jejich starého ID
-     * 
+     *
      * takhle blbě je to řešené, protože mysql neumí sort-before-groupby
-     * 
+     *
      * @param int[] $ids ipId pro které chceme zjistit ipAdresy / subnety
      * @param string $type Typ objektu pro který zjišťujeme - ip / subnet
      * @return array pole ipId=>ipAdresa
@@ -104,9 +104,9 @@ class Log extends Table
                 $names[] = "Subnet[".$id."].subnet";
             }
         }
-        
+
         $logy = $this->findAll()->where("sloupec", $names)->order("datum ASC");
-        
+
         $out = array();
         foreach($logy as $log)
         {
@@ -115,21 +115,21 @@ class Log extends Table
             } elseif ($type == "subnet") {
                 preg_match("/^subnet\[(\d+)\]\.subnet/i", $log->sloupec, $matches);
             }
-            
+
             $id = $matches[1];
-            
+
             if($log->puvodni_hodnota !== null) {
                 $out[$id] = $log->puvodni_hodnota;
             }
-            
+
             if($log->nova_hodnota !== null) {
                 $out[$id] = $log->nova_hodnota;
             }
         }
-       
+
         return($out);
     }
-    
+
     public function logujInsert($data, $sloupecPrefix, &$log)
     {
         foreach($data as $key => $value) {
@@ -143,7 +143,7 @@ class Log extends Table
             }
         }
     }
-    
+
     public function logujUpdate($staraData, $novaData, $sloupecPrefix, &$log)
     {
         foreach($novaData as $key => $value) {
@@ -158,7 +158,7 @@ class Log extends Table
             }
         }
     }
-    
+
     public function logujDelete($staraData, $sloupecPrefix, &$log)
     {
         foreach($staraData as $key => $value) {
@@ -172,16 +172,16 @@ class Log extends Table
             }
         }
     }
-    
+
     public function loguj($tabulka, $tabulka_id, $data)
     {
         if(!is_array($data) || count($data) == 0)
             return(true);
-        
-        // Je bezpodminecne nutne mit stejny cas pro vsechny polozky, proto se 
+
+        // Je bezpodminecne nutne mit stejny cas pro vsechny polozky, proto se
         // vytvari uz tady a ne az triggerem v DB!
         $ted = new Nette\Utils\DateTime;
-        
+
         $spolecne = array(
             'Uzivatel_id' => $this->userService->getId(),
             'ip_adresa' => $_SERVER['REMOTE_ADDR'],
@@ -195,7 +195,7 @@ class Log extends Table
         {
            $toInsert[] = array_merge($radek, $spolecne);
         }
-        
+
         return($this->insert($toInsert));
     }
 }

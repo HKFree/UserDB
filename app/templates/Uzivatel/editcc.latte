@@ -2,13 +2,13 @@
 
 <h3>Editace čestného členství <small>uživatel {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
 {if $canViewOrEdit}
-{form uzivatelCCForm}  
-    <fieldset n:foreach="$form['rights']->containers as $right" class="ipform">
+{form uzivatelCCForm}
+    <fieldset n:foreach="$form['rights']->getContainers() as $right" class="ipform">
         {$right['TypCestnehoClenstvi_id']->label} {$right['TypCestnehoClenstvi_id']->control}<br>
         {$right['plati_od']->label} {$right['plati_od']->control}
         {$right['plati_do']->label} {$right['plati_do']->control}<br>
         {$right['poznamka']->label} {$right['poznamka']->control}<br>
-        {if $canApprove}            
+        {if $canApprove}
             {$right['schvaleno']->label} {$right['schvaleno']->control}<br>
         {/if}
     </fieldset>
@@ -16,7 +16,7 @@
     <ul class="errors" n:if="$form->hasErrors()">
         <li n:foreach="$form->errors as $error">{$error}</li>
     </ul>
-    
+
     {$form['rights']['add']->control} {$form['save']->control}
 {/form}
 {else}

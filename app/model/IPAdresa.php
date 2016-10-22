@@ -27,7 +27,7 @@ class IPAdresa extends Table
      */
     protected $igw2IpCheckerUrl;
 
-    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, Nette\Database\Connection $db, Nette\Security\User $user)
+    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, Nette\Database\Context $db, Nette\Security\User $user)
     {
         parent::__construct($db, $user);
         $this->igw1IpCheckerUrl = $igw1IpCheckerUrl;
@@ -161,7 +161,7 @@ class IPAdresa extends Table
 	private function addActionButtonsTd($tr, $buttons) {
 		$td = $tr->create('td');
 		foreach ($buttons as $b) {
-			$td->add($b);
+			$td->addHtml($b);
 		}
 	}
 
@@ -231,7 +231,7 @@ class IPAdresa extends Table
 					->setClass('btn btn-default btn-xs btn-in-table')
 					->setTitle('Otevřít web')
 					->addAttributes($tooltips)
-					->add(Html::el('span')
+					->addHtml(Html::el('span')
 						->setClass('glyphicon glyphicon-globe')); // web button
 				if (($canViewCredentialsOrEdit || ($subnetModeInfo && $subnetModeInfo['canViewOrEdit']))
 						&& isset($ip->TypZarizeni->text) && isset($ip->heslo) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
@@ -254,11 +254,11 @@ class IPAdresa extends Table
 					->setTitle('Otevřít Mikrotik Winbox')
 					->addAttributes($tooltips)
 					->setClass('btn btn-default btn-xs btn-in-table')
-					->add(Html::el('span')
+					->addHtml(Html::el('span')
 						->setClass('glyphicon glyphicon-cog')); // winbox button
 				$buttons[]= $winboxButton;
 				$buttons[] = Html::el('a')
-								->add(Html::el('sup')->setText('?'))
+								->addHtml(Html::el('sup')->setText('?'))
 								->setTarget('_blank')
 								->setTitle('Jak zprovoznit otevření Winboxu z prohlížeče?')
 								->addAttributes($tooltips)
@@ -275,7 +275,7 @@ class IPAdresa extends Table
 								->setClass('btn btn-default btn-xs btn-in-table')
 								->setTitle('Editovat')
 								->addAttributes($tooltips)
-								->add(Html::el('span')
+								->addHtml(Html::el('span')
 									->setClass('glyphicon glyphicon-pencil'))
 						); // edit button
 					} // jinak nema edit button
@@ -292,7 +292,7 @@ class IPAdresa extends Table
 							->setClass('btn btn-default btn-xs btn-in-table')
 							->setTitle('Editovat')
 							->addAttributes($tooltips)
-							->add(Html::el('span')
+							->addHtml(Html::el('span')
 								->setClass('glyphicon glyphicon-pencil'))
 						); // edit button
 					} // jinak nema edit button
@@ -308,7 +308,7 @@ class IPAdresa extends Table
 						->setClass('btn btn-default btn-xs btn-in-table')
 						->setTitle('Editovat')
 						->addAttributes($tooltips)
-						->add(Html::el('span')
+						->addHtml(Html::el('span')
 							->setClass('glyphicon glyphicon-pencil'))
 					); // edit button
 				}
@@ -325,7 +325,7 @@ class IPAdresa extends Table
 						->setClass('glyphicon glyphicon-transfer')
 						->setTitle('IP je povolená do internetu')
 						->addAttributes($tooltips);
-					$attr->add(' ');
+					$attr->addHtml(' ');
 				}
 
 				if ($ip->smokeping) {
@@ -333,7 +333,7 @@ class IPAdresa extends Table
 						->setClass('glyphicon glyphicon-eye-open')
 						->setTitle('IP je sledovaná ve smokepingu')
 						->addAttributes($tooltips);
-					$attr->add(' ');
+					$attr->addHtml(' ');
 				}
 
 				if ($ip->dhcp) {
@@ -341,7 +341,7 @@ class IPAdresa extends Table
 						->setClass('glyphicon glyphicon-open')
 						->setTitle('IP se exportuje do DHCP')
 						->addAttributes($tooltips);
-					$attr->add(' ');
+					$attr->addHtml(' ');
 				}
 
 				if ($ip->mac_filter) {
@@ -349,7 +349,7 @@ class IPAdresa extends Table
 						->setClass('glyphicon glyphicon-filter')
 						->setTitle('IP exportuje do MAC filteru')
 						->addAttributes($tooltips);
-					$attr->add(' ');
+					$attr->addHtml(' ');
 				}
 
 				if ($ip->wewimo) {
@@ -357,7 +357,7 @@ class IPAdresa extends Table
 						->setClass('glyphicon glyphicon-signal')
 						->setTitle('Zobrazovat signály klientů ve Wewimo')
 						->addAttributes($tooltips);
-					$attr->add(' ');
+					$attr->addHtml(' ');
 				}
 
 				$tr->create('td')->setText($ip->popis); // popis

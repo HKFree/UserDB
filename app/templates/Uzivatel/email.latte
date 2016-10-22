@@ -3,7 +3,7 @@
 <h3>Odeslání emailu <small>uživateli {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
 
 {if $canViewOrEdit}
-{includeblock '../form.latte', form => emailForm}
+{include '../form.latte', form => emailForm}
 {else}
 <p>Na tuto operaci nemáte oprávnění!</p>
 {/if}

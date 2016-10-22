@@ -7,7 +7,7 @@ use Nette,
 
 
 /**
- * @author 
+ * @author
  */
 class cc extends Table
 {
@@ -20,17 +20,15 @@ class cc extends Table
     {
         return($this->findAll());
     }
-    
+
     public function getCCWithNamesVV()
     {
-        $context = new Context($this->connection);
-        return $context->query("SELECT cc_nahled.*, CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni) as name FROM cc_nahled LEFT JOIN Uzivatel ON Uzivatel.id = cc_nahled.id")->fetchAll();
+        return $this->getConnection()->query("SELECT cc_nahled.*, CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni) as name FROM cc_nahled LEFT JOIN Uzivatel ON Uzivatel.id = cc_nahled.id")->fetchAll();
     }
-    
+
     public function getCCWithNames()
     {
-        $context = new Context($this->connection);
-        return $context->query("SELECT cc_nahled.*, "
+        return $this->getConnection()->query("SELECT cc_nahled.*, "
                 . "CASE WHEN cc_nahled.id IN "
                 . "         (SELECT Uzivatel.id FROM Uzivatel WHERE Ap_id IN "
                 . "             (SELECT A.id FROM userdb_v2.SpravceOblasti S JOIN Ap A ON S.Oblast_id=A.Oblast_id Where S.Uzivatel_id=58 AND S.Oblast_id is not null)) "

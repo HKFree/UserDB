@@ -12,18 +12,17 @@ parameters:
 php:
 	date.timezone: Europe/Prague
 
+latte:
+    macros:
+        - App\Model\MyMacroSet
 
-nette:
-	latte:
-		macros:
-			- App\Model\MyMacroSet
-	application:
-		errorPresenter: Error
-		mapping:
-			*: App\*Module\Presenters\*Presenter
+application:
+    errorPresenter: Error
+    mapping:
+        *: App\*Module\Presenters\*Presenter
 
-	session:
-		expiration: 14 days
+session:
+    expiration: 14 days
 
 
 services:

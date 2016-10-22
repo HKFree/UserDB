@@ -3,7 +3,7 @@
 <h3>Vytvoření oblasti</h3>
 
 {if $canViewOrEdit}
-{includeblock '../form.latte', form => novaoblastForm}
+{include '../form.latte', form => novaoblastForm}
 {else}
 <p>Na tuto operaci nemáte oprávnění!</p>
 {/if}

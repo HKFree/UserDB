@@ -1,19 +1,19 @@
 #HKFree UserDB
-Powerful [HKFree.org](http://www.hkfree.org) user&ip managment database
+Powerful [HKFree.org](http://www.hkfree.org) user and IP management system
 
-Developed by powerful team - Evil, ZitnyP & Bkralik
+Developed by powerful team - Evil, ZitnyP, Bkralik & pavkriz
 
 ##Installation
 
 ```bash
 git clone https://github.com/HKFree/UserDB.git
 cd UserDB
-composer update
+composer install
 cp app/config/config.local.DIST.neon app/config/config.local.neon
 vi app/config/config.local.neon www/.htaccess
 ```
 
-##Developing
+##Development
 
 - Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig.org/#download)
 

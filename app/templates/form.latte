@@ -15,13 +15,13 @@
                 {else}
                     {* vychozi zpusob vypisu component uvnitr kontejneru *}
                     {foreach $component->controls as $field}
-                        {label $field /}{!$field->required ? '<span class="red">*</span>'} {input $field} {inputError $field} <br />
+                        {label $field /}{$field->required ? '<span class="red">*</span>'|noescape} {input $field} {inputError $field} <br />
                     {/foreach}
                 {/if}
             {else}
                 {* normalni ovladaci prvek ve formulari *}
                 <tr>
-                    <th>{label $component /}{!$component->required ? '<span class="red">*</span>'}</th>
+                    <th>{label $component /}{$component->required ? '<span class="red">*</span>'|noescape}</th>
                     <td colspan="3">{input $component} {inputError $component}</td>
                 </tr>
             {/if}

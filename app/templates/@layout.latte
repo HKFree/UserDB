@@ -13,19 +13,19 @@
 
         <title>{ifset #title}{include title|striptags} | {/ifset}HKFree UserDB</title>
 
-        <link href="{$basePath}/css/bootstrap.min.css" rel="stylesheet"> 
+        <link href="{$basePath}/css/bootstrap.min.css" rel="stylesheet">
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="{$basePath}/js/jquery.min.js"></script>   
+        <script src="{$basePath}/js/jquery.min.js"></script>
         <link rel="stylesheet" href="{$basePath}/css/jquery-ui.css" />
-        <script src="{$basePath}/js/jquery-ui.min.js"></script>     
+        <script src="{$basePath}/js/jquery-ui.min.js"></script>
         <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script src="{$basePath}/js/bootstrap.min.js"></script>   
+        <script src="{$basePath}/js/bootstrap.min.js"></script>
         <!-- Bar Rating ( https://github.com/antennaio/jquery-bar-rating ) -->
         <script src="{$basePath}/js/jquery.barrating.min.js"></script>
         <script src="{$basePath}/js/jquery.bonsai.js"></script>
 
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v10">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v11">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
@@ -51,7 +51,7 @@
             <li><a href="{link Sprava:nastroje id=>null}">Nástroje</a></li>
             <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
           </ul>
-          {form searchForm}  
+          {form searchForm}
                 {$form['search']->control}
           {/form}
           <ul class="nav navbar-nav navbar-right">
@@ -70,30 +70,30 @@
           {if $mojeOblasti}
             <h4>Moje oblasti</h4>
             <ul class="nav nav-sidebar">
-              {foreach $mojeOblasti as $idoblast => $oblast}
-                <li id="oblast-{$idoblast}"><a href="{link Uzivatel:list id=>$idoblast}">{$oblast}</a></li>
+              {foreach $mojeOblasti as $idoblast => $jmenoOblasti}
+                <li id="oblast-{$idoblast}"><a href="{link Uzivatel:list id=>$idoblast}">{$jmenoOblasti}</a></li>
               {/foreach}
             </ul>
           {/if}
           {if $oblasti}
             <h4><a href="{link Uzivatel:listall id=>NULL}">Všechny oblasti</a></h4>
             <ul class="nav nav-sidebar" n:if="$oblasti" id="oblastitree">
-              {foreach $oblasti as $idoblast => $oblast}
-                {var $apcka = $oblast->related('Ap.Oblast_id')->order("jmeno")}
+              {foreach $oblasti as $idoblast => $o}
+                {var $apcka = $o->related('Ap.Oblast_id')->order("jmeno")}
                 {if count($apcka) == 1}
                   {var $ap = $apcka->fetch()}
-                  <li><a n:href="Uzivatel:list id=>$ap->id">{$ap->jmeno} ({$oblast->id})</a></li>
+                  <li><a n:href="Uzivatel:list id=>$ap->id">{$ap->jmeno} ({$o->id})</a></li>
                 {else}
-                  <li><a n:href="Ap:list id=>$oblast->id">{$oblast->jmeno} ({$oblast->id})</a>
+                  <li><a n:href="Ap:list id=>$o->id">{$o->jmeno} ({$o->id})</a>
                     <ul class="nav">
-                    {foreach $apcka as $idap => $ap}
-                      <li><a n:href="Uzivatel:list id=>$ap->id">{$ap->jmeno}</a></li>
+                    {foreach $apcka as $idap => $theAp}
+                      <li><a n:href="Uzivatel:list id=>$theAp->id">{$theAp->jmeno}</a></li>
                     {/foreach}
                     </ul>
                   </li>
                 {/if}
               {/foreach}
-            </ul> 
+            </ul>
           {/if}
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -107,7 +107,7 @@
       </div>
     </div>
 	{block scripts}
-    <script src="{$basePath}/js/netteForms.js"></script>    
+    <script src="{$basePath}/js/netteForms.js"></script>
     <script src="{$basePath}/js/nette.ajax.js"></script>
     <script src="{$basePath}/js/grido.js"></script>
 	{/block}

@@ -5,16 +5,16 @@
 
     <a href="{link Sprava:nastroje}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Zpět na nástroje správy</a>
 
-{form spravaCCForm}  
-    <fieldset n:foreach="$form['rights']->containers as $right" class="ipform">
+{form spravaCCForm}
+    <fieldset n:foreach="$form['rights']->getContainers() as $right" class="ipform">
         {var $uzivatel_id = $right['Uzivatel_id']->value}
         {var $podavatel_id = $right['zadost_podal']->value}
         <h4>{$uzivatele[$uzivatel_id]->jmeno} {$uzivatele[$uzivatel_id]->prijmeni}
             (<a n:href="uzivatel:show, id=>$uzivatel_id">{$uzivatele[$uzivatel_id]->nick}</a>)
-            [<a n:href="uzivatel:show, id=>$uzivatel_id">{$uzivatele[$uzivatel_id]->id}</a>] 
+            [<a n:href="uzivatel:show, id=>$uzivatel_id">{$uzivatele[$uzivatel_id]->id}</a>]
             <small>Oblast {$uzivatele[$uzivatel_id]->Ap->jmeno}, AP {$uzivatele[$uzivatel_id]->Ap->Oblast->jmeno}</small>
         </h4>
-        žádost podal {$uzivatele[$podavatel_id]->jmeno}  {$uzivatele[$podavatel_id]->prijmeni}  {$right['zadost_podana']->value} 
+        žádost podal {$uzivatele[$podavatel_id]->jmeno}  {$uzivatele[$podavatel_id]->prijmeni}  {$right['zadost_podana']->value}
         (<a n:href="uzivatel:show, id=>$podavatel_id">{$uzivatele[$podavatel_id]->nick}</a>)
         <br><br>
         {$right['plati_od']->label} {$right['plati_od']->control}
@@ -26,7 +26,7 @@
     <ul class="errors" n:if="$form->hasErrors()">
         <li n:foreach="$form->errors as $error">{$error}</li>
     </ul>
-    
+
     {$form['save']->control}
 {/form}
 {else}

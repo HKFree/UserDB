@@ -4,7 +4,7 @@ namespace App\Model;
 
 use Nette,
     Nette\Database\Context;
-    
+
 
 /**
  * Reprezentuje repozitář pro databázovou tabulku
@@ -13,13 +13,13 @@ abstract class Table extends Nette\Object
 {
 
     /**
-     * @var Nette\Database\Connection
+     * @var Nette\Database\Context
      */
     protected $connection;
 
     /**
      *
-     * @var Nette\Security\User 
+     * @var Nette\Security\User
      */
     protected $userService;
 
@@ -33,10 +33,10 @@ abstract class Table extends Nette\Object
 
 
     /**
-     * @param Nette\Database\Connection $db
+     * @param Nette\Database\Context $db
      * @throws \Nette\InvalidStateException
      */
-    public function __construct(Nette\Database\Connection $db, Nette\Security\User $user)
+    public function __construct(Nette\Database\Context $db, Nette\Security\User $user)
     {
 	$this->connection = $db;
 	$this->userService = $user;
@@ -56,8 +56,16 @@ abstract class Table extends Nette\Object
      */
     protected function getTable()
     {
-	$context = new Context($this->connection);
-	return $context->table($this->tableName);
+        return $this->connection->table($this->tableName);
+    }
+
+    /**
+     * Vrací spojení do databáze (context)
+     * @return \Nette\Database\Context
+     */
+    protected function getConnection()
+    {
+        return $this->connection;
     }
 
 
