@@ -6,6 +6,8 @@
 #
 parameters:
 	clenskyPrispevek: 290
+	igw1IpCheckerUrl: http://10.107.0.1:8080/ip4info/
+	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
 
 php:
 	date.timezone: Europe/Prague
@@ -41,7 +43,7 @@ services:
 	zpusobPripojeni: App\Model\ZpusobPripojeni
 	technologiePripojeni: App\Model\TechnologiePripojeni
 	typCestnehoClenstvi: App\Model\TypCestnehoClenstvi
-	ipAdresa: App\Model\IPAdresa
+	ipAdresa: App\Model\IPAdresa(%igw1IpCheckerUrl%, %igw2IpCheckerUrl%)
 	oblast: App\Model\Oblast
 	ap: App\Model\AP
 	cc: App\Model\cc

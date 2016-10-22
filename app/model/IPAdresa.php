@@ -8,7 +8,7 @@ use Nette,
 
 
 /**
- * @author 
+ * @author
  */
 class IPAdresa extends Table
 {
@@ -16,13 +16,30 @@ class IPAdresa extends Table
     * @var string
     */
     protected $tableName = 'IPAdresa';
-    
+
+    /**
+     * @var string
+     */
+    protected $igw1IpCheckerUrl;
+
+    /**
+     * @var string
+     */
+    protected $igw2IpCheckerUrl;
+
+    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, Nette\Database\Connection $db, Nette\Security\User $user)
+    {
+        parent::__construct($db, $user);
+        $this->igw1IpCheckerUrl = $igw1IpCheckerUrl;
+        $this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
+    }
+
     public function getSeznamIPAdres()
     {
 	//$row = $this->findAll();
         return($this->findAll());
     }
-    
+
     public function getSeznamIPAdresZacinajicich($prefix)
     {
         return $this->findAll()->where("ip_adresa LIKE ?", $prefix.'%')->fetchPairs('ip_adresa');
@@ -32,7 +49,7 @@ class IPAdresa extends Table
     {
         return($this->find($id));
     }
-    
+
     public function getDuplicateIP($ip, $id)
     {
         $existujici = $this->findAll()->where('ip_adresa = ?', $ip)->where('id != ?', $id)->fetch();
@@ -42,11 +59,11 @@ class IPAdresa extends Table
         }
         return null;
     }
-    
-    
+
+
     /**
      * Párová metoda k \App\Model\Log::getAdvancedzLogu(), Vrati seznam idIp -> ipAdresa
-     * 
+     *
      * @param array $ids ipId pro které chceme zjistit ipAdresy
      * @return array pole ipId=>ipAdresa
      */
@@ -62,11 +79,11 @@ class IPAdresa extends Table
 		else
 			return true;
     }
-    
+
     public function validateIP($ip) {
         return(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
     }
-    
+
     public function getIPForm(&$ip, $typyZarizeni, $apMode=false) {
 		$ip->addHidden('id')->setAttribute('class', 'id ip');
 		$ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
@@ -147,7 +164,7 @@ class IPAdresa extends Table
 			$td->add($b);
 		}
 	}
-    
+
     public function file_get_contents_curl($url) {
         $ch = curl_init();
 
@@ -155,7 +172,7 @@ class IPAdresa extends Table
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);       
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
 
         $data = curl_exec($ch);
         curl_close($ch);
@@ -180,11 +197,11 @@ class IPAdresa extends Table
 			// zobrazit IP jen jako text
 			$tr->create('td')->setText($ipTitle);
 		}
-        
+
         if ($igwCheck && $ip)
-		{
-            $igw1resp = $this->file_get_contents_curl('http://10.107.0.1:8080/ip4info/'.$ip->ip_adresa);
-            $igw2resp = $this->file_get_contents_curl('http://10.107.0.2:8080/ip4info/'.$ip->ip_adresa);
+	{
+            $igw1resp = $this->file_get_contents_curl($this->igw1IpCheckerUrl.$ip->ip_adresa);
+            $igw2resp = $this->file_get_contents_curl($this->igw2IpCheckerUrl.$ip->ip_adresa);
             if (strpos($igw1resp, $ip->ip_adresa.' 1') !== false || strpos($igw2resp, $ip->ip_adresa.' 1') !== false) {
                 $attr = $tr->create('td');
     			$attr->create('span')
@@ -382,9 +399,9 @@ class IPAdresa extends Table
 
 		return $tr;
     }
-    
+
     /**
-     * 
+     *
      * @param string $ipsubnet ip address subnet
      * @return array of ips
      */
@@ -392,21 +409,21 @@ class IPAdresa extends Table
     {
         $genaddresses = array();
         if(isset($ipsubnet) && !empty($ipsubnet))
-        {  
+        {
             if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $ipsubnet)) {
                 @list($sip, $slen) = explode('/', $ipsubnet);
                 if (($smin = ip2long($sip)) !== false) {
                   $smax = ($smin | (1<<(32-$slen))-1);
                   for ($i = $smin; $i < $smax; $i++)
                     $genaddresses[] = long2ip($i);
-                }                 
+                }
             }
         }
         return $genaddresses;
     }
-    
+
     /**
-     * 
+     *
      * @param string $iprange ip address range
      * @return array of ips
      */
@@ -416,13 +433,13 @@ class IPAdresa extends Table
         if(isset($iprange) && !empty($iprange))
         {
             if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $iprange)) {
-                $temp = preg_split("/-/",$iprange, -1, PREG_SPLIT_NO_EMPTY); 
-                $QRange1 = $temp[0]; 
+                $temp = preg_split("/-/",$iprange, -1, PREG_SPLIT_NO_EMPTY);
+                $QRange1 = $temp[0];
                 $QRange2 = $temp[1];
                 $start = ip2long($QRange1);
                 $end = ip2long($QRange2);
                 $range = range($start, $end);
-                $genaddresses = array_map('long2ip', $range);          
+                $genaddresses = array_map('long2ip', $range);
             }
         }
         return $genaddresses;
