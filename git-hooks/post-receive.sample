@@ -12,7 +12,10 @@ cd "$DEPLOYDIR"
 cp www/.maintenance.php www/maintenance.php
 
 # make sure temp dir is writable
-chmod a+wx temp
+chmod -R a+wx temp
+
+# make sure log dir is writable
+chmod -R a+wx log
 
 # install all dependencies
 composer install
