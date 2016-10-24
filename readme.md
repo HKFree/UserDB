@@ -30,12 +30,15 @@ git push origin master
 
 ##Deployment
 
-...
+Useful stuff to fix several Nette's gotchas: [Nedostatky Nette při přechodu ze Symfony2](https://quip.com/1DAjAVxx9gZ8)
 
-```bash
-rm -rf temp/cache
-php www/index.php migrations:continue --production`
-```
+Run `git remote add production ssh://user@userdb.hkfree.org/opt/UserDB.git` first time (replace user with your username at userdb.hkfree.org).
+
+Run `git push production master` in order to fully deploy the app.
+
+When something goes wrong, try to run `(cd /opt/UserDB.git; hooks/post-receive)` manually on the server.
+
+See [git-hooks/post-receive.sample](git-hooks/post-receive.sample) for more details what happens during deployment on server side.
 
 ##Making DB changes
 
@@ -53,7 +56,7 @@ and edit the change-script created.
 
 Make sure the cache is clean by running `rm -rf temp/cache` and run
 `php www/index.php migrations:continue --production`
-in order to apply the change-script in the DB configured in neon config.
+in order to apply the change-scripts to the DB configured in neon config.
 
 ####On development or testing machines
 

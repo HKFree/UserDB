@@ -8,7 +8,10 @@ $configurator = new Nette\Configurator;
 //$configurator->setDebugMode(false); // disable for all IP (incl. localhost)
 //$configurator->setDebugMode('8.8.8.8'); // enable for IP 8.8.8.8
 
-$configurator->enableDebugger(__DIR__ . '/../log','is@hkfree.org');
+if (php_sapi_name() !== 'cli') {
+    // enable Tracy only in web env. Dump errors to console in CLI mode (eg. during git-based deployment).
+    $configurator->enableDebugger(__DIR__ . '/../log', 'is@hkfree.org');
+}
 
 $configurator->setTempDirectory(__DIR__ . '/../temp');
 
