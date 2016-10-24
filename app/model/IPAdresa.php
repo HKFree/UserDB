@@ -199,14 +199,13 @@ class IPAdresa extends Table
 		}
 
         if ($igwCheck && $ip)
-	{
+		{
             $igw1resp = $this->file_get_contents_curl($this->igw1IpCheckerUrl.$ip->ip_adresa);
-            $igw2resp = $this->file_get_contents_curl($this->igw2IpCheckerUrl.$ip->ip_adresa);
-            if (strpos($igw1resp, $ip->ip_adresa.' 1') !== false || strpos($igw2resp, $ip->ip_adresa.' 1') !== false) {
+            if (strpos($igw1resp, $ip->ip_adresa.' 1') !== false) {
                 $attr = $tr->create('td');
     			$attr->create('span')
                     ->setClass('glyphicon glyphicon-ok')
-                    ->setTitle('IP je povolená do internetu na IGW')
+                    ->setTitle('IP je povolená do internetu na IGW 1')
                     ->addAttributes($tooltips);
             }
             else
@@ -214,9 +213,25 @@ class IPAdresa extends Table
                 $attr = $tr->create('td');
     			$attr->create('span')
                     ->setClass('glyphicon glyphicon-remove')
-                    ->setTitle('IP není povolená do internetu na IGW')
+                    ->setTitle('IP není povolená do internetu na IGW 1')
                     ->addAttributes($tooltips);
             }
+            /*$igw2resp = $this->file_get_contents_curl($this->igw2IpCheckerUrl.$ip->ip_adresa);
+            if (strpos($igw2resp, $ip->ip_adresa.' 1') !== false) {
+                $attr = $tr->create('td');
+    			$attr->create('span')
+                    ->setClass('glyphicon glyphicon-ok')
+                    ->setTitle('IP je povolená do internetu na IGW 2')
+                    ->addAttributes($tooltips);
+            }
+            else
+            {
+                $attr = $tr->create('td');
+    			$attr->create('span')
+                    ->setClass('glyphicon glyphicon-remove')
+                    ->setTitle('IP není povolená do internetu na IGW 2')
+                    ->addAttributes($tooltips);
+            }*/
         }
 
 		if ($ip)
