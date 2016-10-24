@@ -24,6 +24,14 @@ application:
 session:
     expiration: 14 days
 
+extensions:
+    console: Kdyby\Console\DI\ConsoleExtension
+    migrations: Nextras\Migrations\Bridges\NetteDI\MigrationsExtension
+
+migrations:
+    dir: %appDir%/../db         # migrations base directory
+    driver: mysql               # pgsql or mysql
+    dbal: nette                 # nextras, nette, doctrine or dibi
 
 services:
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
