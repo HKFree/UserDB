@@ -3,7 +3,7 @@
 <h3>Převedení platby</h3>
 
 {if $canViewOrEdit}
-{includeblock '../form.latte', form => prevodForm}
+{include '../form.latte', form => prevodForm}
 {else}
 <p>Na tuto operaci nemáte oprávnění!</p>
 {/if}

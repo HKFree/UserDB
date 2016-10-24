@@ -7,6 +7,8 @@ parameters:
 		fakeUser:
 			userID: 3306
 			userName: 'bkralik'
+	igw1IpCheckerUrl: http://localhost/
+	igw2IpCheckerUrl: http://localhost/
 
 # PRODUCTION
 parameters:

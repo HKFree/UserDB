@@ -6,23 +6,32 @@
 #
 parameters:
 	clenskyPrispevek: 290
+	igw1IpCheckerUrl: http://10.107.0.1:8080/ip4info/
+	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
 
 php:
 	date.timezone: Europe/Prague
 
+latte:
+    macros:
+        - App\Model\MyMacroSet
 
-nette:
-	latte:
-		macros:
-			- App\Model\MyMacroSet
-	application:
-		errorPresenter: Error
-		mapping:
-			*: App\*Module\Presenters\*Presenter
+application:
+    errorPresenter: Error
+    mapping:
+        *: App\*Module\Presenters\*Presenter
 
-	session:
-		expiration: 14 days
+session:
+    expiration: 14 days
 
+extensions:
+    console: Kdyby\Console\DI\ConsoleExtension
+    migrations: Nextras\Migrations\Bridges\NetteDI\MigrationsExtension
+
+migrations:
+    dir: %appDir%/../db         # migrations base directory
+    driver: mysql               # pgsql or mysql
+    dbal: nette                 # nextras, nette, doctrine or dibi
 
 services:
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
@@ -41,7 +50,7 @@ services:
 	zpusobPripojeni: App\Model\ZpusobPripojeni
 	technologiePripojeni: App\Model\TechnologiePripojeni
 	typCestnehoClenstvi: App\Model\TypCestnehoClenstvi
-	ipAdresa: App\Model\IPAdresa
+	ipAdresa: App\Model\IPAdresa(%igw1IpCheckerUrl%, %igw2IpCheckerUrl%)
 	oblast: App\Model\Oblast
 	ap: App\Model\AP
 	cc: App\Model\cc

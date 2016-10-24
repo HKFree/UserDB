@@ -1,0 +1,30 @@
+#!/bin/sh
+
+DEPLOYDIR=/opt/UserDB
+
+# get the latest version in master branch
+GIT_WORK_TREE="$DEPLOYDIR" git checkout -f
+
+# go to web app dir
+cd "$DEPLOYDIR"
+
+# enable Nette maintenance mode (HTTP/1.1 503 Service Unavailable)
+cp www/.maintenance.php www/maintenance.php
+
+# make sure temp dir is writable
+chmod -R a+wx temp
+
+# make sure log dir is writable
+chmod -R a+wx log
+
+# install all dependencies
+composer install
+
+# clear Nette cache
+rm -rf temp/cache
+
+# apply any changes to DB
+php www/index.php migrations:continue --production
+
+# disable maintenance mode
+rm www/maintenance.php

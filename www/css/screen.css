@@ -21,7 +21,7 @@ h4, .h4 {
 @media (min-width: 1300px) {
     h4, .h4 {
         font-size: 18px;
-    }    
+    }
     body {
         font-size: 12px;
     }
@@ -260,7 +260,7 @@ pre.tracy-dump {
 
 .legend td
 {
-    padding: 3px;    
+    padding: 3px;
 }
 
 .red {
@@ -275,12 +275,12 @@ pre.tracy-dump {
 }
 .zrusene>td
 {
-    background-color: #808080 !important;   
+    background-color: #808080 !important;
     color: white !important;
 }
 .zrusene>td a
 {
-    color: white !important;    
+    color: white !important;
 }
 
 .neaktivni>td:nth-child(10),
@@ -317,14 +317,14 @@ pre.tracy-dump {
     background-color: yellow;
     color: red;
     border: 3px solid black;
-    
+
 }
 
-.table>thead>tr>th, 
-.table>tbody>tr>th, 
-.table>tfoot>tr>th, 
-.table>thead>tr>td, 
-.table>tbody>tr>td, 
+.table>thead>tr>th,
+.table>tbody>tr>th,
+.table>tfoot>tr>th,
+.table>thead>tr>td,
+.table>tbody>tr>td,
 .table>tfoot>tr>td {
     /* line-height: 1.0 !important; */
     padding: 2px 4px !important;
@@ -544,4 +544,10 @@ pre.tracy-dump {
 tbody > tr.wewimo-table-header > th {
     color: white;
     background-color: #666666 !important;
+}
+
+/* Grido's rules overrides */
+
+.grido tbody tr td {
+    padding: 2px 4px;
 }

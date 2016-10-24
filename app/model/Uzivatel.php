@@ -9,7 +9,7 @@ use Nette,
 
 
 /**
- * @author 
+ * @author
  */
 class Uzivatel extends Table
 {
@@ -20,8 +20,7 @@ class Uzivatel extends Table
 
     public function getSeznamSpravcuUzivatele($id_uzivatel)
     {
-        $context = new Context($this->connection);
-        return $context->query('SELECT SO . * 
+        return $this->getConnection()->query('SELECT SO . *
 FROM  `Uzivatel` U
 LEFT JOIN Ap A ON U.Ap_id = A.id
 LEFT JOIN Oblast O ON A.Oblast_id = O.id
@@ -30,12 +29,12 @@ LEFT JOIN Uzivatel SO ON SO.id = S.Uzivatel_id
 WHERE U.id ='.$id_uzivatel)
                         ->fetchAll();
     }
-    
+
     public function getSeznamUzivatelu()
     {
       return($this->findAll());
     }
-    
+
     public function getFormatovanySeznamNezrusenychUzivatelu()
     {
       $vsichni = $this->findAll()->where('TypClenstvi_id>1')->fetchAll();
@@ -49,12 +48,11 @@ WHERE U.id ='.$id_uzivatel)
     public function findUserByFulltext($search, $Uzivatel)
     {
         //mobil a email pouze pro ty co maji prava
-        
-        
-        
-        $context = new Context($this->connection);
-        $completeMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
-                                            LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id 
+
+
+
+        $completeMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
+                                            LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id
                                             WHERE (
                                             Uzivatel.id = '$search'
                                             OR  IPAdresa.ip_adresa = '$search'
@@ -64,8 +62,8 @@ WHERE U.id ='.$id_uzivatel)
             return($this->findBy(array('id' => $completeMatchId)));
         }
         //\Tracy\Dumper::dump($search);
-        $partialMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
-                                            LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id 
+        $partialMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
+                                            LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id
                                             WHERE (
                                             Uzivatel.id LIKE '$search%'
                                             ) LIMIT 1")->fetchField();
@@ -73,21 +71,21 @@ WHERE U.id ='.$id_uzivatel)
         {
             return($this->findBy(array('id' => $partialMatchId)));
         }
-        
+
         if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV')) {
             $uid = $Uzivatel->getIdentity()->getId();
-            $secureMatchId = $context->query("SELECT Uzivatel.id FROM Uzivatel 
+            $secureMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id
                                             JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
                                             WHERE (
                                             Uzivatel.telefon LIKE '%$search%'
                                             OR Uzivatel.email LIKE '%$search%'
                                             OR Uzivatel.email2 LIKE '%$search%'
-                                            OR CONVERT(Uzivatel.jmeno USING utf8) LIKE '%$search%' 
+                                            OR CONVERT(Uzivatel.jmeno USING utf8) LIKE '%$search%'
                                             OR CONVERT(Uzivatel.prijmeni USING utf8) LIKE '%$search%'
                                             OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE '%$search%'
                                             ) AND (SpravceOblasti.Uzivatel_id = $uid AND od<NOW() AND (do IS NULL OR do>NOW()))")->fetchPairs('id','id');
-            
+
             if(!empty($secureMatchId))
             {
                 //\Tracy\Dumper::dump($secureMatchId);
@@ -98,22 +96,22 @@ WHERE U.id ='.$id_uzivatel)
         else{
             return $this->findAll()->where("telefon LIKE ? OR email LIKE ? OR email2 LIKE ? OR CONVERT(jmeno USING utf8) LIKE ? OR CONVERT(prijmeni USING utf8) LIKE ? OR CONVERT(ulice_cp USING utf8) LIKE ?", '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%')->fetchAll();
         }
-        
-        
+
+
         return($this->findBy(array('id' => 0)));
     }
-    
+
     public function getSeznamUzivateluZAP($idAP)
     {
 	    return($this->findBy(array('Ap_id' => $idAP)));
     }
-    
+
     public function getUzivatel($id)
     {
       return($this->find($id));
     }
 
-    /** 
+    /**
     * Generates a strong password of N length containing at least one lower case letter,
     * one uppercase letter, one digit, and one special character. The remaining characters
     * in the password are chosen at random from those four sets.
@@ -170,17 +168,16 @@ WHERE U.id ='.$id_uzivatel)
         $dash_str .= $password;
         return $dash_str;
     }
-    
+
     public function getNewID()
     {
-        $context = new Context($this->connection);
-        return $context->query('SELECT t1.id+1 AS Free 
-FROM Uzivatel AS t1 
-LEFT JOIN Uzivatel AS t2 ON t1.id+1 = t2.id 
-WHERE t2.id IS NULL AND t1.id>7370 
+        return $this->getConnection()->query('SELECT t1.id+1 AS Free
+FROM Uzivatel AS t1
+LEFT JOIN Uzivatel AS t2 ON t1.id+1 = t2.id
+WHERE t2.id IS NULL AND t1.id>7370
 ORDER BY t1.id LIMIT 1')->fetchField();
     }
-    
+
     public function getDuplicateEmailArea($email, $id)
     {
         $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where('TypClenstvi_id > 1')->fetch();
@@ -190,7 +187,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
         }
         return null;
     }
-    
+
     public function getDuplicatePhoneArea($telefon, $id)
     {
         $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where('TypClenstvi_id > 1')->fetch();
@@ -200,18 +197,18 @@ ORDER BY t1.id LIMIT 1')->fetchField();
         }
         return null;
     }
-    
+
     public function mesicName($indate, $addmonth){
         $date = new Nette\Utils\DateTime($indate);
         $date->add(new \DateInterval('P'.$addmonth.'M'));
         $datestr = $date->format('F');
-        
+
         $aj = array("January","February","March","April","May","June","July","August","September","October","November","December");
         $cz = array("leden","únor","březen","duben","květen","červen","červenec","srpen","září","říjen","listopad","prosinec");
         $datum = str_replace($aj, $cz, $datestr);
         return $datum;
     }
-    
+
     public function mesicDate($indate, $addmonth){
         $date = new Nette\Utils\DateTime($indate);
         $date->add(new \DateInterval('P'.$addmonth.'M'));
