@@ -200,7 +200,7 @@ class IPAdresa extends Table
 
         if ($igwCheck && $ip)
 		{
-            $igw1resp = $this->file_get_contents_curl('http://10.107.0.1:8080/ip4info/'.$ip->ip_adresa);
+            $igw1resp = $this->file_get_contents_curl($this->igw1IpCheckerUrl.$ip->ip_adresa);
             if (strpos($igw1resp, $ip->ip_adresa.' 1') !== false) {
                 $attr = $tr->create('td');
     			$attr->create('span')
@@ -216,7 +216,7 @@ class IPAdresa extends Table
                     ->setTitle('IP není povolená do internetu na IGW 1')
                     ->addAttributes($tooltips);
             }
-            /*$igw2resp = $this->file_get_contents_curl('http://10.107.0.2:8080/ip4info/'.$ip->ip_adresa);
+            /*$igw2resp = $this->file_get_contents_curl($this->igw2IpCheckerUrl.$ip->ip_adresa);
             if (strpos($igw2resp, $ip->ip_adresa.' 1') !== false) {
                 $attr = $tr->create('td');
     			$attr->create('span')
