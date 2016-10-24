@@ -11,12 +11,6 @@ cd "$DEPLOYDIR"
 # enable Nette maintenance mode (HTTP/1.1 503 Service Unavailable)
 cp www/.maintenance.php www/maintenance.php
 
-# make sure temp dir is writable
-chmod -R a+wx temp
-
-# make sure log dir is writable
-chmod -R a+wx log
-
 # install all dependencies
 composer install
 
