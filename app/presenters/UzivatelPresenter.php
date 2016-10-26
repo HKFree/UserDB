@@ -760,7 +760,7 @@ class UzivatelPresenter extends BasePresenter
                 $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
 
                 $uzivatelEditLink = $this->link('Uzivatel:edit', array('id' => $uid));
-    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $uzivatelEditLink, false); //todo enable
+    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $uzivatelEditLink, $this->getParameter('igw', false));
                                 
                 if($ipAdresy->count() > 0)
                 {
@@ -778,6 +778,8 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
                                                         || ($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1);
                 $this->template->deactivaceVisible = $uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 0;
+                
+                $this->template->igw = $this->getParameter("igw", false);
     	    }
     	}
     }
