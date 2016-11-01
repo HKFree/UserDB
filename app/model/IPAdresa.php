@@ -114,7 +114,7 @@ class IPAdresa extends Table
 	{
 		$adresyTab = Html::el('table')->setClass('table table-striped');
 
-		$this->addIPTableHeader($adresyTab, $canViewCredentialsOrEdit);
+		$this->addIPTableHeader($adresyTab, $canViewCredentialsOrEdit, false, $igwCheck);
 
 		foreach ($ips as $ip)
 		{
@@ -125,12 +125,12 @@ class IPAdresa extends Table
 		return $adresyTab;
 	}
 
-	public function addIPTableHeader($adresyTab, $canViewCredentialsOrEdit=false, $subnetMode=false)
+	public function addIPTableHeader($adresyTab, $canViewCredentialsOrEdit=false, $subnetMode=false, $igwCheck=false)
 	{
 		$tr = $adresyTab->create('tr');
 
 		$tr->create('th')->setText('IP');
-        if (!$subnetMode)
+        if ($igwCheck)
 		{
             $tr->create('th')->setText('IGW');
         }
