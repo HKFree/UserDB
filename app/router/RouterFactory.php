@@ -20,7 +20,7 @@ class RouterFactory
     public function createRouter($https, $urlPrefix)
     {
         $router = new RouteList();
-        $router[] = new Route('/api/<presenter>[/<action=default>[/<id>]]', [
+        $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
             'module' => 'Api'
         ]);
         $router[] = new Route($urlPrefix . '/<presenter>/list/<id>', 'Homepage:list', ($https ? Route::SECURED : null));
