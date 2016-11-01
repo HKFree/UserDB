@@ -63,3 +63,4 @@ services:
 	logTableFactory: App\Components\LogTableFactory
 	parameters: App\Model\Parameters(%clenskyPrispevek%)
 	wewimo: App\Model\Wewimo
+	apiKlic: App\Model\ApiKlic

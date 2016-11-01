@@ -24,6 +24,24 @@
 <h4>Subnety <small>na AP</small></h4>
 {$subnety}
 
+<h4>API klíče <small>pro přístup k datům na AP přes https://userdb.hkfree.org/userdb/api/...</small></h4>
+<table class="table table-striped">
+    <tr>
+        <th>Uživatelské jméno</th>
+        <th>Klíč (heslo)</th>
+        <th>Platnost do</th>
+        <th>Poznámka</th>
+    </tr>
+{foreach $apiKlice as $apiKlic}
+    <tr>
+        <td>apikey{$apiKlic['id']}</td>
+        <td>{$apiKlic['klic']}</td>
+        <td>{$apiKlic['plati_do']|date:'%d.%m.%Y'}{if $apiKlic['expired']} <span class="text-danger glyphicon glyphicon-warning-sign" aria-hidden="true"></span>{/if}</td>
+        <td>{$apiKlic['poznamka']}</td>
+    </tr>
+{/foreach}
+</table>
+
 <h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
 <script>
   $(document).ready(function( $ ) {
@@ -34,7 +52,7 @@
   });
 
 </script>
-{control logTable, $ap->id, "ap"}     
+{control logTable, $ap->id, "ap"}
 
 {/ifset}
 {/block}

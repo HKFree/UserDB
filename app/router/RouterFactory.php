@@ -14,15 +14,18 @@ use Nette,
 class RouterFactory
 {
 
-	/**
-	 * @return \Nette\Application\IRouter
-	 */
-	public function createRouter($https, $urlPrefix)
-	{
-		$router = new RouteList();
-		$router[] = new Route($urlPrefix.'/<presenter>/list/<id>', 'Homepage:list', ($https ? Route::SECURED : null));
-		$router[] = new Route($urlPrefix.'/<presenter>/<action>[/<id>]', 'Homepage:default', ($https ? Route::SECURED : null));        
-		return $router;
-	}
+    /**
+     * @return \Nette\Application\IRouter
+     */
+    public function createRouter($https, $urlPrefix)
+    {
+        $router = new RouteList();
+        $router[] = new Route('/api/<presenter>[/<action=default>[/<id>]]', [
+            'module' => 'Api'
+        ]);
+        $router[] = new Route($urlPrefix . '/<presenter>/list/<id>', 'Homepage:list', ($https ? Route::SECURED : null));
+        $router[] = new Route($urlPrefix . '/<presenter>/<action>[/<id>]', 'Homepage:default', ($https ? Route::SECURED : null));
+        return $router;
+    }
 
 }

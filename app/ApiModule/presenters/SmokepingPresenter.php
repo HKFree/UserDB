@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Presenters;
+namespace App\ApiModule\Presenters;
 
 use Nette,
     App\Model,
@@ -14,23 +14,23 @@ use Nette,
     Nette\Mail\SendmailMailer,
     Nette\Utils\Strings,
     PdfResponse\PdfResponse;
-    
+
 use Nette\Forms\Controls\SubmitButton;
 /**
  * Uzivatel presenter.
  */
-class SmokepingPresenter extends BasePresenter
-{  
+class SmokepingPresenter extends ApiPresenter
+{
     private $uzivatel;
     private $ipAdresa;
     private $ap;
 
     function __construct(Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
     	$this->uzivatel = $uzivatel;
-    	$this->ipAdresa = $ipAdresa;  
+    	$this->ipAdresa = $ipAdresa;
     	$this->ap = $ap;
     }
-    
+
     public function renderDefault()
     {
         $httpResponse = $this->presenter->getHttpResponse();
@@ -65,12 +65,12 @@ class SmokepingPresenter extends BasePresenter
         $this->template->users = $users;
         $this->template->users_ips = $users_ips;
     }
-    
+
     public function renderCheck() {
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');
         $this->template->md5 = md5(serialize($this->ipAdresa->findBy(array('smokeping'=>1))->fetchPairs('id','ip_adresa')));
     }
-    
+
 }

@@ -20,11 +20,12 @@ class ApPresenter extends BasePresenter {
     private $subnet;
     private $typZarizeni;
     private $log;
+    private $apiKlic;
 
     /** @var Components\LogTableFactory @inject */
     public $logTableFactory;
 
-    function __construct(Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic) {
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
@@ -32,6 +33,7 @@ class ApPresenter extends BasePresenter {
         $this->subnet = $subnet;
         $this->typZarizeni = $typZarizeni;
         $this->log = $log;
+        $this->apiKlic = $apiKlic;
     }
 
     public function createComponentLogTable() {
@@ -104,6 +106,9 @@ class ApPresenter extends BasePresenter {
             $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
             $this->template->csubnety = $this->subnet->getAPCSubnets($ap->related('Subnet.Ap_id'));
             $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
+            $kliceAsoc = $ap->related('ApiKlic.Ap_id')->fetchAssoc('id');
+            $this->template->apiKlice = $this->apiKlic->decorateKeys($kliceAsoc);
+            $this->template->serverHostname = $_SERVER['HTTP_HOST'];
         }
     }
 
@@ -153,6 +158,22 @@ class ApPresenter extends BasePresenter {
                 ->setValidationScope(FALSE)
                 ->addCreateOnClick(TRUE);
 
+        $dataApiKlice = $this->apiKlic;
+        $apiKlice = $form->addDynamic('apiKlic', function (Container $apiKlic) use ($dataApiKlice, $form) {
+            //var_dump($formValues);
+            $dataApiKlice->getEditForm($apiKlic, $form);
+
+            $apiKlic->addSubmit('remove_apiklic', '– Odstranit API klíč')
+                ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+                ->setValidationScope(FALSE)
+                ->addRemoveOnClick();
+        }, ($this->getParam('id')>0?0:1));
+
+        $apiKlice->addSubmit('add_apiKlic', '+ Přidat další API klíč')
+            ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
+            ->setValidationScope(FALSE)
+            ->addCreateOnClick(TRUE);
+
         $form->addSubmit('save', 'Uložit')
              ->setAttribute('class', 'btn btn-success btn-white default btn-edit-save');
 
@@ -168,6 +189,9 @@ class ApPresenter extends BasePresenter {
                 }
                 foreach($values->related('Subnet.Ap_id') as $subnet_id => $subnet_data) {
                     $form["subnet"][$subnet_id]->setValues($subnet_data);
+                }
+                foreach($values->related('ApiKlic.Ap_id') as $apiKlic_id => $apiKlic_data) {
+                    $form["apiKlic"][$apiKlic_id]->setValues($apiKlic_data);
                 }
                 $form->setValues($values);
             }
@@ -268,8 +292,10 @@ class ApPresenter extends BasePresenter {
         $idAP = $values->id;
         $ips = $values->ip;
         $subnets = $values->subnet;
+        $apiKlice = $values->apiKlic;
         unset($values["ip"]);
         unset($values["subnet"]);
+        unset($values["apiKlic"]);
 
         // Zpracujeme nejdriv APcko
         if(empty($values->id)) {
@@ -339,6 +365,37 @@ class ApPresenter extends BasePresenter {
             }
 
         $this->subnet->deleteSubnet($toDelete);
+        unset($toDelete);
+
+        // Potom zpracujeme API klice
+        $newApiKeysIDs = array();
+        foreach($apiKlice as $apiKey)
+        {
+            $apiKey->Ap_id = $idAP;
+            $idApiKey = $apiKey->id;
+            if ($apiKey->plati_do === '') $apiKey->plati_do = NULL; // save NULL instead of '0000-00-00' when inserting empty string
+            if(empty($apiKey->id)) {
+                $idApiKey = $this->apiKlic->insert($apiKey)->id;
+                $this->log->logujInsert($apiKey, 'ApiKlic['.$idApiKey.']', $log);
+            } else {
+                $oldApiKlic = $this->apiKlic->getApiKlic($idApiKey);
+                $this->apiKlic->update($idApiKey, $apiKey);
+                $this->log->logujUpdate($oldApiKlic, $apiKey, 'ApiKlic['.$idApiKey.']', $log);
+            }
+            $newApiKeysIDs[] = intval($idApiKey);
+        }
+
+        // A tady smazeme v DB ty API klice co jsme smazali
+        $APApiKeyIDs = array_keys($this->ap->getAP($idAP)->related('ApiKlic.Ap_id')->fetchPairs('id', 'klic'));
+        $toDelete = array_values(array_diff($APApiKeyIDs, $newApiKeysIDs));
+        if(!empty($toDelete)) {
+            foreach($toDelete as $idApiKlic) {
+                $oldApiKlic = $this->apiKlic->getApiKlic($idApiKlic);
+                $this->log->logujDelete($oldApiKlic, 'ApiKlic['.$idApiKlic.']', $log);
+            }
+        }
+
+        $this->apiKlic->deleteApiKlice($toDelete);
         unset($toDelete);
 
         $this->log->loguj('Ap', $idAP, $log);
