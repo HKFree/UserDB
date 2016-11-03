@@ -25,29 +25,25 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
     }
-    
+
     public function startup() {
 		parent::startup();
 
 		//$uri = $this->getHttpRequest()->getUrl();
-                if($this->getPresenter()->getName()!='Smokeping' && $this->getPresenter()->getName()!='smokeping') {
-                    if($this->context->parameters["debug"]["fakeUser"] == false) {
-                            $this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
-                    } else { 
-                            $this->getUser()->login("DBG", NULL);
-                    }
+                if($this->context->parameters["debug"]["fakeUser"] == false) {
+                        $this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
                 } else {
-                        $this->getUser()->login("NOLOGIN", NULL);
+                        $this->getUser()->login("DBG", NULL);
                 }
     }
-    
+
     protected function beforeRender() {
         parent::__construct();
         parent::beforeRender();
-        
+
         //$this->template->oblasti = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
         $this->template->oblasti = $this->oblast->getSeznamOblasti();
-        
+
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
         if (count($oblastiSpravce) > 0) {
             $this->template->mojeOblasti = $this->oblast->formatujOblastiSAP($oblastiSpravce);
@@ -55,7 +51,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
             $this->template->mojeOblasti = false;
         }
     }
-    
+
     protected function createComponentSearchForm() {
         $form = new Form;
         $form->getElementPrototype()->class('navbar-form navbar-right');

@@ -7,7 +7,7 @@ use Nette\Application\Responses\JsonResponse,
 use Nette\Http\Response;
 use Nette\Utils\DateTime;
 
-class ApiPresenter extends \App\Presenters\BasePresenter
+class ApiPresenter extends \Nette\Application\UI\Presenter
 {
     protected $apiKlicModel;
 

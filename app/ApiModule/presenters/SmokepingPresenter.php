@@ -21,11 +21,13 @@ use Nette\Forms\Controls\SubmitButton;
  */
 class SmokepingPresenter extends ApiPresenter
 {
+    public $oblast;
     private $uzivatel;
     private $ipAdresa;
     private $ap;
 
-    function __construct(Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
+    function __construct(Model\Oblast $oblast, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
+        $this->oblast = $oblast;
     	$this->uzivatel = $uzivatel;
     	$this->ipAdresa = $ipAdresa;
     	$this->ap = $ap;
