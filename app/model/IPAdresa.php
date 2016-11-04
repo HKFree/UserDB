@@ -107,10 +107,11 @@ class IPAdresa extends Table
 	 * @param $canViewCredentialsOrEdit zda vygenerovat tabulku, kde budou zobrazena hesla a odkazy primo
 	 * 							na editaci dane IP (at uz do AP nebo Uzivatele, podle toho, kde je pouzita)
 	 * @param $subnetLinks asoc. pole ip -> odkaz do subnet zobrazeni (do tabulky s IP adresami v danem C subnetu)
+         * @param $wewimoLinks asoc. pole ip -> odkaz do wewimo zobrazeni
 	 * @param null $editLink link na editaci AP nebo Uzivatele, pokud zobrazujeme tabulku v detailu APcka nebo Uzivatele, jinak null
 	 * @return mixed
 	 */
-    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $editLink=null, $igwCheck=false)
+    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink=null, $igwCheck=false)
 	{
 		$adresyTab = Html::el('table')->setClass('table table-striped');
 
@@ -119,7 +120,8 @@ class IPAdresa extends Table
 		foreach ($ips as $ip)
 		{
 			$subnetLink = $subnetLinks[$ip->ip_adresa];
-			$this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $editLink, $igwCheck);
+                        $wewimoLink = $wewimoLinks[$ip->ip_adresa];
+			$this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $wewimoLink, $editLink, $igwCheck);
 		}
 
 		return $adresyTab;
@@ -143,6 +145,7 @@ class IPAdresa extends Table
 		$tr->create('th')->setText('MAC Adresa');
 		$tr->create('th')->setText('Zařízení');
 		$tr->create('th')->setText('Atributy');
+                $tr->create('th')->setText('SSID');
 		$tr->create('th')->setText('Popis');
 		if ($canViewCredentialsOrEdit) {
 			$tr->create('th')->setText('Login');
@@ -180,7 +183,7 @@ class IPAdresa extends Table
         return $data;
     }
 
-	public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo=null, $subnetLink=null, $editLink=null, $igwCheck=false)
+	public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo=null, $subnetLink=null, $wewimoLink=null, $editLink=null, $igwCheck=false)
 	{
 		$tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
@@ -374,7 +377,27 @@ class IPAdresa extends Table
 						->addAttributes($tooltips);
 					$attr->addHtml(' ');
 				}
-
+                                // ssid
+                                $wewimoTag;
+                                if ($wewimoLink) {
+                                    // SSID jako link do wewimo
+                                    $wewimoTag = $tr->create('td')->create('a')
+                                        ->setHref($wewimoLink)
+                                        ->setTarget('_blank');
+                                } else {
+                                    // zobrazit SSID jen jako text,
+                                    // TOHLE BY ASI NEMELO PRAKTICKY NASTAT,
+                                    // leda se napr. smaze definice AP zarizeni, ale SSID zustane v zaznamu ulozeno
+                                    $wewimoTag = $tr->create('td');
+                                }
+                                if ($ip->w_ssid) {
+                                    $tooOld =  (strtotime($ip->w_timestamp) < strtotime('-60 days'));
+                                    $addInfo = $tooOld ? ", ZASTARALÉ!" : "";
+                                    $wewimoTag->setText($ip->w_ssid)
+                                        ->setTitle('Údaj z Wewima z '.$ip->w_timestamp . ", shoda podle ".$ip->w_shoda.$addInfo)
+                                        ->addAttributes($tooltips);
+                                    if ($tooOld) $wewimoTag->setClass('fade-out-old');
+                                }
 				$tr->create('td')->setText($ip->popis); // popis
 				if ($canViewCredentialsOrEdit) {
 					$tr->create('td')->setText($ip->login);
@@ -390,6 +413,7 @@ class IPAdresa extends Table
 				$tr->create('td'); // MAC
 				$tr->create('td'); // typ zarizeni
 				$tr->create('td'); // atributy
+                                $tr->create('td'); // ssid
 				$tr->create('td'); // popis
 				if ($canViewCredentialsOrEdit) {
 					$tr->create('td'); // login
@@ -405,7 +429,8 @@ class IPAdresa extends Table
 			$tr->create('td');
 			$tr->create('td');
 			$tr->create('td');
-			$tr->create('td');
+                        $tr->create('td'); // ssid
+			$tr->create('td'); // popis
 			if ($canViewCredentialsOrEdit) {
 				$tr->create('td')->setText(''); // login
 				$tr->create('td')->setText(''); // heslo
@@ -472,4 +497,31 @@ class IPAdresa extends Table
 		return $this->getTable()->where('ip_adresa', $ips)->fetchPairs('ip_adresa');
 	}
 
+    public function updateWewimoStatsHook($wewimoStruct) {
+        foreach ($wewimoStruct as $wewimoData) {
+            foreach ($wewimoData['interfaces'] as $interface) {
+                $updateFields = [
+                    'w_ssid' => $interface['ssid'],
+                    'w_ap_IPAdresa_id' => $wewimoData['ip_id'],
+                    'w_timestamp' => new \DateTime()  // now
+                ];
+                // prvne projdeme stanice, kde je podle Last-IP dohledane konkretni zarizeni (IPAdresa)
+                $updateFields['w_shoda'] = 'LAST_IP';
+                foreach ($interface['stations'] as $station) {
+                    if ($station['xx-last-ip-id']) {
+                        // u dane IP updatujeme data (kam je pripojena)
+                        $this->update($station['xx-last-ip-id'], $updateFields);
+                    }
+                }
+                // pak projdeme stanice, kde je podle MAC dohledane konkretni zarizeni (IPAdresa)
+                $updateFields['w_shoda'] = 'MAC';
+                foreach ($interface['stations'] as $station) {
+                    if ($station['xx-mac-ip-id']) {
+                        // u dane IP updatujeme data (kam je pripojena)
+                        $this->update($station['xx-mac-ip-id'], $updateFields);
+                    }
+                }
+            }
+        }
+    }
 }

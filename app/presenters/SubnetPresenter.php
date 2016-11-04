@@ -158,7 +158,8 @@ class SubnetPresenter extends BasePresenter
                             'ipTitle' => $ipAdresaTitle,
                         );
                     }
-                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo);
+                    $wewimoLink = $this->getWewimoLinkFromIpAddress($ip);
+                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo, null, $wewimoLink);
                 } else
                 {
                     // nevyuzita IP

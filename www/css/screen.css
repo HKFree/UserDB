@@ -546,6 +546,10 @@ tbody > tr.wewimo-table-header > th {
     background-color: #666666 !important;
 }
 
+.fade-out-old {
+    color: #d0d0d0;
+}
+
 /* Grido's rules overrides */
 
 .grido tbody tr td {
