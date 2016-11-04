@@ -14,9 +14,9 @@ use Nette,
  * Subnet presenter.
  */
 class SubnetPresenter extends BasePresenter
-{  
-    private $spravceOblasti; 
-    private $cestneClenstviUzivatele;  
+{
+    private $spravceOblasti;
+    private $cestneClenstviUzivatele;
     private $typClenstvi;
     private $typCestnehoClenstvi;
     private $typPravniFormyUzivatele;
@@ -40,7 +40,7 @@ class SubnetPresenter extends BasePresenter
     	$this->zpusobPripojeni = $zpusobPripojeni;
         $this->technologiePripojeni = $technologiePripojeni;
     	$this->uzivatel = $uzivatel;
-    	$this->ipAdresa = $ipAdresa;  
+    	$this->ipAdresa = $ipAdresa;
     	$this->ap = $ap;
     	$this->typZarizeni = $typZarizeni;
         $this->log = $log;
@@ -56,30 +56,30 @@ class SubnetPresenter extends BasePresenter
             {
                 $targetSubnet .= ".";
             }
-            
+
             $existujici = $this->subnet->getSeznamSubnetuZacinajicich($targetSubnet);
             //\Tracy\Dumper::dump($existujici);
-            
+
             $networks = array();
             $captions = array();
             foreach ($existujici as $snet) {
-                $out = $this->subnet->parseSubnet($snet->subnet);            
+                $out = $this->subnet->parseSubnet($snet->subnet);
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
                 $networks[$d] = 1 << (32 - $out["cidr"]); //calculates number of ips in cidr
                 $captions[$d] = $snet->popis;
             }
-            
+
             //\Tracy\Dumper::dump($networks);
             $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;
             $this->template->captions = $captions;
-            
-    	} else {            
+
+    	} else {
             $this->flashMessage("Nebyl vybrán subnet.", "danger");
             $this->redirect("Homepage:default", array("id"=>null)); // a přesměrujeme
     	}
     }
-    
+
     public function renderDetail()
     {
     	if($this->getParam('id'))
@@ -89,14 +89,14 @@ class SubnetPresenter extends BasePresenter
             {
                 $targetSubnet .= ".";
             }
-            
+
             $existujiciSubnety = $this->subnet->getSeznamSubnetuZacinajicich($targetSubnet);
-            
+
             $networks = array();
             $gateways = array();
             foreach ($existujiciSubnety as $snet)
             {
-                $out = $this->subnet->parseSubnet($snet->subnet);            
+                $out = $this->subnet->parseSubnet($snet->subnet);
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
                 $networks[$d] = array(
                     'ips' => 1 << (32 - $out["cidr"]), //calculates number of ips in cidr
@@ -106,7 +106,7 @@ class SubnetPresenter extends BasePresenter
                 );
                 $gateways[$snet->gateway] = 1;
             }
-            
+
             $existujiciIP = $this->ipAdresa->getSeznamIPAdresZacinajicich($targetSubnet);
 
             $adresyTab = Html::el('table')->setClass('table table-striped');
@@ -158,7 +158,7 @@ class SubnetPresenter extends BasePresenter
                             'ipTitle' => $ipAdresaTitle,
                         );
                     }
-                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo, true);
+                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo);
                 } else
                 {
                     // nevyuzita IP
@@ -166,7 +166,7 @@ class SubnetPresenter extends BasePresenter
                         'ipAdresa' => $ipAdresa,
                         'rowClass' => $networkBroadcastAddrClass,
                         'ipTitle' => $ipAdresaTitle,
-                    ), true);
+                    ));
                 }
 
                 if (array_key_exists($i,$networks))
@@ -177,11 +177,11 @@ class SubnetPresenter extends BasePresenter
                 }
             }
             //\Tracy\Dumper::dump($ips);
-            
+
             $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;
             $this->template->adresyTab = $adresyTab;
     	}
     }
-    
+
 }
