@@ -27,17 +27,20 @@ class WewimoPresenter extends BasePresenter
     public function fetchWewimo($apId, $ip=null) {
         // AP podle ID
         $apt = $this->ap->getAP($apId*1);
-        $this->template->ap = $apt;
-        $invokerStr = $this->getUser()->getId() . " (" . $this->getUser()->getIdentity()->nick . ")";
-        $wewimoMultiData = $this->wewimo->getWewimoFullData($apId, $invokerStr, $ip);
-        // doplnit linky
-        $this->addWewimoLinks($wewimoMultiData);
-        // ma uzivatel videt detaily? pokud ne, tak detaily "promazat" a anonymizovat MAC
-        if (!($this->ap->canViewOrEditAP($apt->id, $this->getUser()))) {
-            $this->anonymizeWewimoData($wewimoMultiData);
+        if (!$apt) {
+            $this->error('AP not found');
+        } else {
+            $this->template->ap = $apt;
+            $invokerStr = $this->getUser()->getId() . " (" . $this->getUser()->getIdentity()->nick . ")";
+            $wewimoMultiData = $this->wewimo->getWewimoFullData($apId, $invokerStr, $ip);
+            // doplnit linky
+            $this->addWewimoLinks($wewimoMultiData['devices']);
+            // ma uzivatel videt detaily? pokud ne, tak detaily "promazat" a anonymizovat MAC
+            if (!($this->ap->canViewOrEditAP($apt->id, $this->getUser()))) {
+                $this->anonymizeWewimoData($wewimoMultiData['devices']);
+            }
+            $this->template->wewimo = $wewimoMultiData['devices'];
         }
-        $this->template->wewimo = $wewimoMultiData;
-
     }
 
     public function anonymizeWewimoData(&$wewimoMultiData) {

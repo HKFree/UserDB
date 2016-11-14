@@ -120,6 +120,7 @@ class Wewimo extends Nette\Object
                     $neigh = $neighborsByMac[$row['mac-address']];
                     $row['x-device-type'] = $neigh['x-device-type'];
                     $row['x-identity'] = $neigh['identity'];
+                    $this->sanitizeAttribute($row, 'x-identity');
                     $row['x-in-neighbors'] = 1;
                 } else {
                     $row['x-device-type'] = '';
@@ -146,9 +147,25 @@ class Wewimo extends Nette\Object
         return round($val);
     }
 
+    public function sanitizeAttribute(&$assocArray, $attributeName) {
+        if (array_key_exists($attributeName, $assocArray)) {
+            if (!mb_detect_encoding($assocArray[$attributeName],'UTF-8', true)) {
+                // if not valid UTF-8 string, convert from latin-1 to UTF-8
+                $assocArray[$attributeName] = utf8_encode($assocArray[$attributeName]); // TODO maybe detect which encoding is used in source string
+                //$assocArray[$attributeName] = urlencode($assocArray[$attributeName]); // for debugging purpose
+            }
+        }
+    }
+
     public function getWewimoFullData($apId, $invokerStr, $ip=null) {
         // AP podle ID
         $apt = $this->ap->getAP($apId*1);
+        $wewimoMultiData = [];
+        $wewimoMultiData['devices'] = [];
+        if (!$apt) {
+            $wewimoMultiData['error'] = 'Uknown AP ' . $apId;
+            return $wewimoMultiData;
+        }
         // k AP dohledat IP adresy, ktere maji nastaven priznak Wewimo
         $apIps = $apt->related('IPAdresa.Ap_id')->where('wewimo', 1);
         if ($ip) {
@@ -158,17 +175,19 @@ class Wewimo extends Nette\Object
             $apIps = $apIps->where('ip_adresa', $ip);
         }
         $apIps = $apIps->order('INET_ATON(ip_adresa)');
-        $wewimoMultiData = array();
         foreach ($apIps as $ip) {
             try {
                 $wewimoData = $this->getWewimoData($ip['ip_adresa'], $ip['login'], $ip['heslo'], $invokerStr);
                 $searchMacs = array();
                 $searchIps = array();
-                // doplnit nazvy (IP) k MAC adresam a k last-ip
-                foreach ($wewimoData['interfaces'] as $interfaceName => $xinterface) {
-                    foreach ($xinterface['stations'] as $xstation) {
+                // doplnit nazvy (IP) k MAC adresam a k last-ip, sanovat nektere problematicke stringove atributy
+                foreach ($wewimoData['interfaces'] as $interfaceName => &$xinterface) {
+                    $this->sanitizeAttribute($xinterface, 'comment');
+                    foreach ($xinterface['stations'] as &$xstation) {
                         if ($xstation['mac-address']) $searchMacs[] = $xstation['mac-address'];
                         if ($xstation['last-ip']) $searchIps[] = $xstation['last-ip'];
+                        $this->sanitizeAttribute($xstation, 'comment');
+                        $this->sanitizeAttribute($xstation, 'radio-name');
                     }
                 }
                 $ips = $this->ipadresa->getIpsByMacsMap($searchMacs);
@@ -209,6 +228,7 @@ class Wewimo extends Nette\Object
                                     $station['x-in-neighbors'] = 2;
                                     $station['x-device-type'] = $neighFound['x-device-type'];
                                     $station['x-identity'] = $neighFound['identity'];
+                                    $this->sanitizeAttribute($station, 'x-identity');
                                 }
                             }
                         } else {
@@ -258,9 +278,9 @@ class Wewimo extends Nette\Object
             $wewimoData['ip'] = $ip['ip_adresa'];
             $wewimoData['ip_id'] = $ip['id'];
             $wewimoData['hostname'] = $ip['hostname'];
-            $wewimoMultiData[] = $wewimoData;
+            $wewimoMultiData['devices'][] = $wewimoData;
         }
-        $this->ipadresa->updateWewimoStatsHook($wewimoMultiData);
+        $this->ipadresa->updateWewimoStatsHook($wewimoMultiData['devices']);
         return $wewimoMultiData;
     }
 }
