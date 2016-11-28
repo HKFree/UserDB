@@ -497,23 +497,32 @@ class IPAdresa extends Table
 		return $this->getTable()->where('ip_adresa', $ips)->fetchPairs('ip_adresa');
 	}
 
-    public function updateWewimoStatsHook($wewimoStruct) {
-        foreach ($wewimoStruct as $wewimoData) {
+    public function updateWewimoStatsHook($wewimoDevices) {
+        foreach ($wewimoDevices as $wewimoData) {
             foreach ($wewimoData['interfaces'] as $interface) {
                 $updateFields = [
                     'w_ssid' => $interface['ssid'],
                     'w_ap_IPAdresa_id' => $wewimoData['ip_id'],
                     'w_timestamp' => new \DateTime()  // now
                 ];
-                // prvne projdeme stanice, kde je podle Last-IP dohledane konkretni zarizeni (IPAdresa)
-                $updateFields['w_shoda'] = 'LAST_IP';
-                foreach ($interface['stations'] as $station) {
-                    if ($station['xx-last-ip-id']) {
-                        // u dane IP updatujeme data (kam je pripojena)
-                        $this->update($station['xx-last-ip-id'], $updateFields);
+                // Prvne projdeme stanice, kde je podle Last-IP dohledane konkretni zarizeni (IPAdresa).
+                // Spoje, kde je jen 1 stanice, povazujeme by-default za paterni a podle LAST_IP u nich IP neparujeme,
+                // protoze na paternich spojich se mohou objevovat LAST_IP, ktere jsou nekde mnohem dal v siti.
+                $isSector = (count($interface['stations']) > 1); // Autodetekce podle poctu stanic, pokud nejsou pouzita klicova slova nize.
+                // Pokud je nekde bezny sektor jen s jednim klientem, je mozne pomoci komentare #WEWIMO_SEKTOR u interfacu prepsat toto vychozi chovani.
+                if (array_key_exists('comment', $interface) && preg_match('/#WEWIMO_SEKTOR/', $interface['comment'])) $isSector = true;
+                // Pokud je nekde paterni spoj se dvema stanicemi, je mozne pomoci komentare #WEWIMO_PTP u interfacu prepsat vychozi chovani.
+                if (array_key_exists('comment', $interface) && preg_match('/#WEWIMO_PTP/', $interface['comment'])) $isSector = false;
+                if ($isSector) {
+                    $updateFields['w_shoda'] = 'LAST_IP';
+                    foreach ($interface['stations'] as $station) {
+                        if ($station['xx-last-ip-id']) {
+                            // u dane IP updatujeme data (kam je pripojena)
+                            $this->update($station['xx-last-ip-id'], $updateFields);
+                        }
                     }
                 }
-                // pak projdeme stanice, kde je podle MAC dohledane konkretni zarizeni (IPAdresa)
+                // Pak projdeme stanice, kde je podle MAC dohledane konkretni zarizeni (IPAdresa).
                 $updateFields['w_shoda'] = 'MAC';
                 foreach ($interface['stations'] as $station) {
                     if ($station['xx-mac-ip-id']) {
