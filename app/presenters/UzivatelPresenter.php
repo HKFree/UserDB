@@ -629,7 +629,7 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
         }
-        $this->povoleneSMTP->deleteIPs($isSMTP->id);
+        $this->povoleneSMTP->deleteIPs($smtpIPIDs);
         
         $this->ipAdresa->deleteIPAdresy($toDelete);
 
