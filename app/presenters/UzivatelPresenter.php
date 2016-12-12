@@ -472,6 +472,7 @@ class UzivatelPresenter extends BasePresenter
 
         $genaddresses = array();
         $newUserIPIDs = array();
+        $smtpIPIDs = array();
 
         //generovani ip pro vlozeni ze subnetu
         $genaddresses = $this->ipAdresa->getListOfIPFromSubnet($ipsubnet);
@@ -624,10 +625,12 @@ class UzivatelPresenter extends BasePresenter
                 $isSMTP = $this->povoleneSMTP->getIP($oldip->id);
                 if($isSMTP)
                 {
-                    $this->povoleneSMTP->delete($isSMTP->id);
+                    $smtpIPIDs[] = intval($isSMTP->id);                    
                 }
             }
         }
+        $this->povoleneSMTP->deleteIPs($isSMTP->id);
+        
         $this->ipAdresa->deleteIPAdresy($toDelete);
 
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
