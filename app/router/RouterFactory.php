@@ -20,8 +20,8 @@ class RouterFactory
 	public function createRouter($https, $urlPrefix)
 	{
 		$router = new RouteList();
-		$router[] = new Route($urlPrefix.'/<presenter>/list/<id>', 'Homepage:list', ($https ? Route::SECURED : null));
-		$router[] = new Route($urlPrefix.'/<presenter>/<action>[/<id>]', 'Homepage:default', ($https ? Route::SECURED : null));        
+		$router[] = new Route($urlPrefix.'/<presenter>/list/<id>', 'Homepage:list');
+		$router[] = new Route($urlPrefix.'/<presenter>/<action>[/<id>]', 'Homepage:default');        
 		return $router;
 	}
 

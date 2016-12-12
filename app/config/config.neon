@@ -59,6 +59,7 @@ services:
 	spravceOblasti: App\Model\SpravceOblasti
 	cestneClenstviUzivatele: App\Model\CestneClenstviUzivatele
 	log: App\Model\Log
+	povoleneSMTP: App\Model\PovoleneSMTP
 	accountActivation: App\Model\AccountActivation
 	logTableFactory: App\Components\LogTableFactory
 	parameters: App\Model\Parameters(%clenskyPrispevek%)
