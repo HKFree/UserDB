@@ -17,13 +17,13 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
     protected $context;
     private $fakeUser;
     private $spravceOb;
-    
+
     public function __construct($fakeUser, Nette\Database\Context $ctx)
     {
         $this->context = $ctx;
         $this->fakeUser = $fakeUser;
     }
-            
+
     /**
      * Performs an authentication.
      * @return Nette\Security\Identity
@@ -35,23 +35,17 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
         if (!$userID) {
             throw new Nette\Security\AuthenticationException('User not found.');
         }
-        if($userID == 'NOLOGIN') {
-                $userID = 1;
-                $args = array('nick' => 'SYSTEM');
-                $_SERVER['initials']="password";
-        } else {
-            if($this->fakeUser != false)            /// debuging identity
-            {
-                $userID = $this->fakeUser["userID"];
-                $args = array('nick' => $this->fakeUser["userName"]);
-                $_SERVER['initials']="password";
-            }
-            else
-            {
-                $args = array('nick' => $_SERVER['givenName']);
-            }
-        }               
-        $date = new DateTime();   
+        if($this->fakeUser != false)            /// debuging identity
+        {
+            $userID = $this->fakeUser["userID"];
+            $args = array('nick' => $this->fakeUser["userName"]);
+            $_SERVER['initials']="password";
+        }
+        else
+        {
+            $args = array('nick' => $_SERVER['givenName']);
+        }
+        $date = new DateTime();
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
         $roles = array();
         foreach ($spravcepro as $key => $value) {
@@ -64,7 +58,7 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
                 }
             }
         }
-        
+
         if(count($roles) < 1)
         {
             throw new Nette\Security\AuthenticationException('User not allowed.');
@@ -72,6 +66,6 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator
 
         return new Nette\Security\Identity($userID, $roles, $args);
     }
-    
+
 
 }

@@ -207,20 +207,20 @@ pre.tracy-dump {
 .form tr th {
     padding-right: 10px;
 }
-.ipform, .subnetform {
+.ipform, .subnetform, .apiklicform {
     margin: 5px 0;
     padding: 5px;
     border: 1px solid #ccc;
     width: 570px;
     background-color: #f4f4f4;
 }
-.ipform tr td, .subnetform tr td {
+.ipform tr td, .subnetform tr td, .apiklicform tr td {
     padding: 1px 3px;
 }
-.ipform tr:first-child td, .subnetform tr:first-child td {
+.ipform tr:first-child td, .subnetform tr:first-child td, .apiklicform tr:first-child td {
     padding-top: 3px;
 }
-.ipform tr:last-child td, .subnetform tr:last-child td {
+.ipform tr:last-child td, .subnetform tr:last-child td, .apiklicform tr:last-child td  {
     padding-bottom: 3px;
 }
 .ip>.popis {
@@ -546,8 +546,24 @@ tbody > tr.wewimo-table-header > th {
     background-color: #666666 !important;
 }
 
+.fade-out-old {
+    color: #d0d0d0;
+}
+
 /* Grido's rules overrides */
 
 .grido tbody tr td {
     padding: 2px 4px;
+}
+
+.apiklic>.klic {
+    width: 358px;
+}
+
+.apiklic>.poznamka {
+    width: 358px;
+}
+
+input[readonly] {
+    background-color: #dddddd;
 }

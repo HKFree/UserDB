@@ -27,18 +27,18 @@ title = {(($ap_ip->popis?$ap_ip->popis:$ap_ip->hostname))|toAscii}
 {else}
 menu = AP-IP-{$id_ap_ip}
 title = AP-IP-{$id_ap_ip}
-{/if}    
+{/if}
 host = {$ap_ip->ip_adresa}
 
 {/foreach}
 
 {/if}
 {if isset($users[$id_oblast][$id_ap]) && isset($users_ips[$id_oblast][$id_ap])}
-{foreach $users[$id_oblast][$id_ap] as $id_user => $user}
+{foreach $users[$id_oblast][$id_ap] as $id_user => $puser}
 {if isset($users_ips[$id_oblast][$id_ap][$id_user])}
 +++ userdb-{$ap|webalize}-{$id_user}
-menu = {$user->id}-{$user->nick|toAscii}
-title = {$user->id}-{$user->nick|toAscii}
+menu = {$puser->id}-{$puser->nick|toAscii}
+title = {$puser->id}-{$puser->nick|toAscii}
 
 {foreach $users_ips[$id_oblast][$id_ap][$id_user] as $id_user_ip => $user_ip}
 ++++ userdb-{$ap|webalize}-USER-IP-{$id_user_ip}
@@ -48,7 +48,7 @@ title = {(($user_ip->popis?$user_ip->popis:$user_ip->hostname))|toAscii}
 {else}
 menu = USER-IP-{$id_user_ip}
 title = USER-IP-{$id_user_ip}
-{/if}    
+{/if}
 host = {$user_ip->ip_adresa}
 
 {/foreach}
@@ -58,4 +58,3 @@ host = {$user_ip->ip_adresa}
 {/if}
 {/foreach}
 {/foreach}
-   

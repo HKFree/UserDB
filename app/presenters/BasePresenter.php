@@ -25,29 +25,25 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
     }
-    
+
     public function startup() {
 		parent::startup();
 
 		//$uri = $this->getHttpRequest()->getUrl();
-                if($this->getPresenter()->getName()!='Smokeping' && $this->getPresenter()->getName()!='smokeping') {
-                    if($this->context->parameters["debug"]["fakeUser"] == false) {
-                            $this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
-                    } else { 
-                            $this->getUser()->login("DBG", NULL);
-                    }
+                if($this->context->parameters["debug"]["fakeUser"] == false) {
+                        $this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
                 } else {
-                        $this->getUser()->login("NOLOGIN", NULL);
+                        $this->getUser()->login("DBG", NULL);
                 }
     }
-    
+
     protected function beforeRender() {
         parent::__construct();
         parent::beforeRender();
-        
+
         //$this->template->oblasti = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
         $this->template->oblasti = $this->oblast->getSeznamOblasti();
-        
+
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
         if (count($oblastiSpravce) > 0) {
             $this->template->mojeOblasti = $this->oblast->formatujOblastiSAP($oblastiSpravce);
@@ -55,7 +51,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
             $this->template->mojeOblasti = false;
         }
     }
-    
+
     protected function createComponentSearchForm() {
         $form = new Form;
         $form->getElementPrototype()->class('navbar-form navbar-right');
@@ -77,11 +73,39 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         return $this->link('Subnet:detail', array('id' => $resultnet)).'#ip'.$ipAddress;
     }
 
+    protected function getWewimoLinkFromIpAddress($ip) {
+        if ($ip->w_ssid) {
+            // najit IPAdresu zarizeni (AP), na ktere je tato ip (podle Wewima) pripojena
+            $apAdresa = $ip->ref('IPAdresa','w_ap_IPAdresa_id');
+            if ($apAdresa) {
+                // ok, mame adresu APcka, muze byt navazano na uzivatele (hodne nepravdepodobne),
+                // nebo muze byt navazano na (entitu) AP
+                if ($apAdresa->ref('Uzivatel')) {
+                    $apId = $apAdresa->ref('Uzivatel')->ref('Ap')->id;
+                    return $this->link('Wewimo:show', array('id' => $apId));
+                } else if ($apAdresa->ref('Ap')) {
+                    $apId = $apAdresa->ref('Ap')->id;
+                    return $this->link('Wewimo:show', array('id' => $apId));
+                }
+            }
+        }
+        return NULL; // fallback
+    }
+
     protected function getSubnetLinksFromIPs($ips) {
         $result = array();
         foreach ($ips as $ip)
         {
             $result[$ip->ip_adresa] = $this->getSubnetLinkFromIpAddress($ip->ip_adresa);
+        }
+        return $result;
+    }
+
+    protected function getWewimoLinksFromIPs($ips) {
+        $result = array();
+        foreach ($ips as $ip)
+        {
+            $result[$ip->ip_adresa] = $this->getWewimoLinkFromIpAddress($ip);
         }
         return $result;
     }
