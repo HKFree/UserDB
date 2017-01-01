@@ -30,13 +30,14 @@ class AP extends Table
        //\Tracy\Dumper::dump($Uzivatel);
 	   return $Uzivatel->isInRole('TECH') 
           || $Uzivatel->isInRole('VV')
+          || $Uzivatel->isInRole('KONTROLA')
           || $Uzivatel->isInRole('SO-'.$this->find($ApID)->Oblast_id)
           || $Uzivatel->isInRole('ZSO-'.$this->find($ApID)->Oblast_id);
     }
     
     public function canViewOrEditAll($Uzivatel)
     {  
-      return $Uzivatel->isInRole('TECH') || $Uzivatel->isInRole('VV');
+      return $Uzivatel->isInRole('TECH') || $Uzivatel->isInRole('VV') || $Uzivatel->isInRole('KONTROLA');
     }
     
 }

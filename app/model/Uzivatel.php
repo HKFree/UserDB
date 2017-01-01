@@ -72,7 +72,7 @@ WHERE U.id ='.$id_uzivatel)
             return($this->findBy(array('id' => $partialMatchId)));
         }
 
-        if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV')) {
+        if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV') && !$Uzivatel->isInRole('KONTROLA')) {
             $uid = $Uzivatel->getIdentity()->getId();
             $secureMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id

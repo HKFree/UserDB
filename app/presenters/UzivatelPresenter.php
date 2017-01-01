@@ -45,11 +45,11 @@ class UzivatelPresenter extends BasePresenter
     private $tabulkaUzivatelu;
     private $parameters;
     private $accountActivation;
+    private $povoleneSMTP;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-
-    function __construct(Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -70,6 +70,7 @@ class UzivatelPresenter extends BasePresenter
         $this->tabulkaUzivatelu = $ULGrid;
         $this->parameters = $parameters;
         $this->accountActivation = $accActivation;
+        $this->povoleneSMTP = $alowedSMTP;
     }
 
     public function actionMoneyActivate() {
@@ -471,6 +472,7 @@ class UzivatelPresenter extends BasePresenter
 
         $genaddresses = array();
         $newUserIPIDs = array();
+        $smtpIPIDs = array();
 
         //generovani ip pro vlozeni ze subnetu
         $genaddresses = $this->ipAdresa->getListOfIPFromSubnet($ipsubnet);
@@ -620,8 +622,15 @@ class UzivatelPresenter extends BasePresenter
             foreach($toDelete as $idIp) {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
                 $this->log->logujDelete($oldip, 'IPAdresa['.$idIp.']', $log);
+                $isSMTP = $this->povoleneSMTP->getIP($oldip->id);
+                if($isSMTP)
+                {
+                    $smtpIPIDs[] = intval($isSMTP->id);                    
+                }
             }
         }
+        $this->povoleneSMTP->deleteIPs($smtpIPIDs);
+        
         $this->ipAdresa->deleteIPAdresy($toDelete);
 
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
