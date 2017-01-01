@@ -192,6 +192,7 @@ class Wewimo extends Nette\Object
                 }
                 $ips = $this->ipadresa->getIpsByMacsMap($searchMacs);
                 $ips2 = $this->ipadresa->getIpsMap($searchIps);
+                $lastIpsByMac = $this->ipadresa->getLastIpsForMacs($searchMacs);
                 foreach ($wewimoData['interfaces'] as &$interface) {
                     foreach ($interface['stations'] as &$station) {
                         if (array_key_exists($station['mac-address'], $ips)) {
@@ -267,6 +268,20 @@ class Wewimo extends Nette\Object
                             $station['xx-last-ip-host'] = '';
                             $station['xx-last-ip-link'] = NULL;
                         }
+                        // pripojeni vsech dosud videnych Last-IP k dane MAC
+                        if (array_key_exists($station['mac-address'], $lastIpsByMac)) {
+                            // vybrat vsechny Last-IP krome te, ktera je zaroven zobrazena jako aktualne ziskana z RB,
+                            // pozor! array_filter zachovava indexy pole, takze muzeme dostat pole s indexy 0,1,3
+                            $station['xx-last-ips'] = array_filter(
+                                $lastIpsByMac[$station['mac-address']],
+                                function ($row) use($station) {
+                                    return ($row['ip_adresa'] != $station['last-ip']);
+                                }
+                            );
+                        } else {
+                            $station['xx-last-ips'] = [];
+                        }
+
                     }
                 }
                 $wewimoData['error'] = '';

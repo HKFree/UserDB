@@ -497,6 +497,16 @@ class IPAdresa extends Table
 		return $this->getTable()->where('ip_adresa', $ips)->fetchPairs('ip_adresa');
 	}
 
+    public function getLastIpsForMacs(array $macs) {
+        $arrayByMac = []; // asoc. array (key=mac) of arrays (records)
+        foreach  ($this->getTable()->where('w_client_mac', $macs)->fetchAll() as $row) {
+            $key = $row['w_client_mac'];
+            if (!array_key_exists($key, $arrayByMac)) $arrayByMac[$key] = [];
+            $arrayByMac[$key][] = $row;
+        }
+        return $arrayByMac;
+    }
+
     public function updateWewimoStatsHook($wewimoDevices) {
         foreach ($wewimoDevices as $wewimoData) {
             foreach ($wewimoData['interfaces'] as $interface) {
@@ -516,12 +526,16 @@ class IPAdresa extends Table
                 if ($isSector) {
                     $updateFields['w_shoda'] = 'LAST_IP';
                     foreach ($interface['stations'] as $station) {
+                        // u shody podle Last-IP doplnime MAC klienta (pod jakou MAC je tato IP videt)
+                        $updateFields['w_client_mac'] = $station['mac-address'];
                         if ($station['xx-last-ip-id']) {
                             // u dane IP updatujeme data (kam je pripojena)
                             $this->update($station['xx-last-ip-id'], $updateFields);
                         }
                     }
                 }
+                // pro shodu podle MAC sloupec w_client_mac nenastavujeme (nema smysl, byl by shodny s MAC uvedenou rucne u dane IP)
+                if (array_key_exists('w_client_mac', $updateFields)) unset($updateFields['w_client_mac']);
                 // Pak projdeme stanice, kde je podle MAC dohledane konkretni zarizeni (IPAdresa).
                 $updateFields['w_shoda'] = 'MAC';
                 foreach ($interface['stations'] as $station) {
