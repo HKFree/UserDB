@@ -7,14 +7,25 @@
             <tbody n:snippet="'wewimoDevice-'.$wewimoOneDevice['ip']" class="oneDevice" data-ip="{$wewimoOneDevice['ip']}">
                         <tr>
                             <td colspan="20">
-                                <div class="wewimo-iface-header">
+                                <div class="wewimo-device-header">
                                         {if $wewimoOneDevice['error']}
                                             <div class="alert alert-danger" role="alert">
                                                 {$wewimoOneDevice['error']} {$wewimoOneDevice['ip']} (ujistěte se, že máte v RB povoleno API v IP - Services)
                                             </div>
                                         {else}
+                                            <i class="fa fa-microchip" aria-hidden="true"></i>
+                                            &nbsp;
                                             {$wewimoOneDevice['ip']}
+                                            |
                                             {$wewimoOneDevice['hostname']}
+                                            |
+                                            {$wewimoOneDevice['resources']['board-name']}
+                                            |
+                                            {$wewimoOneDevice['resources']['version']}
+                                            |
+                                            Uptime {$wewimoOneDevice['resources']['uptime']}
+                                            |
+                                            CPU load {$wewimoOneDevice['resources']['cpu-load']}%
                                         {/if}
                                 </div>
                             </td>
@@ -28,6 +39,10 @@
                                         SSID: {$interface['ssid']} |
                                         {$interface['frequency']} MHz |
                                         {$interface['wireless-protocol']}
+                                        {if $interface['interface-type'] == 'virtual-AP' || $interface['interface-type'] == 'virtual'}
+                                            |
+                                            Virtual AP @ {$interface['master-interface']}
+                                        {/if}
                                 </div>
                             </td>
                         </tr>

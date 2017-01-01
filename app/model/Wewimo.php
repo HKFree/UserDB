@@ -52,7 +52,20 @@ class Wewimo extends Nette\Object
         $logRequest->setArgument('message', "Hi! It's Wewimo at userdb.hkfree.org invoked by ".$invoker);
         $client->sendSync($logRequest);
 
-        $data = array('interfaces' => array());
+        $data = array(
+            'interfaces' => array(),
+            'resources' => array()
+        );
+
+        // get system resources (uptime, HW/SW versions, CPU utilisation,...)
+        $systemResourcesResponses = $client->sendSync(new RouterOS\Request('/system/resource/print'));
+        // actually, there is only one row in the response, but we have to iterate
+        foreach ($systemResourcesResponses as $response) {
+            if ($response->getType() === Response::TYPE_DATA) {
+                $row = $response->getIterator()->getArrayCopy(); // ArrayObject => array
+                $data['resources'] = $row;
+            }
+        }
 
         // get wireless table
         $wirelessTableResponses = $client->sendSync(new RouterOS\Request('/interface/wireless/print'));
