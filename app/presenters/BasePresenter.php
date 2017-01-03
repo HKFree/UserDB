@@ -82,10 +82,10 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
                 // nebo muze byt navazano na (entitu) AP
                 if ($apAdresa->ref('Uzivatel')) {
                     $apId = $apAdresa->ref('Uzivatel')->ref('Ap')->id;
-                    return $this->link('Wewimo:show', array('id' => $apId));
+                    return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
                 } else if ($apAdresa->ref('Ap')) {
                     $apId = $apAdresa->ref('Ap')->id;
-                    return $this->link('Wewimo:show', array('id' => $apId));
+                    return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
                 }
             }
         }

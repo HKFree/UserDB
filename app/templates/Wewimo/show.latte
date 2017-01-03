@@ -68,7 +68,7 @@
                         </tr>
                         {foreach $interface['stations'] as $row}
                             {var $stationsIterator = $iterator}
-                            <tr n:class="$stationsIterator->odd ? manual-stripes-odd">
+                            <tr n:class="$stationsIterator->odd ? manual-stripes-odd" id="highlightable-mac:{$row['mac-address']}">
                                 <td>
                                     {if $row['xx-mac-link']}
                                         <a href="{$row['xx-mac-link']}">{$row['mac-address']}</a>

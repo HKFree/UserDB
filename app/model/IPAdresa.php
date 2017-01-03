@@ -394,7 +394,7 @@ class IPAdresa extends Table
                                     $tooOld =  (strtotime($ip->w_timestamp) < strtotime('-60 days'));
                                     $addInfo = $tooOld ? ", ZASTARALÉ!" : "";
                                     $wewimoTag->setText($ip->w_ssid)
-                                        ->setTitle('Údaj z Wewima z '.$ip->w_timestamp . ", shoda podle ".$ip->w_shoda.$addInfo)
+                                        ->setTitle('Údaj z Wewima z '.$ip->w_timestamp . ", shoda podle ".$ip->w_shoda.$addInfo . ", station MAC ".$ip->w_client_mac)
                                         ->addAttributes($tooltips);
                                     if ($tooOld) $wewimoTag->setClass('fade-out-old');
                                 }
