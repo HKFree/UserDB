@@ -69,15 +69,10 @@ class WewimoPresenter extends BasePresenter
         foreach ($wewimoMultiData as &$wewimoData) {
             foreach ($wewimoData['interfaces'] as &$interface) {
                 foreach ($interface['stations'] as &$station) {
-                    if ($station['xx-last-ip-link']) {
-                        $station['xx-last-ip-link'] = $this->link($station['xx-last-ip-link']['presenter'], array('id' => $station['xx-last-ip-link']['id'])) . $station['xx-last-ip-link']['anchor'];
-                    } else {
-                        $station['xx-last-ip-link'] = '';
-                    }
-                    if ($station['xx-mac-link']) {
-                        $station['xx-mac-link'] = $this->link($station['xx-mac-link']['presenter'], array('id' => $station['xx-mac-link']['id'])) . $station['xx-mac-link']['anchor'];
-                    } else {
-                        $station['xx-mac-link'] = '';
+                    $station['xx-last-ip-link'] = $this->resolveLink($station['xx-last-ip-link']);
+                    $station['xx-mac-link'] = $this->resolveLink($station['xx-mac-link']);
+                    foreach ($station['xx-last-ips'] as &$lastIp) {
+                        $lastIp['xx-last-ip-link'] = $this->resolveLink($lastIp['xx-last-ip-link']);
                     }
                 }
             }
@@ -96,5 +91,14 @@ class WewimoPresenter extends BasePresenter
         // viz https://pla.nette.org/cs/dynamicke-snippety
         $this->redrawControl('wewimoContainer');
         $this->fetchWewimo($id, $ip);
+    }
+
+    private function resolveLink($linkStruct)
+    {
+        if (is_array($linkStruct)) {
+            return $this->link($linkStruct['presenter'], array('id' => $linkStruct['id'])) . $linkStruct['anchor'];
+        } else {
+            return '';
+        }
     }
 }

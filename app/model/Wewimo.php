@@ -253,29 +253,7 @@ class Wewimo extends Nette\Object
                         // dohledani hostname a linku na uzivatele pro Last-IP
                         if (array_key_exists($station['last-ip'], $ips2)) {
                             $ipRec = $ips2[$station['last-ip']];
-                            if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {
-                                $station['xx-last-ip-host'] = $ipRec->hostname;
-                            } else {
-                                $station['xx-last-ip-host'] = '('.$ipRec->ref('Uzivatel')->nick.')';
-                            }
-                            $station['xx-last-ip-id'] = $ipRec->id;
-                            if ($ipRec->Uzivatel_id) {
-                                $station['xx-last-ip-link'] = [
-                                    'presenter' => 'Uzivatel:show',
-                                    'id' => $ipRec->Uzivatel_id,
-                                    'anchor' => "#ip" . $ipRec->ip_adresa,
-                                ];
-                                //$this->link('Uzivatel:show', array('id' => $ipRec->Uzivatel_id)) . "#ip" . $ipRec->ip_adresa;
-                                $station['xx-last-ip-user-nick'] = $ipRec->ref('Uzivatel')->nick;
-                            } else {
-                                $station['xx-last-ip-link'] = [
-                                    'presenter' => 'Ap:show',
-                                    'id' => $ipRec->Ap_id,
-                                    'anchor' => "#ip" . $ipRec->ip_adresa,
-                                ];
-                                //$this->link('Ap:show', array('id' => $ipRec->Ap_id)) . "#ip" . $ipRec->ip_adresa;
-                                $station['xx-last-ip-user-nick'] = 'AP';
-                            }
+                            $this->prepareIpInfoAndLink($ipRec, $station);
                         } else {
                             $station['xx-last-ip-id'] = NULL;
                             $station['xx-last-ip-host'] = '';
@@ -285,12 +263,23 @@ class Wewimo extends Nette\Object
                         if (array_key_exists($station['mac-address'], $lastIpsByMac)) {
                             // vybrat vsechny Last-IP krome te, ktera je zaroven zobrazena jako aktualne ziskana z RB,
                             // pozor! array_filter zachovava indexy pole, takze muzeme dostat pole s indexy 0,1,3
-                            $station['xx-last-ips'] = array_filter(
+                             $relevantIpRecords = array_filter(
                                 $lastIpsByMac[$station['mac-address']],
                                 function ($row) use($station) {
                                     return ($row['ip_adresa'] != $station['last-ip']);
                                 }
                             );
+                            // k last-ips vygenerovat linky a nazvy (host/nick)
+                            $station['xx-last-ips'] = array_map(
+                                function($row) {
+                                    $stationInfo = [
+                                        'last-ip' => $row['ip_adresa'],
+                                        'w_timestamp' => $row['w_timestamp']
+                                    ];
+                                    $this->prepareIpInfoAndLink($row, $stationInfo);
+                                    return $stationInfo;
+                                },
+                                $relevantIpRecords);
                         } else {
                             $station['xx-last-ips'] = [];
                         }
@@ -311,4 +300,38 @@ class Wewimo extends Nette\Object
         $this->ipadresa->updateWewimoStatsHook($wewimoMultiData['devices']);
         return $wewimoMultiData;
     }
+
+    /**
+     * @param $ipRec
+     * @param $station
+     */
+    public function prepareIpInfoAndLink($ipRec, &$station)
+    {
+        if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {
+            $station['xx-last-ip-host'] = $ipRec->hostname;
+        } else {
+            $station['xx-last-ip-host'] = '('.$ipRec->ref('Uzivatel')->nick.')';
+        }
+        $station['xx-last-ip-id'] = $ipRec->id;
+        if ($ipRec->Uzivatel_id) {
+            $station['xx-last-ip-link'] = [
+                'presenter' => 'Uzivatel:show',
+                'id' => $ipRec->Uzivatel_id,
+                'anchor' => "#ip" . $ipRec->ip_adresa,
+            ];
+            //$this->link('Uzivatel:show', array('id' => $ipRec->Uzivatel_id)) . "#ip" . $ipRec->ip_adresa;
+            $station['xx-last-ip-user-nick'] = $ipRec->ref('Uzivatel')->nick;
+        } else {
+            $station['xx-last-ip-link'] = [
+                'presenter' => 'Ap:show',
+                'id' => $ipRec->Ap_id,
+                'anchor' => "#ip" . $ipRec->ip_adresa,
+            ];
+            //$this->link('Ap:show', array('id' => $ipRec->Ap_id)) . "#ip" . $ipRec->ip_adresa;
+            $station['xx-last-ip-user-nick'] = 'AP';
+        }
+
+    }
+
+
 }

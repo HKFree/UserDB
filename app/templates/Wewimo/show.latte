@@ -64,7 +64,7 @@
                             <th>OS</th>
                             <th>Last IP</th>
                             <th>Last IP host</th>
-                            <th style="display:none"><a href="#" title="Zobrazit všude další IP (podle Last-IP)" style="color: #C2E7FF" onClick="expandLastIps({$wewimoOneDevice['ip']},{$interfaceName})"><i class="fa fa-plus-square-o" aria-hidden="true"></i></a></th>
+                            <th><a href="#" title="Zobrazit všude další IP (podle Last-IP)" style="color: #C2E7FF" data-last-ips-toggle="{$wewimoOneDevice['ip']},{$interfaceName}" onClick="return toggleLastIps({$wewimoOneDevice['ip']},{$interfaceName})"><i class="fa fa-plus-square" aria-hidden="true"></i></a></th>
                         </tr>
                         {foreach $interface['stations'] as $row}
                             {var $stationsIterator = $iterator}
@@ -138,27 +138,27 @@
                                     {/if}
                                 </td>
                                 <td>{$row['xx-last-ip-host']}</td>
-                                <td style="display:none">
+                                <td>
                                     {if count($row['xx-last-ips']) > 0}
-                                        <a href="#" title="Zobrazit další IP (podle Last-IP)" onClick="expandLastIps({$wewimoOneDevice['ip']},{$interfaceName},{$row['mac-address']})"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
+                                        <a href="#" title="Zobrazit další IP (podle Last-IP)" data-last-ips-permac-toggle="{$wewimoOneDevice['ip']},{$interfaceName}" data-last-ips-mac-toggle="{$wewimoOneDevice['ip']},{$interfaceName},{$row['mac-address']}" onClick="return toggleLastIps({$wewimoOneDevice['ip']},{$interfaceName},{$row['mac-address']})"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
                                     {/if}
                                 </td>
                             </tr>
-                            {*
                             {foreach $row['xx-last-ips'] as $lastIp}
-                                <tr n:class="$stationsIterator->odd ? manual-stripes-odd">
-                                    <td colspan="11"></td>
-                                    <td colspan="4" style="text-align:right; color:#bfbfbf;">{$lastIp['w_timestamp']}</td>
-                                    {if $lastIp['xx-link']}
-                                        <a href="{$row['xx-link']}">{$row['ip_adresa']}</a>
-                                    {else}
-                                        {$row['ip_adresa']}
-                                    {/if}
-                                    <td>{$lastIp['hostname']}</td>
+                                <tr style="display:none" n:class="$stationsIterator->odd ? manual-stripes-odd" data-last-ips-id="{$wewimoOneDevice['ip']},{$interfaceName}" data-last-ips-mac="{$wewimoOneDevice['ip']},{$interfaceName},{$row['mac-address']}">
+                                    <td colspan="13" style="border-bottom: none; border-top: none"></td>
+                                    <td colspan="2" style="text-align:right; color:#bfbfbf;">{$lastIp['w_timestamp']}</td>
+                                    <td>
+                                        {if $lastIp['xx-last-ip-link']}
+                                            <a href="{$lastIp['xx-last-ip-link']}">{$lastIp['last-ip']}</a>
+                                        {else}
+                                            {$lastIp['last-ip']}
+                                        {/if}
+                                    </td>
+                                    <td>{$lastIp['xx-last-ip-host']}</td>
                                     <td style="border-bottom: none; border-top: none"></td>
                                 </tr>
                             {/foreach}
-                            *}
                         {/foreach}
                     {/if}
                 {/foreach}
@@ -185,8 +185,83 @@
 </p>
 
 <script>
+
+function hideUselessToggleLastIps() {
+    $('[data-last-ips-toggle]').each(function() {
+        var rbIpIfacePair = $(this).data('last-ips-toggle');
+        console.log('hideUselessToggleLastIps testing', rbIpIfacePair, $('[data-last-ips-id="'+rbIpIfacePair+'"]').length);
+        if ($('[data-last-ips-id="'+rbIpIfacePair+'"]').length == 0) {
+            // no hidden rows with more last-ips exists, hide [+] toggle
+            $(this).hide();
+        }
+    });
+}
+
+function setToggle(toggleLink, plus) {
+    if (plus) {
+        $(toggleLink).find('i').attr('class', 'fa fa-plus-square');
+    } else {
+        $(toggleLink).find('i').attr('class', 'fa fa-minus-square');
+    }
+}
+
+function toggleLastIps(rbIp, rbInterface, stationMac) {
+    console.log("toggleLastIps", rbIp, rbInterface, stationMac);
+    var ifaceSelector = '[data-last-ips-id="'+rbIp+','+rbInterface+'"]';
+    var ifaceToggleSelector = '[data-last-ips-toggle="'+rbIp+','+rbInterface+'"]';
+    var ipsSelector = stationMac ? '[data-last-ips-mac="'+rbIp+','+rbInterface+','+stationMac+'"]' : ifaceSelector;
+    console.log("ipsSelector", ipsSelector);
+    // test if all (iface-related or station-related) IPs are visible
+    var allVisible = true;
+    $(ipsSelector).each(function() {
+        if ($(this).is(':hidden')) allVisible = false;
+    });
+    if (allVisible) {
+        // hide all
+        $(ipsSelector).hide();
+        if (stationMac) {
+            // particular station's IPs hidden
+            // switch station toggle to [+]
+            var stationToggleSelector = '[data-last-ips-mac-toggle="'+rbIp+','+rbInterface+','+stationMac+'"]';
+            setToggle(stationToggleSelector, true);
+            // we are sure that some (this) station-related IPs are hidden,
+            // switch iface toggle to [+]
+            setToggle(ifaceToggleSelector, true);
+        } else {
+            // all stations' IPs hidden
+            // switch all iface-related toggles to [+]
+            setToggle(ifaceToggleSelector, true);
+            setToggle('[data-last-ips-permac-toggle="'+rbIp+','+rbInterface+'"]', true);
+        }
+    } else {
+        // show all
+        $(ipsSelector).show();
+        if (stationMac) {
+            // particular station's IPs shown
+            // switch station toggle to [-]
+            var stationToggleSelector = '[data-last-ips-mac-toggle="'+rbIp+','+rbInterface+','+stationMac+'"]';
+            setToggle(stationToggleSelector, false);
+            // test if all iface-related IPs are visible
+            var ifaceAllVisible = true;
+            $(ifaceSelector).each(function() {
+                if ($(this).is(':hidden')) ifaceAllVisible = false;
+            });
+            // if all visible, switch iface toggle to [-], else [+]
+            setToggle(ifaceToggleSelector, !ifaceAllVisible);
+        } else {
+            // all stations' IPs shown
+            // switch all iface-related toggles to [-]
+            setToggle(ifaceToggleSelector, false);
+            setToggle('[data-last-ips-permac-toggle="'+rbIp+','+rbInterface+'"]', false);
+        }
+    }
+    return false; // do not follow the dummy link
+}
+
 $(function(){
     $.nette.init();
+
+    hideUselessToggleLastIps();
 
     var refreshDelay = 1000;
 
@@ -219,6 +294,7 @@ $(function(){
         requestByIp[ip] = $.nette.ajax({
             url: "?do=update&ip="+ip,
             complete: function (jqXHR, textStatus) {
+                hideUselessToggleLastIps();
                 console.log('xhr completed', ip, textStatus);
                 if (textStatus !== 'abort') {
                     // pokud je jeste zaskrtnut checkbox, (s odkladem) zahajit dalsi aktualizaci
