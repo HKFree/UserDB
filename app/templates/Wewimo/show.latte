@@ -39,10 +39,20 @@
                                         SSID: {$interface['ssid']} |
                                         {$interface['frequency']} MHz |
                                         {$interface['wireless-protocol']}
+                                        {if isset($interface['monitor']['wireless-protocol']) && $interface['monitor']['wireless-protocol']!=$interface['wireless-protocol'] && $interface['interface-type']!='virtual-AP' && $interface['interface-type']!='virtual'}
+                                            / {$interface['monitor']['wireless-protocol']}
+                                        {/if}
                                         {if $interface['interface-type'] == 'virtual-AP' || $interface['interface-type'] == 'virtual'}
                                             |
                                             Virtual AP @ {$interface['master-interface']}
+                                        {elseif isset($interface['monitor']['x-current-tx-powers']['12Mbps'])}
+                                            |
+                                            TX {$interface['monitor']['x-current-tx-powers']['12Mbps']} dBm
+                                        {elseif isset($interface['monitor']['x-current-tx-powers']['11Mbps'])}
+                                            |
+                                            TX {$interface['monitor']['x-current-tx-powers']['11Mbps']} dBm
                                         {/if}
+
                                 </div>
                             </td>
                         </tr>

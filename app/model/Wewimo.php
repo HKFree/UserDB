@@ -77,6 +77,16 @@ class Wewimo extends Nette\Object
                 //Debugger::dump($row);
                 $data['interfaces'][$row['name']] = $row;
                 $data['interfaces'][$row['name']]['stations'] = array();
+
+                // get monitored values (e.g. current tx power)
+                $wirelessInterfaceMonitorResponses = $client->sendSync(new RouterOS\Request('/interface wireless monitor numbers='.$row['.id'].' once'));
+                foreach ($wirelessInterfaceMonitorResponses as $response2) {
+                    if ($response2->getType() === Response::TYPE_DATA) {
+                        $row2 = $response2->getIterator()->getArrayCopy();
+                        $this->parseAddCurrentTxPower($row2);
+                        $data['interfaces'][$row['name']]['monitor'] = $row2;
+                    }
+                }
             }
         }
 
@@ -147,6 +157,18 @@ class Wewimo extends Nette\Object
         $data['neighborsByIp'] = $neighborsByIp;
 
         return $data;
+    }
+
+    private function parseAddCurrentTxPower(&$monitorRow) {
+        $monitorRow['x-current-tx-powers'] = [];
+        if (array_key_exists('current-tx-powers', $monitorRow)) {
+            // comma is usually used as a separator of different modulation rates but in some versions semicolon is used instead
+            foreach (preg_split ('/[;,]/',$monitorRow['current-tx-powers']) as $modulationRec) {
+                if (preg_match('/^(.+?):(\d+)/', $modulationRec, $match)) {
+                    $monitorRow['x-current-tx-powers'][$match[1]] = $match[2];
+                }
+            }
+        }
     }
 
     private function dbm2pct($dBm, $min=-100, $max=-20) {
