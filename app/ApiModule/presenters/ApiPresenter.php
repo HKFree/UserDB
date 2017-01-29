@@ -30,15 +30,14 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
 
     public function checkRequirements($element) {
         if (!array_key_exists('PHP_AUTH_USER', $_SERVER)) {
-            $this->sendForbidden('FORBIDDEN: Missing HTTP basic username');
+            $this->sendAuthRequired('Missing HTTP basic username');
             return;
         } else if (!array_key_exists('PHP_AUTH_PW', $_SERVER)) {
-            $this->sendForbidden('FORBIDDEN: Missing HTTP basic password');
+            $this->sendAuthRequired('Missing HTTP basic password');
             return;
         }
         $username = $_SERVER['PHP_AUTH_USER'];
         $password = $_SERVER['PHP_AUTH_PW'];
-        $reason = 'FORBIDDEN'; // change this value during the rest of the process if you with to be more specific
         if (preg_match_all('/^apikey([0-9]+)$/',$username,$m)) {
             $apiKeyId = $m[1][0]*1;
             $keyRec = $this->apiKlicModel->getApiKlic($apiKeyId);
@@ -53,13 +52,13 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
                             // action (module) is NOT always allowed, test module and/or AP-id restrictions
                             if ($keyRec->presenter && $requestedModule != $keyRec->presenter) {
                                 // key is restricted to a module and it does not match to requested module
-                                $reason = 'FORBIDDEN: not allowed to view module='.$requestedModule;
+                                $this->sendForbidden('not allowed to view module='.$requestedModule);
                             } else {
                                 // key is allowed to view this modules
                                 // check AP restrictions
                                 if ($keyRec->AP_id && $requestedApId != $keyRec->AP_id) {
                                     // key is restricted to an AP and does not match to requested AP
-                                    $reason = 'FORBIDDEN: not allowed to view AP=' . $requestedApId;
+                                    $this->sendForbidden('not allowed to view AP=' . $requestedApId);
                                 } else {
                                     // key is not restricted to AP or the requested AP match the key's AP
                                     // go on
@@ -76,12 +75,18 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
                 }
             }
         }
-        $this->sendForbidden($reason); // fallback
+        $this->sendAuthRequired('Invalid credentials'); // fallback
     }
 
     public function sendForbidden($reason) {
         //throw new \Nette\Application\ForbiddenRequestException;
         $this->httpResponse->setCode(Response::S403_FORBIDDEN);
-        $this->sendResponse( new JsonResponse(['result' => $reason]) );
+        $this->sendResponse( new JsonResponse(['result' => 'FORBIDDEN: '.$reason]) );
+    }
+
+    public function sendAuthRequired($reason) {
+        $this->httpResponse->setCode(Response::S401_UNAUTHORIZED);
+        $this->httpResponse->addHeader('WWW-Authenticate', 'Basic realm="UserDB API"');
+        $this->sendResponse( new JsonResponse(['result' => 'UNAUTHORIZED: '.$reason]) );
     }
 }
