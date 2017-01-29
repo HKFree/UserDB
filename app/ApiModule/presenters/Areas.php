@@ -1,0 +1,51 @@
+<?php
+
+namespace App\ApiModule\Presenters;
+
+use Nette\Application\Responses\JsonResponse;
+
+class AreasPresenter extends ApiPresenter
+{
+    private $oblast;
+
+    function __construct(\App\Model\Oblast $oblast)
+    {
+        $this->oblast = $oblast;
+    }
+
+    public function actionDefault()
+    {
+        $oblasti = [];
+        $oblastiData = $this->oblast->getSeznamOblasti();
+        foreach ($oblastiData as $idoblast => $o) {
+            $oblasti[$idoblast] = [
+                'id' => $o['id'],
+                'jmeno' => $o['jmeno'],
+            ];
+            // associated APs
+            $apckaData = $o->related('Ap.Oblast_id')->order("jmeno");
+            $apcka = [];
+            foreach ($apckaData as $idApcka => $apcko) {
+                $apcka[$idApcka] = [
+                    'jmeno' => $apcko['jmeno'],
+                    'id' => $apcko['id'],
+                ];
+            }
+            $oblasti[$idoblast]['aps'] = $apcka;
+            // associated admins
+            $spravci = [];
+            foreach ($o->related('SpravceOblasti.Oblast_id') as $spravceMtm) {
+                $spravce = $spravceMtm->ref('Uzivatel', 'Uzivatel_id');
+                $role = $spravceMtm->ref('TypSpravceOblasti', 'TypSpravceOblasti_id');
+                $spravci[$spravce['id']] = [
+                    'id' => $spravce['id'],
+                    'nick' => $spravce['nick'],
+                    'email' => $spravce['email'],
+                    'role' => $role['text'],
+                ];
+            }
+            $oblasti[$idoblast]['admins'] = $spravci;
+        }
+        $this->sendResponse( new JsonResponse($oblasti) );
+    }
+}
