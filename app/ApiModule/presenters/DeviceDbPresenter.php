@@ -4,7 +4,7 @@ namespace App\ApiModule\Presenters;
 
 use Nette\Application\Responses\JsonResponse;
 
-class DeviceDBPresenter extends ApiPresenter
+class DeviceDbPresenter extends ApiPresenter
 {
     private $oblast;
 
