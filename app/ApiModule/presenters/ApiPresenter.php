@@ -3,6 +3,7 @@
 namespace App\ApiModule\Presenters;
 
 use Nette\Application\Responses\JsonResponse,
+    Nette\Application\Responses\TextResponse,
     App\Model;
 use Nette\Http\Response;
 use Nette\Utils\DateTime;
@@ -14,6 +15,9 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     /** @var \Nette\Http\Response */
     protected $httpResponse;
 
+    /** @var \Nette\Http\Request */
+    protected $httpRequest;
+
     // to access these actions, only valid key is required;
     // no checks against AP-id and/or module restrictions is done regarding the API key
     protected $alwaysAllowedActions = ['Api:HealthCheck'];
@@ -23,12 +27,22 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
         $this->httpResponse = $httpResponse;
     }
 
+    public function injectHttpRequest(\Nette\Http\Request $httpRequest)
+    {
+        $this->httpRequest = $httpRequest;
+    }
+
     public function injectApiKlicModel(\App\Model\ApiKlic $apiKlicModel)
     {
         $this->apiKlicModel = $apiKlicModel;
     }
 
     public function checkRequirements($element) {
+        // due to CORS preflight test, we have to respond 200 OK (not 401) to OPTIONS request
+        if ($this->httpRequest->getMethod() == 'OPTIONS') {
+            $this->handleOptionsMethod();
+            return;
+        }
         if (!array_key_exists('PHP_AUTH_USER', $_SERVER)) {
             $this->sendAuthRequired('Missing HTTP basic username');
             return;
@@ -76,6 +90,10 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
             }
         }
         $this->sendAuthRequired('Invalid credentials'); // fallback
+    }
+
+    public function handleOptionsMethod() {
+        $this->sendResponse(new TextResponse(""));
     }
 
     public function sendForbidden($reason) {
