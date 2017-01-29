@@ -86,6 +86,11 @@ ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 ```
 
+##Accessing API
+
+[Open swagger.yaml in Swagger Editor](http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/HKFree/UserDB/master/swagger.yaml#/) and try some operations.
+You'll need the credentials. Create them in UserDB: Oblast - Zobrazit podrobnosti AP - Editovat - API klíče.
+
 ##License
 
 - Nette: New BSD License or GPL 2.0 or 3.0 (http://nette.org/license)

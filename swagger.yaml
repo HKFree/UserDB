@@ -1,0 +1,170 @@
+swagger: '2.0'
+info:
+  title: UserDB.hkfree.org API
+  description: API pro přístup k některým údajům v databázi uživatelů hkfree.org
+  version: "1.0.0"
+# the domain of the service
+host: userdb.hkfree.org
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /userdb/api
+produces:
+  - application/json
+securityDefinitions:
+  basicAuth:
+    type: basic
+security:
+  - basicAuth: []
+
+paths:
+  /health-check:
+    get:
+      summary: Ověření funkčnosti API, vrací mj. aktuální čas na serveru
+      responses:
+        200:
+          description: Stav serveru, aktuální čas na serveru
+          schema:
+            type: object
+            properties:
+              result:
+                type: string
+              serverTime:
+                type: string
+                format: date-time
+          examples:
+            application/json:
+              result: "OK"
+              serverTime: "2017-01-29T21:04:22+01:00"
+  /device-db:
+    get:
+      summary: Seznam oblastí (bez AP) pro potřeby DeviceDB
+      responses:
+        200:
+          description: "Seznam oblastí: asoc. pole klíč=id_oblasti, hodnota=název_oblasti"
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+          examples:
+            application/json:
+              6: "Kukleny"
+              112: "Stěžery Gogo"
+
+  /smokeping:
+    get:
+      produces:
+        - text/plain
+      summary: Konfigurační (textový) soubor pro SmokePing
+      responses:
+        200:
+          description: Konfigurační soubor
+
+  /areas:
+    get:
+      summary: Seznam oblastí, AP a jejich správců ("strom")
+      responses:
+        200:
+          description: Seznam oblastí
+          schema:
+            type: object
+            description: "Seznam oblastí: asoc. pole klíč=id_oblasti, hodnota=Oblast"
+            additionalProperties:
+              $ref: "#/definitions/Oblast"
+          examples:
+            application/json:
+              6:
+                id: 6
+                jmeno: "Kukleny (oblast pouze s jedním AP)"
+                aps:
+                  6:
+                    id: 6
+                    jmeno: "Kukleny"
+                admins:
+                  20:
+                    id: 20
+                    nick: "cermis"
+                    email: "cermis@example.com"
+                    role: "ZSO"
+                277:
+                  id: 277
+                  nick: "Jakub"
+                  email: "jakub@example.com"
+                  role: "SO"
+              112:
+                id: 112
+                jmeno: "Stěžery Gogo (oblast s dvěma AP)"
+                aps:
+                  112:
+                    id: 112
+                    jmeno: "AP2"
+                  1112:
+                    id: 1112
+                    jmeno: "AP3"
+                admins:
+                  1980:
+                    id: 1980
+                    nick: "pavkriz"
+                    email: "pavkriz@example.com"
+                    role: "SO"
+
+  /wewimo/default/{id_oblasti}:
+    get:
+      summary: Wewimo výstup ze všech Routerboardů v dané oblasti (zařazených do Wewima)
+      parameters:
+        - name: id_oblasti
+          in: path
+          required: true
+          description: ID oblasti
+          type: integer
+      responses:
+        200:
+          description: Object se seznamem Routerboardů
+          schema:
+            type: object
+            properties:
+              devices:
+                type: array
+                items:
+                  type: object
+
+definitions:
+  Oblast:
+    type: object
+    properties:
+      id:
+        type: integer
+      jmeno:
+        type: string
+      aps:
+        type: object
+        description: "Seznam AP v dané oblasti: asoc. pole klíč=id_ap, hodnota=Ap"
+        additionalProperties:
+              $ref: "#/definitions/Ap"
+      admins:
+        type: object
+        description: "Seznam spávců dané oblasti: asoc. pole klíč=id_uživatele, hodnota=Spravce"
+        additionalProperties:
+              $ref: "#/definitions/Spravce"
+  Ap:
+    type: object
+    properties:
+      id:
+        type: integer
+      jmeno:
+        type: string
+  Spravce:
+    type: object
+    properties:
+      id:
+        type: integer
+      nick:
+        type: string
+      email:
+        type: string
+      role:
+        type: string
+        enum:
+          - SO
+          - ZSO
