@@ -36,20 +36,20 @@ class UzivatelListGrid extends Nette\Object
         if($id){  
             $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
             $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
-            $canViewOrEdit = $this->ap->canViewOrEditAP($id, $loggedUser);
+            $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($id, $loggedUser);
         } else {
             
             if($search)
             {
                 $seznamUzivatelu = $this->uzivatel->findUserByFulltext($search,$loggedUser);
                 $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC(); //TODO
-                $canViewOrEdit = $this->ap->canViewOrEditAll($loggedUser);
+                $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAll($loggedUser);
             }
             else
             {
                 $seznamUzivatelu = $this->uzivatel->getSeznamUzivatelu();
                 $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC();
-                $canViewOrEdit = $this->ap->canViewOrEditAll($loggedUser);
+                $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAll($loggedUser);
             }
                         
             $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
