@@ -39,5 +39,19 @@ class AP extends Table
     {  
       return $Uzivatel->isInRole('TECH') || $Uzivatel->isInRole('VV') || $Uzivatel->isInRole('KONTROLA');
     }
+
+    public function findAPByIP($search)
+    {
+        $completeMatchId = $this->getConnection()->query("SELECT Ap.id FROM Ap
+                                            LEFT JOIN  IPAdresa ON Ap.id = IPAdresa.Ap_id
+                                            WHERE (
+                                            IPAdresa.ip_adresa = '$search'
+                                            ) LIMIT 1")->fetchField();
+        if(!empty($completeMatchId))
+        {
+            return($this->findBy(array('id' => $completeMatchId)));
+        }
+        return($this->findBy(array('id' => 0)));
+    }
     
 }

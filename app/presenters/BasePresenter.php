@@ -19,11 +19,13 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     public $oblast;
     private $spravceOblasti;
+    private $ap;
 
-    public function injectOblast(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti)
+    public function injectOblast(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap)
     {
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
+        $this->ap = $ap;
     }
 
     public function startup() {
@@ -64,6 +66,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     public function searchFormSucceeded(Form $form) {
         $values = $form->getValues();
+        $ipIsInAp = $this->ap->findAPByIP($values->search);
+        if($ipIsInAp && $ipIsInAp->id > 0)
+        {
+            $this->redirect('Ap:show', array('id'=>$ipIsInAp->id));
+        }
         $this->redirect('Uzivatel:listall', array('search' => $values->search, 'id' => null));
     }
 
