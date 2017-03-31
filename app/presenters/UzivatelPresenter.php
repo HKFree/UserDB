@@ -256,7 +256,7 @@ class UzivatelPresenter extends BasePresenter
     {
         if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
         {
-            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
         }
         else
         {
@@ -689,7 +689,7 @@ class UzivatelPresenter extends BasePresenter
 
 
     	    $this->template->ap = $apt;
-            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
     	} else {
             $this->flashMessage("Chyba, AP s tímto ID neexistuje.", "danger");
             $this->redirect("Homepage:default", array("id"=>null)); // a přesměrujeme
@@ -780,7 +780,7 @@ class UzivatelPresenter extends BasePresenter
                 {
                     $this->template->adresyline = null;
                 }
-                $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
                 //$this->template->logy = $this->log->getLogyUzivatele($uid);
 
