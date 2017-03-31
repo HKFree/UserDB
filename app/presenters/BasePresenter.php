@@ -67,9 +67,10 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     public function searchFormSucceeded(Form $form) {
         $values = $form->getValues();
         $ipIsInAp = $this->ap->findAPByIP($values->search);
-        if($ipIsInAp && $ipIsInAp->id > 0)
+        if($ipIsInAp && $ipIsInAp->count() > 0)
         {
-            $this->redirect('Ap:show', array('id'=>$ipIsInAp->id));
+            $ap = $ipIsInAp->fetch();
+            $this->redirect('Ap:show', array('id'=>$ap->id));
         }
         $this->redirect('Uzivatel:listall', array('search' => $values->search, 'id' => null));
     }
