@@ -45,6 +45,12 @@ WHERE U.id ='.$id_uzivatel)
 		return($uss);
     }
 
+    public function getUsersForMailingList()
+    {
+      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->fetchAll();
+	  return($vsichni);
+    }
+
     public function findUserByFulltext($search, $Uzivatel)
     {
         //mobil a email pouze pro ty co maji prava

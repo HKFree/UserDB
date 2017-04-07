@@ -58,6 +58,7 @@ class SpravaPresenter extends BasePresenter
     public function renderNastroje()
     {
     	$this->template->canApproveCC = $this->getUser()->isInRole('VV');
+        $this->template->canSeeMailList = $this->getUser()->isInRole('VV');
         $this->template->canCreateArea = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         $this->template->canSeePayments = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
@@ -85,6 +86,21 @@ class SpravaPresenter extends BasePresenter
     public function renderSlouceni()
     {
         //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
+    }
+
+    protected function createComponentMailinglistGrid($name)
+    {
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+        $grid->setExport('mailinglist_export');
+        
+        $grid->setModel($this->uzivatel->getUsersForMailingList());
+        
+    	$grid->setDefaultPerPage(100);
+    	$grid->setDefaultSort(array('id' => 'ASC'));
+         
+    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+        $grid->addColumnText('email', 'Email')->setFilterText();
     }
     
     protected function createComponentSlouceniGrid($name)
@@ -564,6 +580,11 @@ class SpravaPresenter extends BasePresenter
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         $this->template->cu = "";
+    }
+
+    public function renderMailinglist()
+    {
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
     }
     
     public function renderNesparovane()
