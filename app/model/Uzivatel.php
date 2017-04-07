@@ -37,7 +37,7 @@ WHERE U.id ='.$id_uzivatel)
 
     public function getFormatovanySeznamNezrusenychUzivatelu()
     {
-      $vsichni = $this->findAll()->where('TypClenstvi_id>1 and email_invalid==0')->fetchAll();
+      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->fetchAll();
       $uss = array();
         foreach ($vsichni as $uzivatel) {
             $uss[$uzivatel->id] = $uzivatel->id . ' - ' . $uzivatel->nick . ' - ' . $uzivatel->jmeno . ' ' . $uzivatel->prijmeni;
@@ -47,7 +47,7 @@ WHERE U.id ='.$id_uzivatel)
 
     public function getUsersForMailingList()
     {
-      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->fetchAll();
+      $vsichni = $this->findAll()->where('TypClenstvi_id>1 and email_invalid==0')->fetchAll();
 	  return($vsichni);
     }
 
