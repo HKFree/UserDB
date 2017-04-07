@@ -47,7 +47,7 @@ WHERE U.id ='.$id_uzivatel)
 
     public function getUsersForMailingList()
     {
-      $vsichni = $this->findAll()->where('TypClenstvi_id>1 and email_invalid==0')->fetchAll();
+      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->where('email_invalid==0')->fetchAll();
 	  return($vsichni);
     }
 
