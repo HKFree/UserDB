@@ -12,15 +12,15 @@ use Nette,
     Nette\Utils\Strings,
     Nette\Mail\SendmailMailer,
     Tracy\Debugger;
-    
+
 use Nette\Forms\Controls\SubmitButton;
 /**
  * Sprava presenter.
  */
 class SpravaPresenter extends BasePresenter
-{  
-    private $spravceOblasti; 
-    private $cestneClenstviUzivatele;  
+{
+    private $spravceOblasti;
+    private $cestneClenstviUzivatele;
     private $platneCC;
     private $uzivatel;
     private $log;
@@ -40,15 +40,15 @@ class SpravaPresenter extends BasePresenter
         $this->log = $log;
         $this->ap = $ap;
         $this->oblast = $ob;
-        $this->ipAdresa = $ipAdresa; 
-        $this->sloucenyUzivatel = $slUzivatel; 
-        $this->uzivatelskeKonto = $konto; 
-        $this->prichoziPlatba = $platba;  
-        $this->odchoziPlatba = $odchplatba; 
+        $this->ipAdresa = $ipAdresa;
+        $this->sloucenyUzivatel = $slUzivatel;
+        $this->uzivatelskeKonto = $konto;
+        $this->prichoziPlatba = $platba;
+        $this->odchoziPlatba = $odchplatba;
         $this->stavBankovnihoUctu = $stavuctu;
         $this->spravceOblasti = $sob;
     }
-    
+
     public function actionLogout() {
         $this->getUser()->logout();
         header("Location: https://userdb.hkfree.org/Shibboleth.sso/Logout?return=https://idp.hkfree.org/idp/logout?return=http://www.hkfree.org");
@@ -72,7 +72,7 @@ class SpravaPresenter extends BasePresenter
             unlink($file);
             }
         }
-        
+
         $this->template->canApproveCC = $this->getUser()->isInRole('VV');
         $uzivatele = array();
         foreach($this->cestneClenstviUzivatele->getNeschvalene() as $cc_id => $cc_data) {
@@ -82,7 +82,7 @@ class SpravaPresenter extends BasePresenter
         $uzivatele = array_unique($uzivatele);
         $this->template->uzivatele = $this->uzivatel->findBy(array("id" => $uzivatele));
     }
-    
+
     public function renderSlouceni()
     {
         //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
@@ -93,51 +93,51 @@ class SpravaPresenter extends BasePresenter
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
         $grid->setExport('mailinglist_export');
-        
+
         $grid->setModel($this->uzivatel->getUsersForMailingList());
-        
+
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('id' => 'ASC'));
-         
+
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
         $grid->addColumnText('email', 'Email')->setFilterText();
     }
-    
+
     protected function createComponentSlouceniGrid($name)
     {
         //$canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-        
+
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
         $grid->setExport('slouceni_export');
-        
+
         $grid->setModel($this->sloucenyUzivatel->getAll());
-        
+
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('Uzivatel_id' => 'ASC'));
-         
+
     	$grid->addColumnText('Uzivatel_id', 'Sloučeno pod')->setSortable()->setFilterText();
         $grid->addColumnText('slouceny_uzivatel', 'Sloučený uživatel')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('datum_slouceni', 'Datum sloučení')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('sloucil', 'Sloučil')->setSortable()->setFilterText()->setSuggestion();
-        
+
         /*$grid->addActionHref('show', 'Zobrazit')
                 ->setIcon('eye-open');*/
     }
-    
+
     public function renderPrehledcc()
     {
         //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
     }
-    
+
     protected function createComponentGrid($name)
     {
         $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-        
+
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
         $grid->setExport('cc_export');
-        
+
         if($canViewOrEdit)
         {
             $grid->setModel($this->platneCC->getCCWithNamesVV());
@@ -145,34 +145,34 @@ class SpravaPresenter extends BasePresenter
         else {
             $grid->setModel($this->platneCC->getCCWithNames());
         }
-        
+
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('plati_od' => 'DESC'));
-         
+
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
         $grid->addColumnText('plati_od', 'Platnost od')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('typcc', 'Typ CC')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('name', 'Jméno a příjmení')->setSortable()->setFilterText()->setSuggestion();
-        
+
         $grid->addActionHref('show', 'Zobrazit')
                 ->setIcon('eye-open');
     }
-    
+
     public function actionShow($id) {
-        $this->redirect('Uzivatel:show', array('id'=>$id)); 
+        $this->redirect('Uzivatel:show', array('id'=>$id));
     }
 
     protected function createComponentSpravaCCForm() {
          // Tohle je nutne abychom mohli zjistit isSubmited
     	$form = new Form($this, "spravaCCForm");
-            
+
         $data = $this->cestneClenstviUzivatele;
     	$rights = $form->addDynamic('rights', function (Container $right) use ($data) {
-    	    
+
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
             $right->addHidden('id')->setAttribute('class', 'id ip');
-                  
+
             $right->addText('plati_od', 'Platnost od:')
                  //->setType('date')
                  ->setAttribute('class', 'datepicker ip')
@@ -180,17 +180,17 @@ class SpravaPresenter extends BasePresenter
                  ->addRule(Form::FILLED, 'Vyberte datum')
                  ->addCondition(Form::FILLED)
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
-                 
+
             $right->addText('plati_do', 'Platnost do:')
                  //->setType('date')
                  ->setAttribute('class', 'datepicker ip')
                  ->setAttribute('data-date-format', 'YYYY/MM/DD')
                  ->addCondition(Form::FILLED)
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
-                 
+
             $right->addTextArea('poznamka', 'Poznámka:', 72, 5)
                  ->setAttribute('class', 'note ip');
-                 
+
             $schvalenoStates = array(
                 0 => 'Nerozhodnuto',
                 1 => 'Schváleno',
@@ -202,23 +202,23 @@ class SpravaPresenter extends BasePresenter
             $right->addHidden('zadost_podana');
 
     	}, 0, false);
-    
+
     	$form->addSubmit('save', 'Uložit')
     		 ->setAttribute('class', 'btn btn-success btn-xs btn-white');
-        
+
     	$form->onSuccess[] = array($this, 'spravaCCFormSucceded');
-    
+
     	// pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if(!$submitujeSe) {
     		foreach($this->cestneClenstviUzivatele->getNeschvalene() as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
     		}
-    	}                
-    
+    	}
+
     	return $form;
     }
-    
+
     /**
     * Schválení čestného členství
     */
@@ -230,16 +230,16 @@ class SpravaPresenter extends BasePresenter
     	foreach($prava as $pravo)
     	{
     	    $pravoId = $pravo->id;
-            
+
             //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if(empty($pravo->plati_od)) $pravo->plati_od = null; 
+            if(empty($pravo->plati_od)) $pravo->plati_od = null;
             if(empty($pravo->plati_do)) $pravo->plati_do = null;
             if(empty($pravo->schvaleno)) $pravo->schvaleno = 0;
 
-            if(!empty($pravo->id)) {                
+            if(!empty($pravo->id)) {
                 $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
-                
+
                 if($starePravo->schvaleno != $pravo->schvaleno && ($pravo->schvaleno == 1 || $pravo->schvaleno == 2))
                 {
                     $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
@@ -259,13 +259,13 @@ class SpravaPresenter extends BasePresenter
                 }
             }
     	}
-    	
+
         //$this->log->loguj('Uzivatel', $idUzivatele, $log);
-        
-    	$this->redirect('Sprava:schvalovanicc'); 
+
+    	$this->redirect('Sprava:schvalovanicc');
     	return true;
     }
-    
+
     public function renderNovaoblast()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
@@ -289,27 +289,27 @@ class SpravaPresenter extends BasePresenter
             if($existujiciOblast) {
                 $form->setValues($existujiciOblast);
     	    }
-    	}                
-    
+    	}
+
     	return $form;
     }
-    
+
     public function novaoblastFormSucceded($form, $values) {
 
         $idOblasti = $values->id;
-        
+
         if(empty($values->id)) {
             $values->datum_zalozeni = new Nette\Utils\DateTime;
             $this->oblast->insert($values);
-            $this->flashMessage('Oblast byla vytvořena.');            
+            $this->flashMessage('Oblast byla vytvořena.');
         } else {
     	    $this->oblast->update($idOblasti, $values);
         }
-            	
-    	$this->redirect('Sprava:nastroje'); 
+
+    	$this->redirect('Sprava:nastroje');
     	return true;
     }
-    
+
     public function renderNoveap()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
@@ -321,9 +321,9 @@ class SpravaPresenter extends BasePresenter
     	$form->addHidden('id');
 
         $aps = $this->oblast->formatujOblasti($this->oblast->getSeznamOblasti());
-        
+
         $form->addSelect('Oblast_id', 'Oblast', $aps);
-        
+
         $form->addText('jmeno', 'Název AP', 50)->setRequired('Zadejte název AP');
         $form->addTextArea('poznamka', 'Poznámka', 72, 10);
 
@@ -338,30 +338,30 @@ class SpravaPresenter extends BasePresenter
             if($existujiciAp) {
                 $form->setValues($existujiciAp);
     	    }
-    	}                
-    
+    	}
+
     	return $form;
     }
-    
+
     public function noveapFormSucceded($form, $values) {
 
         $idAp = $values->id;
-        
+
         if(empty($values->id)) {
             $this->ap->insert($values);
-            $this->flashMessage('AP bylo vytvořeno.');            
+            $this->flashMessage('AP bylo vytvořeno.');
         } else {
     	    $this->ap->update($idAp, $values);
         }
-            	
-    	$this->redirect('Sprava:nastroje'); 
+
+    	$this->redirect('Sprava:nastroje');
     	return true;
     }
-    
+
     public function renderSlucovani()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
-        
+
         $u1id = 1;
         $u2id = 1;
         if($this->getParam('u1'))
@@ -372,7 +372,7 @@ class SpravaPresenter extends BasePresenter
         {
             $u2id = $this->getParam('u2');
         }
-        
+
         $u1 = $this->uzivatel->getUzivatel($u1id);
         $this->template->u1 = $u1;
         $this->template->u1hasCC = $this->cestneClenstviUzivatele->getHasCC($u1id);
@@ -385,7 +385,7 @@ class SpravaPresenter extends BasePresenter
         {
             $this->template->u1adresyline = null;
         }
-  
+
         $this->template->u1money_act = ($u1->money_aktivni == 1) ? "ANO" : "NE";
         $this->template->u1money_dis = ($u1->money_deaktivace == 1) ? "ANO" : "NE";
         $posledniPlatba = $u1->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',1)->order('id DESC')->limit(1);
@@ -429,7 +429,7 @@ class SpravaPresenter extends BasePresenter
         {
             $this->template->u2adresyline = null;
         }
-             
+
         $this->template->u2money_act = ($u2->money_aktivni == 1) ? "ANO" : "NE";
         $this->template->u2money_dis = ($u2->money_deaktivace == 1) ? "ANO" : "NE";
         $posledniPlatba2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',1)->order('id DESC')->limit(1);
@@ -461,14 +461,14 @@ class SpravaPresenter extends BasePresenter
             $this->template->u2money_bal = $stavUctu2;
         }
     }
-    
+
     protected function createComponentSlucovaniForm() {
          // Tohle je nutne abychom mohli zjistit isSubmited
     	$form = new Form($this, "slucovaniForm");
     	$form->addHidden('id');
 
         $users = $this->uzivatel->getFormatovanySeznamNezrusenychUzivatelu();
-        
+
         $form->addSelect('Uzivatel_id', 'Ponechaný uživatel (zůstane aktivní)', $users);
         $form->addSelect('slouceny_uzivatel', 'Sloučený uživatel (bude zrušen a jeho IP budou převedeny aktivnímu)', $users);
 
@@ -479,9 +479,9 @@ class SpravaPresenter extends BasePresenter
                         'Uzivatel_id' => $this->getParam('u1'),
                         'slouceny_uzivatel' => $this->getParam('u2')
                     ));
-        
+
     	$form->onSuccess[] = array($this, 'slucovaniFormSucceded');
-        
+
         //TODO: udelat confirmation dialog na slouceni
 
     	// pokud editujeme, nacteme existujici
@@ -491,15 +491,15 @@ class SpravaPresenter extends BasePresenter
             if($existujiciAp) {
                 $form->setValues($existujiciAp);
     	    }
-    	} */               
-    
+    	} */
+
     	return $form;
     }
-    
+
     public function slucovaniFormSucceded($form, $values) {
-        
+
         //\Tracy\Dumper::dump($form->isSubmitted()->name);
-        
+
         if($form->isSubmitted()->name == "nahled")
         {
             if($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id,$values->slouceny_uzivatel))
@@ -508,39 +508,39 @@ class SpravaPresenter extends BasePresenter
             }
             if($this->sloucenyUzivatel->getIsAlreadyMaster($values->slouceny_uzivatel))
             {
-                $this->flashMessage('Uživatel ke zrušení již figuruje jako hlavní uživatel v jiném sloučení.'); 
+                $this->flashMessage('Uživatel ke zrušení již figuruje jako hlavní uživatel v jiném sloučení.');
             }
             if($this->sloucenyUzivatel->getIsAlreadySlave($values->Uzivatel_id))
             {
-                $this->flashMessage('Uživatel který má zůstat aktivní již figuruje jako sloučený uživatel v jiném sloučení.'); 
+                $this->flashMessage('Uživatel který má zůstat aktivní již figuruje jako sloučený uživatel v jiném sloučení.');
             }
-            $this->redirect('Sprava:slucovani', array('u1'=>$values->Uzivatel_id, 'u2'=>$values->slouceny_uzivatel)); 
+            $this->redirect('Sprava:slucovani', array('u1'=>$values->Uzivatel_id, 'u2'=>$values->slouceny_uzivatel));
         }
-        
+
         if($form->isSubmitted()->name == "slouceni")
         {
             //$u1 = $this->uzivatel->getUzivatel($values->Uzivatel_id);
             $u2 = $this->uzivatel->getUzivatel($values->slouceny_uzivatel);
-            
-            
+
+
             if($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id,$values->slouceny_uzivatel))
             {
-                $this->flashMessage('Takové sloučení již existuje.'); 
+                $this->flashMessage('Takové sloučení již existuje.');
                 return true;
             }
             if($this->sloucenyUzivatel->getIsAlreadyMaster($values->slouceny_uzivatel))
             {
-                $this->flashMessage('Uživatel ke zrušení již figuruje jako hlavní uživatel v jiném sloučení.'); 
+                $this->flashMessage('Uživatel ke zrušení již figuruje jako hlavní uživatel v jiném sloučení.');
                 return true;
             }
             if($this->sloucenyUzivatel->getIsAlreadySlave($values->Uzivatel_id))
             {
-                $this->flashMessage('Uživatel který má zůstat aktivní již figuruje jako sloučený uživatel v jiném sloučení.'); 
+                $this->flashMessage('Uživatel který má zůstat aktivní již figuruje jako sloučený uživatel v jiném sloučení.');
                 return true;
             }
-            
+
             $idSlouceni = $values->id;
-            
+
             if(empty($values->id)) {
                 $values->datum_slouceni = new Nette\Utils\DateTime;
                 $values->sloucil = $this->getUser()->getIdentity()->getId();
@@ -548,15 +548,15 @@ class SpravaPresenter extends BasePresenter
             } else {
                 //$this->sloucenyUzivatel->update($idSlouceni, $values);
             }
-            
+
             //prevest IP z $values->slouceny_uzivatel do $values->Uzivatel_id
             $ipAdresyu2 = $u2->related('IPAdresa.Uzivatel_id');
             foreach ($ipAdresyu2 as $ip) {
                 $this->ipAdresa->update($ip->id, array('Uzivatel_id'=>$values->Uzivatel_id));
             }
-            //zrusit slouceneho 
+            //zrusit slouceneho
             $this->uzivatel->update($values->slouceny_uzivatel, array('TypClenstvi_id'=>1));
-            
+
             //zalogovat udalost ke sloucenemu
             $log = array();
             $log[] = array(
@@ -566,16 +566,16 @@ class SpravaPresenter extends BasePresenter
                     'akce'=>'U'
                 );
             $this->log->loguj('Uzivatel', $values->slouceny_uzivatel, $log);
-            
-            $this->flashMessage('Uživatelé byli sloučeni.');  
-            
-            $this->redirect('Uzivatel:edit', array('id'=>$values->Uzivatel_id)); 
-            
-        }       
-        
+
+            $this->flashMessage('Uživatelé byli sloučeni.');
+
+            $this->redirect('Uzivatel:edit', array('id'=>$values->Uzivatel_id));
+
+        }
+
     	return true;
     }
-    
+
     public function renderPlatbycu()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
@@ -586,57 +586,57 @@ class SpravaPresenter extends BasePresenter
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
     }
-    
+
     public function renderNesparovane()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
-    
+
     protected function createComponentPaymentgrid($name)
     {
     	$id = $this->getParameter('type');
-        
+
         //\Tracy\Dumper::dump($search);
 
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
         $grid->setExport('payment_export');
-        
+
         $prichoziPlatby = $this->prichoziPlatba->getPrichoziPlatby();
-        
+
         $grid->setModel($prichoziPlatby);
-        
+
     	$grid->setDefaultPerPage(25);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
     	$grid->setDefaultSort(array('datum' => 'DESC'));
-        
+
         /*$presenter = $this;
-        $grid->setRowCallback(function ($item, $tr) use ($presenter){  
+        $grid->setRowCallback(function ($item, $tr) use ($presenter){
                 if($item->PrichoziPlatba_id)
                 {
                     $tr->onclick = "window.location='".$presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id))."'";
                 }
                 return $tr;
             });*/
-                        
+
     	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
         {return Html::el('a')
             ->href($presenter->link('Uzivatel:show', array('id'=>$item->Uzivatel_id)))
             ->title($item->Uzivatel_id)
             ->setText($item->Uzivatel_id);})->setSortable();*/
-          
+
         $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
         $grid->addColumnText('cislo_uctu', 'Číslo účtu')->setSortable()->setFilterText();
         $grid->addColumnText('vs', 'VS')->setSortable()->setFilterText();
         $grid->addColumnText('ss', 'SS')->setSortable()->setFilterText();
-        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();   
-        $grid->addColumnText('nazev_uctu', 'Název účtu')->setSortable()->setFilterText();  
-        $grid->addColumnText('zprava_prijemci', 'Zpráva pro příjemce')->setSortable()->setFilterText(); 
-        $grid->addColumnText('kod_cilove_banky', 'Cílová banka')->setSortable()->setFilterText(); 
-        $grid->addColumnText('identifikace_uzivatele', 'Identifikace')->setSortable()->setFilterText(); 
-        $grid->addColumnText('info_od_banky', 'Info banky')->setSortable()->setFilterText(); 
-        
-        
+        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
+        $grid->addColumnText('nazev_uctu', 'Název účtu')->setSortable()->setFilterText();
+        $grid->addColumnText('zprava_prijemci', 'Zpráva pro příjemce')->setSortable()->setFilterText();
+        $grid->addColumnText('kod_cilove_banky', 'Cílová banka')->setSortable()->setFilterText();
+        $grid->addColumnText('identifikace_uzivatele', 'Identifikace')->setSortable()->setFilterText();
+        $grid->addColumnText('info_od_banky', 'Info banky')->setSortable()->setFilterText();
+
+
         $grid->addColumnText('TypPrichoziPlatby_id', 'Typ')->setCustomRender(function($item) {
             return Html::el('span')
                     ->alt($item->TypPrichoziPlatby_id)
@@ -646,7 +646,7 @@ class SpravaPresenter extends BasePresenter
                     ->data("placement", "right");
             })->setSortable();
     }
-    
+
     protected function createComponentAccountgrid($name)
     {
         //\Tracy\Dumper::dump($search);
@@ -654,34 +654,34 @@ class SpravaPresenter extends BasePresenter
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
         $grid->setExport('account_export');
-        
+
         $seznamTransakci = $this->uzivatelskeKonto->getSeznamNesparovanych();
-        
+
         $grid->setModel($seznamTransakci);
-        
+
     	$grid->setDefaultPerPage(500);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
     	$grid->setDefaultSort(array('datum' => 'DESC', 'id' => 'DESC'));
-        
+
         $presenter = $this;
-        $grid->setRowCallback(function ($item, $tr) use ($presenter){  
+        $grid->setRowCallback(function ($item, $tr) use ($presenter){
                 if($item->PrichoziPlatba_id)
                 {
                     $tr->onclick = "window.location='".$presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id))."'";
                 }
                 return $tr;
             });
-   
+
         $grid->addColumnText('PrichoziPlatba_id', 'Akce')->setCustomRender(function($item) use ($presenter)
         {return Html::el('a')
             ->href($presenter->link('Sprava:prevod', array('id'=>$item->PrichoziPlatba_id)))
             ->title("Převést")
-            ->setText("Převést");});    
-            
+            ->setText("Převést");});
+
         $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
-        
+
         $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
-        
+
         $grid->addColumnText('TypPohybuNaUctu_id', 'Typ')->setCustomRender(function($item) {
             return Html::el('span')
                     ->alt($item->TypPohybuNaUctu_id)
@@ -690,14 +690,14 @@ class SpravaPresenter extends BasePresenter
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             })->setSortable();
-        
+
         $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
                 $el = Html::el('span');
                 $el->title = $item->poznamka;
                 $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
                 return $el;
                 })->setSortable()->setFilterText();
-                
+
         $grid->addColumnText('cu', 'Číslo účtu')->setCustomRender(function($item) {
             return Html::el('span')
                     ->alt($item->PrichoziPlatba->cislo_uctu)
@@ -706,7 +706,7 @@ class SpravaPresenter extends BasePresenter
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             })->setSortable();
-            
+
         $grid->addColumnText('vs', 'VS')->setCustomRender(function($item) {
             return Html::el('span')
                     ->alt($item->PrichoziPlatba->vs)
@@ -715,7 +715,7 @@ class SpravaPresenter extends BasePresenter
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             })->setSortable();
-            
+
         $grid->addColumnText('ss', 'SS')->setCustomRender(function($item) {
             return Html::el('span')
                     ->alt($item->PrichoziPlatba->ss)
@@ -724,7 +724,7 @@ class SpravaPresenter extends BasePresenter
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             })->setSortable();
-            
+
         $grid->addColumnText('nazev_uctu', 'Název účtu')->setCustomRender(function($item) {
             return Html::el('span')
                     ->alt($item->PrichoziPlatba->nazev_uctu)
@@ -733,7 +733,7 @@ class SpravaPresenter extends BasePresenter
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             })->setSortable();
-        
+
         $grid->addColumnText('zprava_prijemci', 'Zpráva')->setCustomRender(function($item) {
             return Html::el('span')
                     ->alt($item->PrichoziPlatba->zprava_prijemci)
@@ -742,7 +742,7 @@ class SpravaPresenter extends BasePresenter
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
             })->setSortable();
-        
+
         $grid->addColumnText('info_od_banky', 'Info banky')->setCustomRender(function($item) {
             return Html::el('span')
                     ->alt($item->PrichoziPlatba->info_od_banky)
@@ -752,7 +752,7 @@ class SpravaPresenter extends BasePresenter
                     ->data("placement", "right");
             })->setSortable();
     }
-    
+
     public function renderPrevod()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
@@ -768,9 +768,9 @@ class SpravaPresenter extends BasePresenter
         $form->addText('PrichoziPlatba_vs', 'Příchozí VS', 70)->setDisabled(TRUE);
         $form->addText('PrichoziPlatba_ss', 'Příchozí SS', 70)->setDisabled(TRUE);
         $form->addText('castka', 'Příchozí částka k převodu', 70)->setDisabled(TRUE);
-        
+
         $form->addText('Uzivatel_prev', 'ID původního uživatele', 50)->setDisabled(TRUE);
-        
+
         $form->addText('Uzivatel_id', 'ID správného uživatele', 50)->setRequired('Zadejte UID cílového uživatele');
         $form->addTextArea('poznamka', 'Poznámka', 72, 10);
 
@@ -784,13 +784,13 @@ class SpravaPresenter extends BasePresenter
             $id = $this->getParameter('id');
             $pPlatba = $this->prichoziPlatba->getPrichoziPlatba($id);
             $posledniPohyb = $this->uzivatelskeKonto->getUzivatelskeKontoByPrichoziPlatba($id);
-            
+
             if($posledniPohyb) {
                 $form->setDefaults(array(
                         'Uzivatel_prev' => $posledniPohyb->Uzivatel_id
                     ));
             }
-            
+
             if($pPlatba) {
                 //$form->setValues($user);
                 $form->setDefaults(array(
@@ -802,11 +802,11 @@ class SpravaPresenter extends BasePresenter
                         'poznamka' => 'Chybná platba.'
                     ));
     	    }
-    	}                
-    
+    	}
+
     	return $form;
     }
-    
+
     public function prevodFormSucceded($form, $values) {
 
         $id = $this->getParameter('id');
@@ -814,9 +814,9 @@ class SpravaPresenter extends BasePresenter
         $posledniPohyb = $this->uzivatelskeKonto->getUzivatelskeKontoByPrichoziPlatba($id);
 
         if($pPlatba) {
-            
+
             $targetUID = $values->Uzivatel_id;
-            
+
             $values->poznamka = $values->poznamka.' Převod na UID:['.$targetUID.']';
             if($posledniPohyb) {
                 $values->Uzivatel_id = $posledniPohyb->Uzivatel_id;
@@ -824,12 +824,12 @@ class SpravaPresenter extends BasePresenter
             }
             else
             {
-               $values->Uzivatel_id = NULL; 
+               $values->Uzivatel_id = NULL;
                $values->TypPohybuNaUctu_id = 10;
             }
             $values->PrichoziPlatba_id = $pPlatba->id;
             $values->datum = new Nette\Utils\DateTime;
-            $values->zmenu_provedl = $this->getUser()->getIdentity()->getId();            
+            $values->zmenu_provedl = $this->getUser()->getIdentity()->getId();
             $values->castka = -$pPlatba->castka;
 
             if(empty($values->id)) {
@@ -838,46 +838,46 @@ class SpravaPresenter extends BasePresenter
                 $values->TypPohybuNaUctu_id = 1;
                 $values->Uzivatel_id = $targetUID;
                 $this->uzivatelskeKonto->insert($values);
-                $this->flashMessage('Platba převedena.');            
+                $this->flashMessage('Platba převedena.');
             }
 
-            $this->redirect('Sprava:nastroje'); 
+            $this->redirect('Sprava:nastroje');
         }
         else
         {
-            $this->flashMessage('Nelze převést neexistující platbu!'); 
+            $this->flashMessage('Nelze převést neexistující platbu!');
         }
-        
+
     	return true;
     }
-    
+
     public function renderOdchoziplatby()
     {
-        
+
     }
-    
+
     protected function createComponentOdchplatby($name)
     {
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
         $grid->setExport('op_export');
-        
+
         $grid->setModel($this->odchoziPlatba->getOdchoziPlatby());
-        
+
     	$grid->setDefaultPerPage(100);
     	$grid->setDefaultSort(array('datum' => 'DESC'));
-         
+
         $grid->setRowCallback(function ($item, $tr){
 
             if($item->datum_platby == null)
                 {
                   $tr->class[] = 'primarni';
                 }
-                       
+
                 return $tr;
             });
-        
-    	$grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText(); 
+
+    	$grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();
         $grid->getColumn('datum')->headerPrototype->style['width'] = '10%';
         $grid->addColumnText('firma', 'Firma')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('popis', 'Popis')->setSortable()->setFilterText()->setSuggestion();
@@ -889,34 +889,34 @@ class SpravaPresenter extends BasePresenter
         $grid->addColumnDate('datum_platby', 'Datum platby')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText()->setSuggestion();
         $grid->getColumn('datum_platby')->headerPrototype->style['width'] = '10%';
     }
-    
+
     public function renderUcty()
     {
-        
+
     }
-    
+
     protected function createComponentStavyuctu($name)
     {
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
-        
+
         $grid->setModel($this->stavBankovnihoUctu->getAktualniStavyBankovnihoUctu());
-        
+
     	$grid->setDefaultPerPage(10);
     	$grid->setDefaultSort(array('datum' => 'DESC'));
-         
-    	$grid->addColumnDate('datum', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE);   
+
+    	$grid->addColumnDate('datum', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE);
         $grid->addColumnText('text', 'Bankovní účet');
         $grid->addColumnText('popis', 'Popis');
         $grid->addColumnNumber('castka', 'Částka', 2, ',', ' ');
 
     }
-    
+
     public function renderSms()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
-    
+
     protected function createComponentSmsForm() {
          // Tohle je nutne abychom mohli zjistit isSubmited
     	$form = new Form($this, "smsForm");
@@ -931,7 +931,7 @@ class SpravaPresenter extends BasePresenter
 
     	return $form;
     }
-    
+
     public function smsFormSucceded($form, $values) {
 
         if($values->komu == 0)
@@ -942,26 +942,60 @@ class SpravaPresenter extends BasePresenter
         {
           $sos = $this->spravceOblasti->getZSO();
         }
-        
+
         foreach($sos as $so)
         {
             $tl = $so->Uzivatel->telefon;
             if(!empty($tl) && $tl!='missing')
             {
-                $validni[]=$tl; 
+                $validni[]=$tl;
             }
         }
         $tls = join(",",array_values($validni));
-        
+
         $locale = 'cs_CZ.UTF-8';
         setlocale(LC_ALL, $locale);
         putenv('LC_ALL='.$locale);
         $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$tls.' "'.$values->message.'"');
         $output = shell_exec($command);
-        
+
         $this->flashMessage('SMS byly odeslány. Output: ' . $output);
-        
-    	$this->redirect('Sprava:nastroje', array('id'=>null)); 
+
+    	$this->redirect('Sprava:nastroje', array('id'=>null));
     	return true;
+    }
+
+    public function renderMapa()
+    {
+        $aps = $this->ap->findAll();
+        $povoleneAp = [];
+        foreach ($aps as $ap) {
+            if ($this->ap->canViewOrEditAP($ap->id, $this->getUser())) {
+                $povoleneAp[] = $ap->id;
+            }
+        }
+        $uzivatele = $this->uzivatel->findAll()->where('location_status IN (?, ?)', 'valid', 'approx')->where('TypClenstvi_id > ?', 1);
+        $uzivatele = $uzivatele->where('Ap_id', $povoleneAp); // Ap_id IN (..., ..., ...)
+        $uzivatele = $uzivatele->fetchAll();
+        $output = []; // klic = kombinace latitude + longitude
+        foreach($uzivatele as $uzivatel) {
+            $key = "{$uzivatel->latitude},{$uzivatel->longitude}";
+            if (!isset($output[$key])) {
+                // na danych souradnicich jeste zadny bod v poli $output neni
+                $output[$key] = [
+                    'lat' => $uzivatel->latitude,
+                    'lon' => $uzivatel->longitude,
+                    'us' => [] // users
+                ];
+            }
+            $output[$key]['us'][] = [
+                'id' => $uzivatel->id,
+                'ni' => $uzivatel->nick,
+                'jm' => $uzivatel->jmeno,
+                'pr' => $uzivatel->prijmeni,
+                'li' => $this->link('Uzivatel:show', array('id'=>$uzivatel->id))
+            ];
+        }
+        $this->template->data = json_encode(array_values($output));
     }
 }

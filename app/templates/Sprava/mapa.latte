@@ -1,0 +1,87 @@
+{block content}
+    <h3>Mapa</h3>
+
+    <script src="http://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>
+
+    <div id="map" style="width: auto; height: 200px"></div>
+    <script type="text/javascript">
+        var pointsData = {$data|noescape};
+
+        $('#map').height($(window).height() - $('.navbar').height() - $('h3').height() - 100);
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 10,
+            center: new google.maps.LatLng(50.209232, 15.832773),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+        var template = [
+            '<?xml version="1.0"?>',
+            '<svg width="60px" height="30px" viewBox="0 0 200 100" version="1.1" xmlns="http://www.w3.org/2000/svg">',
+            '<circle stroke="#222" fill="#000" cx="100" cy="30" r="20"/>',
+            '<circle stroke="#222" fill="ccc" cx="100" cy="30" r="15"/>',
+            '<g style="overflow:hidden; text-anchor: middle; font-size:35px; font-family: Arial;">',
+            '    <text x="100" y="42" style="fill: #000; stroke: #000; stroke-width: 5">PLUSSIGN</text>',
+            '</g>',
+            '<g style="overflow:hidden; text-anchor: middle; font-size:35px; font-family: Arial;">',
+            '    <text x="100" y="90" style="fill: #000; stroke: #fff; stroke-width: 10">LABEL</text>',
+            '    <text x="100" y="90" style="fill: #000; stroke: #000; stroke-width: 0">LABEL</text>',
+            '</g>',
+            '</svg>'
+        ].join('\n');
+        var svg = template.replace('ccc', '#3cc000');
+
+        var infowindow = new google.maps.InfoWindow({
+            content: ''
+        });
+
+        var markers = [];
+        for( var j=0; j < pointsData.length; j++ ) {
+            function makePoint(i) {
+                var point = pointsData[i];
+                var title = '';
+                var longTitle = '';
+                var thesvg = null;
+                if (point.us.length > 1) {
+                    // vice useru na jednom miste
+                    thesvg = svg.replace('PLUSSIGN', '+');
+                    title = point.us[0].ni + ',...';
+                    longTitle = point.us.map(function (u) {
+                        return u.ni;
+                    }).join(', ');
+                } else {
+                    // jeden user
+                    thesvg = svg.replace('PLUSSIGN', '');
+                    title = point.us[0].ni;
+                    longTitle = title;
+                }
+                var txtsvg = thesvg.replace(/LABEL/g, title);
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(point.lat, point.lon),
+                    //map: map,
+                    title: longTitle,
+                    //label: longTitle,
+                    icon: {
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(txtsvg),
+                        size: new google.maps.Size(60, 30),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(30, 10)
+                    }
+                });
+                marker.addListener('click', function () {
+                    var infoHtml = point.us.map(function (u) {
+                        return '<a href="' + u.li + '" target="_blank">' + u.id + ' (' + u.ni + ') ' + u.jm + ' ' + u.pr + '</a>';
+                    }).join('<br>');
+                    infowindow.setContent(infoHtml);
+                    infowindow.open(map, marker);
+                });
+                return marker;
+            }
+            markers.push(makePoint(j));
+        }
+
+        var mcOptions = { gridSize: 40, maxZoom: 14,  imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' };
+        var mc = new MarkerClusterer(map, markers, mcOptions);
+
+    </script>
+
+{/block}

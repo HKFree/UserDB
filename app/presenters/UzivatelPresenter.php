@@ -496,6 +496,9 @@ class UzivatelPresenter extends BasePresenter
                 $values->poznamka = null;
             }
 
+        // pri kazde editaci uzivatele nastavime znovu geocoding na pending, aby se znovu dohledaly geofraf. souradnice
+        $values->location_status = 'pending';
+
     	// Zpracujeme nejdriv uzivatele
     	if(empty($values->id)) {
             $values->regform_downloaded_password_sent = 0;
@@ -625,12 +628,12 @@ class UzivatelPresenter extends BasePresenter
                 $isSMTP = $this->povoleneSMTP->getIP($oldip->id);
                 if($isSMTP)
                 {
-                    $smtpIPIDs[] = intval($isSMTP->id);                    
+                    $smtpIPIDs[] = intval($isSMTP->id);
                 }
             }
         }
         $this->povoleneSMTP->deleteIPs($smtpIPIDs);
-        
+
         $this->ipAdresa->deleteIPAdresy($toDelete);
 
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
