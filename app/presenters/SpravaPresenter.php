@@ -985,7 +985,8 @@ class SpravaPresenter extends BasePresenter
                 $output[$key] = [
                     'lat' => $uzivatel->latitude,
                     'lon' => $uzivatel->longitude,
-                    'us' => [] // users
+                    'us' => [], // users
+                    'ax' => 0 // approximate flag
                 ];
             }
             $output[$key]['us'][] = [
@@ -995,6 +996,9 @@ class SpravaPresenter extends BasePresenter
                 'pr' => $uzivatel->prijmeni,
                 'li' => $this->link('Uzivatel:show', array('id'=>$uzivatel->id))
             ];
+            if ($uzivatel->location_status === 'approx') {
+                $output[$key]['ax'] = 1;
+            }
         }
         $this->template->data = json_encode(array_values($output));
     }

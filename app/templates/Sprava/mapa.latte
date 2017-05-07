@@ -71,6 +71,9 @@
                     var infoHtml = point.us.map(function (u) {
                         return '<a href="' + u.li + '" target="_blank">' + u.id + ' (' + u.ni + ') ' + u.jm + ' ' + u.pr + '</a>';
                     }).join('<br>');
+                    if (point.ax) {
+                        infoHtml = 'Nepřesná poloha!<br>' + infoHtml;
+                    }
                     infowindow.setContent(infoHtml);
                     infowindow.open(map, marker);
                 });
