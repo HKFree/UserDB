@@ -65,6 +65,10 @@ services:
 	parameters: App\Model\Parameters(%clenskyPrispevek%)
 	wewimo: App\Model\Wewimo
 	apiKlic: App\Model\ApiKlic
+	SpravaPresenter:
+		class: App\Presenters\SpravaPresenter
+		setup:
+			- setGoogleMapsApiKey(%googleMapsApiKey%)
 
 console:
 	commands:

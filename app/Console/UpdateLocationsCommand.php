@@ -16,7 +16,8 @@ class UpdateLocationsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        echo "update_locations started\n";
+        $googleMapsApiKey = $this->getHelper('container')->getParameter('googleMapsApiKey');
+        echo "update_locations started, googleMapsApiKey: $googleMapsApiKey\n";
         /** @var \App\Model\Uzivatel $uzivatelModel */
         $uzivatelModel = $this->getHelper('container')->getByType('\App\Model\Uzivatel');
         $uzivatele = $uzivatelModel->findAll()->where('location_status = ?', 'pending')->limit(500)->fetchAll();
@@ -26,8 +27,9 @@ class UpdateLocationsCommand extends Command
             $uid = $uzivatel->id;
             echo "[$uid] $adresa\n";
             $client = new \GuzzleHttp\Client(['verify' => false]);
-            $res = $client->request('GET', 'https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($adresa));
-
+            $res = $client->request('GET', 'https://maps.googleapis.com/maps/api/geocode/json?key='.
+                urlencode($googleMapsApiKey).
+                '&address='.urlencode($adresa));
             if ($res->getStatusCode() === 200) {
                 //echo $res->getBody()."\n";
                 $data = json_decode($res->getBody(), true);

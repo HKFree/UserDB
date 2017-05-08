@@ -32,6 +32,7 @@ class SpravaPresenter extends BasePresenter
     private $prichoziPlatba;
     private $odchoziPlatba;
     private $stavBankovnihoUctu;
+    private $googleMapsApiKey;
 
     function __construct(Model\SloucenyUzivatel $slUzivatel, Model\SpravceOblasti $sob, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
         $this->cestneClenstviUzivatele = $cc;
@@ -47,6 +48,11 @@ class SpravaPresenter extends BasePresenter
         $this->odchoziPlatba = $odchplatba;
         $this->stavBankovnihoUctu = $stavuctu;
         $this->spravceOblasti = $sob;
+    }
+
+    public function setGoogleMapsApiKey($googleMapsApiKey)
+    {
+        $this->googleMapsApiKey = $googleMapsApiKey;
     }
 
     public function actionLogout() {
@@ -1001,5 +1007,6 @@ class SpravaPresenter extends BasePresenter
             }
         }
         $this->template->data = json_encode(array_values($output));
+        $this->template->googleMapsApiKey = $this->googleMapsApiKey;
     }
 }
