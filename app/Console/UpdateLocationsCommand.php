@@ -143,8 +143,8 @@ class UpdateLocationsCommand extends Command
                 $res = $this->vugtkGeocode($adresa);
                 if ($res->getStatusCode() === 200) {
                     $data = json_decode($res->getBody(), true);
-                    if (isset($data['records']) && (count($data['records']) > 0)) {
-                        // adresa nalezena
+                    if (isset($data['records']) && (count($data['records']) === 1)) {
+                        // adresa nalezena (presne 1 misto)
                         $jtskx = $data['records'][0]['JTSKX'];
                         $jtsky = $data['records'][0]['JTSKY'];
                         // prevedeme Krovaka na WGS
@@ -154,7 +154,7 @@ class UpdateLocationsCommand extends Command
                         $lon = $wgs['lon'];
                         echo "  vugtk found $lat,$lon\n";
                     } else {
-                        // adresa nenalezena, ulozime tedy aspon to, co nalezly google mapy
+                        // adresa nenalezena nebo nalezeno vetsi uzemi, ulozime tedy aspon to, co nalezly google mapy
                         echo "  vugtk not found\n";
                     }
                     // ulozime stav a souradnice (muze byt uknown+null nebo approx+lat,lon z google nebo valid+lat,lon z vugtk;
