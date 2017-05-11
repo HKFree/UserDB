@@ -39,6 +39,9 @@
             content: ''
         });
 
+        var highlightUid = Number(window.location.hash.replace('#uid', ''));
+        var highlightPosition = null;
+
         var markers = [];
         for( var j=0; j < pointsData.length; j++ ) {
             function makePoint(i) {
@@ -84,6 +87,11 @@
                     infowindow.setContent(infoHtml);
                     infowindow.open(map, marker);
                 });
+                point.us.forEach(function(u) {
+                    if (highlightUid && u.id == highlightUid) {
+                        highlightPosition = marker.getPosition();
+                    }
+                });
                 return marker;
             }
             markers.push(makePoint(j));
@@ -91,6 +99,20 @@
 
         var mcOptions = { gridSize: 40, maxZoom: 14,  imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m' };
         var mc = new MarkerClusterer(map, markers, mcOptions);
+        if (highlightPosition) {
+            var highlightCircle = new google.maps.Circle({
+                strokeColor: '#FF0000',
+                strokeOpacity: 0,
+                strokeWeight: 2,
+                fillColor: '#FF0000',
+                fillOpacity: 0.35,
+                map: map,
+                center: highlightPosition,
+                radius: 20
+            });
+            map.setCenter(highlightPosition);
+            map.setZoom(16);
+        }
 
     </script>
 

@@ -12,11 +12,11 @@
     {if $u->regform_downloaded_password_sent==0}
     <a href="{link Uzivatel:sendRegActivation id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat znovu aktivační link e-mailem</a>
     {else}
-    <a href="{link Uzivatel:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>    
+    <a href="{link Uzivatel:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>
     {/if}
     <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Materna</a>
     {/if}
-    <a href="{link Uzivatel:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>    
+    <a href="{link Uzivatel:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>
     <div style="margin-top:3px;">
     <a href="{link Uzivatel:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Přehled plateb</a>
     {if $activaceVisible}<a href="{link Uzivatel:moneyActivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Aktivace</a>{/if}
@@ -26,32 +26,32 @@
     <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
 
     </div>
-    
+
     <br><br>
     <style>
 	.table-nonfluid {
 	    width: auto;
 	 }
     </style>
-    
+
     <table class="table table-nonfluid">
-    
+
         {if $master}
         <tr class="error"><th>Sloučen pod uživatele </th><td><a n:href="uzivatel:show, id=>$master->id">{$master->nick}</a></td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
-        {/if} 
-        
+        {/if}
+
         {if $slaves}
         <tr n:foreach="$slaves as $slave" class="error"><th>Sloučený uživatel </th><td><a n:href="uzivatel:show, id=>$slave">{$slave}</a></td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
-        {/if} 
-        
+        {/if}
+
 	<tr><th>ID</th><td>{$u->id}</td></tr>
 	<tr><th>Oblast - AP</th><td><a n:href="Ap:list, id => $u->Ap->Oblast->id">{$u->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u->Ap->id">{$u->Ap->jmeno}</a></td></tr>
     <tr><th>Typ členství</th><td>{if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}</td></tr>
 	<tr><td colspan="2">&nbsp;</td></tr>
-	
-  
+
+
     <tr><th>Přezdívka</th><td>{$u->nick}</td></tr>
     {if $canViewOrEdit}
         <tr><th>Typ právní formy</th><td>{$u->TypPravniFormyUzivatele->text}</td></tr>
@@ -60,7 +60,7 @@
         <tr><th>Číslo členské karty</th><td>{$u->cislo_clenske_karty}</td></tr>
         <tr><th>Jméno a příjmení</th><td>{$u->jmeno} {$u->prijmeni}</td></tr>
 
-        <tr><th>Ulice a č.p.</th><td>{$u->ulice_cp}</td></tr>
+        <tr><th>Ulice a č.p.</th><td>{$u->ulice_cp} {if $u->location_status != 'pending' && $u->location_status != 'unknown'}<a href="{link Sprava:mapa id=>null}#uid{$u->id}" class="spacing-left"><i class="fa fa-map-marker" aria-hidden="true"></i> mapa</a>{/if}</td></tr>
         <tr><th>Obec</th><td>{$u->mesto}</td></tr>
         <tr><th>PSČ</th><td>{$u->psc}</td></tr>
         <tr><th>Email</th><td>{$u->email}</td></tr>
@@ -72,30 +72,30 @@
         <tr><th>Index potížisty</th><td><div class="br-widget-show"><span class="lebka-zluta"></span>{for $i=1;$i<6;$i++}{if $i<=$u->index_potizisty}<span class="lebka-cervena"></span>{else}<span class="lebka-seda"></span>{/if}{/for}</div></td></tr>
         <tr><th>Technologie připojení</th><td>{$u->TechnologiePripojeni->text}</td></tr>
         <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni->text}</td></tr>
-        <tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>     
+        <tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>
         <tr><th>Založen</th><td>{$u->zalozen}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
 
-        <tr><th>Kauce na mobilní tarify</th><td>{$u->kauce_mobil}</td></tr> 
+        <tr><th>Kauce na mobilní tarify</th><td>{$u->kauce_mobil}</td></tr>
         <tr><th>Aktivní</th><td>{$money_act}</td></tr>
         <tr><th>Deaktivace</th><td>{$money_dis}</td></tr>
         <tr><th>Poslední platba</th><td>{$money_lastpay}</td></tr>
         <tr><th>Poslední aktivace</th><td>{$money_lastact}</td></tr>
         <tr><th>Stav účtu</th><td>{$money_bal}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
-        
-        
- 
+
+
+
     {/if}
     </table>
-        
+
         <h4>IP Adresy</h4>
         {if $canViewOrEdit}
             {$adresy}
         {else}
             <p>{$adresyline}</p>
-        {/if}  
-        
+        {/if}
+
     {if $canViewOrEdit}
         <script>
             $(document).ready(function( $ ) {
@@ -104,11 +104,11 @@
                 });
                 $(".logstable").hide();
             });
-        
+
         </script>
         <h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
-        
-        {control logTable, $u->id} 
+
+        {control logTable, $u->id}
 
     {/if}
 {/ifset}

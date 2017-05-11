@@ -579,3 +579,7 @@ tbody > tr.wewimo-table-header > th {
 input[readonly] {
     background-color: #dddddd;
 }
+
+.spacing-left {
+    padding-left: 30px;
+}
