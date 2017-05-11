@@ -907,7 +907,7 @@ class UzivatelPresenter extends BasePresenter
 
     public function renderEditcc()
     {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
         $this->template->canApprove = $this->getUser()->isInRole('VV');
         $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
     }

@@ -976,7 +976,7 @@ class SpravaPresenter extends BasePresenter
         $aps = $this->ap->findAll();
         $povoleneAp = [];
         foreach ($aps as $ap) {
-            if ($this->ap->canViewOrEditAP($ap->id, $this->getUser())) {
+            if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($ap->id, $this->getUser())) {
                 $povoleneAp[] = $ap->id;
             }
         }
