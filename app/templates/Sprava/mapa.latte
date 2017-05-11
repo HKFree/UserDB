@@ -17,8 +17,13 @@
         var template = [
             '<?xml version="1.0"?>',
             '<svg width="60px" height="30px" viewBox="0 0 200 100" version="1.1" xmlns="http://www.w3.org/2000/svg">',
-            '<circle stroke="#222" fill="#000" cx="100" cy="30" r="20"/>',
-            '<circle stroke="#222" fill="ccc" cx="100" cy="30" r="15"/>',
+            '<defs>',
+            '  <filter id="f1" x="0" y="0">',
+            '    <feGaussianBlur in="SourceGraphic" stdDeviation="2" />',
+            '  </filter>',
+            '</defs>',
+            '<circle stroke="#222" fill="cccstroke" cx="100" cy="30" r="20" filter="blurfilter"/>',
+            '<circle stroke="#222" fill="cccfill" cx="100" cy="30" r="15" filter="blurfilter"/>',
             '<g style="overflow:hidden; text-anchor: middle; font-size:35px; font-family: Arial;">',
             '    <text x="100" y="42" style="fill: #000; stroke: #000; stroke-width: 5">PLUSSIGN</text>',
             '</g>',
@@ -28,7 +33,7 @@
             '</g>',
             '</svg>'
         ].join('\n');
-        var svg = template.replace('ccc', '#3cc000');
+        var svg = template.replace('cccfill', '#3cc000');
 
         var infowindow = new google.maps.InfoWindow({
             content: ''
@@ -54,6 +59,8 @@
                     title = point.us[0].ni;
                     longTitle = title;
                 }
+                thesvg = thesvg.replace('cccstroke', point.ax ? '#888' : '#000');
+                thesvg = thesvg.replace('blurfilter', point.ax ? 'url(#f1)' : '');
                 var txtsvg = thesvg.replace(/LABEL/g, title);
                 var marker = new google.maps.Marker({
                     position: new google.maps.LatLng(point.lat, point.lon),
