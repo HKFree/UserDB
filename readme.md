@@ -1,9 +1,9 @@
-#HKFree UserDB
+# HKFree UserDB
 Powerful [HKFree.org](http://www.hkfree.org) user and IP management system
 
 Developed by powerful team - Evil, ZitnyP, Bkralik & pavkriz
 
-##Installation
+## Installation
 
 ```bash
 git clone https://github.com/HKFree/UserDB.git
@@ -15,7 +15,7 @@ rm -rf temp/cache
 php www/index.php migrations:continue
 ```
 
-##Development
+## Development
 
 - Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig.org/#download)
 
@@ -28,7 +28,7 @@ git pull origin master
 git push origin master
 ```
 
-##Deployment
+## Deployment
 
 Useful stuff to fix several Nette's gotchas: [Nedostatky Nette při přechodu ze Symfony2](https://quip.com/1DAjAVxx9gZ8)
 
@@ -40,7 +40,7 @@ When something goes wrong, try to run `(cd /opt/UserDB.git; hooks/post-receive)`
 
 See [git-hooks/post-receive.sample](git-hooks/post-receive.sample) for more details what happens during deployment on server side.
 
-##Making DB changes
+## Making DB changes
 
 ###Creating new change-script
 
@@ -52,20 +52,20 @@ and edit the change-script created.
 - b = basic-data (eg. lists-of-values, applied always)
 - d = dummy-data (eg. testing records, applied only when `--production` omitted, should not be run on production)
 
-###Applying changes
+### Applying changes
 
 Make sure the cache is clean by running `rm -rf temp/cache` and run
 `php www/index.php migrations:continue --production`
 in order to apply the change-scripts to the DB configured in neon config.
 
-####On development or testing machines
+#### On development or testing machines
 
 Omit `--production` when you want to apply dummy-data scripts too (on development or testing machine).
 
 You can run `php www/index.php migrations:reset` in order to drop all tables in the database and create them from scratch running all
  change-scripts. Run it on dev/test machine in order to test that the whole schema is completely described in change-scripts. DO NOT RUN IN PRODUCTION! WILL DELETE ALL DATA!
 
-####On moving to nextras/migrations
+#### On moving to nextras/migrations
 
 Before applying migrations to a database that was not versioned before, run the following code (it pretends that all initial change-scripts has been run):
 ```
@@ -86,12 +86,12 @@ ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 ```
 
-##Accessing API
+## Accessing API
 
 [Open swagger.yaml in Swagger Editor](http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/HKFree/UserDB/master/swagger.yaml#/) and try some operations.
 You'll need the credentials. Create them in UserDB: Oblast - Zobrazit podrobnosti AP - Editovat - API klíče.
 
-##License
+## License
 
 - Nette: New BSD License or GPL 2.0 or 3.0 (http://nette.org/license)
 - jQuery: MIT License (https://jquery.org/license)
