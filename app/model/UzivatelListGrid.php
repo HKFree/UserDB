@@ -143,7 +143,7 @@ class UzivatelListGrid extends Nette\Object
                     $el->setText($item->ulice_cp);
                     $this->addressNotice($el, $item);
                     return $el;
-                })->setSortable()->setFilterText();
+                })->setSortable();
                 $grid->addColumnText('mesto', 'Obec')->setSortable()->setFilterText();
                 $grid->addColumnText('psc', 'PSČ')->setSortable()->setFilterText();
             }
@@ -241,7 +241,7 @@ class UzivatelListGrid extends Nette\Object
 
             if($fullnotes)
             {
-                $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable()->setFilterText();
+                $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable();
             }
             else
             {
@@ -250,7 +250,7 @@ class UzivatelListGrid extends Nette\Object
                 $el->title = $item->poznamka;
                 $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
                 return $el;
-                })->setSortable()->setFilterText();
+                })->setSortable();
             }
     	}
 
