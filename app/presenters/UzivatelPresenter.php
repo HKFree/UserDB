@@ -800,7 +800,7 @@ class UzivatelPresenter extends BasePresenter
                 $apcko = $this->ap->getAP($uzivatel->Ap_id);
                 $subnety = $apcko->related('Subnet.Ap_id');
                 $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($uzivatel->Ap_id, $subnety);
-
+\Tracy\Dumper::dump($seznamUzivatelu);
 
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
                                                     || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
