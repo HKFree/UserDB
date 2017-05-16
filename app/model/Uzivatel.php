@@ -82,6 +82,31 @@ WHERE U.id ='.$id_uzivatel)
         return($this->findBy(array('id' => 0)));
     }
 
+    public function findUsersIdsFromOtherAreasByAreaId($referentialApId, $subnety)
+    {
+        $uids = array();
+        foreach ($subnety as $subnet) {
+            list($network, $cidr) = explode("/", $subnet->subnet);
+
+            $userids = $this->getConnection()->query("select DISTINCT U.* 
+            from Uzivatel U 
+            LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id 
+            LEFT JOIN Ap A on A.id=U.Ap_id 
+            where A.id!=$referentialApId
+            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - $cidr))) = inet_aton('$network') 
+            order by U.id")->fetchPairs('id','id');
+
+            if(!empty($userids))
+            {
+                //\Tracy\Dumper::dump($userids);
+                //\Tracy\Dumper::dump(array_values($userids));
+                $uids = array_merge(array_values($userids), $uids);
+            }
+        }
+        
+        return($uids);
+    }
+
     public function findUserByFulltext($search, $Uzivatel)
     {
         //mobil a email pouze pro ty co maji prava

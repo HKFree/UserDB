@@ -796,7 +796,15 @@ class UzivatelPresenter extends BasePresenter
                 {
                     $this->template->adresyline = null;
                 }
-                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+
+                $apcko = $this->ap->getAP($uzivatel->Ap_id);
+                $subnety = $apcko->related('Subnet.Ap_id');
+                $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($uzivatel->Ap_id, $subnety);
+
+
+                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
+                                                    || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
+                                                    || in_array($uid,$seznamUzivatelu);
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
                 //$this->template->logy = $this->log->getLogyUzivatele($uid);
 

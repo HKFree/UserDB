@@ -144,8 +144,8 @@ class UzivatelListGrid extends Nette\Object
                     $this->addressNotice($el, $item);
                     return $el;
                 })->setSortable();
-                $grid->addColumnText('mesto', 'Obec')->setSortable()->setFilterText();
-                $grid->addColumnText('psc', 'PSČ')->setSortable()->setFilterText();
+                $grid->addColumnText('mesto', 'Obec')->setSortable();
+                $grid->addColumnText('psc', 'PSČ')->setSortable();
             }
             else{
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function($item){
@@ -154,7 +154,7 @@ class UzivatelListGrid extends Nette\Object
                     $el->setText(Strings::truncate($item->ulice_cp, 50, $append='…'));
                     $this->addressNotice($el, $item);
                     return $el;
-                })->setSortable()->setFilterText();
+                })->setSortable();
             }
 
             $grid->addColumnEmail('email', 'E-mail')->setSortable();
