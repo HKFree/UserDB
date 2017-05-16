@@ -256,7 +256,15 @@ class UzivatelPresenter extends BasePresenter
     {
         if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
         {
-            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            $apcko = $this->ap->getAP($so->Ap_id);
+            $subnety = $apcko->related('Subnet.Ap_id');
+            $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
+            //\Tracy\Dumper::dump($seznamUzivatelu);
+
+            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
+                                                || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
+                                                || in_array($uid,$seznamUzivatelu);
         }
         else
         {
@@ -800,7 +808,7 @@ class UzivatelPresenter extends BasePresenter
                 $apcko = $this->ap->getAP($so->Ap_id);
                 $subnety = $apcko->related('Subnet.Ap_id');
                 $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
-\Tracy\Dumper::dump($seznamUzivatelu);
+                //\Tracy\Dumper::dump($seznamUzivatelu);
 
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
                                                     || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
