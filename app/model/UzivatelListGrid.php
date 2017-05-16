@@ -41,7 +41,10 @@ class UzivatelListGrid extends Nette\Object
     	$grid->translator->setLang('cs');
         $grid->setExport('user_export');
 
-        $seznamUzivatelu = $this->uzivatel->findUsersFromOtherAreasByAreaId($id);
+        $apcko = $this->ap->getAP($referentialApId);
+        $subnety = $apcko->related('Subnet.Ap_id');
+
+        $seznamUzivatelu = $this->uzivatel->findUsersFromOtherAreasByAreaId($id, $subnety);
         $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
         $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($id, $loggedUser);
 

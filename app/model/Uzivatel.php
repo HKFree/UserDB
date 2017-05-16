@@ -51,10 +51,8 @@ WHERE U.id ='.$id_uzivatel)
 	  return($vsichni);
     }
 
-    public function findUsersFromOtherAreasByAreaId($referentialApId)
+    public function findUsersFromOtherAreasByAreaId($referentialApId, $subnety)
     {
-        $apcko = $this->ap->getAP($referentialApId);
-        $subnety = $apcko->related('Subnet.Ap_id');
         $uids = array();
         foreach ($subnety as $subnet) {
             list($network, $cidr) = explode("/", $subnet->subnet);
