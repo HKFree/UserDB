@@ -655,6 +655,19 @@ class UzivatelPresenter extends BasePresenter
 
     }
 
+    protected function createComponentOthersGrid($name)
+    {
+        $this->tabulkaUzivatelu->getListOfOtherUsersGrid($this,
+                                            $name,
+                                            $this->getUser(),
+                                            $this->getParameter('id'),
+                                            $this->getParameter('money', false),
+                                            $this->getParameter('fullnotes', false),
+                                            $this->getParameter('search', false)
+                                            );
+
+    }
+
     public function renderListall()
     {
         $search = $this->getParameter('search', false);
