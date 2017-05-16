@@ -264,7 +264,7 @@ class UzivatelPresenter extends BasePresenter
 
             $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
                                                 || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
-                                                || in_array($uid,$seznamUzivatelu);
+                                                || in_array($uzivatel->id,$seznamUzivatelu);
         }
         else
         {
