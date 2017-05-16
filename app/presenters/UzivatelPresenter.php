@@ -797,9 +797,9 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->adresyline = null;
                 }
 
-                $apcko = $this->ap->getAP($uzivatel->Ap_id);
+                $apcko = $this->ap->getAP($so->Ap_id);
                 $subnety = $apcko->related('Subnet.Ap_id');
-                $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($uzivatel->Ap_id, $subnety);
+                $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
 \Tracy\Dumper::dump($seznamUzivatelu);
 
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
