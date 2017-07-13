@@ -109,14 +109,14 @@ paths:
                     email: "pavkriz@example.com"
                     role: "SO"
 
-  /wewimo/default/{id_oblasti}:
+  /wewimo/default/{id_ap}:
     get:
-      summary: Wewimo výstup ze všech Routerboardů v dané oblasti (zařazených do Wewima)
+      summary: Wewimo výstup ze všech Routerboardů v daném AP (zařazeným do Wewima)
       parameters:
-        - name: id_oblasti
+        - name: id_ap
           in: path
           required: true
-          description: ID oblasti
+          description: ID APcka
           type: integer
       responses:
         200:
