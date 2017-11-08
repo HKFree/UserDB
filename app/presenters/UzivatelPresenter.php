@@ -471,6 +471,8 @@ class UzivatelPresenter extends BasePresenter
         
                 $newUser = $this->uzivatel->getUzivatel($idUzivatele);
 
+                $mailer = new SendmailMailer;
+                
                 $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
                 /*$mail = new Message;
                 $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
@@ -486,7 +488,7 @@ class UzivatelPresenter extends BasePresenter
                 {
                    $mail->addTo($newUser->email2);
                 }
-                $mailer = new SendmailMailer;
+                
                 $mailer->send($mail);*/
         
                 $mailso = new Message;
