@@ -467,6 +467,101 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
+    public function sendNotificationEmail($idUzivatele) {
+        
+                $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+
+                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+                /*$mail = new Message;
+                $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+                    ->addTo($newUser->email)
+                    ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
+                    ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
+                                  'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
+                                  'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
+                                  'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
+                                  'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
+                                  'S pozdravem hkfree.org z.s.');
+                if (!empty($newUser->email2))
+                {
+                   $mail->addTo($newUser->email2);
+                }
+                $mailer = new SendmailMailer;
+                $mailer->send($mail);*/
+        
+                $mailso = new Message;
+                $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+                    ->addTo($so->email)
+                    ->setSubject('NOTIFIKACE - Nový plánovaný člen - UID '.$idUzivatele)
+                    ->setHTMLBody('V DB je zadán nový plánovaný člen ve Vaší oblasti s UID '.$idUzivatele.'<br><br>'.
+                                  'Bude pravděpodobně následovat připojení od techniků<br><br>'.
+                                  'Prosím zkontrolujte si adresu přípojného místa a pokud máte pro techniky nějaké informace tak je kontaktujte.<br><br>'.
+                                  'S pozdravem UserDB');
+                if (!empty($so->email2))
+                {
+                    $mailso->addTo($so->email2);
+                }
+        
+                $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($idUzivatele);
+                foreach ($seznamSpravcu as $sou) {
+                    $mailso->addTo($sou->email);
+                }
+                $mailer->send($mailso);
+        
+                $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
+        
+            }
+
+    public function sendRegistrationEmail($idUzivatele) {
+
+        $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+
+        $hash = base64_encode($idUzivatele.'-'.md5($this->context->parameters["salt"].$newUser->zalozen));
+        $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
+
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $mail = new Message;
+        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+            ->addTo($newUser->email)
+            ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
+            ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
+                          'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
+                          'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
+                          'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
+                          'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
+                          'S pozdravem hkfree.org z.s.');
+        if (!empty($newUser->email2))
+        {
+           $mail->addTo($newUser->email2);
+        }
+        $mailer = new SendmailMailer;
+        $mailer->send($mail);
+
+        $mailso = new Message;
+        $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+            ->addTo($so->email)
+            ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
+            ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
+                          'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID '.$idUzivatele.'<br><br>'.
+                          'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
+                          'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
+                          'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
+                          'S pozdravem hkfree.org z.s.');
+        if (!empty($so->email2))
+        {
+            $mailso->addTo($so->email2);
+        }
+
+        $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($idUzivatele);
+        foreach ($seznamSpravcu as $sou) {
+            $mailso->addTo($sou->email);
+        }
+        $mailer->send($mailso);
+
+        $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. INTERNET BUDE FUNGOVAT DO 15 MINUT.');
+
+    }
+
     public function uzivatelFormSucceded($form, $values) {
         $log = array();
     	$idUzivatele = $values->id;
@@ -510,56 +605,21 @@ class UzivatelPresenter extends BasePresenter
     	// Zpracujeme nejdriv uzivatele
     	if(empty($values->id)) {
             $values->regform_downloaded_password_sent = 0;
-            $values->money_aktivni = 1;
+            $values->money_aktivni = 0;
             $values->zalozen = new Nette\Utils\DateTime;
             $values->heslo = $this->uzivatel->generateStrongPassword();
             $values->id = $this->uzivatel->getNewID();
             $idUzivatele = $this->uzivatel->insert($values)->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
 
-            $hash = base64_encode($values->id.'-'.md5($this->context->parameters["salt"].$values->zalozen));
-            $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
-
-            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-            $mail = new Message;
-            $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-                ->addTo($values->email)
-                ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
-                ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
-                              'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
-                              'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
-                              'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
-                              'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
-                              'S pozdravem hkfree.org z.s.');
-            if (!empty($values->email2))
+            if($values->TypClenstvi_id > 0)
             {
-               $mail->addTo($values->email2);
+                $this->sendRegistrationEmail($idUzivatele);
             }
-            $mailer = new SendmailMailer;
-            $mailer->send($mail);
-
-            $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($idUzivatele);
-            $mailso = new Message;
-            $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-                ->addTo($so->email)
-                ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
-                ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
-                              'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID '.$idUzivatele.'<br><br>'.
-                              'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
-                              'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
-                              'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
-                              'S pozdravem hkfree.org z.s.');
-            if (!empty($so->email2))
-            {
-               $mailso->addTo($so->email2);
+            else{
+                $this->sendNotificationEmail($idUzivatele);
             }
-            foreach ($seznamSpravcu as $sou) {
-                $mail->addTo($sou->email);
-            }
-            $mailer->send($mailso);
-
-            $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. INTERNET BUDE FUNGOVAT DO 15 MINUT.');
-
+            
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
 
@@ -568,8 +628,19 @@ class UzivatelPresenter extends BasePresenter
                 $values->email_invalid=0;
             }
 
+            if($olduzivatel->TypClenstvi_id == 0 && $values->TypClenstvi_id != 0)
+            {
+                $values->zalozen = new Nette\Utils\DateTime;
+                $values->money_aktivni = 1;
+            }
+
     	    $this->uzivatel->update($idUzivatele, $values);
             $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
+
+            if($olduzivatel->TypClenstvi_id == 0 && $values->TypClenstvi_id != 0)
+            {
+                $this->sendRegistrationEmail($idUzivatele);
+            }
         }
 
     	// Potom zpracujeme IPcka
