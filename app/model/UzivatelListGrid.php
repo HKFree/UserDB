@@ -106,6 +106,10 @@ class UzivatelListGrid extends Nette\Object
                 {
                     $tr->class[] = 'zrusene';
                 }
+                if($item->TypClenstvi_id == 0)
+                {
+                    $tr->class[] = 'planovane';
+                }
                 return $tr;
             });
         }
@@ -357,6 +361,10 @@ class UzivatelListGrid extends Nette\Object
                 if($item->TypClenstvi_id == 1)
                 {
                     $tr->class[] = 'zrusene';
+                }
+                if($item->TypClenstvi_id == 0)
+                {
+                    $tr->class[] = 'planovane';
                 }
                 return $tr;
             });
