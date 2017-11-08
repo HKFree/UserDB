@@ -283,6 +283,11 @@ pre.tracy-dump {
     color: white !important;
 }
 
+.planovane>td
+{
+    background-color: #03a7f3 !important;
+}
+
 .neaktivni>td:nth-child(10),
 .neaktivni>td:nth-child(11),
 .neaktivni>td:nth-child(12),
