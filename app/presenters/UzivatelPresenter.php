@@ -496,6 +496,7 @@ class UzivatelPresenter extends BasePresenter
                     ->addTo($so->email)
                     ->setSubject('NOTIFIKACE - Nový plánovaný člen - UID '.$idUzivatele)
                     ->setHTMLBody('V DB je zadán nový plánovaný člen ve Vaší oblasti s UID '.$idUzivatele.'<br><br>'.
+                                  'https://userdb.hkfree.org/userdb/uzivatel/show/'.$idUzivatele.'<br><br>'.
                                   'Bude pravděpodobně následovat připojení od techniků<br><br>'.
                                   'Prosím zkontrolujte si adresu přípojného místa a pokud máte pro techniky nějaké informace tak je kontaktujte.<br><br>'.
                                   'S pozdravem UserDB');
