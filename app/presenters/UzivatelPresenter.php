@@ -637,7 +637,7 @@ class UzivatelPresenter extends BasePresenter
                 $values->email_invalid=0;
             }
 
-            if($olduzivatel->TypClenstvi_id == 0 && $values->TypClenstvi_id == 3)
+            if($olduzivatel->TypClenstvi_id == 0 && $values->TypClenstvi_id == 1)
             {
                 $this->povoleneSMTP->deleteIPs($smtpIPIDs);
                 $this->ipAdresa->deleteIPAdresy($toDelete);
