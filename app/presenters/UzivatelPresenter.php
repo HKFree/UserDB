@@ -608,7 +608,13 @@ class UzivatelPresenter extends BasePresenter
     	// Zpracujeme nejdriv uzivatele
     	if(empty($values->id)) {
             $values->regform_downloaded_password_sent = 0;
-            $values->money_aktivni = 0;
+            if($values->TypClenstvi_id > 0)
+            {
+                $values->money_aktivni = 1;
+            }
+            else{
+                $values->money_aktivni = 0;
+            }
             $values->zalozen = new Nette\Utils\DateTime;
             $values->heslo = $this->uzivatel->generateStrongPassword();
             $values->id = $this->uzivatel->getNewID();
@@ -629,6 +635,15 @@ class UzivatelPresenter extends BasePresenter
             if($olduzivatel->email != $values->email || $olduzivatel->email2 != $values->email2)
             {
                 $values->email_invalid=0;
+            }
+
+            if($olduzivatel->TypClenstvi_id == 0 && $values->TypClenstvi_id == 3)
+            {
+                $this->povoleneSMTP->deleteIPs($smtpIPIDs);
+                $this->ipAdresa->deleteIPAdresy($toDelete);
+                $this->uzivatel->delete();
+                $this->redirect('Uzivatel:list', array('id'=>$olduzivatel->Ap_id));
+                return true;
             }
 
             if($olduzivatel->TypClenstvi_id == 0 && $values->TypClenstvi_id != 0)
