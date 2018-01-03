@@ -300,20 +300,20 @@ class UzivatelListGrid extends Nette\Object
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
     	$grid->setDefaultSort(array('zalozen' => 'ASC'));
 
-    	$list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných');
+        $list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných', 'planned' => 'pouze plánovaná');
 
         // pri fulltextu vyhledavat i ve zrusenych
         if($search)
         {
             $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
              ->setDefaultValue('all')
-             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0') ));
+             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0'),'planned' => array('TypClenstvi_id',  '= ?', '0') ));
         }
         else
         {
           $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
              ->setDefaultValue('active')
-             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0') ));
+             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0'),'planned' => array('TypClenstvi_id',  '= ?', '0') ));
         }
 
         if($money)
