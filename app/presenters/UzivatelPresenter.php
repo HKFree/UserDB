@@ -642,7 +642,7 @@ class UzivatelPresenter extends BasePresenter
                 $this->povoleneSMTP->deleteIPs($smtpIPIDs);
                 $existinguserIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
-                $this->uzivatel->delete();
+                //$this->uzivatel->delete();
                 $this->redirect('Uzivatel:list', array('id'=>$olduzivatel->Ap_id));
                 return true;
             }
