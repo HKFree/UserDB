@@ -34,7 +34,7 @@ class AreasPresenter extends ApiPresenter
             $oblasti[$idoblast]['aps'] = $apcka;
             // associated admins
             $spravci = [];
-            foreach ($o->related('SpravceOblasti.Oblast_id') as $spravceMtm) {
+            foreach ($o->related('SpravceOblasti.Oblast_id')->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())') as $spravceMtm) {
                 $spravce = $spravceMtm->ref('Uzivatel', 'Uzivatel_id');
                 $role = $spravceMtm->ref('TypSpravceOblasti', 'TypSpravceOblasti_id');
                 $spravci[$spravce['id']] = [
