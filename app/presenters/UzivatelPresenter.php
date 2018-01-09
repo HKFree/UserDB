@@ -957,7 +957,8 @@ class UzivatelPresenter extends BasePresenter
             if(!empty($pravo->id) && !$pravo->override) {
                 $starePravo = null;
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
-                if(($starePravo->od != null && $starePravo->od->format('Y-m-d') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('Y-m-d') != $pravo->do)) {
+                if(($starePravo->od != null && $starePravo->od->format('Y-m-d') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('Y-m-d') != $pravo->do)
+                || $starePravo->Oblast_id != $pravo->Oblast_id || $starePravo->TypSpravceOblasti_id != $pravo->TypSpravceOblasti_id) {
                     $form->addError('NERECYKLUJTE. Práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!.');
                 }
             }
