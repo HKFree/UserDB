@@ -957,11 +957,10 @@ class UzivatelPresenter extends BasePresenter
             if(!empty($pravo->id) && !$pravo->override) {
                 $starePravo = null;
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
-                \Tracy\Dumper::dump($starePravo);
                 \Tracy\Dumper::dump(((string)$starePravo->od));
-                \Tracy\Dumper::dump($starePravo->do->format('Y-m-d'));
+                \Tracy\Dumper::dump($starePravo->od->format('Y-m-d'));
                 \Tracy\Dumper::dump($pravo);
-                if(((string)$starePravo->od) != $pravo->od || ((string)$starePravo->do) != $pravo->do) {
+                if(($starePravo->od != null && $starePravo->od->format('Y-m-d') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('Y-m-d') != $pravo->do)) {
                     $form->addError('NERECYKLUJTE. Práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!.');
                 }
             }
