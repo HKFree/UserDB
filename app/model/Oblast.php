@@ -26,15 +26,6 @@ class Oblast extends Table
       return($this->find($id));
     }
     
-    /*
-     * DEPRECATED - pouzij formatujOblastiSAP(getSeznamOblasti());
-    public function getSeznamOblastiSAP()
-    {
-        $oblasti = $this->getSeznamOblasti();
-        return($this->formatujOblastiSAP($oblasti));
-    }
-    */
-    
     public function getSeznamOblastiBezAP()
     {
 	   $oblasti = $this->getSeznamOblasti();
@@ -42,7 +33,7 @@ class Oblast extends Table
     }
     
     public function getSeznamSpravcu($IDoblasti) {
-	   return($this->find($IDoblasti)->related("SpravceOblasti.Oblast_id")->fetchPairs('Uzivatel_id','Uzivatel'));
+	   return($this->find($IDoblasti)->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id','Uzivatel'));
     }
     
     public function formatujOblastiSAP($oblasti)

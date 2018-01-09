@@ -389,8 +389,7 @@ class UzivatelPresenter extends BasePresenter
     	return $form;
     }
 
-    public function validateUzivatelForm($form)
-    {
+    public function validateUzivatelForm($form) {
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
@@ -458,62 +457,40 @@ class UzivatelPresenter extends BasePresenter
                     $form->addError('Tento email již v DB existuje v oblasti: ' . $duplMail2);
                 }
             }
-
-            /*$duplPhone = $this->uzivatel->getDuplicatePhoneArea($values->telefon, $values->id);
-
-            if ($duplPhone) {
-                $form->addError('Tento telefon již v DB existuje v oblasti: ' . $duplPhone);
-            }*/
         }
     }
 
     public function sendNotificationEmail($idUzivatele) {
         
-                $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+        $newUser = $this->uzivatel->getUzivatel($idUzivatele);
 
-                $mailer = new SendmailMailer;
-                
-                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-                /*$mail = new Message;
-                $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-                    ->addTo($newUser->email)
-                    ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
-                    ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
-                                  'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
-                                  'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
-                                  'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
-                                  'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
-                                  'S pozdravem hkfree.org z.s.');
-                if (!empty($newUser->email2))
-                {
-                   $mail->addTo($newUser->email2);
-                }
-                
-                $mailer->send($mail);*/
+        $mailer = new SendmailMailer;
         
-                $mailso = new Message;
-                $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-                    ->addTo($so->email)
-                    ->setSubject('NOTIFIKACE - Nový plánovaný člen - UID '.$idUzivatele)
-                    ->setHTMLBody('V DB je zadán nový plánovaný člen ve Vaší oblasti s UID '.$idUzivatele.'<br><br>'.
-                                  'https://userdb.hkfree.org/userdb/uzivatel/show/'.$idUzivatele.'<br><br>'.
-                                  'Bude pravděpodobně následovat připojení od techniků<br><br>'.
-                                  'Prosím zkontrolujte si adresu přípojného místa a pokud máte pro techniky nějaké informace tak je kontaktujte.<br><br>'.
-                                  'S pozdravem UserDB');
-                if (!empty($so->email2))
-                {
-                    $mailso->addTo($so->email2);
-                }
+        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+
+        $mailso = new Message;
+        $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+            ->addTo($so->email)
+            ->setSubject('NOTIFIKACE - Nový plánovaný člen - UID '.$idUzivatele)
+            ->setHTMLBody('V DB je zadán nový plánovaný člen ve Vaší oblasti s UID '.$idUzivatele.'<br><br>'.
+                            'https://userdb.hkfree.org/userdb/uzivatel/show/'.$idUzivatele.'<br><br>'.
+                            'Bude pravděpodobně následovat připojení od techniků<br><br>'.
+                            'Prosím zkontrolujte si adresu přípojného místa a pokud máte pro techniky nějaké informace tak je kontaktujte.<br><br>'.
+                            'S pozdravem UserDB');
+        if (!empty($so->email2))
+        {
+            $mailso->addTo($so->email2);
+        }
+
+        $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($idUzivatele);
+        foreach ($seznamSpravcu as $sou) {
+            $mailso->addTo($sou->email);
+        }
+        $mailer->send($mailso);
+
+        $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
         
-                $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($idUzivatele);
-                foreach ($seznamSpravcu as $sou) {
-                    $mailso->addTo($sou->email);
-                }
-                $mailer->send($mailso);
-        
-                $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
-        
-            }
+    }
 
     public function sendRegistrationEmail($idUzivatele) {
 
@@ -904,7 +881,6 @@ class UzivatelPresenter extends BasePresenter
                                                     || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
                                                     || in_array($uid,$seznamUzivatelu);
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
-                //$this->template->logy = $this->log->getLogyUzivatele($uid);
 
                 $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
                 $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
@@ -937,11 +913,6 @@ class UzivatelPresenter extends BasePresenter
         $data = $this->spravceOblasti;
     	$rights = $form->addDynamic('rights', function (Container $right) use ($data, $typRole, $obl) {
     	    $data->getRightsForm($right, $typRole, $obl);
-
-    	    $right->addSubmit('remove', '– Odstranit oprávnění')
-    		    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-    		    ->setValidationScope(FALSE)
-    		    ->addRemoveOnClick();
     	}, 0, false);
 
     	$rights->addSubmit('add', '+ Přidat další oprávnění')
@@ -952,7 +923,8 @@ class UzivatelPresenter extends BasePresenter
     	$form->addSubmit('save', 'Uložit')
     		 ->setAttribute('class', 'btn btn-success btn-xs btn-white');
 
-    	$form->onSuccess[] = array($this, 'uzivatelRightsFormSucceded');
+        $form->onSuccess[] = array($this, 'uzivatelRightsFormSucceded');
+        $form->onValidate[] = array($this, 'validateRightsForm');
 
 
     	// pokud editujeme, nacteme existujici opravneni
@@ -970,6 +942,27 @@ class UzivatelPresenter extends BasePresenter
     	return $form;
     }
 
+    public function validateRightsForm($form)
+    {
+        $data = $form->getHttpData();
+
+        // Validujeme jenom při uložení formuláře
+        if(!isset($data["save"])) {
+            return(0);
+        }
+
+        $values = $form->getValues();
+
+        foreach($values->rights as $pravo) {
+            if(!empty($pravo->id) && !$pravo->override) {
+                $starePravo = $this->spravceOblasti->getPravo($pravoId);
+                if($starePravo->od != $pravo->od || $starePravo->do != $pravo->do) {
+                    $form->addError('NERECYKLUJTE. Práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!.');
+                }
+            }
+        }
+    }
+
     public function uzivatelRightsFormSucceded($form, $values) {
         $log = array();
     	$idUzivatele = $values->id;
@@ -978,8 +971,6 @@ class UzivatelPresenter extends BasePresenter
         $typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
 
     	// Zpracujeme prava
-    	$newUserIPIDs = array();
-      $novaPravaID = array();
     	foreach($prava as $pravo)
     	{
     	    $pravo->Uzivatel_id = $idUzivatele;
@@ -1003,20 +994,7 @@ class UzivatelPresenter extends BasePresenter
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
                 $this->log->logujUpdate($starePravo, $novePravo, 'Pravo['.$popisek.']', $log);
             }
-            $novaPravaID[] = intval($pravoId);
     	}
-
-    	// A tady smazeme v DB ty prava co jsme smazali
-    	$aktualniPravaID = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('SpravceOblasti.Uzivatel_id')->fetchPairs('id', 'id'));
-    	$toDelete = array_values(array_diff($aktualniPravaID, $novaPravaID));
-        if(!empty($toDelete)) {
-            foreach($toDelete as $pravoId) {
-                $starePravo = $this->spravceOblasti->getPravo($pravoId);
-                $popisek = $this->spravceOblasti->getTypPravaPopisek($typRole[$starePravo->TypSpravceOblasti_id], $starePravo->Oblast_id);
-                $this->log->logujDelete($starePravo, 'Pravo['.$popisek.']', $log);
-            }
-        }
-        $this->spravceOblasti->deletePrava($toDelete);
 
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
 
@@ -1049,7 +1027,6 @@ class UzivatelPresenter extends BasePresenter
             $right->addSelect('TypCestnehoClenstvi_id', 'Typ čestného členství', $typCC)->addRule(Form::FILLED, 'Vyberte typ čestného členství');
 
             $right->addText('plati_od', 'Platnost od:')
-                 //->setType('date')
                  ->setAttribute('class', 'datepicker ip')
                  ->setAttribute('data-date-format', 'YYYY/MM/DD')
                  ->addRule(Form::FILLED, 'Vyberte datum')
@@ -1057,7 +1034,6 @@ class UzivatelPresenter extends BasePresenter
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
 
             $right->addText('plati_do', 'Platnost do:')
-                 //->setType('date')
                  ->setAttribute('class', 'datepicker ip')
                  ->setAttribute('data-date-format', 'YYYY/MM/DD')
                  ->addCondition(Form::FILLED)
@@ -1066,7 +1042,6 @@ class UzivatelPresenter extends BasePresenter
                  $right->addTextArea('poznamka', 'Poznámka:', 72, 5)
                  ->setAttribute('class', 'note ip');
 
-                 //$right->addCheckbox('schvaleno', 'Schváleno')->setAttribute('class', 'approve ip');
                  $schvalenoStates = array(
                     0 => 'Nerozhodnuto',
                     1 => 'Schváleno',
@@ -1141,12 +1116,9 @@ class UzivatelPresenter extends BasePresenter
 
                 $this->flashMessage('E-mail VV byl odeslán. Vyčkejte, než VV žádost potvrdí.');
             } else {
-                //$starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
             }
     	}
-
-        //$this->log->loguj('Uzivatel', $idUzivatele, $log);
 
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele));
     	return true;
@@ -1237,7 +1209,6 @@ class UzivatelPresenter extends BasePresenter
         $form = new Form($this, "smsForm");
     	$form->addHidden('id');
 
-        //$form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
         $form->addText('komu', 'Příjemce', 20)->setDisabled(TRUE);
         $form->addTextArea('message', 'Text', 72, 10);
 
@@ -1252,14 +1223,10 @@ class UzivatelPresenter extends BasePresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
 
-
-            //$so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
             if($user) {
                 $form->setValues($user);
                 $form->setDefaults(array(
-                        //'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
-                        'komu' => $user->telefon,
-                        //'subject' => 'Zpráva od správce sítě hkfree.org',
+                        'komu' => $user->telefon
                     ));
     	    }
     	}
@@ -1293,7 +1260,6 @@ class UzivatelPresenter extends BasePresenter
     	$form = new Form($this, "smsallForm");
     	$form->addHidden('id');
 
-        //$form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
         $form->addTextArea('komu', 'Příjemce', 72, 20)->setDisabled(TRUE);
         $form->addTextArea('message', 'Text', 72, 10);
 
@@ -1315,13 +1281,10 @@ class UzivatelPresenter extends BasePresenter
             }
             $tls = join(",",array_values($validni));
 
-            //$so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
             if($ap) {
                 $form->setValues($ap);
                 $form->setDefaults(array(
-                        //'from' => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',
-                        'komu' => $tls,
-                        //'subject' => 'Zpráva od správce sítě hkfree.org',
+                        'komu' => $tls
                     ));
     	    }
     	}
@@ -1341,7 +1304,6 @@ class UzivatelPresenter extends BasePresenter
             }
         }
         $tls = join(",",array_values($validni));
-        //$tls="+420608214292";
 
         $locale = 'cs_CZ.UTF-8';
         setlocale(LC_ALL, $locale);
@@ -1373,7 +1335,6 @@ class UzivatelPresenter extends BasePresenter
         $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
         $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>$oblastMail))->setDefaultValue(0);
 
-        //$form->addText('from', 'Odesílatel', 70)->setDisabled(TRUE);
         $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(TRUE);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
@@ -1497,22 +1458,6 @@ class UzivatelPresenter extends BasePresenter
 
             $canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
 
-        } else {
-
-            /*if($search)
-            {
-                $seznamTransakci = $this->uzivatel->findUserByFulltext($search,$this->getUser());
-                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-            }
-            else
-            {
-                $seznamUzivatelu = $this->uzivatel->getSeznamUzivatelu();
-                $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-            }
-
-            $grid->addColumnText('Ap_id', 'AP')->setCustomRender(function($item){
-                  return $item->ref('Ap', 'Ap_id')->jmeno;
-              })->setSortable();*/
         }
 
         $grid->setModel($seznamTransakci);
@@ -1529,18 +1474,6 @@ class UzivatelPresenter extends BasePresenter
                 }
                 return $tr;
             });
-
-    	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
-        {return Html::el('a')
-            ->href($presenter->link('Uzivatel:show', array('id'=>$item->Uzivatel_id)))
-            ->title($item->Uzivatel_id)
-            ->setText($item->Uzivatel_id);})->setSortable();*/
-
-        /*$grid->addColumnText('PrichoziPlatba_id', 'Příchozí platba')->setCustomRender(function($item) use ($presenter)
-        {return Html::el('a')
-            ->href($presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id)))
-            ->title($item->PrichoziPlatba_id)
-            ->setText($item->PrichoziPlatba_id);})->setSortable();*/
 
         $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
 
