@@ -955,9 +955,9 @@ class UzivatelPresenter extends BasePresenter
 
         foreach($values->rights as $pravo) {
             if(!empty($pravo->id) && !$pravo->override) {
+                $starePravo = $this->spravceOblasti->getPravo($pravoId);
                 \Tracy\Dumper::dump($starePravo);
                 \Tracy\Dumper::dump($pravo);
-                $starePravo = $this->spravceOblasti->getPravo($pravoId);
                 if($starePravo->od != $pravo->od || $starePravo->do != $pravo->do) {
                     $form->addError('NERECYKLUJTE. Práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!.');
                 }
