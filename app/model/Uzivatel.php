@@ -26,7 +26,7 @@ LEFT JOIN Ap A ON U.Ap_id = A.id
 LEFT JOIN Oblast O ON A.Oblast_id = O.id
 LEFT JOIN SpravceOblasti S ON S.Oblast_id = O.id
 LEFT JOIN Uzivatel SO ON SO.id = S.Uzivatel_id
-WHERE U.id ='.$id_uzivatel)
+WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
                         ->fetchAll();
     }
 
