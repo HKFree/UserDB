@@ -107,6 +107,20 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
         return($uids);
     }
 
+    public function getNumberOfActivations()
+    {
+        $activationsCount = $this->getConnection()->query("SELECT COUNT(id) as users
+        , MONTH(datum) as month
+        , YEAR(datum) as year
+            FROM UzivatelskeKonto
+            WHERE (
+            TypPohybuNaUctu_id = 4
+            OR TypPohybuNaUctu_id = 7
+            ) GROUP BY YEAR(datum) ASC, MONTH(datum) ASC")->fetchAll();
+            
+        return $activationsCount;
+    }
+
     public function findUserByFulltext($search, $Uzivatel)
     {
         //mobil a email pouze pro ty co maji prava

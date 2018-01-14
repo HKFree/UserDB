@@ -91,6 +91,9 @@ class SpravaPresenter extends BasePresenter
 
     public function renderSlouceni()
     {
+        $activationsData = $this->uzivatel->getNumberOfActivations();
+        \Tracy\Dumper::dump($activationsData);
+
         //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
     }
 
