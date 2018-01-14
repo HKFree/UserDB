@@ -12,6 +12,7 @@ use Nette,
     Nette\Utils\Strings,
     Nette\Mail\SendmailMailer,
     Nette\Utils\Json,
+    Nette\Utils\DateTime,
     Tracy\Debugger;
 
 use Nette\Forms\Controls\SubmitButton;
@@ -96,7 +97,7 @@ class SpravaPresenter extends BasePresenter
 
         $graphdata = array();
         foreach($activationsData as $ad) {
-            $dt = new DateTime($ad->year."-".str_pad($ad->month, 2, "0", STR_PAD_LEFT)."-01");
+            $dt = Nette\Utils\DateTime::from($ad->year."-".str_pad($ad->month, 2, "0", STR_PAD_LEFT)."-01");
             $graphdata[] = [ "x" => $dt->getTimestamp(), "y" => $ad->users ];
         }
 
