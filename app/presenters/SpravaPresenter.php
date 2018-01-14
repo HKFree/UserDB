@@ -89,13 +89,35 @@ class SpravaPresenter extends BasePresenter
         $this->template->uzivatele = $this->uzivatel->findBy(array("id" => $uzivatele));
     }
 
-    public function renderSlouceni()
+    public function renderUsersgraph()
+    {
+
+    }
+
+    protected function createComponentActiveUsersGrid($name)
     {
         $activationsData = $this->uzivatel->getNumberOfActivations();
-        foreach($activationsData as $ad) {
-            \Tracy\Dumper::dump($ad->users);
-        }
-        \Tracy\Dumper::dump($activationsData);
+
+    	$grid = new \Grido\Grid($this, $name);
+    	$grid->translator->setLang('cs');
+
+        $grid->setModel($activationsData);
+
+    	$grid->setDefaultPerPage(100);
+    	//$grid->setDefaultSort(array('id' => 'ASC'));
+
+    	$grid->addColumnText('users', 'Pocet')->setSortable()->setFilterText();
+        $grid->addColumnText('month', 'Mesic')->setFilterText();
+        $grid->addColumnText('year', 'Rok')->setFilterText();
+    }
+
+    public function renderSlouceni()
+    {
+        //$activationsData = $this->uzivatel->getNumberOfActivations();
+        //foreach($activationsData as $ad) {
+        //    \Tracy\Dumper::dump($ad->users);
+        //}
+        //\Tracy\Dumper::dump($activationsData);
 
         //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
     }
