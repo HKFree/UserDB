@@ -11,6 +11,7 @@ use Nette,
     Nette\Mail\Message,
     Nette\Utils\Strings,
     Nette\Mail\SendmailMailer,
+    Nette\Utils\Json,
     Tracy\Debugger;
 
 use Nette\Forms\Controls\SubmitButton;
@@ -97,6 +98,8 @@ class SpravaPresenter extends BasePresenter
     protected function createComponentActiveUsersGrid($name)
     {
         $activationsData = $this->uzivatel->getNumberOfActivations();
+        $actDataJson = Json::encode($activationsData);
+        \Tracy\Dumper::dump($actDataJson);
 
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
