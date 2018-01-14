@@ -7,7 +7,7 @@
 <style>
 #chart_container {
         position: relative;
-        font-family: Arial, Helvetica, sans-serif;
+        margin-top: 40px;
 }
 #chart {
         position: relative;
@@ -42,7 +42,7 @@ var x_axis = new Rickshaw.Graph.Axis.Time( { graph: graph } );
 var y_axis = new Rickshaw.Graph.Axis.Y( {
         graph: graph,
         orientation: 'left',
-        tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+        tickFormat: function(y){return y},
         element: document.getElementById('y_axis'),
 } );
 

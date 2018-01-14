@@ -94,6 +94,7 @@ class SpravaPresenter extends BasePresenter
     public function renderUsersgraph()
     {
         $activationsData = $this->uzivatel->getNumberOfActivations();
+        //\Tracy\Dumper::dump($activationsData);
 
         $graphdata = array();
         foreach($activationsData as $ad) {
@@ -105,33 +106,8 @@ class SpravaPresenter extends BasePresenter
         $this->template->actdata = $actDataJson;
     }
 
-    protected function createComponentActiveUsersGrid($name)
-    {
-        /*$activationsData = $this->uzivatel->getNumberOfActivations();
-        $actDataJson = Json::encode($activationsData);
-        //\Tracy\Dumper::dump($actDataJson);
-
-    	$grid = new \Grido\Grid($this, $name);
-    	$grid->translator->setLang('cs');
-
-        $grid->setModel($activationsData);
-
-    	$grid->setDefaultPerPage(100);
-    	//$grid->setDefaultSort(array('id' => 'ASC'));
-
-    	$grid->addColumnText('users', 'Pocet')->setSortable()->setFilterText();
-        $grid->addColumnText('month', 'Mesic')->setFilterText();
-        $grid->addColumnText('year', 'Rok')->setFilterText();*/
-    }
-
     public function renderSlouceni()
     {
-        //$activationsData = $this->uzivatel->getNumberOfActivations();
-        //foreach($activationsData as $ad) {
-        //    \Tracy\Dumper::dump($ad->users);
-        //}
-        //\Tracy\Dumper::dump($activationsData);
-
         //$this->template->canApproveCC = $this->getUser()->isInRole('VV');
     }
 
