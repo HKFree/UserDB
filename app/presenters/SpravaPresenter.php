@@ -93,7 +93,14 @@ class SpravaPresenter extends BasePresenter
     public function renderUsersgraph()
     {
         $activationsData = $this->uzivatel->getNumberOfActivations();
-        $actDataJson = Json::encode($activationsData);
+
+        $graphdata = array();
+        foreach($activationsData as $ad) {
+            $dt = new DateTime($ad->year."-".str_pad($ad->month, 2, "0", STR_PAD_LEFT)."-01");
+            $graphdata[] = [ "x" => $dt->getTimestamp(), "y" => $ad->users ];
+        }
+
+        $actDataJson = Json::encode($graphdata);
         $this->template->actdata = $actDataJson;
     }
 
