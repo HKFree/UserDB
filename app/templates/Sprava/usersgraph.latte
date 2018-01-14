@@ -39,10 +39,14 @@ var graph = new Rickshaw.Graph( {
 
 var x_axis = new Rickshaw.Graph.Axis.Time( { graph: graph } );
 
+var format = function(d) {
+    return d;
+}
+
 var y_axis = new Rickshaw.Graph.Axis.Y( {
         graph: graph,
         orientation: 'left',
-        tickFormat: function(y){return y},
+        tickFormat: format,
         element: document.getElementById('y_axis'),
 } );
 
