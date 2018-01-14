@@ -26,6 +26,7 @@
 		"pear2/net_routeros": "dev-master",
 		"nextras/migrations": "^3.0",
 		"guzzlehttp/guzzle": "~6.0",
+		"pauluswebster/shutterstock-rickshaw": "dev-master",
 		"kdyby/console": "dev-master#0de5fcc515750cf4ea9188cdc1f7675b50b29d33"
 	},
 	"require-dev": {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "93e58c8b799ed9f6175e007fa4574f26",
+    "content-hash": "8752bbbab607015125fcdac30a315de2",
     "packages": [
         {
             "name": "dg/adminer-custom",
@@ -241,7 +241,7 @@
                 }
             ],
             "description": "PdfResponse is wrapper of mPDF for Nette.",
-            "time": "2016-10-04 19:04:59"
+            "time": "2016-10-04T19:04:59+00:00"
         },
         {
             "name": "kdyby/console",
@@ -327,7 +327,7 @@
                 "kdyby",
                 "nette"
             ],
-            "time": "2017-02-19 20:12:05"
+            "time": "2017-02-19T20:12:05+00:00"
         },
         {
             "name": "kdyby/forms-replicator",
@@ -404,7 +404,7 @@
                 "nette",
                 "replicator"
             ],
-            "time": "2016-08-27 16:56:29"
+            "time": "2016-08-27T16:56:29+00:00"
         },
         {
             "name": "latte/latte",
@@ -1846,7 +1846,7 @@
                 "table",
                 "tablegrid"
             ],
-            "time": "2016-07-10 16:49:36"
+            "time": "2016-07-10T16:49:36+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -1895,6 +1895,35 @@
                 "random"
             ],
             "time": "2016-10-17T15:23:22+00:00"
+        },
+        {
+            "name": "pauluswebster/shutterstock-rickshaw",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pauluswebster/rickshaw.git",
+                "reference": "686c52f754748e620c0a8a7cedf6c39a844b4b0e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pauluswebster/rickshaw/zipball/686c52f754748e620c0a8a7cedf6c39a844b4b0e",
+                "reference": "686c52f754748e620c0a8a7cedf6c39a844b4b0e",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "Shutterstock",
+                    "homepage": "http://www.shutterstock.com/"
+                }
+            ],
+            "description": "Composer package for shutterstock/rickshaw",
+            "homepage": "http://code.shutterstock.com/rickshaw/",
+            "time": "2015-08-08T20:52:06+00:00"
         },
         {
             "name": "pear2/net_routeros",
@@ -1962,7 +1991,7 @@
                 "router",
                 "routeros"
             ],
-            "time": "2014-11-04 12:52:46"
+            "time": "2014-11-04T12:52:46+00:00"
         },
         {
             "name": "pear2/net_transmitter",
@@ -2802,6 +2831,7 @@
         "jkuchar/pdfresponse": 20,
         "pear2/net_transmitter": 15,
         "pear2/net_routeros": 20,
+        "pauluswebster/shutterstock-rickshaw": 20,
         "kdyby/console": 20
     },
     "prefer-stable": false,
