@@ -32,7 +32,7 @@ var graph = new Rickshaw.Graph( {
         width: 540,
         height: 240,
         series: [ {
-                data: {$actdata}, 
+                data: {$actdata|noescape}, 
                 color: 'steelblue'
         } ]
 } );
