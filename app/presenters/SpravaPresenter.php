@@ -92,14 +92,16 @@ class SpravaPresenter extends BasePresenter
 
     public function renderUsersgraph()
     {
-
+        $activationsData = $this->uzivatel->getNumberOfActivations();
+        $actDataJson = Json::encode($activationsData);
+        $this->template->actdata = $actDataJson;
     }
 
     protected function createComponentActiveUsersGrid($name)
     {
-        $activationsData = $this->uzivatel->getNumberOfActivations();
+        /*$activationsData = $this->uzivatel->getNumberOfActivations();
         $actDataJson = Json::encode($activationsData);
-        \Tracy\Dumper::dump($actDataJson);
+        //\Tracy\Dumper::dump($actDataJson);
 
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');
@@ -111,7 +113,7 @@ class SpravaPresenter extends BasePresenter
 
     	$grid->addColumnText('users', 'Pocet')->setSortable()->setFilterText();
         $grid->addColumnText('month', 'Mesic')->setFilterText();
-        $grid->addColumnText('year', 'Rok')->setFilterText();
+        $grid->addColumnText('year', 'Rok')->setFilterText();*/
     }
 
     public function renderSlouceni()
