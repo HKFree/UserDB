@@ -88,8 +88,8 @@ ALTER TABLE `migrations`
 
 ## Accessing API
 
-[Open swagger.yaml in Swagger Editor](http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/HKFree/UserDB/master/swagger.yaml#/) and try some operations.
-You'll need the credentials. Create them in UserDB: Oblast - Zobrazit podrobnosti AP - Editovat - API klíče.
+[Open swagger.yaml interactive docs](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/HKFree/UserDB/master/swagger.yaml) and try some operations.
+You'll need the credentials (click Authorize in interactive docs). Create credentials in UserDB: Oblast - Zobrazit podrobnosti AP - Editovat - API klíče.
 
 ## License
 
