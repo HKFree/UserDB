@@ -594,6 +594,8 @@ class UzivatelPresenter extends BasePresenter
             }
             $values->zalozen = new Nette\Utils\DateTime;
             $values->heslo = $this->uzivatel->generateStrongPassword();
+            $values->heslo_hash = crypt($values->heslo, 'hk');
+            $values->heslo_strong_hash = hash('sha256', $values->heslo);
             $values->id = $this->uzivatel->getNewID();
             $idUzivatele = $this->uzivatel->insert($values)->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
