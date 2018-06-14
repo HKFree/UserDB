@@ -838,7 +838,7 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->money_bal = $stavUctu;
                 }
 
-                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where("datum>='2017-11-01'")->sum('castka');
+                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
                 if(!$stavUctuDph || $stavUctuDph=='') $stavUctuDph=0;
                 $this->template->money_dph = $stavUctuDph;
 
