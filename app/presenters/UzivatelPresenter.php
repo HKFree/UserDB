@@ -838,6 +838,10 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->money_bal = $stavUctu;
                 }
 
+                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where("datum>='2017-11-01'")->sum('castka');
+                if(!$stavUctuDph || $stavUctuDph=='') $stavUctuDph=0;
+                $this->template->money_dph = $stavUctuDph;
+
                 if($this->sloucenyUzivatel->getIsAlreadyMaster($uid))
                 {
                     $this->flashMessage('Uživatel má pod sebou sloučené uživatele.');
