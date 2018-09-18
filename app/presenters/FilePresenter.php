@@ -42,6 +42,7 @@ public function actionDownloadWinboxCmd() {
                 $httpResponse->setContentType('application/octet-stream');
                 $httpResponse->setHeader('Content-Disposition', "attachment; filename=winboxrun.cmd");
                 $httpResponse->setHeader('Content-Length', strlen($cmd));
+                echo $cmd;
                 $this->sendResponse(new TextResponse($cmd));
             }
         }
