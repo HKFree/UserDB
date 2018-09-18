@@ -38,11 +38,8 @@ public function actionDownloadWinboxCmd() {
                 $handle = fopen($file, "w");
                 fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
                 fclose($handle);
-
-                \Tracy\Dumper::dump($ip);
-
+                
                 $httpResponse = $this->getHttpResponse();
-                \Tracy\Dumper::dump($httpResponse);
                 $httpResponse->setHeader('Pragma', "public");
                 $httpResponse->setHeader('Expires', 0);
                 $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
