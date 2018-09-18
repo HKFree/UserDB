@@ -34,11 +34,11 @@ public function actionDownloadWinboxCmd() {
     	{
             if($ip= $this->ipAdresa->getIPAdresa($this->getParam('id')))
     	    {
-                //$file = tempnam(sys_get_temp_dir(), "cmd");
-                //$handle = fopen($file, "w");
-                //fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
-                //fclose($handle);
-                $cmd = "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login;
+                $file = tempnam(sys_get_temp_dir(), "cmd");
+                $handle = fopen($file, "w");
+                fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
+                fclose($handle);
+                //$cmd = "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login;
 
                 $httpResponse = $this->getHttpResponse();
                 $httpResponse->setHeader('Pragma', "public");
@@ -50,9 +50,10 @@ public function actionDownloadWinboxCmd() {
                 $httpResponse->setHeader('Content-Type', "application/force-download");
                 $httpResponse->setHeader('Content-Type', "application/octet-stream");
                 $httpResponse->setHeader('Content-Type', "application/download");
-                $httpResponse->setHeader('Content-Length', strlen($cmd));
-                $this->sendResponse(new TextResponse($cmd));
-
+                //$httpResponse->setHeader('Content-Length', strlen($cmd));
+                //$this->sendResponse(new TextResponse($cmd));
+                $httpResponse->setHeader('Content-Length', filesize($file));
+                $this->sendResponse(new FileResponse($file, "winbox.cmd", 'application/octet-stream', true));
             }
         }
     }
