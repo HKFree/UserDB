@@ -291,8 +291,7 @@ class IPAdresa extends Table
 					->addAttributes($tooltips)
 					->setClass('btn btn-default btn-xs btn-in-table')
 					->addHtml(Html::el('span')
-						->setClass('glyphicon glyphicon-cog')
-						->value('<script>alert()</script>')); // winbox button
+						->setClass('glyphicon glyphicon-cog')); // winbox button
 				if ($canViewCredentialsOrEdit) {
 					$winboxButton->setAttribute('tag', $ip->heslo);
 				}
