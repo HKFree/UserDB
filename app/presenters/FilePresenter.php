@@ -17,7 +17,7 @@ use Nette\Forms\Controls\SubmitButton;
 /**
  * File presenter.
  */
-class UzivatelPresenter extends BasePresenter
+class FilePresenter extends BasePresenter
 {
     /** @persistent */
     private $ipAdresa;
