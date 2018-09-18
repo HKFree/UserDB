@@ -34,20 +34,24 @@ public function actionDownloadWinboxCmd() {
     	{
             if($ip= $this->ipAdresa->getIPAdresa($this->getParam('id')))
     	    {
-                $file = tempnam(sys_get_temp_dir(), "cmd");
-                $handle = fopen($file, "w");
-                fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
-                fclose($handle);
-                
+                //$file = tempnam(sys_get_temp_dir(), "cmd");
+                //$handle = fopen($file, "w");
+                //fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
+                //fclose($handle);
+                $cmd = "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login;
+
                 $httpResponse = $this->getHttpResponse();
                 $httpResponse->setHeader('Pragma', "public");
                 $httpResponse->setHeader('Expires', 0);
                 $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
                 $httpResponse->setHeader('Content-Transfer-Encoding', "binary");
                 $httpResponse->setHeader('Content-Description', "File Transfer");
-                $httpResponse->setHeader('Content-Length', filesize($file));
-                \Tracy\Dumper::dump(filesize($file));
-                $this->sendResponse(new FileResponse($file, "winbox.cmd", array('application/octet-stream', 'application/force-download', 'application/download')));
+                $httpResponse->setHeader('Content-Disposition: attachment; filename=winbox.cmd');
+                $httpResponse->setHeader("Content-Type: application/force-download");
+                $httpResponse->setHeader("Content-Type: application/octet-stream");
+                $httpResponse->setHeader("Content-Type: application/download");
+                $httpResponse->setHeader('Content-Length', strlen($cmd));
+                $this->sendResponse(new TextResponse($cmd));
 
             }
         }
