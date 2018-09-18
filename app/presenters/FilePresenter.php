@@ -47,8 +47,7 @@ public function actionDownloadWinboxCmd() {
                 $httpResponse->setHeader('Content-Description', "File Transfer");
                 $httpResponse->setHeader('Content-Length', filesize($file));
                 $this->sendResponse(new FileResponse($file, "winbox.cmd", array('application/octet-stream', 'application/force-download', 'application/download')));
-	
-                $this->sendResponse($pdf);
+                
             }
         }
     }
