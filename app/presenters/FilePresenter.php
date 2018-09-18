@@ -39,7 +39,7 @@ public function actionDownloadWinboxCmd() {
                 fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
                 fclose($handle);
 
-                $httpResponse = $this->getHttpResponse();
+                //$httpResponse = $this->getHttpResponse();
                 $httpResponse->setHeader('Pragma', "public");
                 $httpResponse->setHeader('Expires', 0);
                 $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
@@ -47,7 +47,7 @@ public function actionDownloadWinboxCmd() {
                 $httpResponse->setHeader('Content-Description', "File Transfer");
                 $httpResponse->setHeader('Content-Length', filesize($file));
                 $this->sendResponse(new FileResponse($file, "winbox.cmd", array('application/octet-stream', 'application/force-download', 'application/download')));
-                
+
             }
         }
     }
