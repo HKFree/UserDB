@@ -4,7 +4,6 @@ namespace App\Presenters;
 
 use Nette,
     App\Model,
-    App\Presenters,
     Nette\Application\UI\Form,
     Nette\Forms\Container,
     Nette\Utils\Html,
@@ -40,7 +39,7 @@ public function actionDownloadWinboxCmd() {
                 fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
                 fclose($handle);
 
-                $httpResponse = Environment::getHttpResponse();
+                $httpResponse = $this->getHttpResponse();
                 $httpResponse->setHeader('Pragma', "public");
                 $httpResponse->setHeader('Expires', 0);
                 $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
