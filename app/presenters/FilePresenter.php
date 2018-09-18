@@ -4,6 +4,7 @@ namespace App\Presenters;
 
 use Nette,
     App\Model,
+    App\Presenters,
     Nette\Application\UI\Form,
     Nette\Forms\Container,
     Nette\Utils\Html,
