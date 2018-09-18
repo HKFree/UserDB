@@ -35,7 +35,7 @@ public function actionDownloadWinboxCmd() {
             if($ip= $this->ipAdresa->getIPAdresa($this->getParam('id')))
     	    {
                 $file = tempnam("tmp", "zip");
-                $handle = fopen($tmpfname, "w");
+                $handle = fopen($file, "w");
                 fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
                 fclose($handle);
 
