@@ -46,10 +46,10 @@ public function actionDownloadWinboxCmd() {
                 $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
                 $httpResponse->setHeader('Content-Transfer-Encoding', "binary");
                 $httpResponse->setHeader('Content-Description', "File Transfer");
-                $httpResponse->setHeader('Content-Disposition: attachment; filename=winbox.cmd');
-                $httpResponse->setHeader("Content-Type: application/force-download");
-                $httpResponse->setHeader("Content-Type: application/octet-stream");
-                $httpResponse->setHeader("Content-Type: application/download");
+                $httpResponse->setHeader('Content-Disposition', "attachment; filename=winbox.cmd");
+                $httpResponse->setHeader('Content-Type', "application/force-download");
+                $httpResponse->setHeader('Content-Type', "application/octet-stream");
+                $httpResponse->setHeader('Content-Type', "application/download");
                 $httpResponse->setHeader('Content-Length', strlen($cmd));
                 $this->sendResponse(new TextResponse($cmd));
 
