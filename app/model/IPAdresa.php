@@ -282,6 +282,28 @@ class IPAdresa extends Table
 								->addAttributes($tooltips)
 								->setHref('http://wiki.hkfree.org/Winbox_URI');
 			}
+			// winbox cmd button
+			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+				$winboxButton = Html::el('a')
+					->setHref("https://userdb.hkfree.org/userdb/file/download-winbox-cmd/$ip->id")
+					->setTarget('_blank')
+					->setTitle('Otevřít Mikrotik Winbox z CMD')
+					->addAttributes($tooltips)
+					->setClass('btn btn-default btn-xs btn-in-table')
+					->addHtml(Html::el('span')
+						->setClass('glyphicon glyphicon-cog')
+						->value('<script>alert()</script>')); // winbox button
+				if ($canViewCredentialsOrEdit) {
+					$winboxButton->setAttribute('tag', $ip->heslo);
+				}
+				$buttons[]= $winboxButton;
+				$buttons[] = Html::el('a')
+								->addHtml(Html::el('sup')->setText('?'))
+								->setTarget('_blank')
+								->setTitle('Jak zprovoznit otevření Winboxu z CMD?')
+								->addAttributes($tooltips)
+								->setHref('http://wiki.hkfree.org/Winbox_CMD');
+			}
 			// edit button, etc.
 			if ($subnetModeInfo) {
 				if ($subnetModeInfo['type'] == 'Uzivatel')
