@@ -34,18 +34,22 @@ public function actionDownloadWinboxCmd() {
     	{
             if($ip= $this->ipAdresa->getIPAdresa($this->getParam('id')))
     	    {
-                $file = tempnam("tmp", "zip");
+                $file = tempnam(sys_get_temp_dir(), "cmd");
                 $handle = fopen($file, "w");
                 fwrite($handle, "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login);
                 fclose($handle);
 
-                //$httpResponse = $this->getHttpResponse();
+                \Tracy\Dumper::dump($ip);
+
+                $httpResponse = $this->getHttpResponse();
+                \Tracy\Dumper::dump($httpResponse);
                 $httpResponse->setHeader('Pragma', "public");
                 $httpResponse->setHeader('Expires', 0);
                 $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
                 $httpResponse->setHeader('Content-Transfer-Encoding', "binary");
                 $httpResponse->setHeader('Content-Description', "File Transfer");
                 $httpResponse->setHeader('Content-Length', filesize($file));
+                \Tracy\Dumper::dump(filesize($file));
                 $this->sendResponse(new FileResponse($file, "winbox.cmd", array('application/octet-stream', 'application/force-download', 'application/download')));
 
             }
