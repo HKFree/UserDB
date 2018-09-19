@@ -4,7 +4,9 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $configurator = new Nette\Configurator;
 
-//$configurator->setDebugMode(true); // enable for all IP
+if ($_ENV['TRACY_ENABLE']) {
+    $configurator->setDebugMode(true); // enable for all IP
+}
 //$configurator->setDebugMode(false); // disable for all IP (incl. localhost)
 //$configurator->setDebugMode('8.8.8.8'); // enable for IP 8.8.8.8
 

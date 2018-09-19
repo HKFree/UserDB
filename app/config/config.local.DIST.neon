@@ -1,27 +1,28 @@
 # DEVELOPEMENT
 parameters:
-	urlPrefix: ''
+	urlPrefix: '/userdb'
 	salt: 'saltvalue'
 	debug:
 		https: false
 		fakeUser:
-			userID: 3306
-			userName: 'bkralik'
+			userID: 1
+			userName: 'tester'
 	igw1IpCheckerUrl: http://localhost/
 	igw2IpCheckerUrl: http://localhost/
+	googleMapsApiKey: xxx
 
 # PRODUCTION
-parameters:
-	urlPrefix: '/userdb'   # don't forget to edit www/.htaccess
-	salt: 'saltvalue'   # randomize!
-	debug:
-		https: false
-		fakeUser: false
+#parameters:
+#	urlPrefix: '/userdb'   # don't forget to edit www/.htaccess
+#	salt: 'saltvalue'   # randomize!
+#	debug:
+#		https: false
+#		fakeUser: false
 
 
 database:
-	dsn: 'mysql:host=xxxxxx;dbname=userdb'
-	user: 'userdb'
-	password: ''
+	dsn: 'mysql:host=db;dbname=userdb'
+	user: 'root'
+	password: 'rootpwd654'
 	options:
 		lazy: true

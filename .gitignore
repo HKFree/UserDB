@@ -14,5 +14,6 @@ vendor/*
 !.htaccess
 !web.config
 app/config/config.local.neon
+app/config/config.local.bak.neon
 
 nbproject/private/

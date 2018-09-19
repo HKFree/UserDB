@@ -17,7 +17,11 @@ php www/index.php migrations:continue
 
 ## Development
 
-- Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig.org/#download)
+### Editor
+
+Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig.org/#download)
+
+### Build, commit
 
 ```bash
 git pull origin master
@@ -27,6 +31,16 @@ php www/index.php migrations continue
 git pull origin master
 git push origin master
 ```
+
+### Run locally
+
+```bash
+docker-compose build
+docker-compose up
+docker-compose exec web php www/index.php migrations:continue
+```
+
+Now the app is up and running in Docker on host's port 80, PhpMyAdmin on host's port 8080.
 
 ## Deployment
 

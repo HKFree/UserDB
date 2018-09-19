@@ -1,0 +1,36 @@
+version: '2'
+services:
+  web:
+    build: .
+    environment:
+      - TRACY_ENABLE=1
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/opt/userdb
+    links:
+      - db
+    network_mode: "bridge"
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+    network_mode: "bridge"
+  db:
+    image: mariadb:10.1
+    ports:
+      - "3306:3306"
+    command: --max_allowed_packet=32505856      # Set max_allowed_packet to 256M (or any other value)
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd654
+      MYSQL_DATABASE: userdb
+    network_mode: "bridge"
+#networks:
+#  default:
+#    external:
+#      name: bridge
