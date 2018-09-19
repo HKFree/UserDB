@@ -870,7 +870,7 @@ class UzivatelPresenter extends BasePresenter
                 $wewimoLinks = $this->getWewimoLinksFromIPs($ipAdresy);
 
                 $uzivatelEditLink = $this->link('Uzivatel:edit', array('id' => $uid));
-    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $wewimoLinks, $uzivatelEditLink, $this->getParameter('igw', false));
+    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $wewimoLinks, $uzivatelEditLink, $this->getParameter('igw', false), $this->linker);
 
                 if($ipAdresy->count() > 0)
                 {

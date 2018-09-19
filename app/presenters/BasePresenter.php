@@ -117,4 +117,17 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         }
         return $result;
     }
+    
+    /**
+     * Prasofunkce pro linkovani z modelu (vytvoreno pro Models\IPAdresa)
+     * 
+     * Pouzivat co nejmene!
+     * 
+     * @param string $destination
+     * @param mixed $args
+     * @return string
+     */
+    public function linker($destination, $args=[]) {
+        return($this->link($destination, $args));
+    }
 }

@@ -2,49 +2,45 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
-    Nette\Application\UI\Form,
-    Nette\Forms\Container,
-    Nette\Utils\Html,
-    Tracy\Debugger,
-    Nette\Utils\Strings,
-    PdfResponse\PdfResponse,
-    Nette\Application\Responses,
-    App\Components;
-
-use Nette\Forms\Controls\SubmitButton;
+use App\Model,
+    Nette\Application\Responses;
 /**
  * File presenter.
  */
 class FilePresenter extends BasePresenter
 {
-    /** @persistent */
+    /** @var Model\IPAdresa **/
     private $ipAdresa;
-
-    /** @var Components\LogTableFactory @inject **/
-    public $logTableFactory;
-    function __construct(Model\IPAdresa $ipAdresa) {
+    
+    /** @var Model\Ap **/
+    private $ap;
+    
+    function __construct(Model\IPAdresa $ipAdresa, Model\AP $ap) {
     	$this->ipAdresa = $ipAdresa;
+        $this->ap = $ap;
     }
 
 
-public function actionDownloadWinboxCmd() {
-      if($this->getParam('id'))
-    	{
-            if($ip= $this->ipAdresa->getIPAdresa($this->getParam('id')))
-    	    {
-                $cmd = "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login;
-                $httpResponse = $this->getHttpResponse();
-                $httpResponse->setHeader('Pragma', "public");
-                $httpResponse->setHeader('Expires', 0);
-                $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
-                $httpResponse->setContentType('application/octet-stream');
-                $httpResponse->setHeader('Content-Disposition', "attachment; filename=winboxrun.cmd");
-                $httpResponse->setHeader('Content-Length', strlen($cmd));
-                echo $cmd;
-                $this->sendResponse(new TextResponse($cmd));
+    public function actionDownloadWinboxCmd($id) {
+        if($id) {
+            $ip = $this->ipAdresa->getIPAdresa($id);
+            if ($ip) {
+                $apOfIp = $this->ipAdresa->getAPOfIP($ip);
+                if($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($apOfIp, $this->getUser())) {
+
+                    $cmd = "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login . "\n";
+                    $t = tempnam(sys_get_temp_dir(), 'wbx');
+                    file_put_contents($t, $cmd);
+
+                    $this->sendResponse(new Responses\FileResponse($t, "winbox.bat"));
+                } else {
+                    $this->error("IP not found");
+                }
+            } else {
+                $this->error("IP not found");
             }
+        } else {
+            $this->error("ID not found");
         }
     }
 }

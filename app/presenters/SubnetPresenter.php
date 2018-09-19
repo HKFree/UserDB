@@ -159,7 +159,7 @@ class SubnetPresenter extends BasePresenter
                         );
                     }
                     $wewimoLink = $this->getWewimoLinkFromIpAddress($ip);
-                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo, null, $wewimoLink);
+                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo, null, $wewimoLink, null, false, $this->linker);
                 } else
                 {
                     // nevyuzita IP

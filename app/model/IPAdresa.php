@@ -111,7 +111,7 @@ class IPAdresa extends Table
 	 * @param null $editLink link na editaci AP nebo Uzivatele, pokud zobrazujeme tabulku v detailu APcka nebo Uzivatele, jinak null
 	 * @return mixed
 	 */
-    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink=null, $igwCheck=false)
+    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink=null, $igwCheck=false, $linker=null)
 	{
 		$adresyTab = Html::el('table')->setClass('table table-striped');
 
@@ -121,7 +121,7 @@ class IPAdresa extends Table
 		{
 			$subnetLink = $subnetLinks[$ip->ip_adresa];
                         $wewimoLink = $wewimoLinks[$ip->ip_adresa];
-			$this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $wewimoLink, $editLink, $igwCheck);
+			$this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $wewimoLink, $editLink, $igwCheck, $linker);
 		}
 
 		return $adresyTab;
@@ -183,7 +183,7 @@ class IPAdresa extends Table
         return $data;
     }
 
-	public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo=null, $subnetLink=null, $wewimoLink=null, $editLink=null, $igwCheck=false)
+	public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo=null, $subnetLink=null, $wewimoLink=null, $editLink=null, $igwCheck=false, $linker=null)
 	{
 		$tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
@@ -285,7 +285,7 @@ class IPAdresa extends Table
 			// winbox cmd button
 			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$winboxButton = Html::el('a')
-					->setHref("https://userdb.hkfree.org/userdb/file/download-winbox-cmd/$ip->id")
+					->setHref($linker("File:downloadWinboxCmd", [id => $ip->id]))
 					->setTarget('_blank')
 					->setTitle('Otevřít Mikrotik Winbox z CMD')
 					->addAttributes($tooltips)
@@ -513,6 +513,15 @@ class IPAdresa extends Table
 	public function getIpsByMacsMap(array $macs) {
 		return $this->getTable()->where('mac_adresa', $macs)->fetchPairs('mac_adresa');
 	}
+    
+    public function getAPOfIP($id) {
+        $ip = $this->getIPAdresa($id);
+        if($ip->Ap_id) {
+            return($ip->Ap_id);
+        } else {
+            return($ip->uzivatel->Ap_id);
+        }
+    }
 
 	public function getIpsMap(array $ips) {
 		return $this->getTable()->where('ip_adresa', $ips)->fetchPairs('ip_adresa');
