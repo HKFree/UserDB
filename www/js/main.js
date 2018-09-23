@@ -18,8 +18,12 @@ $(document).ready(function() {
         $(".navbar-toggle").click();
     });
     if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-        $(".sidebar").hide();
-        $(".main").css( { marginLeft : "0px" } );
+        // na mobilu
+        if (!window.location.href.endsWith('/userdb/') && !window.location.href.endsWith('/userdb')) {
+            // a neni to uvodni "landing page", tak skryt levou navigacni listu s oblastmi
+            $(".sidebar").hide();
+            $(".main").css( { marginLeft : "0px" } );
+        }
     }
 
     $('[data-toggle="tooltip"]').tooltip();
