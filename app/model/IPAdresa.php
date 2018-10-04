@@ -285,7 +285,7 @@ class IPAdresa extends Table
 			// winbox cmd button
 			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$winboxButton = Html::el('a')
-					->setHref($linker("File:downloadWinboxCmd", [id => $ip->id]))
+					->setHref($linker("File:downloadWinboxCmd", ['id' => $ip->id]))
 					->setTarget('_blank')
 					->setTitle('Otevřít Mikrotik Winbox z CMD')
 					->addAttributes($tooltips)
