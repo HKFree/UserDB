@@ -28,7 +28,7 @@ class FilePresenter extends BasePresenter
                 $apOfIp = $this->ipAdresa->getAPOfIP($ip);
                 if($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($apOfIp, $this->getUser())) {
 
-                    $cmd = "C:\winbox.exe " . $ip->ip_adresa . " " . $ip->login . "\n";
+                    $cmd = "winbox.exe " . $ip->ip_adresa . " " . $ip->login . "\n";
                     $t = tempnam(sys_get_temp_dir(), 'wbx');
                     file_put_contents($t, $cmd);
 
