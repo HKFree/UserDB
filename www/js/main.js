@@ -72,6 +72,54 @@ $(document).ready(function() {
     }
 });
 
+$(document).ready(function () {
+    $(document).on('click', '.wboxbutton', function (event) {
+        event.preventDefault();
+        var txt = $(this).attr('tag');
+        var urlHref = $(this).attr('href');
+        if(!txt || txt == ''){
+            return;
+        }
+    
+        copyTextToClipboard(txt);
+
+        var win = window.open(urlHref, '_blank');
+        if (win) {
+            //Browser has allowed it to be opened
+            win.focus();
+        } else {
+            //Browser has blocked it
+            alert('Please allow popups for this website');
+        }
+    });
+});  
+
+function copyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+  
+    textArea.style.position = 'fixed';
+    textArea.style.top = 0;
+    textArea.style.left = 0;
+    textArea.style.width = '2em';
+    textArea.style.height = '2em';
+    textArea.style.padding = 0;
+    textArea.style.border = 'none';
+    textArea.style.outline = 'none';
+    textArea.style.boxShadow = 'none';
+    textArea.style.background = 'transparent';
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      var successful = document.execCommand('copy');
+      var msg = successful ? 'successful' : 'unsuccessful';
+      console.log('Copying text command was ' + msg);
+    } catch (err) {
+      console.log('Oops, unable to copy');
+    }
+    document.body.removeChild(textArea);
+}
+
 function openMikrotikWebfig(ip, username, password) {
     var theHTML = "<!doctype html><html>" +
         "<head><script>window.name='login="+username+"|"+password+"';window.location.replace('http://"+ip+"/webfig/#Wireless');</script></head><body></body></html>";

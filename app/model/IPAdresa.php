@@ -284,12 +284,11 @@ class IPAdresa extends Table
 			}
 			// winbox cmd button
 			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
-				$winboxButton = Html::el('a')
-					->setHref($linker("File:downloadWinboxCmd", ['id' => $ip->id]))
-					->setTarget('_blank')
+				$winboxButton = Html::el('span')
+					->setAttribute('href', $linker("File:downloadWinboxCmd", ['id' => $ip->id]))
 					->setTitle('Otevřít Mikrotik Winbox z CMD')
 					->addAttributes($tooltips)
-					->setClass('btn btn-default btn-xs btn-in-table')
+					->setClass('wboxbutton btn btn-default btn-xs btn-in-table')
 					->addHtml(Html::el('span')
 						->setClass('glyphicon glyphicon-cog')); // winbox button
 				if ($canViewCredentialsOrEdit) {
