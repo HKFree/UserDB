@@ -302,6 +302,19 @@ class IPAdresa extends Table
 								->addAttributes($tooltips)
 								->setHref('http://wiki.hkfree.org/Winbox_CMD');
 			}
+			// ssh button
+			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+				$winboxButton = Html::el('span')
+					->setTitle('Příkaz pro SSH spojení do schránky')
+					->addAttributes($tooltips)
+					->setClass('wboxbutton btn btn-default btn-xs btn-in-table')
+					->addHtml(Html::el('span')
+						->setClass('glyphicon glyphicon-cog')); // winbox button
+				if ($canViewCredentialsOrEdit) {
+					$winboxButton->setAttribute('tag', ' sshpass -p '.$ip->heslo.' ssh '.$ip->login.'@'.$ip->ip_adresa);
+				}
+				$buttons[]= $winboxButton;
+			}
 			// edit button, etc.
 			if ($subnetModeInfo) {
 				if ($subnetModeInfo['type'] == 'Uzivatel')

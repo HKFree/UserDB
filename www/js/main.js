@@ -83,6 +83,9 @@ $(document).ready(function () {
     
         copyTextToClipboard(txt);
 
+        if(!urlHref || urlHref == ''){
+            return;
+        }
         var win = window.open(urlHref, '_blank');
         if (win) {
             //Browser has allowed it to be opened
