@@ -268,7 +268,6 @@ class IPAdresa extends Table
 				}
 				$winboxButton = Html::el('a')
 					->setHref($link)
-					->setTarget('_blank')
 					->setTitle('Otevřít Mikrotik Winbox')
 					->addAttributes($tooltips)
 					->setClass('btn btn-default btn-xs btn-in-table')
@@ -525,7 +524,7 @@ class IPAdresa extends Table
 	public function getIpsByMacsMap(array $macs) {
 		return $this->getTable()->where('mac_adresa', $macs)->fetchPairs('mac_adresa');
 	}
-    
+
     public function getAPOfIP($id) {
         $ip = $this->getIPAdresa($id);
         if($ip->Ap_id) {
