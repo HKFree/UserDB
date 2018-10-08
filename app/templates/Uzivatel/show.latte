@@ -68,7 +68,6 @@
         <tr><th>Telefon</th><td>{$u->telefon}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
 
-        <tr><th>Rok narození</th><td>{$u->rok_narozeni}</td></tr>
         <tr><th>Index spokojenosti člena</th><td><div class="br-widget-show"><span class="lebka-zluta"></span>{for $i=1;$i<6;$i++}{if $i<=$u->index_potizisty}<span class="lebka-cervena"></span>{else}<span class="lebka-seda"></span>{/if}{/for}</div></td></tr>
         <tr><th>Technologie připojení</th><td>{$u->TechnologiePripojeni->text}</td></tr>
         <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni->text}</td></tr>
