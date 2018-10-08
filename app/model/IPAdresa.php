@@ -290,7 +290,7 @@ class IPAdresa extends Table
 					->addAttributes($tooltips)
 					->setClass('wboxbutton btn btn-default btn-xs btn-in-table')
 					->addHtml(Html::el('span')
-						->setClass('glyphicon glyphicon-cog')); // winbox button
+						->setClass('glyphicon glyphicon-download-alt')); // winbox button
 				if ($canViewCredentialsOrEdit) {
 					$winboxButton->setAttribute('tag', $ip->heslo);
 				}
@@ -309,7 +309,7 @@ class IPAdresa extends Table
 					->addAttributes($tooltips)
 					->setClass('wboxbutton btn btn-default btn-xs btn-in-table')
 					->addHtml(Html::el('span')
-						->setClass('glyphicon glyphicon-cog')); // winbox button
+						->setClass('glyphicon glyphicon-lock')); // winbox button
 				if ($canViewCredentialsOrEdit) {
 					$winboxButton->setAttribute('tag', ' sshpass -p '.$ip->heslo.' ssh '.$ip->login.'@'.$ip->ip_adresa);
 				}
