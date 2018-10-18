@@ -1,1 +1,0 @@
-INSERT INTO `TypClenstvi` (`id`, `text`) VALUES ('0', 'plánované')

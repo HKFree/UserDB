@@ -7,7 +7,7 @@ use Nette;
 /**
  * @author 
  */
-class AccountActivation extends Nette\Object
+class AccountActivation
 {
     private $uzivatel;
     private $uzivatelskeKonto;
