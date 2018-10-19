@@ -92,7 +92,7 @@ CREATE TABLE `migrations` (`id` int(10) UNSIGNED NOT NULL,
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 INSERT INTO `migrations` (`id`, `group`, `file`, `checksum`, `executed`, `ready`) VALUES
 (1, 'structures', '2016-10-23-102733-new-init-schema.sql', '107a87552ba751e059e8197a4194ae5e', '2016-10-23 22:38:06', 1),
-(2, 'basic-data', '2016-10-23-110900-new-init-data.sql', 'e902ac5947ec4eb61fdb37f7f82ee4c8', '2016-10-23 22:38:14', 1);
+(2, 'basic-data', '2016-10-23-110900-new-init-data.sql', 'e26dba9c81ad0a52e875c1bc0fc13863', '2016-10-23 22:38:14', 1);
 ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `type_file` (`group`,`file`);
