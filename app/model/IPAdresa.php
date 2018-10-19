@@ -36,9 +36,12 @@ class IPAdresa extends Table
 
     public function getSeznamIPAdres()
     {
-	//$row = $this->findAll();
         return($this->findAll());
-    }
+	}
+
+	public function findIp(array $by) {
+		return($this->findOneBy($by));
+	 }
 
     public function getSeznamIPAdresZacinajicich($prefix)
     {
