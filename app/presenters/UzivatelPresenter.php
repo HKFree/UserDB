@@ -1506,5 +1506,19 @@ class UzivatelPresenter extends BasePresenter
                 $el->setText(Strings::truncate($item->poznamka, 100, $append='…'));
                 return $el;
                 })->setSortable()->setFilterText();
+
+        $grid->addColumnText('PrichoziPlatba_id', 'Akce')->setCustomRender(function($item) use ($presenter)
+                {
+                    if ($item->PrichoziPlatba_id)
+                    {
+                        $uidLink = Html::el('a')
+                        ->href($presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id)))
+                        ->title('Příchozí platba')
+                        ->setText('Příchozí platba');
+                        return $uidLink;
+                    } else {
+                        return ;
+                    }
+                });
     }
 }
