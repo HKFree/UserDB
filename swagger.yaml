@@ -171,12 +171,12 @@ paths:
         - name: login
           in: query
           required: true
-          description: IP adresa
+          description: Login
           type: string
         - name: heslo
           in: query
           required: true
-          description: IP adresa
+          description: Heslo
           type: string
       responses:
         200:
