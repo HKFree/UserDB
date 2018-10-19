@@ -260,6 +260,18 @@ class IPAdresa extends Table
 				}
 				$buttons[]= $webButton;
 			}
+			// ping button
+			if (isset($ip->ip_adresa)) {
+				$webButton = Html::el('a')
+					->setHref('http://sojka.hkfree.org/grafana/d/H4wLPgJmk/hkfree-pinger?orgId=1&var-ip=' . $ip->ip_adresa)
+					->setTarget('_blank')
+					->setClass('btn btn-default btn-xs btn-in-table')
+					->setTitle('Otevřít ping')
+					->addAttributes($tooltips)
+					->addHtml(Html::el('span')
+						->setClass('glyphicon glyphicon-dashboard'));
+				$buttons[]= $webButton;
+			}
 			// winbox button
 			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$link = 'winbox:'.$ip->ip_adresa;
