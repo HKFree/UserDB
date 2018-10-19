@@ -166,7 +166,7 @@ class SpravaPresenter extends BasePresenter
             $grid->setModel($this->platneCC->getCCWithNamesVV());
         }
         else {
-            $grid->setModel($this->platneCC->getCCWithNames());
+            $grid->setModel($this->platneCC->getCCWithNames($this->getUser()->getIdentity()->getId()));
         }
 
     	$grid->setDefaultPerPage(100);
@@ -177,6 +177,7 @@ class SpravaPresenter extends BasePresenter
         $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('typcc', 'Typ CC')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('name', 'Jméno a příjmení')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('ap', 'AP')->setSortable()->setFilterText()->setSuggestion();
 
         $grid->addActionHref('show', 'Zobrazit')
                 ->setIcon('eye-open');
