@@ -1450,8 +1450,15 @@ class UzivatelPresenter extends BasePresenter
 
     public function renderAccount()
     {
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParam('id'));
+
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
-        $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
+        $this->template->u = $uzivatel;
+
+        $stavUctuIn = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('castka>0')->sum('castka');
+        $this->template->sum_input = $stavUctuIn;
+        $stavUctuOut = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('castka<0')->sum('castka');
+        $this->template->sum_output = $stavUctuOut;
     }
 
     protected function createComponentAccountgrid($name)
