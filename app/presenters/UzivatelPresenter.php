@@ -46,11 +46,13 @@ class UzivatelPresenter extends BasePresenter
     private $parameters;
     private $accountActivation;
     private $povoleneSMTP;
+    private $cryptosvc;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    function __construct(Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
-    	$this->spravceOblasti = $prava;
+    function __construct(Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+        $this->cryptosvc = $cryptosvc;
+        $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
         $this->typClenstvi = $typClenstvi;
@@ -379,7 +381,16 @@ class UzivatelPresenter extends BasePresenter
     	    $values = $this->uzivatel->getUzivatel($this->getParam('id'));
     	    if($values) {
                 foreach($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
-                    $form["ip"][$ip_id]->setValues($ip_data);
+                    if($ip_data->heslo_sifrovane == 1)
+					{
+                        $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
+                        $ipdata = $ip_data->toArray();
+                        $ipdata['heslo'] = $decrypted;
+                        $form["ip"][$ip_id]->setValues($ipdata);
+					}
+					else {
+						$form["ip"][$ip_id]->setValues($ip_data);
+					}
                 }
                 $form->setValues($values);
     	    }
@@ -667,6 +678,9 @@ class UzivatelPresenter extends BasePresenter
             if (empty($ip->heslo)) {
                 $ip->heslo = null;
             }
+
+            $ip->heslo = $this->cryptosvc->encrypt($ip->heslo);
+            $ip->heslo_sifrovane = 1;
 
             if(empty($ip->id)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;

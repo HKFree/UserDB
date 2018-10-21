@@ -21,11 +21,13 @@ class ApPresenter extends BasePresenter {
     private $typZarizeni;
     private $log;
     private $apiKlic;
+    private $cryptosvc;
 
     /** @var Components\LogTableFactory @inject */
     public $logTableFactory;
 
-    function __construct(Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic) {
+    function __construct(Model\CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic) {
+        $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
@@ -188,7 +190,17 @@ class ApPresenter extends BasePresenter {
             $values = $this->ap->getAP($this->getParam('id'));
             if($values) {
                 foreach($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
-                    $form["ip"][$ip_id]->setValues($ip_data);
+                    if($ip_data->heslo_sifrovane == 1)
+					{
+                        //\Tracy\Dumper::dump($ip_data->heslo);
+                        $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
+                        $ipdata = $ip_data->toArray();
+                        $ipdata['heslo'] = $decrypted;
+                        $form["ip"][$ip_id]->setValues($ipdata);
+					}
+					else {
+						$form["ip"][$ip_id]->setValues($ip_data);
+					}
                 }
                 foreach($values->related('Subnet.Ap_id') as $subnet_id => $subnet_data) {
                     $form["subnet"][$subnet_id]->setValues($subnet_data);
@@ -317,6 +329,10 @@ class ApPresenter extends BasePresenter {
         {
             $ip->Ap_id = $idAP;
             $idIp = $ip->id;
+
+            $ip->heslo = $this->cryptosvc->encrypt($ip->heslo);
+            $ip->heslo_sifrovane = 1;
+
             if(empty($ip->id)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);

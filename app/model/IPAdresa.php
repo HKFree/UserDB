@@ -104,7 +104,6 @@ class IPAdresa extends Table
 		$ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'smokeping ip');
 		$ip->addText('login', 'Login', 11)->setAttribute('class', 'login ip')->setAttribute('placeholder', 'Login');
 		$ip->addText('heslo', 'Heslo', 11)->setAttribute('class', 'heslo ip')->setAttribute('placeholder', 'Heslo');
-
 		$ip->addText('mac_adresa', 'MAC Adresa', 24)->setAttribute('class', 'mac_adresa ip')->setAttribute('placeholder', 'MAC Adresa');
 		$ip->addCheckbox('mac_filter', 'MAC Filtr')->setAttribute('class', 'mac_filter ip');
 		$ip->addCheckbox('dhcp', 'DHCP')->setAttribute('class', 'dhcp ip');
