@@ -1,0 +1,2 @@
+ALTER TABLE `IPAdresa` ADD `heslo_sifrovane` TINYINT NOT NULL DEFAULT '0' AFTER `heslo`;
+ALTER TABLE `IPAdresa` CHANGE `heslo` `heslo` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_czech_ci NULL DEFAULT NULL;

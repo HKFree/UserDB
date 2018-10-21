@@ -7,10 +7,12 @@ use Nette\Application\Responses\JsonResponse;
 class PasswordPresenter extends ApiPresenter
 {
     private $ipadresa;
+    private $cryptosvc;
 
-    function __construct(\App\Model\IPAdresa $ipadresa)
+    function __construct(\App\Model\IPAdresa $ipadresa, \App\Model\CryptoSluzba $cryptosvc)
     {
         $this->ipadresa = $ipadresa;
+        $this->cryptosvc = $cryptosvc;
     }
 
     public function actionDefault($id, $ip)
@@ -26,8 +28,14 @@ class PasswordPresenter extends ApiPresenter
             //if id (ap_id) provided then return credentials only for ip from this area
             $this->sendResponse( new JsonResponse( ['result' => 'ERROR', 'message' => 'Not allowed to change this IP address', 'serverTime' => date("c")] ) );
         }
-        //TODO: decrypt password
-        $this->sendResponse( new JsonResponse(['ip' => $ip->ip_adresa, 'login' => $ip->login, 'heslo' => $ip->heslo]) );
+        if($ip->heslo_sifrovane == 1)
+        {
+            $decrypted = $this->cryptosvc->decrypt($ip->heslo);
+            $this->sendResponse( new JsonResponse(['ip' => $ip->ip_adresa, 'login' => $ip->login, 'heslo' => $decrypted]) );
+        }
+        else {
+            $this->sendResponse( new JsonResponse(['ip' => $ip->ip_adresa, 'login' => $ip->login, 'heslo' => $ip->heslo]) );
+        }
     }
 
     public function renderSave($id, $ip, $login, $heslo) 
@@ -43,8 +51,8 @@ class PasswordPresenter extends ApiPresenter
             //if id (ap_id) provided then update credentials only for ip from this area
             $this->sendResponse( new JsonResponse( ['result' => 'ERROR', 'message' => 'Not allowed to change this IP address', 'serverTime' => date("c")] ) );
         }
-        //TODO: encrypt password
-        $this->ipadresa->update($ip->id, array('login'=>$login,'heslo'=>$heslo)); 
+        $encrypted = $this->cryptosvc->encrypt($heslo);
+        $this->ipadresa->update($ip->id, array('login'=>$login,'heslo'=>$encrypted, 'heslo_sifrovane'=>1)); 
         $this->sendResponse( new JsonResponse( ['result' => 'OK', 'serverTime' => date("c")] ) );
     }
 }
