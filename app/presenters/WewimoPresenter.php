@@ -14,13 +14,11 @@ use App\Model;
 class WewimoPresenter extends BasePresenter
 {
     private $wewimo;
-    private $ipadresa;
     private $ap;
 
-    function __construct(Model\Wewimo $wewimo, Model\IPAdresa $ipadresa, Model\AP $ap)
+    function __construct(Model\Wewimo $wewimo, Model\AP $ap)
     {
         $this->wewimo = $wewimo;
-        $this->ipadresa = $ipadresa;
         $this->ap = $ap;
     }
 
