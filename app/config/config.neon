@@ -50,7 +50,7 @@ services:
 	zpusobPripojeni: App\Model\ZpusobPripojeni
 	technologiePripojeni: App\Model\TechnologiePripojeni
 	typCestnehoClenstvi: App\Model\TypCestnehoClenstvi
-	ipAdresa: App\Model\IPAdresa(%igw1IpCheckerUrl%, %igw2IpCheckerUrl%)
+	ipAdresa: App\Model\IPAdresa(%igw1IpCheckerUrl%, %igw2IpCheckerUrl%, %encryptionPassphrase%)
 	oblast: App\Model\Oblast
 	ap: App\Model\AP
 	cc: App\Model\cc

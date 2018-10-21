@@ -3,7 +3,9 @@
 namespace App\Model;
 
 use Nette,
-    Nette\Utils\Html;
+	Nette\Utils\Html;
+use Defuse\Crypto\Key;
+use Defuse\Crypto\Crypto;
 
 
 
@@ -25,13 +27,19 @@ class IPAdresa extends Table
     /**
      * @var string
      */
-    protected $igw2IpCheckerUrl;
+	protected $igw2IpCheckerUrl;
+	
+	/**
+    * @var string
+    */
+    protected $passPhrase;
 
-    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, Nette\Database\Context $db, Nette\Security\User $user)
+    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, $passPhrase, Nette\Database\Context $db, Nette\Security\User $user)
     {
         parent::__construct($db, $user);
         $this->igw1IpCheckerUrl = $igw1IpCheckerUrl;
-        $this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
+		$this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
+		$this->passPhrase = Key::loadFromAsciiSafeString($passPhrase);
     }
 
     public function getSeznamIPAdres()
@@ -96,6 +104,7 @@ class IPAdresa extends Table
 		$ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'smokeping ip');
 		$ip->addText('login', 'Login', 11)->setAttribute('class', 'login ip')->setAttribute('placeholder', 'Login');
 		$ip->addText('heslo', 'Heslo', 11)->setAttribute('class', 'heslo ip')->setAttribute('placeholder', 'Heslo');
+
 		$ip->addText('mac_adresa', 'MAC Adresa', 24)->setAttribute('class', 'mac_adresa ip')->setAttribute('placeholder', 'MAC Adresa');
 		$ip->addCheckbox('mac_filter', 'MAC Filtr')->setAttribute('class', 'mac_filter ip');
 		$ip->addCheckbox('dhcp', 'DHCP')->setAttribute('class', 'dhcp ip');
@@ -449,7 +458,14 @@ class IPAdresa extends Table
 				$tr->create('td')->setText($ip->popis); // popis
 				if ($canViewCredentialsOrEdit) {
 					$tr->create('td')->setText($ip->login);
-					$tr->create('td')->setText($ip->heslo);
+					if($ip->heslo_sifrovane == 1)
+					{
+						$decrypted = Crypto::decrypt($ip->heslo, $this->passPhrase);
+						$tr->create('td')->setText($decrypted);
+					}
+					else {
+						$tr->create('td')->setText($ip->heslo);
+					}
 				}
 			} else {
 				// subnet mode, nesmi videt detaily
