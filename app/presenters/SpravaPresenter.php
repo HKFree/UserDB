@@ -28,17 +28,15 @@ class SpravaPresenter extends BasePresenter
     private $log;
     private $ap;
     public $oblast;
-    private $ipAdresa;
+    protected $ipAdresa;
     private $sloucenyUzivatel;
     private $uzivatelskeKonto;
     private $prichoziPlatba;
     private $odchoziPlatba;
     private $stavBankovnihoUctu;
     private $googleMapsApiKey;
-    private $cryptosvc;
 
-    function __construct(Model\CryptoSluzba $cryptosvc, Model\SloucenyUzivatel $slUzivatel, Model\SpravceOblasti $sob, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
-        $this->cryptosvc = $cryptosvc;
+    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\SpravceOblasti $sob, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
@@ -289,98 +287,6 @@ class SpravaPresenter extends BasePresenter
         //$this->log->loguj('Uzivatel', $idUzivatele, $log);
 
     	$this->redirect('Sprava:schvalovanicc');
-    	return true;
-    }
-
-    public function renderNovaoblast()
-    {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
-    }
-
-    protected function createComponentNovaoblastForm() {
-         // Tohle je nutne abychom mohli zjistit isSubmited
-    	$form = new Form($this, "novaoblastForm");
-    	$form->addHidden('id');
-
-        $form->addText('jmeno', 'Název oblasti', 50)->setRequired('Zadejte název oblasti');
-
-    	$form->addSubmit('send', 'Vytvořit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
-
-    	$form->onSuccess[] = array($this, 'novaoblastFormSucceded');
-
-    	// pokud editujeme, nacteme existujici
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
-            $existujiciOblast = $this->oblast->getOblast($this->getParam('id'));
-            if($existujiciOblast) {
-                $form->setValues($existujiciOblast);
-    	    }
-    	}
-
-    	return $form;
-    }
-
-    public function novaoblastFormSucceded($form, $values) {
-
-        $idOblasti = $values->id;
-
-        if(empty($values->id)) {
-            $values->datum_zalozeni = new Nette\Utils\DateTime;
-            $this->oblast->insert($values);
-            $this->flashMessage('Oblast byla vytvořena.');
-        } else {
-    	    $this->oblast->update($idOblasti, $values);
-        }
-
-    	$this->redirect('Sprava:nastroje');
-    	return true;
-    }
-
-    public function renderNoveap()
-    {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
-    }
-
-    protected function createComponentNoveapForm() {
-         // Tohle je nutne abychom mohli zjistit isSubmited
-    	$form = new Form($this, "noveapForm");
-    	$form->addHidden('id');
-
-        $aps = $this->oblast->formatujOblasti($this->oblast->getSeznamOblasti());
-
-        $form->addSelect('Oblast_id', 'Oblast', $aps);
-
-        $form->addText('jmeno', 'Název AP', 50)->setRequired('Zadejte název AP');
-        $form->addTextArea('poznamka', 'Poznámka', 72, 10);
-
-    	$form->addSubmit('send', 'Vytvořit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
-
-    	$form->onSuccess[] = array($this, 'noveapFormSucceded');
-
-    	// pokud editujeme, nacteme existujici
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
-            $existujiciAp = $this->ap->getAP($this->getParam('id'));
-            if($existujiciAp) {
-                $form->setValues($existujiciAp);
-    	    }
-    	}
-
-    	return $form;
-    }
-
-    public function noveapFormSucceded($form, $values) {
-
-        $idAp = $values->id;
-
-        if(empty($values->id)) {
-            $this->ap->insert($values);
-            $this->flashMessage('AP bylo vytvořeno.');
-        } else {
-    	    $this->ap->update($idAp, $values);
-        }
-
-    	$this->redirect('Sprava:nastroje');
     	return true;
     }
 
@@ -1012,42 +918,5 @@ class SpravaPresenter extends BasePresenter
         }
         $this->template->data = json_encode(array_values($output));
         $this->template->googleMapsApiKey = $this->googleMapsApiKey;
-    }
-
-    public function renderPresifrovani()
-    {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
-    }
-
-    protected function createComponentPresifrovaniForm() {
-         // Tohle je nutne abychom mohli zjistit isSubmited
-    	$form = new Form($this, "presifrovaniForm");
-    	$form->addHidden('id');
-
-    	$form->addSubmit('send', 'Přešifrovat zatím nezašifrovaná hesla ip adres')->setAttribute('class', 'btn btn-success btn-xs btn-white');
-
-    	$form->onSuccess[] = array($this, 'presifrovaniFormSucceded');
-
-    	return $form;
-    }
-
-    public function presifrovaniFormSucceded($form, $values) {
-
-        $nesifrovane = $this->ipAdresa->findBy(array('heslo_sifrovane'=>0));
-                    
-        foreach($nesifrovane as $ip)
-        {
-            if($ip->heslo && strlen($ip->heslo) > 0)
-            {
-                $encrypted = $this->cryptosvc->encrypt($ip->heslo);
-                $this->ipAdresa->update($ip->id, array('heslo'=>$encrypted, 'heslo_sifrovane'=>1)); 
-        
-            }
-        }
-
-        $this->flashMessage('Hesla ip adres jsou přešifrovány.');
-
-    	$this->redirect('Sprava:nastroje', array('id'=>null));
-    	return true;
     }
 }
