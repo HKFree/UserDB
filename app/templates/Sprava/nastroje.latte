@@ -9,15 +9,15 @@
         <br><br>
     {/if}
     {if $canApproveCC}
-        <a href="{link Sprava:slucovani id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Sloučit uživatele</a>
-        <a href="{link Sprava:slouceni id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Sloučení uživatelé</a>
+        <a href="{link SpravaSlucovani:slucovani id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Sloučit uživatele</a>
+        <a href="{link SpravaSlucovani:slouceni id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Sloučení uživatelé</a>
         <br><br>
         <a href="{link SpravaSifrovani:presifrovani id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Přešifrování hesel</a>
         <br><br>
-        <a href="{link Sprava:schvalovanicc id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Schvalování čestného členství</a>
+        <a href="{link SpravaCc:schvalovanicc id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Schvalování čestného členství</a>
         
     {/if}
-    <a href="{link Sprava:prehledcc id=>null}" class="btn btn-default btn-sm" role="button"> Přehled platných čestných členství</a>
+    <a href="{link SpravaCc:prehledcc id=>null}" class="btn btn-default btn-sm" role="button"> Přehled platných čestných členství</a>
     <br><br>
     <a href="{link Sprava:usersgraph id=>null}" class="btn btn-default btn-sm" role="button"> Graf uživatelů</a>
     <br><br>

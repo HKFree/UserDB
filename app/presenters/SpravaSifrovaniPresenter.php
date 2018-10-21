@@ -12,7 +12,7 @@ use Nette,
  */
 class SpravaSifrovaniPresenter extends SpravaPresenter
 {
-    protected $ipAdresa;
+    private $ipAdresa;
     private $cryptosvc;
 
     function __construct(Model\CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa) {

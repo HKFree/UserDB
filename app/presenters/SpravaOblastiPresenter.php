@@ -27,7 +27,6 @@ class SpravaOblastiPresenter extends SpravaPresenter
     }
 
     protected function createComponentNovaoblastForm() {
-         // Tohle je nutne abychom mohli zjistit isSubmited
     	$form = new Form($this, "novaoblastForm");
     	$form->addHidden('id');
 
@@ -37,7 +36,6 @@ class SpravaOblastiPresenter extends SpravaPresenter
 
     	$form->onSuccess[] = array($this, 'novaoblastFormSucceded');
 
-    	// pokud editujeme, nacteme existujici
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
             $existujiciOblast = $this->oblast->getOblast($this->getParam('id'));
@@ -71,7 +69,6 @@ class SpravaOblastiPresenter extends SpravaPresenter
     }
 
     protected function createComponentNoveapForm() {
-         // Tohle je nutne abychom mohli zjistit isSubmited
     	$form = new Form($this, "noveapForm");
     	$form->addHidden('id');
 
@@ -86,7 +83,6 @@ class SpravaOblastiPresenter extends SpravaPresenter
 
     	$form->onSuccess[] = array($this, 'noveapFormSucceded');
 
-    	// pokud editujeme, nacteme existujici
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
             $existujiciAp = $this->ap->getAP($this->getParam('id'));
