@@ -35,8 +35,10 @@ class SpravaPresenter extends BasePresenter
     private $odchoziPlatba;
     private $stavBankovnihoUctu;
     private $googleMapsApiKey;
+    private $cryptosvc;
 
-    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\SpravceOblasti $sob, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
+    function __construct(Model\CryptoSluzba $cryptosvc, Model\SloucenyUzivatel $slUzivatel, Model\SpravceOblasti $sob, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
+        $this->cryptosvc = $cryptosvc;
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
@@ -633,22 +635,6 @@ class SpravaPresenter extends BasePresenter
     	$grid->setDefaultPerPage(25);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
     	$grid->setDefaultSort(array('datum' => 'DESC'));
-
-        /*$presenter = $this;
-        $grid->setRowCallback(function ($item, $tr) use ($presenter){
-                if($item->PrichoziPlatba_id)
-                {
-                    $tr->onclick = "window.location='".$presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id))."'";
-                }
-                return $tr;
-            });*/
-
-    	/*$grid->addColumnText('Uzivatel_id', 'UID')->setCustomRender(function($item) use ($presenter)
-        {return Html::el('a')
-            ->href($presenter->link('Uzivatel:show', array('id'=>$item->Uzivatel_id)))
-            ->title($item->Uzivatel_id)
-            ->setText($item->Uzivatel_id);})->setSortable();*/
-
         $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
         $grid->addColumnText('cislo_uctu', 'Číslo účtu')->setSortable()->setFilterText();
         $grid->addColumnText('vs', 'VS')->setSortable()->setFilterText();
@@ -1026,5 +1012,42 @@ class SpravaPresenter extends BasePresenter
         }
         $this->template->data = json_encode(array_values($output));
         $this->template->googleMapsApiKey = $this->googleMapsApiKey;
+    }
+
+    public function renderPresifrovani()
+    {
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    }
+
+    protected function createComponentPresifrovaniForm() {
+         // Tohle je nutne abychom mohli zjistit isSubmited
+    	$form = new Form($this, "presifrovaniForm");
+    	$form->addHidden('id');
+
+    	$form->addSubmit('send', 'Přešifrovat zatím nezašifrovaná hesla ip adres')->setAttribute('class', 'btn btn-success btn-xs btn-white');
+
+    	$form->onSuccess[] = array($this, 'presifrovaniFormSucceded');
+
+    	return $form;
+    }
+
+    public function presifrovaniFormSucceded($form, $values) {
+
+        $nesifrovane = $this->ipAdresa->findBy(array('heslo_sifrovane'=>0));
+                    
+        foreach($nesifrovane as $ip)
+        {
+            if($ip->heslo && strlen($ip->heslo) > 0)
+            {
+                $encrypted = $this->cryptosvc->encrypt($ip->heslo);
+                $this->ipAdresa->update($ip->id, array('heslo'=>$encrypted, 'heslo_sifrovane'=>1)); 
+        
+            }
+        }
+
+        $this->flashMessage('Hesla ip adres jsou přešifrovány.');
+
+    	$this->redirect('Sprava:nastroje', array('id'=>null));
+    	return true;
     }
 }

@@ -1,0 +1,11 @@
+{block content}
+
+<h3>Přešifrování nešifrovaných hesel IP adres</h3>
+
+{if $canViewOrEdit}
+{include '../form.latte', form => presifrovaniForm}
+{else}
+<p>Na tuto operaci nemáte oprávnění!</p>
+{/if}
+
+{/block}
