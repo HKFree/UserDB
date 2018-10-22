@@ -57,7 +57,9 @@ RUN composer install
 
 FROM userdb-runtime
 
-RUN echo "" > app/config/config.local.neon
+# create empty config.local.neon, we use env. variables for production configuration
+RUN mkdir -p /opt/userdb/app/config
+RUN echo "" > /opt/userdb/app/config/config.local.neon
 
 # copy application (bind volume to the path during development in order to override the baked-in app version)
 COPY . /opt/userdb
