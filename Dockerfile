@@ -63,3 +63,7 @@ RUN echo "" > /opt/userdb/app/config/config.local.neon
 
 # copy application (bind volume to the path during development in order to override the baked-in app version)
 COPY . /opt/userdb
+
+# make some dirs writable by apache httpd
+RUN chmod 777 -R /opt/userdb/log
+RUN chmod 777 -R /opt/userdb/temp
