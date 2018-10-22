@@ -40,11 +40,12 @@ class UzivatelPresenter extends BasePresenter
     private $parameters;
     private $povoleneSMTP;
     private $cryptosvc;
+    private $pdfGenerator;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    function __construct(Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\PdfGenerator $pdf, Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -61,56 +62,7 @@ class UzivatelPresenter extends BasePresenter
         $this->sloucenyUzivatel = $slUzivatel;
         $this->parameters = $parameters;
         $this->povoleneSMTP = $alowedSMTP;
-    }
-
-    public function generatePdf($uzivatel)
-    {
-        $template = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-        $template->oblast = $uzivatel->Ap->Oblast->jmeno;
-        $oblastid = $uzivatel->Ap->Oblast->id;
-        $template->oblastemail = "oblast$oblastid@hkfree.org";
-        $template->jmeno = $uzivatel->jmeno;
-        $template->prijmeni = $uzivatel->prijmeni;
-        $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
-        $template->firma = $uzivatel->firma_nazev;
-        $template->ico = $uzivatel->firma_ico;
-        $template->nick = $uzivatel->nick;
-        $template->uid = $uzivatel->id;
-        $template->heslo = $uzivatel->regform_downloaded_password_sent==0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
-        $template->email = $uzivatel->email;
-        $template->telefon = $uzivatel->telefon;
-        $template->ulice = $uzivatel->ulice_cp;
-        $template->mesto = $uzivatel->mesto;
-        $template->psc = $uzivatel->psc;
-        $template->clenstvi = $uzivatel->TypClenstvi->text;
-        $template->nthmesic = $uzivatel->ZpusobPripojeni_id==2 ? "třetího" : "prvního";
-        $template->nthmesicname = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicName($uzivatel->zalozen,3) : $this->uzivatel->mesicName($uzivatel->zalozen,1);
-        $template->nthmesicdate = $uzivatel->ZpusobPripojeni_id==2 ? $this->uzivatel->mesicDate($uzivatel->zalozen,2) : $this->uzivatel->mesicDate($uzivatel->zalozen,0);
-        $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
-        foreach($ipadrs as $ip) {
-            $subnet = $this->subnet->getSubnetOfIP($ip);
-
-            if(isset($subnet["error"])) {
-                $errorText = 'subnet není v databázi';
-                $out[] = array('ip' => $ip, 'subnet' => $errorText, 'gateway' => $errorText, 'mask' => $errorText);
-            } else {
-                $out[] = array('ip' => $ip, 'subnet' => $subnet["subnet"], 'gateway' => $subnet["gateway"], 'mask' => $subnet["mask"]);
-            }
-        }
-
-        if(count($ipadrs) == 0) {
-            $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');
-        }
-        $template->ips = $out;
-
-        $pdf = new PDFResponse($template);
-        $pdf->pageOrientation = PDFResponse::ORIENTATION_PORTRAIT;
-        $pdf->pageFormat = "A4";
-        $pdf->pageMargins = "5,5,5,5,20,60";
-        $pdf->documentTitle = "hkfree-registrace-".$this->getParam('id');
-        $pdf->documentAuthor = "hkfree.org z.s.";
-
-        return $pdf;
+        $this->pdfGenerator = $pdf;
     }
 
     public function mailPdf($pdf, $uzivatel)
@@ -180,24 +132,14 @@ class UzivatelPresenter extends BasePresenter
         {
             if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
     	    {
-                $pdf = $this->generatePdf($uzivatel);
+                $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
+                $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
                 $this->mailPdf($pdf, $uzivatel);
 
                 $this->flashMessage('E-mail byl odeslán.');
 
                 $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));
-            }
-        }
-    }
-
-    public function actionExportPdf() {
-      if($this->getParam('id'))
-    	{
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
-    	    {
-                $pdf = $this->generatePdf($uzivatel);
-                $this->sendResponse($pdf);
             }
         }
     }
@@ -232,7 +174,8 @@ class UzivatelPresenter extends BasePresenter
     	    {
                 if($uzivatel->regform_downloaded_password_sent==0 && $hash == md5($this->context->parameters["salt"].$uzivatel->zalozen))
                 {
-                    $pdf = $this->generatePdf($uzivatel);
+                    $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
+                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
                     $this->mailPdf($pdf, $uzivatel);
                 }

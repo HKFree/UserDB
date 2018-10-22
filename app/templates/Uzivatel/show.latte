@@ -8,7 +8,7 @@
     <a href="{link UzivatelRightsCc:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a>
     <a href="{link UzivatelMailSms:email id=>$u->id}" class="btn btn-default btn-sm" role="button"><b>@</b> Odeslat E-mail</a>
     <a href="{link UzivatelMailSms:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS</a>
-    <a href="{link Uzivatel:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-file"></i> Registrační formulář</a>
+    <a href="{link UzivatelActions:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-file"></i> Registrační formulář</a>
     {if $u->regform_downloaded_password_sent==0}
     <a href="{link Uzivatel:sendRegActivation id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat znovu aktivační link e-mailem</a>
     {else}

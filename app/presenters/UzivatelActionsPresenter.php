@@ -12,9 +12,13 @@ use Nette,
 class UzivatelActionsPresenter extends UzivatelPresenter
 {
     private $accountActivation;
+    private $uzivatel;
+    private $pdfGenerator;
 
-    function __construct(Model\AccountActivation $accActivation) {
+    function __construct(Model\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel) {
+        $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
+        $this->uzivatel = $uzivatel;
     }
 
     public function actionMoneyActivate() {
@@ -57,4 +61,15 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
+    public function actionExportPdf() {
+        if($this->getParam('id'))
+        {
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+            {
+                $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
+                $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                $this->sendResponse($pdf);
+            }
+        }
+    }
 }
