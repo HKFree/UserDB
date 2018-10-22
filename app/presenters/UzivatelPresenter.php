@@ -11,7 +11,6 @@ use Nette,
     Tracy\Debugger,
     Nette\Mail\Message,
     Nette\Utils\Validators,
-    Nette\Mail\SendmailMailer,
     Nette\Utils\Strings,
     PdfResponse\PdfResponse,
     App\Components;
@@ -180,8 +179,7 @@ class UzivatelPresenter extends BasePresenter
         $pdf->send($this->getHttpRequest(), $this->getHttpResponse());
         $mail->addAttachment('hkfree-registrace-'.$uzivatel->id.'.pdf', file_get_contents($temp_file));
 
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->mailer->send($mail);
     }
 
     public function actionSendRegActivation() {
@@ -203,8 +201,7 @@ class UzivatelPresenter extends BasePresenter
                                   'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
                                   'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
                                   'S pozdravem hkfree.org z.s.');
-                $mailer = new SendmailMailer;
-                $mailer->send($mail);
+                $this->mailer->send($mail);
 
                 $mailso = new Message;
                 $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
@@ -464,8 +461,6 @@ class UzivatelPresenter extends BasePresenter
         
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
 
-        $mailer = new SendmailMailer;
-        
         $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
 
         $mailso = new Message;
@@ -489,7 +484,7 @@ class UzivatelPresenter extends BasePresenter
         foreach ($seznamSpravcu as $sou) {
             $mailso->addTo($sou->email);
         }
-        $mailer->send($mailso);
+        $this->mailer->send($mailso);
 
         $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
         
@@ -517,8 +512,7 @@ class UzivatelPresenter extends BasePresenter
         {
            $mail->addTo($newUser->email2);
         }
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->mailer->send($mail);
 
         $mailso = new Message;
         $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
@@ -539,7 +533,7 @@ class UzivatelPresenter extends BasePresenter
         foreach ($seznamSpravcu as $sou) {
             $mailso->addTo($sou->email);
         }
-        $mailer->send($mailso);
+        $this->mailer->send($mailso);
 
         $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. INTERNET BUDE FUNGOVAT DO 15 MINUT.');
 
@@ -1124,8 +1118,7 @@ class UzivatelPresenter extends BasePresenter
                     ->setSubject('Nová žádost o ČČ')
                     ->setBody("Dobrý den,\nbyla vytvořena nová žádost o ČČ.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\nhttps://userdb.hkfree.org/userdb/sprava/schvalovanicc");
 
-                $mailer = new SendmailMailer;
-                $mailer->send($mail);
+                $this->mailer->send($mail);
 
                 $this->flashMessage('E-mail VV byl odeslán. Vyčkejte, než VV žádost potvrdí.');
             } else {
@@ -1201,8 +1194,7 @@ class UzivatelPresenter extends BasePresenter
         }
 
 
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->mailer->send($mail);
 
         $this->flashMessage('E-mail byl odeslán.');
 
@@ -1412,8 +1404,7 @@ class UzivatelPresenter extends BasePresenter
             }
         }
 
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->mailer->send($mail);
 
         $this->flashMessage('E-mail byl odeslán.');
 

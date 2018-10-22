@@ -1,21 +1,24 @@
-FROM php:5.6-apache-jessie
+####################################################################################################
+# 1st stage (composer deps only, in order to populate cache and speed up builds)
+FROM php:7.2-apache-stretch AS userdb-runtime
 
 RUN a2enmod rewrite
-RUN a2enmod ssl
 RUN a2enmod headers
 
 RUN apt-get update
 
 # Install extenstions: MySQL PDO, GD
 RUN apt-get install -y \
+        git \
+        zip \
+        unzip \
         libpq-dev \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
-        libmcrypt-dev \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install pdo pdo_mysql gd mcrypt
+    && docker-php-ext-install pdo pdo_mysql gd zip
 
 # Enable and configure xdebug
 #RUN pecl install xdebug
@@ -36,4 +39,23 @@ COPY apache.conf /etc/apache2/sites-enabled/000-default.conf
 
 RUN echo "<?php header('Location: /userdb/');" > /var/www/html/index.php
 
+RUN mkdir -p /opt/userdb
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+
 WORKDIR /opt/userdb
+
+RUN mkdir vendor
+
+# intentional caching of the composer-deps layer
+COPY composer.json composer.lock /opt/userdb/
+
+RUN composer install
+
+####################################################################################################
+# 2nd stage (in order to support composer deps caching)
+
+FROM userdb-runtime
+
+# copy application (bind volume to the path during development in order to override the baked-in app version)
+COPY . /opt/userdb

@@ -8,6 +8,9 @@ parameters:
 	clenskyPrispevek: 290
 	igw1IpCheckerUrl: http://10.107.0.1:8080/ip4info/
 	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
+	urlPrefix: '/userdb'
+	salt: %env.USERDB_SALT%
+	https: false
 
 php:
 	date.timezone: Europe/Prague
@@ -36,7 +39,7 @@ migrations:
 services:
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
 	- App\RouterFactory
-	router: @App\RouterFactory::createRouter(%debug.https%, %urlPrefix%)
+	router: @App\RouterFactory::createRouter(%https%, %urlPrefix%)
 	uzivatel: App\Model\Uzivatel
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
@@ -68,8 +71,19 @@ services:
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:
-			- setGoogleMapsApiKey(%googleMapsApiKey%)
+			- setGoogleMapsApiKey(%env.USERDB_GOOGLE_MAPS_KEY%)
 
 console:
 	commands:
 		- App\Console\UpdateLocationsCommand
+
+database:
+	dsn: "mysql:host=%env.USERDB_DB_HOST%;dbname=%env.USERDB_DB_NAME%"
+	user: %env.USERDB_DB_USERNAME%
+	password: %env.USERDB_DB_PASSWORD%
+	options:
+		lazy: true
+
+mail:
+    smtp: true # zapne SmtpMailer místo SendmailMailer
+    host: smtp.hkfree.org

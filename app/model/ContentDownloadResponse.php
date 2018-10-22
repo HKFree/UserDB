@@ -4,7 +4,7 @@ namespace App\Model;
 
 use Nette;
 
-class ContentDownloadResponse extends Nette\Object implements Nette\Application\IResponse {
+class ContentDownloadResponse implements Nette\Application\IResponse {
 	/** @var string */
 	private $content;
 	/** @var string */

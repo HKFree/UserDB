@@ -37,6 +37,7 @@ git push origin master
 ```bash
 docker-compose build
 docker-compose up
+docker-compose exec web composer install
 docker-compose exec web php www/index.php migrations:continue
 ```
 

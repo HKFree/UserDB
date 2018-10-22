@@ -4,9 +4,14 @@ services:
     build: .
     environment:
       - TRACY_ENABLE=1
+      - USERDB_SALT=saltvalue
+      - USERDB_GOOGLE_MAPS_KEY=xxx
+      - USERDB_DB_HOST=db
+      - USERDB_DB_NAME=userdb
+      - USERDB_DB_USERNAME=root
+      - USERDB_DB_PASSWORD=rootpwd654
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - .:/opt/userdb
     links:

@@ -14,7 +14,7 @@ use Tracy\Debugger;
 use Nette;
 
 
-class Wewimo extends Nette\Object
+class Wewimo
 {
     private $ipadresa;
     private $ap;

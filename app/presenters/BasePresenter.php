@@ -6,6 +6,7 @@ use Nette,
 	App\Model,
     Nette\Application\UI\Form,
     Tracy\Debugger;
+use Nette\Mail\IMailer;
 
 
 /**
@@ -21,11 +22,15 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     private $spravceOblasti;
     private $ap;
 
-    public function injectOblast(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap)
+    /** @var IMailer */
+    protected $mailer;
+
+    public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer)
     {
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
         $this->ap = $ap;
+        $this->mailer = $mailer;
     }
 
     public function startup() {

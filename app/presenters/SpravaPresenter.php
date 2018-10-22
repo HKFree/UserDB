@@ -10,7 +10,6 @@ use Nette,
     Grido\Grid,
     Nette\Mail\Message,
     Nette\Utils\Strings,
-    Nette\Mail\SendmailMailer,
     Nette\Utils\Json,
     Nette\Utils\DateTime,
     Tracy\Debugger;
@@ -277,8 +276,7 @@ class SpravaPresenter extends BasePresenter
                         ->setSubject('Žádost o čestné členství')
                         ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $pravo->plati_od - $pravo->plati_do.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
 
-                    $mailer = new SendmailMailer;
-                    $mailer->send($mail);
+                    $this->mailer->send($mail);
                 }
             }
     	}

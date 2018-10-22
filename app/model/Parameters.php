@@ -7,7 +7,7 @@ use Nette;
 /**
  * App parameters.
  */
-class Parameters extends Nette\Object
+class Parameters
 {
     /**
     * @var int
