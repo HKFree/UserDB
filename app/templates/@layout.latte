@@ -78,23 +78,23 @@
             <h4>Moje oblasti</h4>
             <ul class="nav nav-sidebar">
               {foreach $mojeOblasti as $idoblast => $jmenoOblasti}
-                <li id="oblast-{$idoblast}"><a href="{link Uzivatel:list id=>$idoblast}">{$jmenoOblasti}</a></li>
+                <li id="oblast-{$idoblast}"><a href="{link UzivatelList:list id=>$idoblast}">{$jmenoOblasti}</a></li>
               {/foreach}
             </ul>
           {/if}
           {if $oblasti}
-            <h4><a href="{link Uzivatel:listall id=>NULL}">Všechny oblasti</a></h4>
+            <h4><a href="{link UzivatelList:listall id=>NULL}">Všechny oblasti</a></h4>
             <ul class="nav nav-sidebar" n:if="$oblasti" id="oblastitree">
               {foreach $oblasti as $idoblast => $o}
                 {var $apcka = $o->related('Ap.Oblast_id')->order("jmeno")}
                 {if count($apcka) == 1}
                   {var $ap = $apcka->fetch()}
-                  <li><a n:href="Uzivatel:list id=>$ap->id">{$ap->jmeno} ({$o->id})</a></li>
+                  <li><a n:href="UzivatelList:list id=>$ap->id">{$ap->jmeno} ({$o->id})</a></li>
                 {else}
                   <li><a n:href="Ap:list id=>$o->id">{$o->jmeno} ({$o->id})</a>
                     <ul class="nav">
                     {foreach $apcka as $idap => $theAp}
-                      <li><a n:href="Uzivatel:list id=>$theAp->id">{$theAp->jmeno}</a></li>
+                      <li><a n:href="UzivatelList:list id=>$theAp->id">{$theAp->jmeno}</a></li>
                     {/foreach}
                     </ul>
                   </li>

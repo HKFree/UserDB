@@ -23,19 +23,21 @@ class cc extends Table
 
     public function getCCWithNamesVV()
     {
-        return $this->getConnection()->query("SELECT cc_nahled.*, CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni) as name FROM cc_nahled LEFT JOIN Uzivatel ON Uzivatel.id = cc_nahled.id")->fetchAll();
+        return $this->getConnection()
+            ->query("SELECT cc_nahled.*, CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni) as name, Ap.jmeno as ap FROM cc_nahled LEFT JOIN Uzivatel ON Uzivatel.id = cc_nahled.id LEFT JOIN Ap ON Uzivatel.Ap_id = Ap.id")
+            ->fetchAll();
     }
 
-    public function getCCWithNames()
+    public function getCCWithNames($userId)
     {
-        return $this->getConnection()->query("SELECT cc_nahled.*, "
+        return $this->getConnection()->query("SELECT cc_nahled.*,Ap.jmeno as ap, "
                 . "CASE WHEN cc_nahled.id IN "
                 . "         (SELECT Uzivatel.id FROM Uzivatel WHERE Ap_id IN "
-                . "             (SELECT A.id FROM userdb_v2.SpravceOblasti S JOIN Ap A ON S.Oblast_id=A.Oblast_id Where S.Uzivatel_id=58 AND S.Oblast_id is not null)) "
+                . "             (SELECT A.id FROM SpravceOblasti S JOIN Ap A ON S.Oblast_id=A.Oblast_id Where S.Uzivatel_id=$userId AND S.Oblast_id is not null)) "
                 . "     THEN CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni) "
                 . "     ELSE '' "
                 . "END as name "
                 . "FROM cc_nahled "
-                . "LEFT JOIN Uzivatel ON Uzivatel.id = cc_nahled.id;")->fetchAll();
+                . "LEFT JOIN Uzivatel ON Uzivatel.id = cc_nahled.id LEFT JOIN Ap ON Uzivatel.Ap_id = Ap.id;")->fetchAll();
     }
 }

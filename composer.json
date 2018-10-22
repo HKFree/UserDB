@@ -15,7 +15,7 @@
 		}
 	],
 	"require": {
-		"php": ">= 5.6.0",
+		"php": ">= 7.1.19",
 		"nette/nette": "~2.4.0",
 		"dg/adminer-custom": "~1.5",
 		"kdyby/forms-replicator": "@dev",
@@ -27,7 +27,8 @@
 		"nextras/migrations": "^3.0",
 		"guzzlehttp/guzzle": "~6.0",
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
-		"kdyby/console": "dev-master#0de5fcc515750cf4ea9188cdc1f7675b50b29d33"
+		"kdyby/console": "~2.7.1",
+		"defuse/php-encryption": "~2.2.1"
 	},
 	"require-dev": {
 		"nette/tester": "~1.0"

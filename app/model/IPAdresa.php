@@ -3,7 +3,9 @@
 namespace App\Model;
 
 use Nette,
-    Nette\Utils\Html;
+	Nette\Utils\Html;
+use Defuse\Crypto\Key;
+use Defuse\Crypto\Crypto;
 
 
 
@@ -25,20 +27,29 @@ class IPAdresa extends Table
     /**
      * @var string
      */
-    protected $igw2IpCheckerUrl;
+	protected $igw2IpCheckerUrl;
+	
+	/**
+    * @var string
+    */
+    protected $passPhrase;
 
-    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, Nette\Database\Context $db, Nette\Security\User $user)
+    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, $passPhrase, Nette\Database\Context $db, Nette\Security\User $user)
     {
         parent::__construct($db, $user);
         $this->igw1IpCheckerUrl = $igw1IpCheckerUrl;
-        $this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
+		$this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
+		$this->passPhrase = Key::loadFromAsciiSafeString($passPhrase);
     }
 
     public function getSeznamIPAdres()
     {
-	//$row = $this->findAll();
         return($this->findAll());
-    }
+	}
+
+	public function findIp(array $by) {
+		return($this->findOneBy($by));
+	 }
 
     public function getSeznamIPAdresZacinajicich($prefix)
     {
@@ -260,6 +271,18 @@ class IPAdresa extends Table
 				}
 				$buttons[]= $webButton;
 			}
+			// ping button
+			if (isset($ip->ip_adresa)) {
+				$webButton = Html::el('a')
+					->setHref('http://sojka.hkfree.org/grafana/d/H4wLPgJmk/hkfree-pinger?orgId=1&var-ip=' . $ip->ip_adresa)
+					->setTarget('_blank')
+					->setClass('btn btn-default btn-xs btn-in-table')
+					->setTitle('Otevřít ping')
+					->addAttributes($tooltips)
+					->addHtml(Html::el('span')
+						->setClass('glyphicon glyphicon-dashboard'));
+				$buttons[]= $webButton;
+			}
 			// winbox button
 			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$link = 'winbox:'.$ip->ip_adresa;
@@ -433,7 +456,14 @@ class IPAdresa extends Table
 				$tr->create('td')->setText($ip->popis); // popis
 				if ($canViewCredentialsOrEdit) {
 					$tr->create('td')->setText($ip->login);
-					$tr->create('td')->setText($ip->heslo);
+					if($ip->heslo_sifrovane == 1)
+					{
+						$decrypted = Crypto::decrypt($ip->heslo, $this->passPhrase);
+						$tr->create('td')->setText($decrypted);
+					}
+					else {
+						$tr->create('td')->setText($ip->heslo);
+					}
 				}
 			} else {
 				// subnet mode, nesmi videt detaily

@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: UserDB.hkfree.org API
   description: API pro přístup k některým údajům v databázi uživatelů hkfree.org
-  version: "1.0.0"
+  version: "1.0.1"
 # the domain of the service
 host: userdb.hkfree.org
 # array of all schemes that your API supports
@@ -121,6 +121,66 @@ paths:
       responses:
         200:
           description: Object se seznamem Routerboardů
+          schema:
+            type: object
+            properties:
+              devices:
+                type: array
+                items:
+                  type: object
+
+  /password/default/{id_ap}:
+    get:
+      summary: Login a heslo pro danou IP adresu
+      parameters:
+        - name: id_ap
+          in: path
+          required: false
+          description: ID APcka
+          type: integer
+        - name: ip
+          in: query
+          required: true
+          description: IP adresa
+          type: string
+      responses:
+        200:
+          description: Object s prihlasovacimi udaji
+          schema:
+            type: object
+            properties:
+              devices:
+                type: array
+                items:
+                  type: object
+  
+  /password/save/{id_ap}:
+    get:
+      summary: Ulozi login a heslo pro danou IP adresu
+      parameters:
+        - name: id_ap
+          in: path
+          required: false
+          description: ID APcka
+          type: integer
+        - name: ip
+          in: query
+          required: true
+          description: IP adresa
+          type: string
+        - name: login
+          in: query
+          required: true
+          description: Login
+          type: string
+        - name: heslo
+          in: query
+          required: true
+          description: Heslo
+          type: string
+      responses:
+        200:
+          description: Status a casove razitko
           schema:
             type: object
             properties:

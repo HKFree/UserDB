@@ -21,11 +21,13 @@ class ApPresenter extends BasePresenter {
     private $typZarizeni;
     private $log;
     private $apiKlic;
+    private $cryptosvc;
 
     /** @var Components\LogTableFactory @inject */
     public $logTableFactory;
 
-    function __construct(Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic) {
+    function __construct(Model\CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic) {
+        $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
@@ -69,7 +71,7 @@ class ApPresenter extends BasePresenter {
                 $tdAkce->addText(' - ');
                 $tdAkce->create('a')->href($this->link('Ap:edit', array('id'=>$ap->id)))->setText('Editovat');
                 $tdAkce->addText(' - ');
-                $tdAkce->create('a')->href($this->link('Uzivatel:list', array('id'=>$ap->id)))->setText('Zobrazit uživatele');
+                $tdAkce->create('a')->href($this->link('UzivatelList:list', array('id'=>$ap->id)))->setText('Zobrazit uživatele');
             }
 
             $this->template->table = $table;
@@ -127,6 +129,8 @@ class ApPresenter extends BasePresenter {
                 ->setRequired('GPS souřadnice na Google mapě. Zeměpisná šířka jako reálné číslo, čárka, zeměpisná délka jako reálné číslo. Např. 50.22795,15.834133')
                 ->setOption('description', 'GPS souřadnice na Google mapě. Zeměpisná šířka jako reálné číslo, čárka, zeměpisná délka jako reálné číslo. Např. 50.22795,15.834133')
                 ->addRule(Form::PATTERN, 'Zeměpisné souřadnice prosím zadejte ve formátu 50.xxxxxx,15.xxxxxx (bez světových stran, bez mezer, odděleno čárkou)', '^\d{2}.\d{1,8},\d{2}.\d{1,8}$');
+        $form->addCheckBox('no_auto_dns', 'Nechci automaticky generovat DNS z UserDB', 30)->setDefaultValue(false);
+        $form->addCheckBox('no_auto_upgrade', 'Nechci automaticky upgradovat RouterOS', 30)->setDefaultValue(false);
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);
         $dataIp = $this->ipAdresa;
         $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
@@ -186,7 +190,17 @@ class ApPresenter extends BasePresenter {
             $values = $this->ap->getAP($this->getParam('id'));
             if($values) {
                 foreach($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
-                    $form["ip"][$ip_id]->setValues($ip_data);
+                    if($ip_data->heslo_sifrovane == 1)
+					{
+                        //\Tracy\Dumper::dump($ip_data->heslo);
+                        $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
+                        $ipdata = $ip_data->toArray();
+                        $ipdata['heslo'] = $decrypted;
+                        $form["ip"][$ip_id]->setValues($ipdata);
+					}
+					else {
+						$form["ip"][$ip_id]->setValues($ip_data);
+					}
                 }
                 foreach($values->related('Subnet.Ap_id') as $subnet_id => $subnet_data) {
                     $form["subnet"][$subnet_id]->setValues($subnet_data);
@@ -315,6 +329,10 @@ class ApPresenter extends BasePresenter {
         {
             $ip->Ap_id = $idAP;
             $idIp = $ip->id;
+
+            $ip->heslo = $this->cryptosvc->encrypt($ip->heslo);
+            $ip->heslo_sifrovane = 1;
+
             if(empty($ip->id)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);

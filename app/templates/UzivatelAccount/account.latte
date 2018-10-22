@@ -4,6 +4,12 @@
 
 <br><br>
 {if $canViewOrEdit}
+
+<table class="table table-nonfluid">
+<tr><th>Souhrn členských příspěvků</th><td>{$sum_input}</td></tr>
+<tr><th>Souhrn stržených členských příspěvků</th><td>{$sum_output}</td></tr>
+</table>
+
 {control accountgrid}
 {else}
     <p>Na tuto operaci nemáte oprávnění!</p>

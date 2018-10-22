@@ -5,7 +5,7 @@
 {if $canViewOrEdit}
 <a href="{link Ap:edit id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
 {/if}
-<a href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-user"></i> Zobrazit uživatele</a>
+<a href="{link UzivatelList:list id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-user"></i> Zobrazit uživatele</a>
 <br><br>
 <pre>
 {$ap->poznamka}

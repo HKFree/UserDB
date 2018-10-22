@@ -53,6 +53,7 @@ INSERT INTO `TypCestnehoClenstvi` (`id`, `text`) VALUES
 --
 
 INSERT INTO `TypClenstvi` (`id`, `text`) VALUES
+(0, 'plánované'),
 (1, 'zrušeno'),
 (2, 'primární'),
 (3, 'řádné');

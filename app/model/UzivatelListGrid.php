@@ -9,7 +9,7 @@ use Nette,
 /**
  * @author
  */
-class UzivatelListGrid extends Nette\Object
+class UzivatelListGrid
 {
     private $uzivatel;
     private $ap;

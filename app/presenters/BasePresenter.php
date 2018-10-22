@@ -43,7 +43,6 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         parent::__construct();
         parent::beforeRender();
 
-        //$this->template->oblasti = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
         $this->template->oblasti = $this->oblast->getSeznamOblasti();
 
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
@@ -72,7 +71,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
             $ap = $ipIsInAp->fetch();
             $this->redirect('Ap:show', array('id'=>$ap->id));
         }
-        $this->redirect('Uzivatel:listall', array('search' => $values->search, 'id' => null));
+        $this->redirect('UzivatelList:listall', array('search' => $values->search, 'id' => null));
     }
 
     protected function getSubnetLinkFromIpAddress($ipAddress) {

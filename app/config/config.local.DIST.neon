@@ -9,6 +9,8 @@ parameters:
 			userName: 'tester'
 	igw1IpCheckerUrl: http://localhost/
 	igw2IpCheckerUrl: http://localhost/
+	#generate like this: $ vendor/bin/generate-defuse-key
+	encryptionPassphrase: xxx
 	googleMapsApiKey: xxx
 
 # PRODUCTION

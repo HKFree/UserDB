@@ -1,0 +1,1 @@
+ALTER TABLE `Uzivatel` ADD `gdpr_sledovanitv_date` DATETIME NULL AFTER `gdpr_sledovanitv`;
