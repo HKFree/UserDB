@@ -37,7 +37,6 @@ class UzivatelPresenter extends BasePresenter
     private $log;
     private $subnet;
     private $sloucenyUzivatel;
-    private $prichoziPlatba;
     private $parameters;
     private $accountActivation;
     private $povoleneSMTP;
@@ -45,7 +44,7 @@ class UzivatelPresenter extends BasePresenter
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    function __construct(Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\PrichoziPlatba $platba, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -60,7 +59,6 @@ class UzivatelPresenter extends BasePresenter
         $this->log = $log;
         $this->subnet = $subnet;
         $this->sloucenyUzivatel = $slUzivatel;
-        $this->prichoziPlatba = $platba;
         $this->parameters = $parameters;
         $this->accountActivation = $accActivation;
         $this->povoleneSMTP = $alowedSMTP;
