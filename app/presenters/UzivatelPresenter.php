@@ -38,13 +38,13 @@ class UzivatelPresenter extends BasePresenter
     private $subnet;
     private $sloucenyUzivatel;
     private $parameters;
-    private $accountActivation;
     private $povoleneSMTP;
     private $cryptosvc;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    function __construct(Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+
+    function __construct(Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -60,48 +60,7 @@ class UzivatelPresenter extends BasePresenter
         $this->subnet = $subnet;
         $this->sloucenyUzivatel = $slUzivatel;
         $this->parameters = $parameters;
-        $this->accountActivation = $accActivation;
         $this->povoleneSMTP = $alowedSMTP;
-    }
-
-    public function actionMoneyActivate() {
-        $id = $this->getParameter('id');
-        if($id)
-        {
-            if($this->accountActivation->activateAccount($this->getUser(), $id))
-            {
-                $this->flashMessage('Účet byl aktivován.');
-            }
-
-            $this->redirect('Uzivatel:show', array('id'=>$id));
-        }
-    }
-
-    public function actionMoneyReactivate() {
-        $id = $this->getParameter('id');
-        if($id)
-        {
-            $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
-            if($result != '')
-            {
-                $this->flashMessage($result);
-            }
-
-            $this->redirect('Uzivatel:show', array('id'=>$id));
-        }
-    }
-
-    public function actionMoneyDeactivate() {
-        $id = $this->getParameter('id');
-        if($id)
-        {
-            if($this->accountActivation->deactivateAccount($this->getUser(), $id))
-            {
-                $this->flashMessage('Účet byl deaktivován.');
-            }
-
-            $this->redirect('Uzivatel:show', array('id'=>$id));
-        }
     }
 
     public function generatePdf($uzivatel)
