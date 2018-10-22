@@ -11,6 +11,8 @@ parameters:
 	urlPrefix: '/userdb'
 	salt: %env.USERDB_SALT%
 	https: false
+	debug:
+		fakeUser: false
 
 php:
 	date.timezone: Europe/Prague
