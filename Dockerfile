@@ -57,5 +57,7 @@ RUN composer install
 
 FROM userdb-runtime
 
+RUN echo "" > app/config/config.local.neon
+
 # copy application (bind volume to the path during development in order to override the baked-in app version)
 COPY . /opt/userdb
