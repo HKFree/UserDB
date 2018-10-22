@@ -48,7 +48,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         $grid->setRowCallback(function ($item, $tr) use ($presenter){
                 if($item->PrichoziPlatba_id)
                 {
-                    $tr->onclick = "window.location='".$presenter->link('Uzivatel:platba', array('id'=>$item->PrichoziPlatba_id))."'";
+                    $tr->onclick = "window.location='".$presenter->link('UzivatelAccount:platba', array('id'=>$item->PrichoziPlatba_id))."'";
                 }
                 return $tr;
             });
