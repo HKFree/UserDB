@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Model;
+namespace App\Services;
 
 use Nette,
     PdfResponse\PdfResponse,
+    App\Model,
     DateInterval;
 
 /**
@@ -13,7 +14,7 @@ class PdfGenerator
 {
     private $subnet;
 
-    function __construct(Subnet $subnet) {
+    function __construct(Model\Subnet $subnet) {
         $this->subnet = $subnet;
     }
     

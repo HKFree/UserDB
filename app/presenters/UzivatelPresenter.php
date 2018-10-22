@@ -4,16 +4,13 @@ namespace App\Presenters;
 
 use Nette,
     App\Model,
+    App\Services,
     Nette\Application\UI\Form,
     Nette\Forms\Container,
     Nette\Utils\Html,
-    Grido\Grid,
     Tracy\Debugger,
-    Nette\Mail\Message,
     Nette\Utils\Validators,
-    Nette\Mail\SendmailMailer,
     Nette\Utils\Strings,
-    PdfResponse\PdfResponse,
     App\Components;
 
 use Nette\Forms\Controls\SubmitButton;
@@ -41,11 +38,12 @@ class UzivatelPresenter extends BasePresenter
     private $povoleneSMTP;
     private $cryptosvc;
     private $pdfGenerator;
+    private $mailService;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    function __construct(Model\PdfGenerator $pdf, Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -63,85 +61,166 @@ class UzivatelPresenter extends BasePresenter
         $this->parameters = $parameters;
         $this->povoleneSMTP = $alowedSMTP;
         $this->pdfGenerator = $pdf;
+        $this->mailService = $mailsvc;
     }
 
-    public function mailPdf($pdf, $uzivatel)
-    {
+    public function sendNotificationEmail($idUzivatele) {
+        
+        $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getUser()->getIdentity()->getId());
+
+        $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
+    }
+
+    public function sendRegistrationEmail($idUzivatele) {
+
+        $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+
+        $hash = base64_encode($idUzivatele.'-'.md5($this->context->parameters["salt"].$newUser->zalozen));
+        $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
+
         $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
 
-        $mail = new Message;
-        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-            ->addTo($uzivatel->email)
-            ->addTo($so->email)
-            ->setSubject('Registrační formulář člena hkfree.org z.s.')
-            ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem hkfree.org z.s.');
+        $this->mailService->sendConfirmationRequest($newUser, $so, $link);
+        $this->mailService->sendConfirmationRequestCopy($newUser, $so);
 
-        $temp_file = tempnam(sys_get_temp_dir(), 'registrace');
-        $pdf->outputName = $temp_file;
-        $pdf->outputDestination = PdfResponse::OUTPUT_FILE;
-        $pdf->send($this->getHttpRequest(), $this->getHttpResponse());
-        $mail->addAttachment('hkfree-registrace-'.$uzivatel->id.'.pdf', file_get_contents($temp_file));
-
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. INTERNET BUDE FUNGOVAT DO 15 MINUT.');
     }
 
-    public function actionSendRegActivation() {
+    public function renderConfirm()
+    {
         if($this->getParam('id'))
         {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
-    	    {
-                $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
-                $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
+            list($uid, $hash) = explode('-', base64_decode($this->getParam('id')));
 
+            if($uzivatel = $this->uzivatel->getUzivatel($uid))
+    	    {
+                if($uzivatel->regform_downloaded_password_sent==0 && $hash == md5($this->context->parameters["salt"].$uzivatel->zalozen))
+                {
+                    $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
+                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+
+                    $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getUser()->getIdentity()->getId());
+                }
+    		    $this->template->stav = true;
+    	    }
+	        else
+            {
+              $this->template->stav = false;
+            }
+        }
+        else {
+            $this->template->stav = false;
+        }
+    }
+
+    public function renderShow()
+    {
+    	if($this->getParam('id'))
+    	{
+            $uid = $this->getParam('id');
+    	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
+    	    {
                 $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-                $mail = new Message;
-                $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-                    ->addTo($uzivatel->email)
-                    ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s.')
-                    ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
-                                  'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
-                                  'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
-                                  'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
-                                  'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
-                                  'S pozdravem hkfree.org z.s.');
-                $mailer = new SendmailMailer;
-                $mailer->send($mail);
+                $this->template->heslo = base64_decode($_SERVER['initials']);
 
-                $mailso = new Message;
-                $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-                    ->addTo($so->email)
-                    ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s.')
-                    ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
-                                  'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel.....<br><br>'.
-                                  'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
-                                  'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
-                                  'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
-                                  'S pozdravem hkfree.org z.s.');
-                $mailer->send($mailso);
+                $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
+                $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
+                $posledniPlatba = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',1)->order('id DESC')->limit(1);
+                if($posledniPlatba->count() > 0)
+                    {
+                        $posledniPlatbaData = $posledniPlatba->fetch();
+                        $this->template->money_lastpay = ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+                    }
+                    else
+                    {
+                        $this->template->money_lastpay = "?";
+                    }
+                $posledniAktivace = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',array(4, 5))->order('id DESC')->limit(1);
+                if($posledniAktivace->count() > 0)
+                    {
+                        $posledniAktivaceData = $posledniAktivace->fetch();
+                        $this->template->money_lastact = ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
+                    }
+                    else
+                    {
+                        $this->template->money_lastact = "?";
+                    }
+                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
+                if(!$stavUctu || $stavUctu=='') $stavUctu=0;
 
-                $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
+                if($uzivatel->kauce_mobil > 0)
+                {
+                    $this->template->money_bal = ($stavUctu - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
+                }
+                else{
+                    $this->template->money_bal = $stavUctu;
+                }
 
-                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));
-            }
-        }
+                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
+                if(!$stavUctuDph || $stavUctuDph=='') $stavUctuDph=0;
+                $this->template->money_dph = $stavUctuDph;
+
+                if($this->sloucenyUzivatel->getIsAlreadyMaster($uid))
+                {
+                    $this->flashMessage('Uživatel má pod sebou sloučené uživatele.');
+                    $this->template->slaves = $this->sloucenyUzivatel->getSlaves($uid);
+                }
+                else
+                {
+                    $this->template->slaves = null;
+                }
+                if($this->sloucenyUzivatel->getIsAlreadySlave($uid))
+                {
+                    $this->flashMessage('Uživatel byl sloučen pod jiného uživatele.');
+                    $this->template->master = $this->sloucenyUzivatel->getMaster($uid);
+                    //\Tracy\Dumper::dump($this->sloucenyUzivatel->getMaster($uid));
+                }
+                else
+                {
+                    $this->template->master = null;
+                }
+
+    		    $this->template->u = $uzivatel;
+
+                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
+
+                $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
+                $wewimoLinks = $this->getWewimoLinksFromIPs($ipAdresy);
+
+                $uzivatelEditLink = $this->link('Uzivatel:edit', array('id' => $uid));
+    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $wewimoLinks, $uzivatelEditLink, $this->getParameter('igw', false), Array($this, "linker"));
+
+                if($ipAdresy->count() > 0)
+                {
+                    $this->template->adresyline = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
+                }
+                else
+                {
+                    $this->template->adresyline = null;
+                }
+
+                $apcko = $this->ap->getAP($so->Ap_id);
+                $subnety = $apcko->related('Subnet.Ap_id');
+                $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
+                //\Tracy\Dumper::dump($seznamUzivatelu);
+
+                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
+                                                    || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
+                                                    || in_array($uid,$seznamUzivatelu);
+                $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
+
+                $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
+                $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
+                                                        || ($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1);
+                $this->template->deactivaceVisible = $uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 0;
+
+                $this->template->igw = $this->getParameter("igw", false);
+    	    }
+    	}
     }
 
-    public function actionExportAndSendRegForm() {
-        if($this->getParam('id'))
-        {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
-    	    {
-                $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
-
-                $this->mailPdf($pdf, $uzivatel);
-
-                $this->flashMessage('E-mail byl odeslán.');
-
-                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));
-            }
-        }
+    public function createComponentLogTable() {
+        return $this->logTableFactory->create($this);
     }
 
     public function renderEdit()
@@ -161,33 +240,6 @@ class UzivatelPresenter extends BasePresenter
         else
         {
           $this->template->canViewOrEdit = true;
-        }
-    }
-
-    public function renderConfirm()
-    {
-        if($this->getParam('id'))
-        {
-            list($uid, $hash) = explode('-', base64_decode($this->getParam('id')));
-
-            if($uzivatel = $this->uzivatel->getUzivatel($uid))
-    	    {
-                if($uzivatel->regform_downloaded_password_sent==0 && $hash == md5($this->context->parameters["salt"].$uzivatel->zalozen))
-                {
-                    $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
-
-                    $this->mailPdf($pdf, $uzivatel);
-                }
-    		    $this->template->stav = true;
-    	    }
-	        else
-            {
-              $this->template->stav = false;
-            }
-        }
-        else {
-            $this->template->stav = false;
         }
     }
 
@@ -359,91 +411,6 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
         }
-    }
-
-    public function sendNotificationEmail($idUzivatele) {
-        
-        $newUser = $this->uzivatel->getUzivatel($idUzivatele);
-
-        $mailer = new SendmailMailer;
-        
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-
-        $mailso = new Message;
-        $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-            ->addTo($so->email)
-            ->setSubject('NOTIFIKACE - Nový plánovaný člen - UID '.$idUzivatele)
-            ->setHTMLBody('V DB je zadán nový plánovaný člen ve Vaší oblasti s UID '.$idUzivatele.'<br><br>'.
-                            'AP: '.$newUser->Ap->jmeno.'<br><br>'.
-                            'Jméno: '.$newUser->jmeno.' '.$newUser->prijmeni.'<br><br>'.
-                            'Adresa: '.$newUser->ulice_cp.', '.$newUser->psc.' '.$newUser->mesto.'<br><br>'.
-                            'https://userdb.hkfree.org/userdb/uzivatel/show/'.$idUzivatele.'<br><br>'.
-                            'Bude pravděpodobně následovat připojení od techniků<br><br>'.
-                            'Prosím zkontrolujte si adresu přípojného místa a pokud máte pro techniky nějaké informace tak je kontaktujte.<br><br>'.
-                            'S pozdravem UserDB');
-        if (!empty($so->email2))
-        {
-            $mailso->addTo($so->email2);
-        }
-
-        $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($idUzivatele);
-        foreach ($seznamSpravcu as $sou) {
-            $mailso->addTo($sou->email);
-        }
-        $mailer->send($mailso);
-
-        $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
-        
-    }
-
-    public function sendRegistrationEmail($idUzivatele) {
-
-        $newUser = $this->uzivatel->getUzivatel($idUzivatele);
-
-        $hash = base64_encode($idUzivatele.'-'.md5($this->context->parameters["salt"].$newUser->zalozen));
-        $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
-
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-        $mail = new Message;
-        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-            ->addTo($newUser->email)
-            ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
-            ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
-                          'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
-                          'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
-                          'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
-                          'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
-                          'S pozdravem hkfree.org z.s.');
-        if (!empty($newUser->email2))
-        {
-           $mail->addTo($newUser->email2);
-        }
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
-
-        $mailso = new Message;
-        $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-            ->addTo($so->email)
-            ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$idUzivatele)
-            ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
-                          'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID '.$idUzivatele.'<br><br>'.
-                          'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
-                          'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
-                          'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
-                          'S pozdravem hkfree.org z.s.');
-        if (!empty($so->email2))
-        {
-            $mailso->addTo($so->email2);
-        }
-
-        $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($idUzivatele);
-        foreach ($seznamSpravcu as $sou) {
-            $mailso->addTo($sou->email);
-        }
-        $mailer->send($mailso);
-
-        $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. INTERNET BUDE FUNGOVAT DO 15 MINUT.');
-
     }
 
     public function uzivatelFormSucceded($form, $values) {
@@ -624,115 +591,5 @@ class UzivatelPresenter extends BasePresenter
 
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele));
     	return true;
-    }
-
-    public function renderShow()
-    {
-    	if($this->getParam('id'))
-    	{
-            $uid = $this->getParam('id');
-    	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
-    	    {
-                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-                $this->template->heslo = base64_decode($_SERVER['initials']);
-
-                $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
-                $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
-                $posledniPlatba = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',1)->order('id DESC')->limit(1);
-                if($posledniPlatba->count() > 0)
-                    {
-                        $posledniPlatbaData = $posledniPlatba->fetch();
-                        $this->template->money_lastpay = ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
-                    }
-                    else
-                    {
-                        $this->template->money_lastpay = "?";
-                    }
-                $posledniAktivace = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id',array(4, 5))->order('id DESC')->limit(1);
-                if($posledniAktivace->count() > 0)
-                    {
-                        $posledniAktivaceData = $posledniAktivace->fetch();
-                        $this->template->money_lastact = ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
-                    }
-                    else
-                    {
-                        $this->template->money_lastact = "?";
-                    }
-                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
-                if(!$stavUctu || $stavUctu=='') $stavUctu=0;
-
-                if($uzivatel->kauce_mobil > 0)
-                {
-                    $this->template->money_bal = ($stavUctu - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
-                }
-                else{
-                    $this->template->money_bal = $stavUctu;
-                }
-
-                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
-                if(!$stavUctuDph || $stavUctuDph=='') $stavUctuDph=0;
-                $this->template->money_dph = $stavUctuDph;
-
-                if($this->sloucenyUzivatel->getIsAlreadyMaster($uid))
-                {
-                    $this->flashMessage('Uživatel má pod sebou sloučené uživatele.');
-                    $this->template->slaves = $this->sloucenyUzivatel->getSlaves($uid);
-                }
-                else
-                {
-                    $this->template->slaves = null;
-                }
-                if($this->sloucenyUzivatel->getIsAlreadySlave($uid))
-                {
-                    $this->flashMessage('Uživatel byl sloučen pod jiného uživatele.');
-                    $this->template->master = $this->sloucenyUzivatel->getMaster($uid);
-                    //\Tracy\Dumper::dump($this->sloucenyUzivatel->getMaster($uid));
-                }
-                else
-                {
-                    $this->template->master = null;
-                }
-
-    		    $this->template->u = $uzivatel;
-
-                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
-
-                $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
-                $wewimoLinks = $this->getWewimoLinksFromIPs($ipAdresy);
-
-                $uzivatelEditLink = $this->link('Uzivatel:edit', array('id' => $uid));
-    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $wewimoLinks, $uzivatelEditLink, $this->getParameter('igw', false), Array($this, "linker"));
-
-                if($ipAdresy->count() > 0)
-                {
-                    $this->template->adresyline = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
-                }
-                else
-                {
-                    $this->template->adresyline = null;
-                }
-
-                $apcko = $this->ap->getAP($so->Ap_id);
-                $subnety = $apcko->related('Subnet.Ap_id');
-                $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
-                //\Tracy\Dumper::dump($seznamUzivatelu);
-
-                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
-                                                    || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
-                                                    || in_array($uid,$seznamUzivatelu);
-                $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
-
-                $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
-                $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
-                                                        || ($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1);
-                $this->template->deactivaceVisible = $uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 0;
-
-                $this->template->igw = $this->getParameter("igw", false);
-    	    }
-    	}
-    }
-
-    public function createComponentLogTable() {
-        return $this->logTableFactory->create($this);
     }
 }

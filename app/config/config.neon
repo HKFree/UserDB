@@ -59,7 +59,8 @@ services:
 	spravceOblasti: App\Model\SpravceOblasti
 	cestneClenstviUzivatele: App\Model\CestneClenstviUzivatele
 	log: App\Model\Log
-	pdfGenerator: App\Model\PdfGenerator
+	pdfGenerator: App\Services\PdfGenerator
+	mailService: App\Services\MailService
 	povoleneSMTP: App\Model\PovoleneSMTP
 	accountActivation: App\Model\AccountActivation
 	logTableFactory: App\Components\LogTableFactory

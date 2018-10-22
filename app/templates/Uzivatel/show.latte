@@ -10,9 +10,9 @@
     <a href="{link UzivatelMailSms:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS</a>
     <a href="{link UzivatelActions:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-file"></i> Registrační formulář</a>
     {if $u->regform_downloaded_password_sent==0}
-    <a href="{link Uzivatel:sendRegActivation id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat znovu aktivační link e-mailem</a>
+    <a href="{link UzivatelActions:sendRegActivation id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat znovu aktivační link e-mailem</a>
     {else}
-    <a href="{link Uzivatel:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>
+    <a href="{link UzivatelActions:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>
     {/if}
     <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Materna</a>
     {/if}
