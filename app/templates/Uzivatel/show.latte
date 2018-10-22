@@ -4,8 +4,8 @@
     <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     {if $canViewOrEdit}
     <a href="{link Uzivatel:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
-    <a href="{link Uzivatel:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a>
-    <a href="{link Uzivatel:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a>
+    <a href="{link UzivatelRightsCc:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a>
+    <a href="{link UzivatelRightsCc:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a>
     <a href="{link UzivatelMailSms:email id=>$u->id}" class="btn btn-default btn-sm" role="button"><b>@</b> Odeslat E-mail</a>
     <a href="{link UzivatelMailSms:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS</a>
     <a href="{link Uzivatel:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-file"></i> Registrační formulář</a>
