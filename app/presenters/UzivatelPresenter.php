@@ -17,14 +17,12 @@ use Nette,
     App\Components;
 
 use Nette\Forms\Controls\SubmitButton;
+
 /**
  * Uzivatel presenter.
  */
 class UzivatelPresenter extends BasePresenter
 {
-    /** @persistent */
-    public $money = 0;
-
     private $spravceOblasti;
     private $cestneClenstviUzivatele;
     private $typClenstvi;
@@ -40,7 +38,6 @@ class UzivatelPresenter extends BasePresenter
     private $subnet;
     private $sloucenyUzivatel;
     private $prichoziPlatba;
-    private $tabulkaUzivatelu;
     private $parameters;
     private $accountActivation;
     private $povoleneSMTP;
@@ -48,7 +45,7 @@ class UzivatelPresenter extends BasePresenter
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    function __construct(Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\PrichoziPlatba $platba, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -64,7 +61,6 @@ class UzivatelPresenter extends BasePresenter
         $this->subnet = $subnet;
         $this->sloucenyUzivatel = $slUzivatel;
         $this->prichoziPlatba = $platba;
-        $this->tabulkaUzivatelu = $ULGrid;
         $this->parameters = $parameters;
         $this->accountActivation = $accActivation;
         $this->povoleneSMTP = $alowedSMTP;
@@ -630,7 +626,7 @@ class UzivatelPresenter extends BasePresenter
                 $existinguserIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
                 $this->uzivatel->delete(array('id' => array($idUzivatele)));
-                $this->redirect('Uzivatel:list', array('id'=>$olduzivatel->Ap_id));
+                $this->redirect('UzivatelList:list', array('id'=>$olduzivatel->Ap_id));
                 return true;
             }
 
@@ -728,79 +724,6 @@ class UzivatelPresenter extends BasePresenter
 
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele));
     	return true;
-    }
-
-    protected function createComponentGrid($name)
-    {
-        $this->tabulkaUzivatelu->getListOfUsersGrid($this,
-                                            $name,
-                                            $this->getUser(),
-                                            $this->getParameter('id'),
-                                            $this->getParameter('money', false),
-                                            $this->getParameter('fullnotes', false),
-                                            $this->getParameter('search', false)
-                                            );
-
-    }
-
-    protected function createComponentOthersGrid($name)
-    {
-        $this->tabulkaUzivatelu->getListOfOtherUsersGrid($this,
-                                            $name,
-                                            $this->getUser(),
-                                            $this->getParameter('id'),
-                                            $this->getParameter('money', false),
-                                            $this->getParameter('fullnotes', false),
-                                            $this->getParameter('search', false)
-                                            );
-
-    }
-
-    public function renderListall()
-    {
-        $search = $this->getParameter('search', false);
-        if(!$search)
-            {
-            $cestnych = count($this->cestneClenstviUzivatele->getListCC());
-                $this->template->u_celkem = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",1)->count("*");
-                $this->template->u_celkemz = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?",0)->count("*");
-                $this->template->u_aktivnich = $this->uzivatel->getSeznamUzivatelu()->where("money_aktivni=?",1)->count("*");
-                $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",1)->count("*");
-                $this->template->u_primarnich = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",2)->count("*");
-                $this->template->u_radnych = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id=?",3)->count("*")-$cestnych;
-                $this->template->u_cestnych = $cestnych;
-            }
-
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-        $this->template->money = $this->getParameter("money", false);
-        $this->template->search = $this->getParameter('search', false);
-    }
-
-    public function renderList()
-    {
-        // otestujeme, jestli máme id APčka a ono existuje
-    	if($this->getParameter('id') && $apt = $this->ap->getAP($this->getParameter('id')))
-    	{
-            $id=$this->getParameter('id');
-            $cestnych = count($this->cestneClenstviUzivatele->getListCCOfAP($id));
-            $this->template->u_celkem = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",1)->count("*");
-            $this->template->u_celkemz = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?",0)->count("*");
-            $this->template->u_aktivnich = $this->uzivatel->getSeznamUzivateluZAP($id)->where("money_aktivni=?",1)->count("*");
-            $this->template->u_zrusenych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",1)->count("*");
-            $this->template->u_primarnich = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",2)->count("*");
-            $this->template->u_radnych = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id=?",3)->count("*")-$cestnych;
-            $this->template->u_cestnych = $cestnych;
-
-
-    	    $this->template->ap = $apt;
-            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
-    	} else {
-            $this->flashMessage("Chyba, AP s tímto ID neexistuje.", "danger");
-            $this->redirect("Homepage:default", array("id"=>null)); // a přesměrujeme
-    	}
-
-        $this->template->money = $this->getParameter("money", false);
-        $this->template->fullnotes = $this->getParameter("fullnotes", false);
     }
 
     public function renderShow()

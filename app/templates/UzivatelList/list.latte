@@ -8,12 +8,12 @@
 
 &nbsp;&nbsp;
 {if $canViewOrEdit}
-<a n:if="!$money" href="{link Uzivatel:list id=>$ap->id, money=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit informace z money"><i class="glyphicon glyphicon-unchecked"></i> Informace z money</a>
+<a n:if="!$money" href="{link UzivatelList:list id=>$ap->id, money=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit informace z money"><i class="glyphicon glyphicon-unchecked"></i> Informace z money</a>
 {/if}
-<a n:if="$money" href="{link Uzivatel:list id=>$ap->id, money=>0}" class="btn btn-default btn-sm active" role="button" title="Skrýt informace z money"><i class="glyphicon glyphicon-check"></i> Informace z money</a>
+<a n:if="$money" href="{link UzivatelList:list id=>$ap->id, money=>0}" class="btn btn-default btn-sm active" role="button" title="Skrýt informace z money"><i class="glyphicon glyphicon-check"></i> Informace z money</a>
 
-<a n:if="$fullnotes" href="{link Uzivatel:list id=>$ap->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit zkrácené poznámky a adresy"><i class="glyphicon glyphicon-check"></i> Kompletní poznámky a adresy</a>
-<a n:if="!$fullnotes" href="{link Uzivatel:list id=>$ap->id, fullnotes=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit kompletní poznámky a adresy"><i class="glyphicon glyphicon-unchecked"></i> Kompletní poznámky a adresy</a>
+<a n:if="$fullnotes" href="{link UzivatelList:list id=>$ap->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit zkrácené poznámky a adresy"><i class="glyphicon glyphicon-check"></i> Kompletní poznámky a adresy</a>
+<a n:if="!$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit kompletní poznámky a adresy"><i class="glyphicon glyphicon-unchecked"></i> Kompletní poznámky a adresy</a>
 
 <br><br>
 

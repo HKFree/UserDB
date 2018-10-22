@@ -187,7 +187,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $this->flashMessage('E-mail byl odeslán.');
 
-    	$this->redirect('Uzivatel:list', array('id'=>$this->getParam('id')));
+    	$this->redirect('UzivatelList:list', array('id'=>$this->getParam('id')));
     	return true;
     }
 
@@ -304,7 +304,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $this->flashMessage('SMS byly odeslány. Output: ' . $output);
 
-    	$this->redirect('Uzivatel:list', array('id'=>$this->getParam('id')));
+    	$this->redirect('UzivatelList:list', array('id'=>$this->getParam('id')));
     	return true;
     }
 }

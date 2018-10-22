@@ -71,7 +71,7 @@ class ApPresenter extends BasePresenter {
                 $tdAkce->addText(' - ');
                 $tdAkce->create('a')->href($this->link('Ap:edit', array('id'=>$ap->id)))->setText('Editovat');
                 $tdAkce->addText(' - ');
-                $tdAkce->create('a')->href($this->link('Uzivatel:list', array('id'=>$ap->id)))->setText('Zobrazit uživatele');
+                $tdAkce->create('a')->href($this->link('UzivatelList:list', array('id'=>$ap->id)))->setText('Zobrazit uživatele');
             }
 
             $this->template->table = $table;
