@@ -41,9 +41,13 @@ class Authenticator implements Security\IAuthenticator
             $args = array('nick' => $this->fakeUser["userName"]);
             $_SERVER['initials']="password";
         }
-        else
+        else if(array_key_exists('givenName', $_SERVER))
         {
             $args = array('nick' => $_SERVER['givenName']);
+        }
+        else
+        {
+            $args = array('nick' => 'NoNickFound');
         }
         $date = new DateTime();
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
