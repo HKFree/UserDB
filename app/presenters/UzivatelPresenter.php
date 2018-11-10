@@ -334,7 +334,6 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
     	$form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 50, 12);
-        $form->addTextArea('gpg', 'GPG klíč', 50, 12);
     	$form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
         $form->addSelect('index_potizisty', 'Index spokojenosti člena', array(0=>0,1=>1,2=>2,3=>3,4=>4,5=>5))->setDefaultValue(0);
     	$form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
