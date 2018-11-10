@@ -797,7 +797,7 @@ class UzivatelPresenter extends BasePresenter
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
                 $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-                $this->template->heslo = base64_decode($_SERVER['initials']);
+                $this->template->heslo = base64_decode($_SERVER['HTTP_INITIALS']);
 
                 $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
                 $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
@@ -1245,7 +1245,7 @@ class UzivatelPresenter extends BasePresenter
         $locale = 'cs_CZ.UTF-8';
         setlocale(LC_ALL, $locale);
         putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$user->telefon.' "'.$values->message.'"');
+        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['HTTP_INITIALS']).' -d '.$user->telefon.' "'.$values->message.'"');
         $output = shell_exec($command);
 
         $this->flashMessage('SMS byla odeslána. Output: ' . $output);
@@ -1313,7 +1313,7 @@ class UzivatelPresenter extends BasePresenter
         $locale = 'cs_CZ.UTF-8';
         setlocale(LC_ALL, $locale);
         putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$tls.' "'.$values->message.'"');
+        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['HTTP_INITIALS']).' -d '.$tls.' "'.$values->message.'"');
         $output = shell_exec($command);
 
         $this->flashMessage('SMS byly odeslány. Output: ' . $output);

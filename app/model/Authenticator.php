@@ -39,7 +39,7 @@ class Authenticator implements Security\IAuthenticator
         {
             $userID = $this->fakeUser["userID"];
             $args = array('nick' => $this->fakeUser["userName"]);
-            $_SERVER['initials']="password";
+            $_SERVER['HTTP_INITIALS']="password";
         }
         else
         {
