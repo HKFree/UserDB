@@ -67,3 +67,4 @@ COPY . /opt/userdb
 # make some dirs writable by apache httpd
 RUN chmod 777 -R /opt/userdb/log
 RUN chmod 777 -R /opt/userdb/temp
+RUN chmod 777 -R /opt/userdb/vendor/mpdf/mpdf/tmp
