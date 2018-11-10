@@ -89,3 +89,6 @@ database:
 mail:
     smtp: true # zapne SmtpMailer místo SendmailMailer
     host: smtp.hkfree.org
+
+http:
+    proxy: 172.17.0.0/16

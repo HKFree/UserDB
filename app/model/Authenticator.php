@@ -43,7 +43,7 @@ class Authenticator implements Security\IAuthenticator
         }
         else
         {
-            $args = array('nick' => $_SERVER['givenName']);
+            $args = array('nick' => $_SERVER['HTTP_GIVENNAME']);
         }
         $date = new DateTime();
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();

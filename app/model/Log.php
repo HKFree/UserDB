@@ -12,8 +12,16 @@ class Log extends Table
 {
     private $typZarizeni;
 
-    public function __construct(Nette\Database\Context $db, Nette\Security\User $user, TypZarizeni $t) {
+    private $request;
+
+    public function __construct(
+        Nette\Database\Context $db,
+        Nette\Security\User $user,
+        TypZarizeni $t,
+        Nette\Http\Request $request
+    ) {
         parent::__construct($db, $user);
+        $this->request = $request;
     }
 
     /**
@@ -184,7 +192,7 @@ class Log extends Table
 
         $spolecne = array(
             'Uzivatel_id' => $this->userService->getId(),
-            'ip_adresa' => $_SERVER['REMOTE_ADDR'],
+            'ip_adresa' => $this->request->getRemoteAddress(),
             'tabulka' => $tabulka,
             'tabulka_id' => $tabulka_id,
             'datum' => $ted
