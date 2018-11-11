@@ -51,7 +51,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         //$this->template->oblasti = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
         $this->template->oblasti = $this->oblast->getSeznamOblasti();
 
-        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
+        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
         if (count($oblastiSpravce) > 0) {
             $this->template->mojeOblasti = $this->oblast->formatujOblastiSAP($oblastiSpravce);
         } else {
@@ -134,5 +134,14 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      */
     public function linker($destination, $args=[]) {
         return($this->link($destination, $args));
+    }
+
+    public function getIdentity() : Model\HkfIdentity {
+        $i = $this->getUser()->getIdentity();
+        if ($i instanceof Model\HkfIdentity) {
+            return $i;
+        } else {
+            throw new Nette\InvalidStateException("Identity musi byt instance HkfreeIdentity");
+        }
     }
 }

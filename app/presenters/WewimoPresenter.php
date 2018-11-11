@@ -31,7 +31,7 @@ class WewimoPresenter extends BasePresenter
             $this->error('AP not found');
         } else {
             $this->template->ap = $apt;
-            $invokerStr = $this->getUser()->getId() . " (" . $this->getUser()->getIdentity()->nick . ")";
+            $invokerStr = $this->getIdentity()->getUid() . " (" . $this->getIdentity()->getNick() . ")";
             $wewimoMultiData = $this->wewimo->getWewimoFullData($apId, $invokerStr, $ip);
             // doplnit linky
             $this->addWewimoLinks($wewimoMultiData['devices']);

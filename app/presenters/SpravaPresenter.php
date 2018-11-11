@@ -34,8 +34,9 @@ class SpravaPresenter extends BasePresenter
     private $odchoziPlatba;
     private $stavBankovnihoUctu;
     private $googleMapsApiKey;
+    private $smsSender;
 
-    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\SpravceOblasti $sob, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa) {
+    function __construct(Model\SloucenyUzivatel $slUzivatel, Model\SpravceOblasti $sob, Model\StavBankovnihoUctu $stavuctu, Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\UzivatelskeKonto $konto, Model\Oblast $ob, Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\Log $log, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\SmsSender $smsSender) {
         $this->cestneClenstviUzivatele = $cc;
         $this->platneCC = $actualCC;
     	$this->uzivatel = $uzivatel;
@@ -49,6 +50,7 @@ class SpravaPresenter extends BasePresenter
         $this->odchoziPlatba = $odchplatba;
         $this->stavBankovnihoUctu = $stavuctu;
         $this->spravceOblasti = $sob;
+        $this->smsSender = $smsSender;
     }
 
     public function setGoogleMapsApiKey($googleMapsApiKey)
@@ -564,7 +566,7 @@ class SpravaPresenter extends BasePresenter
 
             if(empty($values->id)) {
                 $values->datum_slouceni = new Nette\Utils\DateTime;
-                $values->sloucil = $this->getUser()->getIdentity()->getId();
+                $values->sloucil = $this->getIdentity()->getUid();
                 $this->sloucenyUzivatel->insert($values);
             } else {
                 //$this->sloucenyUzivatel->update($idSlouceni, $values);
@@ -850,7 +852,7 @@ class SpravaPresenter extends BasePresenter
             }
             $values->PrichoziPlatba_id = $pPlatba->id;
             $values->datum = new Nette\Utils\DateTime;
-            $values->zmenu_provedl = $this->getUser()->getIdentity()->getId();
+            $values->zmenu_provedl = $this->getIdentity()->getUid();
             $values->castka = -$pPlatba->castka;
 
             if(empty($values->id)) {
@@ -964,6 +966,7 @@ class SpravaPresenter extends BasePresenter
           $sos = $this->spravceOblasti->getZSO();
         }
 
+        $validni = [];
         foreach($sos as $so)
         {
             $tl = $so->Uzivatel->telefon;
@@ -972,13 +975,8 @@ class SpravaPresenter extends BasePresenter
                 $validni[]=$tl;
             }
         }
-        $tls = join(",",array_values($validni));
 
-        $locale = 'cs_CZ.UTF-8';
-        setlocale(LC_ALL, $locale);
-        putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['HTTP_INITIALS']).' -d '.$tls.' "'.$values->message.'"');
-        $output = shell_exec($command);
+        $output = $this->smsSender->sendSms($this->getIdentity(), $validni, $values->message);
 
         $this->flashMessage('SMS byly odeslány. Output: ' . $output);
 

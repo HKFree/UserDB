@@ -45,10 +45,11 @@ class UzivatelPresenter extends BasePresenter
     private $parameters;
     private $accountActivation;
     private $povoleneSMTP;
+    private $smsSender;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    function __construct(Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\AccountActivation $accActivation, Model\UzivatelListGrid $ULGrid, Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\SmsSender $smsSender) {
     	$this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -70,6 +71,7 @@ class UzivatelPresenter extends BasePresenter
         $this->parameters = $parameters;
         $this->accountActivation = $accActivation;
         $this->povoleneSMTP = $alowedSMTP;
+        $this->smsSender = $smsSender;
     }
 
     public function actionMoneyActivate() {
@@ -164,7 +166,7 @@ class UzivatelPresenter extends BasePresenter
 
     public function mailPdf($pdf, $uzivatel)
     {
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
         $mail = new Message;
         $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
@@ -190,7 +192,7 @@ class UzivatelPresenter extends BasePresenter
                 $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
                 $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
 
-                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+                $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
                 $mail = new Message;
                 $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
                     ->addTo($uzivatel->email)
@@ -253,7 +255,7 @@ class UzivatelPresenter extends BasePresenter
     {
         if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
         {
-            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
             $apcko = $this->ap->getAP($so->Ap_id);
             $subnety = $apcko->related('Subnet.Ap_id');
             $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
@@ -303,7 +305,7 @@ class UzivatelPresenter extends BasePresenter
 
     	$aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
 
-        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
+        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
         if (count($oblastiSpravce) > 0) {
             $aps0 = $this->oblast->formatujOblastiSAP($oblastiSpravce);
             $aps = $aps0 + $aps;
@@ -460,7 +462,7 @@ class UzivatelPresenter extends BasePresenter
         
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
 
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
         $mailso = new Message;
         $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
@@ -496,7 +498,7 @@ class UzivatelPresenter extends BasePresenter
         $hash = base64_encode($idUzivatele.'-'.md5($this->context->parameters["salt"].$newUser->zalozen));
         $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
 
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         $mail = new Message;
         $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->addTo($newUser->email)
@@ -795,8 +797,8 @@ class UzivatelPresenter extends BasePresenter
             $uid = $this->getParam('id');
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
-                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-                $this->template->heslo = base64_decode($_SERVER['HTTP_INITIALS']);
+                $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+                $this->template->heslo = base64_decode($this->getIdentity()->getPasswordHash());
 
                 $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
                 $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
@@ -1099,7 +1101,7 @@ class UzivatelPresenter extends BasePresenter
     	foreach($prava as $pravo)
     	{
     	    $pravo->Uzivatel_id = $idUzivatele;
-            $pravo->zadost_podal = $this->getUser()->getIdentity()->getId();
+            $pravo->zadost_podal = $this->getIdentity()->getUid();
             $pravo->zadost_podana = new Nette\Utils\DateTime;
     	    $pravoId = $pravo->id;
 
@@ -1141,7 +1143,7 @@ class UzivatelPresenter extends BasePresenter
     	$form->addHidden('id');
 
         $user = $this->uzivatel->getUzivatel($this->getParam('id'));
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>'oblast'.$user->Ap->Oblast_id.'@hkfree.org'))->setDefaultValue(0);
 
         $form->addText('email', 'Příjemce', 70)->setDisabled(TRUE);
@@ -1178,7 +1180,7 @@ class UzivatelPresenter extends BasePresenter
 
         if($values->from == 0)
         {
-           $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+           $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
            $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->addTo($user->email)
             ->setSubject($values->subject)
@@ -1241,11 +1243,7 @@ class UzivatelPresenter extends BasePresenter
     public function smsFormSucceded($form, $values) {
     	$user = $this->uzivatel->getUzivatel($this->getParam('id'));
 
-        $locale = 'cs_CZ.UTF-8';
-        setlocale(LC_ALL, $locale);
-        putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['HTTP_INITIALS']).' -d '.$user->telefon.' "'.$values->message.'"');
-        $output = shell_exec($command);
+    	$output = $this->smsSender->sendSms($this->getIdentity(), [ $user->telefon ], $values->message);
 
         $this->flashMessage('SMS byla odeslána. Output: ' . $output);
 
@@ -1300,6 +1298,7 @@ class UzivatelPresenter extends BasePresenter
     	$ap = $this->ap->getAP($this->getParam('id'));
 
         $telefony = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'telefon');
+        $validni = [];
         foreach($telefony as $tl)
         {
             if(!empty($tl) && $tl!='missing')
@@ -1307,13 +1306,8 @@ class UzivatelPresenter extends BasePresenter
                 $validni[]=$tl;
             }
         }
-        $tls = join(",",array_values($validni));
 
-        $locale = 'cs_CZ.UTF-8';
-        setlocale(LC_ALL, $locale);
-        putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['HTTP_INITIALS']).' -d '.$tls.' "'.$values->message.'"');
-        $output = shell_exec($command);
+        $output = $this->smsSender->sendSms($this->getIdentity(), $validni, $values->message);
 
         $this->flashMessage('SMS byly odeslány. Output: ' . $output);
 
@@ -1336,7 +1330,7 @@ class UzivatelPresenter extends BasePresenter
             $ap = $this->ap->getAP($this->getParam('id'));
             $oblastMail='oblast'.$ap->Oblast_id.'@hkfree.org';
         }
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>$oblastMail))->setDefaultValue(0);
 
         $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(TRUE);
@@ -1382,7 +1376,7 @@ class UzivatelPresenter extends BasePresenter
         $mail = new Message;
         if($values->from == 0)
         {
-           $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+           $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
            $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->setSubject($values->subject)
             ->setBody($values->message);
