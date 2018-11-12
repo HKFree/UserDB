@@ -10,7 +10,7 @@ parameters:
 	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
 	urlPrefix: '/userdb'
 	salt: %env.USERDB_SALT%
-	https: false
+	https: true
 	debug:
 		fakeUser: false
 
