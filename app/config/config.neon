@@ -10,7 +10,6 @@ parameters:
 	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
 	urlPrefix: '/userdb'
 	salt: %env.USERDB_SALT%
-	https: true
 	debug:
 		fakeUser: false
 
@@ -41,7 +40,7 @@ migrations:
 services:
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
 	- App\RouterFactory
-	router: @App\RouterFactory::createRouter(%https%, %urlPrefix%)
+	router: @App\RouterFactory::createRouter(%urlPrefix%)
 	uzivatel: App\Model\Uzivatel
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto

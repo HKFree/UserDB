@@ -17,12 +17,12 @@ class RouterFactory
 	/**
 	 * @return \Nette\Application\IRouter
 	 */
-	public function createRouter($https, $urlPrefix)
+	public function createRouter($urlPrefix)
 	{
 		$router = new RouteList();
-        $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
-            'module' => 'Api'
-        ]);
+                $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
+                    'module' => 'Api'
+                ]);
 		$router[] = new Route($urlPrefix.'/<presenter>/list/<id>', 'Homepage:list');
 		$router[] = new Route($urlPrefix.'/<presenter>/<action>[/<id>]', 'Homepage:default');        
 		return $router;
