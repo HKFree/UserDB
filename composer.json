@@ -3,7 +3,7 @@
 	"description": "The sandbox is a pre-packaged Nette Framework project, basic configured structure for your application.",
 	"homepage": "http://nette.org",
 	"type": "project",
-	"license": ["Unlicense"],
+	"license": ["Proprietary"],
 	"authors": [
 		{
 			"name": "David Grudl",
