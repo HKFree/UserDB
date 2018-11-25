@@ -20,7 +20,10 @@ class RouterFactory
 	public function createRouter($urlPrefix)
 	{
 		$router = new RouteList();
-                $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
+
+		$router[] = new Route($urlPrefix.'/uzivatel/list/<id>', 'UzivatelList:list', Route::ONE_WAY);
+		
+        $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
                     'module' => 'Api'
                 ]);
 		$router[] = new Route($urlPrefix.'/<presenter>/list/<id>', 'Homepage:list');
