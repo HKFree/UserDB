@@ -1,6 +1,6 @@
 {
 	"name": "nette/sandbox",
-	"description": "The sandbox is a pre-packaged Nette Framework project, basic configured structure for your application.",
+	"description": "HKFree.org UserDB",
 	"homepage": "http://nette.org",
 	"type": "project",
 	"license": ["Proprietary"],
