@@ -2,6 +2,7 @@
 
 namespace App\Presenters;
 
+use App\Services\CryptoSluzba;
 use Nette,
     App\Model,
     App\Services,
@@ -43,7 +44,7 @@ class UzivatelPresenter extends BasePresenter
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -65,8 +66,8 @@ class UzivatelPresenter extends BasePresenter
     }
 
     public function sendNotificationEmail($idUzivatele) {
-        
-        $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getUser()->getIdentity()->getId());
+
+        $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
 
         $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
     }
@@ -78,7 +79,7 @@ class UzivatelPresenter extends BasePresenter
         $hash = base64_encode($idUzivatele.'-'.md5($this->context->parameters["salt"].$newUser->zalozen));
         $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
 
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
         $this->mailService->sendConfirmationRequest($newUser, $so, $link);
         $this->mailService->sendConfirmationRequestCopy($newUser, $so);
@@ -99,7 +100,7 @@ class UzivatelPresenter extends BasePresenter
                     $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                     $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
-                    $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getUser()->getIdentity()->getId());
+                    $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
                 }
     		    $this->template->stav = true;
     	    }
@@ -120,8 +121,8 @@ class UzivatelPresenter extends BasePresenter
             $uid = $this->getParam('id');
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
-                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
-                $this->template->heslo = base64_decode($_SERVER['initials']);
+                $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+                $this->template->heslo = base64_decode($this->getIdentity()->getPasswordHash());
 
                 $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
                 $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
@@ -204,7 +205,7 @@ class UzivatelPresenter extends BasePresenter
                 $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
                 //\Tracy\Dumper::dump($seznamUzivatelu);
 
-                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
+                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
                                                     || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
                                                     || in_array($uid,$seznamUzivatelu);
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
@@ -227,7 +228,7 @@ class UzivatelPresenter extends BasePresenter
     {
         if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
         {
-            $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+            $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
             $apcko = $this->ap->getAP($so->Ap_id);
             $subnety = $apcko->related('Subnet.Ap_id');
             $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
@@ -251,7 +252,7 @@ class UzivatelPresenter extends BasePresenter
 
     	$aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
 
-        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
+        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
         if (count($oblastiSpravce) > 0) {
             $aps0 = $this->oblast->formatujOblastiSAP($oblastiSpravce);
             $aps = $aps0 + $aps;

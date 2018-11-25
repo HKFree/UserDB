@@ -2,12 +2,8 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
-    Nette\Utils\Json,
-    Tracy\Debugger;
+use App\Model;
 
-use Nette\Forms\Controls\SubmitButton;
 /**
  * Sprava presenter.
  */
@@ -21,6 +17,11 @@ class SpravaPresenter extends BasePresenter
     function __construct(Model\Uzivatel $uzivatel, Model\AP $ap) {
     	$this->uzivatel = $uzivatel;
         $this->ap = $ap;
+    }
+
+    public function setGoogleMapsApiKey($googleMapsApiKey)
+    {
+        $this->googleMapsApiKey = $googleMapsApiKey;
     }
 
     public function actionLogout() {
@@ -39,11 +40,6 @@ class SpravaPresenter extends BasePresenter
 
     public function actionShow($id) {
         $this->redirect('Uzivatel:show', array('id'=>$id));
-    }
-
-    public function setGoogleMapsApiKey($googleMapsApiKey)
-    {
-        $this->googleMapsApiKey = $googleMapsApiKey;
     }
 
     public function renderMapa()

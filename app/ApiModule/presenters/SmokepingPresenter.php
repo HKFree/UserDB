@@ -2,20 +2,8 @@
 
 namespace App\ApiModule\Presenters;
 
-use Nette,
-    App\Model,
-    Nette\Application\UI\Form,
-    Nette\Forms\Container,
-    Nette\Utils\Html,
-    Grido\Grid,
-    Tracy\Debugger,
-    Nette\Mail\Message,
-    Nette\Utils\Validators,
-    Nette\Mail\SendmailMailer,
-    Nette\Utils\Strings,
-    PdfResponse\PdfResponse;
+use App\Model;
 
-use Nette\Forms\Controls\SubmitButton;
 /**
  * Uzivatel presenter.
  */

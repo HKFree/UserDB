@@ -34,9 +34,12 @@ git push origin master
 
 ### Run locally
 
+Override environment variables defined in `docker-compose.yml` using `docker-compose.override.yml` when necessary.
+
 ```bash
 docker-compose build
 docker-compose up
+docker-compose exec web composer install
 docker-compose exec web php www/index.php migrations:continue
 ```
 

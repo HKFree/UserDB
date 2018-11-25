@@ -83,7 +83,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
                 $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
                 //\Tracy\Dumper::dump($link);exit();
-                $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+                $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
                 $this->mailService->sendConfirmationRequest($uzivatel, $so, $link);
                 $this->mailService->sendConfirmationRequestCopy($uzivatel, $so);
@@ -103,7 +103,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
-                $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getUser()->getIdentity()->getId());
+                $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
 
                 $this->flashMessage('E-mail byl odeslán.');
 

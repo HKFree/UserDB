@@ -2,10 +2,9 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
-    Nette\Application\UI\Form,
-    Tracy\Debugger;
+use App\Services\SmsSender;
+use App\Model,
+    Nette\Application\UI\Form;
 
 /**
  * Sprava presenter.
@@ -14,8 +13,11 @@ class SpravaSmsPresenter extends SpravaPresenter
 {
     private $spravceOblasti;
 
-    function __construct(Model\SpravceOblasti $sob) {
+    private $smsSender;
+
+    function __construct(Model\SpravceOblasti $sob, SmsSender $smsSender) {
         $this->spravceOblasti = $sob;
+        $this->smsSender = $smsSender;
     }
 
 
@@ -49,6 +51,7 @@ class SpravaSmsPresenter extends SpravaPresenter
           $sos = $this->spravceOblasti->getZSO();
         }
 
+        $validni = [];
         foreach($sos as $so)
         {
             $tl = $so->Uzivatel->telefon;
@@ -57,13 +60,8 @@ class SpravaSmsPresenter extends SpravaPresenter
                 $validni[]=$tl;
             }
         }
-        $tls = join(",",array_values($validni));
 
-        $locale = 'cs_CZ.UTF-8';
-        setlocale(LC_ALL, $locale);
-        putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$tls.' "'.$values->message.'"');
-        $output = shell_exec($command);
+        $output = $this->smsSender->sendSms($this->getIdentity(), $validni, $values->message);
 
         $this->flashMessage('SMS byly odeslány. Output: ' . $output);
 

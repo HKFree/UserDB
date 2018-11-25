@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use App\Services\CryptoSluzba;
 use Nette,
 	Nette\Utils\Html;
 use Defuse\Crypto\Key;
@@ -28,18 +29,15 @@ class IPAdresa extends Table
      * @var string
      */
 	protected $igw2IpCheckerUrl;
-	
-	/**
-    * @var string
-    */
-    protected $passPhrase;
 
-    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, $passPhrase, Nette\Database\Context $db, Nette\Security\User $user)
+    private $cryptoService;
+
+    function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, CryptoSluzba $cryptoService, Nette\Database\Context $db, Nette\Security\User $user)
     {
         parent::__construct($db, $user);
         $this->igw1IpCheckerUrl = $igw1IpCheckerUrl;
-		$this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
-		$this->passPhrase = Key::loadFromAsciiSafeString($passPhrase);
+        $this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
+        $this->cryptoService = $cryptoService;
     }
 
     public function getSeznamIPAdres()
@@ -458,7 +456,7 @@ class IPAdresa extends Table
 					$tr->create('td')->setText($ip->login);
 					if($ip->heslo_sifrovane == 1)
 					{
-						$decrypted = Crypto::decrypt($ip->heslo, $this->passPhrase);
+						$decrypted = $this->cryptoService->decrypt($ip->heslo);
 						$tr->create('td')->setText($decrypted);
 					}
 					else {

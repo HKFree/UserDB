@@ -2,16 +2,10 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
+use App\Model,
     Nette\Application\UI\Form,
     Nette\Forms\Container,
-    Grido\Grid,
-    Nette\Mail\Message,
-    Nette\Utils\Strings,
-    Nette\Mail\SendmailMailer,
-    Nette\Utils\DateTime,
-    Tracy\Debugger;
+    Nette\Mail\Message;
 
 use Nette\Forms\Controls\SubmitButton;
 /**
@@ -49,7 +43,7 @@ class SpravaCcPresenter extends SpravaPresenter
             $grid->setModel($this->platneCC->getCCWithNamesVV());
         }
         else {
-            $grid->setModel($this->platneCC->getCCWithNames($this->getUser()->getIdentity()->getId()));
+            $grid->setModel($this->platneCC->getCCWithNames($this->getIdentity()->getUid()));
         }
 
     	$grid->setDefaultPerPage(100);
@@ -173,8 +167,7 @@ class SpravaCcPresenter extends SpravaPresenter
                         ->setSubject('Žádost o čestné členství')
                         ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $pravo->plati_od - $pravo->plati_do.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
 
-                    $mailer = new SendmailMailer;
-                    $mailer->send($mail);
+                    $this->mailer->send($mail);
                 }
             }
     	}

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model;
+namespace App\Services;
 
 use Nette;
 use Defuse\Crypto\Key;

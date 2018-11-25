@@ -210,7 +210,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
             }
             $values->PrichoziPlatba_id = $pPlatba->id;
             $values->datum = new Nette\Utils\DateTime;
-            $values->zmenu_provedl = $this->getUser()->getIdentity()->getId();
+            $values->zmenu_provedl = $this->getIdentity()->getUid();
             $values->castka = -$pPlatba->castka;
 
             if(empty($values->id)) {

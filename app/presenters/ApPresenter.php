@@ -2,6 +2,7 @@
 
 namespace App\Presenters;
 
+use App\Services\CryptoSluzba;
 use Nette,
 	App\Model,
     Nette\Application\UI\Form,
@@ -26,7 +27,7 @@ class ApPresenter extends BasePresenter {
     /** @var Components\LogTableFactory @inject */
     public $logTableFactory;
 
-    function __construct(Model\CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic) {
+    function __construct(CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;

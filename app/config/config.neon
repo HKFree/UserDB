@@ -8,6 +8,10 @@ parameters:
 	clenskyPrispevek: 290
 	igw1IpCheckerUrl: http://10.107.0.1:8080/ip4info/
 	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
+	urlPrefix: '/userdb'
+	salt: %env.USERDB_SALT%
+	debug:
+		fakeUser: false
 
 php:
 	date.timezone: Europe/Prague
@@ -36,7 +40,7 @@ migrations:
 services:
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
 	- App\RouterFactory
-	router: @App\RouterFactory::createRouter(%debug.https%, %urlPrefix%)
+	router: @App\RouterFactory::createRouter(%urlPrefix%)
 	uzivatel: App\Model\Uzivatel
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
@@ -50,7 +54,7 @@ services:
 	zpusobPripojeni: App\Model\ZpusobPripojeni
 	technologiePripojeni: App\Model\TechnologiePripojeni
 	typCestnehoClenstvi: App\Model\TypCestnehoClenstvi
-	ipAdresa: App\Model\IPAdresa(%igw1IpCheckerUrl%, %igw2IpCheckerUrl%, %encryptionPassphrase%)
+	ipAdresa: App\Model\IPAdresa(%igw1IpCheckerUrl%, %igw2IpCheckerUrl%)
 	oblast: App\Model\Oblast
 	ap: App\Model\AP
 	cc: App\Model\cc
@@ -65,14 +69,29 @@ services:
 	accountActivation: App\Model\AccountActivation
 	logTableFactory: App\Components\LogTableFactory
 	parameters: App\Model\Parameters(%clenskyPrispevek%)
-	cryptoSluzba: App\Model\CryptoSluzba(%encryptionPassphrase%)
+	cryptoSluzba: App\Services\CryptoSluzba(%env.USERDB_ENCRYPTION_PASSPHRASE%)
 	wewimo: App\Model\Wewimo
 	apiKlic: App\Model\ApiKlic
+	smsSender: App\Services\SmsSender("%appDir%/../bin/smsbackend.py")
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:
-			- setGoogleMapsApiKey(%googleMapsApiKey%)
+			- setGoogleMapsApiKey(%env.USERDB_GOOGLE_MAPS_KEY%)
 
 console:
 	commands:
 		- App\Console\UpdateLocationsCommand
+
+database:
+	dsn: "mysql:host=%env.USERDB_DB_HOST%;dbname=%env.USERDB_DB_NAME%"
+	user: %env.USERDB_DB_USERNAME%
+	password: %env.USERDB_DB_PASSWORD%
+	options:
+		lazy: true
+
+mail:
+    smtp: true # zapne SmtpMailer místo SendmailMailer
+    host: smtp.hkfree.org
+
+http:
+    proxy: 172.17.0.0/16

@@ -2,20 +2,13 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
+use App\Model,
     Nette\Application\UI\Form,
-    Nette\Forms\Container,
-    Nette\Utils\Html,
-    Grido\Grid,
-    Tracy\Debugger,
-    Nette\Mail\SendmailMailer,
     Nette\Mail\Message,
     Nette\Utils\Validators,
-    Nette\Utils\Strings,
     App\Components;
+use App\Services\SmsSender;
 
-use Nette\Forms\Controls\SubmitButton;
 /**
  * Uzivatel presenter.
  */
@@ -26,9 +19,13 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    function __construct(Model\Uzivatel $uzivatel, Model\AP $ap) {
+
+    private $smsSender;
+
+    function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, SmsSender $smsSender) {
     	$this->uzivatel = $uzivatel;
     	$this->ap = $ap;
+    	$this->smsSender = $smsSender;
     }
 
 
@@ -43,7 +40,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     	$form->addHidden('id');
 
         $user = $this->uzivatel->getUzivatel($this->getParam('id'));
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>'oblast'.$user->Ap->Oblast_id.'@hkfree.org'))->setDefaultValue(0);
 
         $form->addText('email', 'Příjemce', 70)->setDisabled(TRUE);
@@ -78,7 +75,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         if($values->from == 0)
         {
-           $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+           $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
            $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->addTo($user->email)
             ->setSubject($values->subject)
@@ -93,8 +90,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         }
 
 
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->mailer->send($mail);
 
         $this->flashMessage('E-mail byl odeslán.');
 
@@ -116,7 +112,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $ap = $this->ap->getAP($this->getParam('id'));
             $oblastMail='oblast'.$ap->Oblast_id.'@hkfree.org';
         }
-        $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         $form->addSelect('from', 'Odesílatel', array(0=>$so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1=>$oblastMail))->setDefaultValue(0);
 
         $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(TRUE);
@@ -161,7 +157,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $mail = new Message;
         if($values->from == 0)
         {
-           $so = $this->uzivatel->getUzivatel($this->getUser()->getIdentity()->getId());
+           $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
            $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->setSubject($values->subject)
             ->setBody($values->message);
@@ -182,8 +178,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             }
         }
 
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->mailer->send($mail);
 
         $this->flashMessage('E-mail byl odeslán.');
 
@@ -230,11 +225,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     public function smsFormSucceded($form, $values) {
     	$user = $this->uzivatel->getUzivatel($this->getParam('id'));
 
-        $locale = 'cs_CZ.UTF-8';
-        setlocale(LC_ALL, $locale);
-        putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$user->telefon.' "'.$values->message.'"');
-        $output = shell_exec($command);
+        $output = $this->smsSender->sendSms($this->getIdentity(), [ $user->telefon ], $values->message);
 
         $this->flashMessage('SMS byla odeslána. Output: ' . $output);
 
@@ -287,6 +278,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     	$ap = $this->ap->getAP($this->getParam('id'));
 
         $telefony = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'telefon');
+
+        $validni = [];
         foreach($telefony as $tl)
         {
             if(!empty($tl) && $tl!='missing')
@@ -294,13 +287,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
                 $validni[]=$tl;
             }
         }
-        $tls = join(",",array_values($validni));
 
-        $locale = 'cs_CZ.UTF-8';
-        setlocale(LC_ALL, $locale);
-        putenv('LC_ALL='.$locale);
-        $command = escapeshellcmd('python /var/www/cgi/smsbackend.py -a https://aweg3.maternacz.com -l hkf'.$this->getUser()->getIdentity()->getId().'-'.$this->getUser()->getIdentity()->nick.':'.base64_decode($_SERVER['initials']).' -d '.$tls.' "'.$values->message.'"');
-        $output = shell_exec($command);
+        $output = $this->smsSender->sendSms($this->getIdentity(), $validni, $values->message);
 
         $this->flashMessage('SMS byly odeslány. Output: ' . $output);
 

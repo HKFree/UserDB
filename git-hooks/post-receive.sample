@@ -1,24 +1,28 @@
-#!/bin/sh
+#!/bin/bash
 
-DEPLOYDIR=/opt/UserDB
+ENV="-e USERDB_SALT=xxxsalt -e USERDB_GOOGLE_MAPS_KEY=xxxmapskey -e USERDB_DB_HOST=db.hkfree.org -e USERDB_DB_NAME=xxxdb -e USERDB_DB_USERNAME=xxxuser -e USERDB_DB_PASSWORD=xxxpwd -e USERDB_ENCRYPTION_PASSPHRASE=def000003f80fda926649189d52b4024641f8fa97d1be88638aa8f8c0bec00fdfd756e344f7547db517b17a5ea67085d9de8c88c806795bdec825f8df8b47e6dbb87ec03"
 
-# get the latest version in master branch
-GIT_WORK_TREE="$DEPLOYDIR" git checkout -f
+#git clone https://github.com/HKFree/UserDB.git
+cd UserDB
+git fetch origin
+git checkout -b master origin/master
+git pull
+TAG=`git log -1 --format=%h`
 
-# go to web app dir
-cd "$DEPLOYDIR"
+echo "Building Docker image..."
+docker build -t userdb:$TAG .
 
-# enable Nette maintenance mode (HTTP/1.1 503 Service Unavailable)
-cp www/.maintenance.php www/maintenance.php
+set -e
 
-# install all dependencies
-composer install
+echo "Upgrading DB schema..." # mandatory
+docker run --rm $ENV userdb:$TAG php www/index.php migrations:continue --production
 
-# clear Nette cache
-rm -rf temp/cache
+echo "Stopping container..." # optional (may fail if container was not running)
+docker stop userdb || true
 
-# apply any changes to DB
-php www/index.php migrations:continue --production
+DATETIME=`date '+%Y%m%d-%H%M%S'`
+echo "Renaming old userdb container to userdb-$DATETIME" # optional (may fail if old container does not exist)
+docker rename userdb userdb-$DATETIME || true
 
-# disable maintenance mode
-rm www/maintenance.php
+echo "Starting a new userdb container..." # mandatory
+docker run -d --restart=always $ENV --name userdb -p 127.0.0.1:8080:80 userdb:$TAG

@@ -18,7 +18,7 @@ class PdfGenerator
         $this->subnet = $subnet;
     }
     
-    public function generatePdf($uzivatel, $template)
+    public function generatePdf($uzivatel, $template): PdfResponse
     {
         $template->oblast = $uzivatel->Ap->Oblast->jmeno;
         $oblastid = $uzivatel->Ap->Oblast->id;

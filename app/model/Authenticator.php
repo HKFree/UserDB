@@ -38,12 +38,13 @@ class Authenticator implements Security\IAuthenticator
         if($this->fakeUser != false)            /// debuging identity
         {
             $userID = $this->fakeUser["userID"];
-            $args = array('nick' => $this->fakeUser["userName"]);
-            $_SERVER['initials']="password";
+            $nick = $this->fakeUser["userName"];
+            $passwordHash = $this->fakeUser["passwordHash"] ?? 'dummy';  // optional
         }
-        else if(array_key_exists('givenName', $_SERVER))
+        else if(array_key_exists('HTTP_GIVENNAME', $_SERVER))
         {
-            $args = array('nick' => $_SERVER['givenName']);
+            $nick = $_SERVER['HTTP_GIVENNAME'];
+            $passwordHash = $_SERVER['HTTP_INITIALS'];
         }
         else
         {
@@ -51,7 +52,7 @@ class Authenticator implements Security\IAuthenticator
         }
         $date = new DateTime();
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
-        $roles = array();
+        $roles = [];
         foreach ($spravcepro as $key => $value) {
             if($value->od->getTimestamp() < $date->getTimestamp() && (!$value->do || $value->do->getTimestamp() > $date->getTimestamp()))
             {
@@ -68,7 +69,7 @@ class Authenticator implements Security\IAuthenticator
             throw new Nette\Security\AuthenticationException('User not allowed.');
         }
 
-        return new Nette\Security\Identity($userID, $roles, $args);
+        return new HkfIdentity($userID, $roles, $nick, $passwordHash);
     }
 
 

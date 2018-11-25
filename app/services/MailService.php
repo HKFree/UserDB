@@ -5,10 +5,7 @@ namespace App\Services;
 use Nette,
     App\Model,
     PdfResponse\PdfResponse,
-    Nette\Mail\SendmailMailer,
-    Nette\Mail\Message,
-    Tracy\Debugger,
-    DateInterval;
+    Nette\Mail\Message;
 
 /**
  * @author 
@@ -16,18 +13,20 @@ use Nette,
 class MailService
 {
     private $uzivatel;
+    private $mailer;
 
-    function __construct(Model\Uzivatel $uzivatel) {
+    public function __construct(Nette\Mail\IMailer $mailer, Model\Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
+        $this->mailer = $mailer;
     }
     
-    public function sendConfirmationRequest($uzivatel, $so, $link)
+    public function sendConfirmationRequest($uzivatel, $so, $link): void
     {
         $mail = new Message;
         $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->addTo($uzivatel->email)
             ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$uzivatel->id)
-            ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
+            ->setHtmlBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
                             'následující odkaz:<br><br><a href="'.$link.'">'.$link.'</a><br><br>'.
                             'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
                             'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
@@ -37,17 +36,16 @@ class MailService
         {
             $mail->addTo($uzivatel->email2);
         }
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->mailer->send($mail);
     }
 
-    public function sendConfirmationRequestCopy($uzivatel, $so)
+    public function sendConfirmationRequestCopy($uzivatel, $so): void
     {
         $mailso = new Message;
         $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->addTo($so->email)
             ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$uzivatel->id)
-            ->setHTMLBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
+            ->setHtmlBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
                             'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID '.$uzivatel->id.'<br><br>'.
                             'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, '.
                             'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
@@ -63,11 +61,10 @@ class MailService
             $mailso->addTo($sou->email);
         }
         //\Tracy\Dumper::dump($mailso);exit();
-        $mailer = new SendmailMailer;
-        $mailer->send($mailso);
+        $this->mailer->send($mailso);
     }
   
-    public function mailPdf($pdf, $uzivatel, $request, $response, $userid)
+    public function mailPdf(PdfResponse $pdf, $uzivatel, $request, $response, $userid): void
     {
         $so = $this->uzivatel->getUzivatel($userid);
 
@@ -84,11 +81,11 @@ class MailService
         $pdf->send($request, $response);
         $mail->addAttachment('hkfree-registrace-'.$uzivatel->id.'.pdf', file_get_contents($temp_file));
 
-        $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        $this->mailer->send($mail);
     }
 
-    public function sendPlannedUserNotificationEmail($idUzivatele, $actuser) {
+    public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void
+    {
         
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $so = $this->uzivatel->getUzivatel($actuser);
@@ -97,7 +94,7 @@ class MailService
         $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
             ->addTo($so->email)
             ->setSubject('NOTIFIKACE - Nový plánovaný člen - UID '.$newUser->id)
-            ->setHTMLBody('V DB je zadán nový plánovaný člen ve Vaší oblasti s UID '.$newUser->id.'<br><br>'.
+            ->setHtmlBody('V DB je zadán nový plánovaný člen ve Vaší oblasti s UID '.$newUser->id.'<br><br>'.
                             'AP: '.$newUser->Ap->jmeno.'<br><br>'.
                             'Jméno: '.$newUser->jmeno.' '.$newUser->prijmeni.'<br><br>'.
                             'Adresa: '.$newUser->ulice_cp.', '.$newUser->psc.' '.$newUser->mesto.'<br><br>'.
@@ -114,7 +111,6 @@ class MailService
         foreach ($seznamSpravcu as $sou) {
             $mailso->addTo($sou->email);
         }
-        $mailer = new SendmailMailer;
-        $mailer->send($mailso);
+        $this->mailer->send($mailso);
     }
 }

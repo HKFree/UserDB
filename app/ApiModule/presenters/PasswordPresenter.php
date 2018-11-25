@@ -9,7 +9,7 @@ class PasswordPresenter extends ApiPresenter
     private $ipadresa;
     private $cryptosvc;
 
-    function __construct(\App\Model\IPAdresa $ipadresa, \App\Model\CryptoSluzba $cryptosvc)
+    function __construct(\App\Model\IPAdresa $ipadresa, \App\Services\CryptoSluzba $cryptosvc)
     {
         $this->ipadresa = $ipadresa;
         $this->cryptosvc = $cryptosvc;

@@ -6,6 +6,7 @@ use Nette,
 	App\Model,
     Nette\Application\UI\Form,
     Tracy\Debugger;
+use Nette\Mail\IMailer;
 
 
 /**
@@ -21,11 +22,15 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     private $spravceOblasti;
     private $ap;
 
-    public function injectOblast(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap)
+    /** @var IMailer */
+    protected $mailer;
+
+    public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer)
     {
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
         $this->ap = $ap;
+        $this->mailer = $mailer;
     }
 
     public function startup() {
@@ -33,7 +38,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
 		//$uri = $this->getHttpRequest()->getUrl();
                 if($this->context->parameters["debug"]["fakeUser"] == false) {
-                        $this->getUser()->login($_SERVER['PHP_AUTH_USER'], NULL);
+                        $this->getUser()->login($_SERVER['HTTP_UID'], NULL);
                 } else {
                         $this->getUser()->login("DBG", NULL);
                 }
@@ -45,7 +50,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
         $this->template->oblasti = $this->oblast->getSeznamOblasti();
 
-        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getUser()->getIdentity()->getId());
+        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
         if (count($oblastiSpravce) > 0) {
             $this->template->mojeOblasti = $this->oblast->formatujOblastiSAP($oblastiSpravce);
         } else {
@@ -128,5 +133,14 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      */
     public function linker($destination, $args=[]) {
         return($this->link($destination, $args));
+    }
+
+    public function getIdentity() : Model\HkfIdentity {
+        $i = $this->getUser()->getIdentity();
+        if ($i instanceof Model\HkfIdentity) {
+            return $i;
+        } else {
+            throw new Nette\InvalidStateException("Identity musi byt instance HkfIdentity");
+        }
     }
 }

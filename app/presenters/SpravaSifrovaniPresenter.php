@@ -2,6 +2,7 @@
 
 namespace App\Presenters;
 
+use App\Services\CryptoSluzba;
 use Nette,
     App\Model,
     Nette\Application\UI\Form,
@@ -15,7 +16,7 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
     private $ipAdresa;
     private $cryptosvc;
 
-    function __construct(Model\CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa) {
+    function __construct(CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa) {
         $this->cryptosvc = $cryptosvc;
         $this->ipAdresa = $ipAdresa;
     }

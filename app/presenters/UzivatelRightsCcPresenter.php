@@ -6,16 +6,9 @@ use Nette,
     App\Model,
     Nette\Application\UI\Form,
     Nette\Forms\Container,
-    Nette\Utils\Html,
-    Grido\Grid,
-    Tracy\Debugger,
-    Nette\Mail\SendmailMailer,
     Nette\Mail\Message,
-    Nette\Utils\Validators,
-    Nette\Utils\Strings,
     App\Components;
 
-use Nette\Forms\Controls\SubmitButton;
 /**
  * Uzivatel presenter.
  */
@@ -238,7 +231,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
     	foreach($prava as $pravo)
     	{
     	    $pravo->Uzivatel_id = $idUzivatele;
-            $pravo->zadost_podal = $this->getUser()->getIdentity()->getId();
+            $pravo->zadost_podal = $this->getIdentity()->getUid();
             $pravo->zadost_podana = new Nette\Utils\DateTime;
     	    $pravoId = $pravo->id;
 
@@ -256,8 +249,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
                     ->setSubject('Nová žádost o ČČ')
                     ->setBody("Dobrý den,\nbyla vytvořena nová žádost o ČČ.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\nhttps://userdb.hkfree.org/userdb/sprava/schvalovanicc");
 
-                $mailer = new SendmailMailer;
-                $mailer->send($mail);
+                $this->mailer->send($mail);
 
                 $this->flashMessage('E-mail VV byl odeslán. Vyčkejte, než VV žádost potvrdí.');
             } else {
