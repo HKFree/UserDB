@@ -215,7 +215,7 @@ class UzivatelPresenter extends BasePresenter
                                   'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. '.
                                   'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>'.
                                   'S pozdravem hkfree.org z.s.');
-                $mailer->send($mailso);
+                $this->mailer->send($mailso);
 
                 $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
 
