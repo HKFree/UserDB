@@ -248,6 +248,18 @@ class IPAdresa extends Table
 
 		if ($ip)
 		{
+			$ip_password = '';
+			if ($canViewCredentialsOrEdit) {
+				if($ip->heslo_sifrovane == 1)
+				{
+					$ip_password = $this->cryptoService->decrypt($ip->heslo);
+				}
+				else {
+					$ip_password = $ip->heslo;
+				}
+			}
+
+
 			// action buttons
 			$buttons = array();
 			// web button
@@ -261,10 +273,10 @@ class IPAdresa extends Table
 					->addHtml(Html::el('span')
 						->setClass('glyphicon glyphicon-globe')); // web button
 				if (($canViewCredentialsOrEdit || ($subnetModeInfo && $subnetModeInfo['canViewOrEdit']))
-						&& isset($ip->TypZarizeni->text) && isset($ip->heslo) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+						&& isset($ip->TypZarizeni->text) && isset($ip_password) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 					// routerboard, smim videt heslo a heslo je vyplneno
 					// -> otevrit primo zalogovany webfig
-					$webButton->setOnclick('return openMikrotikWebfig('.json_encode($ip->ip_adresa).','.json_encode($ip->login).','.json_encode($ip->heslo).')');
+					$webButton->setOnclick('return openMikrotikWebfig('.json_encode($ip->ip_adresa).','.json_encode($ip->login).','.json_encode($ip_password).')');
 					$webButton->setTitle('Otevřít Mikrotik WebFig');
 				}
 				$buttons[]= $webButton;
@@ -285,7 +297,7 @@ class IPAdresa extends Table
 			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$link = 'winbox:'.$ip->ip_adresa;
 				if ($canViewCredentialsOrEdit) {
-					$link .= ';'.$ip->login.';'.$ip->heslo;
+					$link .= ';'.$ip->login.';'.$ip_password;
 				}
 				$winboxButton = Html::el('a')
 					->setHref($link)
@@ -312,7 +324,7 @@ class IPAdresa extends Table
 					->addHtml(Html::el('span')
 						->setClass('glyphicon glyphicon-download-alt')); // winbox button
 				if ($canViewCredentialsOrEdit) {
-					$winboxButton->setAttribute('tag', $ip->heslo);
+					$winboxButton->setAttribute('tag', $ip_password);
 				}
 				$buttons[]= $winboxButton;
 				$buttons[] = Html::el('a')
@@ -331,7 +343,7 @@ class IPAdresa extends Table
 					->addHtml(Html::el('span')
 						->setClass('glyphicon glyphicon-lock')); // winbox button
 				if ($canViewCredentialsOrEdit) {
-					$winboxButton->setAttribute('tag', ' sshpass -p '.$ip->heslo.' ssh '.$ip->login.'@'.$ip->ip_adresa);
+					$winboxButton->setAttribute('tag', ' sshpass -p '.$ip_password.' ssh '.$ip->login.'@'.$ip->ip_adresa);
 				}
 				$buttons[]= $winboxButton;
 			}
@@ -454,14 +466,7 @@ class IPAdresa extends Table
 				$tr->create('td')->setText($ip->popis); // popis
 				if ($canViewCredentialsOrEdit) {
 					$tr->create('td')->setText($ip->login);
-					if($ip->heslo_sifrovane == 1)
-					{
-						$decrypted = $this->cryptoService->decrypt($ip->heslo);
-						$tr->create('td')->setText($decrypted);
-					}
-					else {
-						$tr->create('td')->setText($ip->heslo);
-					}
+					$tr->create('td')->setText($ip_password);
 				}
 			} else {
 				// subnet mode, nesmi videt detaily
