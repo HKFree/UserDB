@@ -8,6 +8,7 @@
 
 namespace App\Model;
 
+use App\Services\CryptoSluzba;
 use PEAR2\Net\RouterOS;
 use PEAR2\Net\RouterOS\Response;
 use Tracy\Debugger;
@@ -18,10 +19,12 @@ class Wewimo
 {
     private $ipadresa;
     private $ap;
+    private $cryptoService;
 
-    public function __construct(IPAdresa $ipadresa, AP $ap) {
+    public function __construct(CryptoSluzba $cryptoService, IPAdresa $ipadresa, AP $ap) {
         $this->ipadresa = $ipadresa;
         $this->ap = $ap;
+        $this->cryptoService = $cryptoService;
     }
 
     public function getWewimoData($ip, $username, $password, $invoker)
@@ -212,7 +215,12 @@ class Wewimo
         $apIps = $apIps->order('INET_ATON(ip_adresa)');
         foreach ($apIps as $ip) {
             try {
-                $wewimoData = $this->getWewimoData($ip['ip_adresa'], $ip['login'], $ip['heslo'], $invokerStr);
+                $ip_password = $ip['heslo'];
+                if($ip['heslo_sifrovane'] == 1)
+                {
+                    $ip_password = $this->cryptoService->decrypt($ip['heslo']);
+                }
+                $wewimoData = $this->getWewimoData($ip['ip_adresa'], $ip['login'], $ip_password, $invokerStr);
                 $searchMacs = array();
                 $searchIps = array();
                 // doplnit nazvy (IP) k MAC adresam a k last-ip, sanovat nektere problematicke stringove atributy
