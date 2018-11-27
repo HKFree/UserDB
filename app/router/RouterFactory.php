@@ -22,7 +22,9 @@ class RouterFactory
 		$router = new RouteList();
 
 		$router[] = new Route($urlPrefix.'/uzivatel/list/<id>', 'UzivatelList:list', Route::ONE_WAY);
-		
+		$router[] = new Route($urlPrefix.'/sprava/schvalovanicc', 'SpravaCc:schvalovanicc', Route::ONE_WAY);
+		$router[] = new Route($urlPrefix.'/sprava/prehledcc', 'SpravaCc:prehledcc', Route::ONE_WAY);
+
         $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
                     'module' => 'Api'
                 ]);
