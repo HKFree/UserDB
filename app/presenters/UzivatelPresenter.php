@@ -122,7 +122,6 @@ class UzivatelPresenter extends BasePresenter
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-                $this->template->heslo = base64_decode($this->getIdentity()->getPasswordHash());
 
                 $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
                 $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
