@@ -40,11 +40,17 @@ class Authenticator implements Security\IAuthenticator
             $userID = $this->fakeUser["userID"];
             $nick = $this->fakeUser["userName"];
             $passwordHash = $this->fakeUser["passwordHash"] ?? 'dummy';  // optional
+            //crypted hash from database
+            //$passwordHash = $this->context->table("Uzivatel")->where('id', $userID)->fetchField('heslo_hash');
         }
         else if(array_key_exists('HTTP_GIVENNAME', $_SERVER))
         {
             $nick = $_SERVER['HTTP_GIVENNAME'];
+            //plaintext password from shibboleth
             $passwordHash = $_SERVER['HTTP_INITIALS'];
+            //TODO: switch to below when ready on AWEG side
+            //crypted hash from database
+            //$passwordHash = $this->context->table("Uzivatel")->where('id', $userID)->fetchField('heslo_hash');
         }
         else
         {
