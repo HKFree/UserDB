@@ -4,7 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $configurator = new Nette\Configurator;
 
-if ($_ENV['TRACY_ENABLE']) {
+if (getenv('TRACY_ENABLE', true)) {
     $configurator->setDebugMode(true); // enable for all IP
 }
 //$configurator->setDebugMode(false); // disable for all IP (incl. localhost)
@@ -21,7 +21,8 @@ $configurator->createRobotLoader()
 	->addDirectory(__DIR__)
 	->register();
 
-$configurator->addParameters(['env' => $_ENV]);
+$configurator->addParameters(['env' => getenv()]);
+
 
 $configurator->addConfig(__DIR__ . '/config/config.neon');
 $configurator->addConfig(__DIR__ . '/config/config.local.neon');
