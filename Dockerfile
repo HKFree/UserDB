@@ -27,7 +27,9 @@ RUN apt-get update && apt-get install -y \
 ##RUN echo "xdebug.remote_connect_back=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 #RUN echo "xdebug.remote_host=172.17.0.1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-
+# Use the default production configuration
+#RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+RUN echo "max_input_vars = 3000" >> /usr/local/etc/php/conf.d/uploads.ini
 RUN echo "log_errors = On" >> /usr/local/etc/php/conf.d/log.ini
 RUN echo "error_log = /dev/stderr" >> /usr/local/etc/php/conf.d/log.ini
 RUN echo "zend.multibyte = On" >> /usr/local/etc/php/conf.d/mb.ini
