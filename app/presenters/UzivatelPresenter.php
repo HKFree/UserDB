@@ -199,9 +199,16 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->adresyline = null;
                 }
 
-                $apcko = $this->ap->getAP($so->Ap_id);
-                $subnety = $apcko->related('Subnet.Ap_id');
-                $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
+                $seznamUzivatelu = array();
+                $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
+                foreach ($oblastiAktualnihoUzivatele as $oblast){
+                    foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
+                        //\Tracy\Dumper::dump($ap->id);
+                        $apcko = $this->ap->getAP($ap->id);
+                        $subnety = $apcko->related('Subnet.Ap_id');
+                        $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
+                    }
+                }
                 //\Tracy\Dumper::dump($seznamUzivatelu);
 
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
@@ -228,10 +235,16 @@ class UzivatelPresenter extends BasePresenter
         if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
         {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-            $apcko = $this->ap->getAP($so->Ap_id);
-            $subnety = $apcko->related('Subnet.Ap_id');
-            $seznamUzivatelu = $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($so->Ap_id, $subnety);
-            //\Tracy\Dumper::dump($seznamUzivatelu);
+            $seznamUzivatelu = array();
+            $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
+            foreach ($oblastiAktualnihoUzivatele as $oblast){
+                foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
+                    \Tracy\Dumper::dump($ap->id);
+                    $apcko = $this->ap->getAP($ap->id);
+                    $subnety = $apcko->related('Subnet.Ap_id');
+                    $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
+                }
+            }
 
             $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
                                                 || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
