@@ -82,7 +82,7 @@ class Subnet extends Table
     public function getAPCSubnets($subnets) {
         foreach ($subnets as $subnet) {
             $out = $this->parseSubnet($subnet->subnet);
-            //\Tracy\Dumper::dump(explode(".", $out["network"]));
+            //\Tracy\Debugger::barDump(explode(".", $out["network"]));
             list($a, $b, $c, $d) = explode(".", $out["network"]);
             $resultnet = $a .".". $b .".". $c .".";
             $results[] = $resultnet;

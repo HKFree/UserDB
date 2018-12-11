@@ -33,7 +33,7 @@ class UzivatelListGrid
     }
 
     public function getListOfOtherUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
-        //\Tracy\Dumper::dump($search);
+        //\Tracy\Debugger::barDump($search);
 
         $canViewOrEdit = false;
 
@@ -262,7 +262,7 @@ class UzivatelListGrid
     }
 
     public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
-        //\Tracy\Dumper::dump($search);
+        //\Tracy\Debugger::barDump($search);
 
         $canViewOrEdit = false;
 

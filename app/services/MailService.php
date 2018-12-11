@@ -60,7 +60,7 @@ class MailService
         foreach ($seznamSpravcu as $sou) {
             $mailso->addTo($sou->email);
         }
-        //\Tracy\Dumper::dump($mailso);exit();
+        //\Tracy\Debugger::barDump($mailso);exit();
         $this->mailer->send($mailso);
     }
   

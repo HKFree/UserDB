@@ -30,7 +30,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
 
     protected function createComponentAccountgrid($name)
     {
-        //\Tracy\Dumper::dump($search);
+        //\Tracy\Debugger::barDump($search);
 
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');

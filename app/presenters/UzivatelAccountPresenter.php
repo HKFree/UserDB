@@ -38,7 +38,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
     {
         $id = $this->getParameter('id');
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
-        //\Tracy\Dumper::dump($pohyb->Uzivatel);
+        //\Tracy\Debugger::barDump($pohyb->Uzivatel);
         if($pohyb)
         {
             if($pohyb->Uzivatel_id)
@@ -80,7 +80,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $canViewOrEdit = false;
     	$id = $this->getParameter('id');
 
-        //\Tracy\Dumper::dump($search);
+        //\Tracy\Debugger::barDump($search);
 
     	$grid = new \Grido\Grid($this, $name);
     	$grid->translator->setLang('cs');

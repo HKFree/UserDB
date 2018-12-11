@@ -193,7 +193,7 @@ class ApPresenter extends BasePresenter {
                 foreach($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
                     if($ip_data->heslo_sifrovane == 1)
 					{
-                        //\Tracy\Dumper::dump($ip_data->heslo);
+                        //\Tracy\Debugger::barDump($ip_data->heslo);
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
                         $ipdata = $ip_data->toArray();
                         $ipdata['heslo'] = $decrypted;

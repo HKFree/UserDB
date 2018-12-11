@@ -82,7 +82,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     	    {
                 $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
                 $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
-                //\Tracy\Dumper::dump($link);exit();
+                //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
                 $this->mailService->sendConfirmationRequest($uzivatel, $so, $link);

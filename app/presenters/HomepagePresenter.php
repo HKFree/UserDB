@@ -27,7 +27,7 @@ class HomepagePresenter extends BasePresenter
 	
 	public function renderTest()
 	{
-	    \Tracy\Dumper::dump($this->context->parameters);
+	    \Tracy\Debugger::barDump($this->context->parameters);
 	    $this->template->test1 = 1;
 	    $this->template->test2 = 1;
 	}

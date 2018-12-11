@@ -67,15 +67,15 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
 
             if(!empty($userids))
             {
-                //\Tracy\Dumper::dump($userids);
-                //\Tracy\Dumper::dump(array_values($userids));
+                //\Tracy\Debugger::barDump($userids);
+                //\Tracy\Debugger::barDump(array_values($userids));
                 $uids = array_merge(array_values($userids), $uids);
             }
         }
         if(!empty($uids))
         {
-            //\Tracy\Dumper::dump($uids);
-            //\Tracy\Dumper::dump(array_values($userids));
+            //\Tracy\Debugger::barDump($uids);
+            //\Tracy\Debugger::barDump(array_values($userids));
             return($this->findBy(array('id' => $uids)));
         }
         
@@ -98,8 +98,8 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
 
             if(!empty($userids))
             {
-                //\Tracy\Dumper::dump($userids);
-                //\Tracy\Dumper::dump(array_values($userids));
+                //\Tracy\Debugger::barDump($userids);
+                //\Tracy\Debugger::barDump(array_values($userids));
                 $uids = array_merge(array_values($userids), $uids);
             }
         }
@@ -137,7 +137,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
         {
             return($this->findBy(array('id' => $completeMatchId)));
         }
-        //\Tracy\Dumper::dump($search);
+        //\Tracy\Debugger::barDump($search);
         $partialMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
                                             LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id
                                             WHERE (
@@ -165,8 +165,8 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
 
             if(!empty($secureMatchId))
             {
-                //\Tracy\Dumper::dump($secureMatchId);
-                //\Tracy\Dumper::dump(array_values($secureMatchId));
+                //\Tracy\Debugger::barDump($secureMatchId);
+                //\Tracy\Debugger::barDump(array_values($secureMatchId));
                 return($this->findBy(array('id' => array_values($secureMatchId))));
             }
         }

@@ -58,7 +58,7 @@ class SubnetPresenter extends BasePresenter
             }
 
             $existujici = $this->subnet->getSeznamSubnetuZacinajicich($targetSubnet);
-            //\Tracy\Dumper::dump($existujici);
+            //\Tracy\Debugger::barDump($existujici);
 
             $networks = array();
             $captions = array();
@@ -69,7 +69,7 @@ class SubnetPresenter extends BasePresenter
                 $captions[$d] = $snet->popis;
             }
 
-            //\Tracy\Dumper::dump($networks);
+            //\Tracy\Debugger::barDump($networks);
             $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;
             $this->template->captions = $captions;
@@ -177,7 +177,7 @@ class SubnetPresenter extends BasePresenter
                     $lastlenght = $networks[$i]['ips'];
                 }
             }
-            //\Tracy\Dumper::dump($ips);
+            //\Tracy\Debugger::barDump($ips);
 
             $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;

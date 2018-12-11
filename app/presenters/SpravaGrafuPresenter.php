@@ -22,7 +22,7 @@ class SpravaGrafuPresenter extends SpravaPresenter
     public function renderUsersgraph()
     {
         $activationsData = $this->uzivatel->getNumberOfActivations();
-        //\Tracy\Dumper::dump($activationsData);
+        //\Tracy\Debugger::barDump($activationsData);
 
         $graphdata = array();
         foreach($activationsData as $ad) {

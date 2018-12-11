@@ -173,7 +173,7 @@ class UzivatelPresenter extends BasePresenter
                 {
                     $this->flashMessage('Uživatel byl sloučen pod jiného uživatele.');
                     $this->template->master = $this->sloucenyUzivatel->getMaster($uid);
-                    //\Tracy\Dumper::dump($this->sloucenyUzivatel->getMaster($uid));
+                    //\Tracy\Debugger::barDump($this->sloucenyUzivatel->getMaster($uid));
                 }
                 else
                 {
@@ -203,13 +203,13 @@ class UzivatelPresenter extends BasePresenter
                 $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
                 foreach ($oblastiAktualnihoUzivatele as $oblast){
                     foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-                        //\Tracy\Dumper::dump($ap->id);
+                        //\Tracy\Debugger::barDump($ap->id);
                         $apcko = $this->ap->getAP($ap->id);
                         $subnety = $apcko->related('Subnet.Ap_id');
                         $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
                     }
                 }
-                //\Tracy\Dumper::dump($seznamUzivatelu);
+                //\Tracy\Debugger::barDump($seznamUzivatelu);
 
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
                                                     || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
@@ -239,7 +239,7 @@ class UzivatelPresenter extends BasePresenter
             $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
             foreach ($oblastiAktualnihoUzivatele as $oblast){
                 foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-                    //\Tracy\Dumper::dump($ap->id);
+                    //\Tracy\Debugger::barDump($ap->id);
                     $apcko = $this->ap->getAP($ap->id);
                     $subnety = $apcko->related('Subnet.Ap_id');
                     $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
@@ -269,7 +269,7 @@ class UzivatelPresenter extends BasePresenter
             $aps0 = $this->oblast->formatujOblastiSAP($oblastiSpravce);
             $aps = $aps0 + $aps;
         }
-        //\Tracy\Dumper::dump($aps);
+        //\Tracy\Debugger::barDump($aps);
 
     	$form = new Form($this, 'uzivatelForm');
     	$form->addHidden('id');
@@ -319,7 +319,7 @@ class UzivatelPresenter extends BasePresenter
     		->setValidationScope(FALSE)
     		->addCreateOnClick(TRUE, function (Container $replicator, Container $ip) {
                         $ip->setValues(array('internet'=>1));
-						//\Tracy\Dumper::dump($ip);
+						//\Tracy\Debugger::barDump($ip);
 				  });
 
     	$form->addSubmit('save', 'Uložit')
@@ -433,7 +433,7 @@ class UzivatelPresenter extends BasePresenter
     	$ips = $values->ip;
         $ipsubnet = $values->ipsubnet;
         $iprange = $values->iprange;
-        //\Tracy\Dumper::dump($ips);exit;
+        //\Tracy\Debugger::barDump($ips);exit;
     	unset($values["ip"]);
         unset($values["ipsubnet"]);
         unset($values["iprange"]);
