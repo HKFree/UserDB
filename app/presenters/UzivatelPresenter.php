@@ -239,7 +239,7 @@ class UzivatelPresenter extends BasePresenter
             $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
             foreach ($oblastiAktualnihoUzivatele as $oblast){
                 foreach($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-                    \Tracy\Dumper::dump($ap->id);
+                    //\Tracy\Dumper::dump($ap->id);
                     $apcko = $this->ap->getAP($ap->id);
                     $subnety = $apcko->related('Subnet.Ap_id');
                     $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
