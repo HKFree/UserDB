@@ -5,6 +5,7 @@ namespace App\Services;
 use Nette,
     App\Model,
     PdfResponse\PdfResponse,
+    Tracy\Debugger,
     Nette\Mail\Message;
 
 /**
@@ -22,8 +23,10 @@ class MailService
     
     public function sendConfirmationRequest($uzivatel, $so, $link): void
     {
+        $fromAddress = 'hkfree.org oblast '.$uzivatel->Ap->Oblast->jmeno.' <oblast'.$uzivatel->Ap->Oblast->id.'@hkfree.org>';
+        
         $mail = new Message;
-        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+        $mail->setFrom($fromAddress)
             ->addTo($uzivatel->email)
             ->setSubject('Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$uzivatel->id)
             ->setHtmlBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
@@ -41,8 +44,10 @@ class MailService
 
     public function sendConfirmationRequestCopy($uzivatel, $so): void
     {
+        $fromAddress = 'hkfree.org oblast '.$uzivatel->Ap->Oblast->jmeno.' <oblast'.$uzivatel->Ap->Oblast->id.'@hkfree.org>';
+        
         $mailso = new Message;
-        $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+        $mailso->setFrom($fromAddress)
             ->addTo($so->email)
             ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s. - UID '.$uzivatel->id)
             ->setHtmlBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na '.
@@ -68,8 +73,11 @@ class MailService
     {
         $so = $this->uzivatel->getUzivatel($userid);
 
+        $fromAddress = 'hkfree.org oblast '.$uzivatel->Ap->Oblast->jmeno.' <oblast'.$uzivatel->Ap->Oblast->id.'@hkfree.org>';
+        //\Tracy\Debugger::barDump($fromAddress);
+
         $mail = new Message;
-        $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+        $mail->setFrom($fromAddress)
             ->addTo($uzivatel->email)
             ->addTo($so->email)
             ->setSubject('Registrační formulář člena hkfree.org z.s.')
@@ -86,12 +94,13 @@ class MailService
 
     public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void
     {
+        $fromAddress = 'hkfree.org oblast '.$uzivatel->Ap->Oblast->jmeno.' <oblast'.$uzivatel->Ap->Oblast->id.'@hkfree.org>';
         
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $so = $this->uzivatel->getUzivatel($actuser);
 
         $mailso = new Message;
-        $mailso->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
+        $mailso->setFrom($fromAddress)
             ->addTo($so->email)
             ->setSubject('NOTIFIKACE - Nový plánovaný člen - UID '.$newUser->id)
             ->setHtmlBody('V DB je zadán nový plánovaný člen ve Vaší oblasti s UID '.$newUser->id.'<br><br>'.
