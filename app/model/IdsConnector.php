@@ -52,11 +52,12 @@ class IdsConnector
                     ]
                 ]
             );
-            $elasticResponse = $client->request('GET', $this->idsUrl.'/elasticsearch/_search',
+            $headers2 = [ 'kbn-xsrf' => 'reporting' ];
+            $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/logstash-alert-*/_search',
                 [
                     'cookies' => $jar,
-                    'query' => ['source_content_type' => 'application/json', 'source' =>
-                        json_encode([
+                    'headers' => $headers2,
+                    'json' => [
                             'size' => $limit,
                             'query' => [
                                 'bool' => [
@@ -90,8 +91,7 @@ class IdsConnector
                                     '@timestamp' => ['order' => 'desc']
                                 ]
                             ]
-                        ])
-                    ]
+                        ]
                 ]
             );
             $json = json_decode($elasticResponse->getBody(), true);
