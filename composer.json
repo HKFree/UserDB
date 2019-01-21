@@ -28,8 +28,9 @@
 		"guzzlehttp/guzzle": "~6.0",
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
 		"kdyby/console": "~2.7.1",
-		"defuse/php-encryption": "~2.2.1"
-	},
+		"defuse/php-encryption": "~2.2.1",
+		"ext-json": "*"
+        },
 	"require-dev": {
 		"nette/tester": "~1.0"
 	},

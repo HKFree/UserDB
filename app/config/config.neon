@@ -73,6 +73,7 @@ services:
 	wewimo: App\Model\Wewimo
 	apiKlic: App\Model\ApiKlic
 	smsSender: App\Services\SmsSender("%appDir%/../bin/smsbackend.py")
+	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%)
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:

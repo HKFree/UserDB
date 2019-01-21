@@ -1,0 +1,24 @@
+{if count($idsEvents) > 0}
+    <table class="table table-striped">
+    <thead>
+        <th>Čas</th>
+        <th>Zdrojová IPv4</th>
+        <th>Cílová IPv4</th>
+        <th>Severity</th>
+        <th>Signature</th>
+        <th>Category</th>
+    </thead>
+    <tbody>
+    <tr n:foreach="$idsEvents as $event">
+        <td>{$event['_source']['timestamp']}</td>
+        <td>{$event['_source']['src_ip4']}</td>
+        <td>{$event['_source']['dest_ip4']}</td>
+        <td>{$event['_source']['alert']['severity']}</td>
+        <td>{$event['_source']['alert']['signature']}</td>
+        <td>{$event['_source']['alert']['category']}</td>
+    </tr>
+    </tbody>
+    </table>
+{else}
+    <p class="text-muted">(žádné události)</p>
+{/if}

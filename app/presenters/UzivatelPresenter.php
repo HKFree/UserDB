@@ -40,11 +40,12 @@ class UzivatelPresenter extends BasePresenter
     private $cryptosvc;
     private $pdfGenerator;
     private $mailService;
+    private $idsConnector;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
+    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -63,6 +64,7 @@ class UzivatelPresenter extends BasePresenter
         $this->povoleneSMTP = $alowedSMTP;
         $this->pdfGenerator = $pdf;
         $this->mailService = $mailsvc;
+        $this->idsConnector = $idsConnector;
     }
 
     public function sendNotificationEmail($idUzivatele) {
@@ -607,5 +609,16 @@ class UzivatelPresenter extends BasePresenter
 
     	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele));
     	return true;
+    }
+
+    public function actionIds($id)
+    {
+        if ($id) {
+            if ($uzivatel = $this->uzivatel->getUzivatel($id)) {
+                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
+                $ips = array_values($ipAdresy->fetchPairs('id', 'ip_adresa'));
+                $this->template->idsEvents = $this->idsConnector->getEventsForIps($ips);
+            }
+        }
     }
 }

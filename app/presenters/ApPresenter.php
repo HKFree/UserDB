@@ -23,11 +23,12 @@ class ApPresenter extends BasePresenter {
     private $log;
     private $apiKlic;
     private $cryptosvc;
+    private $idsConnector;
 
     /** @var Components\LogTableFactory @inject */
     public $logTableFactory;
 
-    function __construct(CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic) {
+    function __construct(CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava,Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic, Model\IdsConnector $idsConnector) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;
@@ -37,6 +38,7 @@ class ApPresenter extends BasePresenter {
         $this->typZarizeni = $typZarizeni;
         $this->log = $log;
         $this->apiKlic = $apiKlic;
+        $this->idsConnector = $idsConnector;
     }
 
     public function createComponentLogTable() {
@@ -423,5 +425,25 @@ class ApPresenter extends BasePresenter {
 
         $this->redirect('Ap:show', array('id'=>$idAP));
         return true;
+    }
+
+    public function actionIds($id) {
+        $apt = $this->ap->getAP($id*1);
+        if (!$apt) {
+            $this->error('AP not found');
+        } else {
+            $this->template->ap = $apt;
+            $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
+            $ip2Uzivatel = [];
+            foreach ($seznamUzivatelu as $uzivatel) {
+                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');
+                foreach (array_values($ipAdresy->fetchPairs('id', 'ip_adresa')) as $ipAdresa) {
+                    $ip2Uzivatel[$ipAdresa] = $uzivatel;
+                }
+            }
+            $events = $this->idsConnector->getEventsForIps(array_keys($ip2Uzivatel));
+            $this->template->idsEvents = $events;
+            $this->template->ip2Uzivatel = $ip2Uzivatel;
+        }
     }
 }

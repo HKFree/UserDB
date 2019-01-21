@@ -12,6 +12,8 @@ services:
       - USERDB_DB_PASSWORD=rootpwd654
       # generate USERDB_ENCRYPTION_PASSPHRASE like this: $ vendor/bin/generate-defuse-key
       - USERDB_ENCRYPTION_PASSPHRASE=def000003f80fda926649189d52b4024641f8fa97d1be88638aa8f8c0bec00fdfd756e344f7547db517b17a5ea67085d9de8c88c806795bdec825f8df8b47e6dbb87ec03
+      - USERDB_IDS_USERNAME=api
+      - USERDB_IDS_PASSWORD=xxx
     ports:
       - "80:80"
     volumes:
