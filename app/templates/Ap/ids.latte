@@ -16,7 +16,7 @@
     <tbody>
     <tr n:foreach="$idsEvents as $event">
         <td>{$event['_source']['timestamp']}</td>
-        <td><a href="{link Uzivatel:show id=>$ip2Uzivatel[$event['_source']['src_ip4']]->id}">{$ip2Uzivatel[$event['_source']['src_ip4']]->nick}</a></td>
+        <td><a href="{$ip2Entity[$event['_source']['src_ip4']]['link']}">{$ip2Entity[$event['_source']['src_ip4']]['label']}</a></td>
         <td>{$event['_source']['src_ip4']}</td>
         <td>{$event['_source']['dest_ip4']}</td>
         <td>{$event['_source']['alert']['severity']}</td>

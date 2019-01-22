@@ -434,16 +434,26 @@ class ApPresenter extends BasePresenter {
         } else {
             $this->template->ap = $apt;
             $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
-            $ip2Uzivatel = [];
+            $ip2Entity = [];
             foreach ($seznamUzivatelu as $uzivatel) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');
                 foreach (array_values($ipAdresy->fetchPairs('id', 'ip_adresa')) as $ipAdresa) {
-                    $ip2Uzivatel[$ipAdresa] = $uzivatel;
+                    $ip2Entity[$ipAdresa] = [
+                        'label' => $uzivatel->nick,
+                        'link' => $this->link('Uzivatel:show', [ 'id' => $uzivatel->id ]),
+                    ];
                 }
             }
-            $events = $this->idsConnector->getEventsForIps(array_keys($ip2Uzivatel));
+            $apIps = $apt->related('IPAdresa.Ap_id');
+            foreach (array_values($apIps->fetchPairs('id', 'ip_adresa')) as $ipAdresa) {
+                $ip2Entity[$ipAdresa] = [
+                    'label' => 'AP '.$apt->jmeno,
+                    'link' => $this->link('Ap:show', [ 'id' => $apt->id ]),
+                ];
+            }
+            $events = $this->idsConnector->getEventsForIps(array_keys($ip2Entity));
             $this->template->idsEvents = $events;
-            $this->template->ip2Uzivatel = $ip2Uzivatel;
+            $this->template->ip2Entity = $ip2Entity;
         }
     }
 }
