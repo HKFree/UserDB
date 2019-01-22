@@ -23,6 +23,19 @@ class IdsConnector
         $this->idsPassword = $idsPassword;
     }
 
+    private function getRelevantIndexes($prefix, $daysBack) {
+        //
+        $indexes = [];
+        $date = new \DateTime();
+        $date->setTimezone(new \DateTimeZone('GMT'));
+        //$indexes = [$prefix.'2019.01.22',$prefix.'2019.01.23'];
+        for ($i = 0; $i <= $daysBack; $i++) {
+            $indexes []= $prefix.$date->format('Y.m.d');;
+            $date = $date->modify('-1 day');
+        }
+        return $indexes;
+    }
+
     public function getEventsForIps(array $ips, $daysBack=7, $limit=1000)
     {
         $stack = HandlerStack::create();
@@ -53,7 +66,8 @@ class IdsConnector
                 ]
             );
             $headers2 = [ 'kbn-xsrf' => 'reporting' ];
-            $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/logstash-alert-*/_search',
+            $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
+            $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
                 [
                     'cookies' => $jar,
                     'headers' => $headers2,
