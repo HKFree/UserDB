@@ -96,6 +96,9 @@ class IdsConnector
                                         ],
                                         [
                                             'match_phrase' => ['alert.category.raw' => 'Potentially Bad Traffic'],
+                                        ],
+                                        [
+                                            'match_phrase' => ['alert.category.raw' => 'Not Suspicious Traffic'],
                                         ]
                                     ]
                                 ]
