@@ -1,0 +1,32 @@
+{block content}
+
+<h3>Události z IDS {$ap->jmeno} <small>za posledních 7 dní, max. 1000 záznamů</small></h3>
+
+{if count($idsEvents) > 0}
+    <table class="table table-striped">
+    <thead>
+        <th>Čas</th>
+        <th>Uživatel</th>
+        <th>Zdrojová IPv4</th>
+        <th>Cílová IPv4</th>
+        <th>Severity</th>
+        <th>Signature</th>
+        <th>Category</th>
+    </thead>
+    <tbody>
+    <tr n:foreach="$idsEvents as $event">
+        <td>{$event['_source']['timestamp']}</td>
+        <td><a href="{$ip2Entity[$event['_source']['src_ip4']]['link']}">{$ip2Entity[$event['_source']['src_ip4']]['label']}</a></td>
+        <td>{$event['_source']['src_ip4']}</td>
+        <td>{$event['_source']['dest_ip4']}</td>
+        <td>{$event['_source']['alert']['severity']}</td>
+        <td>{$event['_source']['alert']['signature']}</td>
+        <td>{$event['_source']['alert']['category']}</td>
+    </tr>
+    </tbody>
+    </table>
+{else}
+    <p class="text-muted">(žádné události)</p>
+{/if}
+
+{/block}

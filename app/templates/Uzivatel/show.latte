@@ -97,6 +97,11 @@
             <p>{$adresyline}</p>
         {/if}
 
+        <h4>Události z IDS <small>za posledních 7 dní, max. 1000 záznamů</small></h4>
+        <div id="ids">
+            Načítám...
+        </div>
+
     {if $canViewOrEdit}
         <script>
             $(document).ready(function( $ ) {
@@ -112,6 +117,22 @@
         {control logTable, $u->id}
 
     {/if}
+
 {/ifset}
+
+<script>
+$(function(){
+    if ($('#ids')) {
+        $.ajax({
+            url : {link ids},
+            type: 'GET',
+            success: function(data){
+                $('#ids').html(data);
+            }
+        });
+    }
+});
+
+</script>
 {/block}
 
