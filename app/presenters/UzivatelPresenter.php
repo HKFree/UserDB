@@ -37,6 +37,7 @@ class UzivatelPresenter extends BasePresenter
     private $sloucenyUzivatel;
     private $parameters;
     private $povoleneSMTP;
+    private $dnat;
     private $cryptosvc;
     private $pdfGenerator;
     private $mailService;
@@ -45,7 +46,7 @@ class UzivatelPresenter extends BasePresenter
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector) {
+    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -62,6 +63,7 @@ class UzivatelPresenter extends BasePresenter
         $this->sloucenyUzivatel = $slUzivatel;
         $this->parameters = $parameters;
         $this->povoleneSMTP = $alowedSMTP;
+        $this->dnat = $dnat;
         $this->pdfGenerator = $pdf;
         $this->mailService = $mailsvc;
         $this->idsConnector = $idsConnector;
@@ -443,6 +445,7 @@ class UzivatelPresenter extends BasePresenter
         $genaddresses = array();
         $newUserIPIDs = array();
         $smtpIPIDs = array();
+        $dnatIPIDs = array();
 
         //generovani ip pro vlozeni ze subnetu
         $genaddresses = $this->ipAdresa->getListOfIPFromSubnet($ipsubnet);
@@ -599,9 +602,16 @@ class UzivatelPresenter extends BasePresenter
                 {
                     $smtpIPIDs[] = intval($isSMTP->id);
                 }
+                $isDNAT = $this->dnat->getIP($oldip->id);
+                if($isDNAT)
+                {
+                    $dnatIPIDs[] = intval($isDNAT->ip);
+                }
             }
         }
         $this->povoleneSMTP->deleteIPs($smtpIPIDs);
+
+        $this->dnat->deleteIPs($dnatIPIDs);
 
         $this->ipAdresa->deleteIPAdresy($toDelete);
 

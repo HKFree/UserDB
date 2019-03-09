@@ -66,6 +66,7 @@ services:
 	pdfGenerator: App\Services\PdfGenerator
 	mailService: App\Services\MailService
 	povoleneSMTP: App\Model\PovoleneSMTP
+	dnat: App\Model\DNat
 	accountActivation: App\Model\AccountActivation
 	logTableFactory: App\Components\LogTableFactory
 	parameters: App\Model\Parameters(%clenskyPrispevek%)
