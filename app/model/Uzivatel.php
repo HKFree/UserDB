@@ -160,6 +160,8 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
                                             OR CONVERT(Uzivatel.nick USING utf8) LIKE '%$search%'
                                             OR CONVERT(Uzivatel.jmeno USING utf8) LIKE '%$search%'
                                             OR CONVERT(Uzivatel.prijmeni USING utf8) LIKE '%$search%'
+                                            OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE '%$search%'
+                                            OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE '%$search%'
                                             OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE '%$search%'
                                             ) AND (SpravceOblasti.Uzivatel_id = $uid AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))")->fetchPairs('id','id');
 
@@ -171,8 +173,14 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
             }
         }
         else{
-            return $this->findAll()->where("telefon LIKE ? OR email LIKE ? OR email2 LIKE ? OR CONVERT(nick USING utf8) LIKE ? OR CONVERT(jmeno USING utf8) LIKE ? OR CONVERT(prijmeni USING utf8) LIKE ? OR CONVERT(ulice_cp USING utf8) LIKE ?", 
-            '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%')->fetchAll();
+            return $this->findAll()->where("telefon LIKE ? OR email LIKE ? OR email2 LIKE ? 
+            OR CONVERT(nick USING utf8) LIKE ? 
+            OR CONVERT(jmeno USING utf8) LIKE ? 
+            OR CONVERT(prijmeni USING utf8) LIKE ? 
+            OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
+            OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
+            OR CONVERT(ulice_cp USING utf8) LIKE ?", 
+            '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%', '%'.$search.'%')->fetchAll();
         }
 
 
