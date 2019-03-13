@@ -556,9 +556,14 @@ class UzivatelPresenter extends BasePresenter
                 $ip->heslo = null;
             }
 
-            if (isset($ip->heslo) && !empty($ip->heslo)) {
+            if($ip->heslo && strlen($ip->heslo) > 0)
+            {
                 $ip->heslo = $this->cryptosvc->encrypt($ip->heslo);
-                $ip->heslo_sifrovane = 1;
+                $ip->heslo_sifrovane = 1; 
+            }
+            else
+            {
+                $ip->heslo_sifrovane = 0;
             }
 
             if(empty($ip->id)) {

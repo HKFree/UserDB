@@ -333,8 +333,16 @@ class ApPresenter extends BasePresenter {
             $ip->Ap_id = $idAP;
             $idIp = $ip->id;
 
-            $ip->heslo = $this->cryptosvc->encrypt($ip->heslo);
-            $ip->heslo_sifrovane = 1;
+            if($ip->heslo && strlen($ip->heslo) > 0)
+            {
+                $ip->heslo = $this->cryptosvc->encrypt($ip->heslo);
+                $ip->heslo_sifrovane = 1;
+            }
+            else
+            {
+                $ip->heslo_sifrovane = 0;
+            }
+            
 
             if(empty($ip->id)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;
