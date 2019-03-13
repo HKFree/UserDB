@@ -8,7 +8,7 @@ if (getenv('TRACY_ENABLE', true)) {
     $configurator->setDebugMode(true); // enable for all IP
 }
 //$configurator->setDebugMode(false); // disable for all IP (incl. localhost)
-$configurator->setDebugMode('81.201.60.32'); // enable for IP 81.201.60.32
+//$configurator->setDebugMode('81.201.60.32'); // enable for IP 81.201.60.32
 
 if (php_sapi_name() !== 'cli') {
     // enable Tracy only in web env. Dump errors to console in CLI mode (eg. during git-based deployment).
