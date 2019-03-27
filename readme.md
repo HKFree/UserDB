@@ -3,6 +3,11 @@ Powerful [HKFree.org](http://www.hkfree.org) user and IP management system
 
 Developed by powerful team - Evil, ZitnyP, Bkralik & pavkriz
 
+## Before you begin
+ - install PHP 7.2
+ - install https://getcomposer.org/
+ - install https://www.docker.com/get-started
+
 ## Installation
 
 ```bash
@@ -10,8 +15,7 @@ git clone https://github.com/HKFree/UserDB.git
 cd UserDB
 composer install
 cp app/config/config.local.DIST.neon app/config/config.local.neon
-vi app/config/config.local.neon www/.htaccess
-rm -rf temp/cache
+vi app/config/config.local.neon www/.htaccess docker-compose.yml
 php www/index.php migrations:continue
 ```
 
@@ -20,17 +24,6 @@ php www/index.php migrations:continue
 ### Editor
 
 Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig.org/#download)
-
-### Build, commit
-
-```bash
-git pull origin master
-composer install
-php www/index.php migrations continue
-# develop your freaking cool feature
-git pull origin master
-git push origin master
-```
 
 ### Run locally
 
@@ -44,6 +37,18 @@ docker-compose exec web php www/index.php migrations:continue
 ```
 
 Now the app is up and running in Docker on host's port 80, PhpMyAdmin on host's port 8080.
+
+### Build, commit
+
+```bash
+git pull origin master
+composer install
+php www/index.php migrations continue
+# develop your freaking cool feature
+git pull origin master
+git push origin master
+```
+
 
 ## Deployment
 
