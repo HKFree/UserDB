@@ -188,6 +188,12 @@ paths:
                 type: array
                 items:
                   type: object
+  /ids:
+    get:
+      summary: Vraci seznam vsech podezrelych privatnich IP z Intrusion Detection Systemu (IDS)
+        responses:
+          200:
+            description: Seznam IP
 
 definitions:
   Oblast:

@@ -14,6 +14,15 @@ class IdsConnector
     private $idsUrl;
 
     /**
+     * Nedulezite typy udalosti:
+     */
+    const IGNORED_ALERTS = [
+        ['match_phrase' => ['alert.category.raw' => 'Potential Corporate Privacy Violation'],],
+        ['match_phrase' => ['alert.category.raw' => 'Potentially Bad Traffic'],],
+        ['match_phrase' => ['alert.category.raw' => 'Not Suspicious Traffic'],]
+    ];
+
+    /**
      * IdsConnector constructor.
      */
     public function __construct(string $idsUrl, string $idsUsername, string $idsPassword)
@@ -23,20 +32,7 @@ class IdsConnector
         $this->idsPassword = $idsPassword;
     }
 
-    private function getRelevantIndexes($prefix, $daysBack) {
-        //
-        $indexes = [];
-        $date = new \DateTime();
-        $date->setTimezone(new \DateTimeZone('GMT'));
-        //$indexes = [$prefix.'2019.01.22',$prefix.'2019.01.23'];
-        for ($i = 0; $i <= $daysBack; $i++) {
-            $indexes []= $prefix.$date->format('Y.m.d');;
-            $date = $date->modify('-1 day');
-        }
-        return $indexes;
-    }
-
-    public function getEventsForIps(array $ips, $daysBack=7, $limit=1000)
+    protected function getElasticHttpClient(): \GuzzleHttp\Client
     {
         $stack = HandlerStack::create();
         $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
@@ -48,6 +44,7 @@ class IdsConnector
 
         $client = new \GuzzleHttp\Client(['verify' => false, 'handler' => $stack]);
         $jar = new \GuzzleHttp\Cookie\CookieJar();
+
         $loginFormResponse = $client->request('GET', $this->idsUrl, ['cookies' => $jar]);
         if (preg_match('/csrfmiddlewaretoken.*value=\'(.+)\'/', $loginFormResponse->getBody(), $matches)) {
             $csrfToken = $matches[1];
@@ -66,59 +63,106 @@ class IdsConnector
                 ]
             );
             $headers2 = [ 'kbn-xsrf' => 'reporting' ];
-            $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
-            $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
-                [
-                    'cookies' => $jar,
-                    'headers' => $headers2,
-                    'json' => [
-                            'size' => $limit,
-                            'query' => [
-                                'bool' => [
-                                    'must' => [
-                                        [
-                                            // "match_phrase" => ["src_ip.raw" => '10.107.212.241']],
-                                            // "wildcard" => ["src_ip.raw" => '10.107.212.*']],
-                                            'terms' => ['src_ip.raw' => $ips]
-                                        ],
-                                        ['range' => [
-                                            '@timestamp' => [
-                                                'gte' => 'now-' .$daysBack. 'd',
-                                                'lte' => 'now'
-                                            ]
-                                        ]
-                                        ]
+            return new \GuzzleHttp\Client([
+                'verify' => false,
+                'handler' => $stack,
+                'headers' => $headers2,
+                'cookies' => $jar,
+            ]);
+        }
+        throw new \RuntimeException('Error getting IDS CSRF token');
+    }
+
+    protected function getRange($daysBack): array
+    {
+        return ['range' => ['@timestamp' => ['gte' => 'now-' . $daysBack . 'd', 'lte' => 'now']]];
+    }
+
+    private function getRelevantIndexes($prefix, $daysBack) {
+        //
+        $indexes = [];
+        $date = new \DateTime();
+        $date->setTimezone(new \DateTimeZone('GMT'));
+        //$indexes = [$prefix.'2019.01.22',$prefix.'2019.01.23'];
+        for ($i = 0; $i <= $daysBack; $i++) {
+            $indexes []= $prefix.$date->format('Y.m.d');;
+            $date = $date->modify('-1 day');
+        }
+        return $indexes;
+    }
+
+    public function getEventsForIps(array $ips, $daysBack=7, $limit=1000)
+    {
+        $client = $this->getElasticHttpClient();
+        $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
+        $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
+            [
+                'json' => [
+                        'size' => $limit,
+                        'query' => [
+                            'bool' => [
+                                'must' => [
+                                    [
+                                        // "match_phrase" => ["src_ip.raw" => '10.107.212.241']],
+                                        // "wildcard" => ["src_ip.raw" => '10.107.212.*']],
+                                        'terms' => ['src_ip.raw' => $ips]
                                     ],
-                                    'must_not' => [
-                                        // nedulezite udalosti:
-                                        [
-                                            'match_phrase' => ['alert.category.raw' => 'Potential Corporate Privacy Violation'],
-                                        ],
-                                        [
-                                            'match_phrase' => ['alert.category.raw' => 'Potentially Bad Traffic'],
-                                        ],
-                                        [
-                                            'match_phrase' => ['alert.category.raw' => 'Not Suspicious Traffic'],
-                                        ]
-                                    ]
-                                ]
-                            ],
-                            'sort' => [
-                                [
-                                    '@timestamp' => ['order' => 'desc']
-                                ]
+                                    $this->getRange($daysBack)
+                                ],
+                                'must_not' => self::IGNORED_ALERTS
+                            ]
+                        ],
+                        'sort' => [
+                            [
+                                '@timestamp' => ['order' => 'desc']
                             ]
                         ]
-                ]
-            );
-            $json = json_decode($elasticResponse->getBody(), true);
-            if ($json) {
-                return $json['hits']['hits'];
-            } else {
-                throw new \RuntimeException('Empty response from IDS, maybe wrong IDS username/password?');
-            }
+                    ]
+            ]
+        );
+        $json = json_decode($elasticResponse->getBody(), true);
+        if ($json) {
+            return $json['hits']['hits'];
         } else {
-            throw new \RuntimeException('Error getting IDS CSRF token');
+            throw new \RuntimeException('Empty response from IDS, maybe wrong IDS username/password?');
+        }
+    }
+
+    public function getUniqueIpsFromPrivateSubnets($daysBack=7, $limit=2000)
+    {
+        $client = $this->getElasticHttpClient();
+        $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
+        $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
+            [
+                'json' => [
+                    'size' => 0,
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                     "wildcard" => ["src_ip.raw" => '10.107.*'],
+                                ],
+                                $this->getRange($daysBack)
+                            ],
+                            'must_not' => self::IGNORED_ALERTS
+                        ]
+                    ],
+                    'aggs' => [
+                        'uniq_ip' => [
+                            'terms' => [
+                                'field' => 'src_ip.raw',
+                                'size' => $limit,
+                            ],
+                        ],
+                    ],
+                ]
+            ]
+        );
+        $json = json_decode($elasticResponse->getBody(), true);
+        if ($json) {
+            return $json['aggregations']['uniq_ip']['buckets'];
+        } else {
+            throw new \RuntimeException('Empty response from IDS, maybe wrong IDS username/password?');
         }
     }
 }
