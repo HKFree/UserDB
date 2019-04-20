@@ -293,6 +293,18 @@ class IPAdresa extends Table
 						->setClass('glyphicon glyphicon-dashboard'));
 				$buttons[]= $webButton;
 			}
+                        // signal grafana button
+                        if (isset($ip->w_client_mac)) {
+                            $signalGrafanaButton = Html::el('a')
+                                ->setHref('http://sojka.hkfree.org/grafana/d/dKlgTs6mk/wewimo?orgId=1&from=now-20d&to=now&refresh=1h&var-Station_MAC=' . $ip->w_client_mac)
+                                ->setTarget('_blank')
+                                ->setClass('btn btn-default btn-xs btn-in-table')
+                                ->setTitle('Otevřít graf signálu')
+                                ->addAttributes($tooltips)
+                                ->addHtml(Html::el('span')
+                                    ->setClass('glyphicon glyphicon-signal'));
+                            $buttons[]= $signalGrafanaButton;
+                        }
 			// winbox button
 			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$link = 'winbox:'.$ip->ip_adresa;

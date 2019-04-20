@@ -238,6 +238,7 @@ class Wewimo
                 $lastIpsByMac = $this->ipadresa->getLastIpsForMacs($searchMacs);
                 foreach ($wewimoData['interfaces'] as &$interface) {
                     foreach ($interface['stations'] as &$station) {
+                        $station['xx-grafana-link'] = 'http://sojka.hkfree.org/grafana/d/dKlgTs6mk/wewimo?orgId=1&from=now-20d&to=now&refresh=1h&var-Station_MAC=' . $station['mac-address'];
                         if (array_key_exists($station['mac-address'], $ips)) {
                             $ipRec = $ips[$station['mac-address']];
                             if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {

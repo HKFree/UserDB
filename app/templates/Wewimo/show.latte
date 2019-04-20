@@ -85,6 +85,14 @@
                                     {else}
                                         {$row['mac-address']}
                                     {/if}
+                                    <a
+                                        href="{$row['xx-grafana-link']}"
+                                        target="_blank"
+                                        class="btn btn-default btn-xs btn-in-table"
+                                        title=""
+                                        data-toggle="tooltip"
+                                        data-placement="top"
+                                        data-original-title="Otevřít graf signálu"><span class="glyphicon glyphicon-signal"></span></a>
                                 </td>
                                 <td>{$row['xx-mac-host']}</td>
                                 <td>{$row['radio-name']}</td>
