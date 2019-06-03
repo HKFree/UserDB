@@ -14,12 +14,13 @@ class IdsConnector
     private $idsUrl;
 
     /**
-     * Nedulezite typy udalosti:
+     * Nedulezite a nevyladene (caste false-positive) typy udalosti:
      */
     const IGNORED_ALERTS = [
         ['match_phrase' => ['alert.category.raw' => 'Potential Corporate Privacy Violation'],],
         ['match_phrase' => ['alert.category.raw' => 'Potentially Bad Traffic'],],
-        ['match_phrase' => ['alert.category.raw' => 'Not Suspicious Traffic'],]
+        ['match_phrase' => ['alert.category.raw' => 'Not Suspicious Traffic'],],
+        ['match_phrase' => ['alert.signature.raw' => 'ET SCAN Potential SSH Scan OUTBOUND'],]
     ];
 
     /**
