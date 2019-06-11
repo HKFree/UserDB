@@ -42,11 +42,12 @@ class UzivatelPresenter extends BasePresenter
     private $pdfGenerator;
     private $mailService;
     private $idsConnector;
+    private $aplikaceToken;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector) {
+    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector, Model\AplikaceToken $aplikaceToken) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -67,6 +68,7 @@ class UzivatelPresenter extends BasePresenter
         $this->pdfGenerator = $pdf;
         $this->mailService = $mailsvc;
         $this->idsConnector = $idsConnector;
+        $this->aplikaceToken = $aplikaceToken;
     }
 
     public function sendNotificationEmail($idUzivatele) {
@@ -504,6 +506,10 @@ class UzivatelPresenter extends BasePresenter
             if($olduzivatel->email != $values->email || $olduzivatel->email2 != $values->email2)
             {
                 $values->email_invalid=0;
+            }
+
+            if($values->TypClenstvi_id <= 1) {
+                $this->aplikaceToken->deleteTokensForUID($idUzivatele);
             }
 
             if($olduzivatel->TypClenstvi_id == 0 && $values->TypClenstvi_id == 1)

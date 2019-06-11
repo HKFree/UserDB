@@ -73,6 +73,8 @@ services:
 	cryptoSluzba: App\Services\CryptoSluzba(%env.USERDB_ENCRYPTION_PASSPHRASE%)
 	wewimo: App\Model\Wewimo
 	apiKlic: App\Model\ApiKlic
+	aplikaceToken: App\Model\AplikaceToken
+	aplikaceLog: App\Model\AplikaceLog
 	smsSender: App\Services\SmsSender("%appDir%/../bin/smsbackend.py")
 	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%)
 	SpravaPresenter:
