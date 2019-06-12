@@ -255,6 +255,16 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
         return $dash_str;
     }
 
+    public function generateStrongHash($password)
+    {
+        return(hash('sha256', $password));
+    }
+
+    public function generateWeakHash($password)
+    {
+        return(crypt($password, 'hk'));
+    }
+
     public function getNewID()
     {
         return $this->getConnection()->query('SELECT t1.id+1 AS Free
