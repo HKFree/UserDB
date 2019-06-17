@@ -10,12 +10,14 @@ class AppPresenter extends ApiPresenter
     private $uzivatel;
     private $aplikaceToken;
     private $aplikaceLog;
+    private $ap;
 
-    function __construct(\App\Model\Uzivatel $uzivatel, \App\Model\AplikaceToken $aplikaceToken, \App\Model\AplikaceLog $aplikaceLog)
+    function __construct(\App\Model\Uzivatel $uzivatel, \App\Model\AplikaceToken $aplikaceToken, \App\Model\AplikaceLog $aplikaceLog, \App\Model\Ap $ap)
     {
         $this->uzivatel = $uzivatel;
         $this->aplikaceToken = $aplikaceToken;
         $this->aplikaceLog = $aplikaceLog;
+        $this->ap = $ap;
     }
 
     public function renderGetToken()
@@ -76,6 +78,35 @@ class AppPresenter extends ApiPresenter
 
         $this->aplikaceLog->log('app.getMembership.successful', array($uid, $token));
         $this->sendResponse( new JsonResponse(['result' => 'OK', 'clenstvi' => $u->TypClenstvi->text, 'jmeno' => $u->jmeno]) );
+    }
+
+    public function renderGetMap($uid, $token)
+    {
+        $this->verifyToken($uid, $token);
+
+        $aps = $this->ap->findAll()->where('gps NOT ?', null);
+
+        $out = array();
+        foreach($aps as $ap) {
+            $spravci = $ap->Oblast->related('SpravceOblasti.Oblast_id')->where('TypSpravceOblasti_id', 1)->where('od < NOW()')->where('do IS NULL OR do > NOW()');
+
+            $spravci_formated = array();
+            foreach($spravci as $spravce) {
+                $spravci_formated[] = array(
+                    'jmeno' => $spravce->Uzivatel->jmeno . ' ' . $spravce->Uzivatel->prijmeni,
+                    'nick' => $spravce->Uzivatel->nick,
+                    'email' => $spravce->Uzivatel->email
+                );
+            }
+
+            $out[$ap->id] = array(
+                "jmeno" => $ap->jmeno,
+                "gps" => $ap->gps,
+                "spravci" => $spravci_formated
+            );
+        }
+
+        $this->sendResponse( new JsonResponse(['result' => 'OK', 'aps' => $out]) );
     }
 
     private function verifyToken($uid, $token)
