@@ -99,7 +99,8 @@ class AppPresenter extends ApiPresenter
                 );
             }
 
-            $out[$ap->id] = array(
+            $out[] = array(
+                "id" => $ap->id,
                 "jmeno" => $ap->jmeno,
                 "gps" => $ap->gps,
                 "spravci" => $spravci_formated
