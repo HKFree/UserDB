@@ -129,12 +129,12 @@ paths:
                 items:
                   type: object
 
-  /password/default/{id_ap}:
+  /password/default:
     get:
       summary: Login a heslo pro danou IP adresu
       parameters:
         - name: id_ap
-          in: path
+          in: query
           required: false
           description: ID APcka
           type: integer
@@ -154,12 +154,12 @@ paths:
                 items:
                   type: object
   
-  /password/save/{id_ap}:
+  /password/save:
     get:
       summary: Ulozi login a heslo pro danou IP adresu
       parameters:
         - name: id_ap
-          in: path
+          in: query
           required: false
           description: ID APcka
           type: integer
@@ -188,12 +188,13 @@ paths:
                 type: array
                 items:
                   type: object
+
   /ids:
     get:
       summary: Vraci seznam vsech podezrelych privatnich IP z Intrusion Detection Systemu (IDS)
-        responses:
-          200:
-            description: Seznam IP
+      responses:
+        200:
+          description: Seznam IP
 
 definitions:
   Oblast:
@@ -213,6 +214,7 @@ definitions:
         description: "Seznam spávců dané oblasti: asoc. pole klíč=id_uživatele, hodnota=Spravce"
         additionalProperties:
               $ref: "#/definitions/Spravce"
+
   Ap:
     type: object
     properties:
