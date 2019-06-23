@@ -62,6 +62,12 @@ When something goes wrong, try to run `(cd /opt/UserDB.git; hooks/post-receive)`
 
 See [git-hooks/post-receive.sample](git-hooks/post-receive.sample) for more details what happens during deployment on server side.
 
+### Jobs to be run
+
+Run `php www/index.php app:update_locations` regularly in order to update users' locations based on their addresses.
+
+Crontab record example: `*/5 * * * * (docker exec userdb php www/index.php app:update_locations) 2>&1 | /usr/bin/logger -t userdb_locations`
+
 ## Making DB changes
 
 ###Creating new change-script
