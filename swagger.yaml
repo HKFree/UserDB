@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: UserDB.hkfree.org API
   description: API pro přístup k některým údajům v databázi uživatelů hkfree.org
-  version: "1.0.1"
+  version: "1.0.2"
 # the domain of the service
 host: userdb.hkfree.org
 # array of all schemes that your API supports
@@ -129,12 +129,12 @@ paths:
                 items:
                   type: object
 
-  /password/default/{id_ap}:
+  /password/default:
     get:
       summary: Login a heslo pro danou IP adresu
       parameters:
         - name: id_ap
-          in: path
+          in: query
           required: false
           description: ID APcka
           type: integer
@@ -154,12 +154,12 @@ paths:
                 items:
                   type: object
   
-  /password/save/{id_ap}:
+  /password/save:
     get:
       summary: Ulozi login a heslo pro danou IP adresu
       parameters:
         - name: id_ap
-          in: path
+          in: query
           required: false
           description: ID APcka
           type: integer
@@ -188,12 +188,130 @@ paths:
                 type: array
                 items:
                   type: object
+
   /ids:
     get:
       summary: Vraci seznam vsech podezrelych privatnich IP z Intrusion Detection Systemu (IDS)
-        responses:
-          200:
-            description: Seznam IP
+      responses:
+        200:
+          description: Seznam IP
+
+  /app/get-token:
+    post:
+      summary: Ověří uživatelské přihlašovací údaje a v případě úspěchu vypadá přístupový token
+      parameters:
+        - name: uid
+          in: query
+          required: true
+          description: UID člena
+          type: integer
+        - name: heslo
+          in: query
+          required: true
+          description: Uživatelské heslo
+          type: string
+      responses:
+        200:
+          description: Status a vygenerovaný token
+          schema:
+            type: object
+            properties:
+              result:
+                type: string
+              token:
+                type: string
+          examples:
+            application/json:
+              result: "OK"
+              token: "wb1ad5wpycgm9ra2cc93erjrmr8k1hu3uflgdia8f64316xmc1z7w3ybtd7swz8z"
+
+  /app/get-membership:
+    get:
+      summary: Ověří token a vrátí potvrzení platnosti členství uživatele
+      parameters:
+        - name: uid
+          in: query
+          required: true
+          description: UID člena
+          type: integer
+        - name: token
+          in: query
+          required: true
+          description: Přístupový token vydaný metodou get-token
+          type: string
+      responses:
+        200:
+          description: Status, typ členství a jméno
+          schema:
+            type: object
+            properties:
+              result:
+                type: string
+              clenstvi:
+                type: string
+              jmeno:
+                type: string
+          examples:
+            application/json:
+              result: "OK"
+              clenstvi: "řádné"
+              jmeno: "Karel Novak"
+
+  /app/get-map:
+    get:
+      summary: Ověří token a vrátí mapové údaje přístupových bodů včetně správcovských informací
+      parameters:
+        - name: uid
+          in: query
+          required: true
+          description: UID člena
+          type: integer
+        - name: token
+          in: query
+          required: true
+          description: Přístupový token vydaný metodou get-token
+          type: string
+      responses:
+        200:
+          description: složité
+          schema:
+            type: object
+            properties:
+              result:
+                type: string
+              aps:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    jmeno:
+                      type: string
+                    gps:
+                      type: string
+                    spravci:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          jmeno:
+                            type: string
+                          nick:
+                            type: string
+                          email:
+                            type: string
+          examples:
+            application/json:
+              result: "OK"
+              aps:
+                - id: 1
+                  jmeno: "Testovací AP"
+                  gps: "50.209918,15.757680"
+                  spravci:
+                    - jmeno: "Tester testovací"
+                      nick: "tester"
+                      email: "tester@example.hkfree.org"
 
 definitions:
   Oblast:
@@ -213,6 +331,7 @@ definitions:
         description: "Seznam spávců dané oblasti: asoc. pole klíč=id_uživatele, hodnota=Spravce"
         additionalProperties:
               $ref: "#/definitions/Spravce"
+
   Ap:
     type: object
     properties:
