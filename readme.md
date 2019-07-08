@@ -73,7 +73,7 @@ Crontab record example: `*/5 * * * * (docker exec userdb php www/index.php app:u
 ###Creating new change-script
 
 Run
-`php www/index.php migrations:create s short-description-of-the-change`
+`docker exec -it userdb_web_1 php www/index.php migrations:create s short-description-of-the-change`
 and edit the change-script created.
 
 - s = structures (applied always)
