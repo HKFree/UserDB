@@ -252,7 +252,7 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
 
-            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') 
+            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
                                                 || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
                                                 || in_array($uzivatel->id,$seznamUzivatelu);
         }
@@ -499,7 +499,7 @@ class UzivatelPresenter extends BasePresenter
             else{
                 $this->sendNotificationEmail($idUzivatele);
             }
-            
+
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
 
@@ -565,7 +565,7 @@ class UzivatelPresenter extends BasePresenter
             if($ip->heslo && strlen($ip->heslo) > 0)
             {
                 $ip->heslo = $this->cryptosvc->encrypt($ip->heslo);
-                $ip->heslo_sifrovane = 1; 
+                $ip->heslo_sifrovane = 1;
             }
             else
             {
@@ -638,7 +638,15 @@ class UzivatelPresenter extends BasePresenter
             if ($uzivatel = $this->uzivatel->getUzivatel($id)) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
                 $ips = array_values($ipAdresy->fetchPairs('id', 'ip_adresa'));
-                $this->template->idsEvents = $this->idsConnector->getEventsForIps($ips);
+                try {
+                    $this->template->idsEvents = $this->idsConnector->getEventsForIps($ips);
+                } catch (\Exception $ex) {
+                    if (Debugger::$productionMode) {
+                        throw $ex;
+                    } else {
+                        $this->template->idsEvents = array(); // silently ignore in non-prod environment
+                    }
+                }
             }
         }
     }
