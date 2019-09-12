@@ -12,6 +12,7 @@ class IdsConnector
     private $idsUsername;
     private $idsPassword;
     private $idsUrl;
+    private $idsIpsWhitelist;
 
     /**
      * Nedulezite a nevyladene (caste false-positive) typy udalosti:
@@ -28,11 +29,12 @@ class IdsConnector
     /**
      * IdsConnector constructor.
      */
-    public function __construct(string $idsUrl, string $idsUsername, string $idsPassword)
+    public function __construct(string $idsUrl, string $idsUsername, string $idsPassword, string $idsIpsWhitelist)
     {
         $this->idsUrl = $idsUrl;
         $this->idsUsername = $idsUsername;
         $this->idsPassword = $idsPassword;
+        $this->idsIpsWhitelist = explode(',', $idsIpsWhitelist);
     }
 
     protected function getElasticHttpClient(): \GuzzleHttp\Client
@@ -162,8 +164,12 @@ class IdsConnector
             ]
         );
         $json = json_decode($elasticResponse->getBody(), true);
+        $resultArray = $json['aggregations']['uniq_ip']['buckets'];
+        $resultArrayFiltered = array_filter($resultArray, function($k) {
+            return !in_array($k['key'], $this->idsIpsWhitelist, true);
+        });
         if ($json) {
-            return $json['aggregations']['uniq_ip']['buckets'];
+            return $resultArrayFiltered;
         } else {
             throw new \RuntimeException('Empty response from IDS, maybe wrong IDS username/password?');
         }
