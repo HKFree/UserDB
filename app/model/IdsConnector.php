@@ -23,7 +23,8 @@ class IdsConnector
         ['match_phrase' => ['alert.category.raw' => 'Not Suspicious Traffic'],],
         ['match_phrase' => ['alert.signature.raw' => 'ET SCAN Potential SSH Scan OUTBOUND'],],  // false-positive u ruznych multi-git / multi-ssh klientu apod.
         ['match_phrase' => ['alert.signature.raw' => 'HKFree rule HOME->EXT, track by_src, Generic Potential Attack Attempt'],], // false-positive u speedtest.net
-        ['match_phrase' => ['alert.signature.raw' => 'HKFree rule HOME->EXT,UDP,track by_src,Generic Potential UDP DOS Attempt'],] // false-positive zrejme pri syncu GDrive
+        ['match_phrase' => ['alert.signature.raw' => 'HKFree rule HOME->EXT,UDP,track by_src,Generic Potential UDP DOS Attempt'],], // false-positive zrejme pri syncu GDrive
+        ['match_phrase' => ['alert.signature.raw' => 'ET CNC Zeus Tracker Reported CnC Server'],] // spousta false-positives kvuli neupdatovani pravidel 13.9.2019-18.9.2019
     ];
 
     /**
