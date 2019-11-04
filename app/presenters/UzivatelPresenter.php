@@ -90,7 +90,7 @@ class UzivatelPresenter extends BasePresenter
         $this->mailService->sendConfirmationRequest($newUser, $so, $link);
         $this->mailService->sendConfirmationRequestCopy($newUser, $so);
 
-        $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. INTERNET BUDE FUNGOVAT DO 15 MINUT.');
+        $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. PŘIPOJENÍ K HLAVNÍMU POČÍTAČI BUDE FUNGOVAT DO 15 MINUT.');
     }
 
     public function renderConfirm()
