@@ -125,3 +125,6 @@ You'll need the credentials (click Authorize in interactive docs). Create creden
 - jQuery: MIT License (https://jquery.org/license)
 - Adminer: Apache License 2.0 or GPL 2 (http://www.adminer.org)
 - Sandbox: The Unlicense (http://unlicense.org)
+
+## Push to production server2
+
