@@ -6,6 +6,7 @@ namespace App\Model;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use Psr\Http\Message\RequestInterface;
+use Tracy\Debugger;
 
 class IdsConnector
 {
@@ -24,7 +25,8 @@ class IdsConnector
         ['match_phrase' => ['alert.signature.raw' => 'ET SCAN Potential SSH Scan OUTBOUND'],],  // false-positive u ruznych multi-git / multi-ssh klientu apod.
         ['match_phrase' => ['alert.signature.raw' => 'HKFree rule HOME->EXT, track by_src, Generic Potential Attack Attempt'],], // false-positive u speedtest.net
         ['match_phrase' => ['alert.signature.raw' => 'HKFree rule HOME->EXT,UDP,track by_src,Generic Potential UDP DOS Attempt'],], // false-positive zrejme pri syncu GDrive
-        ['match_phrase' => ['alert.signature.raw' => 'ET CNC Zeus Tracker Reported CnC Server'],] // spousta false-positives kvuli neupdatovani pravidel 13.9.2019-18.9.2019
+        ['match_phrase' => ['alert.signature.raw' => 'ET CNC Zeus Tracker Reported CnC Server'],], // spousta false-positives kvuli neupdatovani pravidel 13.9.2019-18.9.2019
+        ['match_phrase' => ['tags.raw' => 'archived'],], // nebudeme brat v potaz ani zaarchivovane eventy (tlacitko archive v eveboxu)
     ];
 
     /**
@@ -101,7 +103,8 @@ class IdsConnector
     {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
-        $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
+
+        $elasticFilter =
             [
                 'json' => [
                         'size' => $limit,
@@ -124,8 +127,9 @@ class IdsConnector
                             ]
                         ]
                     ]
-            ]
-        );
+            ];
+
+        $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true', $elasticFilter);
         $json = json_decode($elasticResponse->getBody(), true);
         if ($json) {
             return $json['hits']['hits'];
