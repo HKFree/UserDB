@@ -27,7 +27,7 @@ Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig
 
 ### Run locally
 
-Override environment variables defined in `docker-compose.yml` using `docker-compose.override.yml` when necessary.
+Override environment variables defined in `docker-compose.yml` using `docker-compose.override.yml` when necessary. Don't forget that some settings are still present in `app/config/config.local.neon`.
 
 ```bash
 docker-compose build
@@ -37,6 +37,7 @@ docker-compose exec web php www/index.php migrations:continue
 ```
 
 Now the app is up and running in Docker on host's port 80, PhpMyAdmin on host's port 8080.
+If you don't know your docker's IP, `docker-machine list` is your friend.
 
 ### Build, commit
 
