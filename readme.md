@@ -36,7 +36,7 @@ docker-compose exec web composer install
 docker-compose exec web php www/index.php migrations:continue
 ```
 
-Now the app is up and running in Docker on host's port 80, PhpMyAdmin on host's port 8080.
+Now the app is up and running in Docker on host's port 10107, PhpMyAdmin on host's port 10108.
 If you don't know your docker's IP, `docker-machine list` is your friend.
 
 ### Build, commit
@@ -128,4 +128,3 @@ You'll need the credentials (click Authorize in interactive docs). Create creden
 - Sandbox: The Unlicense (http://unlicense.org)
 
 ## Push to production server2
-
