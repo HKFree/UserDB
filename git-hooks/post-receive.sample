@@ -28,4 +28,4 @@ echo "Renaming old userdb container to userdb-$DATETIME" # optional (may fail if
 docker rename userdb userdb-$DATETIME || true
 
 echo "Starting a new userdb container..." # mandatory
-docker run -d --restart=always $ENV --name userdb -p 127.0.0.1:8080:80 userdb:$TAG
+docker run -d --restart=always $ENV --name userdb -p 127.0.0.1:10107:80 userdb:$TAG
