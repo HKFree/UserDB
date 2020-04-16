@@ -13,7 +13,7 @@
 <br>
 
 <h4>Přehledy subnetů použitých na AP</h4>
-{foreach $csubnety as $cs}
+{foreach $csubnety4 as $cs}
     <p><a href="{link Subnet:overview id=>$cs}" class="btn btn-default btn-sm" role="button"> Zobrazit subnety {$cs}</a> <a href="{link Subnet:detail id=>$cs}" class="btn btn-default btn-sm" role="button"> Zobrazit ip {$cs}</a></p>
 {/foreach}
 <br>
@@ -24,10 +24,13 @@
 {import '../pinger.latte'}
 {include ipPinger}
 
-<h4>Subnety <small>na AP</small></h4>
-{$subnety}
+<h4>IPv4 Subnety <small>na AP</small></h4>
+{$subnety4}
 
-    <h4>API klíče <small>pro přístup k datům na AP přes REST API, postup viz <a href="https://github.com/HKFree/UserDB#accessing-api">GitHub</a></small></h4>
+<h4>IPv6 Subnety <small>na AP</small></h4>
+{$subnety6}
+
+<h4>API klíče <small>pro přístup k datům na AP přes REST API, postup viz <a href="https://github.com/HKFree/UserDB#accessing-api">GitHub</a></small></h4>
 <table class="table table-striped">
     <tr>
         <th>Uživatelské jméno</th>
@@ -59,4 +62,3 @@
 
 {/ifset}
 {/block}
-
