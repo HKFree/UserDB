@@ -44,8 +44,7 @@ If you don't know your docker's IP, `docker-machine list` is your friend.
 1. add 10.254.107.107/32 onto your machine's loopback interface
    - Linux: `ifconfig lo:1 10.254.107.107 netmask 255.255.255.255`
    - MacOS: `ifconfig lo0 alias 10.254.107.107 netmask 255.255.255.255`
-2. Use "Listen for XDebug" on default port 9000 in your IDE.
-3. Configure pathMappings in .vscode/launch.json
+2. Configure pathMappings; in .vscode/launch.json, set:
 ```
 {
   "configurations": [
@@ -61,6 +60,7 @@ If you don't know your docker's IP, `docker-machine list` is your friend.
   ]
 }
 ```
+3. Use "Listen for XDebug" on default port 9000 in your IDE.
 
 
 ### Build, commit

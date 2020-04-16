@@ -18,3 +18,5 @@ app/config/config.local.bak.neon
 docker-compose.override.yml
 
 nbproject/private/
+
+.vscode
