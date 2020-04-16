@@ -12,6 +12,8 @@
                     {include 'dynamic.latte', recordTemplate => 'ipform.latte', component => $component}
                 {elseif $component->name =='subnet'}
                     {include 'dynamic.latte', recordTemplate => 'subnetform.latte', component => $component}
+                {elseif $component->name =='subnet6'}
+                    {include 'dynamic.latte', recordTemplate => 'subnet6form.latte', component => $component}
                 {elseif $component->name =='apiKlic'}
                     {include 'dynamic.latte', recordTemplate => 'apiklicform.latte', component => $component}
                 {else}
