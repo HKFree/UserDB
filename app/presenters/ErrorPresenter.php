@@ -4,7 +4,6 @@ namespace App\Presenters;
 
 use Nette, Tracy\Debugger;
 
-
 /**
  * Error presenter.
  */
