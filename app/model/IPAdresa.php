@@ -261,7 +261,12 @@ class IPAdresa extends Table
 
 
 			// action buttons
-			$buttons = array();
+            $buttons = array();
+
+            $userAgent = $_SERVER['HTTP_USER_AGENT'];
+            $isAndroid = (stripos($_SERVER['HTTP_USER_AGENT'], 'android') !== false);
+            $isWindows = (stripos($_SERVER['HTTP_USER_AGENT'], 'windows') !== false);
+
 			// web button
 			if (isset($ip->TypZarizeni->text) && $ip->TypZarizeni->id != 1) {
 				$webButton = Html::el('a')
@@ -305,8 +310,8 @@ class IPAdresa extends Table
                                     ->setClass('glyphicon glyphicon-signal'));
                             $buttons[]= $signalGrafanaButton;
                         }
-			// winbox button
-			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+			// winbox button (windows)
+			if ($isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$link = 'winbox:'.$ip->ip_adresa;
 				if ($canViewCredentialsOrEdit) {
 					$link .= ';'.$ip->login.';'.$ip_password;
@@ -327,7 +332,7 @@ class IPAdresa extends Table
 								->setHref('http://wiki.hkfree.org/Winbox_URI');
 			}
 			// winbox cmd button
-			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+			if ($isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$winboxButton = Html::el('span')
 					->setAttribute('href', $linker("File:downloadWinboxCmd", ['id' => $ip->id]))
 					->setTitle('Otevřít Mikrotik Winbox z CMD')
@@ -346,6 +351,30 @@ class IPAdresa extends Table
 								->addAttributes($tooltips)
 								->setHref('http://wiki.hkfree.org/Winbox_CMD');
 			}
+			// winbox button (android)
+			if ($isAndroid && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+				$link = 'winbox://'.$ip->ip_adresa;
+				if ($canViewCredentialsOrEdit) {
+					$link .= '/'.$ip->login.'/'.$ip_password;
+				}
+				$winboxButton = Html::el('a')
+					->setHref($link)
+					->setTitle('Otevřít MikroTik app')
+					->addAttributes($tooltips)
+					->setClass('btn btn-default btn-xs btn-in-table')
+					->addHtml(Html::el('img')
+                        ->src('../../images/mikrotik-app-logo.png')
+                        ->setClass('mikrotik-app-logo')
+                    );
+				$buttons[]= $winboxButton;
+				$buttons[] = Html::el('a')
+								->addHtml(Html::el('sup')->setText('?'))
+								->setTarget('_blank')
+								->setTitle('Jak zprovoznit otevření MikroTik app na Androidu?')
+								->addAttributes($tooltips)
+								->setHref('http://wiki.hkfree.org/Winbox_URI');
+            }
+
 			// ssh button
 			if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
 				$winboxButton = Html::el('span')
@@ -408,7 +437,7 @@ class IPAdresa extends Table
 					); // edit button
 				}
 				$this->addActionButtonsTd($tr, $buttons);
-			}
+            }
 			if (!$subnetModeInfo || $subnetModeInfo['canViewOrEdit'])
 			{
 				$tr->create('td')->setText($ip->hostname); // hostname

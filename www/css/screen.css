@@ -588,3 +588,10 @@ input[readonly] {
 .spacing-left {
     padding-left: 30px;
 }
+
+.mikrotik-app-logo {
+    filter: grayscale();
+    border-radius: 5px;
+    width: 16px;
+    height: 16px;
+}
