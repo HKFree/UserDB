@@ -264,8 +264,8 @@ class IPAdresa extends Table
             $buttons = array();
 
             $userAgent = $_SERVER['HTTP_USER_AGENT'];
-            $isAndroid = (stripos($_SERVER['HTTP_USER_AGENT'], 'android') !== false);
-            $isWindows = (stripos($_SERVER['HTTP_USER_AGENT'], 'windows') !== false);
+            $isAndroid = (stripos($userAgent, 'android') !== false);
+            $isWindows = (stripos($userAgent, 'windows') !== false);
 
 			// web button
 			if (isset($ip->TypZarizeni->text) && $ip->TypZarizeni->id != 1) {
