@@ -363,7 +363,8 @@ class IPAdresa extends Table
 					->addAttributes($tooltips)
 					->setClass('btn btn-default btn-xs btn-in-table')
 					->addHtml(Html::el('img')
-                        ->src('../../images/mikrotik-app-logo.png')
+						->src('../../images/mikrotik-app-logo.png')
+						->addAttributes(array('width' => '16', 'height' => '16'))
                         ->setClass('mikrotik-app-logo')
                     );
 				$buttons[]= $winboxButton;
