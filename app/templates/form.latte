@@ -1,6 +1,6 @@
 <form n:name=$form>
 
-    <ul class="error" n:if="$form->ownErrors" n:block="#errors">
+    <ul class="error alert alert-danger" n:if="$form->ownErrors" n:block="#errors">
         <li n:foreach="$form->ownErrors as $error">{$error}</li>
     </ul>
 
@@ -31,5 +31,9 @@
             {/if}
         {/foreach}
     </table>
+
+    <ul class="error alert alert-danger" n:if="$form->ownErrors" n:block="#errors2">
+        <li n:foreach="$form->ownErrors as $error">{$error}</li>
+    </ul>
 
 </form>

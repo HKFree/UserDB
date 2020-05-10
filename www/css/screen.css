@@ -318,11 +318,8 @@ pre.tracy-dump {
     width: 125px;
 }
 
-.error{
-    background-color: yellow;
-    color: red;
-    border: 3px solid black;
-
+.error {
+    margin: 1em;
 }
 
 .table>thead>tr>th,

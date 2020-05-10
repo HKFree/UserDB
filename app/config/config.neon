@@ -19,7 +19,7 @@ parameters:
 		- 10.107.0.0/16
 		- 10.207.0.0/16
 		- 89.248.240.0/20
-	ipv6PrefixWhitelist:
+	ipv6AddressWhitelist:
 		- 2a01:168::/29
 
 php:
