@@ -394,8 +394,7 @@ class UzivatelPresenter extends BasePresenter
                 if(!$this->ipAdresa->validateIPv4Syntax($ip['ip_adresa'])) {
                     $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
                 }
-
-                if(!$this->ipAdresa->validateIPv4Whitelist($ip['ip_adresa'], $this->context->parameters['ipv4AddressWhitelist'])) {
+                else if(!$this->ipAdresa->validateIPv4Whitelist($ip['ip_adresa'], $this->context->parameters['ipv4AddressWhitelist'])) {
                     $form->addError('IP adresa '.$ip['ip_adresa'].' mimo myslitelné rozsahy hkfree.org');
                 }
 

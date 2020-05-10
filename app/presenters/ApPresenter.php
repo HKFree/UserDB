@@ -251,6 +251,9 @@ class ApPresenter extends BasePresenter {
                 if(!$this->ipAdresa->validateIPv4Syntax($ip['ip_adresa'])) {
                     $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
                 }
+                else if(!$this->ipAdresa->validateIPv4Whitelist($ip['ip_adresa'], $this->context->parameters['ipv4AddressWhitelist'])) {
+                    $form->addError('IP adresa '.$ip['ip_adresa'].' mimo myslitelné rozsahy hkfree.org');
+                }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
                 if ($duplIp) {
@@ -288,8 +291,22 @@ class ApPresenter extends BasePresenter {
                     return;
                 }
 
+                $subnet_base = explode("/", $subnet['subnet'])[0];
+                if(!$this->ipAdresa->validateIPv4Whitelist($subnet_base, $this->context->parameters['ipv4AddressWhitelist'])) {
+                    $form->addError('Subnet '.$subnet['subnet'].' leží mimo myslitelné rozsahy hkfree.org');
+                    return;
+                }
+
                 if(!$this->ipAdresa->validateIPv4Syntax($subnet['gateway'])) {
                     $form->addError('Gateway '.$subnet['gateway'].' u subnetu '.$subnet['subnet'].' není validní IPv4 adresa!');
+                    return;
+                }
+                if(!$this->ipAdresa->validateIPv4Whitelist($subnet['gateway'], $this->context->parameters['ipv4AddressWhitelist'])) {
+                    $form->addError('Gateway '.$subnet['gateway'].' u subnetu '.$subnet['subnet'].' leží mimo myslitelné rozsahy hkfree.org');
+                    return;
+                }
+                if(!$this->ipAdresa->validateIPv4Whitelist($subnet['gateway'], array($subnet['subnet']))) {
+                    $form->addError('Gateway '.$subnet['gateway'].' leží mimo subnet '.$subnet['subnet'].'.');
                     return;
                 }
 
