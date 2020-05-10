@@ -2,17 +2,17 @@
 
 {if $canViewOrEdit}
 {include '../form.latte', form => uzivatelForm}
+<script src="{$basePath}/js/isInSubnet.min.js"></script>
 <script>
     $( document ).ready(function() {
-        $(".ip_adresa.ip").keyup(ipClickCallback);
-        $(".ip_adresa.ip").click(ipClickCallback);
+        $(".ip_adresa.ip").on('input', ipInputCallback);
 
         $(".ip_adresa.ip").each(ipStartCallback);
 
         $('[data-toggle="tooltip"]').tooltip();
     });
 
-    function ipClickCallback(e) {
+    function ipInputCallback(e) {
         ipRefresh(e.target);
     }
 
@@ -29,19 +29,37 @@
         var editsubnet = $(tbody).find(".ip.editsubnet");
         var apid = $("#frm-uzivatelForm-Ap_id").val();
         editsubnet.find("a").attr("href", {link Ap:show , id => null} + "/" + apid);
-        editsubnet.show();
 
-        if(!ipValidate(ip)) {
-            var errorsspan = $(tbody).find(".ip.errors");
+        var errorsspan = $(tbody).find(".ip.errors");
+
+        $('.ip.editsubnet').hide();
+
+        var reqid = detailsspan.data("reqid") + 1;
+        detailsspan.data("reqid", reqid);
+        $('.ip.waiting').hide();
+
+        if(!ip) {
+            errorsspan.hide();
+            detailsspan.hide();
+            return(false);
+        }
+        if(!ipValidateSyntax(ip)) {
             errorsspan.show();
             detailsspan.hide();
-
             errorsspan.text("Neplatná IP adresa");
             return(false);
         }
 
-        var reqid = detailsspan.data("reqid") + 1;
-        detailsspan.data("reqid", reqid);
+        if (!ipValidateAllowlist(ip)) {
+            errorsspan.show();
+            detailsspan.hide();
+            errorsspan.text("IP adresa mimo myslitelné rozsahy hkfree.org: " + ipv4AddressWhitelist);
+            return(false);
+        }
+
+        errorsspan.text('');
+        errorsspan.hide();
+        $('.ip.waiting').show();
 
         $.ajax({
             type: "GET",
@@ -61,6 +79,8 @@
             return(false);
         }
 
+        $('.ip.waiting').hide();
+
         if(d.error) {
             errorsspan.text(d.error);
 
@@ -75,12 +95,21 @@
             errorsspan.hide();
             detailsspan.show();
         }
+        $('.ip.editsubnet').show();
     }
 
-    function ipValidate(ip)
+    function ipValidateSyntax(ip)
     {
         var rx = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
         return(rx.test(ip));
+    }
+
+    const ipv4AddressWhitelist = [ {foreach $ipv4AddressWhitelist as $ipSubnet} {$ipSubnet} {sep}, {/sep} {/foreach} ];
+
+    function ipValidateAllowlist(ip)
+    {
+        if (ipv4AddressWhitelist.length == 0) return true;
+        return isInSubnet.isInSubnet(ip, ipv4AddressWhitelist);
     }
 </script>
 
@@ -89,4 +118,3 @@
 {/if}
 
 {/block}
-

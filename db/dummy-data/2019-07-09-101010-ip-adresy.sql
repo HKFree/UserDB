@@ -10,3 +10,7 @@ INSERT INTO `Subnet` (`id`, `Ap_id`, `subnet`, `gateway`, `popis`, `arp_proxy`) 
 INSERT INTO `Subnet` (`id`, `Ap_id`, `subnet`, `gateway`, `popis`, `arp_proxy`) VALUES (3, 2, '10.108.12.0/24', '10.108.12.1', 'síť 1b', 0);
 INSERT INTO `Subnet` (`id`, `Ap_id`, `subnet`, `gateway`, `popis`, `arp_proxy`) VALUES (4, 3, '10.108.13.0/24', '10.108.13.1', 'síť 2', 0);
 INSERT INTO `Subnet` (`id`, `Ap_id`, `subnet`, `gateway`, `popis`, `arp_proxy`) VALUES (5, 4, '10.108.16.0/20', '10.108.16.1', 'síť 3', 0);
+
+INSERT INTO `IP6Prefix` (`Uzivatel_id`, `prefix`, `length`) VALUES (1, '2a01:16a:ff10:1100', 56);
+INSERT INTO `IP6Prefix` (`Uzivatel_id`, `prefix`, `length`) VALUES (2, '2a01:16a:ff10:1200', 56);
+INSERT INTO `IP6Prefix` (`Uzivatel_id`, `prefix`, `length`) VALUES (3, '2a01:16a:ff10:1300', 56);

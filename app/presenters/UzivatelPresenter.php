@@ -205,6 +205,9 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->adresyline = null;
                 }
 
+                $ip6Prefixy = $uzivatel->related('IP6Prefix.Uzivatel_id')->order('prefix');
+                $this->template->ip6prefixy = $ip6Prefixy;
+
                 $seznamUzivatelu = array();
                 $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
                 foreach ($oblastiAktualnihoUzivatele as $oblast){
@@ -260,6 +263,8 @@ class UzivatelPresenter extends BasePresenter
         {
           $this->template->canViewOrEdit = true;
         }
+
+        $this->template->ipv4AddressWhitelist = $this->context->parameters['ipv4AddressWhitelist'] ?: array();
     }
 
     protected function createComponentUzivatelForm() {
@@ -386,8 +391,12 @@ class UzivatelPresenter extends BasePresenter
         if(isset($data['ip'])) {
             $formIPs = array();
             foreach($data['ip'] as $ip) {
-                if(!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
+                if(!$this->ipAdresa->validateIPv4Syntax($ip['ip_adresa'])) {
                     $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
+                }
+
+                if(!$this->ipAdresa->validateIPv4Whitelist($ip['ip_adresa'], $this->context->parameters['ipv4AddressWhitelist'])) {
+                    $form->addError('IP adresa '.$ip['ip_adresa'].' mimo myslitelné rozsahy hkfree.org');
                 }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
