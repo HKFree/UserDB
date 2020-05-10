@@ -248,7 +248,7 @@ class ApPresenter extends BasePresenter {
         if(isset($data['ip'])) {
             $formIPs = array();
             foreach($data['ip'] as $ip) {
-                if(!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
+                if(!$this->ipAdresa->validateIPv4Syntax($ip['ip_adresa'])) {
                     $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
                 }
 
@@ -288,7 +288,7 @@ class ApPresenter extends BasePresenter {
                     return;
                 }
 
-                if(!$this->ipAdresa->validateIP($subnet['gateway'])) {
+                if(!$this->ipAdresa->validateIPv4Syntax($subnet['gateway'])) {
                     $form->addError('Gateway '.$subnet['gateway'].' u subnetu '.$subnet['subnet'].' není validní IPv4 adresa!');
                     return;
                 }
