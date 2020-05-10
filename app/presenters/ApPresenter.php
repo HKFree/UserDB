@@ -10,6 +10,7 @@ use Nette,
     Nette\Utils\Html,
     Nette\Forms\Controls\SubmitButton,
     App\Components;
+
 /**
  * Ap presenter.
  */
@@ -288,26 +289,26 @@ class ApPresenter extends BasePresenter {
 
                 if(!$this->subnet4->validateSubnet($subnet['subnet'])) {
                     $form->addError('Subnet '.$subnet['subnet'].' není validní IPv4 subnet!');
-                    return;
+                    continue;
                 }
 
                 $subnet_base = explode("/", $subnet['subnet'])[0];
                 if(!$this->ipAdresa->validateIPv4Whitelist($subnet_base, $this->context->parameters['ipv4AddressWhitelist'])) {
                     $form->addError('Subnet '.$subnet['subnet'].' leží mimo myslitelné rozsahy hkfree.org');
-                    return;
+                    continue;
                 }
 
                 if(!$this->ipAdresa->validateIPv4Syntax($subnet['gateway'])) {
                     $form->addError('Gateway '.$subnet['gateway'].' u subnetu '.$subnet['subnet'].' není validní IPv4 adresa!');
-                    return;
+                    continue;
                 }
                 if(!$this->ipAdresa->validateIPv4Whitelist($subnet['gateway'], $this->context->parameters['ipv4AddressWhitelist'])) {
                     $form->addError('Gateway '.$subnet['gateway'].' u subnetu '.$subnet['subnet'].' leží mimo myslitelné rozsahy hkfree.org');
-                    return;
+                    continue;
                 }
                 if(!$this->ipAdresa->validateIPv4Whitelist($subnet['gateway'], array($subnet['subnet']))) {
                     $form->addError('Gateway '.$subnet['gateway'].' leží mimo subnet '.$subnet['subnet'].'.');
-                    return;
+                    continue;
                 }
 
                 if(isset($data['id'])) {
@@ -339,6 +340,38 @@ class ApPresenter extends BasePresenter {
                 $form->addError('Subnety '.$formColisionsReadible.' v tomto formuláři se překrývají!');
             }
         }
+
+        if(isset($data['subnet6'])) {
+            $formSubnets = array();
+            foreach($data['subnet6'] as $subnet) {
+
+                if(!$this->subnet6->validateSubnet6Syntax($subnet['subnet'])) {
+                    $form->addError('Subnet '.$subnet['subnet'].' není validní IPv6 subnet!');
+                    continue;
+                }
+
+                list ($subnet_base, $subnet_prefix_length) = explode("/", $subnet['subnet']);
+                if(!$this->subnet6->validateIPv6Whitelist($subnet_base, $this->context->parameters['ipv6AddressWhitelist'])) {
+                    $form->addError('Subnet '.$subnet['subnet'].' leží mimo myslitelné rozsahy hkfree.org');
+                    continue;
+                }
+
+                if ($subnet_prefix_length < 40 || $subnet_prefix_length > 56) {
+                    $form->addError(Nette\Utils\Html::el()->setHtml('Subnet '.$subnet['subnet'].' ... povolená velikost subnetu je od /40 do /56 včetně. <a href="https://confluence.hkfree.org/x/XQmQB">Adresní plán</a> doporučuje /40 pro oblast, <b>/48 pro subnety v oblastech</b>, /56 pro členy.'));
+                    continue;
+                }
+
+                if ($subnet_prefix_length % 4 != 0) {
+                    $form->addError('Subnet '.$subnet['subnet'].' ... velikost subnetu musí být dělitelná 4.');
+                    continue;
+                }
+
+                // TODO kontrola na (ne)překrývání
+            }
+
+        }
+
+
     }
 
     public function apFormSucceded($form, $values) {
