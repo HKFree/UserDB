@@ -26,14 +26,6 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install pdo pdo_mysql gd zip
 
-# Enable and configure xdebug
-RUN pecl install xdebug
-RUN docker-php-ext-enable xdebug
-
-RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-#RUN echo "xdebug.remote_connect_back=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-RUN echo "xdebug.remote_host=192.168.0.34" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-
 # Use the default production configuration
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN echo "max_input_vars = 3000" >> /usr/local/etc/php/conf.d/uploads.ini
@@ -60,7 +52,7 @@ COPY composer.json composer.lock /opt/userdb/
 
 RUN composer install
 
-# Enable and configure xdebug
+# Enable and configure xdebug (re 10.254.107.107, see: readme.md)
 RUN pecl install xdebug
 RUN docker-php-ext-enable xdebug
 RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
