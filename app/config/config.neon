@@ -93,7 +93,7 @@ services:
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:
-			- setGoogleMapsApiKey("xxx0")
+			- setGoogleMapsApiKey(%env.USERDB_GOOGLE_MAPS_KEY%)
 
 console:
 	commands:
