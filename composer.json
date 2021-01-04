@@ -23,13 +23,14 @@
 		"mpdf/mpdf": ">= 5.6.5",
 		"jkuchar/pdfresponse": "~0.4.0-beta2",
 	  	"pear2/net_transmitter": ">=1.0.0a4",
-		"pear2/Net_RouterOS": "dev-develop#3c0125d4426ebd01866104c4677de97cd96382cf",
+		"pear2/net_routeros": "dev-develop#3c0125d4426ebd01866104c4677de97cd96382cf",
 		"nextras/migrations": "^3.0",
 		"guzzlehttp/guzzle": "~6.0",
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
 		"kdyby/console": "~2.7.1",
 		"defuse/php-encryption": "~2.2.1",
-		"ext-json": "*"
+		"ext-json": "*",
+		"influxdb/influxdb-php": "^1.15"
         },
 	"require-dev": {
 		"nette/tester": "~1.0"
