@@ -11,6 +11,7 @@ parameters:
 	urlPrefix: '/userdb'
 	salt: %env.USERDB_SALT%
 	influxUrl: %env.INFLUX_URL%
+	googleMapsApiKey: %env.USERDB_GOOGLE_MAPS_KEY%
 	debug:
 		fakeUser: false
 
