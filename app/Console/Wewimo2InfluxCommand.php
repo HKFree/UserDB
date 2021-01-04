@@ -51,7 +51,6 @@ class Wewimo2InfluxCommand extends Command
                             $fields = [
                                 'macField' => $station['mac-address'],
                             ];
-                            // known issue, some fields are defined as String in InfluxDB
                             $this->addFloatField($fields, 'rx_signal_strength', $station, 'x-signal-strength');
                             $this->addFloatField($fields, 'rx_signal_strength_ch0', $station, 'signal-strength-ch0');
                             $this->addFloatField($fields, 'rx_signal_strength_ch1', $station, 'signal-strength-ch1');
