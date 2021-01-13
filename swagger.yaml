@@ -108,7 +108,29 @@ paths:
                     nick: "pavkriz"
                     email: "pavkriz@example.com"
                     role: "SO"
-
+  /user:
+    get:
+      summary: Seznam uživatelů
+      responses:
+        200:
+          description: Seznam uživatelů
+          schema:
+            type: object
+            description: "Seznam uživatelů: asoc. pole klíč=id_uzivatel, hodnota=Uzivatel"
+          examples:
+            application/json:
+              1:
+                id: 1
+                jmeno: "Tester"
+                prijmeni: "Testovací"
+                email: "tester@example.hkfree.org"
+                nick: "tester"
+                role:
+                  269:
+                    id: 269
+                    od: "2020-11-24T00:00:00+01:00"
+                    do: null
+                    typ: "SO"
   /wewimo/default/{id_ap}:
     get:
       summary: Wewimo výstup ze všech Routerboardů v daném AP (zařazeným do Wewima)
