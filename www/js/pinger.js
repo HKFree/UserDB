@@ -145,7 +145,7 @@ function pingUserListCallback(resp) {
           if(ip_result.alive) {
             text_result = text_result + ips[i] + " | " + (Math.floor(ip_result.rtt*10000)/10) + " ms | " + (Math.floor(ip_result.loss*100)) + " %<br>";
           } else {
-            text_result = text_result + ips[i] + " | " + " dead\n";
+            text_result = text_result + ips[i] + " | " + " dead<br>";
           }
         } else {
           row_result[2]++;

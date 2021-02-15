@@ -21,6 +21,14 @@
 <h4>IP Adresy <small>na AP</small></h4>
 {$adresy}
 
+<script src="{$basePath}/js/pinger.js"></script>
+<script>
+  $(document).ready(function() {
+    pingIPList({link AjaxApi:GetIpsPing , id => null});
+    setInterval(function() {  pingIPList({link AjaxApi:GetIpsPing , id => null}); }, 60*1000);
+  }); 
+</script> 
+
 <h4>Subnety <small>na AP</small></h4>
 {$subnety}
 
