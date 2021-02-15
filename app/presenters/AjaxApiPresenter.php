@@ -9,16 +9,18 @@ use Nette,
 
 
 /**
- * Error presenter.
+ * Ajax API presenter, obsluhuje vnitroaplikační AJAXové požadavky.
  */
 class AjaxApiPresenter extends BasePresenter
 {
     private $subnet;
     private $ap;
+    private $sojka;
 
-    function __construct(Model\Subnet $subnet, Model\AP $ap) {
+    function __construct(Model\Subnet $subnet, Model\AP $ap, Model\Sojka $sojka) {
         $this->subnet = $subnet;
         $this->ap = $ap;
+        $this->sojka = $sojka;
     }
 
 	/**
@@ -61,4 +63,23 @@ class AjaxApiPresenter extends BasePresenter
 
         $this->sendResponse(new JsonResponse($out));
 	}
+    
+    /**
+     *  Opingá zadané IP adresy prostřednictvím SojkaPingeru
+     *
+     *  @param string[] $ips Hledané IP adresy
+     *  @return type Description
+     */
+    public function renderGetIpsPing()
+    {
+        $ips = $this->getParameter("ips");
+        
+        if(empty($ips)) {
+            $this->sendResponse(new JsonResponse(array()));
+        }
+        
+        $p = $this->sojka->pingIPS($ips);
+        
+        $this->sendResponse(new JsonResponse($p));
+    }
 }

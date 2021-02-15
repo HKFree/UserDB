@@ -46,6 +46,18 @@
 </table>      
     
 <br><br>
+<style>
+div.tooltip-inner {
+  max-width: 400px;
+}
+</style>
+<script src="{$basePath}/js/pinger.js"></script>
+<script>
+$(document).ready(function() {
+  pingUserList({link AjaxApi:GetIpsPing , id => null});
+  setInterval(function() {  pingUserList({link AjaxApi:GetIpsPing , id => null}); }, 60*1000);
+}); 
+</script>
 
 {/block}
 
