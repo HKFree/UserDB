@@ -118,13 +118,8 @@
 
     {/if}
 
-    <script src="{$basePath}/js/pinger.js"></script>
-    <script>
-      $(document).ready(function() {
-        pingIPList({link AjaxApi:GetIpsPing , id => null});
-        //setInterval(function() {  pingIPList({link AjaxApi:GetIpsPing , id => null}); }, 60*1000);
-      }); 
-    </script>  
+    {import '../pinger.latte'}
+    {include ipPinger}
     
 {/ifset}
 

@@ -1,0 +1,28 @@
+{define pingerScript}
+<script src="{$basePath}/js/pinger.js"></script>
+{/define}
+
+{define listPinger}
+<style>
+  div.tooltip-inner {
+    max-width: 400px;
+  }
+</style>
+{include pingerScript}
+<script>
+  $(document).ready(function() {
+    pingUserList({link AjaxApi:GetIpsPing , id => null});
+    //setInterval(function() {  pingUserList({link AjaxApi:GetIpsPing , id => null}); }, 60*1000);
+  }); 
+</script>
+{/define}
+
+{define ipPinger}
+{include pingerScript}
+<script>
+  $(document).ready(function() {
+    pingIPList({link AjaxApi:GetIpsPing , id => null});
+    //setInterval(function() {  pingIPList({link AjaxApi:GetIpsPing , id => null}); }, 60*1000);
+  }); 
+</script> 
+{/define}
