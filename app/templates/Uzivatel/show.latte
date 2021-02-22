@@ -60,9 +60,26 @@
         <tr><th>Číslo členské karty</th><td>{$u->cislo_clenske_karty}</td></tr>
         <tr><th>Jméno a příjmení</th><td>{$u->jmeno} {$u->prijmeni}</td></tr>
 
-        <tr><th>Ulice a č.p.</th><td>{$u->ulice_cp} {if $u->location_status != 'pending' && $u->location_status != 'unknown'}<a href="{link Sprava:mapa id=>null}#uid{$u->id}" class="spacing-left"><i class="fa fa-map-marker" aria-hidden="true"></i> mapa</a>{/if}</td></tr>
+        {var $hasLocation = $u->location_status == 'valid' || $u->location_status == 'approx'}
+        <tr>
+          <th>Ulice a č.p.</th>
+          <td>{$u->ulice_cp} 
+            {if $hasLocation}
+            <a n:if="$hasLocation" href="{link Sprava:mapa id=>null}#uid{$u->id}" class="spacing-left"><i class="fa fa-map-marker" aria-hidden="true"></i> mapa</a>
+            {else}
+              <span class="glyphicon glyphicon-exclamation-sign spacing-left" aria-hidden="true" title="Adresu nebylo možné automaticky převést na souřadnice! Opravte ji, prosím." data-toggle="tooltip" data-placement="top"></span>
+            {/if}
+          </td>
+        </tr>
         <tr><th>Obec</th><td>{$u->mesto}</td></tr>
         <tr><th>PSČ</th><td>{$u->psc}</td></tr>
+        <tr n:if="$hasLocation" title="GPS souřadnice jsou automaticky určeny z adresy." data-toggle="tooltip" data-placement="top">
+          <th>GPS</th>
+          <td>
+            <span data-latitude="{$u->latitude}" data-longitude="{$u->longitude}" data-formatid="0" id="gpsCoords">{round($u->latitude*1e6)/1e6}, {round($u->longitude*1e6)/1e6}</span>
+            <a class="spacing-left" href="#" id="gpsCoordsButton"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>&nbsp;formát</a>
+          </td>
+        </tr>
         <tr><th>Email</th><td>{$u->email}</td></tr>
         <tr><th>Sekundární email</th><td>{$u->email2}</td></tr>
         <tr><th>Telefon</th><td>{$u->telefon}</td></tr>
@@ -85,7 +102,14 @@
         <tr><th>Souhrn členských příspěvků od 1.11.2017</th><td>{$money_dph}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
 
-
+    <script src="{$basePath}/js/gps.js"></script>
+    <script>
+      $(document).ready(function() {
+        $("#gpsCoordsButton").click(function() {
+          rotateGPSFormat($("#gpsCoords"));
+        });
+      });
+    </script>
 
     {/if}
     </table>
