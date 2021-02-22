@@ -27,7 +27,7 @@ class UpdateLocationsCommand extends Command
 
     protected function vugtkGeocode($adresa) {
         $client = new \GuzzleHttp\Client(['verify' => false]);
-        return $client->request('GET', 'http://www.vugtk.cz/euradin/ruian/rest.py/Geocode/json?ExtraInformation=standard&SearchText='.
+        return $client->request('GET', 'http://ags.cuzk.cz/arcgis/rest/services/RUIAN/Vyhledavaci_sluzba_nad_daty_RUIAN/MapServer/exts/GeocodeSOE/tables/1/find?f=json&text='.
             urlencode($adresa));
     }
 
@@ -143,10 +143,10 @@ class UpdateLocationsCommand extends Command
                 $res = $this->vugtkGeocode($adresa);
                 if ($res->getStatusCode() === 200) {
                     $data = json_decode($res->getBody(), true);
-                    if (isset($data['records']) && (count($data['records']) === 1)) {
+                    if (isset($data['locations']) && (count($data['locations']) === 1) && ($data['locations'][0]['feature']['attributes']['Score'] == 100)) {
                         // adresa nalezena (presne 1 misto)
-                        $jtskx = $data['records'][0]['JTSKX'];
-                        $jtsky = $data['records'][0]['JTSKY'];
+                        $jtsky = abs($data['locations'][0]['feature']['geometry']['x']); //souradnice x a y musi byt prohozene a s opacnym znamenkem, nebot jsou vracene jako s-jtsk
+                        $jtskx = abs($data['locations'][0]['feature']['geometry']['y']);
                         // prevedeme Krovaka na WGS
                         $wgs = $this->krowToWgs($jtskx, $jtsky, 240);
                         $status = 'valid';
