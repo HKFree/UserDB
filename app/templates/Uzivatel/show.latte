@@ -64,11 +64,8 @@
         <tr>
           <th>Ulice a č.p.</th>
           <td>{$u->ulice_cp} 
-            {if $hasLocation}
             <a n:if="$hasLocation" href="{link Sprava:mapa id=>null}#uid{$u->id}" class="spacing-left"><i class="fa fa-map-marker" aria-hidden="true"></i> mapa</a>
-            {else}
-              <span class="glyphicon glyphicon-exclamation-sign spacing-left" aria-hidden="true" title="Adresu nebylo možné automaticky převést na souřadnice! Opravte ji, prosím." data-toggle="tooltip" data-placement="top"></span>
-            {/if}
+            <span n:if="$u->location_status == 'unknown'" class="glyphicon glyphicon-exclamation-sign spacing-left" aria-hidden="true" title="Adresu nebylo možné automaticky převést na souřadnice! Opravte ji, prosím." data-toggle="tooltip" data-placement="top"></span>
           </td>
         </tr>
         <tr><th>Obec</th><td>{$u->mesto}</td></tr>
