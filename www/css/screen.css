@@ -456,6 +456,15 @@ pre.tracy-dump {
     background-position: 0 32px;
 }
 
+.conntype10 {
+    background: url('../images/conntype10.png');
+    width: 16px;
+    height: 16px;
+    display: block;
+    float: left;
+    background-position: 0 32px;
+}
+
 .highlighted, .highlighted td {
     background-color: #ffa100 !important;
 }
