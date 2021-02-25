@@ -78,6 +78,7 @@ services:
 	apiKlic: App\Model\ApiKlic
 	aplikaceToken: App\Model\AplikaceToken
 	aplikaceLog: App\Model\AplikaceLog
+	awegUser: App\Model\AwegUser
 	smsSender: App\Services\SmsSender("%appDir%/../bin/smsbackend.py")
 	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%, %env.USERDB_IDS_IPS_WHITELIST%)
 	sojka: App\Model\Sojka(%sojkaPingerURL%)

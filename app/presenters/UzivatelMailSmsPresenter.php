@@ -225,9 +225,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     public function smsFormSucceded($form, $values) {
     	$user = $this->uzivatel->getUzivatel($this->getParam('id'));
 
-        $output = $this->smsSender->sendSms($this->getIdentity(), [ $user->telefon ], $values->message);
-
-        $this->flashMessage('SMS byla odeslána. Output: ' . $output);
+        $this->sendSMSAndValidate($this->getIdentity(), [ $user->telefon ], $values->message);
 
     	$this->redirect('Uzivatel:show', array('id'=>$this->getParam('id')));
     	return true;
@@ -288,11 +286,19 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             }
         }
 
-        $output = $this->smsSender->sendSms($this->getIdentity(), $validni, $values->message);
-
-        $this->flashMessage('SMS byly odeslány. Output: ' . $output);
+        $this->sendSMSAndValidate($this->getIdentity(), $validni, $values->message);
 
     	$this->redirect('UzivatelList:list', array('id'=>$this->getParam('id')));
     	return true;
+    }
+    
+    private function sendSMSAndValidate($ident, $numbers, $message) {
+        $output = $this->smsSender->sendSms($ident, $numbers, $message);
+
+        if($output["status"] == SmsSender::STATUS_OK) {
+            $this->flashMessage('SMS byla odeslána. Output: ' . $output["msg"]);
+        } else {
+            $this->flashMessage('SMS nebyla odeslána. ' . $output["msg"], "danger");
+        }
     }
 }
