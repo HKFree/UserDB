@@ -15,6 +15,8 @@ class WewimoPresenter extends ApiPresenter
 
     public function actionDefault($id)
     {
+        parent::checkApID($id);
+        
         $wewimoMultiData = $this->wewimo->getWewimoFullData($id, 'API');
         // "Malformed UTF-8 characters, possibly incorrectly encoded" error could appears inside structure -> sanitize
         $wewimoMultiData = $this->sanitize($wewimoMultiData);

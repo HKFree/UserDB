@@ -23,11 +23,8 @@ class PasswordPresenter extends ApiPresenter
             $this->sendResponse( new JsonResponse( ['result' => 'ERROR', 'message' => 'IP address not found', 'serverTime' => date("c")] ) );
         }
         $apOfIp = $this->ipadresa->getAPOfIP($ip->id);
-        if($id && $id != $apOfIp)
-        {
-            //if id (ap_id) provided then return credentials only for ip from this area
-            $this->sendResponse( new JsonResponse( ['result' => 'ERROR', 'message' => 'Not allowed to change this IP address', 'serverTime' => date("c")] ) );
-        }
+        parent::checkApID($apOfIp);
+        
         if($ip->heslo_sifrovane == 1)
         {
             $decrypted = $this->cryptosvc->decrypt($ip->heslo);
@@ -46,11 +43,8 @@ class PasswordPresenter extends ApiPresenter
             $this->sendResponse( new JsonResponse( ['result' => 'ERROR', 'message' => 'IP address not found', 'serverTime' => date("c")] ) );
         }
         $apOfIp = $this->ipadresa->getAPOfIP($ip->id);
-        if($id && $id != $apOfIp)
-        {
-            //if id (ap_id) provided then update credentials only for ip from this area
-            $this->sendResponse( new JsonResponse( ['result' => 'ERROR', 'message' => 'Not allowed to change this IP address', 'serverTime' => date("c")] ) );
-        }
+        parent::checkApID($apOfIp);
+
         $encrypted = $this->cryptosvc->encrypt($heslo);
         $this->ipadresa->update($ip->id, array('login'=>$login,'heslo'=>$encrypted, 'heslo_sifrovane'=>1)); 
         $this->sendResponse( new JsonResponse( ['result' => 'OK', 'serverTime' => date("c")] ) );
