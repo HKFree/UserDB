@@ -68,7 +68,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
             // Check if the key is valid and not expired
             if ($keyRec && $password == $keyRec->klic && $this->apiKlicModel->isNotExpired($keyRec->plati_do)) {
                 // Save keyApID for later check
-                $this->keyApID = $keyRec->AP_id;
+                $this->keyApID = $keyRec->Ap_id;
                 
                 $requestedModule = $this->getName();
                 
