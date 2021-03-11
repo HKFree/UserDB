@@ -105,6 +105,13 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
             $this->sendForbidden('not allowed to view AP ' . $requestedApId);
         }
     }
+    
+    protected function forceMethod($method) {
+        if ($this->httpRequest->getMethod() != $method) {
+            $this->httpResponse->setCode(Response::S405_METHOD_NOT_ALLOWED);
+            $this->sendResponse( new JsonResponse(['result' => 'METHOD_NOT_ALLOWED: Use http method ' . $method]) );
+        }
+    }
 
     protected function handleOptionsMethod() {
         $this->sendResponse(new TextResponse(""));

@@ -181,7 +181,7 @@ class Log extends Table
         }
     }
 
-    public function loguj($tabulka, $tabulka_id, $data)
+    public function loguj($tabulka, $tabulka_id, $data, $uzivatel_id = null)
     {
         if(!is_array($data) || count($data) == 0)
             return(true);
@@ -191,7 +191,7 @@ class Log extends Table
         $ted = new Nette\Utils\DateTime;
 
         $spolecne = array(
-            'Uzivatel_id' => $this->userService->getId(),
+            'Uzivatel_id' => ($uzivatel_id !== null ? $uzivatel_id : $this->userService->getId()),
             'ip_adresa' => $this->request->getRemoteAddress(),
             'tabulka' => $tabulka,
             'tabulka_id' => $tabulka_id,
