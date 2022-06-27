@@ -22,7 +22,8 @@ services:
       - .:/opt/userdb
     links:
       - db
-    network_mode: "bridge"
+    networks:
+       - my-net
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
@@ -31,7 +32,8 @@ services:
       - db
     environment:
       PMA_HOST: db
-    network_mode: "bridge"
+    networks:
+       - my-net
   db:
     image: mariadb:10.1
     ports:
@@ -40,8 +42,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpwd654
       MYSQL_DATABASE: userdb
-    network_mode: "bridge"
-#networks:
-#  default:
-#    external:
-#      name: bridge
+    networks:
+       - my-net
+networks:
+  my-net:
+     name: my-net
