@@ -336,11 +336,8 @@ CREATE TABLE IF NOT EXISTS `SpravceOblasti` (
 --
 -- Triggers `SpravceOblasti`
 --
-DELIMITER //
 CREATE TRIGGER `SpravceOblasti_bi` BEFORE INSERT ON `SpravceOblasti`
- FOR EACH ROW SET NEW.od= NOW()
-//
-DELIMITER ;
+  FOR EACH ROW SET NEW.od=NOW();
 
 -- --------------------------------------------------------
 
