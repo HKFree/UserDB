@@ -24,7 +24,7 @@
                 {* normalni ovladaci prvek ve formulari *}
                 <tr>
                     <th>{label $component /}{$component->required ? '<span class="red">*</span>'|noescape}</th>
-                    <td colspan="3">{input $component} {inputError $component}</td>
+                    <td>{input $component} {inputError $component}</td>
                 </tr>
             {/if}
         {/foreach}
