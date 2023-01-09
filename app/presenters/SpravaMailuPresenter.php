@@ -36,5 +36,6 @@ class SpravaMailuPresenter extends SpravaPresenter
 
     	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
         $grid->addColumnText('email', 'Email')->setFilterText();
+        $grid->addColumnText('telefon', 'Telefon')->setFilterText();
     }
 }
