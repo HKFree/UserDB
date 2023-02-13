@@ -13,6 +13,10 @@ parameters:
 	salt: %env.USERDB_SALT%
 	influxUrl: %env.INFLUX_URL%
 	googleMapsApiKey: %env.USERDB_GOOGLE_MAPS_KEY%
+	maternaMexUrl: 'https://api.maternacz.com:443/mex'
+	maternaMexUser: %env.MATERNA_MEX_USER%
+	maternaMexPass: %env.MATERNA_MEX_PASS%
+	maternaMexANumber: '00420910301455'
 	debug:
 		fakeUser: false
 
@@ -79,7 +83,9 @@ services:
 	aplikaceToken: App\Model\AplikaceToken
 	aplikaceLog: App\Model\AplikaceLog
 	awegUser: App\Model\AwegUser
+	komunikace: App\Model\Komunikace
 	smsSender: App\Services\SmsSender("%appDir%/../bin/smsbackend.py")
+	mexSmsSender: App\Services\MexSmsSender(%maternaMexUrl%, %maternaMexUser%, %maternaMexPass%, %maternaMexANumber%, Nette\Caching\Cache(namespace: 'sms-sender'))
 	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%, %env.USERDB_IDS_IPS_WHITELIST%)
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
 	status: App\Model\Status
@@ -92,6 +98,7 @@ console:
 	commands:
 		- App\Console\UpdateLocationsCommand
 		- App\Console\Wewimo2InfluxCommand
+		- App\Console\SendSMSCommand
 
 database:
 	dsn: "mysql:host=%env.USERDB_DB_HOST%;dbname=%env.USERDB_DB_NAME%"
