@@ -12,3 +12,6 @@ tab_width = 8
 
 [swagger.yaml]
 indent_size = 2
+
+[*.neon]
+indent_style = tab
