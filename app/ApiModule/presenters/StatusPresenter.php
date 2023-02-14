@@ -86,7 +86,9 @@ class StatusPresenter extends ApiPresenter
                 }
 
                 $status = 0;
-                if($count_dead > 0) {
+                if($count_total > 0 && ($count_dead / $count_total) > 0.5) {
+                    $status = 3;
+                } else if($count_dead > 0) {
                     $status = 2;
                 } else if ($count_warning > 0) {
                     $status = 1;
