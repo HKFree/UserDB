@@ -43,6 +43,10 @@ class StatusPresenter extends ApiPresenter
         $vysledne_oblasti = array();
 
         foreach ($this->oblast->getSeznamOblasti() as $oblast) {
+            // oblasti s ID mensi nez nula jsou technicke, ty ignorujeme
+            if($oblast->id < 0) {
+                continue;
+            }
             $vysledne_ap = array();
 
             foreach ($oblast->related('Ap.Oblast_id') as $ap) {
