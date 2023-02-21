@@ -1,52 +1,63 @@
 {block content}
 
-<h3>Graf aktivních uživatelů</h3>
+<h3>Graf počtu aktivních uživatelů</h3>
 
 <style>
 #chart_container {
-        position: relative;
-        margin-top: 40px;
+    position: relative;
+    margin-top: 20px;
 }
 #chart {
-        position: relative;
-        left: 40px;
+	position: relative;
+	left: 40px;
+	display: block;
 }
 #y_axis {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 40px;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 40px;
+}
+.rickshaw_graph .x_tick .title {
+    bottom: -24px;
+    left: -18px;
+}
+
+svg.rickshaw_graph {
+    height: 480px;
 }
 </style>
 
 <div id="chart_container">
-        <div id="y_axis"></div>
-        <div id="chart"></div>
+    <div id="y_axis"></div>
+    <div id="chart"></div>
 </div>
 
 <script>
 var graph = new Rickshaw.Graph( {
-        element: document.querySelector("#chart"),
-        width: 540,
-        height: 240,
-        series: [ {
-                data: {$actdata|noescape},
-                color: 'steelblue'
-        } ]
+    element: document.getElementById("chart"),
+    width: 1024,
+    height: 400,
+    series: [ {
+        data: {$actdata|noescape},
+        color: 'steelblue'
+    } ]
 } );
 
-var x_axis = new Rickshaw.Graph.Axis.Time( { graph: graph } );
+var x_axis = new Rickshaw.Graph.Axis.Time({
+    graph: graph
+});
 
 var format = function(d) {
     return d;
 }
 
-var y_axis = new Rickshaw.Graph.Axis.Y( {
-        graph: graph,
-        orientation: 'left',
-        tickFormat: format,
-        element: document.getElementById('y_axis'),
-} );
+var y_axis = new Rickshaw.Graph.Axis.Y({
+    graph: graph,
+    orientation: 'left',
+    tickFormat: format,
+    element: document.getElementById('y_axis'),
+});
 
 graph.render();
 
