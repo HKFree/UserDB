@@ -55,7 +55,19 @@
           <ul class="nav navbar-nav navbar-right">
             <li><a href="{link Uzivatel:show id=>$user->getIdentity()->getId()}">{$user->getIdentity()->getNick()} ({$user->getIdentity()->getId()})</a></li>
             <li><a href="{link Sprava:mapa id=>null}">Mapa</a></li>
-            <li><a href="{link Sprava:nastroje id=>null}">Nástroje</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Nástroje <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li><a n:href="Status:default id=>null"><span class="glyphicon glyphicon-globe small" aria-hidden="true"></span> Status AP</a></li>
+                    <li><a n:href="SpravaGrafu:usersgraph id=>null"><i class="fa-solid fa-chart-line small"></i> Graf počtu uživatelů</a></li>
+                    <li><a n:href="SpravaCc:prehledcc id=>null">Přehled platných čestných členství</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a n:href="SpravaUctu:ucty id=>null"><i class="glyphicon glyphicon-usd small"></i> Aktuální stavy účtů</a></li>
+                    <li><a n:href="SpravaPlateb:odchoziplatby id=>null"><i class="glyphicon glyphicon-usd small"></i> Přehled odchozích plateb</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a n:href="Sprava:nastroje id=>null">Pokročilé nástroje</a></li>
+                </ul>
+            </li>
             <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
           </ul>
           {form searchForm}

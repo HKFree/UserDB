@@ -2,8 +2,6 @@
 
 <h3>Graf aktivních uživatelů</h3>
 
-    <a href="{link Sprava:nastroje}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Zpět na nástroje správy</a>
-
 <style>
 #chart_container {
         position: relative;
@@ -32,7 +30,7 @@ var graph = new Rickshaw.Graph( {
         width: 540,
         height: 240,
         series: [ {
-                data: {$actdata|noescape}, 
+                data: {$actdata|noescape},
                 color: 'steelblue'
         } ]
 } );

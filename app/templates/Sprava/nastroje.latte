@@ -3,9 +3,6 @@
 {block content}
     <h3>Nástroje pro správu</h3>
 
-    <a href="{link Status:default id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-eye-open"></i> Status AP</a>
-    <br><br>
-
     {if $canCreateArea}
         <a href="{link SpravaOblasti:novaoblast id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Vytvořit oblast</a>
         <a href="{link SpravaOblasti:noveap id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Vytvořit AP</a>
@@ -20,14 +17,6 @@
         <a href="{link SpravaCc:schvalovanicc id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Schvalování čestného členství</a>
 
     {/if}
-    <a href="{link SpravaCc:prehledcc id=>null}" class="btn btn-default btn-sm" role="button"> Přehled platných čestných členství</a>
-    <br><br>
-    <a href="{link SpravaGrafu:usersgraph id=>null}" class="btn btn-default btn-sm" role="button"> Graf uživatelů</a>
-    <br><br>
-    <a href="{link SpravaUctu:ucty id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Aktuální stavy účtů</a>
-    <a href="{link SpravaPlateb:odchoziplatby id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Přehled odchozích plateb</a>
-    <br><br>
-
     {if $canSeePayments}
         <a href="{link SpravaPlateb:platbycu id=>null}" class="btn btn-default btn-sm" role="button"> Platby z Č.Ú.</a>
         <a href="{link SpravaNesparovanych:nesparovane id=>null}" class="btn btn-default btn-sm" role="button"> Nespárované platby</a>
@@ -35,12 +24,14 @@
         <a href="{link SpravaSms:sms id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS správcům</a>
         <br><br>
     {/if}
-
     {if $canSeeMailList}
         <a href="{link SpravaMailu:mailinglist id=>null}" class="btn btn-default btn-sm" role="button"> Mailing list</a>
         <br><br>
     {/if}
 
+    {if !$canCreateArea && !$canApproveCC && !$canSeePayments && !$canSeeMailList}
+        Nástroje pro správu jsou dostupné pouze pro oprávněné uživatele
+    {/if}
 
 
 {/block}
