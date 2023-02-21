@@ -82,6 +82,7 @@ services:
 	smsSender: App\Services\SmsSender("%appDir%/../bin/smsbackend.py")
 	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%, %env.USERDB_IDS_IPS_WHITELIST%)
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
+	status: App\Model\Status
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:

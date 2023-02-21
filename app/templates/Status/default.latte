@@ -1,0 +1,34 @@
+{block problem}
+    {switch $problem}
+        {case \App\Model\Status::PROBLEM_MRTVA}
+            neodpovídá na ping už {(time() - $ping["time_lastpong"])|interval} (od {$ping["time_lastpong"]|date:'j. n. Y G:i'})
+        {case \App\Model\Status::PROBLEM_RTT}
+            má moc velkou odezvu {$ping["rtt"]} ms
+        {case \App\Model\Status::PROBLEM_LOSS_LOW}
+            má packetloss {$ping["loss"] * 100}%
+        {case \App\Model\Status::PROBLEM_LOSS_HIGH}
+            má velký packetloss {$ping["loss"] * 100}%
+    {/switch}
+{/block}
+
+{block content}
+
+<h1>Status</h1>
+
+    {foreach $problemoveOblasti as list($oblast, $aps)}
+        {foreach $aps as list($ap, $ips)}
+            {continueIf count($ips) == 0}
+
+            <h3>
+                {if count($aps) == 1} {$oblast->jmeno} {else} {$oblast->jmeno} - {$ap->jmeno} {/if}
+                <a n:href="Ap:show id=>$ap->id"><span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></a>
+            </h3>
+            <p>
+            {foreach $ips as list($ip, $problem, $ping)}
+                <b>{$ip->ip_adresa}{if !empty($ip->hostname)} ({$ip->hostname}){/if}</b> {include problem, problem => $problem, ping => $ping}<br>
+            {/foreach}
+            </p>
+        {/foreach}
+    {/foreach}
+
+{/block}
