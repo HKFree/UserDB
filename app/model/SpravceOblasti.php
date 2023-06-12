@@ -102,8 +102,16 @@ class SpravceOblasti extends Table
         return($this->getSpravce(2));
     }
 
-    public function getSpravce($typSpravce) {
+    public function getSpravce($typSpravce, $ignorujSystemove = false) {
+        $q = $this->findAll()
+        ->where('TypSpravceOblasti_id', $typSpravce)
+        ->where('od < NOW()')
+        ->where('do IS NULL OR do > NOW()');
 
-        return($this->findAll()->where('TypSpravceOblasti_id = ? AND od < NOW() AND (do IS NULL OR do > NOW())', $typSpravce));
+        if($ignorujSystemove) {
+            return($q->where('Uzivatel.systemovy', 0));
+        }
+
+        return($q);
     }
 }

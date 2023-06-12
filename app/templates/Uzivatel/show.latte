@@ -1,7 +1,7 @@
 {block content}
 {ifset $u}
 
-    <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
+    <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})<small n:if="$u->systemovy"> - <span class="text-danger">Systémový uživatel</span></small> <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     {if $canViewOrEdit}
     <a href="{link Uzivatel:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
     <a href="{link UzivatelRightsCc:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a>
@@ -63,7 +63,7 @@
         {var $hasLocation = $u->location_status == 'valid' || $u->location_status == 'approx'}
         <tr>
           <th>Ulice a č.p.</th>
-          <td>{$u->ulice_cp} 
+          <td>{$u->ulice_cp}
             <a n:if="$hasLocation" href="{link Sprava:mapa id=>null}#uid{$u->id}" class="spacing-left"><i class="fa fa-map-marker" aria-hidden="true"></i> mapa</a>
             <span n:if="$u->location_status == 'unknown'" class="glyphicon glyphicon-exclamation-sign spacing-left" aria-hidden="true" title="Adresu nebylo možné automaticky převést na souřadnice! Opravte ji, prosím." data-toggle="tooltip" data-placement="top"></span>
           </td>
@@ -141,7 +141,7 @@
 
     {import '../pinger.latte'}
     {include ipPinger}
-    
+
 {/ifset}
 
 <script>

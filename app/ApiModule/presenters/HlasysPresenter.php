@@ -23,7 +23,7 @@ class HlasysPresenter extends ApiPresenter
             $this->sendResponse( new JsonResponse(['result' => 'ERROR, typ spravce '.$typSpravce.' not found']) );
         }
 
-        $spravci = $this->spravceOblasti->getSpravce($typSpravceRec->id);
+        $spravci = $this->spravceOblasti->getSpravce($typSpravceRec->id, true);
 
         $out = array();
         foreach ($spravci as $spravce) {
