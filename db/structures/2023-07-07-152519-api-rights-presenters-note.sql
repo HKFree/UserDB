@@ -1,0 +1,1 @@
+ALTER TABLE `ApiKlic` CHANGE `presenter` `presenter` VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_czech_ci NULL DEFAULT NULL COMMENT '(volitelne) presenter, pro ktery lze klic pouzit, NULL=jakykoliv, vice presenteru oddelujte strednikem';

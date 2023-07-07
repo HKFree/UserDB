@@ -18,7 +18,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
 
     /** @var \Nette\Http\Request */
     protected $httpRequest;
-    
+
     /** @var integer */
     protected $keyApID;
 
@@ -60,32 +60,33 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
         }
         $username = $_SERVER['PHP_AUTH_USER'];
         $password = $_SERVER['PHP_AUTH_PW'];
-        
+
         if (preg_match_all('/^apikey([0-9]+)$/', $username, $m)) {
             $apiKeyId = $m[1][0] * 1;
             $keyRec = $this->apiKlicModel->getApiKlic($apiKeyId);
-            
+
             // Check if the key is valid and not expired
             if ($keyRec && $password == $keyRec->klic && $this->apiKlicModel->isNotExpired($keyRec->plati_do)) {
                 // Save keyApID for later check
                 $this->keyApID = $keyRec->Ap_id;
-                
+
                 $requestedModule = $this->getName();
-                
+
                 // Check if the call is to always allowed module (available to all)
                 if (in_array($requestedModule, $this->alwaysAllowedActions)) {
                     parent::checkRequirements($element);
                     return;
                 }
-                
+
                 // Check if the API key has restricted presenter, if no, allow
                 if(!$keyRec->presenter) {
                     parent::checkRequirements($element);
                     return;
                 }
-                
+
+                $presenters = explode(";", $keyRec->presenter);
                 // Key is restricted to module, check if requested module matches
-                if ($requestedModule == $keyRec->presenter) {
+                if (in_array($requestedModule, $presenters)) {
                     parent::checkRequirements($element);
                     return;
                 }
@@ -93,10 +94,10 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
                 $this->sendForbidden('not allowed to view module ' . $requestedModule);
             }
         }
-        
+
         $this->sendAuthRequired('Invalid credentials'); // fallback
     }
-    
+
     // If function returns sensitive data, check whether API key has access!
     // Call before doing any action! parent::checkApID($apID);
     protected function checkApID($requestedApId) {
@@ -105,7 +106,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
             $this->sendForbidden('not allowed to view AP ' . $requestedApId);
         }
     }
-    
+
     protected function forceMethod($method) {
         if ($this->httpRequest->getMethod() != $method) {
             $this->httpResponse->setCode(Response::S405_METHOD_NOT_ALLOWED);
