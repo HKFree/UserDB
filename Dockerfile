@@ -53,12 +53,12 @@ COPY composer.json composer.lock /opt/userdb/
 RUN composer install
 
 # Enable and configure xdebug (re 10.254.107.107, see: readme.md)
-RUN pecl install xdebug
+RUN pecl install xdebug-3.0.1
 RUN docker-php-ext-enable xdebug
-RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-RUN echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-RUN echo "xdebug.remote_timeout=50" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-RUN echo "xdebug.remote_host=10.254.107.107" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "xdebug.connect_timeout_ms=20" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo "xdebug.client_host=10.254.107.107" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 ####################################################################################################
 # 2nd stage (in order to support composer deps caching)
