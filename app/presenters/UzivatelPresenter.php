@@ -30,6 +30,7 @@ class UzivatelPresenter extends BasePresenter
     private $technologiePripojeni;
     private $uzivatel;
     private $ipAdresa;
+    private $ip6Prefix;
     private $ap;
     private $typZarizeni;
     private $log;
@@ -47,7 +48,7 @@ class UzivatelPresenter extends BasePresenter
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector, Model\AplikaceToken $aplikaceToken) {
+    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\IP6Prefix $ip6Prefix, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector, Model\AplikaceToken $aplikaceToken) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -57,6 +58,7 @@ class UzivatelPresenter extends BasePresenter
         $this->technologiePripojeni = $technologiePripojeni;
     	$this->uzivatel = $uzivatel;
     	$this->ipAdresa = $ipAdresa;
+    	$this->ip6Prefix = $ip6Prefix;
     	$this->ap = $ap;
     	$this->typZarizeni = $typZarizeni;
         $this->log = $log;
@@ -188,26 +190,6 @@ class UzivatelPresenter extends BasePresenter
 
     		    $this->template->u = $uzivatel;
 
-                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
-
-                $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
-                $wewimoLinks = $this->getWewimoLinksFromIPs($ipAdresy);
-
-                $uzivatelEditLink = $this->link('Uzivatel:edit', array('id' => $uid));
-    		    $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $wewimoLinks, $uzivatelEditLink, $this->getParameter('igw', false), Array($this, "linker"));
-
-                if($ipAdresy->count() > 0)
-                {
-                    $this->template->adresyline = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
-                }
-                else
-                {
-                    $this->template->adresyline = null;
-                }
-
-                $ip6Prefixy = $uzivatel->related('IP6Prefix.Uzivatel_id')->order('prefix');
-                $this->template->ip6prefixy = $ip6Prefixy;
-
                 $seznamUzivatelu = array();
                 $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
                 foreach ($oblastiAktualnihoUzivatele as $oblast){
@@ -220,9 +202,45 @@ class UzivatelPresenter extends BasePresenter
                 }
                 //\Tracy\Debugger::barDump($seznamUzivatelu);
 
-                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
+                $canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
                                                     || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
                                                     || in_array($uid,$seznamUzivatelu);
+
+                $this->template->canViewOrEdit = $canViewOrEdit;
+
+                $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
+
+                $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
+                $wewimoLinks = $this->getWewimoLinksFromIPs($ipAdresy);
+
+                $uzivatelEditLink = $this->link('Uzivatel:edit', array('id' => $uid));
+
+                $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $wewimoLinks, $uzivatelEditLink, $this->getParameter('igw', false), Array($this, "linker"));
+
+                if($ipAdresy->count() > 0)
+                {
+                    $this->template->adresyline = join(", ",array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));
+                }
+                else
+                {
+                    $this->template->adresyline = null;
+                }
+
+                $ip6Prefixy = $uzivatel->related('IP6Prefix.Uzivatel_id')->order('prefix');
+                $this->template->ip6prefixy = $ip6Prefixy;
+                if ($canViewOrEdit)
+                {
+                    $this->template->ip6prefixy_html =  $this->ip6Prefix->getIP6PrefixTable($ip6Prefixy);
+                }
+                else
+                {
+                    $this->template->ip6prefixy_html = Html::el('div');
+                    foreach ($ip6Prefixy as $ip6prefix)
+                    {
+                        $this->template->ip6prefixy_html->create('div')->setText($ip6prefix->prefix . '/' . $ip6prefix->length);
+                    }
+                }
+
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
 
                 $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
