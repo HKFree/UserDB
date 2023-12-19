@@ -5,6 +5,13 @@ FROM php:7.2-apache-stretch AS userdb-runtime
 RUN a2enmod rewrite
 RUN a2enmod headers
 
+# Debian 9 "stretch" je uz starej -> lze stahovat pouze z archivu
+RUN echo '\n\
+deb http://archive.debian.org/debian stretch main contrib non-free\n\
+deb-src http://archive.debian.org/debian stretch main contrib non-free\n\
+deb http://archive.debian.org/debian-security/ stretch/updates main contrib non-free\n\
+deb-src http://archive.debian.org/debian-security/ stretch/updates main contrib non-free' > /etc/apt/sources.list
+
 # Install extenstions: MySQL PDO, GD
 RUN apt-get update && apt-get install -y \
         git \
