@@ -357,7 +357,7 @@ class ApPresenter extends BasePresenter {
                 }
 
                 if ($subnet_prefix_length < 40 || $subnet_prefix_length > 56) {
-                    $form->addError(Nette\Utils\Html::el()->setHtml('Subnet '.$subnet['subnet'].' ... povolená velikost subnetu je od /40 do /56 včetně. <a href="https://confluence.hkfree.org/x/XQmQB">Adresní plán</a> doporučuje /40 pro oblast, <b>/48 pro subnety v oblastech</b>, /56 pro členy.'));
+                    $form->addError(Nette\Utils\Html::el()->setHtml('Subnet '.$subnet['subnet'].' ... povolená velikost subnetu je od /40 do /56 včetně. <a href="https://wiki.hkfree.org/IPv6#Adresn.C3.AD_pl.C3.A1n">Adresní plán</a> doporučuje /40 pro oblast, <b>/48 pro subnety v oblastech</b>, /56 pro členy.'));
                     continue;
                 }
 
