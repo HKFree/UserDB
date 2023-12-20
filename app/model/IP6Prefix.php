@@ -34,32 +34,12 @@ class IP6Prefix extends Table
         return $this->findAll()->where("prefix LIKE ?", $prefix.'%')->fetchPairs('prefix');
     }
 
-    public function getDuplicateIP($prefix, $id)
-    {
-        $existujici = $this->findAll()->where('prefix = ?', $prefix)->where('id != ?', $id)->fetch();
-        if($existujici)
-        {
-            return $existujici->ip_adresa;
-        }
-        return null;
-    }
-
-    public function getIPForm(&$ip, $typyZarizeni, $apMode=false) {
+    public function getPrefixForm(&$ip) {
 		$ip->addHidden('id')->setAttribute('class', 'id ip');
-		$ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
-		$ip->addText('hostname', 'Hostname', 11)->setAttribute('class', 'hostname ip')->setAttribute('placeholder', 'Hostname');
-		$ip->addSelect('TypZarizeni_id', 'Typ Zařízení', $typyZarizeni)->setAttribute('class', 'TypZarizeni_id ip')->setPrompt('--Vyberte--');;
-		$ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'internet ip')->setDefaultValue(1);
-		$ip->addCheckbox('smokeping', 'Smokeping')->setAttribute('class', 'smokeping ip');
-		$ip->addText('login', 'Login', 11)->setAttribute('class', 'login ip')->setAttribute('placeholder', 'Login');
-		$ip->addText('heslo', 'Heslo', 11)->setAttribute('class', 'heslo ip')->setAttribute('placeholder', 'Heslo');
-		$ip->addText('mac_adresa', 'MAC Adresa', 24)->setAttribute('class', 'mac_adresa ip')->setAttribute('placeholder', 'MAC Adresa');
-		$ip->addCheckbox('mac_filter', 'MAC Filtr')->setAttribute('class', 'mac_filter ip');
-		$ip->addCheckbox('dhcp', 'DHCP')->setAttribute('class', 'dhcp ip');
-		if ($apMode) {
-			$ip->addCheckbox('wewimo', 'Wewimo')->setAttribute('class', 'wewimo ip');
-		}
-		$ip->addText('popis', 'Popis')->setAttribute('class', 'popis ip')->setAttribute('placeholder', 'Popis');
+		$ip->addText('prefix', 'IPv6 Prefix', 35)->setAttribute('class', '')->setAttribute('placeholder', 'IPv6 Prefix');
+        $ip->addSelect('length', 'Délka', [48=>48,56=>56])->setDefaultValue(48);
+		$ip->addCheckbox('povolit_prichozi_spojeni', 'Povolit příchozí spojení')->setAttribute('class', '')->setDefaultValue(0);
+		$ip->addText('poznamka', 'Poznámka', 46)->setAttribute('class', '')->setAttribute('placeholder', 'Poznámka');
     }
 
 	/**
@@ -107,7 +87,7 @@ class IP6Prefix extends Table
 		$title = $ip6prefix->prefix . '/' . $ip6prefix->length;
 
 		$tr = $adresyTab->create('tr');
-		$tr->setId('highlightable-ip'.($ip6prefix->prefix ));
+		$tr->setId('highlightable-ip'.($ip6prefix->prefix));
 
         $tr->create('td')->setText($title);
 
@@ -117,7 +97,7 @@ class IP6Prefix extends Table
         // edit button, etc.
         array_unshift($buttons,
             Html::el('a')
-                ->setHref('editLink')
+                ->setHref('../edit/' . $ip6prefix->Uzivatel_id . '#ip' . $ip6prefix->prefix)
                 ->setClass('btn btn-default btn-xs btn-in-table')
                 ->setTitle('Editovat')
                 ->addAttributes($tooltips)
