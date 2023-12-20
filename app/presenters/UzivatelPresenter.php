@@ -333,7 +333,8 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('iprange', 'Přidat rozsah ip (x.y.z.w-x.y.z.w)',32);
 
     	$typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
-    	$data = $this->ipAdresa;
+
+        $data = $this->ipAdresa;
     	$ips = $form->addDynamic('ip', function (Container $ip) use ($data,$typyZarizeni,$form) {
     	    $data->getIPForm($ip, $typyZarizeni);
 
@@ -351,6 +352,24 @@ class UzivatelPresenter extends BasePresenter
 						//\Tracy\Debugger::barDump($ip);
 				  });
 
+        $data2 = $this->ip6Prefix;
+        $prefixes = $form->addDynamic('ip6prefix', function (Container $ip6prefix) use ($data2) {
+            $data2->getPrefixForm($ip6prefix);
+    	    $ip6prefix->addSubmit('remove', '– Odstranit IPv6 Prefix')
+    		    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+    		    ->setValidationScope(FALSE)
+    		    ->addRemoveOnClick();
+
+        }, ($this->getParam('id')>0?0:1));
+    	$prefixes->addSubmit('add', '+ Přidat další IPv6 Prefix')
+    		->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
+    		->setValidationScope(FALSE)
+    		->addCreateOnClick(TRUE, function (Container $replicator, Container $ip) {
+                        $ip->setValues(array('internet'=>1));
+						//\Tracy\Debugger::barDump($ip);
+				  });
+
+
     	$form->addSubmit('save', 'Uložit')
     		->setAttribute('class', 'btn btn-success btn-white default btn-edit-save');
     	$form->onSuccess[] = array($this, 'uzivatelFormSucceded');
@@ -364,9 +383,9 @@ class UzivatelPresenter extends BasePresenter
     	// pokud editujeme, nacteme existujici ipadresy
     	$submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if($this->getParam('id') && !$submitujeSe) {
-    	    $values = $this->uzivatel->getUzivatel($this->getParam('id'));
-    	    if($values) {
-                foreach($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
+    	    $uzivatel = $this->uzivatel->getUzivatel($this->getParam('id'));
+    	    if($uzivatel) {
+                foreach($uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
                     if($ip_data->heslo_sifrovane == 1)
 					{
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
@@ -378,8 +397,14 @@ class UzivatelPresenter extends BasePresenter
 						$form["ip"][$ip_id]->setValues($ip_data);
 					}
                 }
-                $form->setValues($values);
+                $form->setValues($uzivatel);
+
+                foreach($uzivatel->related('IP6Prefix.Uzivatel_id')->order('prefix') as $id => $ip6prefix) {
+                    $form['ip6prefix'][$id]->setValues($ip6prefix);
+                }
+
     	    }
+
     	}
 
     	return $form;
@@ -463,15 +488,18 @@ class UzivatelPresenter extends BasePresenter
         $log = array();
     	$idUzivatele = $values->id;
     	$ips = $values->ip;
+        $ip6prefixes = $values->ip6prefix;
         $ipsubnet = $values->ipsubnet;
         $iprange = $values->iprange;
         //\Tracy\Debugger::barDump($ips);exit;
     	unset($values["ip"]);
+    	unset($values["ip6prefix"]);
         unset($values["ipsubnet"]);
         unset($values["iprange"]);
 
         $genaddresses = array();
         $newUserIPIDs = array();
+        $newUserIP6PrefixIDs = array();
         $smtpIPIDs = array();
         $dnatIPIDs = array();
 
@@ -651,6 +679,34 @@ class UzivatelPresenter extends BasePresenter
         $this->dnat->deleteIPs($dnatIPIDs);
 
         $this->ipAdresa->deleteIPAdresy($toDelete);
+
+        // Potom zpracujeme IPv6 Prefixy
+    	foreach($ip6prefixes as $ip6prefix)
+    	{
+    	    $ip6prefix->Uzivatel_id = $idUzivatele;
+    	    $id = $ip6prefix->id;
+
+            if (empty($ip6prefix->prefix)) {
+                $ip6prefix->prefix = null;
+            }
+            if (empty($ip->length)) {
+                $ip->length = null;
+            }
+            $ip6prefix->povolit_prichozi_spojeni = $ip6prefix->povolit_prichozi_spojeni ? 1 : 0;
+            if (empty($ip6prefix->poznamka)) {
+                $ip6prefix->poznamka = '';
+            }
+
+            if(empty($ip6prefix->id)) {
+                $newId = $this->ip6Prefix->insert($ip6prefix)->id;
+                $this->log->logujInsert($ip, 'IPv6Prefix['.$newId.']', $log);
+            } else {
+                $old = $this->ip6Prefix->getIP6Prefix($id);
+                $this->ip6Prefix->update($id, $ip6prefix);
+                $this->log->logujUpdate($old, $ip6prefix, 'IPAdresa['.$id.']', $log);
+            }
+            $newUserIP6PrefixIDs[] = intval($id);
+    	}
 
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
 
