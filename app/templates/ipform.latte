@@ -10,6 +10,21 @@
         </td>
     </tr>
     <tr>
+        <td>
+            {$recordContainer['ip6_adresa']->control}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            {$recordContainer['ip6_prefix']->control}
+            /
+            {$recordContainer['ip6_prefix_length']->control}
+            <nobr>
+                {$recordContainer['ip6_povolit_prichozi_spojeni']->control}
+            </nobr>
+        </td>
+    </tr>
+    <tr>
         <td class="ip">
             {$recordContainer['login']->control}
             {$recordContainer['heslo']->control}

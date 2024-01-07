@@ -111,15 +111,12 @@
     {/if}
     </table>
 
-        <h4>IPv4 Adresy</h4>
+        <h4>IP Adresy</h4>
         {if $canViewOrEdit}
             {$adresy}
         {else}
             <p>{$adresyline}</p>
         {/if}
-
-        <h4>IPv6 Prefixy</h4>
-        {$ip6prefixy_html}
 
         <h4>Události z IDS <small>za posledních 7 dní, max. 1000 záznamů</small></h4>
         <div id="ids">

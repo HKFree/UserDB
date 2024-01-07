@@ -10,8 +10,6 @@
                 {* kontejner, obsluha nekterych specialnich pripadu *}
                 {if $component->name =='ip'}
                     {include 'dynamic.latte', recordTemplate => 'ipform.latte', component => $component}
-                {elseif $component->name =='ip6prefix'}
-                    {include 'dynamic.latte', recordTemplate => 'ip6prefixform.latte', component => $component}
                 {elseif $component->name =='subnet'}
                     {include 'dynamic.latte', recordTemplate => 'subnetform.latte', component => $component}
                 {elseif $component->name =='subnet6'}

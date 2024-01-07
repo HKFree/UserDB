@@ -124,6 +124,12 @@ class IPAdresa extends Table
     public function getIPForm(&$ip, $typyZarizeni, $apMode=false) {
 		$ip->addHidden('id')->setAttribute('class', 'id ip');
 		$ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
+
+        $ip->addText('ip6_adresa', 'IPv6 Adresa', 35)->setAttribute('class', '')->setAttribute('placeholder', 'IPv6 Adresa');
+        $ip->addText('ip6_prefix', 'IPv6 Prefix', 35)->setAttribute('class', '')->setAttribute('placeholder', 'IPv6 Prefix');
+        $ip->addSelect('ip6_prefix_length', 'Délka', [48=>48,56=>56])->setDefaultValue(48);
+        $ip->addCheckbox('ip6_povolit_prichozi_spojeni', 'Povolit příchozí spojení')->setAttribute('class', '')->setDefaultValue(0);
+
 		$ip->addText('hostname', 'Hostname', 11)->setAttribute('class', 'hostname ip')->setAttribute('placeholder', 'Hostname');
 		$ip->addSelect('TypZarizeni_id', 'Typ Zařízení', $typyZarizeni)->setAttribute('class', 'TypZarizeni_id ip')->setPrompt('--Vyberte--');;
 		$ip->addCheckbox('internet', 'Internet')->setAttribute('class', 'internet ip')->setDefaultValue(1);
@@ -230,13 +236,20 @@ class IPAdresa extends Table
 		$tr->setId('highlightable-ip'.($ip ? $ip->ip_adresa : $subnetModeInfo['ipAdresa']));
 		if ($subnetModeInfo && array_key_exists('rowClass', $subnetModeInfo)) $tr->setClass($subnetModeInfo['rowClass']);
 
+        $td_ipadresy = $tr->create('td');
+
 		if ($subnetLink) {
-			// IP jako link do subnets z beznych agend (uzivatel, AP)
-			$tr->create('td')->create('a')->setHref($subnetLink)->setTarget('_blank')->setText($ipTitle);
+			// IPv4 jako link do subnets z beznych agend (uzivatel, AP)
+            $td_ipadresy->create('a')->setHref($subnetLink)->setTarget('_blank')->setText($ipTitle);
 		} else {
-			// zobrazit IP jen jako text
-			$tr->create('td')->setText($ipTitle);
+			// zobrazit IPv4 jen jako text
+			$td_ipadresy->setText($ipTitle);
 		}
+
+        if ($ip->ip6_adresa)
+            $td_ipadresy->create('div')->setText($ip->ip6_adresa);
+        if ($ip->ip6_prefix)
+            $td_ipadresy->create('div')->setText($ip->ip6_prefix . '/' . $ip->ip6_prefix_length);
 
         if ($igwCheck && $ip)
 		{
@@ -512,6 +525,14 @@ class IPAdresa extends Table
 						->addAttributes($tooltips);
 					$attr->addHtml(' ');
 				}
+                if ($ip->ip6_povolit_prichozi_spojeni === 1) {
+                    $attr->create('span')
+						->setClass('glyphicon glyphicon glyphicon-log-in')
+						->setTitle('Povolené IPv6 příchozí spojení z internetu (žádný firewall)')
+						->addAttributes($tooltips);
+					$attr->addHtml(' ');
+
+                }
                                 // ssid
                                 $wewimoTag;
                                 if ($wewimoLink) {

@@ -64,7 +64,6 @@ services:
 	technologiePripojeni: App\Model\TechnologiePripojeni
 	typCestnehoClenstvi: App\Model\TypCestnehoClenstvi
 	ipAdresa: App\Model\IPAdresa(%igw1IpCheckerUrl%, %igw2IpCheckerUrl%)
-	ip6Prefix: App\Model\IP6Prefix
 	oblast: App\Model\Oblast
 	ap: App\Model\AP
 	cc: App\Model\cc
