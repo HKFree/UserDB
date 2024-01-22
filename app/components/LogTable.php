@@ -193,8 +193,8 @@ class LogTable extends UI\Control
         foreach ($logy as $key => $line) {
             if(($rozparsovano = $this->parseSloupec($line->sloupec)) === false)
                 continue;
-            
-            if($rozparsovano["sloupec"]=='heslo')
+
+            if(preg_match("/^heslo/i", $rozparsovano["sloupec"]))
                 continue;
             
             if($rozparsovano["typ"] == self::UZIVATEL) {
