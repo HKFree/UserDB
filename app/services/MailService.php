@@ -94,10 +94,10 @@ class MailService
 
     public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void
     {
-        $fromAddress = 'hkfree.org oblast '.$uzivatel->Ap->Oblast->jmeno.' <oblast'.$uzivatel->Ap->Oblast->id.'@hkfree.org>';
-        
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $so = $this->uzivatel->getUzivatel($actuser);
+
+        $fromAddress = 'hkfree.org oblast '.$newUser->Ap->Oblast->jmeno.' <oblast'.$newUser->Ap->Oblast->id.'@hkfree.org>';
 
         $mailso = new Message;
         $mailso->setFrom($fromAddress)
