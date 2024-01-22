@@ -72,10 +72,12 @@ class UzivatelPresenter extends BasePresenter
     }
 
     public function sendNotificationEmail($idUzivatele) {
-
-        $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
-
-        $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
+        try {
+            $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
+            $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
+        } catch (Nette\Mail\SmtpException $e) {
+            $this->flashMessage('Odeslání e-mailu s notifikací správcům se nezdařilo. ' . $e->getMessage(), 'danger');
+        }
     }
 
     public function sendRegistrationEmail($idUzivatele) {
@@ -87,10 +89,15 @@ class UzivatelPresenter extends BasePresenter
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
-        $this->mailService->sendConfirmationRequest($newUser, $so, $link);
-        $this->mailService->sendConfirmationRequestCopy($newUser, $so);
+        try {
+            $this->mailService->sendConfirmationRequest($newUser, $so, $link);
+            $this->mailService->sendConfirmationRequestCopy($newUser, $so);
 
-        $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. PŘIPOJENÍ K HLAVNÍMU POČÍTAČI BUDE FUNGOVAT DO 15 MINUT.');
+            $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. PŘIPOJENÍ K HLAVNÍMU POČÍTAČI BUDE FUNGOVAT DO 15 MINUT.');
+        } catch (Nette\Mail\SmtpException $e) {
+            $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace se nezdařilo! Napište userdb teamu o pomoc. ' . $hash . $e->getMessage(), 'danger');
+        }
+
     }
 
     public function renderConfirm()
