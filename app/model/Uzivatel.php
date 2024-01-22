@@ -26,7 +26,7 @@ LEFT JOIN Ap A ON U.Ap_id = A.id
 LEFT JOIN Oblast O ON A.Oblast_id = O.id
 LEFT JOIN SpravceOblasti S ON S.Oblast_id = O.id
 LEFT JOIN Uzivatel SO ON SO.id = S.Uzivatel_id
-WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
+WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.id ='.$id_uzivatel)
                         ->fetchAll();
     }
 
@@ -37,7 +37,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
 
     public function getFormatovanySeznamNezrusenychUzivatelu()
     {
-      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->fetchAll();
+      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->where('systemovy=0')->fetchAll();
       $uss = array();
         foreach ($vsichni as $uzivatel) {
             $uss[$uzivatel->id] = $uzivatel->id . ' - ' . $uzivatel->nick . ' - ' . $uzivatel->jmeno . ' ' . $uzivatel->prijmeni;
@@ -47,7 +47,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.id ='.$id_uzivatel)
 
     public function getUsersForMailingList()
     {
-      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->where('email_invalid=0')->fetchAll();
+      $vsichni = $this->findAll()->where('TypClenstvi_id>1')->where('email_invalid=0')->where('systemovy=0')->fetchAll();
 	  return($vsichni);
     }
 
