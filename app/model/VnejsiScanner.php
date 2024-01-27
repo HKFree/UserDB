@@ -60,13 +60,21 @@ class VnejsiScanner
         return($out);
     }
 
-    public function getScanMikrotik() {
+    public function getScanNaPortech($filtr) {
         $scan = $this->getScan();
 
         $out = [];
 
         foreach($scan as $ip => $ports) {
-            if(in_array("8291", $ports)) {
+            $validni = false;
+
+            foreach($filtr as $port) {
+                if(in_array($port, $ports)) {
+                    $validni = true;
+                }
+            }
+
+            if($validni) {
                 $out[$ip] = $ports;
             }
         }

@@ -1,8 +1,4 @@
-{block content}
-
-<h1>Vnější scanner veřejných IP</h1>
-
-<h2>Mikrotiky <small>porty 8291, 8729</small></h2>
+{block scan}
 <table class="table table-striped">
 <tr>
     <th>Oblast</th>
@@ -18,5 +14,17 @@
     <td>{implode(", ", $line["porty"])}</td>
 </tr>
 </table>
+{/block}
+
+{block content}
+
+<h1>Vnější scanner veřejných IP</h1>
+Scanuje se z UHK, scanner spravuje Locutus. Scan se obnovuje jednou za 24 hodin.
+
+<h2>Mikrotik API <small>porty 8728, 8729</small></h2>
+{include scan, scan => $scanMikrotikAPI}
+
+<h2>Mikrotik Winbox <small>porty 8291</small></h2>
+{include scan, scan => $scanMikrotikWinbox}
 
 {/block}

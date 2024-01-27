@@ -18,9 +18,7 @@ class VnejsiScannerPresenter extends BasePresenter
         $this->iPAdresa = $iPAdresa;
     }
 
-    public function renderDefault() {
-        $scan = $this->vnejsiScanner->getScan();
-
+    private function getDetaily($scan) {
         $scan_detaily = [];
         foreach($scan as $ip => $porty) {
             $scan_detaily[$ip]["porty"] = $porty;
@@ -45,7 +43,11 @@ class VnejsiScannerPresenter extends BasePresenter
             return strcmp($a['oblast'], $b['oblast']);
         });
 
-        //\Tracy\Dumper::dump($scan_detaily);
-        $this->template->scan = $scan_detaily;
+        return($scan_detaily);
+    }
+
+    public function renderDefault() {
+        $this->template->scanMikrotikWinbox = $this->getDetaily($this->vnejsiScanner->getScanNaPortech(["8291"]));
+        $this->template->scanMikrotikAPI = $this->getDetaily($this->vnejsiScanner->getScanNaPortech(["8728", "8729"]));
     }
 }
