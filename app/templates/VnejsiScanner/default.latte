@@ -1,0 +1,22 @@
+{block content}
+
+<h1>Vnější scanner veřejných IP</h1>
+
+<h2>Mikrotiky <small>porty 8291, 8729</small></h2>
+<table class="table table-striped">
+<tr>
+    <th>Oblast</th>
+    <th>Uživatel</th>
+    <th>IP adresa</th>
+    <th>Otevřené porty</th>
+</tr>
+
+<tr n:foreach="$scan as $ip => $line">
+    <td {if !$line['uzivatel']}colspan=2{/if}>{$line["oblast"]}</td>
+    <td n:if="$line['uzivatel']"><a n:href="Uzivatel:show, id=>$line['uzivatel']->id">{$line["uzivatel"]->id}</a> - {$line["uzivatel"]->nick}</td>
+    <td>{$ip}</td>
+    <td>{implode(", ", $line["porty"])}</td>
+</tr>
+</table>
+
+{/block}

@@ -10,6 +10,7 @@ parameters:
 	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
 	urlPrefix: '/userdb'
 	sojkaPingerURL: 'http://sojka.hkfree.org/pinger/'
+	outerScannerURL: 'https://shibbtest.uhk.cz/.hkfreePortScanner'
 	salt: %env.USERDB_SALT%
 	influxUrl: %env.INFLUX_URL%
 	googleMapsApiKey: %env.USERDB_GOOGLE_MAPS_KEY%
@@ -82,6 +83,7 @@ services:
 	smsSender: App\Services\SmsSender("%appDir%/../bin/smsbackend.py")
 	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%, %env.USERDB_IDS_IPS_WHITELIST%)
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
+	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
 	status: App\Model\Status
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
