@@ -20,12 +20,15 @@ class VnejsiScanner
      */
     private $ipadresa;
 
+    private $scanData;
+    private $scanDate;
+
     public function __construct($outerScannerURL, IPAdresa $iPAdresa) {
         $this->outerScannerURL = $outerScannerURL;
         $this->ipadresa = $iPAdresa;
     }
 
-    public function getScan() {
+    public function downloadScan() {
         $client = new Client(['verify' => false]);
 
         try {
@@ -43,9 +46,11 @@ class VnejsiScanner
         $separator = "\r\n";
         $line = strtok($body, $separator);
         $out = [];
+        $date = "";
 
         while ($line !== false) {
             if(preg_match('/^#/', $line)) {
+                $this->scanDate = \DateTime::createFromFormat('\#Y.m.d\_H.i', $line);
                 $line = strtok($separator);
                 continue;
             }
@@ -57,7 +62,23 @@ class VnejsiScanner
             $line = strtok($separator);
         }
 
-        return($out);
+        $this->scanData = $out;
+    }
+
+    public function getScan() {
+        if(!$this->scanData) {
+            $this->downloadScan();
+        }
+
+        return($this->scanData);
+    }
+
+    public function getScanDate() {
+        if(!$this->scanDate) {
+            $this->downloadScan();
+        }
+
+        return($this->scanDate);
     }
 
     public function getScanNaPortech($filtr) {

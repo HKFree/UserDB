@@ -47,7 +47,7 @@ class VnejsiScannerPresenter extends BasePresenter
     }
 
     public function renderDefault() {
-        $this->template->scanMikrotikWinbox = $this->getDetaily($this->vnejsiScanner->getScanNaPortech(["8291"]));
-        $this->template->scanMikrotikAPI = $this->getDetaily($this->vnejsiScanner->getScanNaPortech(["8728", "8729"]));
+        $this->template->scan = $this->getDetaily($this->vnejsiScanner->getScan());
+        $this->template->scanDate = $this->vnejsiScanner->getScanDate();
     }
 }
