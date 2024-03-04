@@ -18,6 +18,10 @@ class AreasPresenter extends ApiPresenter
         $oblasti = [];
         $oblastiData = $this->oblast->getSeznamOblasti();
         foreach ($oblastiData as $idoblast => $o) {
+            if($o['id'] < 0) {
+                continue;
+            }
+
             $oblasti[$idoblast] = [
                 'id' => $o['id'],
                 'jmeno' => $o['jmeno'],
@@ -29,6 +33,7 @@ class AreasPresenter extends ApiPresenter
                 $apcka[$idApcka] = [
                     'jmeno' => $apcko['jmeno'],
                     'id' => $apcko['id'],
+                    'gps' => $apcko['gps']
                 ];
             }
             $oblasti[$idoblast]['aps'] = $apcka;
@@ -36,6 +41,10 @@ class AreasPresenter extends ApiPresenter
             $spravci = [];
             foreach ($o->related('SpravceOblasti.Oblast_id')->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())') as $spravceMtm) {
                 $spravce = $spravceMtm->ref('Uzivatel', 'Uzivatel_id');
+                if($spravce['systemovy']) {
+                    continue;
+                }
+
                 $role = $spravceMtm->ref('TypSpravceOblasti', 'TypSpravceOblasti_id');
                 $spravci[$spravce['id']] = [
                     'id' => $spravce['id'],
