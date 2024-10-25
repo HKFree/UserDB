@@ -132,6 +132,9 @@ class ApPresenter extends BasePresenter {
                 ->setRequired('GPS souřadnice na Google mapě. Zeměpisná šířka jako reálné číslo, čárka, zeměpisná délka jako reálné číslo. Např. 50.22795,15.834133')
                 ->setOption('description', 'GPS souřadnice na Google mapě. Zeměpisná šířka jako reálné číslo, čárka, zeměpisná délka jako reálné číslo. Např. 50.22795,15.834133')
                 ->addRule(Form::PATTERN, 'Zeměpisné souřadnice prosím zadejte ve formátu 50.xxxxxx,15.xxxxxx (bez světových stran, bez mezer, odděleno čárkou)', '^\d{2}.\d{1,8},\d{2}.\d{1,8}$');
+        $form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
+        $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
+        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
         $form->addCheckBox('no_auto_dns', 'Nechci automaticky generovat DNS z UserDB', 30)->setDefaultValue(false);
         $form->addCheckBox('no_auto_upgrade', 'Nechci automaticky upgradovat RouterOS', 30)->setDefaultValue(false);
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);
@@ -342,7 +345,7 @@ class ApPresenter extends BasePresenter {
             {
                 $ip->heslo_sifrovane = 0;
             }
-            
+
 
             if(empty($ip->id)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;

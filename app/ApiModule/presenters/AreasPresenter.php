@@ -33,7 +33,10 @@ class AreasPresenter extends ApiPresenter
                 $apcka[$idApcka] = [
                     'jmeno' => $apcko['jmeno'],
                     'id' => $apcko['id'],
-                    'gps' => $apcko['gps']
+                    'gps' => $apcko['gps'],
+                    'ulice_cp' => $apcko['ulice_cp'],
+                    'mesto' => $apcko['mesto'],
+                    'psc' => $apcko['psc']
                 ];
             }
             $oblasti[$idoblast]['aps'] = $apcka;
