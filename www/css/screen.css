@@ -201,6 +201,10 @@ body {
 pre.tracy-dump {
     padding-left: 20%;
 }
+
+.form input[type="checkbox"] {
+    margin-right: 4px;
+}
 .form tr td, .form tr th {
     padding: 2px 0px;
 }
