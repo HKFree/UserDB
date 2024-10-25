@@ -7,8 +7,8 @@
 {/if}
 <a href="{link UzivatelList:list id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-user"></i> Zobrazit uživatele</a>
 <br><br>
-<span n:if="$ap->ulice_cp"><b>Adresa AP:</b> {$ap->ulice_cp}, {$ap->mesto}, {$ap->psc}</span>
-<br><br>
+<span n:if="$ap->ulice_cp"><b>Adresa AP:</b> {$ap->ulice_cp}, {$ap->mesto}, {$ap->psc}<br><br></span>
+
 <pre>
 {$ap->poznamka}
 </pre>
