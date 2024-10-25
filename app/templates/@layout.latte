@@ -102,12 +102,12 @@
                 {var $apcka = $o->related('Ap.Oblast_id')->order("jmeno")}
                 {if count($apcka) == 1}
                   {var $ap = $apcka->fetch()}
-                  <li><a n:href="UzivatelList:list id=>$ap->id">{$ap->jmeno} ({$ap->id})</a></li>
+                  <li><a n:href="UzivatelList:list id=>$ap->id"><s n:tag-if="!$ap->aktivni">{$ap->jmeno} ({$ap->id})</s></a></li>
                 {else}
                   <li><a n:href="Ap:list id=>$o->id">{$o->jmeno}</a>
                     <ul class="nav">
                     {foreach $apcka as $idap => $theAp}
-                      <li><a n:href="UzivatelList:list id=>$theAp->id">{$theAp->jmeno} ({$theAp->id})</a></li>
+                      <li><a n:href="UzivatelList:list id=>$theAp->id"><s n:tag-if="!$theAp->aktivni">{$theAp->jmeno} ({$theAp->id})</s></a></li>
                     {/foreach}
                     </ul>
                   </li>

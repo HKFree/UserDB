@@ -65,7 +65,11 @@ class ApPresenter extends BasePresenter {
             while($ap = $apcka->fetch()) {
                 $tr = $table->create('tr');
                 $tr->create('td')->setText($ap->id);
-                $tr->create('td')->setText($ap->jmeno);
+                $tdNazev = $tr->create('td');
+                if(!$ap->aktivni) {
+                    $tdNazev = $tdNazev->create('s');
+                }
+                $tdNazev->setText($ap->jmeno);
                 $tr->create('td')->setText($ap->poznamka);
                 $tdAkce = $tr->create('td');
 
@@ -125,6 +129,7 @@ class ApPresenter extends BasePresenter {
     protected function createComponentApForm() {
         $form = new Form($this, 'apForm');
         $form->addHidden('id');
+        $form->addCheckBox('aktivni', 'Je AP aktivní?', 30)->setDefaultValue(true);
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
         $form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');
         $form->addText('gps', 'Zeměpisné souřadnice (GPS)', 30)

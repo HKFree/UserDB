@@ -31,6 +31,7 @@ class AreasPresenter extends ApiPresenter
             $apcka = [];
             foreach ($apckaData as $idApcka => $apcko) {
                 $apcka[$idApcka] = [
+                    'aktivni' => $apcko['aktivni'],
                     'jmeno' => $apcko['jmeno'],
                     'id' => $apcko['id'],
                     'gps' => $apcko['gps'],
