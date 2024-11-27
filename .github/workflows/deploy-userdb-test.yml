@@ -23,5 +23,7 @@ jobs:
       run: ls -la 
     # - run: docker build . --file Dockerfile --tag userdb:$(date +%s)
     - run: docker image ls
+    - run: mkdir .ssh
+    - run: echo "$CLOUD_SSH_KEY" >> ~/.ssh/id_rsa
     - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "ls -la "
   
