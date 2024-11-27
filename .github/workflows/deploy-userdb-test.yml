@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "master" ]
 
+env: 
+  CLOUD_HOSTNAME: ${{ vars.CLOUD_HOSTNAME }}
+  CLOUD_USERNAME: ${{ vars.CLOUD_USERNAME }}
+  CLOUD_SSH_KEY: ${{ secrets.CLOUD_SSH_KEY }}
+
 jobs:
 
   deploytest:
@@ -15,10 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      env: 
-        CLOUD_HOSTNAME: ${{ vars.CLOUD_HOSTNAME }}
-        CLOUD_USERNAME: ${{ vars.CLOUD_USERNAME }}
-        CLOUD_SSH_KEY: ${{ secrets.CLOUD_SSH_KEY }}
       run: ls -la 
     # - run: docker build . --file Dockerfile --tag userdb:$(date +%s)
     - run: docker image ls
