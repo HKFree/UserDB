@@ -2,9 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "deployment-test" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "deployment-test" ]
 
 env: 
   CLOUD_HOSTNAME: ${{ vars.CLOUD_HOSTNAME }}
