@@ -15,12 +15,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag userdb:$(date +%s)
-    - run: docker image ls
-    - run: ls -la 
-    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "ls -la "
       env: 
-        CLOUD_HOSTNAME: ${{ secrets.CLOUD_HOSTNAME }}
-        CLOUD_USERNAME: ${{ secrets.CLOUD_USERNAME }}
+        CLOUD_HOSTNAME: ${{ vars.CLOUD_HOSTNAME }}
+        CLOUD_USERNAME: ${{ vars.CLOUD_USERNAME }}
         CLOUD_SSH_KEY: ${{ secrets.CLOUD_SSH_KEY }}
+      run: ls -la 
+    # - run: docker build . --file Dockerfile --tag userdb:$(date +%s)
+    - run: docker image ls
+    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "ls -la "
   
