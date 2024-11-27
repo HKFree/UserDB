@@ -26,7 +26,7 @@ jobs:
     # - run: docker image save userdb:latest | ssh -C -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "docker image import - userdb:test-latest"
     - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "rm -rf ~/.tmp | true"
     - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "mkdir ~/.tmp"
-    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "cd ~/.tmp && git clone https://github.com/HKFree/UserDB.git"
-    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "cd ~/.tmp && docker build . --file Dockerfile --tag userdb:test-latest"    
+    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "cd ~/.tmp/UserDB && git clone https://github.com/HKFree/UserDB.git"
+    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "cd ~/.tmp/UserDB && docker build . --file Dockerfile --tag userdb:test-latest"
     - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "./deploy-userdb-test.sh"
   
