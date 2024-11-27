@@ -2,9 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "master", "deployment-test" ]
+    branches: [ "deployment-test" ]
   pull_request:
-    branches: [ "master", "deployment-test" ]
+    branches: [ "deployment-test" ]
 
 env: 
   CLOUD_HOSTNAME: ${{ vars.CLOUD_HOSTNAME }}
@@ -12,21 +12,14 @@ env:
   CLOUD_SSH_KEY: ${{ secrets.CLOUD_SSH_KEY }}
 
 jobs:
-  deploytest:
+  deploy_test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
       run: ls -la 
-    # - run: docker build . --file Dockerfile --tag userdb:latest
-    # - run: docker image ls
     - run: mkdir ~/.ssh
     - run: echo "$CLOUD_SSH_KEY" >> ~/.ssh/id_rsa
     - run: chmod 0600 ~/.ssh/id_rsa
-    # - run: docker image save userdb:latest | ssh -C -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "docker image import - userdb:test-latest"
-    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "rm -rf ~/.tmp | true"
-    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "mkdir ~/.tmp"
-    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "cd ~/.tmp && git clone https://github.com/HKFree/UserDB.git"
-    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "cd ~/.tmp/UserDB && docker build . --file Dockerfile --tag userdb:test-latest"
     - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "./deploy-userdb-test.sh"
   
