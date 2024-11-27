@@ -18,4 +18,9 @@ jobs:
       run: docker build . --file Dockerfile --tag userdb:$(date +%s)
     - run: docker image ls
     - run: ls -la 
+    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "ls -la "
+      env: 
+        CLOUD_HOSTNAME: ${{ secrets.CLOUD_HOSTNAME }}
+        CLOUD_USERNAME: ${{ secrets.CLOUD_USERNAME }}
+        CLOUD_SSH_KEY: ${{ secrets.CLOUD_SSH_KEY }}
   
