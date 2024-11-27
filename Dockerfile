@@ -7,21 +7,21 @@ RUN a2enmod headers
 
 # Debian 9 "stretch" je uz starej -> lze stahovat pouze z archivu
 RUN echo '\n\
-deb http://archive.debian.org/debian stretch main contrib non-free\n\
-deb-src http://archive.debian.org/debian stretch main contrib non-free\n\
-deb http://archive.debian.org/debian-security/ stretch/updates main contrib non-free\n\
-deb-src http://archive.debian.org/debian-security/ stretch/updates main contrib non-free' > /etc/apt/sources.list
+    deb http://archive.debian.org/debian stretch main contrib non-free\n\
+    deb-src http://archive.debian.org/debian stretch main contrib non-free\n\
+    deb http://archive.debian.org/debian-security/ stretch/updates main contrib non-free\n\
+    deb-src http://archive.debian.org/debian-security/ stretch/updates main contrib non-free' > /etc/apt/sources.list
 
 # Install extenstions: MySQL PDO, GD
 RUN apt-get update && apt-get install -y \
-        git \
-        zip \
-        unzip \
-        libpq-dev \
-        libfreetype6-dev \
-        libjpeg62-turbo-dev \
-        libpng-dev \
-        python \
+    git \
+    zip \
+    unzip \
+    libpq-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    python \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install pdo pdo_mysql gd zip
@@ -76,3 +76,5 @@ COPY . /opt/userdb
 RUN chmod 777 -R /opt/userdb/log
 RUN chmod 777 -R /opt/userdb/temp
 RUN chmod 777 -R /opt/userdb/vendor/mpdf/mpdf/tmp
+
+ENTRYPOINT [ "/usr/local/bin/docker-php-entrypoint" ]

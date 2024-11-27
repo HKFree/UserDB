@@ -23,6 +23,6 @@ jobs:
     - run: mkdir ~/.ssh
     - run: echo "$CLOUD_SSH_KEY" >> ~/.ssh/id_rsa
     - run: chmod 0600 ~/.ssh/id_rsa
-    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "ls -la "
     - run: docker image save userdb:latest | ssh -C -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "docker image import - userdb:test-latest"
+    - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "./deploy-userdb-test.sh"
   
