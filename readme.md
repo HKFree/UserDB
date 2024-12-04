@@ -30,10 +30,13 @@ Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig
 Override environment variables defined in `docker-compose.yml` using `docker-compose.override.yml` when necessary. Don't forget that some settings are still present in `app/config/config.local.neon`.
 
 ```bash
-docker-compose build
-docker-compose up
-docker-compose exec web composer install
-docker-compose exec web php www/index.php migrations:continue
+docker compose build
+docker compose up
+docker compose exec web composer install
+docker compose exec web chmod 777 -R log
+docker compose exec web chmod 777 -R temp
+docker compose exec web chmod 777 -R vendor/mpdf/mpdf/tmp
+docker compose exec web php www/index.php migrations:continue
 ```
 
 Now the app is up and running in Docker on host's port 80, PhpMyAdmin on host's port 8080.
