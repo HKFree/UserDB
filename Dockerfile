@@ -76,5 +76,3 @@ COPY . /opt/userdb
 RUN chmod 777 -R /opt/userdb/log
 RUN chmod 777 -R /opt/userdb/temp
 RUN chmod 777 -R /opt/userdb/vendor/mpdf/mpdf/tmp
-
-ENTRYPOINT [ "/usr/local/bin/docker-php-entrypoint" ]
