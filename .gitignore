@@ -18,3 +18,7 @@ app/config/config.local.bak.neon
 docker-compose.override.yml
 
 nbproject/private/
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+.php_cs.cache
