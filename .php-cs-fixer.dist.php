@@ -6,7 +6,7 @@ $finder = (new PhpCsFixer\Finder())
 
 return (new PhpCsFixer\Config())
     ->setRules([
-	    '@PSR12' => true,
+        '@PSR12' => true,
         'braces' => ['position_after_functions_and_oop_constructs' => 'same']
     ])
     ->setFinder($finder)
