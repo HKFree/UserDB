@@ -155,7 +155,7 @@ class UzivatelListGrid
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function($item){
                     $el = Html::el('span');
                     $el->title = $item->ulice_cp;
-                    $el->setText(Strings::truncate($item->ulice_cp, 50, $append='…'));
+                    $el->setText(Strings::truncate($item->ulice_cp ?? '', 50, $append='…'));
                     $this->addressNotice($el, $item);
                     return $el;
                 })->setSortable();
@@ -252,7 +252,7 @@ class UzivatelListGrid
                 $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
                 $el = Html::el('span');
                 $el->title = $item->poznamka;
-                $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
+                $el->setText(Strings::truncate($item->poznamka ?? '', 20, $append='…'));
                 return $el;
                 })->setSortable();
             }
@@ -411,7 +411,7 @@ class UzivatelListGrid
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function($item){
                     $el = Html::el('span');
                     $el->title = $item->ulice_cp;
-                    $el->setText(Strings::truncate($item->ulice_cp, 50, $append='…'));
+                    $el->setText(Strings::truncate($item->ulice_cp ?? '', 50, $append='…'));
                     $this->addressNotice($el, $item);
                     return $el;
                 })->setSortable()->setFilterText();
@@ -508,7 +508,7 @@ class UzivatelListGrid
                 $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
                 $el = Html::el('span');
                 $el->title = $item->poznamka;
-                $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
+                $el->setText(Strings::truncate($item->poznamka ?? '', 20, $append='…'));
                 return $el;
                 })->setSortable()->setFilterText();
             }

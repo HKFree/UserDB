@@ -57,13 +57,13 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
 
         $u1id = 1;
         $u2id = 1;
-        if($this->getParam('u1'))
+        if($this->getParameter('u1'))
         {
-            $u1id = $this->getParam('u1');
+            $u1id = $this->getParameter('u1');
         }
-        if($this->getParam('u2'))
+        if($this->getParameter('u2'))
         {
-            $u2id = $this->getParam('u2');
+            $u2id = $this->getParameter('u2');
         }
 
         $u1 = $this->uzivatel->getUzivatel($u1id);
@@ -168,8 +168,8 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         $form->addSubmit('slouceni', 'Sloučit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
 
         $form->setDefaults(array(
-                        'Uzivatel_id' => $this->getParam('u1'),
-                        'slouceny_uzivatel' => $this->getParam('u2')
+                        'Uzivatel_id' => $this->getParameter('u1'),
+                        'slouceny_uzivatel' => $this->getParameter('u2')
                     ));
 
     	$form->onSuccess[] = array($this, 'slucovaniFormSucceded');

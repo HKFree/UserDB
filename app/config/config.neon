@@ -20,10 +20,6 @@ parameters:
 php:
 	date.timezone: Europe/Prague
 
-latte:
-    macros:
-        - App\Model\MyMacroSet
-
 application:
     errorPresenter: Error
     mapping:

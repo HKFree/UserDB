@@ -44,7 +44,8 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     /*
      * Called by \Nette\Application\UI\Presenter!
      */
-    public function checkRequirements($element) {
+    public function checkRequirements($element): void
+    {
         // due to CORS preflight test, we have to respond 200 OK (not 401) to OPTIONS request
         if ($this->httpRequest->getMethod() == 'OPTIONS') {
             $this->handleOptionsMethod();

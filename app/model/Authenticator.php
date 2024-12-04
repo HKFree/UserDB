@@ -3,7 +3,7 @@
 namespace App\Model;
 
 use Nette,
-    Nette\DateTime,
+    Nette\Utils\DateTime,
     App\Model,
     Nette\Security,
     Nette\Utils\Strings,

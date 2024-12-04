@@ -102,9 +102,9 @@ class UzivatelPresenter extends BasePresenter
 
     public function renderConfirm()
     {
-        if($this->getParam('id'))
+        if($this->getParameter('id'))
         {
-            list($uid, $hash) = explode('-', base64_decode($this->getParam('id')));
+            list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
 
             if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
@@ -129,9 +129,9 @@ class UzivatelPresenter extends BasePresenter
 
     public function renderShow()
     {
-    	if($this->getParam('id'))
+    	if($this->getParameter('id'))
     	{
-            $uid = $this->getParam('id');
+            $uid = $this->getParameter('id');
     	    if($uzivatel = $this->uzivatel->getUzivatel($uid))
     	    {
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
@@ -245,7 +245,7 @@ class UzivatelPresenter extends BasePresenter
 
     public function renderEdit()
     {
-        if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+        if($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id')))
         {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
             $seznamUzivatelu = array();
@@ -297,7 +297,7 @@ class UzivatelPresenter extends BasePresenter
     	$form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');
         $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::FILLED)->addRule(Form::EMAIL, 'Musíte zadat platný email');
     	$form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
-        if(count($this->spravceOblasti->getOblastiSpravce($this->getParam('id'))) > 0)
+        if(count($this->spravceOblasti->getOblastiSpravce($this->getParameter('id'))) > 0)
         {
             $form->addCheckBox('publicPhone', 'Telefon je viditelný pro členy', 30)->setDefaultValue(true);
         }
@@ -323,13 +323,13 @@ class UzivatelPresenter extends BasePresenter
 
     	    $ip->addSubmit('remove', '– Odstranit IP')
     		    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-    		    ->setValidationScope(FALSE)
+    		    ->setValidationScope(null)
     		    ->addRemoveOnClick();
-    	}, ($this->getParam('id')>0?0:1));
+    	}, ($this->getParameter('id')>0?0:1));
 
     	$ips->addSubmit('add', '+ Přidat další IP')
     		->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-    		->setValidationScope(FALSE)
+    		->setValidationScope(null)
     		->addCreateOnClick(TRUE, function (Container $replicator, Container $ip) {
                         $ip->setValues(array('internet'=>1));
 						//\Tracy\Debugger::barDump($ip);
@@ -347,8 +347,8 @@ class UzivatelPresenter extends BasePresenter
 
     	// pokud editujeme, nacteme existujici ipadresy
     	$submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
-    	    $values = $this->uzivatel->getUzivatel($this->getParam('id'));
+        if($this->getParameter('id') && !$submitujeSe) {
+    	    $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
     	    if($values) {
                 foreach($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
                     if($ip_data->heslo_sifrovane == 1)

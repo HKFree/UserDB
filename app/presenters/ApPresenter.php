@@ -46,14 +46,14 @@ class ApPresenter extends BasePresenter {
     }
 
     public function renderList() {
-        if($this->getParam('id'))
+        if($this->getParameter('id'))
         {
-            $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParam('id'))));
+            $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParameter('id'))));
             if($apcka->count() == 0) {
             $this->template->table = 'Chyba, zadaná oblast neexistuje nebo nemá žádná AP.';
             return true;
             }
-            $this->template->oblast = $this->oblast->find($this->getParam('id'))->jmeno;
+            $this->template->oblast = $this->oblast->find($this->getParameter('id'))->jmeno;
 
             $table = Html::el('table')->setClass('table table-striped');
             $tr = $table->create('tr');
@@ -90,12 +90,12 @@ class ApPresenter extends BasePresenter {
             $tr->create('th')->setText('Nickname');
             $tr->create('th')->setText('Funkce');
 
-            $spravci = $this->oblast->getSeznamSpravcu($this->getParam('id'));
+            $spravci = $this->oblast->getSeznamSpravcu($this->getParameter('id'));
             foreach($spravci as $spravce) {
                 $tr = $spravciTab->create('tr');
                 $tr->create('td')->setText($spravce->jmeno.' '.$spravce->prijmeni);
                 $tr->create('td')->setText($spravce->nick);
-                $role = $this->spravceOblasti->getUserRole($spravce->id, $this->getParam('id'));
+                $role = $this->spravceOblasti->getUserRole($spravce->id, $this->getParameter('id'));
                 $tr->create('td')->setText($role);
             }
             $this->template->spravci = $spravciTab;
@@ -105,9 +105,9 @@ class ApPresenter extends BasePresenter {
     }
 
     public function renderShow() {
-        if($this->getParam('id') && $ap = $this->ap->getAP($this->getParam('id'))) {
+        if($this->getParameter('id') && $ap = $this->ap->getAP($this->getParameter('id'))) {
             $this->template->ap = $ap;
-            $canViewCredentialsOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
+            $canViewCredentialsOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
             $ips = $ap->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)');
             $subnetLinks = $this->getSubnetLinksFromIPs($ips);
             $wewimoLinks = $this->getWewimoLinksFromIPs($ips);
@@ -115,7 +115,7 @@ class ApPresenter extends BasePresenter {
             $this->template->adresy = $this->ipAdresa->getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $apEditLink, false, Array($this, "linker"));
             $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
             $this->template->csubnety = $this->subnet->getAPCSubnets($ap->related('Subnet.Ap_id'));
-            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
+            $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
             $kliceAsoc = $ap->related('ApiKlic.Ap_id')->fetchAssoc('id');
             $this->template->apiKlice = $this->apiKlic->decorateKeys($kliceAsoc);
             $this->template->serverHostname = $_SERVER['HTTP_HOST'];
@@ -123,7 +123,7 @@ class ApPresenter extends BasePresenter {
     }
 
     public function renderEdit() {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParam('id'), $this->getUser());
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
     }
 
     protected function createComponentApForm() {
@@ -150,13 +150,13 @@ class ApPresenter extends BasePresenter {
 
                     $ip->addSubmit('remove', '– Odstranit IP')
                             ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-                            ->setValidationScope(FALSE)
+                            ->setValidationScope(null)
                             ->addRemoveOnClick();
-        }, ($this->getParam('id')>0?0:1));
+        }, ($this->getParameter('id')>0?0:1));
 
         $ips->addSubmit('add', '+ Přidat další IP')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(FALSE)
+            ->setValidationScope(null)
             ->addCreateOnClick(TRUE);
 
         $dataSubnet = $this->subnet;
@@ -165,13 +165,13 @@ class ApPresenter extends BasePresenter {
 
                     $subnet->addSubmit('remove_subnet', '– Odstranit Subnet')
                             ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-                            ->setValidationScope(FALSE)
+                            ->setValidationScope(null)
                             ->addRemoveOnClick();
-        }, ($this->getParam('id')>0?0:1));
+        }, ($this->getParameter('id')>0?0:1));
 
         $subnets->addSubmit('add_subnet', '+ Přidat další Subnet')
                 ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-                ->setValidationScope(FALSE)
+                ->setValidationScope(null)
                 ->addCreateOnClick(TRUE);
 
         $dataApiKlice = $this->apiKlic;
@@ -181,13 +181,13 @@ class ApPresenter extends BasePresenter {
 
             $apiKlic->addSubmit('remove_apiklic', '– Odstranit API klíč')
                 ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-                ->setValidationScope(FALSE)
+                ->setValidationScope(null)
                 ->addRemoveOnClick();
-        }, ($this->getParam('id')>0?0:1));
+        }, ($this->getParameter('id')>0?0:1));
 
         $apiKlice->addSubmit('add_apiKlic', '+ Přidat další API klíč')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(FALSE)
+            ->setValidationScope(null)
             ->addCreateOnClick(TRUE);
 
         $form->addSubmit('save', 'Uložit')
@@ -197,8 +197,8 @@ class ApPresenter extends BasePresenter {
         $form->onValidate[] = array($this, 'validateApForm');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
-            $values = $this->ap->getAP($this->getParam('id'));
+        if($this->getParameter('id') && !$submitujeSe) {
+            $values = $this->ap->getAP($this->getParameter('id'));
             if($values) {
                 foreach($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
                     if($ip_data->heslo_sifrovane == 1)
