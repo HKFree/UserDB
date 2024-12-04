@@ -23,7 +23,7 @@
 		"jkuchar/pdfresponse": "~0.6",
 	  	"pear2/net_transmitter": ">=1.0.0a4",
 		"pear2/net_routeros": "dev-develop#3c0125d4426ebd01866104c4677de97cd96382cf",
-		"nextras/migrations": "^3.0",
+		"nextras/migrations": "^3.3",
 		"guzzlehttp/guzzle": "~6.0",
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
 		"kdyby/console": "~2.8",
