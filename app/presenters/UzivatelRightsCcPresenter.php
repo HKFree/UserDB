@@ -89,7 +89,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             return(0);
         }
 
-        $values = $form->getValues();
+        $values = $form->getUntrustedValues();
 
         foreach($values->rights as $pravo) {
             if(!empty($pravo->id) && !$pravo->override) {

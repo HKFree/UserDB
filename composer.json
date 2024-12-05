@@ -5,40 +5,42 @@
 	"type": "project",
 	"license": ["Proprietary"],
 	"authors": [
-		{
-			"name": "David Grudl",
-			"homepage": "http://davidgrudl.com"
-		},
-		{
-			"name": "Nette Community",
-			"homepage": "http://nette.org/contributors"
-		}
 	],
+        "repositories": [
+            {
+                "type": "git",
+                "url": "https://github.com/mhucik/Console.git"
+            },
+            {
+                "type": "git",
+                "url": "https://github.com/slepic/grido.git"
+            }
+        ],
 	"require": {
-		"php": ">= 7.2.0",
+                "php": "~8.2.0",
 		"dg/adminer-custom": "~1.5",
 		"kdyby/forms-replicator": "~2.0",
-		"o5/grido": "~3.1.0",
+		"o5/grido": "dev-nette-3.2#539b04b65326dcf56a7ac588f959f62e6bfb6beb",
 		"mpdf/mpdf": ">= 5.6.5",
 		"jkuchar/pdfresponse": "~0.6",
 	  	"pear2/net_transmitter": ">=1.0.0a4",
-		"pear2/net_routeros": "dev-develop#3c0125d4426ebd01866104c4677de97cd96382cf",
+		"pear2/net_routeros": "dev-develop#40466961229f641e2cccbe84f5db6fe0d01fef6e",
 		"nextras/migrations": "^3.3",
-		"guzzlehttp/guzzle": "~6.0",
+		"guzzlehttp/guzzle": "~7.9.2",
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
-		"kdyby/console": "~2.8",
 		"defuse/php-encryption": "~2.2.1",
 		"ext-json": "*",
-		"influxdb/influxdb-php": "^1.15",
-		"nette/application": "~3.0",
-		"nette/forms": "~3.0",
-		"nette/di": "~3.0",
-		"nette/bootstrap": "~3.0",
+		"influxdb/influxdb-php": "~1.15.2",
+		"nette/application": "~3.1",
+		"nette/forms": "~3.1",
+		"nette/di": "~3.1",
+		"nette/bootstrap": "~3.1",
 		"latte/latte": "~2.5",
-		"nette/security": "~3.0",
-		"nette/database": "~3.0",
-		"nette/mail": "~3.0",
-		"nette/utils": "~3.0"
+		"nette/security": "~3.1",
+		"nette/database": "~3.1",
+		"nette/mail": "^3.1",
+		"nette/utils": "~3.2",
+		"kdyby/console": "dev-master#308787a59dffdbea92df4c7a4cd50e919cf7b7c1"
         },
 	"require-dev": {
 		"nette/tester": "~1.0"

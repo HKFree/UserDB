@@ -31,7 +31,7 @@ class Wewimo2InfluxCommand extends Command
             ->setDescription('Ziskat Wewimo data ze vsech sledovanych RB a zapsat do InfluxDB (Grafany)');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $influxUrl = $this->getHelper('container')->getParameter('influxUrl');
 
         $database = InfluxDB\Client::fromDSN($influxUrl); // 'influxdb://user:pass@host:port/db'
@@ -87,6 +87,7 @@ class Wewimo2InfluxCommand extends Command
                 echo " ERROR: " .$ex->getMessage(). "\n";
             }
         }
+        return 0;
     }
 
     private function addFloatField(&$fields, $dstField, $station, $srcField)

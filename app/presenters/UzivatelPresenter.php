@@ -420,7 +420,7 @@ class UzivatelPresenter extends BasePresenter
             }
         }
 
-        $values = $form->getValues();
+        $values = $form->getUntrustedValues();
 
         if($values->TypClenstvi_id > 1)
         {

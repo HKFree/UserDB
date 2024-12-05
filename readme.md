@@ -132,3 +132,10 @@ You'll need the credentials (click Authorize in interactive docs). Create creden
 
 ## Push to production server2
 
+## Update Path and Known Issues
+
+Known current issue: Wewimo not working, `pear2/net_routeros` need to be fixed.
+
+Consider updating Latte to 3.0.
+
+Consider updating Nette to 3.2.

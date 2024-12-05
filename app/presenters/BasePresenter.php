@@ -2,6 +2,7 @@
 
 namespace App\Presenters;
 
+use App\Settings;
 use Nette,
 	App\Model,
     Nette\Application\UI\Form,
@@ -25,19 +26,22 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     /** @var IMailer */
     protected $mailer;
 
-    public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer)
+    protected Settings $settings;
+
+    public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer, Settings $settings)
     {
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
         $this->ap = $ap;
         $this->mailer = $mailer;
+        $this->settings = $settings;
     }
 
     public function startup() {
 		parent::startup();
 
 		//$uri = $this->getHttpRequest()->getUrl();
-                if($this->context->parameters["debug"]["fakeUser"] == false) {
+                if($this->settings->fakeUser == false) {
                         $this->getUser()->login($_SERVER['HTTP_UID'], NULL);
                 } else {
                         $this->getUser()->login("DBG", NULL);
@@ -121,12 +125,12 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         }
         return $result;
     }
-    
+
     /**
      * Prasofunkce pro linkovani z modelu (vytvoreno pro Models\IPAdresa)
-     * 
+     *
      * Pouzivat co nejmene!
-     * 
+     *
      * @param string $destination
      * @param mixed $args
      * @return string

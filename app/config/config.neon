@@ -86,6 +86,7 @@ services:
 		class: App\Presenters\SpravaPresenter
 		setup:
 			- setGoogleMapsApiKey(%env.USERDB_GOOGLE_MAPS_KEY%)
+	settings: App\Settings(%debug.fakeUser%)
 
 console:
 	commands:
