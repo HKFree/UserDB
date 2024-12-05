@@ -85,7 +85,7 @@ class UpdateLocationsCommand extends Command
         return(array("lat" => $B,"lon" => $L,"h" => $H));
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->googleMapsApiKey = $this->getHelper('container')->getParameter('googleMapsApiKey');
         $mode = $input->getArgument('mode');
@@ -172,5 +172,6 @@ class UpdateLocationsCommand extends Command
             sleep(2);
         }
         echo "update_locations finished\n";
+        return 0;
     }
 }

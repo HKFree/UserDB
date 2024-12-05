@@ -82,9 +82,9 @@ class SubnetPresenter extends BasePresenter
 
     public function renderDetail()
     {
-    	if($this->getParam('id'))
+    	if($this->getParameter('id'))
     	{
-            $targetSubnet = $this->getParam('id');
+            $targetSubnet = $this->getParameter('id');
             if(substr($targetSubnet, -1) != ".")
             {
                 $targetSubnet .= ".";

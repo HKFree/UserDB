@@ -30,10 +30,13 @@ Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig
 Override environment variables defined in `docker-compose.yml` using `docker-compose.override.yml` when necessary. Don't forget that some settings are still present in `app/config/config.local.neon`.
 
 ```bash
-docker-compose build
-docker-compose up
-docker-compose exec web composer install
-docker-compose exec web php www/index.php migrations:continue
+docker compose build
+docker compose up
+docker compose exec web composer install
+docker compose exec web chmod 777 -R log
+docker compose exec web chmod 777 -R temp
+docker compose exec web chmod 777 -R vendor/mpdf/mpdf/tmp
+docker compose exec web php www/index.php migrations:continue
 ```
 
 Now the app is up and running in Docker on host's port 80, PhpMyAdmin on host's port 8080.
@@ -79,17 +82,17 @@ and edit the change-script created.
 
 - s = structures (applied always)
 - b = basic-data (eg. lists-of-values, applied always)
-- d = dummy-data (eg. testing records, applied only when `--production` omitted, should not be run on production)
+- d = dummy-data (eg. testing records, applied only when `debugMode` is enabled, should not be run on production)
 
 ### Applying changes
 
 Make sure the cache is clean by running `rm -rf temp/cache` and run
-`php www/index.php migrations:continue --production`
+`php www/index.php migrations:continue` (while paying attention to deactivated `debugMode`)
 in order to apply the change-scripts to the DB configured in neon config.
 
 #### On development or testing machines
 
-Omit `--production` when you want to apply dummy-data scripts too (on development or testing machine).
+As mentioned - when `debugMode` is enabled (as is default), dummy data are loaded.
 
 You can run `php www/index.php migrations:reset` in order to drop all tables in the database and create them from scratch running all
  change-scripts. Run it on dev/test machine in order to test that the whole schema is completely described in change-scripts. DO NOT RUN IN PRODUCTION! WILL DELETE ALL DATA!
@@ -129,3 +132,8 @@ You'll need the credentials (click Authorize in interactive docs). Create creden
 
 ## Push to production server2
 
+## Update Path and Known Issues
+
+Known current issue: Wewimo not working, `pear2/net_routeros` need to be fixed.
+
+Consider updating Latte to 3.0 (?).

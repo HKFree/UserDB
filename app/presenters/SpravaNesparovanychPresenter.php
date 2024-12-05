@@ -22,7 +22,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         $this->uzivatelskeKonto = $konto;
         $this->prichoziPlatba = $platba;
     }
-    
+
     public function renderNesparovane()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
@@ -75,7 +75,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
                 $el = Html::el('span');
                 $el->title = $item->poznamka;
-                $el->setText(Strings::truncate($item->poznamka, 20, $append='…'));
+                $el->setText(Strings::truncate($item->poznamka ?? '', 20, $append='…'));
                 return $el;
                 })->setSortable()->setFilterText();
 
@@ -161,7 +161,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
 
     	// pokud editujeme, nacteme existujici
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
+        if($this->getParameter('id') && !$submitujeSe) {
             $id = $this->getParameter('id');
             $pPlatba = $this->prichoziPlatba->getPrichoziPlatba($id);
             $posledniPohyb = $this->uzivatelskeKonto->getUzivatelskeKontoByPrichoziPlatba($id);

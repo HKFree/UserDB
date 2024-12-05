@@ -37,7 +37,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
     public function renderEditrights()
     {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
-        $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
+        $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
     protected function createComponentUzivatelRightsForm() {
@@ -55,7 +55,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
     	$rights->addSubmit('add', '+ Přidat další oprávnění')
     		   ->setAttribute('class', 'btn btn-success btn-xs btn-white')
-    		   ->setValidationScope(FALSE)
+    		   ->setValidationScope(null)
     		   ->addCreateOnClick(TRUE);
 
     	$form->addSubmit('save', 'Uložit')
@@ -67,8 +67,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
     	// pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
-            $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+        if($this->getParameter('id') && !$submitujeSe) {
+            $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
     		foreach($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
     		}
@@ -89,7 +89,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             return(0);
         }
 
-        $values = $form->getValues();
+        $values = $form->getUntrustedValues();
 
         foreach($values->rights as $pravo) {
             if(!empty($pravo->id) && !$pravo->override) {
@@ -146,9 +146,9 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
     public function renderEditcc()
     {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
         $this->template->canApprove = $this->getUser()->isInRole('VV');
-        $this->template->u = $this->uzivatel->getUzivatel($this->getParam('id'));
+        $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
     protected function createComponentUzivatelCCForm() {
@@ -198,7 +198,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
     	$rights->addSubmit('add', '+ Přidat další období ČČ')
     		   ->setAttribute('class', 'btn btn-success btn-xs btn-white')
-    		   ->setValidationScope(FALSE)
+    		   ->setValidationScope(null)
     		   ->addCreateOnClick(TRUE);
 
     	$form->addSubmit('save', 'Uložit')
@@ -208,8 +208,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
     	// pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
-            $user = $this->uzivatel->getUzivatel($this->getParam('id'));
+        if($this->getParameter('id') && !$submitujeSe) {
+            $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
     		foreach($user->related("CestneClenstviUzivatele.Uzivatel_id") as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
     		}

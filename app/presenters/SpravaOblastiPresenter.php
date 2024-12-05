@@ -37,8 +37,8 @@ class SpravaOblastiPresenter extends SpravaPresenter
     	$form->onSuccess[] = array($this, 'novaoblastFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
-            $existujiciOblast = $this->oblast->getOblast($this->getParam('id'));
+        if($this->getParameter('id') && !$submitujeSe) {
+            $existujiciOblast = $this->oblast->getOblast($this->getParameter('id'));
             if($existujiciOblast) {
                 $form->setValues($existujiciOblast);
     	    }
@@ -84,8 +84,8 @@ class SpravaOblastiPresenter extends SpravaPresenter
     	$form->onSuccess[] = array($this, 'noveapFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParam('id') && !$submitujeSe) {
-            $existujiciAp = $this->ap->getAP($this->getParam('id'));
+        if($this->getParameter('id') && !$submitujeSe) {
+            $existujiciAp = $this->ap->getAP($this->getParameter('id'));
             if($existujiciAp) {
                 $form->setValues($existujiciAp);
     	    }

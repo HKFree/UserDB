@@ -59,14 +59,14 @@ class UzivatelAccountPresenter extends UzivatelPresenter
 
         $this->template->canViewOrEditCU = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         $this->template->canTransfer = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
-        $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParam('id'));
+        $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParameter('id'));
     }
 
     public function renderAccount()
     {
-        $uzivatel = $this->uzivatel->getUzivatel($this->getParam('id'));
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
         $this->template->u = $uzivatel;
 
         $stavUctuIn = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('castka>0')->sum('castka');
@@ -89,7 +89,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         if($id){
             $seznamTransakci = $this->uzivatelskeKonto->getUzivatelskeKontoUzivatele($id);
 
-            $canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParam('id'))->Ap_id, $this->getUser());
+            $canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
 
         }
 
@@ -124,7 +124,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function($item){
                 $el = Html::el('span');
                 $el->title = $item->poznamka;
-                $el->setText(Strings::truncate($item->poznamka, 100, $append='…'));
+                $el->setText(Strings::truncate($item->poznamka ?? '', 100, $append='…'));
                 return $el;
                 })->setSortable()->setFilterText();
 

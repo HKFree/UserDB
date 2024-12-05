@@ -65,9 +65,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionExportPdf() {
-        if($this->getParam('id'))
+        if($this->getParameter('id'))
         {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id')))
             {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
@@ -76,9 +76,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
     public function actionSendRegActivation() {
-        if($this->getParam('id'))
+        if($this->getParameter('id'))
         {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id')))
     	    {
                 $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
                 $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
@@ -87,7 +87,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
                 $this->mailService->sendConfirmationRequest($uzivatel, $so, $link);
                 $this->mailService->sendConfirmationRequestCopy($uzivatel, $so);
-                
+
                 $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
 
                 $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));
@@ -96,9 +96,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionExportAndSendRegForm() {
-        if($this->getParam('id'))
+        if($this->getParameter('id'))
         {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParam('id')))
+            if($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id')))
     	    {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
