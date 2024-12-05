@@ -115,7 +115,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
         }
     }
 
-    protected function handleOptionsMethod() {
+    public function handleOptionsMethod() {
         $this->sendResponse(new TextResponse(""));
     }
 

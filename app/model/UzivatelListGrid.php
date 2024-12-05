@@ -124,11 +124,11 @@ class UzivatelListGrid
             if ($canViewOrEdit)
             {
                 // edit button
-                $btn = Html::el('span')->setClass('glyphicon glyphicon-pencil');
-                $anchor = Html::el('a', $btn)
+                $anchor = Html::el('a')
                             ->setHref($presenter->link('Uzivatel:edit', array('id'=>$item->id)))
                             ->setTitle('Editovat')
                             ->setClass('btn btn-default btn-xs btn-in-table pull-right');
+                $anchor->create('span')->setClass('glyphicon glyphicon-pencil'); // inner edit icon
                 $uidLink .= $anchor;
             }
 
@@ -380,11 +380,11 @@ class UzivatelListGrid
             if ($canViewOrEdit)
             {
                 // edit button
-                $btn = Html::el('span')->setClass('glyphicon glyphicon-pencil');
-                $anchor = Html::el('a', $btn)
+                $anchor = Html::el('a')
                             ->setHref($presenter->link('Uzivatel:edit', array('id'=>$item->id)))
                             ->setTitle('Editovat')
                             ->setClass('btn btn-default btn-xs btn-in-table pull-right');
+                $anchor->create('span')->setClass('glyphicon glyphicon-pencil'); // inner edit icon
                 $uidLink .= $anchor;
             }
 

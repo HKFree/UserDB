@@ -136,6 +136,4 @@ You'll need the credentials (click Authorize in interactive docs). Create creden
 
 Known current issue: Wewimo not working, `pear2/net_routeros` need to be fixed.
 
-Consider updating Latte to 3.0.
-
-Consider updating Nette to 3.2.
+Consider updating Latte to 3.0 (?).
