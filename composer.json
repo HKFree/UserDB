@@ -3,34 +3,35 @@
 	"description": "HKFree.org UserDB",
 	"homepage": "http://nette.org",
 	"type": "project",
-	"license": ["Proprietary"],
-	"authors": [
+	"license": [
+		"Proprietary"
 	],
-        "repositories": [
-            {
-                "type": "git",
-                "url": "https://github.com/mhucik/Console.git"
-            },
-            {
-                "type": "git",
-                "url": "https://github.com/slepic/grido.git"
-            },
-            {
-                "type": "git",
-                "url": "https://github.com/marekskopal/PdfResponse.git"
-            },
-            {
-                "type": "git",
-                "url": "https://github.com/Gappa/FormsReplicator.git"
-            }
-        ],
+	"authors": [],
+	"repositories": [
+		{
+			"type": "git",
+			"url": "https://github.com/mhucik/Console.git"
+		},
+		{
+			"type": "git",
+			"url": "https://github.com/slepic/grido.git"
+		},
+		{
+			"type": "git",
+			"url": "https://github.com/marekskopal/PdfResponse.git"
+		},
+		{
+			"type": "git",
+			"url": "https://github.com/Gappa/FormsReplicator.git"
+		}
+	],
 	"require": {
-                "php": "~8.2.0",
+		"php": "~8.2.0",
 		"dg/adminer-custom": "~1.5",
 		"o5/grido": "dev-nette-3.2#539b04b65326dcf56a7ac588f959f62e6bfb6beb",
 		"mpdf/mpdf": ">= 5.6.5",
 		"jkuchar/pdfresponse": "dev-master#152f4c80057f0be66f47310253810a860f11dc12",
-	  	"pear2/net_transmitter": ">=1.0.0a4",
+		"pear2/net_transmitter": ">=1.0.0a4",
 		"pear2/net_routeros": "dev-develop#40466961229f641e2cccbe84f5db6fe0d01fef6e",
 		"nextras/migrations": "^3.3",
 		"guzzlehttp/guzzle": "~7.9.2",
@@ -49,7 +50,7 @@
 		"nette/utils": "~4.0.5",
 		"kdyby/console": "dev-master#308787a59dffdbea92df4c7a4cd50e919cf7b7c1",
 		"kdyby/forms-replicator": "dev-master#5a71bc343d5d0a2e183ee8dc6b0b4dc645955030"
-        },
+	},
 	"require-dev": {
 		"nette/tester": "~1.0",
 		"friendsofphp/php-cs-fixer": "^3.65"

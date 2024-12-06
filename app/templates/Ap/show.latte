@@ -41,7 +41,7 @@
     <tr>
         <td>apikey{$apiKlic['id']}</td>
         <td>{$apiKlic['klic']}</td>
-        <td>{$apiKlic['plati_do']|date:'%d.%m.%Y'}{if $apiKlic['expired']} <span class="text-danger glyphicon glyphicon-warning-sign" aria-hidden="true"></span>{/if}</td>
+        <td>{$apiKlic['plati_do']|date:'d.m.Y'}{if $apiKlic['expired']} <span class="text-danger glyphicon glyphicon-warning-sign" aria-hidden="true"></span>{/if}</td>
         <td>{$apiKlic['poznamka']}</td>
     </tr>
 {/foreach}
@@ -61,4 +61,3 @@
 
 {/ifset}
 {/block}
-
