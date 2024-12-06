@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: composer install
-      run: composer install
-    - name: php-cs-fixer check
-      run: ./php-syntax-check.sh
+    - name: Build the image
+      run: docker build . --tag userdb-web-syntacheck
+    - name: Run php-cs-fixer check
+      run: docker run userdb-web-syntacheck ./vendor/friendsofphp/php-cs-fixer/php-cs-fixer check --diff
