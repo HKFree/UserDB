@@ -6,10 +6,10 @@ on:
 
 jobs:
   php_syntax_check:
-    runs-on: php:8.2
+    runs-on: php:8.2-cli
     steps:
     - uses: actions/checkout@v4
     - name: composer install
       run: composer install
     - name: php-cs-fixer check
-      run: ./vendor/friendsofphp/php-cs-fixer/php-cs-fixer check --diff
+      run: ./php-syntax-check.sh
