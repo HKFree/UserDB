@@ -2,12 +2,12 @@
 
 namespace App\Presenters;
 
-use App\Model,
-    Nette\Application\UI\Form,
-    Nette\Forms\Container,
-    Nette\Mail\Message;
-
+use App\Model;
+use Nette\Application\UI\Form;
+use Nette\Forms\Container;
+use Nette\Mail\Message;
 use Nette\Forms\Controls\SubmitButton;
+
 /**
  * Sprava presenter.
  */
@@ -18,7 +18,8 @@ class SpravaCcPresenter extends SpravaPresenter
     private $platneCC;
     private $ap;
 
-    function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\AP $ap) {
+    public function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\AP $ap)
+    {
         $this->cestneClenstviUzivatele = $cc;
         $this->uzivatel = $uzivatel;
         $this->platneCC = $actualCC;
@@ -27,29 +28,26 @@ class SpravaCcPresenter extends SpravaPresenter
 
     public function renderPrehledcc()
     {
-
     }
 
     protected function createComponentGrid($name)
     {
         $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
 
-    	$grid = new \Grido\Grid($this, $name);
-    	$grid->translator->setLang('cs');
+        $grid = new \Grido\Grid($this, $name);
+        $grid->translator->setLang('cs');
         $grid->setExport('cc_export');
 
-        if($canViewOrEdit)
-        {
+        if ($canViewOrEdit) {
             $grid->setModel($this->platneCC->getCCWithNamesVV());
-        }
-        else {
+        } else {
             $grid->setModel($this->platneCC->getCCWithNames($this->getIdentity()->getUid()));
         }
 
-    	$grid->setDefaultPerPage(100);
-    	$grid->setDefaultSort(array('plati_od' => 'DESC'));
+        $grid->setDefaultPerPage(100);
+        $grid->setDefaultSort(array('plati_od' => 'DESC'));
 
-    	$grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
+        $grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
         $grid->addColumnText('plati_od', 'Platnost od')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('typcc', 'Typ CC')->setSortable()->setFilterText()->setSuggestion();
@@ -64,15 +62,15 @@ class SpravaCcPresenter extends SpravaPresenter
     {
         /*** clear old registration files ***/
         foreach (glob(sys_get_temp_dir()."/registrace*") as $file) {
-        /*** if file is 7 days old then delete it ***/
-        if (filemtime($file) < time() - 604800) {
-            unlink($file);
+            /*** if file is 7 days old then delete it ***/
+            if (filemtime($file) < time() - 604800) {
+                unlink($file);
             }
         }
 
         $this->template->canApproveCC = $this->getUser()->isInRole('VV');
         $uzivatele = array();
-        foreach($this->cestneClenstviUzivatele->getNeschvalene() as $cc_id => $cc_data) {
+        foreach ($this->cestneClenstviUzivatele->getNeschvalene() as $cc_id => $cc_data) {
             $uzivatele[] = $cc_data->Uzivatel_id;
             $uzivatele[] = $cc_data->zadost_podal;
         }
@@ -80,12 +78,12 @@ class SpravaCcPresenter extends SpravaPresenter
         $this->template->uzivatele = $this->uzivatel->findBy(array("id" => $uzivatele));
     }
 
-    protected function createComponentSpravaCCForm() {
-    	$form = new Form($this, "spravaCCForm");
+    protected function createComponentSpravaCCForm()
+    {
+        $form = new Form($this, "spravaCCForm");
 
         $data = $this->cestneClenstviUzivatele;
-    	$rights = $form->addDynamic('rights', function (Container $right) use ($data) {
-
+        $rights = $form->addDynamic('rights', function (Container $right) use ($data) {
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
             $right->addHidden('id')->setAttribute('class', 'id ip');
 
@@ -114,53 +112,57 @@ class SpravaCcPresenter extends SpravaPresenter
 
             $right->addHidden('zadost_podal');
             $right->addHidden('zadost_podana');
+        }, 0, false);
 
-    	}, 0, false);
+        $form->addSubmit('save', 'Uložit')
+             ->setAttribute('class', 'btn btn-success btn-xs btn-white');
 
-    	$form->addSubmit('save', 'Uložit')
-    		 ->setAttribute('class', 'btn btn-success btn-xs btn-white');
-
-    	$form->onSuccess[] = array($this, 'spravaCCFormSucceded');
+        $form->onSuccess[] = array($this, 'spravaCCFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if(!$submitujeSe) {
-    		foreach($this->cestneClenstviUzivatele->getNeschvalene() as $rights_id => $rights_data) {
+        if (!$submitujeSe) {
+            foreach ($this->cestneClenstviUzivatele->getNeschvalene() as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
-    		}
-    	}
+            }
+        }
 
-    	return $form;
+        return $form;
     }
 
     /**
     * Schválení čestného členství
     */
-    public function spravaCCFormSucceded($form, $values) {
+    public function spravaCCFormSucceded($form, $values)
+    {
         $log = array();
-    	$prava = $values->rights;
+        $prava = $values->rights;
 
-    	// Zpracujeme prava
-    	foreach($prava as $pravo)
-    	{
-    	    $pravoId = $pravo->id;
+        // Zpracujeme prava
+        foreach ($prava as $pravo) {
+            $pravoId = $pravo->id;
 
             //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if(empty($pravo->plati_od)) $pravo->plati_od = null;
-            if(empty($pravo->plati_do)) $pravo->plati_do = null;
-            if(empty($pravo->schvaleno)) $pravo->schvaleno = 0;
+            if (empty($pravo->plati_od)) {
+                $pravo->plati_od = null;
+            }
+            if (empty($pravo->plati_do)) {
+                $pravo->plati_do = null;
+            }
+            if (empty($pravo->schvaleno)) {
+                $pravo->schvaleno = 0;
+            }
 
-            if(!empty($pravo->id)) {
+            if (!empty($pravo->id)) {
                 $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
 
-                if($starePravo->schvaleno != $pravo->schvaleno && ($pravo->schvaleno == 1 || $pravo->schvaleno == 2))
-                {
+                if ($starePravo->schvaleno != $pravo->schvaleno && ($pravo->schvaleno == 1 || $pravo->schvaleno == 2)) {
                     $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
                     $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
 
                     $stav = $pravo->schvaleno == 1 ? "schválena" : "zamítnuta";
 
-                    $mail = new Message;
+                    $mail = new Message();
                     $mail->setFrom('UserDB <userdb@hkfree.org>')
                         ->addTo($navrhovatel->email)
                         ->addTo($schvaleny->email)
@@ -170,9 +172,9 @@ class SpravaCcPresenter extends SpravaPresenter
                     $this->mailer->send($mail);
                 }
             }
-    	}
+        }
 
-    	$this->redirect('SpravaCc:schvalovanicc');
-    	return true;
+        $this->redirect('SpravaCc:schvalovanicc');
+        return true;
     }
 }

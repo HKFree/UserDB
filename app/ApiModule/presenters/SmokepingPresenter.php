@@ -14,11 +14,12 @@ class SmokepingPresenter extends ApiPresenter
     private $ipAdresa;
     private $ap;
 
-    function __construct(Model\Oblast $oblast, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
+    public function __construct(Model\Oblast $oblast, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap)
+    {
         $this->oblast = $oblast;
-    	$this->uzivatel = $uzivatel;
-    	$this->ipAdresa = $ipAdresa;
-    	$this->ap = $ap;
+        $this->uzivatel = $uzivatel;
+        $this->ipAdresa = $ipAdresa;
+        $this->ap = $ap;
     }
 
     public function renderDefault()
@@ -31,19 +32,19 @@ class SmokepingPresenter extends ApiPresenter
         $aps_ips = array();
         $users = array();
         $users_ips = array();
-        foreach($oblasti as $id_oblast => $oblast) {
-            $ap_get = $this->ap->findAP(array('Oblast_id'=>$id_oblast));
-            foreach($ap_get as $id_ap => $ap) {
+        foreach ($oblasti as $id_oblast => $oblast) {
+            $ap_get = $this->ap->findAP(array('Oblast_id' => $id_oblast));
+            foreach ($ap_get as $id_ap => $ap) {
                 $aps[$id_oblast][$id_ap] = $ap->jmeno;
-                $ap_ips = $this->ipAdresa->findBy(array('Ap_id'=>$id_ap,'smokeping'=>1));
-                foreach($ap_ips as $id_ap_ip => $ap_ip) {
+                $ap_ips = $this->ipAdresa->findBy(array('Ap_id' => $id_ap,'smokeping' => 1));
+                foreach ($ap_ips as $id_ap_ip => $ap_ip) {
                     $aps_ips[$id_oblast][$id_ap][$id_ap_ip] = $ap_ip;
                 }
                 $user_get = $this->uzivatel->getSeznamUzivateluZAP($id_ap);
-                foreach($user_get as $id_user => $user) {
+                foreach ($user_get as $id_user => $user) {
                     $users[$id_oblast][$id_ap][$id_user] = $user;
-                    $user_ips = $this->ipAdresa->findBy(array('Uzivatel_id'=>$id_user,'smokeping'=>1));
-                    foreach($user_ips as $id_user_ip => $user_ip) {
+                    $user_ips = $this->ipAdresa->findBy(array('Uzivatel_id' => $id_user,'smokeping' => 1));
+                    foreach ($user_ips as $id_user_ip => $user_ip) {
                         $users_ips[$id_oblast][$id_ap][$id_user][$id_user_ip] = $user_ip;
                     }
                 }
@@ -56,11 +57,11 @@ class SmokepingPresenter extends ApiPresenter
         $this->template->users_ips = $users_ips;
     }
 
-    public function renderCheck() {
+    public function renderCheck()
+    {
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');
-        $this->template->md5 = md5(serialize($this->ipAdresa->findBy(array('smokeping'=>1))->fetchPairs('id','ip_adresa')));
+        $this->template->md5 = md5(serialize($this->ipAdresa->findBy(array('smokeping' => 1))->fetchPairs('id', 'ip_adresa')));
     }
-
 }

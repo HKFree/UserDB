@@ -2,9 +2,8 @@
 
 namespace App\Model;
 
-use Nette,
-    Nette\Database\Context;
-
+use Nette;
+use Nette\Database\Context;
 
 /**
  * @author
@@ -18,7 +17,7 @@ class cc extends Table
 
     public function getCC()
     {
-        return($this->findAll());
+        return ($this->findAll());
     }
 
     public function getCCWithNamesVV()

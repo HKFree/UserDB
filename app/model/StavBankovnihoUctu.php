@@ -2,8 +2,8 @@
 
 namespace App\Model;
 
-use Nette,
-    Nette\Database\Context;
+use Nette;
+use Nette\Database\Context;
 
 /**
  * @author

@@ -2,12 +2,12 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
-    Nette\Application\UI\Form,
-    Nette\Forms\Container,
-    Nette\Mail\Message,
-    App\Components;
+use Nette;
+use App\Model;
+use Nette\Application\UI\Form;
+use Nette\Forms\Container;
+use Nette\Mail\Message;
+use App\Components;
 
 /**
  * Uzivatel presenter.
@@ -24,9 +24,10 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    function __construct(Model\AP $ap, Model\Uzivatel $uzivatel, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\TypSpravceOblasti $typSpravce, Model\CestneClenstviUzivatele $cc, Model\SpravceOblasti $prava, Model\Log $log) {
-    	$this->uzivatel = $uzivatel;
-    	$this->spravceOblasti = $prava;
+    public function __construct(Model\AP $ap, Model\Uzivatel $uzivatel, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\TypSpravceOblasti $typSpravce, Model\CestneClenstviUzivatele $cc, Model\SpravceOblasti $prava, Model\Log $log)
+    {
+        $this->uzivatel = $uzivatel;
+        $this->spravceOblasti = $prava;
         $this->typSpravceOblasti = $typSpravce;
         $this->cestneClenstviUzivatele = $cc;
         $this->typCestnehoClenstvi = $typCestnehoClenstvi;
@@ -40,44 +41,44 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentUzivatelRightsForm() {
-    	$typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
+    protected function createComponentUzivatelRightsForm()
+    {
+        $typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
         $obl = $this->oblast->getSeznamOblasti()->fetchPairs('id', 'jmeno');
 
-         // Tohle je nutne abychom mohli zjistit isSubmited
-    	$form = new Form($this, "uzivatelRightsForm");
-    	$form->addHidden('id');
+        // Tohle je nutne abychom mohli zjistit isSubmited
+        $form = new Form($this, "uzivatelRightsForm");
+        $form->addHidden('id');
 
         $data = $this->spravceOblasti;
-    	$rights = $form->addDynamic('rights', function (Container $right) use ($data, $typRole, $obl) {
-    	    $data->getRightsForm($right, $typRole, $obl);
-    	}, 0, false);
+        $rights = $form->addDynamic('rights', function (Container $right) use ($data, $typRole, $obl) {
+            $data->getRightsForm($right, $typRole, $obl);
+        }, 0, false);
 
-    	$rights->addSubmit('add', '+ Přidat další oprávnění')
-    		   ->setAttribute('class', 'btn btn-success btn-xs btn-white')
-    		   ->setValidationScope(null)
-    		   ->addCreateOnClick(TRUE);
+        $rights->addSubmit('add', '+ Přidat další oprávnění')
+               ->setAttribute('class', 'btn btn-success btn-xs btn-white')
+               ->setValidationScope(null)
+               ->addCreateOnClick(true);
 
-    	$form->addSubmit('save', 'Uložit')
-    		 ->setAttribute('class', 'btn btn-success btn-xs btn-white');
+        $form->addSubmit('save', 'Uložit')
+             ->setAttribute('class', 'btn btn-success btn-xs btn-white');
 
         $form->onSuccess[] = array($this, 'uzivatelRightsFormSucceded');
         $form->onValidate[] = array($this, 'validateRightsForm');
 
-
-    	// pokud editujeme, nacteme existujici opravneni
+        // pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParameter('id') && !$submitujeSe) {
+        if ($this->getParameter('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
-    		foreach($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
+            foreach ($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
-    		}
-            if($user) {
+            }
+            if ($user) {
                 $form->setValues($user);
-    	    }
-    	}
+            }
+        }
 
-    	return $form;
+        return $form;
     }
 
     public function validateRightsForm($form)
@@ -85,17 +86,17 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
-        if(!isset($data["save"])) {
-            return(0);
+        if (!isset($data["save"])) {
+            return (0);
         }
 
         $values = $form->getUntrustedValues();
 
-        foreach($values->rights as $pravo) {
-            if(!empty($pravo->id) && !$pravo->override) {
+        foreach ($values->rights as $pravo) {
+            if (!empty($pravo->id) && !$pravo->override) {
                 $starePravo = null;
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
-                if(($starePravo->od != null && $starePravo->od->format('Y-m-d') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('Y-m-d') != $pravo->do)
+                if (($starePravo->od != null && $starePravo->od->format('Y-m-d') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('Y-m-d') != $pravo->do)
                 || $starePravo->Oblast_id != $pravo->Oblast_id || $starePravo->TypSpravceOblasti_id != $pravo->TypSpravceOblasti_id) {
                     $form->addError('NERECYKLUJTE. Práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!.');
                 }
@@ -103,30 +104,32 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         }
     }
 
-    public function uzivatelRightsFormSucceded($form, $values) {
+    public function uzivatelRightsFormSucceded($form, $values)
+    {
         $log = array();
-    	$idUzivatele = $values->id;
-    	$prava = $values->rights;
+        $idUzivatele = $values->id;
+        $prava = $values->rights;
 
         $typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
 
-    	// Zpracujeme prava
-    	foreach($prava as $pravo)
-    	{
+        // Zpracujeme prava
+        foreach ($prava as $pravo) {
             unset($pravo['override']);
 
-    	    $pravo->Uzivatel_id = $idUzivatele;
-    	    $pravoId = $pravo->id;
+            $pravo->Uzivatel_id = $idUzivatele;
+            $pravoId = $pravo->id;
 
             //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if(empty($pravo->od))
+            if (empty($pravo->od)) {
                 $pravo->od = null;
-            if(empty($pravo->do))
+            }
+            if (empty($pravo->do)) {
                 $pravo->do = null;
+            }
 
             $popisek = $this->spravceOblasti->getTypPravaPopisek($typRole[$pravo->TypSpravceOblasti_id], $pravo->Oblast_id);
 
-            if(empty($pravo->id)) {
+            if (empty($pravo->id)) {
                 $pravoId = $this->spravceOblasti->insert($pravo)->id;
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
                 $this->log->logujInsert($novePravo, 'Pravo['.$popisek.']', $log);
@@ -136,12 +139,12 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
                 $this->log->logujUpdate($starePravo, $novePravo, 'Pravo['.$popisek.']', $log);
             }
-    	}
+        }
 
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
 
-    	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele));
-    	return true;
+        $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
+        return true;
     }
 
     public function renderEditcc()
@@ -151,15 +154,15 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentUzivatelCCForm() {
-    	$form = new Form($this, "uzivatelCCForm");
-    	$form->addHidden('id');
+    protected function createComponentUzivatelCCForm()
+    {
+        $form = new Form($this, "uzivatelCCForm");
+        $form->addHidden('id');
 
-        $typCC = $this->typCestnehoClenstvi->getTypCestnehoClenstvi()->fetchPairs('id','text');
+        $typCC = $this->typCestnehoClenstvi->getTypCestnehoClenstvi()->fetchPairs('id', 'text');
 
         $data = $this->cestneClenstviUzivatele;
-    	$rights = $form->addDynamic('rights', function (Container $right) use ($data, $typCC) {
-
+        $rights = $form->addDynamic('rights', function (Container $right) use ($data, $typCC) {
             $right->addHidden('zadost_podal')->setAttribute('class', 'id ip');
             $right->addHidden('zadost_podana')->setAttribute('class', 'id ip');
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
@@ -180,70 +183,75 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
                  ->addCondition(Form::FILLED)
                  ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
 
-                 $right->addTextArea('poznamka', 'Poznámka:', 72, 5)
-                 ->setAttribute('class', 'note ip');
+            $right->addTextArea('poznamka', 'Poznámka:', 72, 5)
+            ->setAttribute('class', 'note ip');
 
-                 $schvalenoStates = array(
-                    0 => 'Nerozhodnuto',
-                    1 => 'Schváleno',
-                    2 => 'Zamítnuto');
-                 $right->addRadioList('schvaleno', 'Stav schválení: ', $schvalenoStates)
-                       ->getSeparatorPrototype()->setName("span")->style('margin-right', '7px');
+            $schvalenoStates = array(
+               0 => 'Nerozhodnuto',
+               1 => 'Schváleno',
+               2 => 'Zamítnuto');
+            $right->addRadioList('schvaleno', 'Stav schválení: ', $schvalenoStates)
+                  ->getSeparatorPrototype()->setName("span")->style('margin-right', '7px');
 
-                 $right->setDefaults(array(
-                        'TypCestnehoClenstvi_id' => 0,
-                    ));
+            $right->setDefaults(array(
+                   'TypCestnehoClenstvi_id' => 0,
+               ));
+        }, 0, false);
 
-    	}, 0, false);
+        $rights->addSubmit('add', '+ Přidat další období ČČ')
+               ->setAttribute('class', 'btn btn-success btn-xs btn-white')
+               ->setValidationScope(null)
+               ->addCreateOnClick(true);
 
-    	$rights->addSubmit('add', '+ Přidat další období ČČ')
-    		   ->setAttribute('class', 'btn btn-success btn-xs btn-white')
-    		   ->setValidationScope(null)
-    		   ->addCreateOnClick(TRUE);
+        $form->addSubmit('save', 'Uložit')
+             ->setAttribute('class', 'btn btn-success btn-xs btn-white');
 
-    	$form->addSubmit('save', 'Uložit')
-    		 ->setAttribute('class', 'btn btn-success btn-xs btn-white');
+        $form->onSuccess[] = array($this, 'uzivatelCCFormSucceded');
 
-    	$form->onSuccess[] = array($this, 'uzivatelCCFormSucceded');
-
-    	// pokud editujeme, nacteme existujici opravneni
+        // pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if($this->getParameter('id') && !$submitujeSe) {
+        if ($this->getParameter('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
-    		foreach($user->related("CestneClenstviUzivatele.Uzivatel_id") as $rights_id => $rights_data) {
+            foreach ($user->related("CestneClenstviUzivatele.Uzivatel_id") as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
-    		}
-            if($user) {
+            }
+            if ($user) {
                 $form->setValues($user);
-    	    }
-    	}
+            }
+        }
 
-    	return $form;
+        return $form;
     }
 
-    public function uzivatelCCFormSucceded($form, $values) {
+    public function uzivatelCCFormSucceded($form, $values)
+    {
         $log = array();
-    	$idUzivatele = $values->id;
-    	$prava = $values->rights;
+        $idUzivatele = $values->id;
+        $prava = $values->rights;
 
-    	// Zpracujeme prava
-    	$newUserIPIDs = array();
-    	foreach($prava as $pravo)
-    	{
-    	    $pravo->Uzivatel_id = $idUzivatele;
+        // Zpracujeme prava
+        $newUserIPIDs = array();
+        foreach ($prava as $pravo) {
+            $pravo->Uzivatel_id = $idUzivatele;
             $pravo->zadost_podal = $this->getIdentity()->getUid();
-            $pravo->zadost_podana = new Nette\Utils\DateTime;
-    	    $pravoId = $pravo->id;
+            $pravo->zadost_podana = new Nette\Utils\DateTime();
+            $pravoId = $pravo->id;
 
             //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if(empty($pravo->plati_od)) $pravo->plati_od = null;
-            if(empty($pravo->plati_do)) $pravo->plati_do = null;
-            if(empty($pravo->schvaleno)) $pravo->schvaleno = 0;
+            if (empty($pravo->plati_od)) {
+                $pravo->plati_od = null;
+            }
+            if (empty($pravo->plati_do)) {
+                $pravo->plati_do = null;
+            }
+            if (empty($pravo->schvaleno)) {
+                $pravo->schvaleno = 0;
+            }
 
-            if(empty($pravo->id)) {
+            if (empty($pravo->id)) {
                 $pravoId = $this->cestneClenstviUzivatele->insert($pravo)->id;
 
-                $mail = new Message;
+                $mail = new Message();
                 $mail->setFrom('UserDB <userdb@hkfree.org>')
                     ->addTo('vv@hkfree.org')
                     ->setSubject('Nová žádost o ČČ')
@@ -255,9 +263,9 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             } else {
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
             }
-    	}
+        }
 
-    	$this->redirect('Uzivatel:show', array('id'=>$idUzivatele));
-    	return true;
+        $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
+        return true;
     }
 }

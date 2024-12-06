@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by IntelliJ IDEA.
  * User: Kriz
@@ -10,21 +11,21 @@ namespace App\Presenters;
 
 use App\Model;
 
-
 class WewimoPresenter extends BasePresenter
 {
     private $wewimo;
     private $ap;
 
-    function __construct(Model\Wewimo $wewimo, Model\AP $ap)
+    public function __construct(Model\Wewimo $wewimo, Model\AP $ap)
     {
         $this->wewimo = $wewimo;
         $this->ap = $ap;
     }
 
-    public function fetchWewimo($apId, $ip=null) {
+    public function fetchWewimo($apId, $ip = null)
+    {
         // AP podle ID
-        $apt = $this->ap->getAP($apId*1);
+        $apt = $this->ap->getAP($apId * 1);
         if (!$apt) {
             $this->error('AP not found');
         } else {
@@ -41,29 +42,39 @@ class WewimoPresenter extends BasePresenter
         }
     }
 
-    public function anonymizeWewimoData(&$wewimoMultiData) {
+    public function anonymizeWewimoData(&$wewimoMultiData)
+    {
         foreach ($wewimoMultiData as &$wewimoData) {
             foreach ($wewimoData['interfaces'] as &$interface) {
                 foreach ($interface['stations'] as &$station) {
                     if (array_key_exists('xx-user-nick', $station)) {
                         $station['xx-mac-host'] = '('.$station['xx-user-nick'].')';
                     } else {
-                        if ($station['xx-mac-host']) $station['xx-mac-host'] = '***';
+                        if ($station['xx-mac-host']) {
+                            $station['xx-mac-host'] = '***';
+                        }
                     }
                     if (array_key_exists('xx-last-ip-user-nick', $station)) {
                         $station['xx-last-ip-host'] = '('.$station['xx-last-ip-user-nick'].')';
                     } else {
-                        if ($station['xx-last-ip-host']) $station['xx-last-ip-host'] = '***';
+                        if ($station['xx-last-ip-host']) {
+                            $station['xx-last-ip-host'] = '***';
+                        }
                     }
-                    if ($station['x-identity']) $station['x-identity'] = '***';
-                    if ($station['radio-name']) $station['radio-name'] = '***';
+                    if ($station['x-identity']) {
+                        $station['x-identity'] = '***';
+                    }
+                    if ($station['radio-name']) {
+                        $station['radio-name'] = '***';
+                    }
                     $station['mac-address'] = $station['x-anonymous-mac-address'];
                 }
             }
         }
     }
 
-    public function addWewimoLinks(&$wewimoMultiData) {
+    public function addWewimoLinks(&$wewimoMultiData)
+    {
         foreach ($wewimoMultiData as &$wewimoData) {
             foreach ($wewimoData['interfaces'] as &$interface) {
                 foreach ($interface['stations'] as &$station) {
@@ -77,15 +88,16 @@ class WewimoPresenter extends BasePresenter
         }
     }
 
-
-    public function renderShow($id) {
+    public function renderShow($id)
+    {
         // viz https://pla.nette.org/cs/dynamicke-snippety
         if (!isset($this->template->wewimo)) {
             $this->fetchWewimo($id);
         }
     }
 
-    public function handleUpdate($id, $ip) {
+    public function handleUpdate($id, $ip)
+    {
         // viz https://pla.nette.org/cs/dynamicke-snippety
         $this->redrawControl('wewimoContainer');
         $this->fetchWewimo($id, $ip);

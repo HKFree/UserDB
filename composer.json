@@ -51,7 +51,8 @@
 		"kdyby/forms-replicator": "dev-master#5a71bc343d5d0a2e183ee8dc6b0b4dc645955030"
         },
 	"require-dev": {
-		"nette/tester": "~1.0"
+		"nette/tester": "~1.0",
+		"friendsofphp/php-cs-fixer": "^3.65"
 	},
 	"minimum-stability": "stable"
 }
