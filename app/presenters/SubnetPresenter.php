@@ -2,14 +2,15 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
-    Nette\Application\UI\Form,
-    Nette\Forms\Container,
-    Nette\Utils\Html,
-    Tracy\Debugger,
-    Nette\Utils\Validators,
-    Nette\Utils\Strings;
+use Nette;
+use App\Model;
+use Nette\Application\UI\Form;
+use Nette\Forms\Container;
+use Nette\Utils\Html;
+use Tracy\Debugger;
+use Nette\Utils\Validators;
+use Nette\Utils\Strings;
+
 /**
  * Subnet presenter.
  */
@@ -30,30 +31,29 @@ class SubnetPresenter extends BasePresenter
     private $log;
     private $subnet;
 
-    function __construct(Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
-    	$this->spravceOblasti = $prava;
+    public function __construct(Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log)
+    {
+        $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
         $this->typClenstvi = $typClenstvi;
         $this->typCestnehoClenstvi = $typCestnehoClenstvi;
         $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
-    	$this->zpusobPripojeni = $zpusobPripojeni;
+        $this->zpusobPripojeni = $zpusobPripojeni;
         $this->technologiePripojeni = $technologiePripojeni;
-    	$this->uzivatel = $uzivatel;
-    	$this->ipAdresa = $ipAdresa;
-    	$this->ap = $ap;
-    	$this->typZarizeni = $typZarizeni;
+        $this->uzivatel = $uzivatel;
+        $this->ipAdresa = $ipAdresa;
+        $this->ap = $ap;
+        $this->typZarizeni = $typZarizeni;
         $this->log = $log;
         $this->subnet = $subnet;
     }
 
     public function renderOverview()
     {
-    	if($this->getParameter('id'))
-    	{
+        if ($this->getParameter('id')) {
             $targetSubnet = $this->getParameter('id');
-            if(substr($targetSubnet, -1) != ".")
-            {
+            if (substr($targetSubnet, -1) != ".") {
                 $targetSubnet .= ".";
             }
 
@@ -73,20 +73,17 @@ class SubnetPresenter extends BasePresenter
             $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;
             $this->template->captions = $captions;
-
-    	} else {
+        } else {
             $this->flashMessage("Nebyl vybrán subnet.", "danger");
-            $this->redirect("Homepage:default", array("id"=>null)); // a přesměrujeme
-    	}
+            $this->redirect("Homepage:default", array("id" => null)); // a přesměrujeme
+        }
     }
 
     public function renderDetail()
     {
-    	if($this->getParameter('id'))
-    	{
+        if ($this->getParameter('id')) {
             $targetSubnet = $this->getParameter('id');
-            if(substr($targetSubnet, -1) != ".")
-            {
+            if (substr($targetSubnet, -1) != ".") {
                 $targetSubnet .= ".";
             }
 
@@ -94,8 +91,7 @@ class SubnetPresenter extends BasePresenter
 
             $networks = array();
             $gateways = array();
-            foreach ($existujiciSubnety as $snet)
-            {
+            foreach ($existujiciSubnety as $snet) {
                 $out = $this->subnet->parseSubnet($snet->subnet);
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
                 $networks[$d] = array(
@@ -116,22 +112,22 @@ class SubnetPresenter extends BasePresenter
             $lastindex = 0;
             $lastlenght = 0;
 
-            for ($i = 0; $i < 256; $i++)
-            {
+            for ($i = 0; $i < 256; $i++) {
                 $ipAdresa = $targetSubnet.$i;
                 $ipAdresaTitle = $ipAdresa;
-                if (array_key_exists($ipAdresa, $gateways)) $ipAdresaTitle .= ' (GW)';
+                if (array_key_exists($ipAdresa, $gateways)) {
+                    $ipAdresaTitle .= ' (GW)';
+                }
                 $tr = null;
 
                 $networkBroadcastAddrClass = '';
-                if (array_key_exists($i,$networks)) {
+                if (array_key_exists($i, $networks)) {
                     $networkBroadcastAddrClass = 'danger subnet-ip-network-row';
-                } else if ($i==($lastindex + $lastlenght - 1)) {
+                } elseif ($i == ($lastindex + $lastlenght - 1)) {
                     $networkBroadcastAddrClass = 'danger subnet-ip-broadcast-row';
                 }
 
-                if (array_key_exists($ipAdresa, $existujiciIP))
-                {
+                if (array_key_exists($ipAdresa, $existujiciIP)) {
                     $ip = $existujiciIP[$ipAdresa];
                     list($a, $b, $c, $d) = explode(".", $ip->ip_adresa);
                     $subnetInfo = null;
@@ -159,9 +155,8 @@ class SubnetPresenter extends BasePresenter
                         );
                     }
                     $wewimoLink = $this->getWewimoLinkFromIpAddress($ip);
-                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo, null, $wewimoLink, null, false, Array($this, "linker"));
-                } else
-                {
+                    $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo, null, $wewimoLink, null, false, array($this, "linker"));
+                } else {
                     // nevyuzita IP
                     $tr = $this->ipAdresa->addIPTableRow(null, false, $adresyTab, array(
                         'ipAdresa' => $ipAdresa,
@@ -170,8 +165,7 @@ class SubnetPresenter extends BasePresenter
                     ));
                 }
 
-                if (array_key_exists($i,$networks))
-                {
+                if (array_key_exists($i, $networks)) {
                     $tr->create('td')->setRowspan($networks[$i]['ips'])->setClass('fullsubnet')->setText($networks[$i]['subnet']."\n".$networks[$i]['ips']."\n".$networks[$i]['popis']);
                     $lastindex = $i;
                     $lastlenght = $networks[$i]['ips'];
@@ -182,7 +176,6 @@ class SubnetPresenter extends BasePresenter
             $this->template->prefix = $targetSubnet;
             $this->template->networks = $networks;
             $this->template->adresyTab = $adresyTab;
-    	}
+        }
     }
-
 }

@@ -2,9 +2,9 @@
 
 namespace App\ApiModule\Presenters;
 
-use Nette\Application\Responses\JsonResponse,
-    Nette\Application\Responses\TextResponse,
-    App\Model;
+use Nette\Application\Responses\JsonResponse;
+use Nette\Application\Responses\TextResponse;
+use App\Model;
 use Nette\Http\Response;
 use Nette\Utils\DateTime;
 
@@ -55,7 +55,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
         if (!array_key_exists('PHP_AUTH_USER', $_SERVER)) {
             $this->sendAuthRequired('Missing HTTP basic username');
             return;
-        } else if (!array_key_exists('PHP_AUTH_PW', $_SERVER)) {
+        } elseif (!array_key_exists('PHP_AUTH_PW', $_SERVER)) {
             $this->sendAuthRequired('Missing HTTP basic password');
             return;
         }
@@ -80,7 +80,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
                 }
 
                 // Check if the API key has restricted presenter, if no, allow
-                if(!$keyRec->presenter) {
+                if (!$keyRec->presenter) {
                     parent::checkRequirements($element);
                     return;
                 }
@@ -101,33 +101,38 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
 
     // If function returns sensitive data, check whether API key has access!
     // Call before doing any action! parent::checkApID($apID);
-    protected function checkApID($requestedApId) {
+    protected function checkApID($requestedApId)
+    {
         // Check if key is restricted to an AP and does not match to requested AP
         if ($this->keyApID && $requestedApId != $this->keyApID) {
             $this->sendForbidden('not allowed to view AP ' . $requestedApId);
         }
     }
 
-    protected function forceMethod($method) {
+    protected function forceMethod($method)
+    {
         if ($this->httpRequest->getMethod() != $method) {
             $this->httpResponse->setCode(Response::S405_METHOD_NOT_ALLOWED);
-            $this->sendResponse( new JsonResponse(['result' => 'METHOD_NOT_ALLOWED: Use http method ' . $method]) );
+            $this->sendResponse(new JsonResponse(['result' => 'METHOD_NOT_ALLOWED: Use http method ' . $method]));
         }
     }
 
-    public function handleOptionsMethod() {
+    public function handleOptionsMethod()
+    {
         $this->sendResponse(new TextResponse(""));
     }
 
-    protected function sendForbidden($reason) {
+    protected function sendForbidden($reason)
+    {
         //throw new \Nette\Application\ForbiddenRequestException;
         $this->httpResponse->setCode(Response::S403_FORBIDDEN);
-        $this->sendResponse( new JsonResponse(['result' => 'FORBIDDEN: '.$reason]) );
+        $this->sendResponse(new JsonResponse(['result' => 'FORBIDDEN: '.$reason]));
     }
 
-    protected function sendAuthRequired($reason) {
+    protected function sendAuthRequired($reason)
+    {
         $this->httpResponse->setCode(Response::S401_UNAUTHORIZED);
         $this->httpResponse->addHeader('WWW-Authenticate', 'Basic realm="UserDB API"');
-        $this->sendResponse( new JsonResponse(['result' => 'UNAUTHORIZED: '.$reason]) );
+        $this->sendResponse(new JsonResponse(['result' => 'UNAUTHORIZED: '.$reason]));
     }
 }

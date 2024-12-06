@@ -4,10 +4,8 @@ namespace App\Model;
 
 use Nette;
 
-
-
 /**
- * @author 
+ * @author
  */
 class TypZarizeni extends Table
 {
@@ -18,6 +16,6 @@ class TypZarizeni extends Table
 
     public function getTypyZarizeni()
     {
-        return($this->findAll());
+        return ($this->findAll());
     }
 }

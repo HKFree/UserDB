@@ -1,0 +1,15 @@
+name: Kontrola PHP syntaxe
+
+on:
+  push:
+    branches: [ "*" ]
+
+jobs:
+  php_syntax_check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the image
+      run: docker build . --tag userdb-web-syntacheck
+    - name: Run php-cs-fixer check
+      run: docker run userdb-web-syntacheck ./vendor/friendsofphp/php-cs-fixer/php-cs-fixer check --diff

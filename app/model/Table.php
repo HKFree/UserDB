@@ -2,16 +2,14 @@
 
 namespace App\Model;
 
-use Nette,
-    Nette\Database\Context;
-
+use Nette;
+use Nette\Database\Context;
 
 /**
  * Reprezentuje repozitář pro databázovou tabulku
  */
 abstract class Table
 {
-
     /**
      * @var Nette\Database\Context
      */
@@ -28,9 +26,7 @@ abstract class Table
      */
     protected $tableName;
 
-
     protected $loginUID = 797;
-
 
     /**
      * @param Nette\Database\Context $db
@@ -38,17 +34,14 @@ abstract class Table
      */
     public function __construct(Nette\Database\Context $db, Nette\Security\User $user)
     {
-	$this->connection = $db;
-	$this->userService = $user;
+        $this->connection = $db;
+        $this->userService = $user;
 
-
-	if ($this->tableName === NULL) {
-	    $class = get_class($this);
-	    throw new Nette\InvalidStateException("Název tabulky musí být definován v $class::\$tableName.");
-	}
+        if ($this->tableName === null) {
+            $class = get_class($this);
+            throw new Nette\InvalidStateException("Název tabulky musí být definován v $class::\$tableName.");
+        }
     }
-
-
 
     /**
      * Vrací celou tabulku z databáze
@@ -68,18 +61,14 @@ abstract class Table
         return $this->connection;
     }
 
-
-
     /**
      * Vrací všechny záznamy z databáze
      * @return \Nette\Database\Table\Selection
      */
     public function findAll()
     {
-	return $this->getTable();
+        return $this->getTable();
     }
-
-
 
     /**
      * Vrací vyfiltrované záznamy na základě vstupního pole
@@ -91,10 +80,8 @@ abstract class Table
      */
     public function findBy(array $by)
     {
-	return $this->getTable()->where($by);
+        return $this->getTable()->where($by);
     }
-
-
 
     /**
      * To samé jako findBy akorát vrací vždy jen jeden záznam
@@ -105,10 +92,8 @@ abstract class Table
      */
     public function findOneBy(array $by)
     {
-	return $this->findBy($by)->limit(1)->fetch();
+        return $this->findBy($by)->limit(1)->fetch();
     }
-
-
 
     /**
      * Vrací záznam s daným primárním klíčem
@@ -119,7 +104,7 @@ abstract class Table
      */
     public function find($id)
     {
-	return $this->getTable()->get($id);
+        return $this->getTable()->get($id);
     }
     /**
      * Smaže záznam/y
@@ -130,19 +115,18 @@ abstract class Table
      */
     public function delete(array $by)
     {
-	return $this->getTable()->where($by)->delete();
+        return $this->getTable()->where($by)->delete();
     }
 
     public function insert($data)
     {
-	return($this->getTable()->insert($data));
+        return ($this->getTable()->insert($data));
     }
 
     public function update($id, $data)
     {
-	$post = $this->find($id);
-	$post->update($data);
-	return($post);
+        $post = $this->find($id);
+        $post->update($data);
+        return ($post);
     }
-
 }

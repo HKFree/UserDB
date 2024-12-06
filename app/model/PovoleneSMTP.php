@@ -2,10 +2,8 @@
 
 namespace App\Model;
 
-use Nette,
-    Nette\Utils\Html;
-
-
+use Nette;
+use Nette\Utils\Html;
 
 /**
  * @author
@@ -21,14 +19,13 @@ class PovoleneSMTP extends Table
     {
         return $this->findAll()->where("IPAdresa_id = ?", $ip_id)->fetch();
     }
-    
+
     public function deleteIPs(array $ips)
     {
-		if (count($ips) > 0) {
-            return($this->delete(array('id' => $ips)));
+        if (count($ips) > 0) {
+            return ($this->delete(array('id' => $ips)));
         } else {
             return true;
         }
     }
-
 }

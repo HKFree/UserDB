@@ -5,7 +5,7 @@ namespace App\Model;
 use Nette;
 
 /**
- * @author 
+ * @author
  */
 class ZpusobPripojeni extends Table
 {
@@ -16,6 +16,6 @@ class ZpusobPripojeni extends Table
 
     public function getZpusobyPripojeni()
     {
-        return($this->findAll());
+        return ($this->findAll());
     }
 }

@@ -5,7 +5,7 @@ namespace App\Model;
 use Nette;
 
 /**
- * @author 
+ * @author
  */
 class TypCestnehoClenstvi extends Table
 {
@@ -16,6 +16,6 @@ class TypCestnehoClenstvi extends Table
 
     public function getTypCestnehoClenstvi()
     {
-        return($this->findAll());
+        return ($this->findAll());
     }
 }

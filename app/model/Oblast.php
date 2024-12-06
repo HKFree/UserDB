@@ -4,13 +4,11 @@ namespace App\Model;
 
 use Nette;
 
- 
 /**
- * @author 
+ * @author
  */
 class Oblast extends Table
 {
-
     /**
     * @var string
     */
@@ -18,40 +16,41 @@ class Oblast extends Table
 
     public function getSeznamOblasti()
     {
-        return($this->findAll()->order("jmeno"));
+        return ($this->findAll()->order("jmeno"));
     }
-    
+
     public function getOblast($id)
     {
-      return($this->find($id));
+        return ($this->find($id));
     }
-    
+
     public function getSeznamOblastiBezAP()
     {
-	   $oblasti = $this->getSeznamOblasti();
-	   return($oblasti->fetchPairs('id', 'jmeno'));
+        $oblasti = $this->getSeznamOblasti();
+        return ($oblasti->fetchPairs('id', 'jmeno'));
     }
-    
-    public function getSeznamSpravcu($IDoblasti) {
-	   return($this->find($IDoblasti)->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id','Uzivatel'));
+
+    public function getSeznamSpravcu($IDoblasti)
+    {
+        return ($this->find($IDoblasti)->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id', 'Uzivatel'));
     }
-    
+
     public function formatujOblastiSAP($oblasti)
     {
         $aps = array();
         foreach ($oblasti as $oblast) {
-			$apcka_oblasti = $oblast->related('Ap.Oblast_id');
-			foreach($oblast->related('Ap.Oblast_id')->order("jmeno") as $apid => $ap) {
-				if (count($apcka_oblasti) == 1) {
+            $apcka_oblasti = $oblast->related('Ap.Oblast_id');
+            foreach ($oblast->related('Ap.Oblast_id')->order("jmeno") as $apid => $ap) {
+                if (count($apcka_oblasti) == 1) {
                     $aps[$apid] = $ap->jmeno . ' (' . $ap->id . ')';
                 } else {
                     $aps[$apid] = $oblast->jmeno . ' - ' . $ap->jmeno . ' (' . $ap->id . ')';
                 }
             }
-		}
-		return($aps);
+        }
+        return ($aps);
     }
-    
+
     /**
     * seznam oblasti pro vytvareni noveho AP
     */
@@ -60,7 +59,7 @@ class Oblast extends Table
         $aps = array();
         foreach ($oblasti as $oblast) {
             $aps[$oblast->id] = $oblast->jmeno . ' (' . $oblast->id . ')';
-		}
-		return($aps);
+        }
+        return ($aps);
     }
 }

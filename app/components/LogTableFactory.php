@@ -2,16 +2,19 @@
 
 namespace App\Components;
 
-use App\Components\LogTable,
-    App\Model;
+use App\Components\LogTable;
+use App\Model;
 
 /**
  * LogTableFactory
  *
  * @author bkralik
  */
-class LogTableFactory {
-    private $ipAdresa, $subnet, $log;
+class LogTableFactory
+{
+    private $ipAdresa;
+    private $subnet;
+    private $log;
 
     public function __construct(Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\Log $log)
     {
