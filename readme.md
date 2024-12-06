@@ -36,10 +36,11 @@ docker compose exec web composer install
 docker compose exec web chmod 777 -R log
 docker compose exec web chmod 777 -R temp
 docker compose exec web chmod 777 -R vendor/mpdf/mpdf/tmp
+cp app/config/config.local.DIST.neon app/config/config.local.neon
 docker compose exec web php www/index.php migrations:continue
 ```
 
-Now the app is up and running in Docker on host's port 80, PhpMyAdmin on host's port 8080.
+Now the app is up and running in Docker on host's port 10107, PhpMyAdmin on host's port 10108.
 If you don't know your docker's IP, `docker-machine list` is your friend.
 
 ### Build, commit
