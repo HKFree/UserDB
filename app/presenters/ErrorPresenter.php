@@ -2,14 +2,14 @@
 
 namespace App\Presenters;
 
-use Nette, Tracy\Debugger;
+use Nette;
+use Tracy\Debugger;
 
 /**
  * Error presenter.
  */
 class ErrorPresenter extends BasePresenter
 {
-
     /**
      * @param  \Exception
      * @return void
@@ -32,9 +32,8 @@ class ErrorPresenter extends BasePresenter
         }
 
         if ($this->isAjax()) { // AJAX request? Note this error in payload.
-            $this->payload->error = TRUE;
+            $this->payload->error = true;
             $this->terminate();
         }
     }
-
 }

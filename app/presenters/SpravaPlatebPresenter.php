@@ -2,11 +2,11 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
-    Grido\Grid,
-    Nette\Utils\Html,
-    Tracy\Debugger;
+use Nette;
+use App\Model;
+use Grido\Grid;
+use Nette\Utils\Html;
+use Tracy\Debugger;
 
 /**
  * Sprava odchozich plateb presenter.
@@ -16,39 +16,36 @@ class SpravaPlatebPresenter extends SpravaPresenter
     private $odchoziPlatba;
     private $prichoziPlatba;
 
-    function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba) {
+    public function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba)
+    {
         $this->odchoziPlatba = $odchplatba;
         $this->prichoziPlatba = $platba;
     }
-    
 
     public function renderOdchoziplatby()
     {
-
     }
 
     protected function createComponentOdchplatby($name)
     {
-    	$grid = new \Grido\Grid($this, $name);
-    	$grid->translator->setLang('cs');
+        $grid = new \Grido\Grid($this, $name);
+        $grid->translator->setLang('cs');
         $grid->setExport('op_export');
 
         $grid->setModel($this->odchoziPlatba->getOdchoziPlatby());
 
-    	$grid->setDefaultPerPage(100);
-    	$grid->setDefaultSort(array('datum' => 'DESC'));
+        $grid->setDefaultPerPage(100);
+        $grid->setDefaultSort(array('datum' => 'DESC'));
 
-        $grid->setRowCallback(function ($item, $tr){
+        $grid->setRowCallback(function ($item, $tr) {
+            if ($item->datum_platby == null) {
+                $tr->class[] = 'primarni';
+            }
 
-            if($item->datum_platby == null)
-                {
-                  $tr->class[] = 'primarni';
-                }
+            return $tr;
+        });
 
-                return $tr;
-            });
-
-    	$grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();
+        $grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();
         $grid->getColumn('datum')->headerPrototype->style['width'] = '10%';
         $grid->addColumnText('firma', 'Firma')->setSortable()->setFilterText()->setSuggestion();
         $grid->addColumnText('popis', 'Popis')->setSortable()->setFilterText()->setSuggestion();
@@ -69,19 +66,19 @@ class SpravaPlatebPresenter extends SpravaPresenter
 
     protected function createComponentPaymentgrid($name)
     {
-    	$id = $this->getParameter('type');
+        $id = $this->getParameter('type');
 
-    	$grid = new \Grido\Grid($this, $name);
-    	$grid->translator->setLang('cs');
+        $grid = new \Grido\Grid($this, $name);
+        $grid->translator->setLang('cs');
         $grid->setExport('payment_export');
 
         $prichoziPlatby = $this->prichoziPlatba->getPrichoziPlatby();
 
         $grid->setModel($prichoziPlatby);
 
-    	$grid->setDefaultPerPage(25);
+        $grid->setDefaultPerPage(25);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
-    	$grid->setDefaultSort(array('datum' => 'DESC'));
+        $grid->setDefaultSort(array('datum' => 'DESC'));
         $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
         $grid->addColumnText('cislo_uctu', 'Číslo účtu')->setSortable()->setFilterText();
         $grid->addColumnText('vs', 'VS')->setSortable()->setFilterText();
@@ -93,14 +90,13 @@ class SpravaPlatebPresenter extends SpravaPresenter
         $grid->addColumnText('identifikace_uzivatele', 'Identifikace')->setSortable()->setFilterText();
         $grid->addColumnText('info_od_banky', 'Info banky')->setSortable()->setFilterText();
 
-
-        $grid->addColumnText('TypPrichoziPlatby_id', 'Typ')->setCustomRender(function($item) {
+        $grid->addColumnText('TypPrichoziPlatby_id', 'Typ')->setCustomRender(function ($item) {
             return Html::el('span')
                     ->alt($item->TypPrichoziPlatby_id)
                     ->setTitle($item->TypPrichoziPlatby->text)
                     ->setText($item->TypPrichoziPlatby->text)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-            })->setSortable();
+        })->setSortable();
     }
 }

@@ -4,10 +4,8 @@ namespace App\Model;
 
 use Nette;
 
-
-
 /**
- * @author 
+ * @author
  */
 class TypPravniFormyUzivatele extends Table
 {
@@ -18,6 +16,6 @@ class TypPravniFormyUzivatele extends Table
 
     public function getTypyPravniFormyUzivatele()
     {
-        return($this->findAll());
+        return ($this->findAll());
     }
 }

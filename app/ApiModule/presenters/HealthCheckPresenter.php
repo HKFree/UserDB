@@ -8,6 +8,6 @@ class HealthCheckPresenter extends ApiPresenter
 {
     public function actionDefault()
     {
-        $this->sendResponse( new JsonResponse(['result' => 'OK', 'serverTime' => date("c")]) );
+        $this->sendResponse(new JsonResponse(['result' => 'OK', 'serverTime' => date("c")]));
     }
 }

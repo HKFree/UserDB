@@ -2,10 +2,10 @@
 
 namespace App\Presenters;
 
-use Nette,
-    App\Model,
-    App\Services,
-    Tracy\Debugger;
+use Nette;
+use App\Model;
+use App\Services;
+use Tracy\Debugger;
 
 /**
  * Uzivatel actions presenter.
@@ -17,69 +17,65 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $pdfGenerator;
     private $mailService;
 
-    function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel) {
+    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel)
+    {
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
     }
 
-    public function actionMoneyActivate() {
+    public function actionMoneyActivate()
+    {
         $id = $this->getParameter('id');
-        if($id)
-        {
-            if($this->accountActivation->activateAccount($this->getUser(), $id))
-            {
+        if ($id) {
+            if ($this->accountActivation->activateAccount($this->getUser(), $id)) {
                 $this->flashMessage('Účet byl aktivován.');
             }
 
-            $this->redirect('Uzivatel:show', array('id'=>$id));
+            $this->redirect('Uzivatel:show', array('id' => $id));
         }
     }
 
-    public function actionMoneyReactivate() {
+    public function actionMoneyReactivate()
+    {
         $id = $this->getParameter('id');
-        if($id)
-        {
+        if ($id) {
             $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
-            if($result != '')
-            {
+            if ($result != '') {
                 $this->flashMessage($result);
             }
 
-            $this->redirect('Uzivatel:show', array('id'=>$id));
+            $this->redirect('Uzivatel:show', array('id' => $id));
         }
     }
 
-    public function actionMoneyDeactivate() {
+    public function actionMoneyDeactivate()
+    {
         $id = $this->getParameter('id');
-        if($id)
-        {
-            if($this->accountActivation->deactivateAccount($this->getUser(), $id))
-            {
+        if ($id) {
+            if ($this->accountActivation->deactivateAccount($this->getUser(), $id)) {
                 $this->flashMessage('Účet byl deaktivován.');
             }
 
-            $this->redirect('Uzivatel:show', array('id'=>$id));
+            $this->redirect('Uzivatel:show', array('id' => $id));
         }
     }
 
-    public function actionExportPdf() {
-        if($this->getParameter('id'))
-        {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id')))
-            {
+    public function actionExportPdf()
+    {
+        if ($this->getParameter('id')) {
+            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
                 $this->sendResponse($pdf);
             }
         }
     }
-    public function actionSendRegActivation() {
-        if($this->getParameter('id'))
-        {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id')))
-    	    {
+    public function actionSendRegActivation()
+    {
+        if ($this->getParameter('id')) {
+            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
                 $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
                 //\Tracy\Debugger::barDump($link);exit();
@@ -90,16 +86,15 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
                 $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
 
-                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));
+                $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
             }
         }
     }
 
-    public function actionExportAndSendRegForm() {
-        if($this->getParameter('id'))
-        {
-            if($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id')))
-    	    {
+    public function actionExportAndSendRegForm()
+    {
+        if ($this->getParameter('id')) {
+            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
@@ -107,7 +102,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
                 $this->flashMessage('E-mail byl odeslán.');
 
-                $this->redirect('Uzivatel:show', array('id'=>$uzivatel->id));
+                $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
             }
         }
     }

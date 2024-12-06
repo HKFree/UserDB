@@ -1,7 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Model;
-
 
 use Nette\Security\Identity;
 
@@ -39,5 +40,4 @@ class HkfIdentity extends Identity
     {
         return $this->getData()['passwordHash'];
     }
-
 }

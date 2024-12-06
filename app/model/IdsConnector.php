@@ -2,7 +2,6 @@
 
 namespace App\Model;
 
-
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use Psr\Http\Message\RequestInterface;
@@ -18,7 +17,7 @@ class IdsConnector
     /**
      * Nedulezite a nevyladene (caste false-positive) typy udalosti:
      */
-    const IGNORED_ALERTS = [
+    public const IGNORED_ALERTS = [
         ['match_phrase' => ['alert.category.raw' => 'Potential Corporate Privacy Violation'],],
         ['match_phrase' => ['alert.category.raw' => 'Potentially Bad Traffic'],],
         ['match_phrase' => ['alert.category.raw' => 'Not Suspicious Traffic'],],
@@ -48,7 +47,6 @@ class IdsConnector
             //var_dump($contentsRequest);   // debug GuzzleHttp requests
             return $request;
         }));
-
 
         $client = new \GuzzleHttp\Client(['verify' => false, 'handler' => $stack]);
         $jar = new \GuzzleHttp\Cookie\CookieJar();
@@ -86,20 +84,22 @@ class IdsConnector
         return ['range' => ['@timestamp' => ['gte' => 'now-' . $daysBack . 'd', 'lte' => 'now']]];
     }
 
-    private function getRelevantIndexes($prefix, $daysBack) {
+    private function getRelevantIndexes($prefix, $daysBack)
+    {
         //
         $indexes = [];
         $date = new \DateTime();
         $date->setTimezone(new \DateTimeZone('GMT'));
         //$indexes = [$prefix.'2019.01.22',$prefix.'2019.01.23'];
         for ($i = 0; $i <= $daysBack; $i++) {
-            $indexes []= $prefix.$date->format('Y.m.d');;
+            $indexes [] = $prefix.$date->format('Y.m.d');
+            ;
             $date = $date->modify('-1 day');
         }
         return $indexes;
     }
 
-    public function getEventsForIps(array $ips, $daysBack=7, $limit=1000)
+    public function getEventsForIps(array $ips, $daysBack = 7, $limit = 1000)
     {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
@@ -138,11 +138,13 @@ class IdsConnector
         }
     }
 
-    public function getUniqueIpsFromPrivateSubnets($daysBack=7, $limit=2000)
+    public function getUniqueIpsFromPrivateSubnets($daysBack = 7, $limit = 2000)
     {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
-        $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
+        $elasticResponse = $client->request(
+            'POST',
+            $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
             [
                 'json' => [
                     'size' => 0,
@@ -170,7 +172,7 @@ class IdsConnector
         );
         $json = json_decode($elasticResponse->getBody(), true);
         $resultArray = $json['aggregations']['uniq_ip']['buckets'];
-        $resultArrayFiltered = array_filter($resultArray, function($k) {
+        $resultArrayFiltered = array_filter($resultArray, function ($k) {
             return !in_array($k['key'], $this->idsIpsWhitelist, true);
         });
         if ($json) {

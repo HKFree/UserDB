@@ -12,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Wewimo2InfluxCommand extends Command
 {
-
     /** @var AP */
     private $ap;
     /** @var Wewimo */
@@ -31,7 +30,8 @@ class Wewimo2InfluxCommand extends Command
             ->setDescription('Ziskat Wewimo data ze vsech sledovanych RB a zapsat do InfluxDB (Grafany)');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $influxUrl = $this->getHelper('container')->getParameter('influxUrl');
 
         $database = InfluxDB\Client::fromDSN($influxUrl); // 'influxdb://user:pass@host:port/db'

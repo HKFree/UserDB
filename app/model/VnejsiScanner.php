@@ -2,8 +2,8 @@
 
 namespace App\Model;
 
-use Nette,
-    GuzzleHttp\Client;
+use Nette;
+use GuzzleHttp\Client;
 
 /**
  * VnejsiScanner connector
@@ -23,22 +23,24 @@ class VnejsiScanner
     private $scanData;
     private $scanDate;
 
-    public function __construct($outerScannerURL, IPAdresa $iPAdresa) {
+    public function __construct($outerScannerURL, IPAdresa $iPAdresa)
+    {
         $this->outerScannerURL = $outerScannerURL;
         $this->ipadresa = $iPAdresa;
     }
 
-    public function downloadScan() {
+    public function downloadScan()
+    {
         $client = new Client(['verify' => false]);
 
         try {
             $r = $client->request('GET', $this->outerScannerURL);
         } catch (\GuzzleHttp\Exception\TransferException $e) {
-            return([]);
+            return ([]);
         }
 
-        if($r->getStatusCode() != 200) {
-            return([]);
+        if ($r->getStatusCode() != 200) {
+            return ([]);
         }
 
         $body = $r->getBody();
@@ -49,7 +51,7 @@ class VnejsiScanner
         $date = "";
 
         while ($line !== false) {
-            if(preg_match('/^#/', $line)) {
+            if (preg_match('/^#/', $line)) {
                 $this->scanDate = \DateTime::createFromFormat('\#Y.m.d\_H.i', $line);
                 $line = strtok($separator);
                 continue;
@@ -65,41 +67,44 @@ class VnejsiScanner
         $this->scanData = $out;
     }
 
-    public function getScan() {
-        if(!$this->scanData) {
+    public function getScan()
+    {
+        if (!$this->scanData) {
             $this->downloadScan();
         }
 
-        return($this->scanData);
+        return ($this->scanData);
     }
 
-    public function getScanDate() {
-        if(!$this->scanDate) {
+    public function getScanDate()
+    {
+        if (!$this->scanDate) {
             $this->downloadScan();
         }
 
-        return($this->scanDate);
+        return ($this->scanDate);
     }
 
-    public function getScanNaPortech($filtr) {
+    public function getScanNaPortech($filtr)
+    {
         $scan = $this->getScan();
 
         $out = [];
 
-        foreach($scan as $ip => $ports) {
+        foreach ($scan as $ip => $ports) {
             $validni = false;
 
-            foreach($filtr as $port) {
-                if(in_array($port, $ports)) {
+            foreach ($filtr as $port) {
+                if (in_array($port, $ports)) {
                     $validni = true;
                 }
             }
 
-            if($validni) {
+            if ($validni) {
                 $out[$ip] = $ports;
             }
         }
 
-        return($out);
+        return ($out);
     }
 }

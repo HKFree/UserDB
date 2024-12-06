@@ -2,12 +2,10 @@
 
 namespace App\Model;
 
-use Nette,
-    Nette\Application\UI\Form,
-    Nette\Utils\Html,
-    Nette\Database\Context;
-
-
+use Nette;
+use Nette\Application\UI\Form;
+use Nette\Utils\Html;
+use Nette\Database\Context;
 
 /**
  * @author
@@ -22,7 +20,7 @@ class CestneClenstviUzivatele extends Table
     public function getHasCC($userID)
     {
         $PlatnaCestnaClenstvi = $this->findAll()->where('Uzivatel_id', $userID)->where('schvaleno=1')->where('plati_od < NOW()')->where('plati_do IS NULL OR plati_do > NOW()')->fetchAll();
-        return(count($PlatnaCestnaClenstvi)>0);
+        return (count($PlatnaCestnaClenstvi) > 0);
     }
 
     public function getListCCOfAP($apID)
@@ -39,12 +37,11 @@ class CestneClenstviUzivatele extends Table
 
     public function getNeschvalene()
     {
-        return($this->findAll()->where('schvaleno=0')->order("plati_od"));
+        return ($this->findAll()->where('schvaleno=0')->order("plati_od"));
     }
 
     public function getCC($id)
     {
-        return($this->find($id));
+        return ($this->find($id));
     }
-
 }
