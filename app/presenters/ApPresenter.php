@@ -138,10 +138,10 @@ class ApPresenter extends BasePresenter
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
         $form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');
         $form->addText('gps', 'Zeměpisné souřadnice (GPS)', 30)
-                ->setAttribute('placeholder', '50.xxxxxx,15.xxxxxx')
-                ->setRequired('GPS souřadnice na Google mapě. Zeměpisná šířka jako reálné číslo, čárka, zeměpisná délka jako reálné číslo. Např. 50.22795,15.834133')
-                ->setOption('description', 'GPS souřadnice na Google mapě. Zeměpisná šířka jako reálné číslo, čárka, zeměpisná délka jako reálné číslo. Např. 50.22795,15.834133')
-                ->addRule(Form::PATTERN, 'Zeměpisné souřadnice prosím zadejte ve formátu 50.xxxxxx,15.xxxxxx (bez světových stran, bez mezer, odděleno čárkou)', '^\d{2}.\d{1,8},\d{2}.\d{1,8}$');
+            ->setAttribute('placeholder', '50.xxxxxx,15.xxxxxx')
+            ->setRequired('GPS souřadnice na Google mapě. Zeměpisná šířka jako reálné číslo, čárka, zeměpisná délka jako reálné číslo. Např. 50.22795,15.834133')
+            ->setOption('description', 'GPS souřadnice na Google mapě. Zeměpisná šířka jako reálné číslo, čárka, zeměpisná délka jako reálné číslo. Např. 50.22795,15.834133')
+            ->addRule(Form::PATTERN, 'Zeměpisné souřadnice prosím zadejte ve formátu 50.xxxxxx,15.xxxxxx (bez světových stran, bez mezer, odděleno čárkou)', '^\d{2}.\d{1,8},\d{2}.\d{1,8}$');
         $form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
         $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
         $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
@@ -154,9 +154,9 @@ class ApPresenter extends BasePresenter
             $dataIp->getIPForm($ip, $typyZarizeni, true);
 
             $ip->addSubmit('remove', '– Odstranit IP')
-                    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-                    ->setValidationScope(null)
-                    ->addRemoveOnClick();
+                ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+                ->setValidationScope(null)
+                ->addRemoveOnClick();
         }, ($this->getParameter('id') > 0 ? 0 : 1));
 
         $ips->addSubmit('add', '+ Přidat další IP')
@@ -169,15 +169,15 @@ class ApPresenter extends BasePresenter
             $dataSubnet->getSubnetForm($subnet);
 
             $subnet->addSubmit('remove_subnet', '– Odstranit Subnet')
-                    ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
-                    ->setValidationScope(null)
-                    ->addRemoveOnClick();
+                ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+                ->setValidationScope(null)
+                ->addRemoveOnClick();
         }, ($this->getParameter('id') > 0 ? 0 : 1));
 
         $subnets->addSubmit('add_subnet', '+ Přidat další Subnet')
-                ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-                ->setValidationScope(null)
-                ->addCreateOnClick(true);
+            ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
+            ->setValidationScope(null)
+            ->addCreateOnClick(true);
 
         $dataApiKlice = $this->apiKlic;
         $apiKlice = $form->addDynamic('apiKlic', function (Container $apiKlic) use ($dataApiKlice, $form) {
@@ -196,7 +196,7 @@ class ApPresenter extends BasePresenter
             ->addCreateOnClick(true);
 
         $form->addSubmit('save', 'Uložit')
-             ->setAttribute('class', 'btn btn-success btn-white default btn-edit-save');
+            ->setAttribute('class', 'btn btn-success btn-white default btn-edit-save');
 
         $form->onSuccess[] = array($this, 'apFormSucceded');
         $form->onValidate[] = array($this, 'validateApForm');
@@ -241,12 +241,12 @@ class ApPresenter extends BasePresenter
             $formIPs = array();
             foreach ($data['ip'] as $ip) {
                 if (!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
-                    $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
+                    $form->addError('IP adresa ' . $ip['ip_adresa'] . ' není validní IPv4 adresa!');
                 }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
                 if ($duplIp) {
-                    $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
+                    $form->addError('IP adresa ' . $duplIp . ' již  v databázi existuje!');
                 }
 
                 $formIPs[] = $ip['ip_adresa'];
@@ -263,7 +263,7 @@ class ApPresenter extends BasePresenter
 
             if (count($formDuplicates) != 0) {
                 $formDuplicatesReadible = implode(", ", $formDuplicates);
-                $form->addError('IP adresa '.$formDuplicatesReadible.' je v tomto formuláři vícekrát!');
+                $form->addError('IP adresa ' . $formDuplicatesReadible . ' je v tomto formuláři vícekrát!');
             }
         }
 
@@ -275,12 +275,12 @@ class ApPresenter extends BasePresenter
             $formSubnets = array();
             foreach ($data['subnet'] as $subnet) {
                 if (!$this->subnet->validateSubnet($subnet['subnet'])) {
-                    $form->addError('Subnet '.$subnet['subnet'].' není validní IPv4 subnet!');
+                    $form->addError('Subnet ' . $subnet['subnet'] . ' není validní IPv4 subnet!');
                     return;
                 }
 
                 if (!$this->ipAdresa->validateIP($subnet['gateway'])) {
-                    $form->addError('Gateway '.$subnet['gateway'].' u subnetu '.$subnet['subnet'].' není validní IPv4 adresa!');
+                    $form->addError('Gateway ' . $subnet['gateway'] . ' u subnetu ' . $subnet['subnet'] . ' není validní IPv4 adresa!');
                     return;
                 }
 
@@ -293,13 +293,15 @@ class ApPresenter extends BasePresenter
                 $overlapping = $this->subnet->getOverlapingSubnet($subnet['subnet'], $idAP);
                 if ($overlapping !== false) {
                     $overlappingReadible = implode(", ", $overlapping);
-                    $form->addError('Subnet '.$subnet['subnet'].' se překrývá s již existujícím subnetem '.$overlappingReadible.' !');
+                    $form->addError('Subnet ' . $subnet['subnet'] . ' se překrývá s již existujícím subnetem ' . $overlappingReadible . ' !');
                     return;
                 }
 
-                if ($this->subnet->validateSubnet($subnet['subnet'])
+                if (
+                    $this->subnet->validateSubnet($subnet['subnet'])
                     && !$this->subnet->checkColision($subnet['subnet'], \App\Model\Subnet::ARP_PROXY_SUBNET)
-                    && isset($subnet['arp_proxy'])) {
+                    && isset($subnet['arp_proxy'])
+                ) {
                     $form->addError('ARP Proxy může být zapnuté pouze u veřejných subnetů!');
                     return;
                 }
@@ -310,7 +312,7 @@ class ApPresenter extends BasePresenter
             $formColisions = $this->subnet->checkColisions($formSubnets);
             if ($formColisions !== false) {
                 $formColisionsReadible = implode(", ", $formColisions);
-                $form->addError('Subnety '.$formColisionsReadible.' v tomto formuláři se překrývají!');
+                $form->addError('Subnety ' . $formColisionsReadible . ' v tomto formuláři se překrývají!');
             }
         }
     }
@@ -351,11 +353,11 @@ class ApPresenter extends BasePresenter
 
             if (empty($ip->id)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;
-                $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);
+                $this->log->logujInsert($ip, 'IPAdresa[' . $idIp . ']', $log);
             } else {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
                 $this->ipAdresa->update($idIp, $ip);
-                $this->log->logujUpdate($oldip, $ip, 'IPAdresa['.$idIp.']', $log);
+                $this->log->logujUpdate($oldip, $ip, 'IPAdresa[' . $idIp . ']', $log);
             }
             $newAPIPIDs[] = intval($idIp);
         }
@@ -366,7 +368,7 @@ class ApPresenter extends BasePresenter
         if (!empty($toDelete)) {
             foreach ($toDelete as $idIp) {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
-                $this->log->logujDelete($oldip, 'IPAdresa['.$idIp.']', $log);
+                $this->log->logujDelete($oldip, 'IPAdresa[' . $idIp . ']', $log);
             }
         }
 
@@ -379,11 +381,11 @@ class ApPresenter extends BasePresenter
             $idSubnet = $subnet->id;
             if (empty($subnet->id)) {
                 $idSubnet = $this->subnet->insert($subnet)->id;
-                $this->log->logujInsert($subnet, 'Subnet['.$idSubnet.']', $log);
+                $this->log->logujInsert($subnet, 'Subnet[' . $idSubnet . ']', $log);
             } else {
                 $oldsubnet = $this->subnet->getSubnet($idSubnet);
                 $this->subnet->update($idSubnet, $subnet);
-                $this->log->logujUpdate($oldsubnet, $subnet, 'Subnet['.$idSubnet.']', $log);
+                $this->log->logujUpdate($oldsubnet, $subnet, 'Subnet[' . $idSubnet . ']', $log);
             }
             $newAPSubnetIDs[] = intval($idSubnet);
         }
@@ -394,7 +396,7 @@ class ApPresenter extends BasePresenter
         if (!empty($toDelete)) {
             foreach ($toDelete as $idSubnet) {
                 $oldsubnet = $this->subnet->getSubnet($idSubnet);
-                $this->log->logujDelete($oldsubnet, 'Subnet['.$idSubnet.']', $log);
+                $this->log->logujDelete($oldsubnet, 'Subnet[' . $idSubnet . ']', $log);
             }
         }
 
@@ -411,11 +413,11 @@ class ApPresenter extends BasePresenter
             } // save NULL instead of '0000-00-00' when inserting empty string
             if (empty($apiKey->id)) {
                 $idApiKey = $this->apiKlic->insert($apiKey)->id;
-                $this->log->logujInsert($apiKey, 'ApiKlic['.$idApiKey.']', $log);
+                $this->log->logujInsert($apiKey, 'ApiKlic[' . $idApiKey . ']', $log);
             } else {
                 $oldApiKlic = $this->apiKlic->getApiKlic($idApiKey);
                 $this->apiKlic->update($idApiKey, $apiKey);
-                $this->log->logujUpdate($oldApiKlic, $apiKey, 'ApiKlic['.$idApiKey.']', $log);
+                $this->log->logujUpdate($oldApiKlic, $apiKey, 'ApiKlic[' . $idApiKey . ']', $log);
             }
             $newApiKeysIDs[] = intval($idApiKey);
         }
@@ -426,7 +428,7 @@ class ApPresenter extends BasePresenter
         if (!empty($toDelete)) {
             foreach ($toDelete as $idApiKlic) {
                 $oldApiKlic = $this->apiKlic->getApiKlic($idApiKlic);
-                $this->log->logujDelete($oldApiKlic, 'ApiKlic['.$idApiKlic.']', $log);
+                $this->log->logujDelete($oldApiKlic, 'ApiKlic[' . $idApiKlic . ']', $log);
             }
         }
 
@@ -453,15 +455,15 @@ class ApPresenter extends BasePresenter
                 foreach (array_values($ipAdresy->fetchPairs('id', 'ip_adresa')) as $ipAdresa) {
                     $ip2Entity[$ipAdresa] = [
                         'label' => $uzivatel->nick,
-                        'link' => $this->link('Uzivatel:show', [ 'id' => $uzivatel->id ]),
+                        'link' => $this->link('Uzivatel:show', ['id' => $uzivatel->id]),
                     ];
                 }
             }
             $apIps = $apt->related('IPAdresa.Ap_id');
             foreach (array_values($apIps->fetchPairs('id', 'ip_adresa')) as $ipAdresa) {
                 $ip2Entity[$ipAdresa] = [
-                    'label' => 'AP '.$apt->jmeno,
-                    'link' => $this->link('Ap:show', [ 'id' => $apt->id ]),
+                    'label' => 'AP ' . $apt->jmeno,
+                    'link' => $this->link('Ap:show', ['id' => $apt->id]),
                 ];
             }
             $events = $this->idsConnector->getEventsForIps(array_keys($ip2Entity));
