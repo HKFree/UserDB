@@ -1,6 +1,6 @@
 <?php
 
-if (file_exists('maintenance.php' ) ) {
+if (file_exists('maintenance.php')) {
     require 'maintenance.php';
 }
 
