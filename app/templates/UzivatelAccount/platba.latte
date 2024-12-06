@@ -4,22 +4,22 @@
     {ifset $u}
     <h3>Příchozí platba pro: {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     <a href="{link UzivatelAccount:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět na přehled plateb</a>
-    
+
     {if $canTransfer}
     <a href="{link SpravaNesparovanych:prevod id=>$p->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Převést jinému uživateli (chybná platba)</a>
     {/if}
     {/ifset}
-    
+
     <br><br>
     <style>
 	.table-nonfluid {
 	    width: auto;
 	 }
     </style>
- 
-    {if $canViewOrEdit}    
+
+    {if $canViewOrEdit}
     <table class="table table-nonfluid">
-        <tr><th>Datum</th><td>{$p->datum|date:'%d.%m.%Y'}</td></tr>
+        <tr><th>Datum</th><td>{$p->datum|date:'d.m.Y'}</td></tr>
         {if $canViewOrEditCU}<tr><th>Číslo účtu</th><td>{$p->cislo_uctu}</td></tr>{/if}
         <tr><th>Název účtu</th><td>{$p->nazev_uctu}</td></tr>
         <tr><th>VS</th><td>{$p->vs}</td></tr>
@@ -32,11 +32,10 @@
         <tr><th>Zpráva příjemci</th><td>{$p->zprava_prijemci}</td></tr>
         <tr><th>Identifikace uživatele</th><td>{$p->identifikace_uzivatele}</td></tr>
         <tr><th>Info od banky</th><td>{$p->info_od_banky}</td></tr>
-        <tr><td colspan="2">&nbsp;</td></tr>  
+        <tr><td colspan="2">&nbsp;</td></tr>
     </table>
     {else}
     <p>Na tuto operaci nemáte oprávnění!</p>
     {/if}
 
 {/block}
-
