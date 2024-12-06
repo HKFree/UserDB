@@ -6,7 +6,7 @@ on:
 
 jobs:
   php_syntax_check:
-    runs-on: php:8.2-apache-bookworm
+    runs-on: php:8.2
     steps:
     - uses: actions/checkout@v4
     - name: composer install
