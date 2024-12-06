@@ -9,3 +9,7 @@ UPDATE PrichoziPlatba SET spolek=true WHERE druzstvo=false;
 ALTER TABLE OdchoziPlatba ADD COLUMN spolek boolean NOT NULL DEFAULT false AFTER id;
 ALTER TABLE OdchoziPlatba ADD COLUMN druzstvo boolean NOT NULL DEFAULT false AFTER spolek;
 UPDATE OdchoziPlatba SET spolek=true WHERE druzstvo=false;
+
+ALTER TABLE BankovniUcet ADD COLUMN spolek boolean NOT NULL DEFAULT false AFTER id;
+ALTER TABLE BankovniUcet ADD COLUMN druzstvo boolean NOT NULL DEFAULT false AFTER spolek;
+UPDATE BankovniUcet SET spolek=true WHERE druzstvo=false;
