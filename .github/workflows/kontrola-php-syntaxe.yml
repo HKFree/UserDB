@@ -5,10 +5,11 @@ on:
     branches: [ "*" ]
 
 jobs:
-  deploy_test:
+  php_syntax_check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Run PHP-CS-FIXER
-      run: ls -la
-    - run: ./vendor/friendsofphp/php-cs-fixer/php-cs-fixer check --diff
+    - name: composer install
+      run: composer install
+    - name: php-cs-fixer check
+      run: ./vendor/friendsofphp/php-cs-fixer/php-cs-fixer check --diff
