@@ -37,15 +37,12 @@ class StitekUzivatele extends Table
     {
         return $this->database->table($this->tableName)->where("Uzivatel_id", $user_id)
             ->select('Stitek.id, Stitek.text, Stitek.barva_pozadi, Stitek.barva_popredi')
-            ->order('Stitek.text ASC')
-            ->fetchAll();
+            ->order('Stitek.text ASC')->fetchAll();
     }
 
     public function odstranStitek( $stitekId, $userId)
     {
-        return $this->database->table($this->tableName)
-            ->where("Stitek_id", $stitekId)
-            ->where("Uzivatel_id", $userId)
-            ->delete();
+        return $this->database->table($this->tableName)->where("Stitek_id", $stitekId)
+            ->where("Uzivatel_id", $userId)->delete();
     }
 }
