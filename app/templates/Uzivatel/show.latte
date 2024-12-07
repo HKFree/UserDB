@@ -61,6 +61,7 @@
         <tr n:if="isset($u->firma_ico) || ($u->TypPravniFormyUzivatele->text == 'PO')"><th>IČO</th><td>{$u->firma_ico}</td></tr>
         <tr><th>Číslo členské karty</th><td>{$u->cislo_clenske_karty}</td></tr>
         <tr><th>Jméno a příjmení</th><td>{$u->jmeno} {$u->prijmeni}</td></tr>
+        <tr><th>Datum narození</th><td>{$u->datum_narozeni->format('Y-m-d')}</td></tr>
 
         {var $hasLocation = $u->location_status == 'valid' || $u->location_status == 'approx'}
         <tr>
