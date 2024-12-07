@@ -271,7 +271,8 @@ class UzivatelPresenter extends BasePresenter
         //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
         $form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
-        $form->addDate('datum_narozeni', 'Datum narození:');
+        $form->addDate('datum_narozeni', 'Datum narození:')
+        ->addRule($form::Max, 'Nesmí být v budoucnu', new \Nette\Utils\DateTime('-1 hours'));
         $form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
         $form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');
         $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::FILLED)->addRule(Form::EMAIL, 'Musíte zadat platný email');
