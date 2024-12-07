@@ -1,0 +1,4 @@
+{define spolekdruzstvolabel $u}
+    <span n:if="$u->spolek" n:class="$u->TypClenstvi_id > 1 ? 'label label-spolek' : 'label label-neaktivni'">Spolek</span>
+    <span n:if="$u->druzstvo" n:class="!$u->smazano ? 'label label-druzstvo' : 'label label-neaktivni'">Družstvo</span>
+{/define}

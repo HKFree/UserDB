@@ -1,7 +1,9 @@
 {block content}
 {ifset $u}
 
-    <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})<small n:if="$u->systemovy"> - <span class="text-danger">Systémový uživatel</span></small> <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
+    <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})
+    {include spolekdruzstvolabel $u}
+    <small n:if="$u->systemovy"> - <span class="text-danger">Systémový uživatel</span></small> <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     {if $canViewOrEdit}
     <a href="{link Uzivatel:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
     <a href="{link UzivatelRightsCc:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a>
@@ -159,4 +161,3 @@ $(function(){
 
 </script>
 {/block}
-

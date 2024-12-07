@@ -500,6 +500,13 @@ pre.tracy-dump {
     margin-top: 20px;
 }
 
+/* HACK: Schování tlačítka zobrazení seznamu oblastí na desktopu */
+@media (min-width: 990px) {
+    .navbar-collapse.collapse > .nav > li > #navareas {
+        display: none;
+    }
+}
+
 .navbar-brand {
   color: #FFFFFF !important;
 }
@@ -607,4 +614,16 @@ input[readonly] {
     border-radius: 5px;
     width: 16px;
     height: 16px;
+}
+
+.label-druzstvo {
+    background-color: #03758f;
+}
+
+.label-spolek {
+    background-color: #9f61a2;
+}
+
+.label-neaktivni {
+    background-color: #383838;
 }
