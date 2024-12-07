@@ -7,10 +7,7 @@ use Nette\Application\Attributes\Parameter;
 
 class SpravaSmluvPresenter extends BasePresenter
 {
-    // $id se doplni z request URL
-    // viz https://doc.nette.org/en/application/presenters#toc-request-parameters
-    #[Parameter]
-    public string $id;
+    public string $smlouva_id;
 
     protected $smlouva;
 
@@ -19,7 +16,16 @@ class SpravaSmluvPresenter extends BasePresenter
     }
 
     public function renderShow() {
-        $this->template->id = $this->id;
+        // TODO: ACCESS CONTROL NA SMLOUVY
+
+        if (!$this->getParameter('id')) {
+            $this->flashMessage('Nezname ID smlouvy.');
+            $this->redirect('UzivatelList:listall');
+        }
+        $this->smlouva_id = $this->getParameter('id');
+
+        $this->template->id = $this->smlouva_id;
         $this->template->smlouvy = $this->smlouva->findAll();
+        $this->template->test = $this->smlouva->getByUzivatelId(1);
     }
 }

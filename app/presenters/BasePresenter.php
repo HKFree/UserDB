@@ -14,8 +14,8 @@ use Nette\Mail\IMailer;
  */
 abstract class BasePresenter extends Nette\Application\UI\Presenter
 {
-    // /** @persistent */
-    // public $id;
+    /** @persistent */
+    public $id;
 
     public $oblast;
     private $spravceOblasti;
