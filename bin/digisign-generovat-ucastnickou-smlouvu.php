@@ -61,7 +61,9 @@ function set_tag_value($envelope, $tagLabel, $newValue)
     ]);
 }
 
-// TODO
+print("TODO tady bude generování smlouvy - START\n");
+sleep(15);
+print("TODO tady bude generování smlouvy - DONE\n");
 exit;
 
 // $templateId = "0193683c-2123-7025-b014-e42fb5aa5f46"; // účastnická smlouva v3
