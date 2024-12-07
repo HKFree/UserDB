@@ -9,6 +9,8 @@ final class Smlouva extends Table {
 
     // Vrátí všechny smlouvy od konkretniho uživatele
     public function getByUzivatelId(int $uzivatel_id) {
-        return $this->findAll()->where('Uzivatel_id', $uzivatel_id);
+        $smlouvy = $this->findAll()->where('Uzivatel_id', $uzivatel_id);
+        \Tracy\Debugger::dump($smlouvy);
+        return $smlouvy;
     }
 }
