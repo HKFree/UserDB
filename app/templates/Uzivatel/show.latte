@@ -1,7 +1,9 @@
 {block content}
 {ifset $u}
 
-    <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})<small n:if="$u->systemovy"> - <span class="text-danger">Systémový uživatel</span></small> <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
+    <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})
+    {include spolekDruzstvoLabelUzivatel $u}
+    <small n:if="$u->systemovy"> - <span class="text-danger">Systémový uživatel</span></small> <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
     {if $canViewOrEdit}
     <a href="{link Uzivatel:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
     <a href="{link UzivatelRightsCc:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a>
@@ -59,6 +61,7 @@
         <tr n:if="isset($u->firma_ico) || ($u->TypPravniFormyUzivatele->text == 'PO')"><th>IČO</th><td>{$u->firma_ico}</td></tr>
         <tr><th>Číslo členské karty</th><td>{$u->cislo_clenske_karty}</td></tr>
         <tr><th>Jméno a příjmení</th><td>{$u->jmeno} {$u->prijmeni}</td></tr>
+        <tr><th>Datum narození</th><td>{$u->datum_narozeni ? $u->datum_narozeni->format('d.m.Y') : '-'}</td></tr>
 
         {var $hasLocation = $u->location_status == 'valid' || $u->location_status == 'approx'}
         <tr>
@@ -159,4 +162,3 @@ $(function(){
 
 </script>
 {/block}
-
