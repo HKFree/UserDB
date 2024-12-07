@@ -1,0 +1,29 @@
+<div class="d-flex align-items-center">
+    <div class="dropdown me-2" data-user-id="{$userId}">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Vyberte štítek
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu">
+            {foreach $stitky as $stitek}
+                <li>
+                    <a href="#"
+                       class="stitky-item" data-id="{$stitek->id}"
+                       style="background-color: {$stitek->barva_pozadi|noescape}; color: {$stitek->barva_popredi|noescape};">
+                        {$stitek->text}
+                    </a>
+                </li>
+            {/foreach}
+        </ul>
+    </div>
+
+    <!-- Existující štítky uživatele -->
+    <div id="user-labels">
+        {foreach $stitkyUzivatele as $stitekUzivatele}
+            <span class="badge position-relative" style="background-color: {$stitekUzivatele->barva_pozadi|noescape}; color: {$stitekUzivatele->barva_popredi|noescape};">
+                {$stitekUzivatele->text}
+                <span class="badge-remove" data-stitek-id="{$stitekUzivatele->id}" data-user-id="{$userId}">&times;</span>
+        </span>
+        {/foreach}
+    </div>
+</div>

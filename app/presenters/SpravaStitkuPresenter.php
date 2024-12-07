@@ -15,11 +15,15 @@ class SpravaStitkuPresenter extends SpravaPresenter
 {
     public $oblast;
     public $stitek;
+    private $uzivatel;
+    private $stitekUzivatel;
 
-    public function __construct(Model\Oblast $ob, Model\Stitek $stitek)
+    public function __construct(Model\Oblast $ob, Model\Stitek $stitek, Model\Uzivatel $uzivatel, Model\StitekUzivatele $stitekUzivatel)
     {
         $this->oblast = $ob;
         $this->stitek = $stitek;
+        $this->uzivatel = $uzivatel;
+        $this->stitekUzivatel = $stitekUzivatel;
     }
 
     public function renderDefault()
@@ -93,5 +97,71 @@ class SpravaStitkuPresenter extends SpravaPresenter
         }
 
         $this->redirect('default');
+    }
+
+    public function actionDeleteLabel(): void
+    {
+        $this->getHttpResponse()->setContentType('application/json');
+
+        // Kontrola HTTP metody
+        if (!$this->getHttpRequest()->isMethod("DELETE")) {
+            $this->error('Pouze DELETE požadavky jsou povoleny.', Nette\Http\IResponse::S405_METHOD_NOT_ALLOWED);
+        }
+        $data = json_decode($this->getHttpRequest()->getRawBody(), true);
+        $stitek_id = $data['stitek_id'] ?? null;
+        $user_id = $data['user_id'] ?? null;
+        if (!$stitek_id || !$user_id) {
+            echo json_encode(['success' => false, 'message' => 'Neplatné parametry.']);
+            $this->terminate();
+        }
+        try {
+            $this->stitekUzivatel->odstranStitek( $stitek_id, $user_id);
+            echo json_encode(['success' => true, 'stitekId' => $stitek_id, 'userId'=> $user_id]);
+            //$stitek = $this->stitek->getStitekById($stitekId);
+            //echo json_encode(['success' => true, 'barva_popredi' => $stitek->barva_popredi, 'barva_pozadi' => $stitek->barva_pozadi, 'text' => $stitek->text]);
+
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Nepodarilo se ulozit stitek.', 'exception' => $e]);
+        }
+        $this->terminate();
+
+    }
+
+
+    public function actionSaveLabel($stitek_id, $user_id): void
+    {
+        $this->getHttpResponse()->setContentType('application/json');
+
+        // Kontrola HTTP metody
+        if (!$this->getHttpRequest()->isMethod("POST")) {
+            $this->error('Pouze POST požadavky jsou povoleny.', Nette\Http\IResponse::S405_METHOD_NOT_ALLOWED);
+        }
+
+        // Ověření, že štítek existuje
+        $stitek = $this->stitek->getStitekById($stitek_id);
+        if (!$stitek) {
+            echo json_encode(['success' => false, 'message' => 'Štítek nebyl nalezen.']);
+            $this->terminate();
+        }
+
+        // Ověření, že uživatel existuje
+        $user = $this->uzivatel->getUzivatel($user_id);
+        if (!$user) {
+            echo json_encode(['success' => false, 'message' => 'Uživatel nebyl nalezen.']);
+            $this->terminate();
+        }
+
+        try {
+            $this->stitekUzivatel->createStitekUzivatele([
+                'Stitek_id' => $stitek_id,
+                'Uzivatel_id' => $user_id,
+            ]);
+            $stitek = $this->stitek->getStitekById($stitek_id);
+            echo json_encode(['success' => true, 'barva_popredi' => $stitek->barva_popredi, 'barva_pozadi' => $stitek->barva_pozadi, 'text' => $stitek->text]);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Nepodarilo se ulozit stitek.', 'exception' => $e]);
+        }
+
+        $this->terminate();
     }
 }

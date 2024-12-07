@@ -2,11 +2,14 @@
 
 namespace App\Presenters;
 
+use App\Components\UserLabelsComponent;
 use App\Services\CryptoSluzba;
 use Nette;
 use App\Model;
 use App\Services;
 use Nette\Application\UI\Form;
+use Nette\Application\UI\Presenter;
+use Nette\Database\Explorer;
 use Nette\Forms\Container;
 use Nette\Utils\Html;
 use Tracy\Debugger;
@@ -42,11 +45,19 @@ class UzivatelPresenter extends BasePresenter
     private $mailService;
     private $idsConnector;
     private $aplikaceToken;
+    private $stitek;
+    private $stitkyUzivatele;
+    private Explorer $database;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector, Model\AplikaceToken $aplikaceToken)
+    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP,
+                                Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava,
+                                Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi,
+                                Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel,
+                                Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector,
+                                Model\AplikaceToken $aplikaceToken, Model\Stitek $stitek, Model\StitekUzivatele $stitkyUzivatele, Explorer $database)
     {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
@@ -69,6 +80,17 @@ class UzivatelPresenter extends BasePresenter
         $this->mailService = $mailsvc;
         $this->idsConnector = $idsConnector;
         $this->aplikaceToken = $aplikaceToken;
+        $this->stitek = $stitek;
+        $this->stitkyUzivatele = $stitkyUzivatele;
+        $this->database = $database;
+
+    }
+
+    protected function createComponentUserLabels(): UserLabelsComponent
+    {
+        // Předej do komponenty databázi a aktuální user ID
+        $userId = $this->getParameter('id'); // Nebo jiný způsob získání ID uživatele
+        return new UserLabelsComponent($this->database, $userId, $this->stitek, $this->stitkyUzivatele);
     }
 
     public function sendNotificationEmail($idUzivatele)
@@ -127,6 +149,8 @@ class UzivatelPresenter extends BasePresenter
             $uid = $this->getParameter('id');
             if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+                $this->template->stitky = $this->stitek->getSeznamStitku();
+                $this->template->stitkyUzivatele = $this->stitkyUzivatele->getStitekByUserId($uid);
 
                 $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
                 $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
