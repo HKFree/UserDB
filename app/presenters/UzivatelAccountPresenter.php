@@ -97,6 +97,18 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             return $tr;
         });
 
+        $grid->addFilterSelect('ucet', 'Účet', array('spolek' => 'Spolek', 'druzstvo' => 'Družstvo'))
+            ->setDefaultValue('druzstvo')
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+                if ($value == 'spolek') {
+                    return ($connection->where('spolek = ?', '1'));
+                }
+                if ($value == 'druzstvo') {
+                    return ($connection->where('druzstvo = ?', '1'));
+                }
+                return ($connection);
+            });
+
         $grid->addColumnText('castka', 'Částka')->setCustomRender(function ($item) {
             $c = $item->castka;
             $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label label-spolek')->setAttribute('style', 'margin-left: 4px;');
