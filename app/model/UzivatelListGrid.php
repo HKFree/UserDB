@@ -283,28 +283,28 @@ class UzivatelListGrid
                 'spolek' => 'pouze spolek',
                 'druzstvo' => 'pouze družstvo'))
             ->setDefaultValue('all')
-            ->setWhere(function($value, \Nette\Database\Table\Selection $connection) {
-                if($value == 'spolek') {
-                    return($connection->where('spolek = ?' , '1'));
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+                if ($value == 'spolek') {
+                    return ($connection->where('spolek = ?', '1'));
                 }
-                if($value == 'druzstvo') {
-                    return($connection->where('druzstvo = ?' , '1'));
+                if ($value == 'druzstvo') {
+                    return ($connection->where('druzstvo = ?', '1'));
                 }
-                return($connection);
-        });
+                return ($connection);
+            });
 
         $list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných', 'planned' => 'pouze plánovaná');
 
         $tz = $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
-            ->setWhere(function($value, \Nette\Database\Table\Selection $connection) {
-                if($value == 'active') {
-                    return($connection->where('TypClenstvi_id > ? OR smazano = ?' , 1, 0));
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+                if ($value == 'active') {
+                    return ($connection->where('TypClenstvi_id > ? OR smazano = ?', 1, 0));
                 }
-                if($value == 'planned') {
-                    return($connection->where('TypClenstvi_id = ?' , '0'));
+                if ($value == 'planned') {
+                    return ($connection->where('TypClenstvi_id = ?', '0'));
                 }
-                return($connection);
-        });
+                return ($connection);
+            });
 
         if ($search) {
             $tz->setDefaultValue('all');
@@ -369,11 +369,11 @@ class UzivatelListGrid
             $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
             $spanDruzstvo->addClass(!$item->smazano ? "label-druzstvo" : "label-neaktivni");
 
-            if($item->spolek) {
+            if ($item->spolek) {
                 $uidLink .= $spanSpolek;
             }
 
-            if($item->druzstvo) {
+            if ($item->druzstvo) {
                 $uidLink .= $spanDruzstvo;
             }
 
