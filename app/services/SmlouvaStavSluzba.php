@@ -45,10 +45,8 @@ class SmlouvaStavSluzba
                 }
             }
             if($podpis->kdy_odmitnuto != null){
-                return "odmítnutá dne ".$konec->format('d.m.Y');
+                return "odmítnutá dne ".$podpis->kdy_odmitnuto->format('d.m.Y');
             }
-            \Tracy\Debugger::dump($podpis->kdy_podepsano);
-            \Tracy\Debugger::dump($podpis->kdy_odmitnuto);
         }
 
         if($pocetPodpisu==$pocetPodepsano){
