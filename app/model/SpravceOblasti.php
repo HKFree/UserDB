@@ -74,18 +74,10 @@ class SpravceOblasti extends Table
               ->addConditionOn($right['TypSpravceOblasti_id'], Form::IS_IN, array(1,2))
               ->setRequired('Zadejte oblast');
 
-        $right->addText('od', 'Platnost od:')
-             ->setAttribute('class', 'datepicker ip')
-             ->setAttribute('data-date-format', 'YYYY/MM/DD')
-             ->addRule(Form::FILLED, 'Vyberte datum')
-             ->addCondition(Form::FILLED)
-             ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
+        $right->addDate('od', 'Platnost od:')
+             ->addRule(Form::FILLED, 'Vyberte datum');
 
-        $right->addText('do', 'Platnost do:')
-             ->setAttribute('class', 'datepicker ip')
-             ->setAttribute('data-date-format', 'YYYY/MM/DD')
-             ->addCondition(Form::FILLED)
-             ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
+        $right->addDate('do', 'Platnost do:');
 
         $right->addCheckbox('override', '!!! OPRAVA !!!');
     }
