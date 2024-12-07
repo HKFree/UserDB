@@ -11,7 +11,7 @@ use Tracy\Debugger;
 /**
  * Sprava oblasti presenter.
  */
-    class SpravaStitkuPresenter extends SpravaPresenter
+class SpravaStitkuPresenter extends SpravaPresenter
 {
     public $oblast;
     public $stitek;
@@ -21,7 +21,6 @@ use Tracy\Debugger;
         $this->oblast = $ob;
         $this->stitek = $stitek;
     }
-
 
     public function renderDefault()
     {
@@ -95,6 +94,4 @@ use Tracy\Debugger;
 
         $this->redirect('default');
     }
-
-
 }
