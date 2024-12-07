@@ -298,10 +298,10 @@ class UzivatelListGrid
         $tz = $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
             ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
                 if ($value == 'active') {
-                    return ($connection->where('TypClenstvi_id > ? OR smazano = ?', 1, 0));
+                    return ($connection->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)'));
                 }
                 if ($value == 'planned') {
-                    return ($connection->where('TypClenstvi_id = ?', '0'));
+                    return ($connection->where('spolek = 1 AND TypClenstvi_id = 0'));
                 }
                 return ($connection);
             });
