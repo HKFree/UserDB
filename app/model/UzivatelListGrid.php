@@ -246,8 +246,6 @@ class UzivatelListGrid
 
     public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search)
     {
-        //\Tracy\Debugger::barDump($search);
-
         $canViewOrEdit = false;
 
         $grid = new \Grido\Grid($presenter, $name);
@@ -280,17 +278,38 @@ class UzivatelListGrid
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
         $grid->setDefaultSort(array('zalozen' => 'ASC'));
 
+        $grid->addFilterSelect('spolek_druzstvo', 'Zobrazit', array(
+                'all' => 'spolek i družstvo',
+                'spolek' => 'pouze spolek',
+                'druzstvo' => 'pouze družstvo'))
+            ->setDefaultValue('all')
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+                if ($value == 'spolek') {
+                    return ($connection->where('spolek = ?', '1'));
+                }
+                if ($value == 'druzstvo') {
+                    return ($connection->where('druzstvo = ?', '1'));
+                }
+                return ($connection);
+            });
+
         $list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných', 'planned' => 'pouze plánovaná');
 
-        // pri fulltextu vyhledavat i ve zrusenych
+        $tz = $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+                if ($value == 'active') {
+                    return ($connection->where('TypClenstvi_id > ? OR smazano = ?', 1, 0));
+                }
+                if ($value == 'planned') {
+                    return ($connection->where('TypClenstvi_id = ?', '0'));
+                }
+                return ($connection);
+            });
+
         if ($search) {
-            $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
-             ->setDefaultValue('all')
-             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0'),'planned' => array('TypClenstvi_id',  '= ?', '0') ));
+            $tz->setDefaultValue('all');
         } else {
-            $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
-               ->setDefaultValue('active')
-               ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0'),'planned' => array('TypClenstvi_id',  '= ?', '0') ));
+            $tz->setDefaultValue('active');
         }
 
         if ($money) {
@@ -325,10 +344,12 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                if ($item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
-                if ($item->TypClenstvi_id == 1) {
+                if ($item->spolek && $item->TypClenstvi_id == 1 && (!$item->druzstvo)
+                    || $item->druzstvo && $item->smazano && (!$item->spolek)
+                    || $item->spolek && $item->druzstvo && $item->TypClenstvi_id == 1 && $item->smazano) {
                     $tr->class[] = 'zrusene';
                 }
                 if ($item->TypClenstvi_id == 0) {
@@ -343,6 +364,20 @@ class UzivatelListGrid
             ->href($presenter->link('Uzivatel:show', array('id' => $item->id)))
             ->title($item->id)
             ->setText($item->id);
+
+            $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
+            $spanSpolek->addClass($item->TypClenstvi_id > 1 ? "label-spolek" : "label-neaktivni");
+
+            $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
+            $spanDruzstvo->addClass(!$item->smazano ? "label-druzstvo" : "label-neaktivni");
+
+            if ($item->spolek) {
+                $uidLink .= $spanSpolek;
+            }
+
+            if ($item->druzstvo) {
+                $uidLink .= $spanDruzstvo;
+            }
 
             if ($canViewOrEdit) {
                 // edit button
