@@ -608,3 +608,15 @@ input[readonly] {
     width: 16px;
     height: 16px;
 }
+
+.label-druzstvo {
+    background-color: #03758f;
+}
+
+.label-spolek {
+    background-color: #9f61a2;
+}
+
+.label-neaktivni {
+    background-color: #383838;
+}
