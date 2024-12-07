@@ -36,7 +36,7 @@ if ($smlouva) {
 */
 
 // $uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
-$uzivatel = $container->getByType('\App\Model\Uzivatel')->find(1002);
+$uzivatel = $container->getByType('\App\Model\Uzivatel')->find(1001);
 
 print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
 
@@ -72,18 +72,17 @@ function set_tag_value($envelope, $tagLabel, $newValue)
     ]);
 }
 
-// print("TODO tady bude generování smlouvy - START\n");
-// sleep(15);
-// print("TODO tady bude generování smlouvy - DONE\n");
-// exit;
-
 $krok = 0;
+
+printf("Krok %u: check template\n", ++$krok);
+$template = $dgs->envelopeTemplates()->get($templateId);
+printf("Template %s name: \"%s\" file: %s\n", $template->id, $template->name, $template->documents[0]->name);
+
 printf("Krok %u: create envelope from template\n", ++$krok);
 $envelope = $dgs->envelopeTemplates()->use($templateId);
 $envelopeId = $envelope->id;
 
 $envelope = $ENVELOPES->get($envelopeId);
-// trace_to_file("envelope1", $envelope);
 
 printf("Krok %u: document name\n", ++$krok);
 $doc1 = $ENVELOPES->documents($envelope)->get($envelope->documents[0]->id);
@@ -92,22 +91,24 @@ $ENVELOPES->documents($envelope)->update($doc1->id, [
 ]);
 
 printf("Krok %u: recipient details\n", ++$krok);
+$recipient_details = [
+  'name' => sprintf("%s %s", $uzivatel->jmeno, $uzivatel->prijmeni),
+  'birthdate' => $uzivatel->datum_narozeni,
+  'email' => $uzivatel->email,
+  'mobile' => $uzivatel->telefon,
+  'address' => sprintf("%s, %s", $uzivatel->ulice_cp, $uzivatel->psc, $uzivatel->mesto),
+  'contractingParty' => (string) $uzivatel->id,
+  'emailSubject' => $envelope->emailSubject,
+  'emailBody' => str_replace('{UID}', $uzivatel->id, $envelope->emailBody),
+];
+// print_r($recipient_details);
 $recipient1 = $ENVELOPES->recipients($envelope)->get($envelope->recipients[0]->id);
 $recipient2 = $ENVELOPES->recipients($envelope)->update(
     $recipient1->id,
-    [
-    'name' => sprintf("%s %s", $uzivatel->jmeno, $uzivatel->prijmeni),
-    'birthdate' => $uzivatel->datum_narozeni,
-    'email' => $uzivatel->email,
-    'mobile' => $uzivatel->telefon,
-    'address' => sprintf("%s, %s", $uzivatel->ulice_cp, $uzivatel->psc, $uzivatel->mesto),
-    'contractingParty' => $uzivatel->id,
-    'emailSubject' => $envelope->emailSubject,
-    'emailBody' => str_replace('{UID}', $uzivatel->id, $envelope->emailBody),
-  ]
+    $recipient_details
 );
 
-printf("Krok %u: create tags\n", ++$krok);
+printf("Krok %u: create tags {jmeno_prijmeni}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -117,6 +118,7 @@ $ENVELOPES->tags($envelope)->create([
   "recipientClaim" => "name",
   "type" => "text",
 ]);
+printf("Krok %u: create tags {datum_narozeni}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -127,6 +129,7 @@ $ENVELOPES->tags($envelope)->create([
   "recipientClaim" => "birthdate",
   "type" => "text",
 ]);
+printf("Krok %u: create tags {email}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -136,6 +139,7 @@ $ENVELOPES->tags($envelope)->create([
   "recipientClaim" => "email",
   "type" => "text",
 ]);
+printf("Krok %u: create tags {telefon}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -146,6 +150,7 @@ $ENVELOPES->tags($envelope)->create([
   "recipientClaim" => "mobile",
   "type" => "text",
 ]);
+printf("Krok %u: create tags {adresa}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -155,6 +160,7 @@ $ENVELOPES->tags($envelope)->create([
   "recipientClaim" => "address",
   "type" => "text",
 ]);
+printf("Krok %u: create tags {uid}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -165,6 +171,7 @@ $ENVELOPES->tags($envelope)->create([
   "recipientClaim" => "contractingParty",
   "type" => "text",
 ]);
+printf("Krok %u: create tags {uid2}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -175,6 +182,7 @@ $ENVELOPES->tags($envelope)->create([
   "recipientClaim" => "contractingParty",
   "type" => "text",
 ]);
+printf("Krok %u: create tags {IPv4-1}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -185,6 +193,7 @@ $ENVELOPES->tags($envelope)->create([
   'required' => false,
   "type" => "text",
 ]);
+printf("Krok %u: create tags {GW-1}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -195,6 +204,7 @@ $ENVELOPES->tags($envelope)->create([
   'required' => false,
   "type" => "text",
 ]);
+printf("Krok %u: create tags {oblast-adresa}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,
   'recipient' => $recipient1,
@@ -216,5 +226,5 @@ set_tag_value($envelope, 'GW-1', '10.107.99.1');
 printf("Krok %u: validate\n", ++$krok);
 $ENVELOPES->validate($envelopeId);
 
-// printf("Krok %u: send\n", ++$krok);
-// $ENVELOPES->send($envelopeId);
+printf("Krok %u: send\n", ++$krok);
+$ENVELOPES->send($envelopeId);
