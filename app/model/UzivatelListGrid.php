@@ -344,10 +344,12 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                if ($item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
-                if ($item->TypClenstvi_id == 1) {
+                if ($item->spolek && $item->TypClenstvi_id == 1 && (!$item->druzstvo)
+                    || $item->druzstvo && $item->smazano && (!$item->spolek)
+                    || $item->spolek && $item->druzstvo && $item->TypClenstvi_id == 1 && $item->smazano) {
                     $tr->class[] = 'zrusene';
                 }
                 if ($item->TypClenstvi_id == 0) {
