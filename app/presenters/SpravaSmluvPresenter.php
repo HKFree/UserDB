@@ -13,12 +13,14 @@ class SpravaSmluvPresenter extends BasePresenter
     protected $smlouva;
     protected $podpis;
 
-    public function __construct(Model\Smlouva $smlouva, Model\Podpis $podpis) {
+    public function __construct(Model\Smlouva $smlouva, Model\Podpis $podpis)
+    {
         $this->smlouva = $smlouva;
         $this->podpis = $podpis;
     }
 
-    public function renderShow() {
+    public function renderShow()
+    {
         // TODO: ACCESS CONTROL NA SMLOUVY
 
         if (!$this->getParameter('id')) {
@@ -35,7 +37,8 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->template->podpisy = $podpisy;
     }
 
-    public function parseDate(string $timestamp): DateTime {
+    public function parseDate(string $timestamp): DateTime
+    {
         return \Nette\Utils\DateTime::from($timestamp);
     }
 }

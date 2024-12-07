@@ -17,42 +17,38 @@ class SmlouvaStavSluzba
     {
     }
 
-    public function getStav(Nette\Database\Table\ActiveRow $smlouva):string
+    public function getStav(Nette\Database\Table\ActiveRow $smlouva): string
     {
-        $sid=$smlouva->id;
-        $konec=$smlouva->kdy_ukonceno;
+        $sid = $smlouva->id;
+        $konec = $smlouva->kdy_ukonceno;
 
-        $podpisy=$smlouva->related('Podpis.Smlouva_id');
+        $podpisy = $smlouva->related('Podpis.Smlouva_id');
 
-        $pocetPodpisu=0;
-        $pocetPodepsano=0;
+        $pocetPodpisu = 0;
+        $pocetPodepsano = 0;
 
-        $datum=null;
+        $datum = null;
 
-
-        if($konec != null){
+        if ($konec != null) {
             return "ukončená dne ".$konec->format('d.m.Y');
         }
 
-        foreach($podpisy as $podpis){
+        foreach ($podpisy as $podpis) {
             $pocetPodpisu++;
-            if($podpis->kdy_podepsano != null)
-            {
+            if ($podpis->kdy_podepsano != null) {
                 $pocetPodepsano++;
-                if($datum == null || $datum < $podpis->kdy_podepsano)
-                {
-                    $datum=$podpis->kdy_podepsano;
+                if ($datum == null || $datum < $podpis->kdy_podepsano) {
+                    $datum = $podpis->kdy_podepsano;
                 }
             }
-            if($podpis->kdy_odmitnuto != null){
+            if ($podpis->kdy_odmitnuto != null) {
                 return "odmítnutá dne ".$podpis->kdy_odmitnuto->format('d.m.Y');
             }
         }
 
-        if($pocetPodpisu==$pocetPodepsano){
+        if ($pocetPodpisu == $pocetPodepsano) {
             return "platná od ".$datum->format('d.m.Y');
-        }
-        else{
+        } else {
             return "čeká na podpis";
         }
     }

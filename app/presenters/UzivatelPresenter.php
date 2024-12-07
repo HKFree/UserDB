@@ -224,7 +224,6 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-
     public function createComponentLogTable()
     {
         return $this->logTableFactory->create($this);
