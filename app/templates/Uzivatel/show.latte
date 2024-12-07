@@ -35,7 +35,7 @@
 	    width: auto;
 	 }
     </style>
-
+    <div style="display:flex">
     <table class="table table-nonfluid">
 
         {if $master}
@@ -112,7 +112,26 @@
 
     {/if}
     </table>
-
+    <table class="table table-nonfluid" style="height: fit-content; margin-left: 40px">
+    <tbody>
+      <tr>
+        <th>Typ</th>
+        <th>Ze dne</th>
+        <th>Stav</th>
+      </tr>
+      <tr>
+        <td>účastnická</td>
+        <td></td>
+        <td>platná od 13.12.2024</td>
+      </tr>
+      <tr n:foreach="$smlouvy as $smlouva">
+        <td>{$smlouva->typ}</td>
+        <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->kdy_vygenerovano}</a></td>
+        <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
+      </tr>
+      </tbody>
+      </table>
+    </div>
         <h4>IP Adresy</h4>
         {if $canViewOrEdit}
             {$adresy}

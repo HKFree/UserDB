@@ -34,6 +34,8 @@ class UzivatelPresenter extends BasePresenter
     private $log;
     private $subnet;
     private $sloucenyUzivatel;
+    private $smlouva;
+    private $smlouvaStavSluzba;
     private $parameters;
     private $povoleneSMTP;
     private $dnat;
@@ -46,7 +48,7 @@ class UzivatelPresenter extends BasePresenter
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector, Model\AplikaceToken $aplikaceToken)
+    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Services\SmlouvaStavSluzba $smlouvaStavSluzba, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector, Model\AplikaceToken $aplikaceToken, Model\Smlouva $smlouva)
     {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
@@ -62,6 +64,8 @@ class UzivatelPresenter extends BasePresenter
         $this->log = $log;
         $this->subnet = $subnet;
         $this->sloucenyUzivatel = $slUzivatel;
+        $this->smlouva = $smlouva;
+        $this->smlouvaStavSluzba = $smlouvaStavSluzba;
         $this->parameters = $parameters;
         $this->povoleneSMTP = $alowedSMTP;
         $this->dnat = $dnat;
@@ -214,9 +218,12 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->deactivaceVisible = $uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 0;
 
                 $this->template->igw = $this->getParameter("igw", false);
+                $this->template->smlouvaStavSluzba = $this->smlouvaStavSluzba;
+                $this->template->smlouvy = $this->smlouva->getByUzivatelId($uid);
             }
         }
     }
+
 
     public function createComponentLogTable()
     {
