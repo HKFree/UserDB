@@ -35,7 +35,7 @@ class SmlouvaStavSluzba
         }
 
         foreach($podpisy as $podpis){
-            $pocetPodpis++;
+            $pocetPodpisu++;
             if($podpis->kdy_podepsano != null)
             {
                 $pocetPodepsano++;
@@ -47,7 +47,8 @@ class SmlouvaStavSluzba
             if($podpis->kdy_odmitnuto != null){
                 return "odmítnutá dne ".$konec->format('d.m.Y');
             }
-            \Tracy\Debugger::dump($podpis);
+            \Tracy\Debugger::dump($podpis->kdy_podepsano);
+            \Tracy\Debugger::dump($podpis->kdy_odmitnuto);
         }
 
         if($pocetPodpisu==$pocetPodepsano){
