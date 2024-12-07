@@ -2,6 +2,9 @@
 delete from `Podpis` where Smlouva_id=150005;
 delete from `Podpis` where Smlouva_id=150007;
 delete from `Podpis` where Smlouva_id=150006;
+UPDATE `Smlouva` SET `kdy_ukonceno` = NULL WHERE `Smlouva`.`id` = 150005;
+UPDATE `Smlouva` SET `kdy_ukonceno` = NULL WHERE `Smlouva`.`id` = 150006;
+UPDATE `Smlouva` SET `kdy_ukonceno` = NULL WHERE `Smlouva`.`id` = 150007;
 
 INSERT INTO Podpis (smlouva_id, externi_id, smluvni_strana, jmeno, kdy_podepsano, kdy_odmitnuto)
 VALUES
