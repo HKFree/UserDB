@@ -15,6 +15,8 @@ services:
       - USERDB_IDS_PASSWORD=xxx
       - USERDB_IDS_IPS_WHITELIST=10.107.99.188
       - INFLUX_URL=influxdb://wewimo:xxx@10.107.252.101:8086/wewimo
+      - DIGISIGN_ACCESS_KEY=abcd
+      - DIGISIGN_SECRET_KEY=0987654321
     ports:
       - "10107:80"
     volumes:
@@ -36,8 +38,8 @@ services:
   db:
     image: mariadb:10.1
     ports:
-      - "3306:3306"
-    command: --max_allowed_packet=32505856 # Set max_allowed_packet to 256M (or any other value)
+      - "10306:3306"
+    command: --max_allowed_packet=32505856      # Set max_allowed_packet to 256M (or any other value)
     environment:
       MYSQL_ROOT_PASSWORD: rootpwd654
       MYSQL_DATABASE: userdb
@@ -45,4 +47,4 @@ services:
       - my-net
 networks:
   my-net:
-    name: my-net
+     name: my-net
