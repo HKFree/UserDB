@@ -13,7 +13,4 @@ class Podpis extends Table
     * @var string
     */
     protected $tableName = 'Podpis';
-
-
-
 }
