@@ -82,6 +82,7 @@ services:
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
 	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
 	status: App\Model\Status
+	smlouva: App\Model\Smlouva
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:
