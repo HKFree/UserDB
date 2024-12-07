@@ -3,7 +3,7 @@
 <?php
 /**
  * Digisign API
- * Vytvoření tzv. obálky a odeslání smlouvy k pordpisu pro připojence hkfree.org
+ * Vytvoření tzv. obálky a odeslání smlouvy k podpisu pro připojence hkfree.org
  */
 use DigitalCz\DigiSign\DigiSign;
 
