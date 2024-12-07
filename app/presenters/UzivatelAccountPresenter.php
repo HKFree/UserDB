@@ -101,6 +101,17 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             return $tr;
         });
 
+        $grid->addFilterSelect('ucet', 'Účet', array('spolek' => 'Spolek', 'druzstvo' => 'Družstvo'))
+            ->setDefaultValue('spolek')
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+                if ($value == 'spolek') {
+                    return ($connection->where('spolek = ?', '1'));
+                }
+                if ($value == 'druzstvo') {
+                    return ($connection->where('druzstvo = ?', '1'));
+                }
+                return ($connection);
+            });
         $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
 
         $grid->addColumnDate('datum_cas', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATETIME)->setSortable()->setFilterText();
