@@ -17,7 +17,6 @@ services:
       - INFLUX_URL=influxdb://wewimo:xxx@10.107.252.101:8086/wewimo
       - DIGISIGN_ACCESS_KEY=abcd
       - DIGISIGN_SECRET_KEY=0987654321
-      - DIGISIGN_UCASTNICKA_SABLONA_ID=01938b74-b86e-7361-9ab9-17e7b2671225 # migrace + účastnická smlouva v5
     ports:
       - "10107:80"
     volumes:
