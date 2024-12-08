@@ -13,7 +13,7 @@ class SpravaSmluvPresenter extends BasePresenter
     protected $smlouva;
     protected $podpis;
 
-    public function __construct(Model\Smlouva $smlouva, Model\Podpis $podpis)
+    public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis)
     {
         $this->smlouva = $smlouva;
         $this->podpis = $podpis;
@@ -33,7 +33,7 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->template->id = $this->smlouva_id;
         $this->template->smlouva = $this->smlouva->find($this->smlouva_id);
 
-        $podpisy = $this->template->smlouva->related('Podpis', 'Smlouva_id');
+        $podpisy = $this->template->smlouva->related('PodpisSmlouvy', 'Smlouva_id');
         $this->template->podpisy = $podpisy;
     }
 

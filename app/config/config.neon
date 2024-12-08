@@ -83,7 +83,7 @@ services:
 	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
 	status: App\Model\Status
 	smlouva: App\Model\Smlouva
-	podpis: App\Model\Podpis
+	podpisSmlouvy: App\Model\PodpisSmlouvy
 	smlouvaStavSluzba: App\Services\SmlouvaStavSluzba
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter

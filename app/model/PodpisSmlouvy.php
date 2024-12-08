@@ -7,10 +7,10 @@ use Nette;
 /**
  * @author
  */
-class Podpis extends Table
+class PodpisSmlouvy extends Table
 {
     /**
     * @var string
     */
-    protected $tableName = 'Podpis';
+    protected $tableName = 'PodpisSmlouvy';
 }

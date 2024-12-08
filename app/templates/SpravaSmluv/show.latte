@@ -49,9 +49,11 @@
                 {foreach $podpisy as $podpis}
                     <li>
                         {$podpis->jmeno} - za {$podpis->smluvni_strana} -
-                        <span title="{$podpis->kdy_podepsano->format('d F Y H:h:s')}">
-                            {$podpis->kdy_podepsano->format('d.m.y')}
-                        </span>
+                        {if isset($podpis->kdy_podepsano)}
+                            <span title="{$podpis->kdy_podepsano->format('d F Y H:h:s')}">
+                                {$podpis->kdy_podepsano->format('d.m.y')}
+                            </span>
+                        {/if}
                         {if isset($podpis->kdy_odmitnuto)}
                             {* Zde predpokladame ze kdy_zruseno nemuze byt v budoucnosti *}
                             <ul>
