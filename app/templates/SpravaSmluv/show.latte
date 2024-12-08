@@ -25,7 +25,7 @@
 
         <tr>
             <th>Vygenerováno</th>
-            <td>{$smlouva->kdy_vygenerovano}</td>
+            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
         </tr>
 
         <tr>
@@ -45,29 +45,29 @@
         <tr>
             <th>Podpisy</th>
             <td>
-                <ul>
+                <ol>
                 {foreach $podpisy as $podpis}
                     <li>
-                        {$podpis->jmeno} - za {$podpis->smluvni_strana} -
+                        za {$podpis->smluvni_strana} {$podpis->jmeno}:
                         {if isset($podpis->kdy_podepsano)}
+                            ✅ podepsáno
                             <span title="{$podpis->kdy_podepsano->format('d F Y H:h:s')}">
-                                {$podpis->kdy_podepsano->format('d.m.y')}
+                                {$podpis->kdy_podepsano->format('d.m.Y')}
                             </span>
                         {/if}
                         {if isset($podpis->kdy_odmitnuto)}
                             {* Zde predpokladame ze kdy_zruseno nemuze byt v budoucnosti *}
-                            <ul>
-                                <li>
-                                    tento podpis byl <b>odmítnut</b>
+                                    ⚠️ tento podpis byl <b>odmítnut</b>
                                     <span title="{$podpis->kdy_odmitnuto->format('d F Y H:h:s')}">
-                                        {$podpis->kdy_odmitnuto->format('d.m.y')}
+                                        {$podpis->kdy_odmitnuto->format('d.m.Y')}
                                     </span>
-                                </li>
-                            </ul>
+                        {/if}
+                        {if !isset($podpis->kdy_odmitnuto) && !isset($podpis->kdy_podepsano)}
+                            ⏳ ještě nepodapsáno
                         {/if}
                     </li>
                 {/foreach}
-                </ul>
+                </ol>
             </td>
         </tr>
 

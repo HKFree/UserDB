@@ -149,7 +149,7 @@
       </tr>
       <tr n:foreach="$smlouvy as $smlouva">
         <td>{$smlouva->typ}</td>
-        <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->kdy_vygenerovano}</a></td>
+        <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->kdy_vygenerovano->format('d.m.Y')}</a></td>
         <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
       </tr>
       {* <td colspan="3" >
