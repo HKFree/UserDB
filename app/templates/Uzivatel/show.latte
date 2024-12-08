@@ -26,7 +26,7 @@
     {if $deactivaceVisible}<a href="{link UzivatelActions:moneyDeactivate id=>$u->id}" class="btn btn-danger btn-sm" role="button"><i class="glyphicon glyphicon-remove-circle"></i> Deaktivace</a>{/if}
     <a n:if="$igw" href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-check"></i> Zobrazit stav na IGW</a>
     <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
-    {control userLabels userId => $u->id}
+
     </div>
 
     <br><br>

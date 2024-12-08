@@ -610,6 +610,7 @@ input[readonly] {
 }
 
 .mikrotik-app-logo {
+    filter: grayscale();
     border-radius: 5px;
     width: 16px;
     height: 16px;
@@ -626,68 +627,3 @@ input[readonly] {
 .label-neaktivni {
     background-color: #383838;
 }
-
-/** STITKY **/
-
-.dropdown-menu > li > a.stitky-item {
-    display: inline-block;
-    padding: 4px 5px; /* Více prostoru uvnitř štítku */
-    margin: 5px 5px; /* Větší mezery mezi štítky */
-    border-radius: 12px; /* Zaoblené rohy */
-    font-size: 10px; /* Velikost textu */
-    font-weight: normal; /* Tučný text */
-    text-align: center; /* Zarovnání textu na střed */
-    transition: all 0.3s ease; /* Plynulý hover efekt */
-    line-height: 1.5; /* Zvýšení mezery mezi řádky */
-    text-decoration: none; /* Odstranění podtržení */
-    white-space: nowrap; /* Zamezí zalamování textu */
-}
-
-/* Hover efekt */
-.dropdown-menu > li > a.stitky-item:hover {
-    filter: brightness(85%); /* Efekt ztmavení při hover */
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Jemný stín pro hover */
-}
-.d-flex {
-    display: flex;
-    align-items: center; /* Vertikální zarovnání na střed */
-}
-
-.me-2 {
-    margin-right: 10px; /* Mezera mezi dropdownem a štítky */
-}
-
-#user-labels .badge {
-    margin-left: 5px; /* Mezery mezi jednotlivými štítky */
-}
-
-
-.badge {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    margin-right: 5px;
-    padding-right: 5px; /* Rezerva pro křížek */
-}
-
-.badge-remove {
-    position: absolute;
-    top: 50%;
-    right: 5px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #fff;
-    background-color: #dc3545;
-    border-radius: 50%;
-    font-size: 12px;
-    line-height: 1;
-    padding: 0 5px;
-    display: none;
-}
-
-.badge:hover .badge-remove {
-    display: inline-block;
-}
-
-
-/** STITKY **/

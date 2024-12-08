@@ -5,7 +5,6 @@ namespace App\Model;
 use Nette;
 use Nette\Utils\Strings;
 use Nette\Utils\Html;
-use Latte\Engine;
 
 /**
  * @author
@@ -13,16 +12,12 @@ use Latte\Engine;
 class UzivatelListGrid
 {
     private $uzivatel;
-    private $stitek;
-    private $stitekUzivatele;
     private $ap;
     private $cestneClenstviUzivatele;
     private $parameters;
 
-    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel, Stitek $stitky, StitekUzivatele $stitekUzivatele)
+    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel)
     {
-        $this->stitek = $stitky;
-        $this->stitekUzivatele = $stitekUzivatele;
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->cestneClenstviUzivatele = $cc;
@@ -130,7 +125,6 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
-        $grid->addColumnText('stitky', 'Štítky')->setSortable();
         $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if ($canViewOrEdit) {
@@ -397,17 +391,6 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
-            $latte = new Engine();
-            $params = [
-                'stitky' => $this->stitek->getSeznamStitku(),
-                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
-                'userId' => $item->id,
-            ];
-            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
-            return $latte->renderToString($templatePath, $params);
-
-        });
         $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if ($canViewOrEdit) {
