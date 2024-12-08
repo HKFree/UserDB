@@ -52,13 +52,32 @@ class UzivatelPresenter extends BasePresenter
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP,
-                                Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava,
-                                Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi,
-                                Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel,
-                                Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector,
-                                Model\AplikaceToken $aplikaceToken, Model\Stitek $stitek, Model\StitekUzivatele $stitkyUzivatele, Explorer $database)
-    {
+    public function __construct(
+        Services\MailService $mailsvc,
+        Services\PdfGenerator $pdf,
+        CryptoSluzba $cryptosvc,
+        Model\PovoleneSMTP $alowedSMTP,
+        Model\DNat $dnat,
+        Model\Parameters $parameters,
+        Model\SloucenyUzivatel $slUzivatel,
+        Model\Subnet $subnet,
+        Model\SpravceOblasti $prava,
+        Model\CestneClenstviUzivatele $cc,
+        Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
+        Model\TypClenstvi $typClenstvi,
+        Model\ZpusobPripojeni $zpusobPripojeni,
+        Model\TechnologiePripojeni $technologiePripojeni,
+        Model\Uzivatel $uzivatel,
+        Model\IPAdresa $ipAdresa,
+        Model\AP $ap,
+        Model\TypZarizeni $typZarizeni,
+        Model\Log $log,
+        Model\IdsConnector $idsConnector,
+        Model\AplikaceToken $aplikaceToken,
+        Model\Stitek $stitek,
+        Model\StitekUzivatele $stitkyUzivatele,
+        Explorer $database
+    ) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;

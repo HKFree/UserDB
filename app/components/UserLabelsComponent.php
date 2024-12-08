@@ -13,7 +13,7 @@ class UserLabelsComponent extends Control
     private $stitkyUzivatele;
     private $stitky;
 
-    public function __construct(Explorer $database, int $userId, Model\Stitek $stitky, Model\StitekUzivatele $stitkyUzivatele,)
+    public function __construct(Explorer $database, int $userId, Model\Stitek $stitky, Model\StitekUzivatele $stitkyUzivatele)
     {
         $this->database = $database;
         $this->userId = $userId;

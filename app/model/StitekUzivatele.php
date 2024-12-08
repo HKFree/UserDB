@@ -40,7 +40,7 @@ class StitekUzivatele extends Table
             ->order('Stitek.text ASC')->fetchAll();
     }
 
-    public function odstranStitek( $stitekId, $userId)
+    public function odstranStitek($stitekId, $userId)
     {
         return $this->database->table($this->tableName)->where("Stitek_id", $stitekId)
             ->where("Uzivatel_id", $userId)->delete();
