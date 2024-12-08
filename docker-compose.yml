@@ -36,7 +36,7 @@ services:
   db:
     image: mariadb:10.1
     ports:
-      - "3306:3306"
+      - "3307:3306"
     command: --max_allowed_packet=32505856 # Set max_allowed_packet to 256M (or any other value)
     environment:
       MYSQL_ROOT_PASSWORD: rootpwd654
