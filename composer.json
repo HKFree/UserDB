@@ -49,11 +49,17 @@
 		"nette/mail": "~4.0.0",
 		"nette/utils": "~4.0.5",
 		"kdyby/console": "dev-master#308787a59dffdbea92df4c7a4cd50e919cf7b7c1",
-		"kdyby/forms-replicator": "dev-master#5a71bc343d5d0a2e183ee8dc6b0b4dc645955030"
+		"kdyby/forms-replicator": "dev-master#5a71bc343d5d0a2e183ee8dc6b0b4dc645955030",
+		"digitalcz/digisign": "^2.5"
 	},
 	"require-dev": {
 		"nette/tester": "~1.0",
 		"friendsofphp/php-cs-fixer": "^3.65"
 	},
-	"minimum-stability": "stable"
+	"minimum-stability": "stable",
+	"config": {
+		"allow-plugins": {
+			"php-http/discovery": true
+		}
+	}
 }
