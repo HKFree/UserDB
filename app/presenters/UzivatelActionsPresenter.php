@@ -106,4 +106,17 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             }
         }
     }
+
+    public function actionHandleSubscriberContract()
+    {
+        if (!$this->getParameter('id')) {
+            $this->flashMessage('Žádný uživatel s tímto id.');
+            return;
+        }
+
+        $this->flashMessage('shit');
+        // Tady call na generaci nove smlouvy a odeslani
+        $this->redirect('Uzivatel:show', array('id' => 1));
+
+    }
 }
