@@ -152,9 +152,9 @@
         <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->kdy_vygenerovano->format('d.m.Y')}</a></td>
         <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
       </tr>
-      {* <td colspan="3" >
+      <td colspan="3" >
         <a n:href="SpravaSmluv:new, id=>$u->id" class="btn btn-success" role="button" data-original-title="" title=""><i class="glyphicon glyphicon-plus" style="padding-right: 5px;"></i>Nová smlouva</a>
-      </td> *}
+      </td>
       </tbody>
       </table>
       </div>
@@ -180,6 +180,15 @@
                 $(".logstable").hide();
             });
 
+            $('#btn-handle-subscriber-contract').on('click', function() {
+                let c = confirm("Chystáš se vygenerovat novou účastnickou smlouvu a odeslat jí členovi na e-mail.\nTato akce může trvat až minutu.\nJsi si opravdu jistý?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
         </script>
         <h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
 
