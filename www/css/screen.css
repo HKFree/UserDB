@@ -610,7 +610,6 @@ input[readonly] {
 }
 
 .mikrotik-app-logo {
-    filter: grayscale();
     border-radius: 5px;
     width: 16px;
     height: 16px;
@@ -632,11 +631,11 @@ input[readonly] {
 
 .dropdown-menu > li > a.stitky-item {
     display: inline-block;
-    padding: 4px 15px; /* Více prostoru uvnitř štítku */
-    margin: 5px 10px; /* Větší mezery mezi štítky */
-    border-radius: 15px; /* Zaoblené rohy */
-    font-size: 12px; /* Velikost textu */
-    font-weight: bold; /* Tučný text */
+    padding: 4px 5px; /* Více prostoru uvnitř štítku */
+    margin: 5px 5px; /* Větší mezery mezi štítky */
+    border-radius: 12px; /* Zaoblené rohy */
+    font-size: 10px; /* Velikost textu */
+    font-weight: normal; /* Tučný text */
     text-align: center; /* Zarovnání textu na střed */
     transition: all 0.3s ease; /* Plynulý hover efekt */
     line-height: 1.5; /* Zvýšení mezery mezi řádky */
@@ -668,7 +667,7 @@ input[readonly] {
     display: inline-flex;
     align-items: center;
     margin-right: 5px;
-    padding-right: 20px; /* Rezerva pro křížek */
+    padding-right: 5px; /* Rezerva pro křížek */
 }
 
 .badge-remove {

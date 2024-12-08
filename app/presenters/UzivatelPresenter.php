@@ -90,7 +90,9 @@ class UzivatelPresenter extends BasePresenter
     {
         // Předej do komponenty databázi a aktuální user ID
         $userId = $this->getParameter('id'); // Nebo jiný způsob získání ID uživatele
-        return new UserLabelsComponent($this->database, $userId, $this->stitek, $this->stitkyUzivatele);
+        $ulc = new UserLabelsComponent($this->database, $this->stitek, $this->stitkyUzivatele);
+        $ulc->setUserId($userId);
+        return $ulc;
     }
 
     public function sendNotificationEmail($idUzivatele)
