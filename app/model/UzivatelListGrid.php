@@ -397,7 +397,7 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item)  use ($presenter){
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
             $latte = new Engine();
             $params = [
                 'stitky' => $this->stitek->getSeznamStitku(),
