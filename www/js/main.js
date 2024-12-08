@@ -9,7 +9,7 @@ $(document).ready(function() {
     $(".datepicker").change();
     $(".datepicker").off("change");
 
-    $(".datepicker").datepicker({ dateFormat: "yy-mm-dd" });
+    $(".datepicker").datepicker({ dateFormat: "dd.mm.yy" });
 
     $("#navareas").click(function(){
         $(".sidebar").toggle();
@@ -80,7 +80,7 @@ $(document).ready(function () {
         if(!txt || txt == ''){
             return;
         }
-    
+
         copyTextToClipboard(txt);
 
         if(!urlHref || urlHref == ''){
@@ -95,11 +95,11 @@ $(document).ready(function () {
             alert('Please allow popups for this website');
         }
     });
-});  
+});
 
 function copyTextToClipboard(text) {
     var textArea = document.createElement("textarea");
-  
+
     textArea.style.position = 'fixed';
     textArea.style.top = 0;
     textArea.style.left = 0;

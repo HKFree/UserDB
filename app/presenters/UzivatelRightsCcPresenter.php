@@ -96,7 +96,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             if (!empty($pravo->id) && !$pravo->override) {
                 $starePravo = null;
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
-                if (($starePravo->od != null && $starePravo->od->format('Y-m-d') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('Y-m-d') != $pravo->do)
+                if (($starePravo->od != null && $starePravo->od->format('d.m.Y') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('d.m.Y') != $pravo->do)
                 || $starePravo->Oblast_id != $pravo->Oblast_id || $starePravo->TypSpravceOblasti_id != $pravo->TypSpravceOblasti_id) {
                     $form->addError('NERECYKLUJTE. Práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!.');
                 }
@@ -170,18 +170,10 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
             $right->addSelect('TypCestnehoClenstvi_id', 'Typ čestného členství', $typCC)->addRule(Form::FILLED, 'Vyberte typ čestného členství');
 
-            $right->addText('plati_od', 'Platnost od:')
-                 ->setAttribute('class', 'datepicker ip')
-                 ->setAttribute('data-date-format', 'YYYY/MM/DD')
-                 ->addRule(Form::FILLED, 'Vyberte datum')
-                 ->addCondition(Form::FILLED)
-                 ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
+            $right->addDate('plati_od', 'Platnost od:')
+            ->addRule(Form::FILLED, 'Vyberte datum');
 
-            $right->addText('plati_do', 'Platnost do:')
-                 ->setAttribute('class', 'datepicker ip')
-                 ->setAttribute('data-date-format', 'YYYY/MM/DD')
-                 ->addCondition(Form::FILLED)
-                 ->addRule(Form::PATTERN, 'prosím zadejte datum ve formátu RRRR-MM-DD', '^\d{4}-\d{2}-\d{1,2}$');
+            $right->addDate('plati_do', 'Platnost do:');
 
             $right->addTextArea('poznamka', 'Poznámka:', 72, 5)
             ->setAttribute('class', 'note ip');
