@@ -22,7 +22,7 @@ services:
     links:
       - db
     networks:
-      - my-net
+      - local-userdb-net
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
@@ -32,7 +32,7 @@ services:
     environment:
       PMA_HOST: db
     networks:
-      - my-net
+      - local-userdb-net
   db:
     image: mariadb:10.1
     ports:
@@ -42,7 +42,17 @@ services:
       MYSQL_ROOT_PASSWORD: rootpwd654
       MYSQL_DATABASE: userdb
     networks:
-      - my-net
+      - local-userdb-net
+  fio2userdb:
+    build: ./fio2userdb
+    environment:
+      - FIO_READONLY_TOKEN=U8S2I6r...T7nv
+      - USERDB_DB_HOST=db
+      - USERDB_DB_NAME=userdb
+      - USERDB_DB_USERNAME=root
+      - USERDB_DB_PASSWORD=rootpwd654
+    networks:
+      - local-userdb-net
 networks:
-  my-net:
-    name: my-net
+  local-userdb-net:
+    name: local-userdb-net
