@@ -152,11 +152,11 @@
         <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->kdy_vygenerovano->format('d.m.Y')}</a></td>
         <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
       </tr>
-      <td colspan="3" >
-        <a n:href="SpravaSmluv:new, id=>$u->id" class="btn btn-success" role="button" data-original-title="" title=""><i class="glyphicon glyphicon-plus" style="padding-right: 5px;"></i>Nová smlouva</a>
-      </td>
       </tbody>
       </table>
+        <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-success btn-sm" id="btn-handle-subscriber-contract" role="button">
+            <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová smlouva
+        </a>
       </div>
     </div>
         <h4>IP Adresy</h4>

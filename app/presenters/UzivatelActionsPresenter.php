@@ -16,9 +16,11 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $uzivatel;
     private $pdfGenerator;
     private $mailService;
+    private $smlouva;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel)
+    public function __construct(private Nette\Database\Connection $database, Model\Smlouva $smlouva, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel)
     {
+        $this->smlouva = $smlouva;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
@@ -110,9 +112,23 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionHandleSubscriberContract()
     {
         if (!$this->getParameter('id')) {
-            $this->flashMessage('Žádný uživatel s tímto id.');
-            return;
+            $this->flashMessage('Žádné id.');
+            $this->redirect('UzivatelList:listall');
         }
+        
+        $user_id = $this->getParameter('id');
+        $current_user = $this->uzivatel->find($user_id);
+        
+        if (!$current_user) {
+            $this->flashMessage('Žádný uživatel s tímto id.');
+            $this->redirect('UzivatelList:listall');
+        }
+        
+        $this->database->query('INSERT INTO Smlouva ?',[
+            'Uzivatel_id' => $user_id,
+            
+        ]);
+
 
         $this->flashMessage('shit');
         // Tady call na generaci nove smlouvy a odeslani
