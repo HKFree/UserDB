@@ -48,14 +48,12 @@ class StitekUzivatele extends Table
 
     public function getStitekByUserId($user_id)
     {
-
-
         return $this->database->table($this->tableName)->where("Uzivatel_id", $user_id)
             ->select('Stitek.id, Stitek.text, Stitek.barva_pozadi, Stitek.barva_popredi')
             ->order('Stitek.text ASC')->fetchAll();
     }
 
-    public function odstranStitek( $stitekId, $userId)
+    public function odstranStitek($stitekId, $userId)
     {
         $stitek = $this->stitek->getStitekById($stitekId);
         $stara_data = array(
@@ -64,8 +62,6 @@ class StitekUzivatele extends Table
         $l = [];
         $this->log->logujDelete($stara_data, "Uzivatel", $l);
         $this->log->loguj("Uzivatel", $userId, $l);
-
-
         return $this->database->table($this->tableName)->where("Stitek_id", $stitekId)
             ->where("Uzivatel_id", $userId)->delete();
     }

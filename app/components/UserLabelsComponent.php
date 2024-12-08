@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Components;
-use Nette\Application\UI\Presenter;
+
 use Nette\Application\UI\Control;
 use Nette\Database\Explorer;
 use App\Model;
@@ -9,7 +9,6 @@ use App\Model;
 class UserLabelsComponent extends Control
 {
     private Explorer $database;
-    private Presenter $presenter;
     private int $userId;
     private $stitkyUzivatele;
     private $stitky;
@@ -35,18 +34,5 @@ class UserLabelsComponent extends Control
 
         $this->template->setFile(__DIR__ . '/UserLabelsComponent.latte');
         $this->template->render();
-    }
-
-    public function attachToPresenter(Presenter $presenter): void
-    {
-        if (!$this->lookup(Presenter::class, false)) {
-            $this->monitor(Presenter::class);
-            $this->attached($presenter);
-        }
-    }
-
-    public function setPresenter(Presenter $presenter): void
-    {
-        $this->presenter = $presenter;
     }
 }

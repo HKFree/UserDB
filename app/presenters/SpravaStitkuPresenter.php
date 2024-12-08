@@ -115,8 +115,8 @@ class SpravaStitkuPresenter extends SpravaPresenter
             $this->terminate();
         }
         try {
-            $this->stitekUzivatel->odstranStitek( $stitek_id, $user_id);
-            echo json_encode(['success' => true, 'stitekId' => $stitek_id, 'userId'=> $user_id]);
+            $this->stitekUzivatel->odstranStitek($stitek_id, $user_id);
+            echo json_encode(['success' => true, 'stitekId' => $stitek_id, 'userId' => $user_id]);
             //$stitek = $this->stitek->getStitekById($stitekId);
             //echo json_encode(['success' => true, 'barva_popredi' => $stitek->barva_popredi, 'barva_pozadi' => $stitek->barva_pozadi, 'text' => $stitek->text]);
 
@@ -126,7 +126,6 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $this->terminate();
 
     }
-
 
     public function actionSaveLabel($stitek_id, $user_id): void
     {
