@@ -82,6 +82,8 @@ services:
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
 	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
 	status: App\Model\Status
+	stitek: App\Model\Stitek
+	stitekUzivatele: App\Model\StitekUzivatele
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:

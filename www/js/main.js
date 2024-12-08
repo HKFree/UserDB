@@ -130,3 +130,88 @@ function openMikrotikWebfig(ip, username, password) {
     webfigWindow.document.write(theHTML);
     return false;
 }
+
+/** STITKY **/
+function showMessage(message, type = 'success') {
+    const messageContainer = $('#message-container');
+    const messageContent = $('#message-content');
+
+    messageContent.text(message); // Nastav text zprávy
+    messageContainer.removeClass('alert-success alert-danger').addClass(`alert-${type}`);
+    messageContainer.show(); // Zobraz zprávu
+
+    setTimeout(() => {
+        messageContainer.fadeOut(); // Automaticky skryj zprávu po 5 sekundách
+    }, 5000);
+}
+
+
+$(document).ready(function () {
+    $('#user-labels').on('click', '.badge-remove', function (e) {
+        e.preventDefault();
+
+        const stitekId = $(this).data('stitek-id');
+        const userId = $(this).data('user-id');
+        const badge = $(this).closest('.badge');
+
+        // AJAX DELETE požadavek
+        $.ajax({
+            url: '/userdb/stitky/deleteLabel', // Upravit podle skutečné URL komponenty
+            type: 'DELETE',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                stitek_id: stitekId,
+                user_id: userId
+            }),
+            success: function (response) {
+                if (response.success) {
+                    badge.fadeOut(300, function () {
+                        $(this).remove(); // Odstranění badge
+                    });
+                } else {
+                    console.error('Nepodařilo se odstranit štítek: ' + response.message);
+                }
+            },
+            error: function () {
+                console.error('Chyba při komunikaci se serverem.');
+            }
+        });
+    });
+    $('.stitky-item').on('click', function (e) {
+        e.preventDefault(); // Zabráníme reloadu stránky
+
+        const stitekId = $(this).data('id'); // Získáme ID štítku
+        const userId = $(this).closest('.dropdown').data('user-id'); // Získáme user_id z dropdown boxu
+
+        // Odeslání AJAX požadavku
+        $.ajax({
+            url: '/userdb/stitky/saveLabel',
+            type: 'POST',
+            data: {
+                stitek_id: stitekId,
+                user_id: userId
+            },
+            success: function (response) {
+                if (response.success) {
+                    const newLabel = `<span class="badge" style="background-color: ${response.barva_pozadi}; color: ${response.barva_popredi};">
+                            ${response.text}
+                        </span>`;
+                    $('#user-labels').append(newLabel);
+
+                    console.log('Štítek byl úspěšně uložen!', 'success');
+                } else {
+                    alert('Došlo k chybě: ' + response.message, 'danger');
+                    console.error('Došlo k chybě: ' + response.message, 'danger');
+                }
+            },
+            error: function () {
+                alert('Nepodařilo se připojit k serveru.', 'danger');
+                console.error('Nepodařilo se připojit k serveru.', 'danger');
+            }
+        });
+    });
+});
+
+
+
+/** STITKY **/

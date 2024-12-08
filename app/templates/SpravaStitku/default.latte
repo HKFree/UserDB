@@ -1,0 +1,34 @@
+{block content}
+
+<h3>Správa štítků</h3>
+
+{if $canViewOrEdit}
+    <a n:href="SpravaStitku:edit" class="btn btn-default btn-sm" role="button"> Přidat + </a>
+{/if}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Štítek</th>
+        <th>Oblast ID</th>
+        <th>Barva pozadí</th>
+        <th>Barva popředí</th>
+    </tr>
+    </thead>
+    <tbody>
+    {foreach $stitky as $stitek}
+        <tr>
+            <td><a n:href="SpravaStitku:edit id=>$stitek['id']" >
+                <span class="badge rounded-pill" style="background-color: {$stitek->barva_pozadi|noescape}; color: {$stitek->barva_popredi|noescape};" >
+                    {$stitek['text']}</a>
+                </span>
+            </td>
+            <td>{$stitek['Oblast_id']}</td>
+            <td>{$stitek['barva_pozadi']}</td>
+            <td>{$stitek['barva_popredi']}</td>
+        </tr>
+    {/foreach}
+    </tbody>
+</table>
+
+{/block}

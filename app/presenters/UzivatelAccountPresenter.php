@@ -101,7 +101,20 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             return $tr;
         });
 
-        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
+        $grid->addColumnText('castka', 'Částka')->setCustomRender(function ($item) {
+            $c = $item->castka;
+            $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label label-spolek')->setAttribute('style', 'margin-left: 4px;');
+            $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label label-druzstvo')->setAttribute('style', 'margin-left: 4px;');
+
+            if ($item->spolek) {
+                $c = $c . $spanSpolek;
+            }
+
+            if ($item->druzstvo) {
+                $c = $c . $spanDruzstvo;
+            }
+            return ($c);
+        })->setSortable()->setFilterText();
 
         $grid->addColumnDate('datum_cas', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATETIME)->setSortable()->setFilterText();
 
