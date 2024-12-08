@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use Grido\DataSources\Model;
 use Nette;
 use Nette\Database\Explorer;
 
@@ -15,12 +16,15 @@ class StitekUzivatele extends Table
      */
 
     private Explorer $database;
-
+    private $log;
+    private $stitek;
     protected $tableName = 'StitekUzivatele';
 
-    public function __construct(Explorer $database)
+    public function __construct(Explorer $database, Log $log, Stitek $stitek)
     {
         $this->database = $database;
+        $this->log = $log;
+        $this->stitek = $stitek;
     }
 
     public function updateStitekUzivatele($id, array $data)
@@ -31,10 +35,21 @@ class StitekUzivatele extends Table
     public function createStitekUzivatele(array $data)
     {
         $this->database->table($this->tableName)->insert($data);
+        //print_r($data);
+        $stitek = $this->stitek->getStitekById($data["Stitek_id"]);
+        $stara_data = array(
+            "stitek" => $stitek->text
+        );
+        $l = [];
+        $this->log->logujInsert($stara_data, "Uzivatel", $l);
+        $this->log->loguj("Uzivatel", $data["Uzivatel_id"], $l);
+
     }
 
     public function getStitekByUserId($user_id)
     {
+
+
         return $this->database->table($this->tableName)->where("Uzivatel_id", $user_id)
             ->select('Stitek.id, Stitek.text, Stitek.barva_pozadi, Stitek.barva_popredi')
             ->order('Stitek.text ASC')->fetchAll();
@@ -42,6 +57,15 @@ class StitekUzivatele extends Table
 
     public function odstranStitek( $stitekId, $userId)
     {
+        $stitek = $this->stitek->getStitekById($stitekId);
+        $stara_data = array(
+            "stitek" => $stitek->text
+        );
+        $l = [];
+        $this->log->logujDelete($stara_data, "Uzivatel", $l);
+        $this->log->loguj("Uzivatel", $userId, $l);
+
+
         return $this->database->table($this->tableName)->where("Stitek_id", $stitekId)
             ->where("Uzivatel_id", $userId)->delete();
     }
