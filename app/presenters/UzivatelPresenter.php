@@ -130,12 +130,19 @@ class UzivatelPresenter extends BasePresenter
 
                 $this->template->money_act = ($uzivatel->money_aktivni == 1) ? "ANO" : "NE";
                 $this->template->money_dis = ($uzivatel->money_deaktivace == 1) ? "ANO" : "NE";
-                $posledniPlatba = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
-                if ($posledniPlatba->count() > 0) {
-                    $posledniPlatbaData = $posledniPlatba->fetch();
-                    $this->template->money_lastpay = ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+                $posledniPlatbaSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('spolek', 1)->order('id DESC')->limit(1);
+                $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);
+                if ($posledniPlatbaSpolek->count() > 0) {
+                    $posledniPlatbaData = $posledniPlatbaSpolek->fetch();
+                    $this->template->money_lastpay_spolek = ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
                 } else {
-                    $this->template->money_lastpay = "?";
+                    $this->template->money_lastpay_spolek = "?";
+                }
+                if ($posledniPlatbaDruzstvo->count() > 0) {
+                    $posledniPlatbaData = $posledniPlatbaDruzstvo->fetch();
+                    $this->template->money_lastpay_druzstvo = ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+                } else {
+                    $this->template->money_lastpay_druzstvo = "?";
                 }
                 $posledniAktivace = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
                 if ($posledniAktivace->count() > 0) {
@@ -144,15 +151,21 @@ class UzivatelPresenter extends BasePresenter
                 } else {
                     $this->template->money_lastact = "?";
                 }
-                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
-                if (!$stavUctu || $stavUctu == '') {
-                    $stavUctu = 0;
+                $stavUctuSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->sum('castka');
+                if (!$stavUctuSpolek || $stavUctuSpolek == '') {
+                    $stavUctuSpolek = 0;
+                }
+                $stavUctuDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
+                if (!$stavUctuDruzstvo || $stavUctuDruzstvo == '') {
+                    $stavUctuDruzstvo = 0;
                 }
 
                 if ($uzivatel->kauce_mobil > 0) {
-                    $this->template->money_bal = ($stavUctu - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
+                    $this->template->money_bal_spolek = ($stavUctuSpolek - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
+                    $this->template->money_bal_druzstvo = ($stavUctuDruzstvo - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
                 } else {
-                    $this->template->money_bal = $stavUctu;
+                    $this->template->money_bal_spolek = $stavUctuSpolek;
+                    $this->template->money_bal_druzstvo = $stavUctuDruzstvo;
                 }
 
                 $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
@@ -208,8 +221,8 @@ class UzivatelPresenter extends BasePresenter
                                                     || in_array($uid, $seznamUzivatelu);
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
 
-                $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
-                $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
+                $this->template->activaceVisible = $uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 0 && (($stavUctuSpolek - $uzivatel->kauce_mobil) || ($stavUctuDruzstvo - $uzivatel->kauce_mobil)) >= $this->parameters->getVyseClenskehoPrispevku();
+                $this->template->reactivaceVisible = ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1 && (($stavUctuSpolek - $uzivatel->kauce_mobil) || ($stavUctuDruzstvo - $uzivatel->kauce_mobil)) >= $this->parameters->getVyseClenskehoPrispevku())
                                                         || ($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1);
                 $this->template->deactivaceVisible = $uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 0;
 
