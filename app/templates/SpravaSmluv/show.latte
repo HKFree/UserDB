@@ -4,10 +4,13 @@
 
 <div style="margin-top:3px;">
     {* TODO: smlouva dowlanding *}
+    <a href="{link Uzivatel:show id=>$smlouva->Uzivatel_id}" class="btn btn-default btn-sm" role="button">
+        <i class="glyphicon glyphicon-chevron-left"></i> Na uživatele
+    </a>
     <a href="{$smlouva->id}" class="btn btn-default btn-sm" role="button">
         <i class="glyphicon glyphicon-cloud-download"></i> Stáhnout
     </a>
-    <a href="{link SpravaSmluv:cancelContract}" class="btn btn-danger btn-sm" role="button">
+    <a {ifset $smlouva->kdy_ukonceno}disabled{/ifset} href="{link SpravaSmluv:cancelContract}" id="btn-cancel-contract" class="btn btn-danger btn-sm" role="button">
         <i class="glyphicon glyphicon-remove"></i> Vypovědět
     </a>
 </div>
@@ -52,6 +55,18 @@
         </tr>
 
         <tr>
+            <th>Interní poznámka</th>
+            <th>
+                <form id="poznamka-form" action="{link SpravaSmluv:updateNote}" method="post">
+                    <textarea rows="5" cols="50" name="interni-poznamka" id="txtara-interni-poznamka" placeholder="Zatím zde nic není...">{$smlouva->poznamka}</textarea>
+                </form>
+                <button form="poznamka-form" href="{$smlouva->id}" class="btn btn-success btn-sm" type="submit" role="submit">
+                    <i class="glyphicon glyphicon-cloud-upload"></i> Uložit
+                </button>
+            </th>
+        </tr>
+
+        <tr>
             <th>Podpisy</th>
             <td>
                 {if !count($podpisy)}
@@ -86,5 +101,15 @@
     </tbody>
 </table>
 
+<script>
+$('#btn-cancel-contract').on('click', function() {
+    let c = confirm("Chystáš se vypovědět smlouvu.\nTato akce NELZE vrátit.\nJsi si opravdu jistý?");
+    if (c) {
+        // Ok
+    } else {
+        // Cancel
+        event.preventDefault();
+    }
+})</script>
 
 {/block}

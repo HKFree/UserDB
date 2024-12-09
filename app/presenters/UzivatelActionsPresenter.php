@@ -128,6 +128,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionHandleSubscriberContract() {
+        // TODO: Logování změn
+
         if (!$this->getParameter('id')) {
             $this->flashMessage('Žádné id.');
             $this->redirect('UzivatelList:listall');
@@ -149,6 +151,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             'typ' => 'ucastnicka',
             'kdy_vygenerovano' => new DateTime()
         ]);
+
+        // ZDE CALL SCRIPT
 
         $this->flashMessage('Vyrobena smlouva s číslem ' . $this->database->getInsertId());
         // Tady call na generaci nove smlouvy a odeslani

@@ -4,7 +4,6 @@ namespace App\Presenters;
 
 use App\Model;
 use DateTime;
-use Nette\Application\Attributes\Parameter;
 
 class SpravaSmluvPresenter extends BasePresenter
 {
@@ -19,14 +18,36 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->podpis = $podpis;
     }
 
-    public function renderShow()
-    {
-        // TODO: ACCESS CONTROL NA SMLOUVY
-
-        if (!$this->getParameter('id')) {
+    // Zkontroluje ze jsme dostali ID a existuje smlouva s timto ID
+    private function idAndContractExists($contract_id) {
+        if (
+            !(isset($contract_id) && $this->smlouva->find($contract_id))
+        ) {
             $this->flashMessage('Nezname ID smlouvy.');
-            $this->redirect('UzivatelList:listall');
+            $this->redirect('Homepage:default');
         }
+    }
+
+    private function userCanChange(int $contract_id) {
+        // TODO: Dodelat tuto logiku
+        if (false) {
+            $this->flashMessage('❌ Na tuhle smlouvy ty šmatlat nemůžeš.', 'danger');
+            $this->redirect('Homepage:default');
+        }
+    }
+
+    private function userCanView(int $contract_id) {
+        // TODO: Dodelat tuto logiku
+        if (false) {
+            $this->flashMessage('❌ Na tuhle smlouvy ty koukat nemůžeš.', 'danger');
+            $this->redirect('Homepage:default');
+        }
+    }
+
+    public function renderShow() {
+        $contract_id = $this->getParameter('id');
+        $this->idAndContractExists($contract_id);
+        $this->userCanView($contract_id);
 
         $this->smlouva_id = $this->getParameter('id');
 
@@ -37,8 +58,60 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->template->podpisy = $podpisy;
     }
 
-    public function parseDate(string $timestamp): DateTime
-    {
+    public function parseDate(string $timestamp): DateTime {
         return \Nette\Utils\DateTime::from($timestamp);
     }
+
+    public function actionCancelContract() {
+        // TODO: Logování změn
+
+        $contract_id = $this->getParameter('id');
+        $this->idAndContractExists($contract_id);
+        $this->userCanChange($contract_id);
+
+        $current_contract = $this->smlouva->find($contract_id);
+        if (isset($current_contract->kdy_ukonceno)) {
+            $this->flashMessage('Tato smlouva je již vypovězena. Byla vypovězena ' . $current_contract->kdy_ukonceno->format('d.m.Y \v h:m'), 'warning');
+            $this->redirect('SpravaSmluv:show');
+        }
+
+        $updated_row = $current_contract->update([
+            'kdy_ukonceno' => new DateTime
+        ]);
+
+        if ($updated_row) {
+            $this->flashMessage('Smlouva č. ' . $contract_id . ' vypovězena!');
+        } else {
+            $this->flashMessage('Chyba ve vypovezení smlouvy.', 'danger');
+        }
+        $this->redirect('SpravaSmluv:show');
+    }
+
+    public function actionUpdateNote() {
+        // TODO: Logování změn
+
+        $request = $this->getHttpRequest();
+        $contract_id = $this->getParameter('id');
+
+        if (!$request->isMethod('POST')) {
+            $this->flashMessage('Tento endpoint nepodporuje metodu ' . $request->getMethod(), 'warning');
+            $this->redirect('SpravaSmluv:show');
+        }
+
+        $this->idAndContractExists($contract_id);
+        $this->userCanChange($contract_id);
+
+        $updated_row = $this->smlouva->find($contract_id)->update([
+            'poznamka' => $request->getPost('interni-poznamka')
+        ]);
+
+        if ($updated_row) {
+            $this->flashMessage('Poznámka uložena');
+        } else {
+            $this->flashMessage('Chyba při update poznámky.', 'danger');
+        }
+        $this->redirect('SpravaSmluv:show');
+    }
+
+
 }

@@ -143,13 +143,15 @@
     <table class="table table-nonfluid table-right">
     <tbody>
       <tr>
+        <th>ID</th>
         <th>Typ</th>
         <th>Ze dne</th>
         <th>Stav</th>
       </tr>
       <tr n:foreach="$smlouvy as $smlouva">
-        <td>{$smlouva->typ}</td>
-        <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->kdy_vygenerovano->format('d.m.Y')}</a></td>
+        <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->id}</a></td>
+        <td>{$smlouva->typ|firstUpper}</td>
+        <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
         <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
       </tr>
       </tbody>
