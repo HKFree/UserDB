@@ -1,0 +1,115 @@
+{block content}
+
+<h1>{isset($smlouva->kdy_ukonceno) ? 'Vypovězená smlouva' : 'Smlouva'} č. {$id}</h1>
+
+<div style="margin-top:3px;">
+    {* TODO: smlouva dowlanding *}
+    <a href="{link Uzivatel:show id=>$smlouva->Uzivatel_id}" class="btn btn-default btn-sm" role="button">
+        <i class="glyphicon glyphicon-chevron-left"></i> Na uživatele
+    </a>
+    <a href="{$smlouva->id}" class="btn btn-default btn-sm" role="button">
+        <i class="glyphicon glyphicon-cloud-download"></i> Stáhnout
+    </a>
+    <a {ifset $smlouva->kdy_ukonceno}disabled{/ifset} href="{link SpravaSmluv:cancelContract}" id="btn-cancel-contract" class="btn btn-danger btn-sm" role="button">
+        <i class="glyphicon glyphicon-remove"></i> Vypovědět
+    </a>
+</div>
+
+<br>
+
+<table class="table table-nonfluid">
+    <tbody>
+        <tr>
+            <th>typ</th>
+            <td>{$smlouva->typ}</td>
+        </tr>
+
+        <tr>
+            <th>Uzivatel</th>
+            <td><a href="{link Uzivatel:show id=>$smlouva->Uzivatel_id}">{$smlouva->Uzivatel_id}</a></td>
+        </tr>
+
+        <tr>
+            <th>Vygenerováno</th>
+            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y \v H:h')}</td>
+        </tr>
+
+        <tr>
+            <th>Ukončeno</th>
+            <td>
+                {ifset $smlouva->kdy_ukonceno}
+                    {$smlouva->kdy_ukonceno->format('d.m.Y \v h:m')}
+                {else}
+                    - - -
+                {/ifset}
+            </td>
+        </tr>
+
+        <tr>
+            <th>Parametry smlouvy</th>
+            <th>
+                <pre>
+                    {$smlouva->parametry_smlouvy}
+                </pre>
+            </th>
+        </tr>
+
+        <tr>
+            <th>Interní poznámka</th>
+            <th>
+                <form id="poznamka-form" action="{link SpravaSmluv:updateNote}" method="post">
+                    <textarea rows="5" cols="50" name="interni-poznamka" id="txtara-interni-poznamka" placeholder="Zatím zde nic není...">{$smlouva->poznamka}</textarea>
+                </form>
+                <button form="poznamka-form" href="{$smlouva->id}" class="btn btn-success btn-sm" type="submit" role="submit">
+                    <i class="glyphicon glyphicon-cloud-upload"></i> Uložit
+                </button>
+            </th>
+        </tr>
+
+        <tr>
+            <th>Podpisy</th>
+            <td>
+                {if !count($podpisy)}
+                    ❌ Zatím žádné podpisy
+                {/if}
+                <ol>
+                {foreach $podpisy as $podpis}
+                    <li>
+                        za {$podpis->smluvni_strana} {$podpis->jmeno}:
+                        {if isset($podpis->kdy_podepsano)}
+                            ✅ podepsáno
+                            <span title="{$podpis->kdy_podepsano->format('d F Y H:h:s')}">
+                                {$podpis->kdy_podepsano->format('d.m.Y')}
+                            </span>
+                        {/if}
+                        {if isset($podpis->kdy_odmitnuto)}
+                            {* Zde predpokladame ze kdy_zruseno nemuze byt v budoucnosti *}
+                                    ⚠️ tento podpis byl <b>odmítnut</b>
+                                    <span title="{$podpis->kdy_odmitnuto->format('d F Y H:h:s')}">
+                                        {$podpis->kdy_odmitnuto->format('d.m.Y')}
+                                    </span>
+                        {/if}
+                        {if !isset($podpis->kdy_odmitnuto) && !isset($podpis->kdy_podepsano)}
+                            ⏳ ještě nepodapsáno
+                        {/if}
+                    </li>
+                {/foreach}
+                </ol>
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+
+<script>
+$('#btn-cancel-contract').on('click', function() {
+    let c = confirm("Chystáš se vypovědět smlouvu.\nTato akce NELZE vrátit.\nJsi si opravdu jistý?");
+    if (c) {
+        // Ok
+    } else {
+        // Cancel
+        event.preventDefault();
+    }
+})</script>
+
+{/block}

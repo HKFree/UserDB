@@ -5,6 +5,8 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use App\Services;
+use DateInterval;
+use DateTime;
 use Tracy\Debugger;
 
 /**
@@ -16,9 +18,11 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $uzivatel;
     private $pdfGenerator;
     private $mailService;
+    private $smlouva;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel)
+    public function __construct(private Nette\Database\Connection $database, Model\Smlouva $smlouva, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel)
     {
+        $this->smlouva = $smlouva;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
@@ -105,5 +109,53 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
             }
         }
+    }
+
+    private function checkTimeSinceLastGenerateContract(string $interval = 'PT5M') {
+        $user_id = $this->getParameter('id');
+
+        $last_generated = $this->smlouva->findAll()
+            ->where('Uzivatel_id', $user_id)->order('kdy_vygenerovano DESC')->limit(1)->fetch();
+
+        $last_generated_datetime = \Nette\Utils\DateTime::from($last_generated['kdy_vygenerovano']);
+        $half_hour_ago = (new DateTime())
+            ->sub(new DateInterval($interval));
+
+        if ($half_hour_ago < $last_generated_datetime) {
+            $this->flashMessage('Od generace poslední smlouvy neuběhlo ani 5 minut. To bude chyba...');
+            $this->redirect('Uzivatel:show', array('id' => $user_id));
+        }
+    }
+
+    public function actionHandleSubscriberContract() {
+        // TODO: Logování změn
+
+        if (!$this->getParameter('id')) {
+            $this->flashMessage('Žádné id.');
+            $this->redirect('UzivatelList:listall');
+        }
+
+        $user_id = $this->getParameter('id');
+        $current_user = $this->uzivatel->find($user_id);
+
+        if (!$current_user) {
+            $this->flashMessage('Žádný uživatel s tímto id.');
+            $this->redirect('UzivatelList:listall');
+        }
+
+        // Kontrola, že od poslední generace uběhlo aspoň 15 minut...
+        $this->checkTimeSinceLastGenerateContract();
+
+        $inserted_row = $this->database->query('INSERT INTO Smlouva ?', [
+            'Uzivatel_id' => $user_id,
+            'typ' => 'ucastnicka',
+            'kdy_vygenerovano' => new DateTime()
+        ]);
+
+        // ZDE CALL SCRIPT
+
+        $this->flashMessage('Vyrobena smlouva s číslem ' . $this->database->getInsertId());
+        // Tady call na generaci nove smlouvy a odeslani
+        $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 }

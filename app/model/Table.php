@@ -32,7 +32,7 @@ abstract class Table
      * @param Nette\Database\Context $db
      * @throws \Nette\InvalidStateException
      */
-    public function __construct(Nette\Database\Context $db, Nette\Security\User $user)
+    public function __construct(Nette\Database\Explorer $db, Nette\Security\User $user)
     {
         $this->connection = $db;
         $this->userService = $user;
