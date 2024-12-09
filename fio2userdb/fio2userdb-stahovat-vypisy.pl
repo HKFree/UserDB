@@ -132,7 +132,7 @@ my $filename = "fio-statements-".($reimport_last_week?'last7days':'incremental')
 local $/ = undef;
 if ( $from_file )
 {
-  print "Starting $0 v$VERSION: loading [$from_file]\n";
+  print "Starting $0: loading [$from_file]\n";
   open( FILE, $from_file ) or die "Cannot open input file [$from_file]: $!";
   $file_md5sum= trim(`md5sum '$from_file' | cut -d ' ' -f 1`);
 }
@@ -148,7 +148,7 @@ else
   }
   my $url_real = $url;
   $url_real =~ s/TOKEN/$token/;
-  print "Starting $0 v$VERSION: loading [$url]\n";
+  print "Starting $0: loading [$url]\n";
 
   my $tmpfile = "/tmp/fio.transactions.00.tmp.json";
   my $cmd = "curl --output '$tmpfile' --retry 3 -s -S '$url_real'";
@@ -309,6 +309,11 @@ foreach $trxref (@trxlist)
 
   my $TypPrichoziPlatby = 1; # Nova platba
 
+  if ( trimZero($remoteAccountNo) == '7770227' &&  $remoteBankCode  == '0100' )
+  {
+    $TypPrichoziPlatby = "10"; # prichozi platba od CEZu -> preplatek na elektrice
+  }
+
   my $do_inserts= 0;
 
   if ($import_incremental)
@@ -336,9 +341,9 @@ foreach $trxref (@trxlist)
 
   if ($do_inserts)
   {
-    my $i= sprintf "INSERT INTO PrichoziPlatba (vs, ss, datum, cislo_uctu, nazev_uctu, castka, kod_cilove_banky, index_platby,
+    my $i= sprintf "INSERT INTO PrichoziPlatba (spolek, druzstvo, vs, ss, datum, cislo_uctu, nazev_uctu, castka, kod_cilove_banky, index_platby,
       zprava_prijemci, TypPrichoziPlatby_id, identifikace_uzivatele, info_od_banky)
-      VALUES( %s, %s, %s, %s,%s, %s, %s, %s,%s, %s, %s, %s)
+      VALUES( false, true, %s, %s, %s, %s,%s, %s, %s, %s,%s, %s, %s, %s)
       ON DUPLICATE KEY UPDATE datum = values(datum)",
       db_quote(trimZero($symVariable)), db_quote(trimZero($symSpecific)),
       db_quote(substr($date, 0, 10)),
@@ -384,6 +389,14 @@ db_do(sprintf "UPDATE FioDownloadedFiles SET debit_sum=%.2f, credit_sum=%.2f WHE
 db_do("COMMIT");
 db_do("UNLOCK TABLES");
 unlink "/tmp/fio2userdb_is_running";
+
+#
+# TODO1 aktualizujStavUctu https://github.com/HKFree/MoneyAPI/blob/master/bin/stahujPlatby.py#L546
+#
+
+#
+# TODO2 PripisPlatbyNaUzivatelskeKonto https://github.com/HKFree/MoneyAPI/blob/master/bin/stahujPlatby.py#L139C5-L139C35
+#
 
 exit 0;
 
