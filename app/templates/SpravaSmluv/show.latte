@@ -1,11 +1,14 @@
 {block content}
 
-<h1>{isset($smlouva->kdy_ukonceno) ? 'Ukončená smlouva' : 'Smlouva'} č. {$id}</h1>
+<h1>{isset($smlouva->kdy_ukonceno) ? 'Vypovězená smlouva' : 'Smlouva'} č. {$id}</h1>
 
 <div style="margin-top:3px;">
     {* TODO: smlouva dowlanding *}
     <a href="{$smlouva->id}" class="btn btn-default btn-sm" role="button">
         <i class="glyphicon glyphicon-cloud-download"></i> Stáhnout
+    </a>
+    <a href="{link SpravaSmluv:cancelContract}" class="btn btn-danger btn-sm" role="button">
+        <i class="glyphicon glyphicon-remove"></i> Vypovědět
     </a>
 </div>
 
@@ -25,12 +28,18 @@
 
         <tr>
             <th>Vygenerováno</th>
-            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
+            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y \v H:h')}</td>
         </tr>
 
         <tr>
             <th>Ukončeno</th>
-            <td>{$smlouva->kdy_ukonceno ?? '- - -'}</td>
+            <td>
+                {ifset $smlouva->kdy_ukonceno}
+                    {$smlouva->kdy_ukonceno->format('d.m.Y \v h:m')}
+                {else}
+                    - - -
+                {/ifset}
+            </td>
         </tr>
 
         <tr>
@@ -45,6 +54,9 @@
         <tr>
             <th>Podpisy</th>
             <td>
+                {if !count($podpisy)}
+                    ❌ Zatím žádné podpisy
+                {/if}
                 <ol>
                 {foreach $podpisy as $podpis}
                     <li>

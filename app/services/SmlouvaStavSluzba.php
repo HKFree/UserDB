@@ -30,7 +30,7 @@ class SmlouvaStavSluzba
         $datum = null;
 
         if ($konec != null) {
-            return "ukončená dne ".$konec->format('d.m.Y');
+            return "❌ ukončená dne ".$konec->format('d.m.Y');
         }
 
         foreach ($podpisy as $podpis) {
@@ -42,14 +42,14 @@ class SmlouvaStavSluzba
                 }
             }
             if ($podpis->kdy_odmitnuto != null) {
-                return "odmítnutá dne ".$podpis->kdy_odmitnuto->format('d.m.Y');
+                return "🚫 odmítnutá dne ".$podpis->kdy_odmitnuto->format('d.m.Y');
             }
         }
 
         if ($pocetPodpisu == $pocetPodepsano) {
-            return isset($datum) ?  "platná od ".$datum->format('d.m.Y') : '---';
+            return isset($datum) ?  "✅ platná od ".$datum->format('d.m.Y') : '---';
         } else {
-            return "čeká na podpis";
+            return "⏳ čeká na podpis";
         }
     }
 }
