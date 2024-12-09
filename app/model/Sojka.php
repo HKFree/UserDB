@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use Exception;
 use Nette;
 use GuzzleHttp\Client;
 
@@ -15,8 +16,7 @@ class Sojka
     */
     protected $sojkaPingerURL;
 
-    public function __construct($sojkaPingerURL)
-    {
+    public function __construct($sojkaPingerURL) {
         $this->sojkaPingerURL = $sojkaPingerURL;
     }
 
@@ -26,8 +26,7 @@ class Sojka
      * @param string[] $ips
      * @return object
      */
-    public function pingIPS($ips)
-    {
+    public function pingIPS($ips) {
         if (empty($ips)) {
             return ([]);
         }
@@ -36,10 +35,15 @@ class Sojka
 
         try {
             $r = $client->request('POST', $this->sojkaPingerURL . '?rq=pingjson', [
-                'json' => $ips
+                'json' => $ips,
+                'connect_timeout' => 3,
+                'timeout' => 5
             ]);
-        } catch (\GuzzleHttp\Exception\TransferException $e) {
-            return ([]);
+        } catch (Exception $e) {
+            return ([
+                'error' => true,
+                'reason' => $e->getMessage()
+            ]);
         }
 
         if ($r->getStatusCode() != 200) {
