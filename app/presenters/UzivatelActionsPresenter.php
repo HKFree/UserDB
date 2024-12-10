@@ -19,8 +19,10 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $pdfGenerator;
     private $mailService;
     private $smlouva;
+    private $database;
 
-    public function __construct(private Nette\Database\Connection $database, Model\Smlouva $smlouva, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel) {
+    public function __construct(\Nette\Database\Connection $database, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva) {
+        $this->database = $database;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
