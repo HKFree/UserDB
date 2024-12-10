@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7b0b30c26b6133a395981c3bc2f705ae",
+    "content-hash": "25bfd684f6ad697084bbe6a63b227675",
     "packages": [
         {
             "name": "defuse/php-encryption",
@@ -97,6 +97,93 @@
                 "sqlite"
             ],
             "time": "2018-06-29T10:30:14+00:00"
+        },
+        {
+            "name": "digitalcz/digisign",
+            "version": "v2.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/digitalcz/digisign.git",
+                "reference": "37fe3213dc8614374a2e2c67f8ab897655afb5c3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/digitalcz/digisign/zipball/37fe3213dc8614374a2e2c67f8ab897655afb5c3",
+                "reference": "37fe3213dc8614374a2e2c67f8ab897655afb5c3",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": "^8.0",
+                "php-http/discovery": "^1.13",
+                "php-http/multipart-stream-builder": "^1.1",
+                "psr/http-client": "^1.0",
+                "psr/http-message": "^1.0.1 || ^2.0",
+                "psr/simple-cache": "^1.0 || ^3.0"
+            },
+            "require-dev": {
+                "digitalcz/coding-standard": "^0.2.0",
+                "nyholm/nsa": "^1.2.1",
+                "nyholm/psr7": "^1.3",
+                "php-http/httplug": "^2.1",
+                "php-http/mock-client": "^1.3",
+                "phpstan/extension-installer": "^1.2.0",
+                "phpstan/phpstan": "^1.9.3",
+                "phpstan/phpstan-phpunit": "^1.3.2",
+                "phpstan/phpstan-strict-rules": "^1.4.4",
+                "phpunit/phpunit": "^9.5",
+                "symfony/cache": "^6.0",
+                "symfony/http-client": "^6.0",
+                "symfony/var-dumper": "^6.0"
+            },
+            "suggest": {
+                "symfony/cache": "*",
+                "symfony/http-client": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DigitalCz\\DigiSign\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Digital Solutions s.r.o.",
+                    "email": "devs@digital.cz",
+                    "homepage": "https://digital.cz",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Filip Klouček",
+                    "email": "filip.kloucek@gmail.com",
+                    "homepage": "https://github.com/fidovo",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Pavel Stejskal",
+                    "email": "spajxo@gmail.com",
+                    "homepage": "https://github.com/spajxo",
+                    "role": "Developer"
+                }
+            ],
+            "description": "DigiSign PHP library - provides communication with https://api.digisign.org in PHP via PSR-18 HTTP Client",
+            "homepage": "https://www.digisign.cz",
+            "keywords": [
+                "digi-sign",
+                "digisign",
+                "digisign.cz",
+                "digisign.org",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/digitalcz/digisign/issues",
+                "source": "https://github.com/digitalcz/digisign/tree/v2.5.0"
+            },
+            "time": "2024-10-14T10:24:15+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -2656,6 +2743,141 @@
             "time": "2017-05-13T13:41:29+00:00"
         },
         {
+            "name": "php-http/discovery",
+            "version": "1.20.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-http/discovery.git",
+                "reference": "82fe4c73ef3363caed49ff8dd1539ba06044910d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/82fe4c73ef3363caed49ff8dd1539ba06044910d",
+                "reference": "82fe4c73ef3363caed49ff8dd1539ba06044910d",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^1.0|^2.0",
+                "php": "^7.1 || ^8.0"
+            },
+            "conflict": {
+                "nyholm/psr7": "<1.0",
+                "zendframework/zend-diactoros": "*"
+            },
+            "provide": {
+                "php-http/async-client-implementation": "*",
+                "php-http/client-implementation": "*",
+                "psr/http-client-implementation": "*",
+                "psr/http-factory-implementation": "*",
+                "psr/http-message-implementation": "*"
+            },
+            "require-dev": {
+                "composer/composer": "^1.0.2|^2.0",
+                "graham-campbell/phpspec-skip-example-extension": "^5.0",
+                "php-http/httplug": "^1.0 || ^2.0",
+                "php-http/message-factory": "^1.0",
+                "phpspec/phpspec": "^5.1 || ^6.1 || ^7.3",
+                "sebastian/comparator": "^3.0.5 || ^4.0.8",
+                "symfony/phpunit-bridge": "^6.4.4 || ^7.0.1"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "Http\\Discovery\\Composer\\Plugin",
+                "plugin-optional": true
+            },
+            "autoload": {
+                "psr-4": {
+                    "Http\\Discovery\\": "src/"
+                },
+                "exclude-from-classmap": [
+                    "src/Composer/Plugin.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Márk Sági-Kazár",
+                    "email": "mark.sagikazar@gmail.com"
+                }
+            ],
+            "description": "Finds and installs PSR-7, PSR-17, PSR-18 and HTTPlug implementations",
+            "homepage": "http://php-http.org",
+            "keywords": [
+                "adapter",
+                "client",
+                "discovery",
+                "factory",
+                "http",
+                "message",
+                "psr17",
+                "psr7"
+            ],
+            "support": {
+                "issues": "https://github.com/php-http/discovery/issues",
+                "source": "https://github.com/php-http/discovery/tree/1.20.0"
+            },
+            "time": "2024-10-02T11:20:13+00:00"
+        },
+        {
+            "name": "php-http/multipart-stream-builder",
+            "version": "1.4.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-http/multipart-stream-builder.git",
+                "reference": "10086e6de6f53489cca5ecc45b6f468604d3460e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-http/multipart-stream-builder/zipball/10086e6de6f53489cca5ecc45b6f468604d3460e",
+                "reference": "10086e6de6f53489cca5ecc45b6f468604d3460e",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1 || ^8.0",
+                "php-http/discovery": "^1.15",
+                "psr/http-factory-implementation": "^1.0"
+            },
+            "require-dev": {
+                "nyholm/psr7": "^1.0",
+                "php-http/message": "^1.5",
+                "php-http/message-factory": "^1.0.2",
+                "phpunit/phpunit": "^7.5.15 || ^8.5 || ^9.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Http\\Message\\MultipartStream\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com"
+                }
+            ],
+            "description": "A builder class that help you create a multipart stream",
+            "homepage": "http://php-http.org",
+            "keywords": [
+                "factory",
+                "http",
+                "message",
+                "multipart stream",
+                "stream"
+            ],
+            "support": {
+                "issues": "https://github.com/php-http/multipart-stream-builder/issues",
+                "source": "https://github.com/php-http/multipart-stream-builder/tree/1.4.2"
+            },
+            "time": "2024-09-04T13:22:54+00:00"
+        },
+        {
             "name": "psr/container",
             "version": "2.0.2",
             "source": {
@@ -2917,6 +3139,57 @@
                 "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
             "time": "2024-09-11T13:17:53+00:00"
+        },
+        {
+            "name": "psr/simple-cache",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/simple-cache.git",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/simple-cache/zipball/764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\SimpleCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interfaces for simple caching",
+            "keywords": [
+                "cache",
+                "caching",
+                "psr",
+                "psr-16",
+                "simple-cache"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/simple-cache/tree/3.0.0"
+            },
+            "time": "2021-10-29T13:26:27+00:00"
         },
         {
             "name": "ralouphie/getallheaders",

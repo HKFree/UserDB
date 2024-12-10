@@ -22,3 +22,7 @@ nbproject/private/
 # PHP CS Fixer
 .php-cs-fixer.cache
 .php_cs.cache
+
+# Tyka se digisign API:
+.env*
+trace*json
