@@ -11,11 +11,11 @@ CREATE TABLE Smlouva (
     auditni_stopa_nazev varchar(1000),
     auditni_stopa_content_type varchar(256),
     auditni_stopa_path varchar(1000),
-    poznamka text default '',
+    poznamka text NULL default NULL,
     kdy_vygenerovano timestamp NULL default CURRENT_TIMESTAMP,
     kdy_ukonceno timestamp NULL default NULL,
     CONSTRAINT `fk_uzivatel_id` FOREIGN KEY (uzivatel_id) REFERENCES Uzivatel (id)
-)AUTO_INCREMENT = 150000;
+) AUTO_INCREMENT = 150000;
 
 CREATE TABLE PodpisSmlouvy (
     id INT AUTO_INCREMENT PRIMARY KEY,
