@@ -32,10 +32,9 @@ if (!$smlouva) {
 $uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
 $cestneClenstviUzivatele = $container->getByType('App\Model\CestneClenstviUzivatele');
 
-sleep(2); // to trochu zpřehlední logy
+sleep(1); // to trochu zpřehlední logy
 
-// $uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
-$uzivatel = $container->getByType('\App\Model\Uzivatel')->find(1001);
+$uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
 $cestneClenstviUzivatele = $container->getByType('App\Model\CestneClenstviUzivatele');
 
 print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
@@ -78,51 +77,83 @@ if ($cestneClenstviUzivatele->getHasCC($uzivatel->id)) {
     $cenaString = sprintf('0 Kč (zdarma)');
 }
 
+$parametrySmlouvy = [
+  'nazev1' => $jmenoString,
+  'datum_narozeni' => $uzivatel->datum_narozeni,
+  'email' => $uzivatel->email,
+  'telefon' => $uzivatel->telefon,
+  'adresa' => $adresaString,
+  'uid' => (string) $uzivatel->id,
+];
+$smlouva->update(['parametry_smlouvy' => json_encode($parametrySmlouvy, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)]);
+
 $krok = 0;
 
 printf("Krok %u: check template\n", ++$krok);
 $template = $dgs->envelopeTemplates()->get($templateId);
-printf("Template %s name: \"%s\" file: %s\n", $template->id, $template->name, $template->documents[0]->name);
+printf("Template %s name: \"%s\" file: %s\n", $template->id, $template->title, $template->documents[0]->name);
+$smlouva->update(['sablona' => $template->title]);
+trace_to_file('ttt', $template);
 
 printf("Krok %u: create envelope from template\n", ++$krok);
 $envelope = $dgs->envelopeTemplates()->use($templateId);
 $envelopeId = $envelope->id;
 
-printf("Envelope: https://app.digisign.org/selfcare/envelopes/%s/detail", $envelopeId);
+printf("Envelope: https://app.digisign.org/selfcare/envelopes/%s/detail\n", $envelopeId);
+printf("Krok %u: UPDATE Smlouva: externi_id=%s\n", ++$krok, $envelopeId);
+$smlouva->update(['externi_id' => $envelopeId]);
 
 $envelope = $ENVELOPES->get($envelopeId);
 
-printf("Krok %u: document name obsahuje UID\n", ++$krok);
 $doc1 = $ENVELOPES->documents($envelope)->get($envelope->documents[0]->id);
-$ENVELOPES->documents($envelope)->update($doc1->id, [
-  'name' => str_replace('template', "uid{$uzivatel->id}", $doc1->name)
-]);
+$documentName = str_replace('template', "{$smlouva_id}_uid{$uzivatel->id}", $doc1->name);
 
-printf("Krok %u: envelope subject obsahuje jmeno+prijmeni\n", ++$krok);
+printf("Krok %u: document name: %s\n", ++$krok, $documentName);
+$ENVELOPES->documents($envelope)->update($doc1->id, [  'name' => $documentName]);
+
+printf("Krok %u: UPDATE Smlouva: podepsany_dokument=%s\n", ++$krok, $documentName);
+$smlouva->update(['podepsany_dokument_nazev' => $documentName]);
+$smlouva->update(['podepsany_dokument_content_type' => 'application/pdf']);
+
+$emailSubject = $envelope->emailSubject . ' ' . $jmenoString . ' ' . $uzivatel->firma_nazev;
+printf("Krok %u: envelope subject: \"%s\"\n", ++$krok, $emailSubject);
 $ENVELOPES->update($envelopeId, [
-  'emailSubject' => $envelope->emailSubject . ' ' . $jmenoString . ' ' . $uzivatel->firma_nazev,
+  'emailSubject' => $emailSubject,
 ]);
 
-printf("Krok %u: recipient details obsahuje adresu, cenu, uid\n", ++$krok);
-$recipient_details = [
-  'name' => $jmenoString,
-  'birthdate' => $uzivatel->datum_narozeni,
-  'email' => $uzivatel->email,
-  'mobile' => $uzivatel->telefon,
-  'address' => $adresaString,
-  'contractingParty' => (string) $uzivatel->id,
-  'emailBody' => str_replace(
-      ['{UID}',        '{cena}',   '{adresa}'],
-      [$uzivatel->id, $cenaString, $adresaString],
-      $envelope->emailBody
-  ),
-];
-// print_r($recipient_details);
+if ($uzivatel->TypPravniFormyUzivatele->text == "PO") {
+    $parametrySmlouvy['nazev2'] = sprintf("%s, IČO: %s", $uzivatel->firma_nazev, $uzivatel->firma_ico);
+}
+
 $recipient1 = $ENVELOPES->recipients($envelope)->get($envelope->recipients[0]->id);
+printf("Krok %u: recipient details: %s=\"%s\"\n", ++$krok, 'name', $parametrySmlouvy['nazev1']);
+printf("Krok %u: recipient details: %s=\"%s\"\n", ++$krok, 'birthdate', $parametrySmlouvy['datum_narozeni']);
+printf("Krok %u: recipient details: %s=\"%s\"\n", ++$krok, 'addresa', $parametrySmlouvy['adresa']);
+printf("Krok %u: recipient details: %s=\"%s\"\n", ++$krok, 'address', $adresaString);
+printf("Krok %u: recipient details: %s=\"%s\"\n", ++$krok, 'contractingParty', $parametrySmlouvy['uid']);
 $recipient2 = $ENVELOPES->recipients($envelope)->update(
     $recipient1->id,
-    $recipient_details
+    [
+      'name' => $parametrySmlouvy['nazev1'],
+      'birthdate' => $parametrySmlouvy['datum_narozeni'],
+      'email' => $parametrySmlouvy['email'],
+      'address' => $parametrySmlouvy['adresa'],
+      'contractingParty' => $parametrySmlouvy['uid'],
+      'emailBody' => str_replace(
+          ['{UID}',        '{cena}',   '{adresa}'],
+          [$uzivatel->id, $cenaString, $adresaString],
+          $envelope->emailBody
+      ),
+    ]
 );
+
+printf("Krok %u: INSERT INTO PodmisSmlouvy\n", ++$krok);
+$Podpis = $container->getByType('\App\Model\PodpisSmlouvy');
+// Podpisy za družstvo jsou hardcoded v šabloně
+$Podpis->insert(['Smlouva_id' => $smlouva_id, 'smluvni_strana' => 'druzstvo', 'jmeno' => 'Vojtěch Pithart', 'kdy_podepsano' => new DateTime()]);
+$Podpis->insert(['Smlouva_id' => $smlouva_id, 'smluvni_strana' => 'druzstvo', 'jmeno' => 'Petr Mikeš', 'kdy_podepsano' => new DateTime()]);
+// Podpis účastníka
+$Podpis->insert(['Smlouva_id' => $smlouva_id, 'smluvni_strana' => 'ucastnik', 'jmeno' => $jmenoString, 'kdy_podepsano' => null]);
 
 printf("Krok %u: create tags {jmeno_prijmeni}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
@@ -173,8 +204,7 @@ if ($uzivatel->TypPravniFormyUzivatele->text == "FO") {
       'label' => 'datum_narozeni_nebo_firma',
       "type" => "text",
     ]);
-    $firma = sprintf("%s, IČO: %s", $uzivatel->firma_nazev, $uzivatel->firma_ico);
-    set_tag_value($envelope, 'datum_narozeni_nebo_firma', $firma);
+    set_tag_value($envelope, 'datum_narozeni_nebo_firma', $parametrySmlouvy['firma']);
 }
 printf("Krok %u: create tags {email}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
@@ -194,10 +224,11 @@ $ENVELOPES->tags($envelope)->create([
   "placeholder" => '{telefon}',
   'readonly' => true,
   'required' => false,
-  'label' => 'Telefon',
-  "recipientClaim" => "mobile",
+  'label' => 'telefon',
+  // "recipientClaim" => "mobile",
   "type" => "text",
 ]);
+set_tag_value($envelope, 'telefon', $parametrySmlouvy['telefon']);
 printf("Krok %u: create tags {adresa}\n", ++$krok);
 $ENVELOPES->tags($envelope)->create([
   'document' => $doc1,

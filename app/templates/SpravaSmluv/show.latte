@@ -25,8 +25,18 @@
         </tr>
 
         <tr>
-            <th>Uzivatel</th>
+            <th>Uživatel</th>
             <td><a href="{link Uzivatel:show id=>$smlouva->Uzivatel->id}">{$smlouva->uzivatel->id} {$smlouva->uzivatel->firma_nazev} {$smlouva->uzivatel->jmeno} {$smlouva->uzivatel->prijmeni}</a></td>
+        </tr>
+
+        <tr>
+            <th>Ze šablony</th>
+            <td>{$smlouva->sablona}</td>
+        </tr>
+
+        <tr>
+            <th>Soubor</th>
+            <td>{$smlouva->podepsany_dokument_nazev} <small><i>{$smlouva->podepsany_dokument_content_type}</i></small></td>
         </tr>
 
         <tr>
@@ -47,18 +57,16 @@
 
         <tr>
             <th>Parametry smlouvy</th>
-            <th>
-                <pre>
-                    {$smlouva->parametry_smlouvy}
-                </pre>
-            </th>
+            <td>
+                <pre>{$smlouva->parametry_smlouvy}</pre>
+            </td>
         </tr>
 
         <tr>
-            <th>Interní poznámka</th>
+            <th>Interní poznámka<br/></th>
             <th>
                 <form id="poznamka-form" action="{link SpravaSmluv:updateNote}" method="post">
-                    <textarea rows="5" cols="50" name="interni-poznamka" id="txtara-interni-poznamka" placeholder="Zatím zde nic není...">{$smlouva->poznamka}</textarea>
+                    <textarea rows="5" cols="50" name="interni-poznamka" id="txtara-interni-poznamka">{$smlouva->poznamka}</textarea>
                 </form>
                 <button form="poznamka-form" href="{$smlouva->id}" class="btn btn-success btn-sm" type="submit" role="submit">
                     <i class="glyphicon glyphicon-cloud-upload"></i> Uložit
