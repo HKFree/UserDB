@@ -30,36 +30,30 @@ class IPAdresa extends Table
 
     private $cryptoService;
 
-    public function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, CryptoSluzba $cryptoService, Nette\Database\Context $db, Nette\Security\User $user)
-    {
+    public function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, CryptoSluzba $cryptoService, Nette\Database\Context $db, Nette\Security\User $user) {
         parent::__construct($db, $user);
         $this->igw1IpCheckerUrl = $igw1IpCheckerUrl;
         $this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
         $this->cryptoService = $cryptoService;
     }
 
-    public function getSeznamIPAdres()
-    {
+    public function getSeznamIPAdres() {
         return ($this->findAll());
     }
 
-    public function findIp(array $by)
-    {
+    public function findIp(array $by) {
         return ($this->findOneBy($by));
     }
 
-    public function getSeznamIPAdresZacinajicich($prefix)
-    {
+    public function getSeznamIPAdresZacinajicich($prefix) {
         return $this->findAll()->where("ip_adresa LIKE ?", $prefix.'%')->fetchPairs('ip_adresa');
     }
 
-    public function getIPAdresa($id)
-    {
+    public function getIPAdresa($id) {
         return ($this->find($id));
     }
 
-    public function getDuplicateIP($ip, $id)
-    {
+    public function getDuplicateIP($ip, $id) {
         $existujici = $this->findAll()->where('ip_adresa = ?', $ip)->where('id != ?', $id)->fetch();
         if ($existujici) {
             return $existujici->ip_adresa;//$existujici->ref('Uzivatel', 'Uzivatel_id')->id;
@@ -73,13 +67,11 @@ class IPAdresa extends Table
      * @param array $ids ipId pro které chceme zjistit ipAdresy
      * @return array pole ipId=>ipAdresa
      */
-    public function getIPzDB(array $ids)
-    {
+    public function getIPzDB(array $ids) {
         return ($this->getTable()->where("id", $ids)->fetchPairs("id", "ip_adresa"));
     }
 
-    public function deleteIPAdresy(array $ips)
-    {
+    public function deleteIPAdresy(array $ips) {
         if (count($ips) > 0) {
             return ($this->delete(array('id' => $ips)));
         } else {
@@ -87,13 +79,11 @@ class IPAdresa extends Table
         }
     }
 
-    public function validateIP($ip)
-    {
+    public function validateIP($ip) {
         return (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
     }
 
-    public function getIPForm(&$ip, $typyZarizeni, $apMode = false)
-    {
+    public function getIPForm(&$ip, $typyZarizeni, $apMode = false) {
         $ip->addHidden('id')->setAttribute('class', 'id ip');
         $ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
         $ip->addText('hostname', 'Hostname', 11)->setAttribute('class', 'hostname ip')->setAttribute('placeholder', 'Hostname');
@@ -121,8 +111,7 @@ class IPAdresa extends Table
      * @param null $editLink link na editaci AP nebo Uzivatele, pokud zobrazujeme tabulku v detailu APcka nebo Uzivatele, jinak null
      * @return mixed
      */
-    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink = null, $igwCheck = false, $linker = null)
-    {
+    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink = null, $igwCheck = false, $linker = null) {
         $adresyTab = Html::el('table')->setClass('table table-striped');
 
         $this->addIPTableHeader($adresyTab, $canViewCredentialsOrEdit, false, $igwCheck);
@@ -136,8 +125,7 @@ class IPAdresa extends Table
         return $adresyTab;
     }
 
-    public function addIPTableHeader($adresyTab, $canViewCredentialsOrEdit = false, $subnetMode = false, $igwCheck = false)
-    {
+    public function addIPTableHeader($adresyTab, $canViewCredentialsOrEdit = false, $subnetMode = false, $igwCheck = false) {
         $tr = $adresyTab->create('tr');
 
         $tr->create('th')->setText('IP');
@@ -168,16 +156,14 @@ class IPAdresa extends Table
      * @param Nette\Utils\Html $tr
      * @param  Nette\Utils\Html[] $buttons
      */
-    private function addActionButtonsTd($tr, $buttons)
-    {
+    private function addActionButtonsTd($tr, $buttons) {
         $td = $tr->create('td');
         foreach ($buttons as $b) {
             $td->addHtml($b);
         }
     }
 
-    public function file_get_contents_curl($url)
-    {
+    public function file_get_contents_curl($url) {
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_AUTOREFERER, true);
@@ -192,8 +178,7 @@ class IPAdresa extends Table
         return $data;
     }
 
-    public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo = null, $subnetLink = null, $wewimoLink = null, $editLink = null, $igwCheck = false, $linker = null)
-    {
+    public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo = null, $subnetLink = null, $wewimoLink = null, $editLink = null, $igwCheck = false, $linker = null) {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $ipTitle = $subnetModeInfo ? $subnetModeInfo['ipTitle'] : $ip->ip_adresa;
@@ -549,8 +534,7 @@ class IPAdresa extends Table
      * @param string $ipsubnet ip address subnet
      * @return array of ips
      */
-    public function getListOfIPFromSubnet($ipsubnet)
-    {
+    public function getListOfIPFromSubnet($ipsubnet) {
         $genaddresses = array();
         if (isset($ipsubnet) && !empty($ipsubnet)) {
             if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $ipsubnet)) {
@@ -571,8 +555,7 @@ class IPAdresa extends Table
      * @param string $iprange ip address range
      * @return array of ips
      */
-    public function getListOfIPFromRange($iprange)
-    {
+    public function getListOfIPFromRange($iprange) {
         $genaddresses = array();
         if (isset($iprange) && !empty($iprange)) {
             if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $iprange)) {
@@ -592,13 +575,11 @@ class IPAdresa extends Table
      * @param string[] $macs
      * @return object[] asic. pole mac => zaznam pro danou mac adresu
      */
-    public function getIpsByMacsMap(array $macs)
-    {
+    public function getIpsByMacsMap(array $macs) {
         return $this->getTable()->where('mac_adresa', $macs)->fetchPairs('mac_adresa');
     }
 
-    public function getAPOfIP($id)
-    {
+    public function getAPOfIP($id) {
         $ip = $this->getIPAdresa($id);
         if ($ip->Ap_id) {
             return ($ip->Ap_id);
@@ -607,13 +588,11 @@ class IPAdresa extends Table
         }
     }
 
-    public function getIpsMap(array $ips)
-    {
+    public function getIpsMap(array $ips) {
         return $this->getTable()->where('ip_adresa', $ips)->fetchPairs('ip_adresa');
     }
 
-    public function getLastIpsForMacs(array $macs)
-    {
+    public function getLastIpsForMacs(array $macs) {
         $arrayByMac = []; // asoc. array (key=mac) of arrays (records)
         foreach ($this->getTable()->where('w_client_mac', $macs)->fetchAll() as $row) {
             $key = $row['w_client_mac'];
@@ -625,8 +604,7 @@ class IPAdresa extends Table
         return $arrayByMac;
     }
 
-    public function updateWewimoStatsHook($wewimoDevices)
-    {
+    public function updateWewimoStatsHook($wewimoDevices) {
         foreach ($wewimoDevices as $wewimoData) {
             foreach ($wewimoData['interfaces'] as $interface) {
                 $updateFields = [

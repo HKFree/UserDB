@@ -14,8 +14,7 @@ class BankovniUcet extends Table
     */
     protected $tableName = 'BankovniUcet';
 
-    public function getBankovniUcty()
-    {
+    public function getBankovniUcty() {
         return ($this->findAll());
     }
 }

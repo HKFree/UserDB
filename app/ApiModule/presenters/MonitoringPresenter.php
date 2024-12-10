@@ -11,15 +11,13 @@ class MonitoringPresenter extends ApiPresenter
     private $ipAdresa;
     private $ap;
 
-    public function __construct(Model\TypZarizeni $typZarizeni, Model\IPAdresa $iPAdresa, Model\AP $ap)
-    {
+    public function __construct(Model\TypZarizeni $typZarizeni, Model\IPAdresa $iPAdresa, Model\AP $ap) {
         $this->typZarizeni = $typZarizeni;
         $this->ipAdresa = $iPAdresa;
         $this->ap = $ap;
     }
 
-    public function actionGetTypyZarizeni()
-    {
+    public function actionGetTypyZarizeni() {
         $typyZarizení = $this->typZarizeni->getTypyZarizeni();
 
         $out = array();
@@ -31,8 +29,7 @@ class MonitoringPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'typyZarizeni' => $out]));
     }
 
-    public function actionGetZarizeni($typ, $uzivatele = 0, $ap = null)
-    {
+    public function actionGetZarizeni($typ, $uzivatele = 0, $ap = null) {
         parent::checkApID($ap);
 
         $typZarizeni = $this->typZarizeni->find($typ);

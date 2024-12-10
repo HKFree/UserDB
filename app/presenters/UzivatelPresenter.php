@@ -44,31 +44,10 @@ class UzivatelPresenter extends BasePresenter
     private $idsConnector;
     private $aplikaceToken;
 
-    public function __construct(
-        Services\MailService $mailsvc,
-        Services\PdfGenerator $pdf,
-        CryptoSluzba $cryptosvc,
-        Services\SmlouvaStavSluzba $smlouvaStavSluzba,
-        Model\PovoleneSMTP $alowedSMTP,
-        Model\DNat $dnat,
-        Model\Parameters $parameters,
-        Model\SloucenyUzivatel $slUzivatel,
-        Model\Subnet $subnet,
-        Model\SpravceOblasti $prava,
-        Model\CestneClenstviUzivatele $cc,
-        Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
-        Model\TypClenstvi $typClenstvi,
-        Model\ZpusobPripojeni $zpusobPripojeni,
-        Model\TechnologiePripojeni $technologiePripojeni,
-        Model\Uzivatel $uzivatel,
-        Model\IPAdresa $ipAdresa,
-        Model\AP $ap,
-        Model\TypZarizeni $typZarizeni,
-        Model\Log $log,
-        Model\IdsConnector $idsConnector,
-        Model\AplikaceToken $aplikaceToken,
-        Model\Smlouva $smlouva
-    ) {
+    /** @var Components\LogTableFactory @inject **/
+    public $logTableFactory;
+
+    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, CryptoSluzba $cryptosvc, Model\PovoleneSMTP $alowedSMTP, Model\DNat $dnat, Model\Parameters $parameters, Model\SloucenyUzivatel $slUzivatel, Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\IdsConnector $idsConnector, Model\AplikaceToken $aplikaceToken) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -94,8 +73,7 @@ class UzivatelPresenter extends BasePresenter
         $this->aplikaceToken = $aplikaceToken;
     }
 
-    public function sendNotificationEmail($idUzivatele)
-    {
+    public function sendNotificationEmail($idUzivatele) {
         try {
             $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
             $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
@@ -104,8 +82,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function sendRegistrationEmail($idUzivatele)
-    {
+    public function sendRegistrationEmail($idUzivatele) {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
 
         $hash = base64_encode($idUzivatele.'-'.md5($this->context->parameters['salt'].$newUser->zalozen));
@@ -123,8 +100,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderConfirm()
-    {
+    public function renderConfirm() {
         if ($this->getParameter('id')) {
             list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
 
@@ -144,8 +120,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderShow()
-    {
+    public function renderShow() {
         if ($this->getParameter('id')) {
             $uid = $this->getParameter('id');
             if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
@@ -243,13 +218,11 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function createComponentLogTable()
-    {
+    public function createComponentLogTable() {
         return $this->logTableFactory->create($this);
     }
 
-    public function renderEdit()
-    {
+    public function renderEdit() {
         if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
             $seznamUzivatelu = [];
@@ -271,8 +244,106 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function validateUzivatelForm($form)
-    {
+    protected function createComponentUzivatelForm() {
+        $typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id', 'text');
+        $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id', 'text');
+        $zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id', 'text');
+        $technologiePripojeni = $this->technologiePripojeni->getTechnologiePripojeni()->fetchPairs('id', 'text');
+
+        $aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
+
+        $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
+        if (count($oblastiSpravce) > 0) {
+            $aps0 = $this->oblast->formatujOblastiSAP($oblastiSpravce);
+            $aps = $aps0 + $aps;
+        }
+        //\Tracy\Debugger::barDump($aps);
+
+        $form = new Form($this, 'uzivatelForm');
+        $form->addHidden('id');
+        $form->addSelect('Ap_id', 'Oblast - AP', $aps);
+        $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::FILLED, 'Vyberte typ právní formy');
+        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte název firmy');
+        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte IČ');
+        //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
+        $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
+        $form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
+        $form->addDate('datum_narozeni', 'Datum narození:')
+        ->addRule($form::Max, 'Nesmí být v budoucnu', new \Nette\Utils\DateTime('-1 hours'));
+        $form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
+        $form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');
+        $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::FILLED)->addRule(Form::EMAIL, 'Musíte zadat platný email');
+        $form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
+        if (count($this->spravceOblasti->getOblastiSpravce($this->getParameter('id'))) > 0) {
+            $form->addCheckBox('publicPhone', 'Telefon je viditelný pro členy', 30)->setDefaultValue(true);
+        }
+        $form->addText('cislo_clenske_karty', 'Číslo členské karty', 30);
+        $form->addText('kauce_mobil', 'Kauce na mobilní tarify', 30);
+        $form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
+        $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
+        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
+        $form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
+        $form->addTextArea('poznamka', 'Poznámka', 50, 12);
+        $form->addTextArea('gpg', 'GPG klíč', 50, 12);
+        $form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
+        $form->addSelect('index_potizisty', 'Index spokojenosti člena', array(0 => 0,1 => 1,2 => 2,3 => 3,4 => 4,5 => 5))->setDefaultValue(0);
+        $form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
+
+        $form->addText('ipsubnet', 'Přidat všechny ip ze subnetu (x.y.z.w/c)', 20);
+        $form->addText('iprange', 'Přidat rozsah ip (x.y.z.w-x.y.z.w)', 32);
+
+        $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
+        $data = $this->ipAdresa;
+        $ips = $form->addDynamic('ip', function (Container $ip) use ($data, $typyZarizeni, $form) {
+            $data->getIPForm($ip, $typyZarizeni);
+
+            $ip->addSubmit('remove', '– Odstranit IP')
+                ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+                ->setValidationScope(null)
+                ->addRemoveOnClick();
+        }, ($this->getParameter('id') > 0 ? 0 : 1));
+
+        $ips->addSubmit('add', '+ Přidat další IP')
+            ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
+            ->setValidationScope(null)
+            ->addCreateOnClick(true, function (Container $replicator, Container $ip) {
+                $ip->setValues(array('internet' => 1));
+                //\Tracy\Debugger::barDump($ip);
+            });
+
+        $form->addSubmit('save', 'Uložit')
+            ->setAttribute('class', 'btn btn-success btn-white default btn-edit-save');
+        $form->onSuccess[] = array($this, 'uzivatelFormSucceded');
+        $form->onValidate[] = array($this, 'validateUzivatelForm');
+
+        $form->setDefaults(array(
+            'TypClenstvi_id' => 3,
+            'TypPravniFormyUzivatele_id' => 1,
+        ));
+
+        // pokud editujeme, nacteme existujici ipadresy
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        if ($this->getParameter('id') && !$submitujeSe) {
+            $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
+            if ($values) {
+                foreach ($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
+                    if ($ip_data->heslo_sifrovane == 1) {
+                        $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
+                        $ipdata = $ip_data->toArray();
+                        $ipdata['heslo'] = $decrypted;
+                        $form["ip"][$ip_id]->setValues($ipdata);
+                    } else {
+                        $form["ip"][$ip_id]->setValues($ip_data);
+                    }
+                }
+                $form->setValues($values);
+            }
+        }
+
+        return $form;
+    }
+
+    public function validateUzivatelForm($form) {
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
@@ -340,9 +411,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function uzivatelFormSucceded($form, $values)
-    {
-        $log = [];
+    public function uzivatelFormSucceded($form, $values) {
+        $log = array();
         $idUzivatele = $values->id;
         $ips = $values->ip;
         $ipsubnet = $values->ipsubnet;
@@ -523,8 +593,7 @@ class UzivatelPresenter extends BasePresenter
         return true;
     }
 
-    public function actionIds($id)
-    {
+    public function actionIds($id) {
         if ($id) {
             if ($uzivatel = $this->uzivatel->getUzivatel($id)) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
@@ -543,8 +612,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    protected function createComponentUzivatelForm()
-    {
+    protected function createComponentUzivatelForm() {
         $typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id', 'text');
         $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id', 'text');
         $zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id', 'text');

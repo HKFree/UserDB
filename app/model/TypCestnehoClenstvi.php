@@ -14,8 +14,7 @@ class TypCestnehoClenstvi extends Table
     */
     protected $tableName = 'TypCestnehoClenstvi';
 
-    public function getTypCestnehoClenstvi()
-    {
+    public function getTypCestnehoClenstvi() {
         return ($this->findAll());
     }
 }

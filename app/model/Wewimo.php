@@ -21,15 +21,13 @@ class Wewimo
     private $ap;
     private $cryptoService;
 
-    public function __construct(CryptoSluzba $cryptoService, IPAdresa $ipadresa, AP $ap)
-    {
+    public function __construct(CryptoSluzba $cryptoService, IPAdresa $ipadresa, AP $ap) {
         $this->ipadresa = $ipadresa;
         $this->ap = $ap;
         $this->cryptoService = $cryptoService;
     }
 
-    public function getWewimoData($ip, $username, $password, $invoker)
-    {
+    public function getWewimoData($ip, $username, $password, $invoker) {
         // default values (when not present in $responses) of optional attributes
         $defaultRegistrationRow = array(
             'radio-name' => '',
@@ -167,8 +165,7 @@ class Wewimo
         return $data;
     }
 
-    private function parseAddCurrentTxPower(&$monitorRow)
-    {
+    private function parseAddCurrentTxPower(&$monitorRow) {
         $monitorRow['x-current-tx-powers'] = [];
         if (array_key_exists('current-tx-powers', $monitorRow)) {
             // comma is usually used as a separator of different modulation rates but in some versions semicolon is used instead
@@ -180,8 +177,7 @@ class Wewimo
         }
     }
 
-    private function dbm2pct($dBm, $min = -100, $max = -20)
-    {
+    private function dbm2pct($dBm, $min = -100, $max = -20) {
         // linear approx.
         $a = 100 / ($max - $min);
         $b = -$a * $min;
@@ -196,8 +192,7 @@ class Wewimo
         return round($val);
     }
 
-    public function sanitizeAttribute(&$assocArray, $attributeName)
-    {
+    public function sanitizeAttribute(&$assocArray, $attributeName) {
         if (array_key_exists($attributeName, $assocArray)) {
             if (!mb_detect_encoding($assocArray[$attributeName], 'UTF-8', true)) {
                 // if not valid UTF-8 string, convert from latin-1 to UTF-8
@@ -207,8 +202,7 @@ class Wewimo
         }
     }
 
-    public function getWewimoFullData($apId, $invokerStr, $ip = null)
-    {
+    public function getWewimoFullData($apId, $invokerStr, $ip = null) {
         // AP podle ID
         $apt = $this->ap->getAP($apId * 1);
         $wewimoMultiData = [];
@@ -352,8 +346,7 @@ class Wewimo
      * @param $ipRec
      * @param $station
      */
-    public function prepareIpInfoAndLink($ipRec, &$station)
-    {
+    public function prepareIpInfoAndLink($ipRec, &$station) {
         if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {
             $station['xx-last-ip-host'] = $ipRec->hostname;
         } else {

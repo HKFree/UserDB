@@ -23,8 +23,7 @@ class LogTable extends UI\Control
     public const UPDATE = "U";
     public const DELETE = "D";
 
-    public function __construct($parentPresenter, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\Log $log)
-    {
+    public function __construct($parentPresenter, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\Log $log) {
         //parent::__construct();
         $this->parentPresenter = $parentPresenter;
         $this->ipAdresa = $ipAdresa;
@@ -41,8 +40,7 @@ class LogTable extends UI\Control
      * @param string $sloupec IPAdresa.sloupec z DB
      * @return array (typ, sloupec, ipId) or empty array (falsy value) when not matched
      */
-    private function parseSloupec($sloupec)
-    {
+    private function parseSloupec($sloupec) {
         $out = [];
         if (preg_match("/^uzivatel\.(.+)/i", $sloupec, $matches)) {
             $out["typ"] = self::UZIVATEL;
@@ -73,8 +71,7 @@ class LogTable extends UI\Control
      * @param array $logy pole ipId
      * @return array pole ipId=>ipAdresa
      */
-    private function getIPMapping($logy)
-    {
+    private function getIPMapping($logy) {
         $ipsKProhlednuti = array();
         foreach ($logy as $line) {
             if (($sloupec = $this->parseSloupec($line->sloupec)) && ($sloupec["typ"] == self::IPADRESA)) {
@@ -94,8 +91,7 @@ class LogTable extends UI\Control
      * @param array $logy pole subnetId
      * @return array pole subnetId=>subnet
      */
-    private function getSubnetMapping($logy)
-    {
+    private function getSubnetMapping($logy) {
         $subnetsKProhlednuti = array();
         foreach ($logy as $line) {
             if (($sloupec = $this->parseSloupec($line->sloupec)) && ($sloupec["typ"] == self::SUBNET)) {
@@ -109,8 +105,7 @@ class LogTable extends UI\Control
         return ($subnetZDB + $subnetZLogu + $subnetsKProhlednuti);
     }
 
-    private function tableGetHeader()
-    {
+    private function tableGetHeader() {
         $logyTab = Html::el('table')->setClass('table table-striped logstable');
         $tr = $logyTab->create('tr');
 
@@ -122,14 +117,12 @@ class LogTable extends UI\Control
         return ($logyTab);
     }
 
-    private function tableGetFooter(&$table)
-    {
+    private function tableGetFooter(&$table) {
         $table->create('script')->setHTML('$(\'a\').tooltip();');
         return ($table);
     }
 
-    private function tableGetLineBegin(&$table, $line)
-    {
+    private function tableGetLineBegin(&$table, $line) {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $tr = $table->create('tr');
@@ -144,8 +137,7 @@ class LogTable extends UI\Control
         return ($tr);
     }
 
-    private function tableGetLineEndSimple(&$tr, $line, $rozparsovano)
-    {
+    private function tableGetLineEndSimple(&$tr, $line, $rozparsovano) {
         $sloupec = $this->log->translateJmeno($rozparsovano["sloupec"]);
         $tr->create('td')->setText($sloupec);
 
@@ -166,8 +158,7 @@ class LogTable extends UI\Control
         }
     }
 
-    private function tableProcessLines(&$table, $logy)
-    {
+    private function tableProcessLines(&$table, $logy) {
         $ipVsechny = $this->getIPMapping($logy);
         $subnetyVsechny = $this->getSubnetMapping($logy);
 
@@ -269,8 +260,7 @@ class LogTable extends UI\Control
         }
     }
 
-    public function render($id, $type = "user")
-    {
+    public function render($id, $type = "user") {
         $template = $this->template;
         $template->setFile(__DIR__ . '/LogTable.latte');
 

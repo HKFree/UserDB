@@ -16,18 +16,15 @@ class SpravaPlatebPresenter extends SpravaPresenter
     private $odchoziPlatba;
     private $prichoziPlatba;
 
-    public function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba)
-    {
+    public function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba) {
         $this->odchoziPlatba = $odchplatba;
         $this->prichoziPlatba = $platba;
     }
 
-    public function renderOdchoziplatby()
-    {
+    public function renderOdchoziplatby() {
     }
 
-    protected function createComponentOdchplatby($name)
-    {
+    protected function createComponentOdchplatby($name) {
         $grid = new \Grido\Grid($this, $name);
         $grid->translator->setLang('cs');
         $grid->setExport('op_export');
@@ -58,14 +55,12 @@ class SpravaPlatebPresenter extends SpravaPresenter
         $grid->getColumn('datum_platby')->headerPrototype->style['width'] = '10%';
     }
 
-    public function renderPlatbycu()
-    {
+    public function renderPlatbycu() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         $this->template->cu = "";
     }
 
-    protected function createComponentPaymentgrid($name)
-    {
+    protected function createComponentPaymentgrid($name) {
         $id = $this->getParameter('type');
 
         $grid = new \Grido\Grid($this, $name);

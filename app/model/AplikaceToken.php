@@ -17,8 +17,7 @@ class AplikaceToken extends Table
      */
     protected $tableName = 'AplikaceToken';
 
-    public function createAplikaceToken($uid)
-    {
+    public function createAplikaceToken($uid) {
         return ($this->insert(array(
             'token' => Random::generate(64),
             'Uzivatel_id' => $uid,
@@ -27,8 +26,7 @@ class AplikaceToken extends Table
         )));
     }
 
-    public function verifyToken($uid, $token)
-    {
+    public function verifyToken($uid, $token) {
         $token = $this->findAll()->where('Uzivatel_id', $uid)->where('token', $token)->fetch();
         if ($token) {
             $token->update(array('pouzit_naposledy' => new Nette\Utils\DateTime()));
@@ -38,8 +36,7 @@ class AplikaceToken extends Table
         }
     }
 
-    public function deleteTokensForUID($uid)
-    {
+    public function deleteTokensForUID($uid) {
         $this->findAll()->where('Uzivatel_id', $uid)->delete();
     }
 }

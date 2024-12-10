@@ -29,20 +29,17 @@ class Log extends Table
     */
     protected $tableName = 'Log';
 
-    public function getLogyUzivatele($uid)
-    {
+    public function getLogyUzivatele($uid) {
         $logy = $this->findAll()->where("tabulka = ?", "Uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
         return ($logy);
     }
 
-    public function getLogyAP($Apid)
-    {
+    public function getLogyAP($Apid) {
         $logy = $this->findAll()->where("tabulka = ?", "Ap")->where("tabulka_id = ?", $Apid)->order("datum DESC, sloupec DESC");
         return ($logy);
     }
 
-    public function translateJmeno($jmeno)
-    {
+    public function translateJmeno($jmeno) {
         $slovnikUzivatel = array(
             "Ap_id" => "AP",
             "jmeno" => "jméno",
@@ -102,8 +99,7 @@ class Log extends Table
      * @param string $type Typ objektu pro který zjišťujeme - ip / subnet
      * @return array pole ipId=>ipAdresa
      */
-    public function getAdvancedzLogu(array $ids, $type = "ip")
-    {
+    public function getAdvancedzLogu(array $ids, $type = "ip") {
         $names = array();
         foreach ($ids as $id) {
             if ($type == "ip") {
@@ -137,8 +133,7 @@ class Log extends Table
         return ($out);
     }
 
-    public function logujInsert($data, $sloupecPrefix, &$log)
-    {
+    public function logujInsert($data, $sloupecPrefix, &$log) {
         foreach ($data as $key => $value) {
             if (!empty($value)) {
                 $log[] = array(
@@ -151,8 +146,7 @@ class Log extends Table
         }
     }
 
-    public function logujUpdate($staraData, $novaData, $sloupecPrefix, &$log)
-    {
+    public function logujUpdate($staraData, $novaData, $sloupecPrefix, &$log) {
         foreach ($novaData as $key => $value) {
             $isSet = isset($staraData[$key]) || ($staraData[$key] == null);
             if (!($isSet && $value == $staraData[$key])) {
@@ -166,8 +160,7 @@ class Log extends Table
         }
     }
 
-    public function logujDelete($staraData, $sloupecPrefix, &$log)
-    {
+    public function logujDelete($staraData, $sloupecPrefix, &$log) {
         foreach ($staraData as $key => $value) {
             if (!empty($value)) {
                 $log[] = array(
@@ -180,8 +173,7 @@ class Log extends Table
         }
     }
 
-    public function loguj($tabulka, $tabulka_id, $data, $uzivatel_id = null)
-    {
+    public function loguj($tabulka, $tabulka_id, $data, $uzivatel_id = null) {
         if (!is_array($data) || count($data) == 0) {
             return (true);
         }
