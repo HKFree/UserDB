@@ -4,7 +4,7 @@
 
 <div style="margin-top:3px;">
     {* TODO: smlouva dowlanding *}
-    <a href="{link Uzivatel:show id=>$smlouva->Uzivatel_id}" class="btn btn-default btn-sm" role="button">
+    <a href="{link Uzivatel:show id=>$smlouva->uzivatel->id}" class="btn btn-default btn-sm" role="button">
         <i class="glyphicon glyphicon-chevron-left"></i> Na uživatele
     </a>
     <a href="{$smlouva->id}" class="btn btn-default btn-sm" role="button">
@@ -26,7 +26,7 @@
 
         <tr>
             <th>Uzivatel</th>
-            <td><a href="{link Uzivatel:show id=>$smlouva->Uzivatel_id}">{$smlouva->Uzivatel_id}</a></td>
+            <td><a href="{link Uzivatel:show id=>$smlouva->Uzivatel->id}">{$smlouva->uzivatel->id} {$smlouva->uzivatel->firma_nazev} {$smlouva->uzivatel->jmeno} {$smlouva->uzivatel->prijmeni}</a></td>
         </tr>
 
         <tr>

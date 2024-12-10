@@ -3,6 +3,7 @@
 namespace App\Presenters;
 
 use App\Model;
+use App\Model\Smlouva;
 use DateTime;
 
 class SpravaSmluvPresenter extends BasePresenter
@@ -12,15 +13,13 @@ class SpravaSmluvPresenter extends BasePresenter
     protected $smlouva;
     protected $podpis;
 
-    public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis)
-    {
+    public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis) {
         $this->smlouva = $smlouva;
         $this->podpis = $podpis;
     }
 
     // Zkontroluje ze jsme dostali ID a existuje smlouva s timto ID
-    private function idAndContractExists($contract_id)
-    {
+    private function idAndContractExists($contract_id) {
         if (
             !(isset($contract_id) && $this->smlouva->find($contract_id))
         ) {
@@ -29,8 +28,7 @@ class SpravaSmluvPresenter extends BasePresenter
         }
     }
 
-    private function userCanChange(int $contract_id)
-    {
+    private function userCanChange(int $contract_id) {
         // TODO: Dodelat tuto logiku
         if (false) {
             $this->flashMessage('❌ Na tuhle smlouvy ty šmatlat nemůžeš.', 'danger');
@@ -38,8 +36,7 @@ class SpravaSmluvPresenter extends BasePresenter
         }
     }
 
-    private function userCanView(int $contract_id)
-    {
+    private function userCanView(int $contract_id) {
         // TODO: Dodelat tuto logiku
         if (false) {
             $this->flashMessage('❌ Na tuhle smlouvy ty koukat nemůžeš.', 'danger');
@@ -47,8 +44,7 @@ class SpravaSmluvPresenter extends BasePresenter
         }
     }
 
-    public function renderShow()
-    {
+    public function renderShow() {
         $contract_id = $this->getParameter('id');
         $this->idAndContractExists($contract_id);
         $this->userCanView($contract_id);
@@ -58,17 +54,15 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->template->id = $this->smlouva_id;
         $this->template->smlouva = $this->smlouva->find($this->smlouva_id);
 
-        $podpisy = $this->template->smlouva->related('PodpisSmlouvy', 'Smlouva_id');
+        $podpisy = $this->podpis->findBy(['Smlouva_id' => $this->smlouva_id]);
         $this->template->podpisy = $podpisy;
     }
 
-    public function parseDate(string $timestamp): DateTime
-    {
+    public function parseDate(string $timestamp): DateTime {
         return \Nette\Utils\DateTime::from($timestamp);
     }
 
-    public function actionCancelContract()
-    {
+    public function actionCancelContract() {
         // TODO: Logování změn
 
         $contract_id = $this->getParameter('id');
@@ -93,8 +87,7 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->redirect('SpravaSmluv:show');
     }
 
-    public function actionUpdateNote()
-    {
+    public function actionUpdateNote() {
         // TODO: Logování změn
 
         $request = $this->getHttpRequest();

@@ -20,11 +20,12 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $mailService;
     private $smlouva;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel) {
+    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva) {
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
+        $this->smlouva = $smlouva;
     }
 
     public function actionMoneyActivate() {
