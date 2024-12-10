@@ -125,7 +125,17 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
-        $grid->addColumnText('stitky', 'Štítky')->setSortable();
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+            $latte = new Engine();
+            $params = [
+                'stitky' => $this->stitek->getSeznamStitku(),
+                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
+                'userId' => $item->id,
+            ];
+            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
+            return $latte->renderToString($templatePath, $params);
+
+        });
         $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if ($canViewOrEdit) {
