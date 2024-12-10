@@ -34,6 +34,10 @@ $cestneClenstviUzivatele = $container->getByType('App\Model\CestneClenstviUzivat
 
 sleep(2); // to trochu zpřehlední logy
 
+// $uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
+$uzivatel = $container->getByType('\App\Model\Uzivatel')->find(1001);
+$cestneClenstviUzivatele = $container->getByType('App\Model\CestneClenstviUzivatele');
+
 print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
 
 $dgs = new DigiSign([
