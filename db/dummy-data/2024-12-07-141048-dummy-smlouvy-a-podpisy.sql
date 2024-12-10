@@ -1,8 +1,8 @@
 
 
 /*  Smlouva nepodepsaná */
-INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano)
-VALUES (150001, 1000, UUID(), 'ucastnicka', NOW()); -- Karel Pokusny
+INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano, poznamka)
+VALUES (150001, 1000, UUID(), 'ucastnicka', NOW(), "tato smlouva není podepsaná..."); -- Karel Pokusny
 
 INSERT INTO PodpisSmlouvy (smlouva_id, externi_id, smluvni_strana, jmeno, kdy_podepsano, kdy_odmitnuto)
 VALUES
@@ -11,8 +11,8 @@ VALUES
 
 /* Smlouva odmítnutá */
 
-INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano)
-VALUES (150002, 1001, UUID(), 'ucastnicka', NOW()); -- Petr Novak
+INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano, poznamka)
+VALUES (150002, 1001, UUID(), 'ucastnicka', NOW(), "on to vodmitnul, ani se o tom semnou nepobavil! nehezký přístup"); -- Petr Novak
 
 INSERT INTO PodpisSmlouvy (smlouva_id, externi_id, smluvni_strana, jmeno, kdy_podepsano, kdy_odmitnuto)
 VALUES
@@ -29,8 +29,8 @@ VALUES
 (150003, UUID(), 'druzstvo', 'Ing. Předseda Světa', NOW(), NULL);
 
 /* Smlouva ukončená */
-INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano, kdy_ukonceno)
-VALUES (150004, 1003, UUID(), 'ucastnicka', NOW(), '2029-05-15 00:00:00'); -- Richard Výjimečný
+INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano, kdy_ukonceno, poznamka)
+VALUES (150004, 1003, UUID(), 'ucastnicka', NOW(), '2029-05-15 00:00:00', "Richard to ukončil"); -- Richard Výjimečný
 
 INSERT INTO PodpisSmlouvy (smlouva_id, externi_id, smluvni_strana, jmeno, kdy_podepsano, kdy_odmitnuto)
 VALUES
@@ -39,8 +39,8 @@ VALUES
 
 
 /* Smlouva nakonec platná  */
-INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano, kdy_ukonceno)
-VALUES (150005, 1, UUID(), 'spravcovska', NOW(), NULL); -- Tester Testovací
+INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano, kdy_ukonceno, poznamka)
+VALUES (150005, 1, UUID(), 'spravcovska', NOW(), NULL, "https://www.youtube.com/watch?v=dQw4w9WgXcQ"); -- Tester Testovací
 
 INSERT INTO PodpisSmlouvy (smlouva_id, externi_id, smluvni_strana, jmeno, kdy_podepsano, kdy_odmitnuto)
 VALUES
