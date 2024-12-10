@@ -19,7 +19,7 @@ docker-compose.override.yml
 
 nbproject/private/
 
-.local-environment.env
+.local.env
 
 # PHP CS Fixer
 .php-cs-fixer.cache
