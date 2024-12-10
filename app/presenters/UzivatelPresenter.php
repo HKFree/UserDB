@@ -86,8 +86,7 @@ class UzivatelPresenter extends BasePresenter
 
     public function sendRegistrationEmail($idUzivatele) {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
-
-        $hash = base64_encode($idUzivatele.'-'.md5($this->context->parameters['salt'].$newUser->zalozen));
+        $hash = base64_encode($idUzivatele.'-'.md5($this->parameters['salt'].$newUser->zalozen));
         $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
@@ -107,7 +106,7 @@ class UzivatelPresenter extends BasePresenter
             list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
 
             if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
-                if (0 == $uzivatel->regform_downloaded_password_sent && $hash == md5($this->context->parameters['salt'].$uzivatel->zalozen)) {
+                if (0 == $uzivatel->regform_downloaded_password_sent && $hash == md5($this->parameters['salt'].$uzivatel->zalozen)) {
                     $pdftemplate = $this->createTemplate()->setFile(__DIR__.'/../templates/Uzivatel/pdf-form.latte');
                     $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
@@ -459,7 +458,7 @@ class UzivatelPresenter extends BasePresenter
             } else {
                 $values->money_aktivni = 0;
             }
-            $values->zalozen = new DateTime();
+            $values->zalozen = new \DateTime();
             $values->heslo = $this->uzivatel->generateStrongPassword();
             $values->heslo_hash = $this->uzivatel->generateWeakHash($values->heslo);
             $values->heslo_strong_hash = $this->uzivatel->generateStrongHash($values->heslo);
@@ -494,7 +493,7 @@ class UzivatelPresenter extends BasePresenter
             }
 
             if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id) {
-                $values->zalozen = new DateTime();
+                $values->zalozen = new \DateTime();
                 $values->money_aktivni = 1;
             }
 

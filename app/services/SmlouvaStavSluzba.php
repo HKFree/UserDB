@@ -20,7 +20,7 @@ class SmlouvaStavSluzba
         $sid = $smlouva->id;
         $konec = $smlouva->kdy_ukonceno;
 
-        $podpisy = $smlouva->related('PodpisSmlouvy.Smlouva_id');
+        $podpisy = $smlouva->related('PodpisSmlouvy.smlouva_id');
 
         $pocetPodpisu = 0;
         $pocetPodepsano = 0;
