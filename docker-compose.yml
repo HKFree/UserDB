@@ -15,8 +15,8 @@ services:
       - USERDB_IDS_PASSWORD=xxx
       - USERDB_IDS_IPS_WHITELIST=10.107.99.188
       - INFLUX_URL=influxdb://wewimo:xxx@10.107.252.101:8086/wewimo
-      - DIGISIGN_ACCESS_KEY=abcd
-      - DIGISIGN_SECRET_KEY=0987654321
+    env_file:
+     - .local.env
     ports:
       - "10107:80"
     volumes:

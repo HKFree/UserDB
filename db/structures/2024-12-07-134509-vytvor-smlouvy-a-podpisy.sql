@@ -15,7 +15,7 @@ CREATE TABLE Smlouva (
     kdy_vygenerovano timestamp NULL default CURRENT_TIMESTAMP,
     kdy_ukonceno timestamp NULL default NULL,
     CONSTRAINT `fk_uzivatel_id` FOREIGN KEY (uzivatel_id) REFERENCES Uzivatel (id)
-) AUTO_INCREMENT = 150000;
+) AUTO_INCREMENT=150000 DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 CREATE TABLE PodpisSmlouvy (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -26,4 +26,4 @@ CREATE TABLE PodpisSmlouvy (
     kdy_podepsano timestamp NULL default NULL,
     kdy_odmitnuto timestamp NULL default NULL,
     CONSTRAINT `fk_smlouva_id` FOREIGN KEY (smlouva_id) REFERENCES Smlouva (id)
-);
+) DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;

@@ -1,6 +1,6 @@
 #!/usr/bin/env php
-
 <?php
+
 /**
  * Digisign API
  * Vytvoření tzv. obálky a odeslání smlouvy k podpisu pro připojence hkfree.org
@@ -23,13 +23,16 @@ $templateId = "0193a831-9ccd-7152-9797-752fa40014f6"; # účastnická smlouva v6
 
 $smlouva_id = $argv[1];
 
-/*
 $smlouva = $container->getByType('\App\Model\Smlouva')->find($smlouva_id);
-if ($smlouva) {
-  print("Smlouva id [$smlouva_id] neni v DB\n");
-  die();
+if (!$smlouva) {
+    print("Smlouva id [$smlouva_id] neni v DB\n");
+    die();
 }
-*/
+
+$uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
+$cestneClenstviUzivatele = $container->getByType('App\Model\CestneClenstviUzivatele');
+
+sleep(2); // to trochu zpřehlední logy
 
 // $uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
 $uzivatel = $container->getByType('\App\Model\Uzivatel')->find(1001);
@@ -44,16 +47,15 @@ $dgs = new DigiSign([
 
 $ENVELOPES = $dgs->envelopes();
 
-function trace_to_file($what, $payload = null)
-{
+function trace_to_file($what, $payload = null) {
     global $debugCounter;
     file_put_contents(
         "trace" . (++$debugCounter) . "-" . $what . ".json",
         json_encode($payload, JSON_PRETTY_PRINT)
     );
 }
-function set_tag_value($envelope, $tagLabel, $newValue)
-{
+
+function set_tag_value($envelope, $tagLabel, $newValue) {
     global $ENVELOPES;
 
     print("set_tag_value $tagLabel $newValue\n");
@@ -85,6 +87,8 @@ printf("Template %s name: \"%s\" file: %s\n", $template->id, $template->name, $t
 printf("Krok %u: create envelope from template\n", ++$krok);
 $envelope = $dgs->envelopeTemplates()->use($templateId);
 $envelopeId = $envelope->id;
+
+printf("Envelope: https://app.digisign.org/selfcare/envelopes/%s/detail", $envelopeId);
 
 $envelope = $ENVELOPES->get($envelopeId);
 

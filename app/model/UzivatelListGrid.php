@@ -62,7 +62,6 @@ class UzivatelListGrid
         if ($money) {
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id' => $item->id))."'";
 
                 $konto = $item->related('UzivatelskeKonto.Uzivatel_id');
                 if ($item->money_aktivni != 1) {
@@ -82,7 +81,6 @@ class UzivatelListGrid
             });
         } else {
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter) {
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id' => $item->id))."'";
 
                 if ($item->email_invalid == 1) {
                     $tr->class[] = 'invalidemail';
@@ -311,7 +309,6 @@ class UzivatelListGrid
         if ($money) {
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id' => $item->id))."'";
 
                 $konto = $item->related('UzivatelskeKonto.Uzivatel_id');
                 if ($item->money_aktivni != 1) {
@@ -331,7 +328,6 @@ class UzivatelListGrid
             });
         } else {
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter) {
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id' => $item->id))."'";
 
                 if ($item->email_invalid == 1) {
                     $tr->class[] = 'invalidemail';

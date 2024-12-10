@@ -70,7 +70,7 @@ services:
 	dnat: App\Model\DNat
 	accountActivation: App\Model\AccountActivation
 	logTableFactory: App\Components\LogTableFactory
-	parameters: App\Model\Parameters(%clenskyPrispevek%)
+	parameters: App\Model\Parameters(%clenskyPrispevek%, %salt%)
 	cryptoSluzba: App\Services\CryptoSluzba(%env.USERDB_ENCRYPTION_PASSPHRASE%)
 	wewimo: App\Model\Wewimo
 	apiKlic: App\Model\ApiKlic
@@ -82,6 +82,9 @@ services:
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
 	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
 	status: App\Model\Status
+	smlouva: App\Model\Smlouva
+	podpisSmlouvy: App\Model\PodpisSmlouvy
+	smlouvaStavSluzba: App\Services\SmlouvaStavSluzba
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:
