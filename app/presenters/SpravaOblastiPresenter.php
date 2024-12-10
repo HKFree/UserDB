@@ -16,19 +16,16 @@ class SpravaOblastiPresenter extends SpravaPresenter
     private $ap;
     public $oblast;
 
-    public function __construct(Model\Oblast $ob, Model\AP $ap)
-    {
+    public function __construct(Model\Oblast $ob, Model\AP $ap) {
         $this->ap = $ap;
         $this->oblast = $ob;
     }
 
-    public function renderNovaoblast()
-    {
+    public function renderNovaoblast() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
-    protected function createComponentNovaoblastForm()
-    {
+    protected function createComponentNovaoblastForm() {
         $form = new Form($this, "novaoblastForm");
         $form->addHidden('id');
 
@@ -49,8 +46,7 @@ class SpravaOblastiPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function novaoblastFormSucceded($form, $values)
-    {
+    public function novaoblastFormSucceded($form, $values) {
         $idOblasti = $values->id;
 
         if (empty($values->id)) {
@@ -65,13 +61,11 @@ class SpravaOblastiPresenter extends SpravaPresenter
         return true;
     }
 
-    public function renderNoveap()
-    {
+    public function renderNoveap() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
-    protected function createComponentNoveapForm()
-    {
+    protected function createComponentNoveapForm() {
         $form = new Form($this, "noveapForm");
         $form->addHidden('id');
 
@@ -97,8 +91,7 @@ class SpravaOblastiPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function noveapFormSucceded($form, $values)
-    {
+    public function noveapFormSucceded($form, $values) {
         $idAp = $values->id;
 
         if (empty($values->id)) {

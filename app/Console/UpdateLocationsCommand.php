@@ -11,30 +11,26 @@ class UpdateLocationsCommand extends Command
 {
     private $googleMapsApiKey;
 
-    protected function configure()
-    {
+    protected function configure() {
         $this->setName('app:update_locations')
             ->setDescription('Aktualizovat hromadne zemepis. souradnice podle adres u uzivatelu (kde nejsou ve stavu "valid")');
         $this->addArgument('mode', InputArgument::OPTIONAL, 'normal nebo retry, retry zkusi krome pending adres znovu geokodovat adresy ve stavu approx nebo uknown', 'normal');
     }
 
-    protected function googleMapsGeocode($adresa)
-    {
+    protected function googleMapsGeocode($adresa) {
         $client = new \GuzzleHttp\Client(['verify' => false]);
         return $client->request('GET', 'https://maps.googleapis.com/maps/api/geocode/json?key='.
             urlencode($this->googleMapsApiKey).
             '&address='.urlencode($adresa));
     }
 
-    protected function vugtkGeocode($adresa)
-    {
+    protected function vugtkGeocode($adresa) {
         $client = new \GuzzleHttp\Client(['verify' => false]);
         return $client->request('GET', 'http://ags.cuzk.cz/arcgis/rest/services/RUIAN/Vyhledavaci_sluzba_nad_daty_RUIAN/MapServer/exts/GeocodeSOE/tables/1/find?f=json&text='.
             urlencode($adresa));
     }
 
-    private function krowToWgs($X, $Y, $H)
-    {
+    private function krowToWgs($X, $Y, $H) {
         $H = $H + 45;
 
         ///*Vypocet zemepisnych souradnic z rovinnych souradnic*/
@@ -111,8 +107,7 @@ class UpdateLocationsCommand extends Command
         return (array("lat" => $B,"lon" => $L,"h" => $H));
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $this->googleMapsApiKey = $this->getHelper('container')->getParameter('googleMapsApiKey');
         $mode = $input->getArgument('mode');
         echo "update_locations started, mode $mode, googleMapsApiKey: $this->googleMapsApiKey\n";

@@ -14,8 +14,7 @@ class TypSpravceOblasti extends Table
     */
     protected $tableName = 'TypSpravceOblasti';
 
-    public function getTypySpravcuOblasti()
-    {
+    public function getTypySpravcuOblasti() {
         return ($this->findAll());
     }
 }

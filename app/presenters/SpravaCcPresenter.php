@@ -18,20 +18,17 @@ class SpravaCcPresenter extends SpravaPresenter
     private $platneCC;
     private $ap;
 
-    public function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\AP $ap)
-    {
+    public function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\AP $ap) {
         $this->cestneClenstviUzivatele = $cc;
         $this->uzivatel = $uzivatel;
         $this->platneCC = $actualCC;
         $this->ap = $ap;
     }
 
-    public function renderPrehledcc()
-    {
+    public function renderPrehledcc() {
     }
 
-    protected function createComponentGrid($name)
-    {
+    protected function createComponentGrid($name) {
         $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
 
         $grid = new \Grido\Grid($this, $name);
@@ -58,8 +55,7 @@ class SpravaCcPresenter extends SpravaPresenter
                 ->setIcon('eye-open');
     }
 
-    public function renderSchvalovanicc()
-    {
+    public function renderSchvalovanicc() {
         /*** clear old registration files ***/
         foreach (glob(sys_get_temp_dir()."/registrace*") as $file) {
             /*** if file is 7 days old then delete it ***/
@@ -78,8 +74,7 @@ class SpravaCcPresenter extends SpravaPresenter
         $this->template->uzivatele = $this->uzivatel->findBy(array("id" => $uzivatele));
     }
 
-    protected function createComponentSpravaCCForm()
-    {
+    protected function createComponentSpravaCCForm() {
         $form = new Form($this, "spravaCCForm");
 
         $data = $this->cestneClenstviUzivatele;
@@ -124,8 +119,7 @@ class SpravaCcPresenter extends SpravaPresenter
     /**
     * Schválení čestného členství
     */
-    public function spravaCCFormSucceded($form, $values)
-    {
+    public function spravaCCFormSucceded($form, $values) {
         $log = array();
         $prava = $values->rights;
 

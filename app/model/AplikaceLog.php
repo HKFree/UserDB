@@ -28,8 +28,7 @@ class AplikaceLog extends Table
         $this->request = $request;
     }
 
-    public function log($action, $data = array())
-    {
+    public function log($action, $data = array()) {
         return ($this->insert(array(
             'action' => $action,
             'ip' => $this->request->getRemoteAddress(),
@@ -38,8 +37,7 @@ class AplikaceLog extends Table
         )));
     }
 
-    public function getLogy()
-    {
+    public function getLogy() {
         return ($this->findAll());
     }
 }

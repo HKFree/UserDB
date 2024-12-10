@@ -16,14 +16,12 @@ class WewimoPresenter extends BasePresenter
     private $wewimo;
     private $ap;
 
-    public function __construct(Model\Wewimo $wewimo, Model\AP $ap)
-    {
+    public function __construct(Model\Wewimo $wewimo, Model\AP $ap) {
         $this->wewimo = $wewimo;
         $this->ap = $ap;
     }
 
-    public function fetchWewimo($apId, $ip = null)
-    {
+    public function fetchWewimo($apId, $ip = null) {
         // AP podle ID
         $apt = $this->ap->getAP($apId * 1);
         if (!$apt) {
@@ -42,8 +40,7 @@ class WewimoPresenter extends BasePresenter
         }
     }
 
-    public function anonymizeWewimoData(&$wewimoMultiData)
-    {
+    public function anonymizeWewimoData(&$wewimoMultiData) {
         foreach ($wewimoMultiData as &$wewimoData) {
             foreach ($wewimoData['interfaces'] as &$interface) {
                 foreach ($interface['stations'] as &$station) {
@@ -73,8 +70,7 @@ class WewimoPresenter extends BasePresenter
         }
     }
 
-    public function addWewimoLinks(&$wewimoMultiData)
-    {
+    public function addWewimoLinks(&$wewimoMultiData) {
         foreach ($wewimoMultiData as &$wewimoData) {
             foreach ($wewimoData['interfaces'] as &$interface) {
                 foreach ($interface['stations'] as &$station) {
@@ -88,23 +84,20 @@ class WewimoPresenter extends BasePresenter
         }
     }
 
-    public function renderShow($id)
-    {
+    public function renderShow($id) {
         // viz https://pla.nette.org/cs/dynamicke-snippety
         if (!isset($this->template->wewimo)) {
             $this->fetchWewimo($id);
         }
     }
 
-    public function handleUpdate($id, $ip)
-    {
+    public function handleUpdate($id, $ip) {
         // viz https://pla.nette.org/cs/dynamicke-snippety
         $this->redrawControl('wewimoContainer');
         $this->fetchWewimo($id, $ip);
     }
 
-    private function resolveLink($linkStruct)
-    {
+    private function resolveLink($linkStruct) {
         if (is_array($linkStruct)) {
             return $this->link($linkStruct['presenter'], array('id' => $linkStruct['id'])) . $linkStruct['anchor'];
         } else {

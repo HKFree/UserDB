@@ -24,22 +24,18 @@ class Subnet extends Table
     */
     protected $tableName = 'Subnet';
 
-    public function getSeznamSubnetu()
-    {
+    public function getSeznamSubnetu() {
         return ($this->findAll());
     }
 
-    public function getSeznamSubnetuZacinajicich($prefix)
-    {
+    public function getSeznamSubnetuZacinajicich($prefix) {
         return $this->findAll()->where("subnet LIKE ?", $prefix.'%')->fetchAll();
     }
 
-    public function getSubnet($id)
-    {
+    public function getSubnet($id) {
         return ($this->find($id));
     }
-    public function deleteSubnet(array $subnets)
-    {
+    public function deleteSubnet(array $subnets) {
         if (count($subnets) > 0) {
             return ($this->delete(array('id' => $subnets)));
         } else {
@@ -47,8 +43,7 @@ class Subnet extends Table
         }
     }
 
-    public function getSubnetForm(&$subnet)
-    {
+    public function getSubnetForm(&$subnet) {
         $subnet->addHidden('id')->setAttribute('class', 'id subnet');
         $subnet->addText('subnet', 'Subnet', 11)->setAttribute('class', 'subnet_text subnet')->setAttribute('placeholder', 'Subnet');
         $subnet->addText('gateway', 'Gateway', 11)->setAttribute('class', 'gateway_text subnet')->setAttribute('placeholder', 'Gateway');
@@ -62,8 +57,7 @@ class Subnet extends Table
      * @param int[] $ids idSubnet pro které chceme zjistit subnet
      * @return array pole idSubnet=>subnet
      */
-    public function getSubnetzDB(array $ids)
-    {
+    public function getSubnetzDB(array $ids) {
         return ($this->getTable()->where("id", $ids)->fetchPairs("id", "subnet"));
     }
 
@@ -78,8 +72,7 @@ class Subnet extends Table
      * @param string $subnet Vstupní subnet
      * @return string[] Pole s položkami
      */
-    public function getAPCSubnets($subnets)
-    {
+    public function getAPCSubnets($subnets) {
         foreach ($subnets as $subnet) {
             $out = $this->parseSubnet($subnet->subnet);
             //\Tracy\Debugger::barDump(explode(".", $out["network"]));
@@ -94,8 +87,7 @@ class Subnet extends Table
         }
     }
 
-    public function getSubnetTable($subnets)
-    {
+    public function getSubnetTable($subnets) {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $subnetyTab = Html::el('table')->setClass('table table-striped');
@@ -133,8 +125,7 @@ class Subnet extends Table
      * @param string $ip IP adresa
      * @return string[] Subnet a informace o něm
      */
-    public function getSubnetOfIP($ip)
-    {
+    public function getSubnetOfIP($ip) {
         $possibleSubnets = $this->genSubnets($ip);
         $subnets = $this->findAll()->where("subnet", $possibleSubnets);
 
@@ -179,8 +170,7 @@ class Subnet extends Table
      * @param string $subnet Vstupní subnet
      * @return string[] Pole s položkami
      */
-    public function parseSubnet($subnet)
-    {
+    public function parseSubnet($subnet) {
         list($network, $cidr) = explode("/", $subnet);
 
         $out["subnet"] = $subnet;
@@ -200,8 +190,7 @@ class Subnet extends Table
      * @param string $ip IP adresa
      * @return string[] Subnety
      */
-    private function genSubnets($ip)
-    {
+    private function genSubnets($ip) {
         $lip = ip2long($ip);
         $subnets = array();
         for ($mask = 32; $mask >= 16; $mask--) {
@@ -220,8 +209,7 @@ class Subnet extends Table
      * @return boolean|string[] false pokud zadaný subnet nekoliduje,
      *               pole kolidujících subnetů pokud koliduje
      */
-    public function getOverlapingSubnet($s, $apId = null)
-    {
+    public function getOverlapingSubnet($s, $apId = null) {
         $posiblyColiding = $this->getPossiblyColiding($s);
         if (!is_null($apId)) {
             $posiblyColiding = $posiblyColiding->where("Ap_id != ?", $apId);
@@ -251,8 +239,7 @@ class Subnet extends Table
      * @param string $s Subnet
      * @return Nette\Database\Table\Selection Možné kolidující subnety
      */
-    private function getPossiblyColiding($s)
-    {
+    private function getPossiblyColiding($s) {
         list($network, $cidr) = explode("/", $s);
         $bigCidr = floor($cidr / 8);
 
@@ -278,8 +265,7 @@ class Subnet extends Table
      * @return boolean false když subnety nekolidují,
      *                 true  když kolidují.
      */
-    public function checkColision($s1, $s2)
-    {
+    public function checkColision($s1, $s2) {
         list($n1, $c1) = explode("/", $s1);
         list($n2, $c2) = explode("/", $s2);
 
@@ -307,8 +293,7 @@ class Subnet extends Table
      * @param string $subnet Testovaný subnet
      * @return boolean
      */
-    public function inSubnet($ip, $subnet)
-    {
+    public function inSubnet($ip, $subnet) {
         if ($subnet == "0.0.0.0/0") {
             return (true);
         }
@@ -322,8 +307,7 @@ class Subnet extends Table
      * @return boolean|string[] false pokud se žádné dva subnety nepřekrývají
      *                          string[] pokud se překrývají
      */
-    public function checkColisions($subnets)
-    {
+    public function checkColisions($subnets) {
         $collisions = array();
         foreach ($subnets as $id1 => $subnet1) {
             foreach ($subnets as $id2 => $subnet2) {
@@ -357,8 +341,7 @@ class Subnet extends Table
      * @param string $subnet Validovaný subnet
      * @return boolean Výsledek validace
      */
-    public function validateSubnet($subnet)
-    {
+    public function validateSubnet($subnet) {
         $disected_subnet = explode("/", $subnet);
 
         // Zkontrolujeme jestli máme přesně jedno lomítko
@@ -399,8 +382,7 @@ class Subnet extends Table
      * @param integer $cidr CIDR
      * @return string Maska
      */
-    public function CIDRToMask($cidr)
-    {
+    public function CIDRToMask($cidr) {
         return (long2ip(pow(2, 32) - pow(2, 32 - $cidr)));
     }
 }

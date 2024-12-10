@@ -14,13 +14,11 @@ class PrichoziPlatba extends Table
     */
     protected $tableName = 'PrichoziPlatba';
 
-    public function getPrichoziPlatby()
-    {
+    public function getPrichoziPlatby() {
         return ($this->findAll());
     }
 
-    public function getPrichoziPlatba($id)
-    {
+    public function getPrichoziPlatba($id) {
         return ($this->find($id));
     }
 }

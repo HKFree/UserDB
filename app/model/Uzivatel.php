@@ -16,8 +16,7 @@ class Uzivatel extends Table
     */
     protected $tableName = 'Uzivatel';
 
-    public function getSeznamSpravcuUzivatele($id_uzivatel)
-    {
+    public function getSeznamSpravcuUzivatele($id_uzivatel) {
         return $this->getConnection()->query('SELECT SO . *
 FROM  `Uzivatel` U
 LEFT JOIN Ap A ON U.Ap_id = A.id
@@ -28,13 +27,11 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                         ->fetchAll();
     }
 
-    public function getSeznamUzivatelu()
-    {
+    public function getSeznamUzivatelu() {
         return ($this->findAll());
     }
 
-    public function getFormatovanySeznamNezrusenychUzivatelu()
-    {
+    public function getFormatovanySeznamNezrusenychUzivatelu() {
         $vsichni = $this->findAll()->where('TypClenstvi_id>1')->where('systemovy=0')->fetchAll();
         $uss = array();
         foreach ($vsichni as $uzivatel) {
@@ -43,14 +40,12 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return ($uss);
     }
 
-    public function getUsersForMailingList()
-    {
+    public function getUsersForMailingList() {
         $vsichni = $this->findAll()->where('TypClenstvi_id>1')->where('email_invalid=0')->where('systemovy=0')->fetchAll();
         return ($vsichni);
     }
 
-    public function findUsersFromOtherAreasByAreaId($referentialApId, $subnety)
-    {
+    public function findUsersFromOtherAreasByAreaId($referentialApId, $subnety) {
         $uids = array();
         foreach ($subnety as $subnet) {
             list($network, $cidr) = explode("/", $subnet->subnet);
@@ -78,8 +73,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return ($this->findBy(array('id' => 0)));
     }
 
-    public function findUsersIdsFromOtherAreasByAreaId($referentialApId, $subnety)
-    {
+    public function findUsersIdsFromOtherAreasByAreaId($referentialApId, $subnety) {
         $uids = array();
         foreach ($subnety as $subnet) {
             list($network, $cidr) = explode("/", $subnet->subnet);
@@ -102,8 +96,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return ($uids);
     }
 
-    public function getNumberOfActivations()
-    {
+    public function getNumberOfActivations() {
         $activationsCount = $this->getConnection()->query("SELECT COUNT(id) as users
         , MONTH(datum) as month
         , YEAR(datum) as year
@@ -116,8 +109,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return $activationsCount;
     }
 
-    public function findUserByFulltext($search, $Uzivatel)
-    {
+    public function findUserByFulltext($search, $Uzivatel) {
         //mobil a email pouze pro ty co maji prava
 
         $completeMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
@@ -185,13 +177,11 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return ($this->findBy(array('id' => 0)));
     }
 
-    public function getSeznamUzivateluZAP($idAP)
-    {
+    public function getSeznamUzivateluZAP($idAP) {
         return ($this->findBy(array('Ap_id' => $idAP)));
     }
 
-    public function getUzivatel($id)
-    {
+    public function getUzivatel($id) {
         return ($this->find($id));
     }
 
@@ -207,8 +197,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
     * Note: the $add_dashes option will increase the length of the password by
     * floor(sqrt(N)) characters.
     */
-    public function generateStrongPassword($length = 9, $add_dashes = false, $available_sets = 'lud')
-    {
+    public function generateStrongPassword($length = 9, $add_dashes = false, $available_sets = 'lud') {
         $sets = array();
         if (strpos($available_sets, 'l') !== false) {
             $sets[] = 'abcdefghjkmnpqrstuvwxyz';
@@ -251,18 +240,15 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return $dash_str;
     }
 
-    public function generateStrongHash($password)
-    {
+    public function generateStrongHash($password) {
         return (hash('sha256', $password));
     }
 
-    public function generateWeakHash($password)
-    {
+    public function generateWeakHash($password) {
         return (crypt($password, 'hk'));
     }
 
-    public function getNewID()
-    {
+    public function getNewID() {
         return $this->getConnection()->query('SELECT t1.id+1 AS Free
 FROM Uzivatel AS t1
 LEFT JOIN Uzivatel AS t2 ON t1.id+1 = t2.id
@@ -270,8 +256,7 @@ WHERE t2.id IS NULL AND t1.id>7370
 ORDER BY t1.id LIMIT 1')->fetchField();
     }
 
-    public function getDuplicateEmailArea($email, $id)
-    {
+    public function getDuplicateEmailArea($email, $id) {
         $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where('TypClenstvi_id > 1')->fetch();
         if ($existujici) {
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
@@ -279,8 +264,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
         return null;
     }
 
-    public function getDuplicatePhoneArea($telefon, $id)
-    {
+    public function getDuplicatePhoneArea($telefon, $id) {
         $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where('TypClenstvi_id > 1')->fetch();
         if ($existujici) {
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";

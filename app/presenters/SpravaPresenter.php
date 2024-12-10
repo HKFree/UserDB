@@ -14,39 +14,33 @@ class SpravaPresenter extends BasePresenter
 
     private $googleMapsApiKey;
 
-    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap)
-    {
+    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap) {
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
     }
 
-    public function setGoogleMapsApiKey($googleMapsApiKey)
-    {
+    public function setGoogleMapsApiKey($googleMapsApiKey) {
         $this->googleMapsApiKey = $googleMapsApiKey;
     }
 
-    public function actionLogout()
-    {
+    public function actionLogout() {
         $this->getUser()->logout();
         header("Location: https://userdb.hkfree.org/Shibboleth.sso/Logout?return=https://idp.hkfree.org/idp/logout?return=http://www.hkfree.org");
         die();
     }
 
-    public function renderNastroje()
-    {
+    public function renderNastroje() {
         $this->template->canApproveCC = $this->getUser()->isInRole('VV');
         $this->template->canSeeMailList = $this->getUser()->isInRole('VV');
         $this->template->canCreateArea = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
         $this->template->canSeePayments = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
-    public function actionShow($id)
-    {
+    public function actionShow($id) {
         $this->redirect('Uzivatel:show', array('id' => $id));
     }
 
-    public function renderMapa()
-    {
+    public function renderMapa() {
         $aps = $this->ap->findAll();
         $povoleneAp = [];
         foreach ($aps as $ap) {

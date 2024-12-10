@@ -13,20 +13,17 @@ class StatusPresenter extends ApiPresenter
     // Pokud je IP mrtva dele nez $lookback sekund, nezajima nas a ignorujeme je
     private $lookback = 7 * 24 * 60 * 60;
 
-    public function __construct(\App\Model\Oblast $oblast, \App\Model\Sojka $sojka, \App\Model\IPAdresa $ipadresa)
-    {
+    public function __construct(\App\Model\Oblast $oblast, \App\Model\Sojka $sojka, \App\Model\IPAdresa $ipadresa) {
         $this->oblast = $oblast;
         $this->sojka = $sojka;
         $this->ipadresa = $ipadresa;
     }
 
-    public function renderDefault()
-    {
+    public function renderDefault() {
         $this->sendResponse(new JsonResponse(['result' => 'Method not implemented']));
     }
 
-    public function actionGetOblasti()
-    {
+    public function actionGetOblasti() {
         parent::forceMethod("GET");
 
         $ip_k_pingnuti = array();
@@ -116,8 +113,7 @@ class StatusPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse($vysledne_oblasti));
     }
 
-    public function actionGetAP()
-    {
+    public function actionGetAP() {
         parent::forceMethod("GET");
 
         $ip_tazatele = $this->getHttpRequest()->getRemoteAddress();

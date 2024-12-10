@@ -16,16 +16,14 @@ class UzivatelListGrid
     private $cestneClenstviUzivatele;
     private $parameters;
 
-    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel)
-    {
+    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->cestneClenstviUzivatele = $cc;
         $this->parameters = $parameters;
     }
 
-    private function addressNotice($el, $item)
-    {
+    private function addressNotice($el, $item) {
         if ($item->location_status === 'approx') {
             $el->addHtml(' <i class="fa fa-exclamation-triangle" title="Nepřesná adresa, opravte!"></i>');
         } elseif ($item->location_status === 'unknown') {
@@ -33,8 +31,7 @@ class UzivatelListGrid
         }
     }
 
-    public function getListOfOtherUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search)
-    {
+    public function getListOfOtherUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
         //\Tracy\Debugger::barDump($search);
 
         $canViewOrEdit = false;
@@ -244,8 +241,7 @@ class UzivatelListGrid
         return $grid;
     }
 
-    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search)
-    {
+    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
         $canViewOrEdit = false;
 
         $grid = new \Grido\Grid($presenter, $name);

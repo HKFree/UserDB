@@ -16,14 +16,12 @@ class FilePresenter extends BasePresenter
     /** @var Model\Ap **/
     private $ap;
 
-    public function __construct(Model\IPAdresa $ipAdresa, Model\AP $ap)
-    {
+    public function __construct(Model\IPAdresa $ipAdresa, Model\AP $ap) {
         $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
     }
 
-    public function actionDownloadWinboxCmd($id)
-    {
+    public function actionDownloadWinboxCmd($id) {
         if ($id) {
             $ip = $this->ipAdresa->getIPAdresa($id);
             if ($ip) {

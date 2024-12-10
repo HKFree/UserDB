@@ -14,13 +14,11 @@ class PdfGenerator
 {
     private $subnet;
 
-    public function __construct(Model\Subnet $subnet)
-    {
+    public function __construct(Model\Subnet $subnet) {
         $this->subnet = $subnet;
     }
 
-    public function generatePdf($uzivatel, $template): PdfResponse
-    {
+    public function generatePdf($uzivatel, $template): PdfResponse {
         $template->oblast = $uzivatel->Ap->Oblast->jmeno;
         $oblastid = $uzivatel->Ap->Oblast->id;
         $template->oblastemail = "oblast$oblastid@hkfree.org";
@@ -68,8 +66,7 @@ class PdfGenerator
         return $pdf;
     }
 
-    public function mesicName($indate, $addmonth)
-    {
+    public function mesicName($indate, $addmonth) {
         $date = new Nette\Utils\DateTime($indate);
         $date->add(new \DateInterval('P'.$addmonth.'M'));
         $datestr = $date->format('F');
@@ -80,8 +77,7 @@ class PdfGenerator
         return $datum;
     }
 
-    public function mesicDate($indate, $addmonth)
-    {
+    public function mesicDate($indate, $addmonth) {
         $date = new Nette\Utils\DateTime($indate);
         $date->add(new \DateInterval('P'.$addmonth.'M'));
         return $date->format('17.m.Y');

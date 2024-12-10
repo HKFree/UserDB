@@ -14,16 +14,14 @@ class AccountActivation
     private $prichoziPlatba;
     private $parameters;
 
-    public function __construct(Parameters $parameters, PrichoziPlatba $platba, UzivatelskeKonto $konto, Uzivatel $uzivatel)
-    {
+    public function __construct(Parameters $parameters, PrichoziPlatba $platba, UzivatelskeKonto $konto, Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
         $this->uzivatelskeKonto = $konto;
         $this->prichoziPlatba = $platba;
         $this->parameters = $parameters;
     }
 
-    public function activateAccount($loggedUser, $id)
-    {
+    public function activateAccount($loggedUser, $id) {
         $uzivatel = $this->uzivatel->getUzivatel($id);
         if ($uzivatel) {
             $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
@@ -45,8 +43,7 @@ class AccountActivation
         return false;
     }
 
-    public function reactivateAccount($loggedUser, $id)
-    {
+    public function reactivateAccount($loggedUser, $id) {
         $uzivatel = $this->uzivatel->getUzivatel($id);
         if ($uzivatel) {
             $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
@@ -81,8 +78,7 @@ class AccountActivation
         return '';
     }
 
-    public function deactivateAccount($loggedUser, $id)
-    {
+    public function deactivateAccount($loggedUser, $id) {
         $uzivatel = $this->uzivatel->getUzivatel($id);
         if ($uzivatel) {
             $this->uzivatel->update($uzivatel->id, array('money_aktivni' => 1,'money_deaktivace' => 1));

@@ -26,8 +26,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     protected Settings $settings;
 
-    public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer, Settings $settings)
-    {
+    public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer, Settings $settings) {
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
         $this->ap = $ap;
@@ -35,8 +34,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->settings = $settings;
     }
 
-    public function startup()
-    {
+    public function startup() {
         parent::startup();
 
         //$uri = $this->getHttpRequest()->getUrl();
@@ -47,8 +45,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         }
     }
 
-    protected function beforeRender()
-    {
+    protected function beforeRender() {
         parent::__construct();
         parent::beforeRender();
 
@@ -62,8 +59,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         }
     }
 
-    protected function createComponentSearchForm()
-    {
+    protected function createComponentSearchForm() {
         $form = new Form();
         $form->getElementPrototype()->class('navbar-form navbar-right');
         $form->addText('search', 'Vyhledej:')->setAttribute('class', 'form-control')->setAttribute('placeholder', 'Hledat...');
@@ -73,8 +69,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         return $form;
     }
 
-    public function searchFormSucceeded(Form $form)
-    {
+    public function searchFormSucceeded(Form $form) {
         $values = $form->getValues();
         $ipIsInAp = $this->ap->findAPByIP($values->search);
         if ($ipIsInAp && $ipIsInAp->count() > 0) {
@@ -84,15 +79,13 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->redirect('UzivatelList:listall', array('search' => $values->search, 'id' => null));
     }
 
-    protected function getSubnetLinkFromIpAddress($ipAddress)
-    {
+    protected function getSubnetLinkFromIpAddress($ipAddress) {
         list($a, $b, $c, $d) = explode(".", $ipAddress);
         $resultnet = $a .".". $b .".". $c .".";
         return $this->link('Subnet:detail', array('id' => $resultnet)).'#ip'.$ipAddress;
     }
 
-    protected function getWewimoLinkFromIpAddress($ip)
-    {
+    protected function getWewimoLinkFromIpAddress($ip) {
         if ($ip->w_ssid) {
             // najit IPAdresu zarizeni (AP), na ktere je tato ip (podle Wewima) pripojena
             $apAdresa = $ip->ref('IPAdresa', 'w_ap_IPAdresa_id');
@@ -111,8 +104,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         return null; // fallback
     }
 
-    protected function getSubnetLinksFromIPs($ips)
-    {
+    protected function getSubnetLinksFromIPs($ips) {
         $result = array();
         foreach ($ips as $ip) {
             $result[$ip->ip_adresa] = $this->getSubnetLinkFromIpAddress($ip->ip_adresa);
@@ -120,8 +112,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         return $result;
     }
 
-    protected function getWewimoLinksFromIPs($ips)
-    {
+    protected function getWewimoLinksFromIPs($ips) {
         $result = array();
         foreach ($ips as $ip) {
             $result[$ip->ip_adresa] = $this->getWewimoLinkFromIpAddress($ip);
@@ -138,13 +129,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      * @param mixed $args
      * @return string
      */
-    public function linker($destination, $args = [])
-    {
+    public function linker($destination, $args = []) {
         return ($this->link($destination, $args));
     }
 
-    public function getIdentity(): Model\HkfIdentity
-    {
+    public function getIdentity(): Model\HkfIdentity {
         $i = $this->getUser()->getIdentity();
         if ($i instanceof Model\HkfIdentity) {
             return $i;
