@@ -16,8 +16,7 @@ class AjaxApiPresenter extends BasePresenter
     private $ap;
     private $sojka;
 
-    public function __construct(Model\Subnet $subnet, Model\AP $ap, Model\Sojka $sojka)
-    {
+    public function __construct(Model\Subnet $subnet, Model\AP $ap, Model\Sojka $sojka) {
         $this->subnet = $subnet;
         $this->ap = $ap;
         $this->sojka = $sojka;
@@ -29,8 +28,7 @@ class AjaxApiPresenter extends BasePresenter
      *  @param string $ip Hledaná IP adresa
      *  @return type Description
      */
-    public function renderGetIpDetails()
-    {
+    public function renderGetIpDetails() {
         $errorTable = array(
             Model\Subnet::ERR_NOT_FOUND => "Podsíť a brána pro tuto IP není v databázi!",
             Model\Subnet::ERR_NO_GW => "Brána pro tuto IP není v databázi!",
@@ -70,8 +68,7 @@ class AjaxApiPresenter extends BasePresenter
      *  @param string[] $ips Hledané IP adresy
      *  @return type Description
      */
-    public function renderGetIpsPing()
-    {
+    public function renderGetIpsPing() {
         $ips = $this->getParameter("ips");
 
         if (empty($ips)) {

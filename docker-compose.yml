@@ -24,7 +24,7 @@ services:
     links:
       - db
     networks:
-      - my-net
+      - local-userdb-net
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
@@ -34,17 +34,17 @@ services:
     environment:
       PMA_HOST: db
     networks:
-      - my-net
+      - local-userdb-net
   db:
     image: mariadb:10.1
     ports:
       - "10306:3306"
-    command: --max_allowed_packet=32505856      # Set max_allowed_packet to 256M (or any other value)
+    command: --max_allowed_packet=32505856 # Set max_allowed_packet to 256M (or any other value)
     environment:
       MYSQL_ROOT_PASSWORD: rootpwd654
       MYSQL_DATABASE: userdb
     networks:
-      - my-net
+      - local-userdb-net
 networks:
-  my-net:
-     name: my-net
+  local-userdb-net:
+    name: local-userdb-net

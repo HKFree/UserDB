@@ -16,19 +16,16 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
     private $ipAdresa;
     private $cryptosvc;
 
-    public function __construct(CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa)
-    {
+    public function __construct(CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa) {
         $this->cryptosvc = $cryptosvc;
         $this->ipAdresa = $ipAdresa;
     }
 
-    public function renderPresifrovani()
-    {
+    public function renderPresifrovani() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
-    protected function createComponentPresifrovaniForm()
-    {
+    protected function createComponentPresifrovaniForm() {
         // Tohle je nutne abychom mohli zjistit isSubmited
         $form = new Form($this, "presifrovaniForm");
         $form->addHidden('id');
@@ -40,8 +37,7 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function presifrovaniFormSucceded($form, $values)
-    {
+    public function presifrovaniFormSucceded($form, $values) {
         $nesifrovane = $this->ipAdresa->findBy(array('heslo_sifrovane' => 0));
 
         foreach ($nesifrovane as $ip) {

@@ -23,14 +23,12 @@ class VnejsiScanner
     private $scanData;
     private $scanDate;
 
-    public function __construct($outerScannerURL, IPAdresa $iPAdresa)
-    {
+    public function __construct($outerScannerURL, IPAdresa $iPAdresa) {
         $this->outerScannerURL = $outerScannerURL;
         $this->ipadresa = $iPAdresa;
     }
 
-    public function downloadScan()
-    {
+    public function downloadScan() {
         $client = new Client(['verify' => false]);
 
         try {
@@ -67,8 +65,7 @@ class VnejsiScanner
         $this->scanData = $out;
     }
 
-    public function getScan()
-    {
+    public function getScan() {
         if (!$this->scanData) {
             $this->downloadScan();
         }
@@ -76,8 +73,7 @@ class VnejsiScanner
         return ($this->scanData);
     }
 
-    public function getScanDate()
-    {
+    public function getScanDate() {
         if (!$this->scanDate) {
             $this->downloadScan();
         }
@@ -85,8 +81,7 @@ class VnejsiScanner
         return ($this->scanDate);
     }
 
-    public function getScanNaPortech($filtr)
-    {
+    public function getScanNaPortech($filtr) {
         $scan = $this->getScan();
 
         $out = [];

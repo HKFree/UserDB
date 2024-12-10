@@ -11,14 +11,12 @@ class HlasysPresenter extends ApiPresenter
     private $spravceOblasti;
     private $typSpravceOblasti;
 
-    public function __construct(\App\Model\SpravceOblasti $spravceOblasti, TypSpravceOblasti $typSpravceOblasti)
-    {
+    public function __construct(\App\Model\SpravceOblasti $spravceOblasti, TypSpravceOblasti $typSpravceOblasti) {
         $this->spravceOblasti = $spravceOblasti;
         $this->typSpravceOblasti = $typSpravceOblasti;
     }
 
-    public function actionGetSpravce($typSpravce)
-    {
+    public function actionGetSpravce($typSpravce) {
         $typSpravceRec = $this->typSpravceOblasti->findOneBy(['text' => $typSpravce]);
         if (!$typSpravceRec) {
             $this->sendResponse(new JsonResponse(['result' => 'ERROR, typ spravce '.$typSpravce.' not found']));

@@ -17,21 +17,18 @@ class Wewimo2InfluxCommand extends Command
     /** @var Wewimo */
     private $wewimo;
 
-    public function __construct(AP $ap, Wewimo $wewimo)
-    {
+    public function __construct(AP $ap, Wewimo $wewimo) {
         parent::__construct();
         $this->ap = $ap;
         $this->wewimo = $wewimo;
     }
 
-    protected function configure()
-    {
+    protected function configure() {
         $this->setName('app:wewimo2influx')
             ->setDescription('Ziskat Wewimo data ze vsech sledovanych RB a zapsat do InfluxDB (Grafany)');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $influxUrl = $this->getHelper('container')->getParameter('influxUrl');
 
         $database = InfluxDB\Client::fromDSN($influxUrl); // 'influxdb://user:pass@host:port/db'
@@ -90,8 +87,7 @@ class Wewimo2InfluxCommand extends Command
         return 0;
     }
 
-    private function addFloatField(&$fields, $dstField, $station, $srcField)
-    {
+    private function addFloatField(&$fields, $dstField, $station, $srcField) {
         $val = $station[$srcField] ?? null;
         if (!is_null($val)) {
             $fields[$dstField] = floatval($val);

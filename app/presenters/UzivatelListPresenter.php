@@ -19,16 +19,14 @@ class UzivatelListPresenter extends BasePresenter
     private $ap;
     private $tabulkaUzivatelu;
 
-    public function __construct(Model\UzivatelListGrid $ULGrid, Model\CestneClenstviUzivatele $cc, Model\Uzivatel $uzivatel, Model\AP $ap)
-    {
+    public function __construct(Model\UzivatelListGrid $ULGrid, Model\CestneClenstviUzivatele $cc, Model\Uzivatel $uzivatel, Model\AP $ap) {
         $this->cestneClenstviUzivatele = $cc;
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->tabulkaUzivatelu = $ULGrid;
     }
 
-    public function renderList()
-    {
+    public function renderList() {
         // otestujeme, jestli máme id APčka a ono existuje
         if ($this->getParameter('id') && $apt = $this->ap->getAP($this->getParameter('id'))) {
             $id = $this->getParameter('id');
@@ -52,8 +50,7 @@ class UzivatelListPresenter extends BasePresenter
         $this->template->fullnotes = $this->getParameter("fullnotes", false);
     }
 
-    public function renderListall()
-    {
+    public function renderListall() {
         $search = $this->getParameter('search', false);
         if (!$search) {
             $cestnych = count($this->cestneClenstviUzivatele->getListCC());
@@ -71,8 +68,7 @@ class UzivatelListPresenter extends BasePresenter
         $this->template->search = $this->getParameter('search', false);
     }
 
-    protected function createComponentGrid($name)
-    {
+    protected function createComponentGrid($name) {
         $this->tabulkaUzivatelu->getListOfUsersGrid(
             $this,
             $name,
@@ -84,8 +80,7 @@ class UzivatelListPresenter extends BasePresenter
         );
     }
 
-    protected function createComponentOthersGrid($name)
-    {
+    protected function createComponentOthersGrid($name) {
         $this->tabulkaUzivatelu->getListOfOtherUsersGrid(
             $this,
             $name,

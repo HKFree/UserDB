@@ -27,16 +27,14 @@ class UzivatelAccountPresenter extends UzivatelPresenter
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    public function __construct(Model\UzivatelskeKonto $konto, Model\Uzivatel $uzivatel, Model\AP $ap, Model\PrichoziPlatba $platba)
-    {
+    public function __construct(Model\UzivatelskeKonto $konto, Model\Uzivatel $uzivatel, Model\AP $ap, Model\PrichoziPlatba $platba) {
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->uzivatelskeKonto = $konto;
         $this->prichoziPlatba = $platba;
     }
 
-    public function renderPlatba()
-    {
+    public function renderPlatba() {
         $id = $this->getParameter('id');
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
         //\Tracy\Debugger::barDump($pohyb->Uzivatel);
@@ -57,8 +55,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParameter('id'));
     }
 
-    public function renderAccount()
-    {
+    public function renderAccount() {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
@@ -70,8 +67,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $this->template->sum_output = $stavUctuOut;
     }
 
-    protected function createComponentAccountgrid($name)
-    {
+    protected function createComponentAccountgrid($name) {
         $canViewOrEdit = false;
         $id = $this->getParameter('id');
 

@@ -12,8 +12,7 @@ use Nette\Application\Routers\SimpleRouter;
  */
 class RouterFactory
 {
-    public function createRouter($urlPrefix): Nette\Routing\Router
-    {
+    public function createRouter($urlPrefix): Nette\Routing\Router {
         $router = new RouteList();
 
         $router->addRoute($urlPrefix . '/uzivatel/list/<id>', 'UzivatelList:list', Route::ONE_WAY);

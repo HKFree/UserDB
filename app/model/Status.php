@@ -31,15 +31,13 @@ class Status
      */
     private $ipadresa;
 
-    public function __construct(Sojka $sojka, Oblast $oblast, IPAdresa $ipadresa)
-    {
+    public function __construct(Sojka $sojka, Oblast $oblast, IPAdresa $ipadresa) {
         $this->sojka = $sojka;
         $this->oblast = $oblast;
         $this->ipadresa = $ipadresa;
     }
 
-    public function getPingNaIPAP()
-    {
+    public function getPingNaIPAP() {
         $ip_k_pingnuti = array();
 
         foreach ($this->oblast->getSeznamOblasti() as $oblast) {
@@ -55,8 +53,7 @@ class Status
         return ($vysledek_pingu);
     }
 
-    public function getProblemoveAP()
-    {
+    public function getProblemoveAP() {
         $vysledek_pingu = $this->getPingNaIPAP();
 
         $tmp_lookback_date = time() - 7 * 24 * 60 * 60;

@@ -24,8 +24,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    public function __construct(Model\AP $ap, Model\Uzivatel $uzivatel, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\TypSpravceOblasti $typSpravce, Model\CestneClenstviUzivatele $cc, Model\SpravceOblasti $prava, Model\Log $log)
-    {
+    public function __construct(Model\AP $ap, Model\Uzivatel $uzivatel, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\TypSpravceOblasti $typSpravce, Model\CestneClenstviUzivatele $cc, Model\SpravceOblasti $prava, Model\Log $log) {
         $this->uzivatel = $uzivatel;
         $this->spravceOblasti = $prava;
         $this->typSpravceOblasti = $typSpravce;
@@ -35,14 +34,12 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $this->ap = $ap;
     }
 
-    public function renderEditrights()
-    {
+    public function renderEditrights() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentUzivatelRightsForm()
-    {
+    protected function createComponentUzivatelRightsForm() {
         $typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
         $obl = $this->oblast->getSeznamOblasti()->fetchPairs('id', 'jmeno');
 
@@ -81,8 +78,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function validateRightsForm($form)
-    {
+    public function validateRightsForm($form) {
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
@@ -104,8 +100,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         }
     }
 
-    public function uzivatelRightsFormSucceded($form, $values)
-    {
+    public function uzivatelRightsFormSucceded($form, $values) {
         $log = array();
         $idUzivatele = $values->id;
         $prava = $values->rights;
@@ -147,15 +142,13 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return true;
     }
 
-    public function renderEditcc()
-    {
+    public function renderEditcc() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
         $this->template->canApprove = $this->getUser()->isInRole('VV');
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentUzivatelCCForm()
-    {
+    protected function createComponentUzivatelCCForm() {
         $form = new Form($this, "uzivatelCCForm");
         $form->addHidden('id');
 
@@ -215,8 +208,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function uzivatelCCFormSucceded($form, $values)
-    {
+    public function uzivatelCCFormSucceded($form, $values) {
         $log = array();
         $idUzivatele = $values->id;
         $prava = $values->rights;

@@ -14,14 +14,12 @@ class VnejsiScannerPresenter extends BasePresenter
     private $vnejsiScanner;
     private $iPAdresa;
 
-    public function __construct(Model\VnejsiScanner $vnejsiScanner, Model\IPAdresa $iPAdresa)
-    {
+    public function __construct(Model\VnejsiScanner $vnejsiScanner, Model\IPAdresa $iPAdresa) {
         $this->vnejsiScanner = $vnejsiScanner;
         $this->iPAdresa = $iPAdresa;
     }
 
-    private function getDetaily($scan)
-    {
+    private function getDetaily($scan) {
         $scan_detaily = [];
         foreach ($scan as $ip => $porty) {
             $scan_detaily[$ip]["porty"] = $porty;
@@ -49,8 +47,7 @@ class VnejsiScannerPresenter extends BasePresenter
         return ($scan_detaily);
     }
 
-    public function renderDefault()
-    {
+    public function renderDefault() {
         $this->template->scan = $this->getDetaily($this->vnejsiScanner->getScan());
         $this->template->scanDate = $this->vnejsiScanner->getScanDate();
     }

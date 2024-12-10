@@ -14,16 +14,14 @@ class SmokepingPresenter extends ApiPresenter
     private $ipAdresa;
     private $ap;
 
-    public function __construct(Model\Oblast $oblast, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap)
-    {
+    public function __construct(Model\Oblast $oblast, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
         $this->oblast = $oblast;
         $this->uzivatel = $uzivatel;
         $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
     }
 
-    public function renderDefault()
-    {
+    public function renderDefault() {
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');
@@ -57,8 +55,7 @@ class SmokepingPresenter extends ApiPresenter
         $this->template->users_ips = $users_ips;
     }
 
-    public function renderCheck()
-    {
+    public function renderCheck() {
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');

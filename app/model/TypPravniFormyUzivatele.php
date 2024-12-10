@@ -14,8 +14,7 @@ class TypPravniFormyUzivatele extends Table
     */
     protected $tableName = 'TypPravniFormyUzivatele';
 
-    public function getTypyPravniFormyUzivatele()
-    {
+    public function getTypyPravniFormyUzivatele() {
         return ($this->findAll());
     }
 }

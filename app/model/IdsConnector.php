@@ -31,16 +31,14 @@ class IdsConnector
     /**
      * IdsConnector constructor.
      */
-    public function __construct(string $idsUrl, string $idsUsername, string $idsPassword, string $idsIpsWhitelist)
-    {
+    public function __construct(string $idsUrl, string $idsUsername, string $idsPassword, string $idsIpsWhitelist) {
         $this->idsUrl = $idsUrl;
         $this->idsUsername = $idsUsername;
         $this->idsPassword = $idsPassword;
         $this->idsIpsWhitelist = explode(',', $idsIpsWhitelist);
     }
 
-    protected function getElasticHttpClient(): \GuzzleHttp\Client
-    {
+    protected function getElasticHttpClient(): \GuzzleHttp\Client {
         $stack = HandlerStack::create();
         $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
             $contentsRequest = (string)$request->getBody();
@@ -79,13 +77,11 @@ class IdsConnector
         throw new \RuntimeException('Error getting IDS CSRF token');
     }
 
-    protected function getRange($daysBack): array
-    {
+    protected function getRange($daysBack): array {
         return ['range' => ['@timestamp' => ['gte' => 'now-' . $daysBack . 'd', 'lte' => 'now']]];
     }
 
-    private function getRelevantIndexes($prefix, $daysBack)
-    {
+    private function getRelevantIndexes($prefix, $daysBack) {
         //
         $indexes = [];
         $date = new \DateTime();
@@ -99,8 +95,7 @@ class IdsConnector
         return $indexes;
     }
 
-    public function getEventsForIps(array $ips, $daysBack = 7, $limit = 1000)
-    {
+    public function getEventsForIps(array $ips, $daysBack = 7, $limit = 1000) {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
 
@@ -138,8 +133,7 @@ class IdsConnector
         }
     }
 
-    public function getUniqueIpsFromPrivateSubnets($daysBack = 7, $limit = 2000)
-    {
+    public function getUniqueIpsFromPrivateSubnets($daysBack = 7, $limit = 2000) {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
         $elasticResponse = $client->request(

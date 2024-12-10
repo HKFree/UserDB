@@ -14,18 +14,15 @@ class AP extends Table
     */
     protected $tableName = 'Ap';
 
-    public function getAP($id)
-    {
+    public function getAP($id) {
         return ($this->find($id));
     }
 
-    public function findAP(array $by)
-    {
+    public function findAP(array $by) {
         return ($this->findBy($by));
     }
 
-    public function canViewOrEditAP($ApID, $Uzivatel)
-    {
+    public function canViewOrEditAP($ApID, $Uzivatel) {
         //\Tracy\Debugger::barDump($ApID);
         //\Tracy\Debugger::barDump($Uzivatel);
         return $Uzivatel->isInRole('TECH')
@@ -35,13 +32,11 @@ class AP extends Table
            || $Uzivatel->isInRole('ZSO-'.$this->find($ApID)->Oblast_id);
     }
 
-    public function canViewOrEditAll($Uzivatel)
-    {
+    public function canViewOrEditAll($Uzivatel) {
         return $Uzivatel->isInRole('TECH') || $Uzivatel->isInRole('VV') || $Uzivatel->isInRole('KONTROLA');
     }
 
-    public function findAPByIP($search)
-    {
+    public function findAPByIP($search) {
         $completeMatchId = $this->getConnection()->query("SELECT Ap.id FROM Ap
                                             LEFT JOIN  IPAdresa ON Ap.id = IPAdresa.Ap_id
                                             WHERE (
