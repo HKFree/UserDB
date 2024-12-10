@@ -16,7 +16,8 @@ services:
       - USERDB_IDS_IPS_WHITELIST=10.107.99.188
       - INFLUX_URL=influxdb://wewimo:xxx@10.107.252.101:8086/wewimo
     env_file:
-     - .local.env
+      - path: .local.env
+        required: false
     ports:
       - "10107:80"
     volumes:
