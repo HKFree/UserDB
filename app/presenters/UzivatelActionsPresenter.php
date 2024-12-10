@@ -20,7 +20,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $mailService;
     private $smlouva;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva) {
+    public function __construct(private Nette\Database\Connection $database, Model\Smlouva $smlouva, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel) {
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
@@ -141,18 +141,22 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             $this->redirect('UzivatelList:listall');
         }
 
-        // Kontrola, že od poslední generace uběhlo aspoň 15 minut...
-        $this->checkTimeSinceLastGenerateContract();
+        // Kontrola, že od poslední generace uběhlo aspoň 5 minut...
+        // $this->checkTimeSinceLastGenerateContract();
 
-        $inserted_row = $this->database->query('INSERT INTO Smlouva ?', [
+        $this->database->query('INSERT INTO Smlouva ?', [
             'Uzivatel_id' => $user_id,
             'typ' => 'ucastnicka',
             'kdy_vygenerovano' => new DateTime()
         ]);
+        $newId = $this->database->getInsertId();
 
-        // ZDE CALL SCRIPT
+        $cmd = sprintf("%s/../bin/digisign-generovat-ucastnickou-smlouvu.php %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
+        $cmd2 = "$cmd | sed -u 's/^/digisign-generovat-ucastnickou-smlouvu /' &";
+        error_log("RUN: [$cmd2]", );
+        proc_close(proc_open($cmd2, array(), $foo));
 
-        $this->flashMessage('Vyrobena smlouva s číslem ' . $this->database->getInsertId());
+        $this->flashMessage(sprintf('Nová smlouva číso %u bude odeslána na e-mail %s.', $newId, $current_user->email));
         // Tady call na generaci nove smlouvy a odeslani
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
