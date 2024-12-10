@@ -389,6 +389,7 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
+
         $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
             $latte = new Engine();
             $params = [
