@@ -116,11 +116,11 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
 
         $last_generated_datetime = \Nette\Utils\DateTime::from($last_generated['kdy_vygenerovano']);
-        $half_hour_ago = (new DateTime())
+        $interval_ago = (new DateTime())
             ->sub(new DateInterval($interval));
 
-        if ($half_hour_ago < $last_generated_datetime) {
-            $this->flashMessage('Od generace poslední smlouvy neuběhlo ani 5 minut. To bude chyba...');
+        if ($interval_ago < $last_generated_datetime) {
+            $this->flashMessage('Ochrana proti přetížení: Nelze vytvořit další smlouvu dříve než 5 minut po předchozí. Pokud je to záměr, prosím chvíli počkej.', 'danger');
             $this->redirect('Uzivatel:show', array('id' => $user_id));
         }
     }
