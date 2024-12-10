@@ -61,10 +61,10 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
         $this->template->u = $uzivatel;
 
-        $stavUctuIn = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('castka>0')->sum('castka');
-        $this->template->sum_input = $stavUctuIn;
-        $stavUctuOut = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('castka<0')->sum('castka');
-        $this->template->sum_output = $stavUctuOut;
+        $this->template->sum_input_spolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where('castka>0')->sum('castka');
+        $this->template->sum_output_spolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where('castka<0')->sum('castka');
+        $this->template->sum_input_druzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->where('castka>0')->sum('castka');
+        $this->template->sum_output_druzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->where('castka<0')->sum('castka');
     }
 
     protected function createComponentAccountgrid($name) {
@@ -96,6 +96,18 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             }
             return $tr;
         });
+
+        $grid->addFilterSelect('ucet', 'Účet', array('spolek' => 'Spolek', 'druzstvo' => 'Družstvo'))
+            ->setDefaultValue('druzstvo')
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+                if ($value == 'spolek') {
+                    return ($connection->where('spolek', 1));
+                }
+                if ($value == 'druzstvo') {
+                    return ($connection->where('druzstvo', 1));
+                }
+                return ($connection);
+            });
 
         $grid->addColumnText('castka', 'Částka')->setCustomRender(function ($item) {
             $c = $item->castka;

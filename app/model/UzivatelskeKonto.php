@@ -23,7 +23,7 @@ class UzivatelskeKonto extends Table
     }
 
     public function getUzivatelskeKontoUzivatele($idUzivatele) {
-        return ($this->findBy(array('Uzivatel_id' => $idUzivatele))->fetchAll());
+        return ($this->findBy(array('Uzivatel_id' => $idUzivatele)));
     }
 
     public function getUzivatelskeKontoByPrichoziPlatba($idPlatby) {
