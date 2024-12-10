@@ -14,7 +14,6 @@ class RouterFactory
 {
     public function createRouter($urlPrefix): Nette\Routing\Router {
         $router = new RouteList();
-
         $router->addRoute($urlPrefix . '/uzivatel/list/<id>', 'UzivatelList:list', Route::ONE_WAY);
         $router->addRoute($urlPrefix . '/uzivatel/listall', 'UzivatelList:listall', Route::ONE_WAY);
         $router->addRoute($urlPrefix . '/sprava/schvalovanicc', 'SpravaCc:schvalovanicc', Route::ONE_WAY);
@@ -37,6 +36,8 @@ class RouterFactory
         $router->addRoute($urlPrefix . '/uzivatel/editrights/<id>', 'UzivatelRightsCc:editrights', Route::ONE_WAY);
         $router->addRoute($urlPrefix . '/uzivatel/account/<id>', 'UzivatelAccount:account', Route::ONE_WAY);
         $router->addRoute($urlPrefix . '/uzivatel/platba/<id>', 'UzivatelAccount:platba', Route::ONE_WAY);
+        $router->addRoute($urlPrefix . '/stitky/saveLabel', ['presenter' => 'SpravaStitku','action' => 'saveLabel',]);
+        $router->addRoute($urlPrefix . '/stitky/deleteLabel', ['presenter' => 'SpravaStitku','action' => 'deleteLabel',]);
 
         $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
             'module' => 'Api'
