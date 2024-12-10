@@ -21,8 +21,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
     private $sloucenyUzivatel;
     private $cestneClenstviUzivatele;
 
-    public function __construct(Model\SloucenyUzivatel $slUzivatel, Model\Uzivatel $uzivatel, Model\Log $log, Model\IPAdresa $ipAdresa, Model\CestneClenstviUzivatele $cc)
-    {
+    public function __construct(Model\SloucenyUzivatel $slUzivatel, Model\Uzivatel $uzivatel, Model\Log $log, Model\IPAdresa $ipAdresa, Model\CestneClenstviUzivatele $cc) {
         $this->uzivatel = $uzivatel;
         $this->log = $log;
         $this->ipAdresa = $ipAdresa;
@@ -30,12 +29,10 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         $this->cestneClenstviUzivatele = $cc;
     }
 
-    public function renderSlouceni()
-    {
+    public function renderSlouceni() {
     }
 
-    protected function createComponentSlouceniGrid($name)
-    {
+    protected function createComponentSlouceniGrid($name) {
         $grid = new \Grido\Grid($this, $name);
         $grid->translator->setLang('cs');
         $grid->setExport('slouceni_export');
@@ -51,8 +48,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         $grid->addColumnText('sloucil', 'Sloučil')->setSortable()->setFilterText()->setSuggestion();
     }
 
-    public function renderSlucovani()
-    {
+    public function renderSlucovani() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
 
         $u1id = 1;
@@ -131,8 +127,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         }
     }
 
-    protected function createComponentSlucovaniForm()
-    {
+    protected function createComponentSlucovaniForm() {
         $form = new Form($this, "slucovaniForm");
         $form->addHidden('id');
 
@@ -154,8 +149,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function slucovaniFormSucceded($form, $values)
-    {
+    public function slucovaniFormSucceded($form, $values) {
         if ($form->isSubmitted()->name == "nahled") {
             if ($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id, $values->slouceny_uzivatel)) {
                 $this->flashMessage('Takové sloučení již existuje.');

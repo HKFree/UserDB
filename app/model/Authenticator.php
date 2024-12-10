@@ -18,8 +18,7 @@ class Authenticator implements Security\IAuthenticator
     private $fakeUser;
     private $spravceOb;
 
-    public function __construct($fakeUser, Nette\Database\Context $ctx)
-    {
+    public function __construct($fakeUser, Nette\Database\Context $ctx) {
         $this->context = $ctx;
         $this->fakeUser = $fakeUser;
     }
@@ -29,8 +28,7 @@ class Authenticator implements Security\IAuthenticator
      * @return Nette\Security\Identity
      * @throws Nette\Security\AuthenticationException
      */
-    public function authenticate(array $credentials)
-    {
+    public function authenticate(array $credentials) {
         list($userID, $password) = $credentials;
         if (!$userID) {
             throw new Nette\Security\AuthenticationException('User not found.');

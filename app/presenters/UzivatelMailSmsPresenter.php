@@ -22,21 +22,18 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
     private $smsSender;
 
-    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, SmsSender $smsSender)
-    {
+    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, SmsSender $smsSender) {
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->smsSender = $smsSender;
     }
 
-    public function renderEmail()
-    {
+    public function renderEmail() {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentEmailForm()
-    {
+    protected function createComponentEmailForm() {
         $form = new Form($this, "emailForm");
         $form->addHidden('id');
 
@@ -66,8 +63,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function emailFormSucceded($form, $values)
-    {
+    public function emailFormSucceded($form, $values) {
         $idUzivatele = $values->id;
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
@@ -95,14 +91,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return true;
     }
 
-    public function renderEmailall()
-    {
+    public function renderEmailall() {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
     }
 
-    protected function createComponentEmailallForm()
-    {
+    protected function createComponentEmailallForm() {
         $form = new Form($this, "emailallForm");
         $form->addHidden('id');
 
@@ -144,8 +138,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function emailallFormSucceded($form, $values)
-    {
+    public function emailallFormSucceded($form, $values) {
         $idUzivatele = $values->id;
 
         $ap = $this->ap->getAP($this->getParameter('id'));
@@ -178,15 +171,13 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return true;
     }
 
-    public function renderSms()
-    {
+    public function renderSms() {
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($user->Ap_id, $this->getUser());
         $this->template->uziv = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentSmsForm()
-    {
+    protected function createComponentSmsForm() {
         $form = new Form($this, "smsForm");
         $form->addHidden('id');
 
@@ -213,8 +204,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function smsFormSucceded($form, $values)
-    {
+    public function smsFormSucceded($form, $values) {
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
         $this->sendSMSAndValidate($this->getIdentity(), [ $user->telefon ], $values->message);
@@ -223,14 +213,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return true;
     }
 
-    public function renderSmsall()
-    {
+    public function renderSmsall() {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
     }
 
-    protected function createComponentSmsallForm()
-    {
+    protected function createComponentSmsallForm() {
         $form = new Form($this, "smsallForm");
         $form->addHidden('id');
 
@@ -263,8 +251,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function smsallFormSucceded($form, $values)
-    {
+    public function smsallFormSucceded($form, $values) {
         $ap = $this->ap->getAP($this->getParameter('id'));
 
         $telefony = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'telefon');
@@ -282,8 +269,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return true;
     }
 
-    private function sendSMSAndValidate($ident, $numbers, $message)
-    {
+    private function sendSMSAndValidate($ident, $numbers, $message) {
         $output = $this->smsSender->sendSms($ident, $numbers, $message);
 
         if ($output["status"] == SmsSender::STATUS_OK) {

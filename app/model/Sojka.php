@@ -15,8 +15,7 @@ class Sojka
     */
     protected $sojkaPingerURL;
 
-    public function __construct($sojkaPingerURL)
-    {
+    public function __construct($sojkaPingerURL) {
         $this->sojkaPingerURL = $sojkaPingerURL;
     }
 
@@ -26,8 +25,7 @@ class Sojka
      * @param string[] $ips
      * @return object
      */
-    public function pingIPS($ips)
-    {
+    public function pingIPS($ips) {
         if (empty($ips)) {
             return ([]);
         }

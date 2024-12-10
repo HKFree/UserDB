@@ -14,8 +14,7 @@ class TypZarizeni extends Table
     */
     protected $tableName = 'TypZarizeni';
 
-    public function getTypyZarizeni()
-    {
+    public function getTypyZarizeni() {
         return ($this->findAll());
     }
 }

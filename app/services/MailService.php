@@ -16,14 +16,12 @@ class MailService
     private $uzivatel;
     private $mailer;
 
-    public function __construct(Nette\Mail\IMailer $mailer, Model\Uzivatel $uzivatel)
-    {
+    public function __construct(Nette\Mail\IMailer $mailer, Model\Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
         $this->mailer = $mailer;
     }
 
-    public function sendConfirmationRequest($uzivatel, $so, $link): void
-    {
+    public function sendConfirmationRequest($uzivatel, $so, $link): void {
         $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mail = new Message();
@@ -42,8 +40,7 @@ class MailService
         $this->mailer->send($mail);
     }
 
-    public function sendConfirmationRequestCopy($uzivatel, $so): void
-    {
+    public function sendConfirmationRequestCopy($uzivatel, $so): void {
         $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mailso = new Message();
@@ -68,8 +65,7 @@ class MailService
         $this->mailer->send($mailso);
     }
 
-    public function mailPdf(PdfResponse $pdf, $uzivatel, $request, $response, $userid): void
-    {
+    public function mailPdf(PdfResponse $pdf, $uzivatel, $request, $response, $userid): void {
         $so = $this->uzivatel->getUzivatel($userid);
 
         $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
@@ -91,8 +87,7 @@ class MailService
         $this->mailer->send($mail);
     }
 
-    public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void
-    {
+    public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $so = $this->uzivatel->getUzivatel($actuser);
 

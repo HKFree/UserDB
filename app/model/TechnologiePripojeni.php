@@ -14,8 +14,7 @@ class TechnologiePripojeni extends Table
     */
     protected $tableName = 'TechnologiePripojeni';
 
-    public function getTechnologiePripojeni()
-    {
+    public function getTechnologiePripojeni() {
         return ($this->findAll());
     }
 }

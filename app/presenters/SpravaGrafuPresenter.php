@@ -15,13 +15,11 @@ class SpravaGrafuPresenter extends SpravaPresenter
 {
     private $uzivatel;
 
-    public function __construct(Model\Uzivatel $uzivatel)
-    {
+    public function __construct(Model\Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
     }
 
-    public function renderUsersgraph()
-    {
+    public function renderUsersgraph() {
         $activationsData = $this->uzivatel->getNumberOfActivations();
         //\Tracy\Debugger::barDump($activationsData);
 

@@ -13,7 +13,9 @@ return (new PhpCsFixer\Config())
     "control_structure_continuation_position" => true,
     "declare_parentheses" => true,
     "no_multiple_statements_per_line" => true,
-    "braces_position" => true,
+    'braces_position' => [
+      'functions_opening_brace' => 'same_line'
+    ],
     "statement_indentation" => true,
     "no_extra_blank_lines" => true
   ])

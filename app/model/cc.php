@@ -15,20 +15,17 @@ class cc extends Table
     */
     protected $tableName = 'cc';
 
-    public function getCC()
-    {
+    public function getCC() {
         return ($this->findAll());
     }
 
-    public function getCCWithNamesVV()
-    {
+    public function getCCWithNamesVV() {
         return $this->getConnection()
             ->query("SELECT cc_nahled.*, CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni) as name, Ap.jmeno as ap FROM cc_nahled LEFT JOIN Uzivatel ON Uzivatel.id = cc_nahled.id LEFT JOIN Ap ON Uzivatel.Ap_id = Ap.id")
             ->fetchAll();
     }
 
-    public function getCCWithNames($userId)
-    {
+    public function getCCWithNames($userId) {
         return $this->getConnection()->query("SELECT cc_nahled.*,Ap.jmeno as ap, "
                 . "CASE WHEN cc_nahled.id IN "
                 . "         (SELECT Uzivatel.id FROM Uzivatel WHERE Ap_id IN "

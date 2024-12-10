@@ -17,8 +17,7 @@ class AwegUser extends Table
     */
     protected $tableName = 'AwegUsers';
 
-    public function getAwegUser($uid)
-    {
+    public function getAwegUser($uid) {
         $r = $this->findOneBy(["hkfree_uid" => $uid]);
 
         if ($r) {

@@ -14,13 +14,11 @@ class OdchoziPlatba extends Table
     */
     protected $tableName = 'OdchoziPlatba';
 
-    public function getOdchoziPlatby()
-    {
+    public function getOdchoziPlatby() {
         return ($this->findAll());
     }
 
-    public function getOdchoziPlatba($id)
-    {
+    public function getOdchoziPlatba($id) {
         return ($this->find($id));
     }
 }

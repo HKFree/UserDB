@@ -12,16 +12,14 @@ class AppPresenter extends ApiPresenter
     private $aplikaceLog;
     private $ap;
 
-    public function __construct(\App\Model\Uzivatel $uzivatel, \App\Model\AplikaceToken $aplikaceToken, \App\Model\AplikaceLog $aplikaceLog, \App\Model\Ap $ap)
-    {
+    public function __construct(\App\Model\Uzivatel $uzivatel, \App\Model\AplikaceToken $aplikaceToken, \App\Model\AplikaceLog $aplikaceLog, \App\Model\Ap $ap) {
         $this->uzivatel = $uzivatel;
         $this->aplikaceToken = $aplikaceToken;
         $this->aplikaceLog = $aplikaceLog;
         $this->ap = $ap;
     }
 
-    public function renderGetToken()
-    {
+    public function renderGetToken() {
         if ($this->request->method != 'POST') {
             $this->sendLoginFailed();
         }
@@ -51,8 +49,7 @@ class AppPresenter extends ApiPresenter
         $this->sendLoginFailed($uid);
     }
 
-    private function getFailedGetTokenAttempts()
-    {
+    private function getFailedGetTokenAttempts() {
         return ($this->aplikaceLog->getLogy()
             ->where('action', 'app.getToken.failed')
             ->where('ip', $this->httpRequest->remoteAddress)
@@ -60,14 +57,12 @@ class AppPresenter extends ApiPresenter
             ->count());
     }
 
-    private function sendLoginFailed($uid = '')
-    {
+    private function sendLoginFailed($uid = '') {
         $this->aplikaceLog->log('app.getToken.failed', array($uid));
         $this->sendResponse(new JsonResponse(['result' => 'Login failed']));
     }
 
-    public function renderGetMembership($uid, $token)
-    {
+    public function renderGetMembership($uid, $token) {
         $this->verifyToken($uid, $token);
 
         $u = $this->uzivatel->getUzivatel($uid);
@@ -79,8 +74,7 @@ class AppPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'clenstvi' => $u->TypClenstvi->text, 'jmeno' => $u->jmeno]));
     }
 
-    public function renderGetMap($uid, $token)
-    {
+    public function renderGetMap($uid, $token) {
         $this->verifyToken($uid, $token);
 
         $aps = $this->ap->findAll()->where('gps NOT ?', null);
@@ -109,8 +103,7 @@ class AppPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'aps' => $out]));
     }
 
-    private function verifyToken($uid, $token)
-    {
+    private function verifyToken($uid, $token) {
         if (!$this->aplikaceToken->verifyToken($uid, $token)) {
             $this->aplikaceLog->log('app.verifyToken.failed', array($uid, $token));
             $this->sendResponse(new JsonResponse(['result' => 'Token invalid']));

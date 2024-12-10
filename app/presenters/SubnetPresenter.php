@@ -31,8 +31,7 @@ class SubnetPresenter extends BasePresenter
     private $log;
     private $subnet;
 
-    public function __construct(Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log)
-    {
+    public function __construct(Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
         $this->typSpravceOblasti = $typSpravce;
@@ -49,8 +48,7 @@ class SubnetPresenter extends BasePresenter
         $this->subnet = $subnet;
     }
 
-    public function renderOverview()
-    {
+    public function renderOverview() {
         if ($this->getParameter('id')) {
             $targetSubnet = $this->getParameter('id');
             if (substr($targetSubnet, -1) != ".") {
@@ -79,8 +77,7 @@ class SubnetPresenter extends BasePresenter
         }
     }
 
-    public function renderDetail()
-    {
+    public function renderDetail() {
         if ($this->getParameter('id')) {
             $targetSubnet = $this->getParameter('id');
             if (substr($targetSubnet, -1) != ".") {
