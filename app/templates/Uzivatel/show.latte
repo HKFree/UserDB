@@ -183,7 +183,7 @@
             });
 
             $('#btn-handle-subscriber-contract').on('click', function() {
-                let c = confirm("Chystáš se vygenerovat novou účastnickou smlouvu a odeslat jí členovi na e-mail.\nTato akce může trvat až minutu.\nJsi si opravdu jistý?");
+                const c = confirm("Nová účastnická smloua bude odeslána k podpisu na e-mail "+{$u->email}+".\n\n(e-mail dorazí během 2 minut)\n\nPokračovat?");
                 if (c) {
                     // Ok
                 } else {

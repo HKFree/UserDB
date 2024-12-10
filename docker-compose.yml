@@ -36,21 +36,11 @@ services:
   db:
     image: mariadb:10.1
     ports:
-      - "3306:3306"
+      - "10306:3306"
     command: --max_allowed_packet=32505856 # Set max_allowed_packet to 256M (or any other value)
     environment:
       MYSQL_ROOT_PASSWORD: rootpwd654
       MYSQL_DATABASE: userdb
-    networks:
-      - local-userdb-net
-  fio2userdb:
-    build: ./fio2userdb
-    environment:
-      - FIO_READONLY_TOKEN=U8S2I6r...T7nv
-      - USERDB_DB_HOST=db
-      - USERDB_DB_NAME=userdb
-      - USERDB_DB_USERNAME=root
-      - USERDB_DB_PASSWORD=rootpwd654
     networks:
       - local-userdb-net
 networks:
