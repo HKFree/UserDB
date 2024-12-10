@@ -94,7 +94,8 @@ class UzivatelPresenter extends BasePresenter
         $this->aplikaceToken = $aplikaceToken;
     }
 
-    public function sendNotificationEmail($idUzivatele) {
+    public function sendNotificationEmail($idUzivatele)
+    {
         try {
             $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
             $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
@@ -103,7 +104,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function sendRegistrationEmail($idUzivatele) {
+    public function sendRegistrationEmail($idUzivatele)
+    {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
 
         $hash = base64_encode($idUzivatele.'-'.md5($this->context->parameters['salt'].$newUser->zalozen));
@@ -121,7 +123,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderConfirm() {
+    public function renderConfirm()
+    {
         if ($this->getParameter('id')) {
             list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
 
@@ -141,7 +144,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderShow() {
+    public function renderShow()
+    {
         if ($this->getParameter('id')) {
             $uid = $this->getParameter('id');
             if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
@@ -239,11 +243,13 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function createComponentLogTable() {
+    public function createComponentLogTable()
+    {
         return $this->logTableFactory->create($this);
     }
 
-    public function renderEdit() {
+    public function renderEdit()
+    {
         if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
             $seznamUzivatelu = [];
@@ -265,7 +271,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function validateUzivatelForm($form) {
+    public function validateUzivatelForm($form)
+    {
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
@@ -333,7 +340,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function uzivatelFormSucceded($form, $values) {
+    public function uzivatelFormSucceded($form, $values)
+    {
         $log = [];
         $idUzivatele = $values->id;
         $ips = $values->ip;
@@ -515,7 +523,8 @@ class UzivatelPresenter extends BasePresenter
         return true;
     }
 
-    public function actionIds($id) {
+    public function actionIds($id)
+    {
         if ($id) {
             if ($uzivatel = $this->uzivatel->getUzivatel($id)) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
@@ -534,7 +543,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    protected function createComponentUzivatelForm() {
+    protected function createComponentUzivatelForm()
+    {
         $typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id', 'text');
         $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id', 'text');
         $zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id', 'text');

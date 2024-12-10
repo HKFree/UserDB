@@ -20,7 +20,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $mailService;
     private $smlouva;
 
-    public function __construct(private Nette\Database\Connection $database, Model\Smlouva $smlouva, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel) {
+    public function __construct(private Nette\Database\Connection $database, Model\Smlouva $smlouva, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel)
+    {
         $this->smlouva = $smlouva;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
@@ -28,7 +29,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->mailService = $mailsvc;
     }
 
-    public function actionMoneyActivate() {
+    public function actionMoneyActivate()
+    {
         $id = $this->getParameter('id');
         if ($id) {
             if ($this->accountActivation->activateAccount($this->getUser(), $id)) {
@@ -39,7 +41,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionMoneyReactivate() {
+    public function actionMoneyReactivate()
+    {
         $id = $this->getParameter('id');
         if ($id) {
             $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
@@ -51,7 +54,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionMoneyDeactivate() {
+    public function actionMoneyDeactivate()
+    {
         $id = $this->getParameter('id');
         if ($id) {
             if ($this->accountActivation->deactivateAccount($this->getUser(), $id)) {
@@ -62,7 +66,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionExportPdf() {
+    public function actionExportPdf()
+    {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
@@ -71,7 +76,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             }
         }
     }
-    public function actionSendRegActivation() {
+    public function actionSendRegActivation()
+    {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
@@ -89,7 +95,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionExportAndSendRegForm() {
+    public function actionExportAndSendRegForm()
+    {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
@@ -104,7 +111,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    private function checkTimeSinceLastGenerateContract(string $interval = 'PT5M') {
+    private function checkTimeSinceLastGenerateContract(string $interval = 'PT5M')
+    {
         $user_id = $this->getParameter('id');
 
         $last_generated = $this->smlouva->findAll()
@@ -125,7 +133,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionHandleSubscriberContract() {
+    public function actionHandleSubscriberContract()
+    {
         // TODO: Logování změn
 
         if (!$this->getParameter('id')) {
