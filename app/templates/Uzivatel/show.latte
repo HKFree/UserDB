@@ -33,10 +33,34 @@
     <style>
 	.table-nonfluid {
 	    width: auto;
-	 }
+	}
+    .flex-content{
+        display:flex;
+    }
+    .panel-right{
+        height: fit-content;
+        margin-left: 40px;
+    }
+    .panel-right .table>tbody>tr>td {
+        padding: 2px 24px 2px 4px !important;
+    }
+    h4{
+        font-size: 24px;
+        font-weight: bold;
+    }
+    @media (max-width: 1200px) {
+        .flex-content{
+            flex-direction: column;
+        }
+        .panel-right{
+            margin-left: 0px;
+        }
+    }
     </style>
-
-    <table class="table table-nonfluid">
+    <div class="flex-content">
+        <div class="panel-left">
+        <h4>Detail informací</h4>
+    <table class="table table-nonfluid table-left">
 
         {if $master}
         <tr class="error"><th>Sloučen pod uživatele </th><td><a n:href="Uzivatel:show, id=>$master->id">{$master->nick}</a></td></tr>
@@ -113,7 +137,30 @@
 
     {/if}
     </table>
-
+    </div>
+    <div class="panel-right">
+        <h4>Smlouvy</h4>
+    <table class="table table-nonfluid table-right">
+    <tbody>
+      <tr>
+        <th>ID</th>
+        <th>Typ</th>
+        <th>Ze dne</th>
+        <th>Stav</th>
+      </tr>
+      <tr n:foreach="$smlouvy as $smlouva">
+        <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->id}</a></td>
+        <td>{$smlouva->typ|firstUpper}</td>
+        <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
+        <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
+      </tr>
+      </tbody>
+      </table>
+        <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-success btn-sm" id="btn-handle-subscriber-contract" role="button">
+            <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva
+        </a>
+      </div>
+    </div>
         <h4>IP Adresy</h4>
         {if $canViewOrEdit}
             {$adresy}
@@ -135,6 +182,15 @@
                 $(".logstable").hide();
             });
 
+            $('#btn-handle-subscriber-contract').on('click', function() {
+                let c = confirm("Chystáš se vygenerovat novou účastnickou smlouvu a odeslat jí členovi na e-mail.\nTato akce může trvat až minutu.\nJsi si opravdu jistý?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
         </script>
         <h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
 

@@ -13,6 +13,7 @@ CREATE TABLE Smlouva (
     auditni_stopa_path varchar(1000),
     kdy_vygenerovano timestamp,
     kdy_ukonceno timestamp,
+    poznamka text,
     CONSTRAINT `fk_uzivatel_id` FOREIGN KEY (uzivatel_id) REFERENCES Uzivatel (id)
 )AUTO_INCREMENT = 150000;
 
