@@ -34,6 +34,10 @@ $cestneClenstviUzivatele = $container->getByType('App\Model\CestneClenstviUzivat
 
 sleep(2); // to trochu zpřehlední logy
 
+// $uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
+$uzivatel = $container->getByType('\App\Model\Uzivatel')->find(1001);
+$cestneClenstviUzivatele = $container->getByType('App\Model\CestneClenstviUzivatele');
+
 print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
 
 $dgs = new DigiSign([
@@ -50,6 +54,7 @@ function trace_to_file($what, $payload = null) {
         json_encode($payload, JSON_PRETTY_PRINT)
     );
 }
+
 function set_tag_value($envelope, $tagLabel, $newValue) {
     global $ENVELOPES;
 
@@ -82,6 +87,7 @@ printf("Template %s name: \"%s\" file: %s\n", $template->id, $template->name, $t
 printf("Krok %u: create envelope from template\n", ++$krok);
 $envelope = $dgs->envelopeTemplates()->use($templateId);
 $envelopeId = $envelope->id;
+
 printf("Envelope: https://app.digisign.org/selfcare/envelopes/%s/detail", $envelopeId);
 
 $envelope = $ENVELOPES->get($envelopeId);
