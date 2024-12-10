@@ -13,12 +13,10 @@ class SmlouvaStavSluzba
      * @var string
      */
 
-    public function __construct()
-    {
+    public function __construct() {
     }
 
-    public function getStav(Nette\Database\Table\ActiveRow $smlouva): string
-    {
+    public function getStav(Nette\Database\Table\ActiveRow $smlouva): string {
         $sid = $smlouva->id;
         $konec = $smlouva->kdy_ukonceno;
 
