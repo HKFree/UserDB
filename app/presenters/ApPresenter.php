@@ -30,8 +30,7 @@ class ApPresenter extends BasePresenter
     /** @var Components\LogTableFactory @inject */
     public $logTableFactory;
 
-    public function __construct(CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava, Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic, Model\IdsConnector $idsConnector)
-    {
+    public function __construct(CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava, Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic, Model\IdsConnector $idsConnector) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;
@@ -44,13 +43,11 @@ class ApPresenter extends BasePresenter
         $this->idsConnector = $idsConnector;
     }
 
-    public function createComponentLogTable()
-    {
+    public function createComponentLogTable() {
         return $this->logTableFactory->create($this);
     }
 
-    public function renderList()
-    {
+    public function renderList() {
         if ($this->getParameter('id')) {
             $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParameter('id'))));
             if ($apcka->count() == 0) {
@@ -106,8 +103,7 @@ class ApPresenter extends BasePresenter
         }
     }
 
-    public function renderShow()
-    {
+    public function renderShow() {
         if ($this->getParameter('id') && $ap = $this->ap->getAP($this->getParameter('id'))) {
             $this->template->ap = $ap;
             $canViewCredentialsOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
@@ -125,13 +121,11 @@ class ApPresenter extends BasePresenter
         }
     }
 
-    public function renderEdit()
-    {
+    public function renderEdit() {
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
     }
 
-    protected function createComponentApForm()
-    {
+    protected function createComponentApForm() {
         $form = new Form($this, 'apForm');
         $form->addHidden('id');
         $form->addCheckBox('aktivni', 'Je AP aktivní?', 30)->setDefaultValue(true);
@@ -228,8 +222,7 @@ class ApPresenter extends BasePresenter
         return ($form);
     }
 
-    public function validateApForm($form)
-    {
+    public function validateApForm($form) {
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
@@ -317,8 +310,7 @@ class ApPresenter extends BasePresenter
         }
     }
 
-    public function apFormSucceded($form, $values)
-    {
+    public function apFormSucceded($form, $values) {
         $log = array();
         $idAP = $values->id;
         $ips = $values->ip;
@@ -441,8 +433,7 @@ class ApPresenter extends BasePresenter
         return true;
     }
 
-    public function actionIds($id)
-    {
+    public function actionIds($id) {
         $apt = $this->ap->getAP($id * 1);
         if (!$apt) {
             $this->error('AP not found');

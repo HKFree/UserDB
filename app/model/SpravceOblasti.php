@@ -16,8 +16,7 @@ class SpravceOblasti extends Table
     */
     protected $tableName = 'SpravceOblasti';
 
-    public function getOblastiSpravce($userID)
-    {
+    public function getOblastiSpravce($userID) {
         $OblastiSpravce = $this->findAll()->where('Uzivatel_id', $userID)->where('od < NOW() AND (do IS NULL OR do > NOW())')->where('Oblast_id IS NOT NULL')->order("Oblast.jmeno")->fetchAll();
         $out = array();
         foreach ($OblastiSpravce as $key => $value) {
@@ -26,8 +25,7 @@ class SpravceOblasti extends Table
         return ($out);
     }
 
-    public function getTypPravaPopisek($typPrava, $idOblasti)
-    {
+    public function getTypPravaPopisek($typPrava, $idOblasti) {
         if ($idOblasti == null || empty($idOblasti)) {
             return ($typPrava);
         } else {
@@ -35,8 +33,7 @@ class SpravceOblasti extends Table
         }
     }
 
-    public function getUserRole($userid, $ap)
-    {
+    public function getUserRole($userid, $ap) {
         $existujici = $this->findAll()->where('Uzivatel_id = ?', $userid)->where('od < NOW() AND (do IS NULL OR do > NOW())')->where('Oblast_id = ?', $ap)->fetch();
         if ($existujici) {
             return $existujici->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
@@ -44,13 +41,11 @@ class SpravceOblasti extends Table
         return null;
     }
 
-    public function getPravo($id)
-    {
+    public function getPravo($id) {
         return ($this->find($id));
     }
 
-    public function deletePrava(array $rights)
-    {
+    public function deletePrava(array $rights) {
         if (count($rights) > 0) {
             return ($this->delete(array('id' => $rights)));
         } else {
@@ -58,8 +53,7 @@ class SpravceOblasti extends Table
         }
     }
 
-    public function getRightsForm(&$right, $typRole, $obl)
-    {
+    public function getRightsForm(&$right, $typRole, $obl) {
         $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
         $right->addHidden('id')->setAttribute('class', 'id ip');
 
@@ -82,18 +76,15 @@ class SpravceOblasti extends Table
         $right->addCheckbox('override', '!!! OPRAVA !!!');
     }
 
-    public function getSO()
-    {
+    public function getSO() {
         return ($this->getSpravce(1));
     }
 
-    public function getZSO()
-    {
+    public function getZSO() {
         return ($this->getSpravce(2));
     }
 
-    public function getSpravce($typSpravce, $ignorujSystemove = false)
-    {
+    public function getSpravce($typSpravce, $ignorujSystemove = false) {
         $q = $this->findAll()
         ->where('TypSpravceOblasti_id', $typSpravce)
         ->where('od < NOW()')

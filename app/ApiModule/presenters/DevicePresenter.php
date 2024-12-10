@@ -10,20 +10,17 @@ class DevicePresenter extends ApiPresenter
     private $cryptosvc;
     private $log;
 
-    public function __construct(\App\Model\IPAdresa $ipadresa, \App\Services\CryptoSluzba $cryptosvc, \App\Model\Log $log)
-    {
+    public function __construct(\App\Model\IPAdresa $ipadresa, \App\Services\CryptoSluzba $cryptosvc, \App\Model\Log $log) {
         $this->ipadresa = $ipadresa;
         $this->cryptosvc = $cryptosvc;
         $this->log = $log;
     }
 
-    public function renderDefault()
-    {
+    public function renderDefault() {
         $this->sendResponse(new JsonResponse(['result' => 'Method not implemented']));
     }
 
-    public function actionGetCredentials($id)
-    {
+    public function actionGetCredentials($id) {
         $ip = $this->ipadresa->findIp(array('ip_adresa' => $id));
         if (!$ip) {
             $this->sendResponse(new JsonResponse(['result' => 'IP address not found', 'serverTime' => date("c")]));
@@ -35,8 +32,7 @@ class DevicePresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['ip' => $ip->ip_adresa, 'login' => $ip->login, 'heslo' => $this->getHeslo($ip)]));
     }
 
-    public function actionSetCredentials($id)
-    {
+    public function actionSetCredentials($id) {
         parent::forceMethod("POST");
 
         $ip = $this->ipadresa->findIp(array('ip_adresa' => $id));
@@ -78,8 +74,7 @@ class DevicePresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'serverTime' => date("c")]));
     }
 
-    private function getHeslo($ip)
-    {
+    private function getHeslo($ip) {
         if ($ip->heslo_sifrovane == 1) {
             $decrypted = $this->cryptosvc->decrypt($ip->heslo);
             return ($decrypted);

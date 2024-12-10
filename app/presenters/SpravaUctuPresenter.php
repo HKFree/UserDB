@@ -14,17 +14,14 @@ class SpravaUctuPresenter extends SpravaPresenter
 {
     private $stavBankovnihoUctu;
 
-    public function __construct(Model\StavBankovnihoUctu $stavuctu)
-    {
+    public function __construct(Model\StavBankovnihoUctu $stavuctu) {
         $this->stavBankovnihoUctu = $stavuctu;
     }
 
-    public function renderUcty()
-    {
+    public function renderUcty() {
     }
 
-    protected function createComponentStavyuctu($name)
-    {
+    protected function createComponentStavyuctu($name) {
         $grid = new \Grido\Grid($this, $name);
         $grid->translator->setLang('cs');
 

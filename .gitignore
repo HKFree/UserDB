@@ -19,8 +19,16 @@ docker-compose.override.yml
 
 nbproject/private/
 
+ca-certificates.crt
+resolv.conf
+
+# eventuelni secrets pro lokalni vyvoj
+.local.env
+
 # PHP CS Fixer
 .php-cs-fixer.cache
 .php_cs.cache
-ca-certificates.crt
-resolv.conf
+
+# Tyka se digisign API:
+.env*
+trace*json

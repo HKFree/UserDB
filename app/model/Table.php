@@ -32,8 +32,7 @@ abstract class Table
      * @param Nette\Database\Context $db
      * @throws \Nette\InvalidStateException
      */
-    public function __construct(Nette\Database\Context $db, Nette\Security\User $user)
-    {
+    public function __construct(Nette\Database\Context $db, Nette\Security\User $user) {
         $this->connection = $db;
         $this->userService = $user;
 
@@ -47,8 +46,7 @@ abstract class Table
      * Vrací celou tabulku z databáze
      * @return \Nette\Database\Table\Selection
      */
-    protected function getTable()
-    {
+    protected function getTable() {
         return $this->connection->table($this->tableName);
     }
 
@@ -56,8 +54,7 @@ abstract class Table
      * Vrací spojení do databáze (context)
      * @return \Nette\Database\Context
      */
-    protected function getConnection()
-    {
+    protected function getConnection() {
         return $this->connection;
     }
 
@@ -65,8 +62,7 @@ abstract class Table
      * Vrací všechny záznamy z databáze
      * @return \Nette\Database\Table\Selection
      */
-    public function findAll()
-    {
+    public function findAll() {
         return $this->getTable();
     }
 
@@ -78,8 +74,7 @@ abstract class Table
      *
      * @return \Nette\Database\Table\Selection
      */
-    public function findBy(array $by)
-    {
+    public function findBy(array $by) {
         return $this->getTable()->where($by);
     }
 
@@ -90,8 +85,7 @@ abstract class Table
      *
      * @return \Nette\Database\Table\ActiveRow|FALSE
      */
-    public function findOneBy(array $by)
-    {
+    public function findOneBy(array $by) {
         return $this->findBy($by)->limit(1)->fetch();
     }
 
@@ -102,8 +96,7 @@ abstract class Table
      *
      * @return \Nette\Database\Table\ActiveRow|FALSE
      */
-    public function find($id)
-    {
+    public function find($id) {
         return $this->getTable()->get($id);
     }
     /**
@@ -113,18 +106,15 @@ abstract class Table
      *
      * @return \Nette\Database\Table\ActiveRow|FALSE
      */
-    public function delete(array $by)
-    {
+    public function delete(array $by) {
         return $this->getTable()->where($by)->delete();
     }
 
-    public function insert($data)
-    {
+    public function insert($data) {
         return ($this->getTable()->insert($data));
     }
 
-    public function update($id, $data)
-    {
+    public function update($id, $data) {
         $post = $this->find($id);
         $post->update($data);
         return ($post);

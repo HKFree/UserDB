@@ -14,8 +14,7 @@ class TypPohybuNaUctu extends Table
     */
     protected $tableName = 'TypPohybuNaUctu';
 
-    public function getTypPohybuNaUctu()
-    {
+    public function getTypPohybuNaUctu() {
         return ($this->findAll());
     }
 }

@@ -19,8 +19,7 @@ class UzivatelListGrid
     private $cestneClenstviUzivatele;
     private $parameters;
 
-    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel, Stitek $stitky, StitekUzivatele $stitekUzivatele)
-    {
+    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel, Stitek $stitky, StitekUzivatele $stitekUzivatele) {
         $this->stitek = $stitky;
         $this->stitekUzivatele = $stitekUzivatele;
         $this->uzivatel = $uzivatel;
@@ -29,8 +28,7 @@ class UzivatelListGrid
         $this->parameters = $parameters;
     }
 
-    private function addressNotice($el, $item)
-    {
+    private function addressNotice($el, $item) {
         if ($item->location_status === 'approx') {
             $el->addHtml(' <i class="fa fa-exclamation-triangle" title="Nepřesná adresa, opravte!"></i>');
         } elseif ($item->location_status === 'unknown') {
@@ -38,8 +36,7 @@ class UzivatelListGrid
         }
     }
 
-    public function getListOfOtherUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search)
-    {
+    public function getListOfOtherUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
         //\Tracy\Debugger::barDump($search);
 
         $canViewOrEdit = false;
@@ -70,7 +67,6 @@ class UzivatelListGrid
         if ($money) {
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id' => $item->id))."'";
 
                 $konto = $item->related('UzivatelskeKonto.Uzivatel_id');
                 if ($item->money_aktivni != 1) {
@@ -90,7 +86,6 @@ class UzivatelListGrid
             });
         } else {
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter) {
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id' => $item->id))."'";
 
                 if ($item->email_invalid == 1) {
                     $tr->class[] = 'invalidemail';
@@ -250,8 +245,7 @@ class UzivatelListGrid
         return $grid;
     }
 
-    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search)
-    {
+    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
         $canViewOrEdit = false;
 
         $grid = new \Grido\Grid($presenter, $name);
@@ -321,7 +315,6 @@ class UzivatelListGrid
         if ($money) {
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id' => $item->id))."'";
 
                 $konto = $item->related('UzivatelskeKonto.Uzivatel_id');
                 if ($item->money_aktivni != 1) {
@@ -341,7 +334,6 @@ class UzivatelListGrid
             });
         } else {
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter) {
-                $tr->onclick = "window.location='".$presenter->link('Uzivatel:show', array('id' => $item->id))."'";
 
                 if ($item->email_invalid == 1) {
                     $tr->class[] = 'invalidemail';

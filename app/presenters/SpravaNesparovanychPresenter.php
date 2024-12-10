@@ -18,19 +18,16 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
     private $uzivatelskeKonto;
     private $prichoziPlatba;
 
-    public function __construct(Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto)
-    {
+    public function __construct(Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto) {
         $this->uzivatelskeKonto = $konto;
         $this->prichoziPlatba = $platba;
     }
 
-    public function renderNesparovane()
-    {
+    public function renderNesparovane() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
-    protected function createComponentAccountgrid($name)
-    {
+    protected function createComponentAccountgrid($name) {
         //\Tracy\Debugger::barDump($search);
 
         $grid = new \Grido\Grid($this, $name);
@@ -135,13 +132,11 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         })->setSortable();
     }
 
-    public function renderPrevod()
-    {
+    public function renderPrevod() {
         $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
-    protected function createComponentPrevodForm()
-    {
+    protected function createComponentPrevodForm() {
         // Tohle je nutne abychom mohli zjistit isSubmited
         $form = new Form($this, "prevodForm");
         $form->addHidden('id');
@@ -190,8 +185,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function prevodFormSucceded($form, $values)
-    {
+    public function prevodFormSucceded($form, $values) {
         $id = $this->getParameter('id');
         $pPlatba = $this->prichoziPlatba->getPrichoziPlatba($id);
         $posledniPohyb = $this->uzivatelskeKonto->getUzivatelskeKontoByPrichoziPlatba($id);

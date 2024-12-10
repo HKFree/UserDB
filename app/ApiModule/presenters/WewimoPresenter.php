@@ -8,13 +8,11 @@ class WewimoPresenter extends ApiPresenter
 {
     private $wewimo;
 
-    public function __construct(\App\Model\Wewimo $wewimo)
-    {
+    public function __construct(\App\Model\Wewimo $wewimo) {
         $this->wewimo = $wewimo;
     }
 
-    public function actionDefault($id)
-    {
+    public function actionDefault($id) {
         parent::checkApID($id);
 
         $wewimoMultiData = $this->wewimo->getWewimoFullData($id, 'API');
@@ -23,8 +21,7 @@ class WewimoPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse($wewimoMultiData));
     }
 
-    public function sanitize($mixed)
-    {
+    public function sanitize($mixed) {
         if (is_array($mixed)) {
             foreach ($mixed as $key => $value) {
                 $mixed[$key] = $this->sanitize($value);

@@ -13,20 +13,17 @@ class UserLabelsComponent extends Control
     private $stitkyUzivatele;
     private $stitky;
 
-    public function __construct(Explorer $database, Model\Stitek $stitky, Model\StitekUzivatele $stitkyUzivatele)
-    {
+    public function __construct(Explorer $database, Model\Stitek $stitky, Model\StitekUzivatele $stitkyUzivatele) {
         $this->database = $database;
         $this->stitky = $stitky;
         $this->stitkyUzivatele = $stitkyUzivatele;
     }
 
-    public function setUserId(int $userId): void
-    {
+    public function setUserId(int $userId): void {
         $this->userId = $userId;
     }
 
-    public function render(): void
-    {
+    public function render(): void {
         $this->template->stitky = $this->stitky->getSeznamStitku();
         $this->template->stitkyUzivatele = $this->stitkyUzivatele->getStitekByUserId($this->userId);
 

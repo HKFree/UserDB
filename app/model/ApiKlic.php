@@ -15,18 +15,15 @@ class ApiKlic extends Table
     */
     protected $tableName = 'ApiKlic';
 
-    public function getApiKliceTable(array $by)
-    {
+    public function getApiKliceTable(array $by) {
         return ($this->findBy($by));
     }
 
-    public function getApiKlic($id)
-    {
+    public function getApiKlic($id) {
         return ($this->find($id));
     }
 
-    public function deleteApiKlice(array $keys)
-    {
+    public function deleteApiKlice(array $keys) {
         if (count($keys) > 0) {
             return ($this->delete(array('id' => $keys)));
         } else {
@@ -34,13 +31,11 @@ class ApiKlic extends Table
         }
     }
 
-    public function generateKey($length = 30)
-    {
+    public function generateKey($length = 30) {
         return substr(str_shuffle(str_repeat($x = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ', ceil($length / strlen($x)))), 1, $length);
     }
 
-    public function getEditForm(Nette\ComponentModel\Container &$container, $form)
-    {
+    public function getEditForm(Nette\ComponentModel\Container &$container, $form) {
         $container->addHidden('id')->setAttribute('class', 'id');
         $klic = $container->addText('klic', 'Klíč', 20)->setAttribute('readonly', 'readonly')->setAttribute('class', 'klic');
         $container->addDate('plati_do', 'Platnost do');
@@ -53,16 +48,14 @@ class ApiKlic extends Table
         }
     }
 
-    public function decorateKeys(&$recordsAssoc)
-    {
+    public function decorateKeys(&$recordsAssoc) {
         foreach ($recordsAssoc as $id => $record) {
             $recordsAssoc[$id]['expired'] = !$this->isNotExpired($record['plati_do']);
         }
         return $recordsAssoc;
     }
 
-    public function isNotExpired($validTo)
-    {
+    public function isNotExpired($validTo) {
         if ($validTo) {
             // valid to is not NULL, check validity
             if ($validTo >= (\Nette\Utils\DateTime::from(date('d.m.Y').' 00:00:00'))) {

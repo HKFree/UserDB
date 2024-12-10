@@ -13,14 +13,14 @@ class Parameters
     * @var int
     */
     protected $clenskyPrispevek;
+    public $salt;
 
-    public function __construct($clenskyPrispevek)
-    {
+    public function __construct($clenskyPrispevek, $salt) {
         $this->clenskyPrispevek = $clenskyPrispevek;
+        $this->salt = $salt;
     }
 
-    public function getVyseClenskehoPrispevku()
-    {
+    public function getVyseClenskehoPrispevku() {
         return ($this->clenskyPrispevek);
     }
 }

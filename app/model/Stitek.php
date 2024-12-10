@@ -18,33 +18,27 @@ class Stitek extends Table
 
     protected $tableName = 'Stitek';
 
-    public function __construct(Explorer $database)
-    {
+    public function __construct(Explorer $database) {
         $this->database = $database;
     }
 
-    public function getSeznamStitku()
-    {
+    public function getSeznamStitku() {
         return $this->database->table($this->tableName);
     }
 
-    public function updateStitek($id, array $data)
-    {
+    public function updateStitek($id, array $data) {
         $this->database->table($this->tableName)->where('id', $id)->update($data);
     }
 
-    public function createStitek(array $data)
-    {
+    public function createStitek(array $data) {
         $this->database->table($this->tableName)->insert($data);
     }
 
-    public function getStitekById($id)
-    {
+    public function getStitekById($id) {
         return $this->database->table($this->tableName)->get($id);
     }
 
-    public function getStitkyByOblast($id)
-    {
+    public function getStitkyByOblast($id) {
         return ($this->findAll().where("Oblast_id", $id));
     }
 

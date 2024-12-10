@@ -14,8 +14,7 @@ class ErrorPresenter extends BasePresenter
      * @param  \Exception
      * @return void
      */
-    public function renderDefault($exception)
-    {
+    public function renderDefault($exception) {
         $this->template->message = '';
         if ($exception instanceof Nette\Application\BadRequestException) {
             $code = $exception->getCode();

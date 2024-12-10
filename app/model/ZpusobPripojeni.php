@@ -14,8 +14,7 @@ class ZpusobPripojeni extends Table
     */
     protected $tableName = 'ZpusobPripojeni';
 
-    public function getZpusobyPripojeni()
-    {
+    public function getZpusobyPripojeni() {
         return ($this->findAll());
     }
 }

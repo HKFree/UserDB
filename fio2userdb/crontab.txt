@@ -1,0 +1,5 @@
+# Import vypisu z FIO banky - pravidelne
+*/15 *  * * *  (cd /opt/fio2userdb && ./fio2userdb-stahovat-vypisy.pl --import-incremental; ./fio2userdb-parovat-platby-na-uzivatelske-konto.pl) > /container.stdout 2> /container.stderr
+
+# Import vypisu z FIO banky - 1x za den zpetne dotahnout pokud neco chybi
+11 5    * * *  (cd /opt/fio2userdb && ./fio2userdb-stahovat-vypisy.pl --reimport-last-week; ./fio2userdb-parovat-platby-na-uzivatelske-konto.pl) > /container.stdout 2> /container.stderr

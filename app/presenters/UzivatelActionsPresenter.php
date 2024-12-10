@@ -5,6 +5,8 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use App\Services;
+use DateInterval;
+use DateTime;
 use Tracy\Debugger;
 
 /**
@@ -16,17 +18,19 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $uzivatel;
     private $pdfGenerator;
     private $mailService;
+    private $smlouva;
+    private $database;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel)
-    {
+    public function __construct(\Nette\Database\Connection $database, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva) {
+        $this->database = $database;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
+        $this->smlouva = $smlouva;
     }
 
-    public function actionMoneyActivate()
-    {
+    public function actionMoneyActivate() {
         $id = $this->getParameter('id');
         if ($id) {
             if ($this->accountActivation->activateAccount($this->getUser(), $id)) {
@@ -37,8 +41,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionMoneyReactivate()
-    {
+    public function actionMoneyReactivate() {
         $id = $this->getParameter('id');
         if ($id) {
             $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
@@ -50,8 +53,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionMoneyDeactivate()
-    {
+    public function actionMoneyDeactivate() {
         $id = $this->getParameter('id');
         if ($id) {
             if ($this->accountActivation->deactivateAccount($this->getUser(), $id)) {
@@ -62,8 +64,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionExportPdf()
-    {
+    public function actionExportPdf() {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
@@ -72,8 +73,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             }
         }
     }
-    public function actionSendRegActivation()
-    {
+    public function actionSendRegActivation() {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
@@ -91,8 +91,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionExportAndSendRegForm()
-    {
+    public function actionExportAndSendRegForm() {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
@@ -105,5 +104,62 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
             }
         }
+    }
+
+    private function checkTimeSinceLastGenerateContract(string $interval = 'PT5M') {
+        $user_id = $this->getParameter('id');
+
+        $last_generated = $this->smlouva->findAll()
+            ->where('Uzivatel_id', $user_id)->order('kdy_vygenerovano DESC')->limit(1)->fetch();
+
+        // Pokud neexistuje zadna smlouva, je to v pohode => return
+        if (!$last_generated) {
+            return;
+        }
+
+        $last_generated_datetime = \Nette\Utils\DateTime::from($last_generated['kdy_vygenerovano']);
+        $interval_ago = (new DateTime())
+            ->sub(new DateInterval($interval));
+
+        if ($interval_ago < $last_generated_datetime) {
+            $this->flashMessage('Ochrana proti přetížení: Nelze vytvořit další smlouvu dříve než 5 minut po předchozí. Pokud je to záměr, prosím chvíli počkej.', 'danger');
+            $this->redirect('Uzivatel:show', array('id' => $user_id));
+        }
+    }
+
+    public function actionHandleSubscriberContract() {
+        // TODO: Logování změn
+
+        if (!$this->getParameter('id')) {
+            $this->flashMessage('Žádné id.');
+            $this->redirect('UzivatelList:listall');
+        }
+
+        $user_id = $this->getParameter('id');
+        $current_user = $this->uzivatel->find($user_id);
+
+        if (!$current_user) {
+            $this->flashMessage('Žádný uživatel s tímto id.');
+            $this->redirect('UzivatelList:listall');
+        }
+
+        // Kontrola, že od poslední generace uběhlo aspoň 5 minut...
+        // $this->checkTimeSinceLastGenerateContract();
+
+        $this->database->query('INSERT INTO Smlouva ?', [
+            'Uzivatel_id' => $user_id,
+            'typ' => 'ucastnicka',
+            'kdy_vygenerovano' => new DateTime()
+        ]);
+        $newId = $this->database->getInsertId();
+
+        $cmd = sprintf("%s/../bin/digisign-generovat-ucastnickou-smlouvu.php %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
+        $cmd2 = "$cmd | sed -u 's/^/digisign-generovat-ucastnickou-smlouvu /' &";
+        error_log("RUN: [$cmd2]", );
+        proc_close(proc_open($cmd2, array(), $foo));
+
+        $this->flashMessage(sprintf('Nová smlouva číso %u bude odeslána na e-mail %s.', $newId, $current_user->email));
+        // Tady call na generaci nove smlouvy a odeslani
+        $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 }

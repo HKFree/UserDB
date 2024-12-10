@@ -18,27 +18,23 @@ class SpravaStitkuPresenter extends SpravaPresenter
     private $uzivatel;
     private $stitekUzivatel;
 
-    public function __construct(Model\Oblast $ob, Model\Stitek $stitek, Model\Uzivatel $uzivatel, Model\StitekUzivatele $stitekUzivatel)
-    {
+    public function __construct(Model\Oblast $ob, Model\Stitek $stitek, Model\Uzivatel $uzivatel, Model\StitekUzivatele $stitekUzivatel) {
         $this->oblast = $ob;
         $this->stitek = $stitek;
         $this->uzivatel = $uzivatel;
         $this->stitekUzivatel = $stitekUzivatel;
     }
 
-    public function renderDefault()
-    {
+    public function renderDefault() {
         $this->template->canViewOrEdit = true;
         $this->template->stitky = $this->stitek->getSeznamStitku();
     }
 
-    public function renderEdit()
-    {
+    public function renderEdit() {
         $this->template->canViewOrEdit = true;
     }
 
-    protected function createComponentEditStitekForm()
-    {
+    protected function createComponentEditStitekForm() {
         $form = new Form($this, "editStitekForm");
         $id = $this->getParameter('id');
 
@@ -73,8 +69,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function processEditStitekForm(Form $form, \stdClass $values): void
-    {
+    public function processEditStitekForm(Form $form, \stdClass $values): void {
         $id = $this->getParameter('id');
         $values->Oblast_id = $values->Oblast_id === '' ? null : $values->Oblast_id;
 
@@ -99,8 +94,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $this->redirect('default');
     }
 
-    public function actionDeleteLabel(): void
-    {
+    public function actionDeleteLabel(): void {
         $this->getHttpResponse()->setContentType('application/json');
 
         // Kontrola HTTP metody
@@ -127,8 +121,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
 
     }
 
-    public function actionSaveLabel($stitek_id, $user_id): void
-    {
+    public function actionSaveLabel($stitek_id, $user_id): void {
         $this->getHttpResponse()->setContentType('application/json');
 
         // Kontrola HTTP metody
