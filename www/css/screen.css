@@ -353,32 +353,6 @@ pre.tracy-dump {
     line-height: 1.2 !important;
 }
 
-.br-widget, .br-widget-show {
-    height: 32px;
-}
-
-.br-widget a, .br-widget-show span {
-    background: url('../images/skull-icon-min.png');
-    width: 32px;
-    height: 32px;
-    display: block;
-    float: left;
-    background-position: 0 64px;
-}
-
-.br-widget a:hover,
-.br-widget a.br-active,
-.br-widget a.br-selected,
-.br-widget-show span.lebka-cervena {
-    background-position: 0 0px;
-}
-.br-widget a:first-child,
-.br-widget a:first-child.br-active,
-.br-widget a:first-child.br-selected,
-.br-widget-show span.lebka-zluta {
-    background-position: 0 32px;
-}
-
 .conntype0 {
     background: url('../images/conntype0.png');
     width: 16px;
