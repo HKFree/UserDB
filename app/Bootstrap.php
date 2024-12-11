@@ -15,8 +15,7 @@ class Bootstrap
     private Configurator $configurator;
     private string $rootDir;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->rootDir = dirname(__DIR__);
 
         // The configurator is responsible for setting up the application environment and services.
@@ -27,15 +26,13 @@ class Bootstrap
         $this->configurator->setTempDirectory($this->rootDir . '/temp');
     }
 
-    public function boot(): Nette\DI\Container
-    {
+    public function boot(): Nette\DI\Container {
         $this->initializeEnvironment();
         $this->setupContainer();
         return $this->configurator->createContainer();
     }
 
-    public function initializeEnvironment(): void
-    {
+    public function initializeEnvironment(): void {
         if (getenv('TRACY_ENABLE', true)) {
             $this->configurator->setDebugMode(true); // enable for all IP
         }
@@ -48,8 +45,7 @@ class Bootstrap
         $this->configurator->enableTracy($this->rootDir . '/log');
     }
 
-    private function setupContainer(): void
-    {
+    private function setupContainer(): void {
         $this->configurator->addDynamicParameters([
             'env' => getenv(),
         ]);
