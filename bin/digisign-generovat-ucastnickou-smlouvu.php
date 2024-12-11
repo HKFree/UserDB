@@ -11,6 +11,8 @@ require __DIR__ . '/parametrySmlouvy.php';
 
 $container =  require __DIR__ . '/../app/bootstrap.php';
 
+$FILE_STORAGE_PATH = "/opt/userdb/smlouvy/ucastnickeSmlouvy/";
+
 if (!getenv('DIGISIGN_ACCESS_KEY') || !getenv('DIGISIGN_SECRET_KEY')) {
     print("Missing DIGISIGN_ACCESS_KEY or DIGISIGN_SECRET_KEY environment variables\n");
     die();
@@ -43,6 +45,8 @@ function trace_to_file($what, $payload = null) {
         json_encode($payload, JSON_PRETTY_PRINT)
     );
 }
+
+is_dir($FILE_STORAGE_PATH) || mkdir($FILE_STORAGE_PATH);
 
 $uzivatel = $container->getByType('\App\Model\Uzivatel')->find($smlouva->uzivatel_id);
 
@@ -79,14 +83,14 @@ $smlouva->update(['externi_id' => $envelopeId]);
 
 $envelope = $ENVELOPES->get($envelopeId);
 
-printf("Krok %u: vygenerovat a predvyplnit PDF podle sablony\n", ++$krok);
-$tmpname = sprintf('/dev/shm/document_%u.pdf', rand(1, 1e9));
-exec(__DIR__."/nahled-ucastnicke-smlouvy.php {$uzivatel->id} {$smlouva_id} > $tmpname", );
-$stream = DigitalCz\DigiSign\Stream\FileStream::open($tmpname);
-$file = $dgs->files()->upload($stream);
-unlink($tmpname);
-
 $documentName = "SmlouvaUcastnicka_{$smlouva_id}_uid{$uzivatel->id}.pdf";
+
+printf("Krok %u: vygenerovat a predvyplnit PDF podle sablony\n", ++$krok);
+$documentFullName = "/opt/userdb/smlouvy/ucastnickeSmlouvy/$documentName";
+exec(__DIR__."/nahled-ucastnicke-smlouvy.php {$uzivatel->id} {$smlouva_id} > $documentFullName", );
+$stream = DigitalCz\DigiSign\Stream\FileStream::open($documentFullName);
+$file = $dgs->files()->upload($stream);
+
 $document = $ENVELOPES->documents($envelope)->create([
   'name' => $documentName,
   'file' => $file->self()
@@ -108,6 +112,7 @@ $tag = $ENVELOPES->tags($envelope)->create([
 printf("Krok %u: UPDATE Smlouva: podepsany_dokument=%s\n", ++$krok, $documentName);
 $smlouva->update(['podepsany_dokument_nazev' => $documentName]);
 $smlouva->update(['podepsany_dokument_content_type' => 'application/pdf']);
+$smlouva->update(['podepsany_dokument_path' => $documentFullName]);
 
 $emailSubject = $envelope->emailSubject . ' ' . $parametry['jmeno_prijmeni'] . ' ' . $uzivatel->firma_nazev;
 printf("Krok %u: envelope subject: \"%s\"\n", ++$krok, $emailSubject);

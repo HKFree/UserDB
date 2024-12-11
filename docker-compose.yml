@@ -23,6 +23,7 @@ services:
       - "10107:80"
     volumes:
       - .:/opt/userdb
+      - .local.storage:/opt/userdb/smlouvy
     links:
       - db
     networks:
