@@ -127,6 +127,15 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
+    public function actionHandleSubscriberContractPreview() {
+        $user_id = $this->getParameter('id');
+
+        $tmpname = sprintf('/dev/shm/document_%u.pdf', rand(1, 1e9));
+        exec(__DIR__."/../../bin/nahled-ucastnicke-smlouvy.php {$user_id} > $tmpname", );
+
+        $this->presenter->sendResponse(new Nette\Application\Responses\FileResponse($tmpname, "náhled smlouvy", 'application/pdf', false));
+    }
+
     public function actionHandleSubscriberContract() {
         // TODO: Logování změn
 

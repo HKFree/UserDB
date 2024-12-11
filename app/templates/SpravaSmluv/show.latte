@@ -3,13 +3,14 @@
 <h1>{isset($smlouva->kdy_ukonceno) ? 'Vypovězená smlouva' : 'Smlouva'} č. {$id}</h1>
 
 <div style="margin-top:3px;">
-    {* TODO: smlouva dowlanding *}
     <a href="{link Uzivatel:show id=>$smlouva->uzivatel->id}" class="btn btn-default btn-sm" role="button">
         <i class="glyphicon glyphicon-chevron-left"></i> Na uživatele
     </a>
-    <a href="{$smlouva->id}" class="btn btn-default btn-sm" role="button">
+    {if $smlouva->podepsany_dokument_path}
+    <a href="{link SpravaSmluv:handleDownload id=>$smlouva->id}" class="btn btn-default btn-sm" role="button">
         <i class="glyphicon glyphicon-cloud-download"></i> Stáhnout
     </a>
+    {/if}
     <a {ifset $smlouva->kdy_ukonceno}disabled{/ifset} href="{link SpravaSmluv:cancelContract}" id="btn-cancel-contract" class="btn btn-danger btn-sm" role="button">
         <i class="glyphicon glyphicon-remove"></i> Vypovědět
     </a>
@@ -36,7 +37,15 @@
 
         <tr>
             <th>Soubor</th>
-            <td>{$smlouva->podepsany_dokument_nazev} <small><i>{$smlouva->podepsany_dokument_content_type}</i></small></td>
+            <td>
+                {if $smlouva->podepsany_dokument_path}
+                <a href="{link SpravaSmluv:handleDownload id=>$smlouva->id}">
+                    {$smlouva->podepsany_dokument_nazev}
+                </a>
+                {else}
+                {$smlouva->podepsany_dokument_nazev}
+                {/if}
+            </td>
         </tr>
 
         <tr>
@@ -58,7 +67,7 @@
         <tr>
             <th>Parametry smlouvy</th>
             <td>
-                <pre>{$smlouva->parametry_smlouvy}</pre>
+                <pre style="font-size: 75%">{$smlouva->parametry_smlouvy}</pre>
             </td>
         </tr>
 
