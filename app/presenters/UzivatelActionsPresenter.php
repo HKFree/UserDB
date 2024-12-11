@@ -166,8 +166,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         ]);
         $newId = $this->database->getInsertId();
 
-        $cmd = sprintf("%s/../bin/digisign-generovat-ucastnickou-smlouvu.php %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
-        $cmd2 = "$cmd | sed -u 's/^/digisign-generovat-ucastnickou-smlouvu /' &";
+        $cmd = sprintf("%s/../bin/console app:digisign_generovat_ucastnickou_smlouvu %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
+        $cmd2 = "$cmd | sed -u 's/^/digisign_generovat_ucastnickou_smlouvu /' &";
         error_log("RUN: [$cmd2]", );
         proc_close(proc_open($cmd2, array(), $foo));
 
