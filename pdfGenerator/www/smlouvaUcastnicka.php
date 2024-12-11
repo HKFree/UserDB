@@ -24,6 +24,9 @@ $content = str_replace(
     array_values($_GET),
     $content
 );
+// Zbylý placeholdery vyhodit
+$content = preg_replace('/\{[a-zA-Z0-9-._]+\}/', '', $content, -1);
+
 file_put_contents("$templateRandomizedName/content.xml", $content);
 
 /**
