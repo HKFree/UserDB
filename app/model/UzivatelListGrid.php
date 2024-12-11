@@ -135,11 +135,10 @@ class UzivatelListGrid
             $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
             return $latte->renderToString($templatePath, $params);
         });
-        $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if ($canViewOrEdit) {
-            $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function ($item) {
-                return $item->jmeno . ' '. $item->prijmeni;
+            $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
+                return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
             })->setSortable();
             if ($fullnotes) {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {
@@ -398,6 +397,7 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
+
         $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
             $latte = new Engine();
             $params = [
@@ -409,11 +409,10 @@ class UzivatelListGrid
             return $latte->renderToString($templatePath, $params);
 
         });
-        $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if ($canViewOrEdit) {
-            $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function ($item) {
-                return $item->jmeno . ' '. $item->prijmeni;
+            $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
+                return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
             })->setSortable();
             if ($fullnotes) {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {
