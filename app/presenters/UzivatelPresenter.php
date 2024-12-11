@@ -328,11 +328,11 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('kauce_mobil', 'Kauce na mobilní tarify', 30);
         $form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
         $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
-        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
-        $form->addSelect('druzstvo', 'Právní vztah k družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(1)->addRule(Form::FILLED, 'Vyberte Právní vztah k družstvu');
-        $form->addSelect('smazano', 'Smazán v družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::FILLED, 'Vyberte Smazán v družstvu');
-        $form->addSelect('spolek', 'Právní vztah ke spolku', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::FILLED, 'Vyberte Právní vztah ke spolku');
-        $form->addSelect('TypClenstvi_id', 'Typ členství ve spolku', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
+        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::Integer, 'PSČ musí být číslo');
+        $form->addSelect('druzstvo', 'Právní vztah k družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(1)->addRule(Form::Filled, 'Vyberte Právní vztah k družstvu');
+        $form->addSelect('smazano', 'Smazán v družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::Filled, 'Vyberte Smazán v družstvu');
+        $form->addSelect('spolek', 'Právní vztah ke spolku', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::Filled, 'Vyberte Právní vztah ke spolku');
+        $form->addSelect('TypClenstvi_id', 'Typ členství ve spolku', $typClenstvi)->addRule(Form::Filled, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 50, 12);
         $form->addTextArea('gpg', 'GPG klíč', 50, 12);
         $form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
