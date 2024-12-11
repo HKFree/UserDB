@@ -17,8 +17,7 @@ services:
       - INFLUX_URL=influxdb://wewimo:xxx@10.107.252.101:8086/wewimo
       - PDF_GENERATOR_URL=http://pdf-generator/
     env_file:
-      - path: .local.env
-        required: false
+      - .local.env
     ports:
       - "10107:80"
     volumes:

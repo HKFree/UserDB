@@ -6,6 +6,7 @@ use Nette;
 use Nette\Utils\Strings;
 use Nette\Utils\Html;
 use Latte\Engine;
+use Nette\Database\Explorer;
 
 /**
  * @author
@@ -18,14 +19,17 @@ class UzivatelListGrid
     private $ap;
     private $cestneClenstviUzivatele;
     private $parameters;
+    private Explorer $database;
 
-    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel, Stitek $stitky, StitekUzivatele $stitekUzivatele) {
+    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel,
+                                Stitek $stitky, StitekUzivatele $stitekUzivatele, Explorer $database) {
         $this->stitek = $stitky;
         $this->stitekUzivatele = $stitekUzivatele;
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->cestneClenstviUzivatele = $cc;
         $this->parameters = $parameters;
+        $this->database = $database;
     }
 
     private function addressNotice($el, $item) {
@@ -254,6 +258,12 @@ class UzivatelListGrid
         return $grid;
     }
 
+    public function getSeznamStitku(): array
+    {
+        $labels = $this->database->table('Stitek')->fetchPairs('id', 'text') ;
+        return $labels;
+    }
+
     public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
         $canViewOrEdit = false;
 
@@ -286,13 +296,20 @@ class UzivatelListGrid
         $grid->setDefaultPerPage(500);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
         $grid->setDefaultSort(array('zalozen' => 'ASC'));
-
+        $grid->addFilterSelect('filter_stitek', 'Štítky', ['all' => 'Všechny'] + $this->getSeznamStitku() )
+            ->setDefaultValue('all')
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection){
+                if ($value !== 'all') {
+                    return $connection->where(':StitekUzivatele.Stitek_id = ?', $value);
+                }
+                return $connection;
+            });
         $grid->addFilterSelect('spolek_druzstvo', 'Zobrazit', array(
                 'all' => 'spolek i družstvo',
                 'spolek' => 'pouze spolek',
                 'druzstvo' => 'pouze družstvo'))
             ->setDefaultValue('all')
-            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection)  {
                 if ($value == 'spolek') {
                     return ($connection->where('spolek = ?', '1'));
                 }
@@ -524,6 +541,8 @@ class UzivatelListGrid
                     return $el;
                 })->setSortable()->setFilterText();
             }
+            //$grid->addColumnText('filter_stitky', 'Štítky')->setFilterText();
+
         }
 
         return $grid;
