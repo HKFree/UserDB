@@ -55,8 +55,6 @@ $parametry['cislo'] = $smlouva_id;
 
 $smlouva->update(['parametry_smlouvy' => json_encode($parametry, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)]);
 
-sleep(1); // to trochu zpřehlední logy
-
 print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
 
 $dgs = new DigiSign([
