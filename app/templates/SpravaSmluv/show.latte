@@ -37,7 +37,15 @@
 
         <tr>
             <th>Soubor</th>
-            <td>{$smlouva->podepsany_dokument_nazev} <small><i>{$smlouva->podepsany_dokument_content_type}</i></small></td>
+            <td>
+                {if $smlouva->podepsany_dokument_path}
+                <a href="{link SpravaSmluv:handleDownload id=>$smlouva->id}">
+                    {$smlouva->podepsany_dokument_nazev}
+                </a>
+                {else}
+                {$smlouva->podepsany_dokument_nazev}
+                {/if}
+            </td>
         </tr>
 
         <tr>
