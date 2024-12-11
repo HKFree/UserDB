@@ -4,6 +4,8 @@ FROM php:8.2-apache-bookworm AS userdb-runtime
 
 RUN a2enmod rewrite
 RUN a2enmod headers
+#COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+#COPY resolv.conf /etc/resolv.conf
 
 # Install extenstions: MySQL PDO, GD
 RUN apt-get update && apt-get install -y \
