@@ -58,6 +58,28 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->template->podpisy = $podpisy;
     }
 
+    public function actionhandleDownload() {
+        $contract_id = $this->getParameter('id');
+        $this->idAndContractExists($contract_id);
+        $this->userCanView($contract_id);
+
+        $smlouva = $this->smlouva->find($contract_id);
+
+        if (!is_file($smlouva->podepsany_dokument_path)) {
+            $this->flashMessage("❌ chybí soubor ($smlouva->podepsany_dokument_path)", 'danger');
+            $this->redirect('SpravaSmluv:show');
+        }
+
+        $this->sendResponse(
+            new \Nette\Application\Responses\FileResponse(
+                $smlouva->podepsany_dokument_path,
+                $smlouva->podepsany_dokument_nazev,
+                'application/pdf',
+                false
+            )
+        );
+    }
+
     public function parseDate(string $timestamp): DateTime {
         return \Nette\Utils\DateTime::from($timestamp);
     }

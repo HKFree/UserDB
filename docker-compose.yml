@@ -15,6 +15,7 @@ services:
       - USERDB_IDS_PASSWORD=xxx
       - USERDB_IDS_IPS_WHITELIST=10.107.99.188
       - INFLUX_URL=influxdb://wewimo:xxx@10.107.252.101:8086/wewimo
+      - PDF_GENERATOR_URL=http://pdf-generator/
     env_file:
       - path: .local.env
         required: false
@@ -22,6 +23,7 @@ services:
       - "10107:80"
     volumes:
       - .:/opt/userdb
+      - .local.storage:/opt/userdb/smlouvy
     links:
       - db
     networks:
@@ -46,6 +48,15 @@ services:
       MYSQL_DATABASE: userdb
     networks:
       - local-userdb-net
+  pdf-generator:
+    build: ./pdfGenerator
+    networks:
+      - local-userdb-net
+    ports:
+      - "10109:80"
+    volumes:
+      - ./pdfGenerator/www:/var/www/html
+      - ./pdfGenerator/templates:/opt/templates
 networks:
   local-userdb-net:
     name: local-userdb-net
