@@ -46,6 +46,15 @@ services:
       MYSQL_DATABASE: userdb
     networks:
       - local-userdb-net
+  pdf-generator:
+    build: ./pdfGenerator
+    networks:
+      - local-userdb-net
+    ports:
+      - "10109:80"
+    volumes:
+      - ./pdfGenerator/www:/var/www/html
+      - ./pdfGenerator/templates:/opt/templates
 networks:
   local-userdb-net:
     name: local-userdb-net
