@@ -1,7 +1,3 @@
-$(function () {
-    $('#frm-uzivatelForm-index_potizisty').barrating({ showSelectedRating:false });
-});
-
 $(document).ready(function() {
     $(".datepicker").change(function() {
         if($(this).val().indexOf("00:00:00") > -1) $(this).val($(this).val().replace(" 00:00:00", ""));
