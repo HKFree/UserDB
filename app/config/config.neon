@@ -94,6 +94,7 @@ services:
 	settings: App\Settings(%debug.fakeUser%)
 	- App\Console\UpdateLocationsCommand(%googleMapsApiKey%)
 	- App\Console\Wewimo2InfluxCommand(%influxUrl%)
+	- App\Console\DigisignGenerovatUcastnickouSmlouvu
 
 database:
 	dsn: "mysql:host=%env.USERDB_DB_HOST%;dbname=%env.USERDB_DB_NAME%"
