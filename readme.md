@@ -16,7 +16,7 @@ cd UserDB
 composer install
 cp app/config/config.local.DIST.neon app/config/config.local.neon
 vi app/config/config.local.neon www/.htaccess docker-compose.yml
-php www/index.php migrations:continue
+php bin/console migrations:continue
 ```
 
 ## Development
@@ -41,7 +41,7 @@ docker compose exec web chmod 777 -R log
 docker compose exec web chmod 777 -R temp
 docker compose exec web chmod 777 -R vendor/mpdf/mpdf/tmp
 cp app/config/config.local.DIST.neon app/config/config.local.neon
-docker compose exec web php www/index.php migrations:continue
+docker compose exec web php bin/console migrations:continue
 ```
 
 Now the app is up and running in Docker on host's port 10107, PhpMyAdmin on host's port 10108.
@@ -52,7 +52,7 @@ If you don't know your docker's IP, `docker-machine list` is your friend.
 ```bash
 git pull origin master
 composer install
-php www/index.php migrations continue
+php bin/console migrations:continue
 # develop your freaking cool feature
 git pull origin master
 git push origin master
@@ -82,7 +82,7 @@ Crontab record example: `*/5 * * * * (docker exec userdb php www/index.php app:u
 ###Creating new change-script
 
 Run
-`docker exec -it userdb_web_1 php www/index.php migrations:create s short-description-of-the-change`
+`docker exec -it userdb_web_1 php bin/console migrations:create s short-description-of-the-change`
 and edit the change-script created.
 
 - s = structures (applied always)
@@ -92,14 +92,14 @@ and edit the change-script created.
 ### Applying changes
 
 Make sure the cache is clean by running `rm -rf temp/cache` and run
-`php www/index.php migrations:continue` (while paying attention to deactivated `debugMode`)
+`php bin/console migrations:continue` (while paying attention to deactivated `debugMode`)
 in order to apply the change-scripts to the DB configured in neon config.
 
 #### On development or testing machines
 
 As mentioned - when `debugMode` is enabled (as is default), dummy data are loaded.
 
-You can run `php www/index.php migrations:reset` in order to drop all tables in the database and create them from scratch running all
+You can run `php bin/console migrations:reset` in order to drop all tables in the database and create them from scratch running all
  change-scripts. Run it on dev/test machine in order to test that the whole schema is completely described in change-scripts. DO NOT RUN IN PRODUCTION! WILL DELETE ALL DATA!
 
 #### On moving to nextras/migrations

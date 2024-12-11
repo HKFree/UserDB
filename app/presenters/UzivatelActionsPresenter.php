@@ -129,11 +129,15 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionHandleSubscriberContractPreview() {
         $user_id = $this->getParameter('id');
+        $uzivatel =  $this->uzivatel->find($user_id);
 
         $tmpname = sprintf('/dev/shm/document_%u.pdf', rand(1, 1e9));
-        exec(__DIR__."/../../bin/nahled-ucastnicke-smlouvy.php {$user_id} > $tmpname", );
+        $pdfData = \App\Services\GeneratorSmlouvy::nahledUcastnickeSmlouvy($uzivatel);
+        file_put_contents($tmpname, $pdfData);
 
-        $this->presenter->sendResponse(new Nette\Application\Responses\FileResponse($tmpname, "náhled smlouvy", 'application/pdf', false));
+        $this->sendResponse(new Nette\Application\Responses\FileResponse($tmpname, "náhled smlouvy", 'application/pdf', false));
+
+        unlink($tmpname);
     }
 
     public function actionHandleSubscriberContract() {
@@ -162,8 +166,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         ]);
         $newId = $this->database->getInsertId();
 
-        $cmd = sprintf("%s/../bin/digisign-generovat-ucastnickou-smlouvu.php %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
-        $cmd2 = "$cmd | sed -u 's/^/digisign-generovat-ucastnickou-smlouvu /' &";
+        $cmd = sprintf("%s/../bin/console app:digisign_generovat_ucastnickou_smlouvu %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
+        $cmd2 = "$cmd | sed -u 's/^/digisign_generovat_ucastnickou_smlouvu /' &";
         error_log("RUN: [$cmd2]", );
         proc_close(proc_open($cmd2, array(), $foo));
 

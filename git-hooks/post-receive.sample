@@ -18,7 +18,7 @@ docker build -t userdb:$TAG .
 set -e
 
 echo "Upgrading DB schema..." # mandatory
-docker run --rm $ENV userdb:$TAG php www/index.php migrations:continue --production
+docker run --rm $ENV userdb:$TAG php bin/console migrations:continue --production
 
 echo "Stopping container..." # optional (may fail if container was not running)
 docker stop userdb || true
