@@ -31,6 +31,7 @@ session:
 extensions:
     console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
     migrations: Nextras\Migrations\Bridges\NetteDI\MigrationsExtension
+    replicator: Kdyby\Replicator\DI\ReplicatorExtension
 
 migrations:
     dir: %appDir%/../db         # migrations base directory
