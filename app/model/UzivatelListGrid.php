@@ -134,7 +134,6 @@ class UzivatelListGrid
             ];
             $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
             return $latte->renderToString($templatePath, $params);
-
         });
         $grid->addColumnText('nick', 'Nick')->setSortable();
 
