@@ -329,7 +329,10 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
         $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
         $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
-        $form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
+        $form->addSelect('druzstvo', 'Právní vztah k družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(1)->addRule(Form::FILLED, 'Vyberte Právní vztah k družstvu');
+        $form->addSelect('smazano', 'Smazán v družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::FILLED, 'Vyberte Smazán v družstvu');
+        $form->addSelect('spolek', 'Právní vztah ke spolku', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::FILLED, 'Vyberte Právní vztah ke spolku');
+        $form->addSelect('TypClenstvi_id', 'Typ členství ve spolku', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 50, 12);
         $form->addTextArea('gpg', 'GPG klíč', 50, 12);
         $form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
@@ -396,6 +399,16 @@ class UzivatelPresenter extends BasePresenter
         // Validujeme jenom při uložení formuláře
         if (!isset($data['save'])) {
             return 0;
+        }
+
+        $uzivatelBeforeSave = $this->uzivatel->getUzivatel($data['id']);
+
+        if ($uzivatelBeforeSave->druzstvo == 1 && $data['druzstvo'] != 1) {
+            $form->addError('Právní vztah k družstvu již nelze nikdy změnit na Ne.');
+        }
+
+        if ($uzivatelBeforeSave->spolek == 1 && $data['spolek'] != 1) {
+            $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
         }
 
         if (isset($data['ipsubnet']) && !empty($data['ipsubnet'])) {
