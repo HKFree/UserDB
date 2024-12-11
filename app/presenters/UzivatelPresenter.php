@@ -175,12 +175,19 @@ class UzivatelPresenter extends BasePresenter
 
                 $this->template->money_act = (1 == $uzivatel->money_aktivni) ? 'ANO' : 'NE';
                 $this->template->money_dis = (1 == $uzivatel->money_deaktivace) ? 'ANO' : 'NE';
-                $posledniPlatba = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
-                if ($posledniPlatba->count() > 0) {
-                    $posledniPlatbaData = $posledniPlatba->fetch();
-                    $this->template->money_lastpay = (null == $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
+                $posledniPlatbaSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('spolek', 1)->order('id DESC')->limit(1);
+                $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);
+                if ($posledniPlatbaSpolek->count() > 0) {
+                    $posledniPlatbaData = $posledniPlatbaSpolek->fetch();
+                    $this->template->money_lastpay_spolek = (null == $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
                 } else {
-                    $this->template->money_lastpay = '?';
+                    $this->template->money_lastpay_spolek = '?';
+                }
+                if ($posledniPlatbaDruzstvo->count() > 0) {
+                    $posledniPlatbaData = $posledniPlatbaDruzstvo->fetch();
+                    $this->template->money_lastpay_druzstvo = (null == $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
+                } else {
+                    $this->template->money_lastpay_druzstvo = '?';
                 }
                 $posledniAktivace = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', [4, 5])->order('id DESC')->limit(1);
                 if ($posledniAktivace->count() > 0) {
@@ -189,18 +196,24 @@ class UzivatelPresenter extends BasePresenter
                 } else {
                     $this->template->money_lastact = '?';
                 }
-                $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
-                if (!$stavUctu || '' == $stavUctu) {
-                    $stavUctu = 0;
+                $stavUctuSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->sum('castka');
+                if (!$stavUctuSpolek || '' == $stavUctuSpolek) {
+                    $stavUctuSpolek = 0;
+                }
+                $stavUctuDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
+                if (!$stavUctuDruzstvo || '' == $stavUctuDruzstvo) {
+                    $stavUctuDruzstvo = 0;
                 }
 
                 if ($uzivatel->kauce_mobil > 0) {
-                    $this->template->money_bal = ($stavUctu - $uzivatel->kauce_mobil).' (kauce: '.$uzivatel->kauce_mobil.')';
+                    $this->template->money_bal_spolek = ($stavUctuSpolek - $uzivatel->kauce_mobil).' (kauce: '.$uzivatel->kauce_mobil.')';
+                    $this->template->money_bal_druzstvo = ($stavUctuDruzstvo - $uzivatel->kauce_mobil).' (kauce: '.$uzivatel->kauce_mobil.')';
                 } else {
-                    $this->template->money_bal = $stavUctu;
+                    $this->template->money_bal_spolek = $stavUctuSpolek;
+                    $this->template->money_bal_druzstvo = $stavUctuDruzstvo;
                 }
 
-                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
+                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
                 if (!$stavUctuDph || '' == $stavUctuDph) {
                     $stavUctuDph = 0;
                 }
@@ -253,8 +266,8 @@ class UzivatelPresenter extends BasePresenter
                                                     || in_array($uid, $seznamUzivatelu);
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
 
-                $this->template->activaceVisible = 0 == $uzivatel->money_aktivni && 0 == $uzivatel->money_deaktivace && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
-                $this->template->reactivaceVisible = (0 == $uzivatel->money_aktivni && 1 == $uzivatel->money_deaktivace && ($stavUctu - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
+                $this->template->activaceVisible = 0 == $uzivatel->money_aktivni && 0 == $uzivatel->money_deaktivace && ($stavUctuSpolek - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku() && ($stavUctuDruzstvo - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
+                $this->template->reactivaceVisible = (0 == $uzivatel->money_aktivni && 1 == $uzivatel->money_deaktivace && ($stavUctuSpolek - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku() && ($stavUctuDruzstvo - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
                                                         || (1 == $uzivatel->money_aktivni && 1 == $uzivatel->money_deaktivace);
                 $this->template->deactivaceVisible = 1 == $uzivatel->money_aktivni && 0 == $uzivatel->money_deaktivace;
 
@@ -309,17 +322,17 @@ class UzivatelPresenter extends BasePresenter
         $form = new Form($this, 'uzivatelForm');
         $form->addHidden('id');
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
-        $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::FILLED, 'Vyberte typ právní formy');
-        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte název firmy');
-        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::EQUAL, 2)->setRequired('Zadejte IČ');
+        $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::Filled, 'Vyberte typ právní formy');
+        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::Equal, 2)->setRequired('Zadejte název firmy');
+        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::Equal, 2)->setRequired('Zadejte IČ');
         //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
         $form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
         $form->addDate('datum_narozeni', 'Datum narození:')
         ->addRule($form::Max, 'Nesmí být v budoucnu', new \Nette\Utils\DateTime('-1 hours'));
         $form->addText('nick', 'Nick (přezdívka)', 30)->setRequired('Zadejte nickname');
-        $form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::EMAIL, 'Musíte zadat platný email');
-        $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::FILLED)->addRule(Form::EMAIL, 'Musíte zadat platný email');
+        $form->addText('email', 'Email', 30)->setRequired('Zadejte email')->addRule(Form::Email, 'Musíte zadat platný email');
+        $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::Filled)->addRule(Form::Email, 'Musíte zadat platný email');
         $form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
         if (count($this->spravceOblasti->getOblastiSpravce($this->getParameter('id'))) > 0) {
             $form->addCheckBox('publicPhone', 'Telefon je viditelný pro členy', 30)->setDefaultValue(true);
@@ -328,13 +341,15 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('kauce_mobil', 'Kauce na mobilní tarify', 30);
         $form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
         $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
-        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
-        $form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
+        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::Integer, 'PSČ musí být číslo');
+        $form->addSelect('druzstvo', 'Právní vztah k družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(1)->addRule(Form::Filled, 'Vyberte Právní vztah k družstvu');
+        $form->addSelect('smazano', 'Smazán v družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::Filled, 'Vyberte Smazán v družstvu');
+        $form->addSelect('spolek', 'Právní vztah ke spolku', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::Filled, 'Vyberte Právní vztah ke spolku');
+        $form->addSelect('TypClenstvi_id', 'Typ členství ve spolku', $typClenstvi)->addRule(Form::Filled, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 50, 12);
         $form->addTextArea('gpg', 'GPG klíč', 50, 12);
-        $form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::FILLED, 'Vyberte technologii připojení');
-        $form->addSelect('index_potizisty', 'Index spokojenosti člena', array(0 => 0,1 => 1,2 => 2,3 => 3,4 => 4,5 => 5))->setDefaultValue(0);
-        $form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::FILLED, 'Vyberte způsob připojení');
+        $form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::Filled, 'Vyberte technologii připojení');
+        $form->addSelect('ZpusobPripojeni_id', 'Způsob připojení', $zpusobPripojeni)->addRule(Form::Filled, 'Vyberte způsob připojení');
 
         $form->addText('ipsubnet', 'Přidat všechny ip ze subnetu (x.y.z.w/c)', 20);
         $form->addText('iprange', 'Přidat rozsah ip (x.y.z.w-x.y.z.w)', 32);
@@ -345,7 +360,7 @@ class UzivatelPresenter extends BasePresenter
             $data->getIPForm($ip, $typyZarizeni);
 
             $ip->addSubmit('remove', '– Odstranit IP')
-                ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
+                ->setHtmlAttribute('class', 'btn btn-danger btn-xs btn-white')
                 ->setValidationScope(null)
                 ->addRemoveOnClick();
         }, ($this->getParameter('id') > 0 ? 0 : 1));
@@ -359,7 +374,7 @@ class UzivatelPresenter extends BasePresenter
             });
 
         $form->addSubmit('save', 'Uložit')
-            ->setAttribute('class', 'btn btn-success btn-white default btn-edit-save');
+            ->setHtmlAttribute('class', 'btn btn-success btn-white default btn-edit-save');
         $form->onSuccess[] = array($this, 'uzivatelFormSucceded');
         $form->onValidate[] = array($this, 'validateUzivatelForm');
 
@@ -396,6 +411,16 @@ class UzivatelPresenter extends BasePresenter
         // Validujeme jenom při uložení formuláře
         if (!isset($data['save'])) {
             return 0;
+        }
+
+        $uzivatelBeforeSave = $this->uzivatel->getUzivatel($data['id']);
+
+        if ($uzivatelBeforeSave->druzstvo == 1 && $data['druzstvo'] != 1) {
+            $form->addError('Právní vztah k družstvu již nelze nikdy změnit na Ne.');
+        }
+
+        if ($uzivatelBeforeSave->spolek == 1 && $data['spolek'] != 1) {
+            $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
         }
 
         if (isset($data['ipsubnet']) && !empty($data['ipsubnet'])) {

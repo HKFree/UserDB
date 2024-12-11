@@ -293,15 +293,15 @@ class UzivatelListGrid
             ->setDefaultValue('all')
             ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
                 if ($value == 'spolek') {
-                    return ($connection->where('spolek = ?', '1'));
+                    return ($connection->where('spolek = ? AND druzstvo = ?', ['1','0']));
                 }
                 if ($value == 'druzstvo') {
-                    return ($connection->where('druzstvo = ?', '1'));
+                    return ($connection->where('druzstvo = ? AND spolek = ?', ['1', '0']));
                 }
                 return ($connection);
             });
 
-        $list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných', 'planned' => 'pouze plánovaná');
+        $list = array('active' => 'bez zrušených, plánovaných a smazaných', 'all' => 'včetně zrušených, plánovaných a smazaných', 'planned' => 'pouze plánovaná členství ve spolku');
 
         $tz = $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
             ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
