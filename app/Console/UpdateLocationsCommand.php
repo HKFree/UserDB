@@ -2,18 +2,29 @@
 
 namespace App\Console;
 
+use App\Model\Uzivatel;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'app:update_locations',
+    description: 'Aktualizovat hromadne zemepis. souradnice podle adres u uzivatelu (kde nejsou ve stavu "valid")'
+)]
 class UpdateLocationsCommand extends Command
 {
     private $googleMapsApiKey;
+    private $uzivatelModel;
+
+    public function __construct(string $googleMapsApiKey, Uzivatel $uzivatelModel) {
+        parent::__construct();
+        $this->googleMapsApiKey = $googleMapsApiKey;
+        $this->uzivatelModel = $uzivatelModel;
+    }
 
     protected function configure() {
-        $this->setName('app:update_locations')
-            ->setDescription('Aktualizovat hromadne zemepis. souradnice podle adres u uzivatelu (kde nejsou ve stavu "valid")');
         $this->addArgument('mode', InputArgument::OPTIONAL, 'normal nebo retry, retry zkusi krome pending adres znovu geokodovat adresy ve stavu approx nebo uknown', 'normal');
     }
 
@@ -108,14 +119,11 @@ class UpdateLocationsCommand extends Command
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        $this->googleMapsApiKey = $this->getHelper('container')->getParameter('googleMapsApiKey');
         $mode = $input->getArgument('mode');
         echo "update_locations started, mode $mode, googleMapsApiKey: $this->googleMapsApiKey\n";
-        /** @var \App\Model\Uzivatel $uzivatelModel */
-        $uzivatelModel = $this->getHelper('container')->getByType('\App\Model\Uzivatel');
         $statuses = ($mode === 'retry') ? ['pending', 'approx', 'unknown'] : ['pending'];
-        $uzivatele = $uzivatelModel->findAll()->where('location_status IN ?', $statuses)->limit(500)->fetchAll();
-        //$uzivatele = $uzivatelModel->findAll()->where('id IN ?', [1016])->limit(500)->fetchAll();
+        $uzivatele = $this->uzivatelModel->findAll()->where('location_status IN ?', $statuses)->limit(500)->fetchAll();
+        //$uzivatele = $this->uzivatelModel->findAll()->where('id IN ?', [1016])->limit(500)->fetchAll();
         foreach ($uzivatele as $uzivatel) {
             $adresa = "{$uzivatel->ulice_cp}, {$uzivatel->mesto}";
             $uid = $uzivatel->id;
@@ -151,7 +159,7 @@ class UpdateLocationsCommand extends Command
 
             if ($status === 'valid') {
                 // google nasel adresu presne, ulozit
-                $uzivatelModel->update($uid, [
+                $this->uzivatelModel->update($uid, [
                     'location_status' => $status,
                     'latitude' => $lat,
                     'longitude' => $lon
@@ -180,7 +188,7 @@ class UpdateLocationsCommand extends Command
                     }
                     // ulozime stav a souradnice (muze byt uknown+null nebo approx+lat,lon z google nebo valid+lat,lon z vugtk;
                     //                              valid+lan,lon z google se uklada vyse)
-                    $uzivatelModel->update($uid, [
+                    $this->uzivatelModel->update($uid, [
                         'location_status' => $status,
                         'latitude' => $lat,
                         'longitude' => $lon

@@ -4,8 +4,79 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "25bfd684f6ad697084bbe6a63b227675",
+    "content-hash": "d34c764c52ed87cbeb600b83b11d4e05",
     "packages": [
+        {
+            "name": "contributte/console",
+            "version": "v0.10.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/contributte/console.git",
+                "reference": "dc2b84fb8dd795ea9988f396311aeed435aed495"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/contributte/console/zipball/dc2b84fb8dd795ea9988f396311aeed435aed495",
+                "reference": "dc2b84fb8dd795ea9988f396311aeed435aed495",
+                "shasum": ""
+            },
+            "require": {
+                "nette/di": "^3.1.8",
+                "php": ">=8.1",
+                "symfony/console": "^6.4.2 || ^7.0.2"
+            },
+            "require-dev": {
+                "contributte/phpstan": "^0.1",
+                "contributte/qa": "^0.4",
+                "contributte/tester": "^0.4",
+                "mockery/mockery": "^1.6.7",
+                "nette/http": "^3.2.3",
+                "symfony/event-dispatcher": "^6.4.2 || ^7.0.2"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.11.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Contributte\\Console\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Milan Felix Šulc",
+                    "homepage": "https://f3l1x.io"
+                }
+            ],
+            "description": "Best Symfony Console for Nette Framework",
+            "homepage": "https://github.com/contributte/console",
+            "keywords": [
+                "console",
+                "nette",
+                "symfony"
+            ],
+            "support": {
+                "issues": "https://github.com/contributte/console/issues",
+                "source": "https://github.com/contributte/console/tree/v0.10.1"
+            },
+            "funding": [
+                {
+                    "url": "https://contributte.org/partners.html",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/f3l1x",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-01-04T20:10:58+00:00"
+        },
         {
             "name": "defuse/php-encryption",
             "version": "v2.2.1",
@@ -628,87 +699,6 @@
             ],
             "description": "PdfResponse is wrapper of mPDF for Nette.",
             "time": "2024-03-20T21:31:50+00:00"
-        },
-        {
-            "name": "kdyby/console",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mhucik/Console.git",
-                "reference": "308787a59dffdbea92df4c7a4cd50e919cf7b7c1"
-            },
-            "require": {
-                "nette/di": "^3.0",
-                "nette/routing": "^3.0.0",
-                "nette/utils": "^3.1 || ^4.0",
-                "php": "^7.4 | ^8.0",
-                "symfony/console": ">=4.4",
-                "tracy/tracy": "^2.8 || ^3.0"
-            },
-            "require-dev": {
-                "doctrine/coding-standard": "8.2.*",
-                "kdyby/events": "dev-patch-1 as 3.2.99",
-                "nette/application": "^3.0",
-                "nette/bootstrap": "^3.0",
-                "nette/caching": "^3.0",
-                "nette/http": "^3.0",
-                "nette/tester": "^2.2",
-                "php-coveralls/php-coveralls": "^2.1",
-                "php-parallel-lint/php-parallel-lint": "^v1.2.0",
-                "phpstan/phpstan": "^0.12.88",
-                "symfony/event-dispatcher": "~2.3 || ^3.0 || < 4.3",
-                "typo3/class-alias-loader": "^1.0"
-            },
-            "suggest": {
-                "nette/http": "For faking the url of the request in cli"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.8-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Kdyby\\Console\\": "src/"
-                },
-                "classmap": [
-                    "src/CliPresenter.php"
-                ]
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "KdybyTests\\": "tests/KdybyTests/"
-                },
-                "classmap": [
-                    "tests/KdybyTests/"
-                ]
-            },
-            "license": [
-                "BSD-3-Clause",
-                "GPL-2.0",
-                "GPL-3.0"
-            ],
-            "authors": [
-                {
-                    "name": "Filip Procházka",
-                    "homepage": "http://filip-prochazka.com",
-                    "email": "filip@prochazka.su"
-                }
-            ],
-            "description": "Symfony Console integration for Kdyby components",
-            "homepage": "http://kdyby.org",
-            "keywords": [
-                "console",
-                "kdyby",
-                "nette"
-            ],
-            "support": {
-                "email": "filip@prochazka.su",
-                "issues": "https://github.com/kdyby/console/issues"
-            },
-            "time": "2024-11-28T09:04:11+00:00"
         },
         {
             "name": "kdyby/forms-replicator",
@@ -6118,7 +6108,6 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "jkuchar/pdfresponse": 20,
-        "kdyby/console": 20,
         "kdyby/forms-replicator": 20,
         "o5/grido": 20,
         "pauluswebster/shutterstock-rickshaw": 20,

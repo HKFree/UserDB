@@ -29,7 +29,7 @@ session:
     expiration: 14 days
 
 extensions:
-    console: Kdyby\Console\DI\ConsoleExtension
+    console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
     migrations: Nextras\Migrations\Bridges\NetteDI\MigrationsExtension
 
 migrations:
@@ -40,8 +40,8 @@ migrations:
 
 services:
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
-	- App\RouterFactory
-	router: @App\RouterFactory::createRouter(%urlPrefix%)
+	- App\Router\RouterFactory
+	router: @App\Router\RouterFactory::createRouter(%urlPrefix%)
 	uzivatel: App\Model\Uzivatel
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
@@ -92,11 +92,8 @@ services:
 		setup:
 			- setGoogleMapsApiKey(%env.USERDB_GOOGLE_MAPS_KEY%)
 	settings: App\Settings(%debug.fakeUser%)
-
-console:
-	commands:
-		- App\Console\UpdateLocationsCommand
-		- App\Console\Wewimo2InfluxCommand
+	- App\Console\UpdateLocationsCommand(%googleMapsApiKey%)
+	- App\Console\Wewimo2InfluxCommand(%influxUrl%)
 
 database:
 	dsn: "mysql:host=%env.USERDB_DB_HOST%;dbname=%env.USERDB_DB_NAME%"
