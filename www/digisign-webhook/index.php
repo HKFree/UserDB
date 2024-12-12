@@ -160,7 +160,7 @@ switch ($hook->event) {
         // 1. uložit do DB že je smlouva odmítnuta
         $podpis = $PodpisSmlouvyModel->findOneBy(['smlouva_id' => $smlouva->id, 'smluvni_strana' => 'ucastnik']);
         $podpis->update(['kdy_odmitnuto' => $hook->time]);
-        print_and_log(sprintf("smlouva #%u odmitnuta \"%s\" datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
+        print_and_log(sprintf("smlouva #%u podpis \"%s\" odmitnut, datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
         // 2. důvod odmítnutí uložit do poznámky
         if (!empty($envelope->recipients[0]->declineReason)) {
             $novaPoznamka = sprintf(
@@ -174,7 +174,22 @@ switch ($hook->event) {
         }
         break;
     case 'envelopeExpired': // obálka expirovala
+        // ověřit skutečný stav
+        if ($envelope->status !== 'expired') {
+            print_and_log("Nesedi envelope status ({$envelope->status})");
+            break;
+        }
 
+        // 1. uložit do DB že smlouva vypršela
+        print_and_log(sprintf("smlouva #%u vyexpirovala datum/cas: %s", $smlouva->id, $hook->time));
+        $novaPoznamka = sprintf(
+            "%s%sVYPRŠEL ČAS na podpis %s",
+            $smlouva->poznamka,
+            empty($smlouva->poznamka) ? '' : "\n",
+            $envelope->recipients[0]->declinedAt->format('d.m.Y H:i'),
+        );
+        $smlouva->update(['poznamka' => $novaPoznamka]);
+        break;
     case 'envelopeCancelled': // obálka byla zrušena
 
     case 'recipientSent': // obálka byla odeslána příjemci
