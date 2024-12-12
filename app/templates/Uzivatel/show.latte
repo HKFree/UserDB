@@ -11,13 +11,12 @@
     <a n:if="$u->spolek" href="{link UzivatelRightsCc:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a>
     <a href="{link UzivatelMailSms:email id=>$u->id}" class="btn btn-default btn-sm" role="button"><b>@</b> Odeslat E-mail</a>
     <a href="{link UzivatelMailSms:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS</a>
-    <a href="{link UzivatelActions:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-file"></i> Registrační formulář</a>
-    {if $u->regform_downloaded_password_sent==0}
-    <a href="{link UzivatelActions:sendRegActivation id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat znovu aktivační link e-mailem</a>
-    {else}
-    <a href="{link UzivatelActions:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>
+    <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Comverga</a>
     {/if}
-    <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Materna</a>
+    {if $u->regform_downloaded_password_sent==0}
+    <a n:href="UzivatelActions:sendRegActivation id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat znovu aktivační link e-mailem</a>
+    {else}
+    <a n:href="UzivatelActions:exportAndSendRegForm id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat registrační formulář e-mailem</a>
     {/if}
     <a href="{link UzivatelList:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>
     <div style="margin-top:3px;">
@@ -86,9 +85,20 @@
         <tr><td colspan="2">&nbsp;</td></tr>
         {/if}
 
-	<tr><th>ID</th><td>{$u->id}</td></tr>
-	<tr><th>Oblast - AP</th><td><a n:href="Ap:list, id => $u->Ap->Oblast->id">{$u->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u->Ap->id">{$u->Ap->jmeno}</a></td></tr>
-    <tr><th>Typ členství</th><td>{if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}</td></tr>
+	<tr>
+            <th>Oblast - AP</th>
+            <td><a n:href="Ap:list, id => $u->Ap->Oblast->id">{$u->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u->Ap->id">{$u->Ap->jmeno}</a></td>
+        </tr>
+        <tr n:if="$u->spolek">
+            <th>Typ členství</th>
+            <td>
+                {if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}
+                <br>
+                {if $u->TypClenstvi->id != 1}
+                <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-file icon-file"></i> Registrační formulář</a>
+                {/if}
+            </td>
+        </tr>
 	<tr><td colspan="2">&nbsp;</td></tr>
 
     <tr><th>Přezdívka</th><td>{$u->nick}</td></tr>
