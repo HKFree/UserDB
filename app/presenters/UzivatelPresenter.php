@@ -415,12 +415,14 @@ class UzivatelPresenter extends BasePresenter
 
         $uzivatelBeforeSave = $this->uzivatel->getUzivatel($data['id']);
 
-        if ($uzivatelBeforeSave->druzstvo == 1 && $data['druzstvo'] != 1) {
-            $form->addError('Právní vztah k družstvu již nelze nikdy změnit na Ne.');
-        }
+        if ($uzivatelBeforeSave) {
+            if ($uzivatelBeforeSave->druzstvo == 1 && $data['druzstvo'] != 1) {
+                $form->addError('Právní vztah k družstvu již nelze nikdy změnit na Ne.');
+            }
 
-        if ($uzivatelBeforeSave->spolek == 1 && $data['spolek'] != 1) {
-            $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
+            if ($uzivatelBeforeSave->spolek == 1 && $data['spolek'] != 1) {
+                $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
+            }
         }
 
         if (isset($data['ipsubnet']) && !empty($data['ipsubnet'])) {

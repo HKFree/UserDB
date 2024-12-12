@@ -9,7 +9,7 @@ class GeneratorSmlouvy
      */
     public static function nahledUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
 
-        $parametry = self::parametryUcastnickeSmlouvy($uzivatel);
+        $parametry = self::parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy);
 
         if (!getenv('PDF_GENERATOR_URL')) {
             throw new \Exception("Missing PDF_GENERATOR_URL environment variable\n");
