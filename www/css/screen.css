@@ -589,16 +589,27 @@ input[readonly] {
     height: 16px;
 }
 
+.label {
+    border-width: 1px;
+    border-style: solid;
+}
+
 .label-druzstvo {
-    background-color: #03758f;
+    border-color: #03758f;
+    color: #03758f;
+    background-color: #03758f20;
 }
 
 .label-spolek {
-    background-color: #9f61a2;
+    border-color: #9f61a2;
+    color: #9f61a2;
+    background-color: #9f61a220;
 }
 
 .label-neaktivni {
-    background-color: #383838;
+    border-color: #383838;
+    color: #383838;
+    background-color: #38383820;
 }
 
 /** STITKY **/
