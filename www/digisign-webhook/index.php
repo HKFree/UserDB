@@ -114,6 +114,8 @@ switch ($hook->event) {
         break;
     case 'envelopeExpired': // obálka expirovala
 
+    case 'envelopeDeclined': // obálka byla odmítnuta
+
     case 'envelopeCancelled': // obálka byla zrušena
 
     case 'recipientSent': // obálka byla odeslána příjemci
