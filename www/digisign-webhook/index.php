@@ -19,7 +19,7 @@ function print_and_log($message) {
 }
 
 $body = file_get_contents('php://input');
-// $body = '{"id":"0193b7d7-4941-7217-ad91-f2cf0ca9a8e6","event":"envelopeCompleted","name":"envelope.completed","time":"2024-12-11T23:29:19+01:00","entityName":"envelope","entityId":"0193b1df-239d-7260-b479-111da9ddfbac","data":{"status":"completed"},"envelope":{"id":"0193b1df-239d-7260-b479-111da9ddfbac","status":"completed"}}';
+// $body = '{"id":"0193b88b-67d0-70c2-a4e6-fed356998bac","event":"envelopeCompleted","name":"envelope.completed","time":"2024-12-12T02:46:04+01:00","entityName":"envelope","entityId":"0193b88a-e045-70c7-ac0f-e6adc93009c3","data":{"status":"completed"},"envelope":{"id":"0193b88a-e045-70c7-ac0f-e6adc93009c3","status":"completed"}}';
 
 if (strlen($body) < 10000) {
     error_log("digisign_webhook: payload: " . print_r($body, true));
@@ -95,7 +95,14 @@ switch ($hook->event) {
                             $uzivatel->update(['datum_narozeni' => $d->format('Y-m-d')]);
                         } catch (Exception $e) {
                             print_and_log(sprintf('datum narozeni [%s] neni jasny -> zapsat do poznamky', $birthdate_dirty));
-                            $novaPoznamka = sprintf("%s\n\nNejasné datum narození [%s] (z digisign smlouvy #%u ze dne %s)", $uzivatel->poznamka, $birthdate_dirty, $smlouva->id, $podpis->kdy_podepsano->format("d.m.Y"));
+                            $novaPoznamka = sprintf(
+                                "%s%sNejasné datum narození [%s] (z digisign smlouvy #%u ze dne %s)",
+                                $uzivatel->poznamka,
+                                empty($uzivatel->poznamka) ? '' : "\n\n",
+                                $birthdate_dirty,
+                                $smlouva->id,
+                                $podpis->kdy_podepsano->format("d.m.Y")
+                            );
                             $uzivatel->update(['poznamka' => $novaPoznamka]);
                         }
                     }
@@ -113,6 +120,8 @@ switch ($hook->event) {
         }
         break;
     case 'envelopeExpired': // obálka expirovala
+
+    case 'envelopeDeclined': // obálka byla odmítnuta
 
     case 'envelopeCancelled': // obálka byla zrušena
 
