@@ -57,7 +57,7 @@
             <th>Ukončeno</th>
             <td>
                 {ifset $smlouva->kdy_ukonceno}
-                    {$smlouva->kdy_ukonceno->format('d.m.Y \v h:m')}
+                    {$smlouva->kdy_ukonceno->format('d.m.Y \v H:h')}
                 {else}
                     - - -
                 {/ifset}
