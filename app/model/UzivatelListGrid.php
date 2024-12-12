@@ -60,6 +60,7 @@ class UzivatelListGrid
 
         $list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných', 'planned' => 'pouze plánovaná');
 
+        // TODO: spolek / druzstvo
         $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
             ->setDefaultValue('active')
             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0'),'planned' => array('TypClenstvi_id',  '= ?', '0') ));
@@ -79,6 +80,7 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
+                // TODO: spolek / druzstvo
                 if ($item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
@@ -94,12 +96,15 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
+                // TODO: spolek / druzstvo
                 if ($item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
+                // TODO: spolek / druzstvo
                 if ($item->TypClenstvi_id == 1) {
                     $tr->class[] = 'zrusene';
                 }
+                // TODO: spolek / druzstvo
                 if ($item->TypClenstvi_id == 0) {
                     $tr->class[] = 'planovane';
                 }
@@ -335,6 +340,7 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
+                // TODO: spolek / druzstvo
                 if ($item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
@@ -350,7 +356,7 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                if ($item->spolek && $item->TypClenstvi_id == 2) {
+                if (($item->spolek && $item->TypClenstvi_id == 2) || ($item->druzstvo && !$item->smazano) {
                     $tr->class[] = 'primarni';
                 }
                 if ($item->spolek && $item->TypClenstvi_id == 1 && (!$item->druzstvo)
@@ -358,7 +364,7 @@ class UzivatelListGrid
                     || $item->spolek && $item->druzstvo && $item->TypClenstvi_id == 1 && $item->smazano) {
                     $tr->class[] = 'zrusene';
                 }
-                if ($item->TypClenstvi_id == 0) {
+                if (((int)$item->TypClenstvi_id) === 0) {
                     $tr->class[] = 'planovane';
                 }
                 return $tr;

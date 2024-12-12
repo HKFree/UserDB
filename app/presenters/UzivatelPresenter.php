@@ -523,7 +523,7 @@ class UzivatelPresenter extends BasePresenter
 
         $values = $form->getUntrustedValues();
 
-        if ($values->TypClenstvi_id > 1) {
+        if (($values->spolek == 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo == 1 && $values->smazano == 0)) {
             $duplMail = $this->uzivatel->getDuplicateEmailArea($values->email, $values->id);
 
             if ($duplMail) {
@@ -612,10 +612,12 @@ class UzivatelPresenter extends BasePresenter
                 $values->email_invalid = 0;
             }
 
-            if ($values->TypClenstvi_id <= 1) {
+            // pokud neni aktivni ani ve spolku ani v druzstvu
+            if (!(($values->spolek == 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo == 1 && $values->smazano == 0))) {
                 $this->aplikaceToken->deleteTokensForUID($idUzivatele);
             }
 
+            // TODO: spolek / druzstvo
             if (0 == $olduzivatel->TypClenstvi_id && 1 == $values->TypClenstvi_id) {
                 $this->povoleneSMTP->deleteIPs($smtpIPIDs);
                 $existinguserIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
@@ -626,6 +628,7 @@ class UzivatelPresenter extends BasePresenter
                 return true;
             }
 
+            // TODO: spolek / druzstvo
             if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id) {
                 $values->zalozen = new \DateTime();
                 $values->money_aktivni = 1;
@@ -634,6 +637,7 @@ class UzivatelPresenter extends BasePresenter
             $this->uzivatel->update($idUzivatele, $values);
             $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
 
+            // TODO: spolek / druzstvo
             if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id && $values->spolek == 1) {
                 $this->sendSpolekRegistrationEmail($idUzivatele);
             }

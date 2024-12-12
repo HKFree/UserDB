@@ -36,6 +36,7 @@ class AppPresenter extends ApiPresenter
             $this->sendLoginFailed($uid);
         }
 
+        // TODO: spolek / druzstvo
         if ($u->TypClenstvi_id <= 1) {
             $this->sendLoginFailed($uid);
         }
@@ -71,6 +72,7 @@ class AppPresenter extends ApiPresenter
         }
 
         $this->aplikaceLog->log('app.getMembership.successful', array($uid, $token));
+        // TODO: spolek / druzstvo
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'clenstvi' => $u->TypClenstvi->text, 'jmeno' => $u->jmeno]));
     }
 

@@ -117,7 +117,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if ($this->getParameter('id') && !$submitujeSe) {
-            $emaily = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'email');
+            $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
             foreach ($emaily as $email) {
                 if (Validators::isEmail($email)) {
                     $validni[] = $email;
@@ -142,7 +142,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $idUzivatele = $values->id;
 
         $ap = $this->ap->getAP($this->getParameter('id'));
-        $emaily = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'email');
+        $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
 
         $mail = new Message();
         if ($values->from == 0) {
@@ -232,7 +232,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if ($this->getParameter('id') && !$submitujeSe) {
             $ap = $this->ap->getAP($this->getParameter('id'));
-            $telefony = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'telefon');
+            $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
             foreach ($telefony as $tl) {
                 if (!empty($tl) && $tl != 'missing') {
                     $validni[] = $tl;
@@ -254,7 +254,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     public function smsallFormSucceded($form, $values) {
         $ap = $this->ap->getAP($this->getParameter('id'));
 
-        $telefony = $ap->related('Uzivatel.Ap_id')->where('TypClenstvi_id>1')->fetchPairs('id', 'telefon');
+        $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
 
         $validni = [];
         foreach ($telefony as $tl) {
