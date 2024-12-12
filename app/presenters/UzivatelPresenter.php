@@ -119,7 +119,7 @@ class UzivatelPresenter extends BasePresenter
         return $ulc;
     }
 
-    public function sendNotificationEmail($idUzivatele) {
+    public function sendSpolekNotificationEmail($idUzivatele) {
         try {
             $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
             $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
@@ -128,7 +128,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function sendRegistrationEmail($idUzivatele) {
+    public function sendSpolekRegistrationEmail($idUzivatele) {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
@@ -139,9 +139,26 @@ class UzivatelPresenter extends BasePresenter
             $this->mailService->sendConfirmationRequest($newUser, $so, $link);
             $this->mailService->sendConfirmationRequestCopy($newUser, $so);
 
-            $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán. PŘIPOJENÍ K HLAVNÍMU POČÍTAČI BUDE FUNGOVAT DO 15 MINUT.');
+            $this->flashMessage('E-mail s žádostí o potvrzení registrace do spolku byl odeslán.');
         } catch (Nette\Mail\SmtpException $e) {
-            $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
+            $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace do spolku se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
+        }
+    }
+
+    public function sendDruzstvoRegistrationEmail($idUzivatele) {
+        $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+        $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
+        $link = 'https://moje.hkfree.org/uzivatel/confirm-druzstvo/'.$hash;
+
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+
+        try {
+            $this->mailService->sendDruzstvoConfirmationRequest($newUser, $so, $link);
+            $this->mailService->sendDruzstvoConfirmationRequestCopy($newUser, $so);
+
+            $this->flashMessage('E-mail s žádostí o potvrzení registrace do družstva byl odeslán.');
+        } catch (Nette\Mail\SmtpException $e) {
+            $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace do družstva se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
         }
     }
 
@@ -150,12 +167,36 @@ class UzivatelPresenter extends BasePresenter
             list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
 
             if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
-                if (0 == $uzivatel->regform_downloaded_password_sent && $hash == md5($this->parameters->salt . $uzivatel->zalozen)) {
+                if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
+                    die('Incorrect request (invalid hash)');
+                }
+
+                if (0 == $uzivatel->regform_downloaded_password_sent) {
                     $pdftemplate = $this->createTemplate()->setFile(__DIR__.'/../templates/Uzivatel/pdf-form.latte');
                     $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
                     $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
                 }
+                $this->template->stav = true;
+            } else {
+                $this->template->stav = false;
+            }
+        } else {
+            $this->template->stav = false;
+        }
+    }
+
+    public function renderConfirmDruzstvo() {
+        if ($this->getParameter('id')) {
+            list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
+
+            if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
+                if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
+                    die('Incorrect request (invalid hash)');
+                }
+
+                // TODO: generovat smlouvu jako v https://github.com/HKFree/UserDB/blob/master/app/presenters/UzivatelActionsPresenter.php#L143
+
                 $this->template->stav = true;
             } else {
                 $this->template->stav = false;
@@ -423,6 +464,20 @@ class UzivatelPresenter extends BasePresenter
             if ($uzivatelBeforeSave->spolek == 1 && $data['spolek'] != 1) {
                 $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
             }
+        } else {
+            if ($data['druzstvo'] == 1) {
+                if (($data['datum_narozeni'] ?? "") == "") {
+                    $form->addError('Právní vztah k družstvu vyžaduje zadání data narození.');
+                }
+            }
+
+            if ($data['smazano'] != 0) {
+                $form->addError('Nelze založit uživatele s atributem Smazáno.');
+            }
+
+            if ($data['spolek'] == 1 && $data['druzstvo'] == 1) {
+                $form->addError('Založení nového uživatele NEPODPORUJE právní vztahy k družstvu a ke spolku najednou, založte uživatele jen s jedním právním vztahem.');
+            }
         }
 
         if (isset($data['ipsubnet']) && !empty($data['ipsubnet'])) {
@@ -526,7 +581,7 @@ class UzivatelPresenter extends BasePresenter
         // Zpracujeme nejdriv uzivatele
         if (empty($values->id)) {
             $values->regform_downloaded_password_sent = 0;
-            if ($values->TypClenstvi_id > 0) {
+            if (($values->spolek == 1 && $values->TypClenstvi_id > 0) || ($values->druzstvo == 1 && $values->smazano == 0)) {
                 $values->money_aktivni = 1;
             } else {
                 $values->money_aktivni = 0;
@@ -539,10 +594,16 @@ class UzivatelPresenter extends BasePresenter
             $idUzivatele = $this->uzivatel->insert($values)->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
 
-            if ($values->TypClenstvi_id > 0) {
-                $this->sendRegistrationEmail($idUzivatele);
-            } else {
-                $this->sendNotificationEmail($idUzivatele);
+            if ($values->spolek == 1) {
+                if ($values->TypClenstvi_id > 0) {
+                    $this->sendSpolekRegistrationEmail($idUzivatele);
+                } else {
+                    $this->sendSpolekNotificationEmail($idUzivatele);
+                }
+            }
+
+            if ($values->druzstvo == 1) {
+                $this->sendDruzstvoRegistrationEmail($idUzivatele);
             }
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
@@ -573,8 +634,8 @@ class UzivatelPresenter extends BasePresenter
             $this->uzivatel->update($idUzivatele, $values);
             $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
 
-            if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id) {
-                $this->sendRegistrationEmail($idUzivatele);
+            if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id && $values->spolek == 1) {
+                $this->sendSpolekRegistrationEmail($idUzivatele);
             }
         }
 

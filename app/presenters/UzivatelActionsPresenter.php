@@ -76,15 +76,25 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionSendRegActivation() {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-                $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
-                $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
+                $hash = base64_encode($uzivatel->id . '-' . md5($this->context->parameters["salt"] . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
-                $this->mailService->sendConfirmationRequest($uzivatel, $so, $link);
-                $this->mailService->sendConfirmationRequestCopy($uzivatel, $so);
+                if ($uzivatel->druzstvo == 1) {
+                    $link = "https://moje.hkfree.org/uzivatel/confirm-druzstvo/" . $hash;
 
-                $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
+                    $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);
+                    $this->mailService->sendDruzstvoConfirmationRequestCopy($uzivatel, $so);
+
+                    $this->flashMessage('E-mail s žádostí o ověření emailu pro registraci do družstva byl odeslán.');
+                } elseif ($uzivatel->spolek == 1) {
+                    $link = "https://moje.hkfree.org/uzivatel/confirm/" . $hash;
+
+                    $this->mailService->sendSpolekConfirmationRequest($uzivatel, $so, $link);
+                    $this->mailService->sendSpolekConfirmationRequestCopy($uzivatel, $so);
+
+                    $this->flashMessage('E-mail s žádostí o potvrzení registrace do spolku byl odeslán.');
+                }
 
                 $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
             }
