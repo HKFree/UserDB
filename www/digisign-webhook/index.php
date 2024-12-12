@@ -11,6 +11,7 @@ use DigitalCz\DigiSign\DigiSign;
 \Tracy\Debugger::$logSeverity = E_ALL;
 
 $FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
+$FILE_STORAGE_PATH .= '/ucastnickeSmlouvy';
 
 function print_and_log($message) {
     error_log("digisign_webhook: $message.");
