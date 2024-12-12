@@ -19,8 +19,7 @@ use DigitalCz\DigiSign\DigiSign;
 class DigisignGenerovatUcastnickouSmlouvu extends Command
 {
     private $templateId = "0193b32a-d60f-7077-9fae-123a91d1a308"; # účastnická smlouva v7 (bez PDFka)
-    private $FILE_STORAGE_PATH = "/opt/userdb/smlouvy/ucastnickeSmlouvy/"; # sem se ukládají PDFka - smlouvy
-
+    private $FILE_STORAGE_PATH;
     private $uzivatelModel;
     private $smlouvaModel;
     private $podpisSmlouvyModel;
@@ -30,6 +29,9 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         $this->uzivatelModel = $uzivatelModel;
         $this->smlouvaModel = $smlouvaModel;
         $this->podpisSmlouvyModel = $podpisSmlouvyModel;
+        $this->FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
+        $this->FILE_STORAGE_PATH .= '/ucastnickeSmlouvy';
+        is_dir($this->FILE_STORAGE_PATH) || mkdir($this->FILE_STORAGE_PATH);
     }
 
     protected function configure() {
@@ -47,8 +49,6 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         if (!$smlouva) {
             throw new \Exception("Smlouva cislo [$smlouva_id] neni v DB\n");
         }
-
-        is_dir($this->FILE_STORAGE_PATH) || mkdir($this->FILE_STORAGE_PATH);
 
         $uzivatel = $this->uzivatelModel->find($smlouva->uzivatel_id);
 
@@ -114,7 +114,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         $smlouva->update(['podepsany_dokument_content_type' => 'application/pdf']);
         $smlouva->update(['podepsany_dokument_path' => $documentFullName]);
 
-        $emailSubject = $envelope->emailSubject . ' ' . $parametry['jmeno_prijmeni'] . ' ' . $uzivatel->firma_nazev;
+        $emailSubject = trim($envelope->emailSubject . ' ' . $parametry['jmeno_prijmeni'] . ' ' . $uzivatel->firma_nazev);
         printf("Krok %u: envelope subject: \"%s\"\n", ++$krok, $emailSubject);
         $ENVELOPES->update($envelopeId, [
           'emailSubject' => $emailSubject,
