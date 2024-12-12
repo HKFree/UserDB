@@ -21,6 +21,7 @@ function print_and_log($message) {
 $body = file_get_contents('php://input');
 // $body = '{"id":"0193b88b-67d0-70c2-a4e6-fed356998bac","event":"envelopeCompleted","name":"envelope.completed","time":"2024-12-12T02:46:04+01:00","entityName":"envelope","entityId":"0193b88a-e045-70c7-ac0f-e6adc93009c3","data":{"status":"completed"},"envelope":{"id":"0193b88a-e045-70c7-ac0f-e6adc93009c3","status":"completed"}}';
 // $body = '{"id":"0193b7bc-3bee-7393-b19d-02c49b5781a9","event":"envelopeSent","name":"envelope.sent","time":"2024-12-11T22:59:46+01:00","entityName":"envelope","entityId":"0193b88a-e045-70c7-ac0f-e6adc93009c3","data":{"status":"sent"},"envelope":{"id":"0193b7bc-1797-70f6-a095-231c750d3487","status":"sent"}}';
+// $body = '{"id":"0193bc3c-08d2-73ef-b4e4-a4660319bf08","event":"envelopeDeclined","name":"envelope.declined","time":"2024-12-12T19:57:51+01:00","entityName":"envelope","entityId":"0193bc3b-46f0-73fa-8d73-c9f0452a08ca","data":{"status":"declined"},"envelope":{"id":"0193bc3b-46f0-73fa-8d73-c9f0452a08ca","status":"declined"}}';
 
 if (strlen($body) < 10000) {
     error_log("digisign_webhook: payload: " . print_r($body, true));
@@ -79,7 +80,7 @@ switch ($hook->event) {
 
         // 1. uložit do DB že je smlouva odeslaná
         $novaPoznamka = sprintf(
-            "%s%sSmlouva odeslána  %s na adresu %s.",
+            "%s%sSmlouva odeslána %s na adresu %s.",
             $smlouva->poznamka,
             empty($smlouva->poznamka) ? '' : "\n",
             $odeslano_kdy->format('d.m.Y H:i'),
@@ -146,9 +147,33 @@ switch ($hook->event) {
         $uzivatel->update(['druzstvo' => 1]);
 
         break;
-    case 'envelopeExpired': // obálka expirovala
-
     case 'envelopeDeclined': // obálka byla odmítnuta
+        /**
+         * {"id":"0193bc3c-08d2-73ef-b4e4-a4660319bf08","event":"envelopeDeclined","name":"envelope.declined","time":"2024-12-12T19:57:51+01:00","entityName":"envelope","entityId":"0193bc3b-46f0-73fa-8d73-c9f0452a08ca","data":{"status":"declined"},"envelope":{"id":"0193bc3b-46f0-73fa-8d73-c9f0452a08ca","status":"declined"}}
+         */
+        // ověřit skutečný stav
+        if ($envelope->status !== 'declined') {
+            print_and_log("Nesedi envelope status ({$envelope->status})");
+            break;
+        }
+
+        // 1. uložit do DB že je smlouva odmítnuta
+        $podpis = $PodpisSmlouvyModel->findOneBy(['smlouva_id' => $smlouva->id, 'smluvni_strana' => 'ucastnik']);
+        $podpis->update(['kdy_odmitnuto' => $hook->time]);
+        print_and_log(sprintf("smlouva #%u odmitnuta \"%s\" datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
+        // 2. důvod odmítnutí uložit do poznámky
+        if (!empty($envelope->recipients[0]->declineReason)) {
+            $novaPoznamka = sprintf(
+                "%s%sSmlouva ODMÍTNUTA %s s důvodem: %s",
+                $smlouva->poznamka,
+                empty($smlouva->poznamka) ? '' : "\n",
+                $envelope->recipients[0]->declinedAt->format('d.m.Y H:i'),
+                $envelope->recipients[0]->declineReason
+            );
+            $smlouva->update(['poznamka' => $novaPoznamka]);
+        }
+        break;
+    case 'envelopeExpired': // obálka expirovala
 
     case 'envelopeCancelled': // obálka byla zrušena
 
