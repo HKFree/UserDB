@@ -89,9 +89,8 @@ switch ($hook->event) {
                 foreach ($tags as $tag) {
                     if ($tag['recipientClaim'] == 'birthdate') {
                         $birthdate_dirty = $tag['value'];
-                        $birthdate_dirty = preg_replace('/\s+/', '', $birthdate_dirty);
                         try {
-                            $d = new DateTime($birthdate_dirty . " 00:00:00");
+                            $d = new DateTime(preg_replace('/\s+/', '', $birthdate_dirty) . " 00:00:00");
                             print_and_log(sprintf('datum narozeni [%s] parsovano jako %s', $birthdate_dirty, $d->format('Y-m-d')));
                             $uzivatel->update(['datum_narozeni' => $d->format('Y-m-d')]);
                         } catch (Exception $e) {
