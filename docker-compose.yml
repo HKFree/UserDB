@@ -16,6 +16,7 @@ services:
       - USERDB_IDS_IPS_WHITELIST=10.107.99.188
       - INFLUX_URL=influxdb://wewimo:xxx@10.107.252.101:8086/wewimo
       - PDF_GENERATOR_URL=http://pdf-generator/
+      - FILE_STORAGE_PATH=/opt/userdb/smlouvy # sem se ukládají PDFka - smlouvy
     env_file:
       - path: .local.env
         required: false

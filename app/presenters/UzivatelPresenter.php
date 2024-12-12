@@ -341,8 +341,8 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('kauce_mobil', 'Kauce na mobilní tarify', 30);
         $form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
         $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
-        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::Integer, 'PSČ musí být číslo');
-        $form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::Filled, 'Vyberte typ členství');
+        $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
+        $form->addSelect('TypClenstvi_id', 'Členství', $typClenstvi)->addRule(Form::FILLED, 'Vyberte typ členství');
         $form->addTextArea('poznamka', 'Poznámka', 50, 12);
         $form->addTextArea('gpg', 'GPG klíč', 50, 12);
         $form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::Filled, 'Vyberte technologii připojení');
@@ -408,6 +408,18 @@ class UzivatelPresenter extends BasePresenter
         // Validujeme jenom při uložení formuláře
         if (!isset($data['save'])) {
             return 0;
+        }
+
+        $uzivatelBeforeSave = $this->uzivatel->getUzivatel($data['id']);
+
+        if ($uzivatelBeforeSave) {
+            if ($uzivatelBeforeSave->druzstvo == 1 && $data['druzstvo'] != 1) {
+                $form->addError('Právní vztah k družstvu již nelze nikdy změnit na Ne.');
+            }
+
+            if ($uzivatelBeforeSave->spolek == 1 && $data['spolek'] != 1) {
+                $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
+            }
         }
 
         if (isset($data['ipsubnet']) && !empty($data['ipsubnet'])) {

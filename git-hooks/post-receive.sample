@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ENV="-e USERDB_SALT=xxxsalt -e USERDB_GOOGLE_MAPS_KEY=xxxmapskey -e USERDB_DB_HOST=db.hkfree.org -e USERDB_DB_NAME=xxxdb -e USERDB_DB_USERNAME=xxxuser -e USERDB_DB_PASSWORD=xxxpwd -e USERDB_ENCRYPTION_PASSPHRASE=def000003f80fda926649189d52b4024641f8fa97d1be88638aa8f8c0bec00fdfd756e344f7547db517b17a5ea67085d9de8c88c806795bdec825f8df8b47e6dbb87ec03 -e USERDB_IDS_IPS_WHITELIST=10.107.99.188"
+ENV="-e USERDB_SALT=xxxsalt -e USERDB_GOOGLE_MAPS_KEY=xxxmapskey -e USERDB_DB_HOST=db.hkfree.org -e USERDB_DB_NAME=xxxdb -e USERDB_DB_USERNAME=xxxuser -e USERDB_DB_PASSWORD=xxxpwd -e USERDB_ENCRYPTION_PASSPHRASE=def000b87ec03 -e USERDB_IDS_IPS_WHITELIST=10.107.99.188 -e PDF_GENERATOR_URL=http://userdb-pdf-generator-testing/ FILE_STORAGE_PATH=/opt/userdb/smlouvy DIGISIGN_ACCESS_KEY=PSy...abc DIGISIGN_SECRET_KEY=dko...MM"
 
 DEPLOYDIR=/opt/UserDB
 
@@ -29,3 +29,7 @@ docker rename userdb userdb-$DATETIME || true
 
 echo "Starting a new userdb container..." # mandatory
 docker run -d --restart=always $ENV --name userdb -p 127.0.0.1:8080:80 userdb:$TAG
+
+#
+# TODO pořešit deployment "pdf-generator" kontejneru
+#

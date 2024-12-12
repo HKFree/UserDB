@@ -135,11 +135,10 @@ class UzivatelListGrid
             $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
             return $latte->renderToString($templatePath, $params);
         });
-        $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if ($canViewOrEdit) {
-            $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function ($item) {
-                return $item->jmeno . ' '. $item->prijmeni;
+            $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
+                return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
             })->setSortable();
             if ($fullnotes) {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {
@@ -294,15 +293,15 @@ class UzivatelListGrid
             ->setDefaultValue('all')
             ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
                 if ($value == 'spolek') {
-                    return ($connection->where('spolek = ?', '1'));
+                    return ($connection->where('spolek = ? AND druzstvo = ?', ['1','0']));
                 }
                 if ($value == 'druzstvo') {
-                    return ($connection->where('druzstvo = ?', '1'));
+                    return ($connection->where('druzstvo = ? AND spolek = ?', ['1', '0']));
                 }
                 return ($connection);
             });
 
-        $list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných', 'planned' => 'pouze plánovaná');
+        $list = array('active' => 'bez zrušených, plánovaných a smazaných', 'all' => 'včetně zrušených, plánovaných a smazaných', 'planned' => 'pouze plánovaná členství ve spolku');
 
         $tz = $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
             ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
@@ -398,6 +397,7 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
+
         $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
             $latte = new Engine();
             $params = [
@@ -409,11 +409,10 @@ class UzivatelListGrid
             return $latte->renderToString($templatePath, $params);
 
         });
-        $grid->addColumnText('nick', 'Nick')->setSortable();
 
         if ($canViewOrEdit) {
-            $grid->addColumnText('jmeno', 'Jméno a příjmení')->setCustomRender(function ($item) {
-                return $item->jmeno . ' '. $item->prijmeni;
+            $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
+                return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
             })->setSortable();
             if ($fullnotes) {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {

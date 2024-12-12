@@ -57,7 +57,7 @@
             <th>Ukončeno</th>
             <td>
                 {ifset $smlouva->kdy_ukonceno}
-                    {$smlouva->kdy_ukonceno->format('d.m.Y \v h:m')}
+                    {$smlouva->kdy_ukonceno->format('d.m.Y \v H:h')}
                 {else}
                     - - -
                 {/ifset}
@@ -95,16 +95,12 @@
                         za {$podpis->smluvni_strana} {$podpis->jmeno}:
                         {if isset($podpis->kdy_podepsano)}
                             ✅ podepsáno
-                            <span title="{$podpis->kdy_podepsano->format('d F Y H:h:s')}">
-                                {$podpis->kdy_podepsano->format('d.m.Y')}
-                            </span>
+                            {$podpis->kdy_podepsano->format('d.m.Y H:i')}
                         {/if}
                         {if isset($podpis->kdy_odmitnuto)}
                             {* Zde predpokladame ze kdy_zruseno nemuze byt v budoucnosti *}
-                                    ⚠️ tento podpis byl <b>odmítnut</b>
-                                    <span title="{$podpis->kdy_odmitnuto->format('d F Y H:h:s')}">
-                                        {$podpis->kdy_odmitnuto->format('d.m.Y')}
-                                    </span>
+                            ⚠️ tento podpis byl <b>odmítnut</b>
+                            {$podpis->kdy_odmitnuto->format('d.m.Y H:i')}
                         {/if}
                         {if !isset($podpis->kdy_odmitnuto) && !isset($podpis->kdy_podepsano)}
                             ⏳ ještě nepodapsáno
