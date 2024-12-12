@@ -13,6 +13,11 @@
     <a href="{link UzivatelMailSms:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS</a>
     <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Comverga</a>
     {/if}
+    {if $u->regform_downloaded_password_sent==0}
+    <a n:href="UzivatelActions:sendRegActivation id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat znovu aktivační link e-mailem</a>
+    {else}
+    <a n:href="UzivatelActions:exportAndSendRegForm id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat registrační formulář e-mailem</a>
+    {/if}
     <a href="{link UzivatelList:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>
     <div style="margin-top:3px;">
     {if $activaceVisible}<a href="{link UzivatelActions:moneyActivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Aktivace</a>{/if}
@@ -20,6 +25,7 @@
     {if $deactivaceVisible}<a href="{link UzivatelActions:moneyDeactivate id=>$u->id}" class="btn btn-danger btn-sm" role="button"><i class="glyphicon glyphicon-remove-circle"></i> Deaktivace</a>{/if}
     <a n:if="$igw" href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-check"></i> Zobrazit stav na IGW</a>
     <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
+
     {control userLabels userId => $u->id}
     </div>
 
@@ -88,12 +94,8 @@
             <td>
                 {if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}
                 <br>
-                <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button">Registrační formulář</a>
-                <br>
-                {if $u->regform_downloaded_password_sent==0}
-                <a n:href="UzivatelActions:sendRegActivation id=>$u->id" role="button">Odeslat znovu aktivační link e-mailem</a>
-                {else}
-                <a n:href="UzivatelActions:exportAndSendRegForm id=>$u->id" role="button">Odeslat registrační formulář e-mailem</a>
+                {if $u->TypClenstvi->id != 1}
+                <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-file icon-file"></i> Registrační formulář</a>
                 {/if}
             </td>
         </tr>
@@ -132,8 +134,8 @@
 
         <tr><th>Technologie připojení</th><td>{$u->TechnologiePripojeni->text}</td></tr>
         <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni->text}</td></tr>
-        <tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>
-        <tr><th>GPG klíč</th><td><pre class="well well-sm">{$u->gpg}</pre></td></tr>
+        <tr><th>Poznámka</th><td>{$u->poznamka|breakLines}</td></tr>
+        <tr><th>GPG klíč</th><td>{$u->gpg}</td></tr>
         <tr><th>Založen</th><td>{$u->zalozen}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
 
