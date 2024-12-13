@@ -19,15 +19,15 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $pdfGenerator;
     private $mailService;
     private $smlouva;
-    private $database;
+    private Services\RequestDruzstvoContract $requestDruzstvoContract;
 
-    public function __construct(\Nette\Database\Connection $database, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva) {
-        $this->database = $database;
+    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva, Services\RequestDruzstvoContract $requestDruzstvoContract) {
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
         $this->smlouva = $smlouva;
+        $this->requestDruzstvoContract = $requestDruzstvoContract;
     }
 
     public function actionMoneyActivate() {
@@ -76,15 +76,25 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionSendRegActivation() {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-                $hash = base64_encode($uzivatel->id.'-'.md5($this->context->parameters["salt"].$uzivatel->zalozen));
-                $link = "https://moje.hkfree.org/uzivatel/confirm/".$hash;
+                $hash = base64_encode($uzivatel->id . '-' . md5($this->context->parameters["salt"] . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
-                $this->mailService->sendConfirmationRequest($uzivatel, $so, $link);
-                $this->mailService->sendConfirmationRequestCopy($uzivatel, $so);
+                if ($uzivatel->druzstvo == 1) {
+                    $link = "https://moje.hkfree.org/uzivatel/confirm-druzstvo/" . $hash;
 
-                $this->flashMessage('E-mail s žádostí o potvrzení registrace byl odeslán.');
+                    $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);
+                    $this->mailService->sendDruzstvoConfirmationRequestCopy($uzivatel, $so);
+
+                    $this->flashMessage('E-mail s žádostí o ověření emailu pro registraci do družstva byl odeslán.');
+                } elseif ($uzivatel->spolek == 1) {
+                    $link = "https://moje.hkfree.org/uzivatel/confirm/" . $hash;
+
+                    $this->mailService->sendSpolekConfirmationRequest($uzivatel, $so, $link);
+                    $this->mailService->sendSpolekConfirmationRequestCopy($uzivatel, $so);
+
+                    $this->flashMessage('E-mail s žádostí o potvrzení registrace do spolku byl odeslán.');
+                }
 
                 $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
             }
@@ -94,14 +104,20 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionExportAndSendRegForm() {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-                $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                if ($uzivatel->spolek == 0) {
+                    $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
 
-                $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
+                    $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
+                } else {
+                    $pdftemplate = $this->createTemplate()->setFile(__DIR__ . "/../templates/Uzivatel/pdf-form.latte");
+                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
-                $this->flashMessage('E-mail byl odeslán.');
+                    $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
 
-                $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
+                    $this->flashMessage('E-mail byl odeslán.');
+
+                    $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
+                }
             }
         }
     }
@@ -159,19 +175,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         // Kontrola, že od poslední generace uběhlo aspoň 5 minut...
         // $this->checkTimeSinceLastGenerateContract();
 
-        $this->database->query('INSERT INTO Smlouva ?', [
-            'Uzivatel_id' => $user_id,
-            'typ' => 'ucastnicka',
-            'kdy_vygenerovano' => new DateTime()
-        ]);
-        $newId = $this->database->getInsertId();
+        $newId = $this->requestDruzstvoContract->execute($user_id);
 
-        $cmd = sprintf("%s/../bin/console app:digisign_generovat_ucastnickou_smlouvu %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
-        $cmd2 = "$cmd | sed -u 's/^/digisign_generovat_ucastnickou_smlouvu /' &";
-        error_log("RUN: [$cmd2]", );
-        proc_close(proc_open($cmd2, array(), $foo));
-
-        $this->flashMessage(sprintf('Nová smlouva číso %u bude odeslána na e-mail %s.', $newId, $current_user->email));
+        $this->flashMessage(sprintf('Nová smlouva číslo %u bude odeslána na e-mail %s.', $newId, $current_user->email));
         // Tady call na generaci nove smlouvy a odeslani
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }

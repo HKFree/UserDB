@@ -21,8 +21,8 @@ class MailService
         $this->mailer = $mailer;
     }
 
-    public function sendConfirmationRequest($uzivatel, $so, $link): void {
-        $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+    public function sendSpolekConfirmationRequest($uzivatel, $so, $link): void {
+        $fromAddress = 'spolek hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mail = new Message();
         $mail->setFrom($fromAddress)
@@ -40,8 +40,8 @@ class MailService
         $this->mailer->send($mail);
     }
 
-    public function sendConfirmationRequestCopy($uzivatel, $so): void {
-        $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+    public function sendSpolekConfirmationRequestCopy($uzivatel, $so): void {
+        $fromAddress = 'spolek hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mailso = new Message();
         $mailso->setFrom($fromAddress)
@@ -53,6 +53,46 @@ class MailService
                 'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. ' .
                 'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org z.s.');
+        if (!empty($so->email2)) {
+            $mailso->addTo($so->email2);
+        }
+
+        $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($uzivatel->id);
+        foreach ($seznamSpravcu as $sou) {
+            $mailso->addTo($sou->email);
+        }
+        //\Tracy\Debugger::barDump($mailso);exit();
+        $this->mailer->send($mailso);
+    }
+
+    public function sendDruzstvoConfirmationRequest($uzivatel, $so, $link): void {
+        $fromAddress = 'hkfree.org internetové družstvo, oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+
+        $mail = new Message();
+        $mail->setFrom($fromAddress)
+            ->addTo($uzivatel->email)
+            ->setSubject('Ověření adresy, potvrďte prosím, UID ' . $uzivatel->id)
+            ->setHtmlBody('Dobrý den,<br><br>pro ověření platnosti Vaší e-mailové adresy je nutné kliknout na ' .
+                'následující odkaz:<br><br><a href="' . $link . '">' . $link . '</a><br><br>' .
+                'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://druzstvo.hkfree.org">druzstvo.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
+                'S pozdravem hkfree.org internetové družstvo');
+        if (!empty($uzivatel->email2)) {
+            $mail->addTo($uzivatel->email2);
+        }
+        $this->mailer->send($mail);
+    }
+
+    public function sendDruzstvoConfirmationRequestCopy($uzivatel, $so): void {
+        $fromAddress = 'hkfree.org internetové družstvo, oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+
+        $mailso = new Message();
+        $mailso->setFrom($fromAddress)
+            ->addTo($so->email)
+            ->setSubject('kopie - Ověření adresy, potvrďte prosím, UID ' . $uzivatel->id)
+            ->setHtmlBody('Dobrý den,<br><br>pro ověření platnosti Vaší e-mailové adresy je nutné kliknout na ' .
+                'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID ' . $uzivatel->id . '<br><br>' .
+                'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://druzstvo.hkfree.org">druzstvo.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
+                'S pozdravem hkfree.org internetové družstvo');
         if (!empty($so->email2)) {
             $mailso->addTo($so->email2);
         }

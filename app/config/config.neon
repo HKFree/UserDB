@@ -82,6 +82,7 @@ services:
 	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%, %env.USERDB_IDS_IPS_WHITELIST%)
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
 	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
+	requestDruzstvoContract: App\Services\RequestDruzstvoContract
 	status: App\Model\Status
 	stitek: App\Model\Stitek
 	stitekUzivatele: App\Model\StitekUzivatele

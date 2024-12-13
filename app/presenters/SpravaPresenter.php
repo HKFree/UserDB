@@ -48,7 +48,7 @@ class SpravaPresenter extends BasePresenter
                 $povoleneAp[] = $ap->id;
             }
         }
-        $uzivatele = $this->uzivatel->findAll()->where('location_status IN (?, ?)', 'valid', 'approx')->where('TypClenstvi_id > ?', 1);
+        $uzivatele = $this->uzivatel->findAll()->where('location_status IN (?, ?)', 'valid', 'approx')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)');
         $uzivatele = $uzivatele->where('Ap_id', $povoleneAp); // Ap_id IN (..., ..., ...)
         $uzivatele = $uzivatele->fetchAll();
         $output = []; // klic = kombinace latitude + longitude

@@ -193,6 +193,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
             foreach ($ipAdresyu2 as $ip) {
                 $this->ipAdresa->update($ip->id, array('Uzivatel_id' => $values->Uzivatel_id));
             }
+            //TODO: spolek / druzstvo
             //zrusit slouceneho
             $this->uzivatel->update($values->slouceny_uzivatel, array('TypClenstvi_id' => 1));
 

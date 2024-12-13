@@ -32,7 +32,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
     }
 
     public function getFormatovanySeznamNezrusenychUzivatelu() {
-        $vsichni = $this->findAll()->where('TypClenstvi_id>1')->where('systemovy=0')->fetchAll();
+        $vsichni = $this->findAll()->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->where('systemovy=0')->fetchAll();
         $uss = array();
         foreach ($vsichni as $uzivatel) {
             $uss[$uzivatel->id] = $uzivatel->id . ' - ' . $uzivatel->nick . ' - ' . $uzivatel->jmeno . ' ' . $uzivatel->prijmeni;
@@ -41,7 +41,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
     }
 
     public function getUsersForMailingList() {
-        $vsichni = $this->findAll()->where('TypClenstvi_id>1')->where('email_invalid=0')->where('systemovy=0')->fetchAll();
+        $vsichni = $this->findAll()->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->where('email_invalid=0')->where('systemovy=0')->fetchAll();
         return ($vsichni);
     }
 
@@ -50,12 +50,12 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         foreach ($subnety as $subnet) {
             list($network, $cidr) = explode("/", $subnet->subnet);
 
-            $userids = $this->getConnection()->query("select DISTINCT U.* 
-            from Uzivatel U 
-            LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id 
-            LEFT JOIN Ap A on A.id=U.Ap_id 
+            $userids = $this->getConnection()->query("select DISTINCT U.*
+            from Uzivatel U
+            LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id
+            LEFT JOIN Ap A on A.id=U.Ap_id
             where A.id!=$referentialApId
-            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - $cidr))) = inet_aton('$network') 
+            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - $cidr))) = inet_aton('$network')
             order by U.id")->fetchPairs('id', 'id');
 
             if (!empty($userids)) {
@@ -78,12 +78,12 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         foreach ($subnety as $subnet) {
             list($network, $cidr) = explode("/", $subnet->subnet);
 
-            $userids = $this->getConnection()->query("select DISTINCT U.* 
-            from Uzivatel U 
-            LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id 
-            LEFT JOIN Ap A on A.id=U.Ap_id 
+            $userids = $this->getConnection()->query("select DISTINCT U.*
+            from Uzivatel U
+            LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id
+            LEFT JOIN Ap A on A.id=U.Ap_id
             where A.id!=$referentialApId
-            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - $cidr))) = inet_aton('$network') 
+            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - $cidr))) = inet_aton('$network')
             order by U.id")->fetchPairs('id', 'id');
 
             if (!empty($userids)) {
@@ -155,10 +155,10 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             }
         } else {
             return $this->findAll()->where(
-                "telefon LIKE ? OR email LIKE ? OR email2 LIKE ? 
-            OR CONVERT(nick USING utf8) LIKE ? 
-            OR CONVERT(jmeno USING utf8) LIKE ? 
-            OR CONVERT(prijmeni USING utf8) LIKE ? 
+                "telefon LIKE ? OR email LIKE ? OR email2 LIKE ?
+            OR CONVERT(nick USING utf8) LIKE ?
+            OR CONVERT(jmeno USING utf8) LIKE ?
+            OR CONVERT(prijmeni USING utf8) LIKE ?
             OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
             OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
             OR CONVERT(ulice_cp USING utf8) LIKE ?",
@@ -257,7 +257,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
     }
 
     public function getDuplicateEmailArea($email, $id) {
-        $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where('TypClenstvi_id > 1')->fetch();
+        $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetch();
         if ($existujici) {
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
         }
@@ -265,7 +265,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
     }
 
     public function getDuplicatePhoneArea($telefon, $id) {
-        $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where('TypClenstvi_id > 1')->fetch();
+        $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetch();
         if ($existujici) {
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
         }
