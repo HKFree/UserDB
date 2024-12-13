@@ -50,7 +50,8 @@ class UzivatelPresenter extends BasePresenter
     private $aplikaceToken;
     private $stitek;
     private $stitkyUzivatele;
-    private Explorer $database;
+    private Explorer $databaseExplorer;
+    private Services\RequestDruzstvoContract $requestDruzstvoContract;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
@@ -81,7 +82,8 @@ class UzivatelPresenter extends BasePresenter
         Model\AplikaceToken $aplikaceToken,
         Model\Stitek $stitek,
         Model\StitekUzivatele $stitkyUzivatele,
-        Explorer $database
+        Explorer $databaseExplorer,
+        Services\RequestDruzstvoContract $requestDruzstvoContract,
     ) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
@@ -108,13 +110,14 @@ class UzivatelPresenter extends BasePresenter
         $this->aplikaceToken = $aplikaceToken;
         $this->stitek = $stitek;
         $this->stitkyUzivatele = $stitkyUzivatele;
-        $this->database = $database;
+        $this->databaseExplorer = $databaseExplorer;
+        $this->requestDruzstvoContract = $requestDruzstvoContract;
     }
 
     protected function createComponentUserLabels(): UserLabelsComponent {
         // Předej do komponenty databázi a aktuální user ID
         $userId = $this->getParameter('id'); // Nebo jiný způsob získání ID uživatele
-        $ulc = new UserLabelsComponent($this->database, $this->stitek, $this->stitkyUzivatele);
+        $ulc = new UserLabelsComponent($this->databaseExplorer, $this->stitek, $this->stitkyUzivatele);
         $ulc->setUserId($userId);
         return $ulc;
     }
@@ -195,7 +198,7 @@ class UzivatelPresenter extends BasePresenter
                     die('Incorrect request (invalid hash)');
                 }
 
-                // TODO: generovat smlouvu jako v https://github.com/HKFree/UserDB/blob/master/app/presenters/UzivatelActionsPresenter.php#L143
+                $this->requestDruzstvoContract->execute($uzivatel->id);
 
                 $this->template->stav = true;
             } else {

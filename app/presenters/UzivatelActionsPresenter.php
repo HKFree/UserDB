@@ -19,15 +19,15 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $pdfGenerator;
     private $mailService;
     private $smlouva;
-    private $database;
+    private Services\RequestDruzstvoContract $requestDruzstvoContract;
 
-    public function __construct(\Nette\Database\Connection $database, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva) {
-        $this->database = $database;
+    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva, Services\RequestDruzstvoContract $requestDruzstvoContract) {
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
         $this->smlouva = $smlouva;
+        $this->requestDruzstvoContract = $requestDruzstvoContract;
     }
 
     public function actionMoneyActivate() {
@@ -175,19 +175,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         // Kontrola, že od poslední generace uběhlo aspoň 5 minut...
         // $this->checkTimeSinceLastGenerateContract();
 
-        $this->database->query('INSERT INTO Smlouva ?', [
-            'Uzivatel_id' => $user_id,
-            'typ' => 'ucastnicka',
-            'kdy_vygenerovano' => new DateTime()
-        ]);
-        $newId = $this->database->getInsertId();
+        $newId = $this->requestDruzstvoContract->execute($user_id);
 
-        $cmd = sprintf("%s/../bin/console app:digisign_generovat_ucastnickou_smlouvu %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
-        $cmd2 = "$cmd | sed -u 's/^/digisign_generovat_ucastnickou_smlouvu /' &";
-        error_log("RUN: [$cmd2]", );
-        proc_close(proc_open($cmd2, array(), $foo));
-
-        $this->flashMessage(sprintf('Nová smlouva číso %u bude odeslána na e-mail %s.', $newId, $current_user->email));
+        $this->flashMessage(sprintf('Nová smlouva číslo %u bude odeslána na e-mail %s.', $newId, $current_user->email));
         // Tady call na generaci nove smlouvy a odeslani
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
