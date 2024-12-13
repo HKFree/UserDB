@@ -32,6 +32,11 @@ class GeneratorSmlouvy
             $cenaString = sprintf('0 Kč (zdarma)');
         }
 
+        $subjectPrefix = getenv('AGREEMENT_NAME_PREFIX');
+        if (!empty($subjectPrefix)) {
+            $jmenoString = "($subjectPrefix) $jmenoString";
+        }
+
         $ip4Adresy = [];
         $IPAdresa = $container->getByType('App\Model\IPAdresa');
         foreach (
