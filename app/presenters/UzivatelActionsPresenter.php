@@ -104,14 +104,20 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionExportAndSendRegForm() {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-                $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                if ($uzivatel->spolek == 0) {
+                    $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
 
-                $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
+                    $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
+                } else {
+                    $pdftemplate = $this->createTemplate()->setFile(__DIR__ . "/../templates/Uzivatel/pdf-form.latte");
+                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
-                $this->flashMessage('E-mail byl odeslán.');
+                    $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
 
-                $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
+                    $this->flashMessage('E-mail byl odeslán.');
+
+                    $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
+                }
             }
         }
     }

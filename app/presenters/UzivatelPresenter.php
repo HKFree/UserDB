@@ -346,7 +346,7 @@ class UzivatelPresenter extends BasePresenter
     }
 
     protected function createComponentUzivatelForm() {
-        $typClenstvi = $this->typClenstvi->getTypyClenstvi()->fetchPairs('id', 'text');
+        $typClenstvi = [-1 => '-'] + $this->typClenstvi->getTypyClenstvi()->fetchPairs('id', 'text');
         $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id', 'text');
         $zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id', 'text');
         $technologiePripojeni = $this->technologiePripojeni->getTechnologiePripojeni()->fetchPairs('id', 'text');
@@ -386,7 +386,7 @@ class UzivatelPresenter extends BasePresenter
         $form->addSelect('druzstvo', 'Právní vztah k družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(1)->addRule(Form::Filled, 'Vyberte Právní vztah k družstvu');
         $form->addSelect('smazano', 'Smazán v družstvu', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::Filled, 'Vyberte Smazán v družstvu');
         $form->addSelect('spolek', 'Právní vztah ke spolku', [1 => 'Ano',0 => 'Ne'])->setDefaultValue(0)->addRule(Form::Filled, 'Vyberte Právní vztah ke spolku');
-        $form->addSelect('TypClenstvi_id', 'Typ členství ve spolku', $typClenstvi)->addRule(Form::Filled, 'Vyberte typ členství');
+        $form->addSelect('TypClenstvi_id', 'Typ členství ve spolku', $typClenstvi);
         $form->addTextArea('poznamka', 'Poznámka', 50, 12);
         $form->addTextArea('gpg', 'GPG klíč', 50, 12);
         $form->addSelect('TechnologiePripojeni_id', 'Technologie připojení', $technologiePripojeni)->addRule(Form::Filled, 'Vyberte technologii připojení');
@@ -420,7 +420,7 @@ class UzivatelPresenter extends BasePresenter
         $form->onValidate[] = array($this, 'validateUzivatelForm');
 
         $form->setDefaults(array(
-            'TypClenstvi_id' => 3,
+            'TypClenstvi_id' => -1,
             'TypPravniFormyUzivatele_id' => 1,
         ));
 
@@ -477,6 +477,18 @@ class UzivatelPresenter extends BasePresenter
 
             if ($data['spolek'] == 1 && $data['druzstvo'] == 1) {
                 $form->addError('Založení nového uživatele NEPODPORUJE právní vztahy k družstvu a ke spolku najednou, založte uživatele jen s jedním právním vztahem.');
+            }
+        }
+
+        if ($data['spolek'] == 1) {
+            if (($data['TypClenstvi_id'] ?? -1) == -1) {
+                $form->addError('Právní vztah ke spolku vyžaduje vyplnění Typu členství.');
+            }
+        }
+
+        if ($data['spolek'] == 0) {
+            if (($data['TypClenstvi_id'] ?? -1) >= 0) {
+                $form->addError('Právní vztah ke spolku Ne vyžaduje nevyplnění Typu členství.');
             }
         }
 
@@ -574,6 +586,9 @@ class UzivatelPresenter extends BasePresenter
         if (empty($values->poznamka)) {
             $values->poznamka = null;
         }
+        if ($values->TypClenstvi_id ?? -1 < 0) {
+            $values->TypClenstvi_id = null;
+        }
 
         // pri kazde editaci uzivatele nastavime znovu geocoding na pending, aby se znovu dohledaly geofraf. souradnice
         $values->location_status = 'pending';
@@ -591,7 +606,10 @@ class UzivatelPresenter extends BasePresenter
             $values->heslo_hash = $this->uzivatel->generateWeakHash($values->heslo);
             $values->heslo_strong_hash = $this->uzivatel->generateStrongHash($values->heslo);
             $values->id = $this->uzivatel->getNewID();
-            $idUzivatele = $this->uzivatel->insert($values)->id;
+
+            $uzivatel = $this->uzivatel->insert($values);
+
+            $idUzivatele = $uzivatel->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
 
             if ($values->spolek == 1) {

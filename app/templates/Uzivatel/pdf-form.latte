@@ -2,17 +2,17 @@
     <head>
         <style type="text/css">
             body {
-              font-size: 9pt; 
+              font-size: 9pt;
             }
             h1 {
-              font-size: 12pt; 
+              font-size: 12pt;
             }
             .info-sdruzeni {
-              padding: 10px; 
-              background: #ccc; 
-              width: 100%; 
-              border-bottom: 1px solid black; 
-              border-top: 1px solid black;  
+              padding: 10px;
+              background: #ccc;
+              width: 100%;
+              border-bottom: 1px solid black;
+              border-top: 1px solid black;
             }
             .info-sdruzeni td {
                 width: 50%;
@@ -35,7 +35,7 @@
                 width: 80%;
                 border-bottom: 1px solid #ccc;
             }
-            
+
             .ipcka {
                 width: 100%;
             }
@@ -86,9 +86,9 @@
             <tr>
                 <th>Právní forma:</td>
                 {if $forma == "PO"}
-                   <td>Právnická osoba</td> 
+                   <td>Právnická osoba</td>
                 {else}
-                   <td>Fyzická osoba</td>  
+                   <td>Fyzická osoba</td>
                 {/if}
             </tr>
             <tr>
@@ -128,35 +128,7 @@
                 <td>{$clenstvi}</td>
             </tr>
         </table>
-        
-        <h1>Parametry pro připojení k síti</h1>
-        <table class="ipcka">
-            <tr>
-                <th>IP adresa</th>
-                <th>Maska sítě</th>
-                <th>Výchozí brána</th>
-            </tr>
-            {foreach $ips as $ip}
-                <tr>
-                    <td>{$ip['ip']}</td>
-                    <td>{$ip['mask']}</td>
-                    <td>{$ip['gateway']}</td>
-                </tr>
-            {/foreach}            
-        </table>
-        <table class="ipcka">
-            <tr>
-                <th>Primární DNS</th>
-                <th>Sekundární DNS</th>
-                <th>SMTP server (server odchozí pošty)</th>
-            </tr>            
-            <tr>
-                <td>10.107.4.100</td>
-                <td>10.107.4.129</td>
-                <td>smtp.hkfree.org</td>
-            </tr>          
-        </table>
-        
+
         <h1>Informace o placení členských příspěvků</h1>
         <table class="udaje">
             <tr>
@@ -174,7 +146,7 @@
             <tr>
                 <th>Výše příspěvku:</td>
                 <td>290,- Kč, platí se vždy dopředu</td>
-            </tr>            
+            </tr>
         </table>
         <p><strong>Potvrzením registračního odkazu v emailu, který je zaslán při registraci, člen vyjadřuje souhlas se Stanovami zapsaného spolku v platném znění, souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. Oba výše uvedené dokumenty lze najít na stránkách sdružení http://www.hkfree.org v sekci Základní dokumenty.</strong></p>
         <p><strong>Tento registrační list je potvrzením, že se výše uvedená osoba stala členem hkfree.org z.s. a od té chvíle má právo účastnit se Valné hromady zapsaného spolku, podávat návrhy a hlasovat o návrzích v rámci Valné hromady.</strong></p>
@@ -190,6 +162,6 @@
             <li>Kontrolu stavu vašeho virtuálního účtu můžete provést na adrese https://money.hkfree.org, přihlašovací jméno <strong>{$uid}</strong> a heslo <strong>{$heslo}</strong>.</li>
             <li>Svého správce můžete vždy kontaktovat emailem na adrese <strong>{$oblastemail}</strong></li>
         </ul>
-        
+
     </body>
 </html>
