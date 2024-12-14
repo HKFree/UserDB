@@ -20,14 +20,24 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $mailService;
     private $smlouva;
     private $database;
+    private $logger;
 
-    public function __construct(\Nette\Database\Connection $database, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva) {
+    public function __construct(
+        \Nette\Database\Connection $database,
+        Services\MailService $mailsvc,
+        Services\PdfGenerator $pdf,
+        Model\AccountActivation $accActivation,
+        Model\Uzivatel $uzivatel,
+        Model\Smlouva $smlouva,
+        Model\Log $logger
+    ) {
         $this->database = $database;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
         $this->smlouva = $smlouva;
+        $this->logger = $logger;
     }
 
     public function actionMoneyActivate() {
@@ -141,8 +151,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionHandleSubscriberContract() {
-        // TODO: Logování změn
-
         if (!$this->getParameter('id')) {
             $this->flashMessage('Žádné id.');
             $this->redirect('UzivatelList:listall');
@@ -157,12 +165,13 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
 
         // Kontrola, že od poslední generace uběhlo aspoň 5 minut...
-        // $this->checkTimeSinceLastGenerateContract();
+        $this->checkTimeSinceLastGenerateContract();
 
+        $now = new DateTime();
         $this->database->query('INSERT INTO Smlouva ?', [
             'Uzivatel_id' => $user_id,
             'typ' => 'ucastnicka',
-            'kdy_vygenerovano' => new DateTime()
+            'kdy_vygenerovano' => $now
         ]);
         $newId = $this->database->getInsertId();
 
@@ -170,6 +179,16 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $cmd2 = "$cmd | sed -u 's/^/digisign_generovat_ucastnickou_smlouvu /' &";
         error_log("RUN: [$cmd2]", );
         proc_close(proc_open($cmd2, array(), $foo));
+
+        $log = [];
+        $new_data = [
+            'id' => $newId,
+            'Uzivatel_id' => $user_id,
+            'typ' => 'ucastnicka',
+            'kdy_vygenerovano' => $now
+        ];
+        $this->logger->logujInsert($new_data, 'Smlouva', $log);
+        $this->logger->loguj('Smlouva', $newId, $log);
 
         $this->flashMessage(sprintf('Nová smlouva číso %u bude odeslána na e-mail %s.', $newId, $current_user->email));
         // Tady call na generaci nove smlouvy a odeslani
