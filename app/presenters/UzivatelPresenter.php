@@ -589,7 +589,7 @@ class UzivatelPresenter extends BasePresenter
         if (empty($values->poznamka)) {
             $values->poznamka = null;
         }
-        if ($values->TypClenstvi_id ?? -1 < 0) {
+        if (($values->TypClenstvi_id ?? -1) < 0) {
             $values->TypClenstvi_id = null;
         }
 
