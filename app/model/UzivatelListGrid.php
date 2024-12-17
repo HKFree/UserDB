@@ -339,8 +339,7 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                // TODO: spolek / druzstvo
-                if ($item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
                 return $tr;
@@ -369,7 +368,6 @@ class UzivatelListGrid
                 return $tr;
             });
         }
-        \Tracy\Debugger::barDump($seznamUzivateluCC);
 
         $grid->addColumnText('id', 'UID')->setCustomRender(function ($item) use ($presenter, $canViewOrEdit) {
             $uidLink = Html::el('a')
