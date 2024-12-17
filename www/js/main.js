@@ -1,24 +1,24 @@
-$(document).ready(function() {
-    $(".datepicker").change(function() {
-        if($(this).val().indexOf("00:00:00") > -1) $(this).val($(this).val().replace(" 00:00:00", ""));
+$(document).ready(function () {
+    $(".datepicker").change(function () {
+        if ($(this).val().indexOf("00:00:00") > -1) $(this).val($(this).val().replace(" 00:00:00", ""));
     });
     $(".datepicker").change();
     $(".datepicker").off("change");
 
     $(".datepicker").datepicker({ dateFormat: "dd.mm.yy" });
 
-    $("#navareas").click(function(){
+    $("#navareas").click(function () {
         $(".sidebar").toggle();
-        if($(".sidebar").is(":visible")) $(".main").css( { marginLeft : "210px" } );
-        else $(".main").css( { marginLeft : "0px" } );
+        if ($(".sidebar").is(":visible")) $(".main").css({ marginLeft: "210px" });
+        else $(".main").css({ marginLeft: "0px" });
         $(".navbar-toggle").click();
     });
-    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         // na mobilu
         if (!window.location.href.endsWith('/userdb/') && !window.location.href.endsWith('/userdb')) {
             // a neni to uvodni "landing page", tak skryt levou navigacni listu s oblastmi
             $(".sidebar").hide();
-            $(".main").css( { marginLeft : "0px" } );
+            $(".main").css({ marginLeft: "0px" });
         }
     }
 
@@ -28,7 +28,7 @@ $(document).ready(function() {
 });
 
 // EXTREMNI prasarna pro "nastaveni" defaultniho inputu ve formulari
-$(document).ready(function() {
+$(document).ready(function () {
     $('form').each(function () {
         var thisform = $(this);
         var clonebutton = thisform.find('input.default');
@@ -44,26 +44,26 @@ $(document).ready(function() {
 });
 
 // INICIALIZATOR pro JSTREE
-$(document).ready(function() {
+$(document).ready(function () {
     $('#oblastitree').bonsai();
 });
 
 // Scroll na objekt odkazovany ve fragmentu (napr. "#ip10.107.12.1")
 // a zvyrazneni objektu (id musi byt napr. 'highlightable-ip10.107.12.1')
-$(document).ready(function() {
+$(document).ready(function () {
     var elem = document.getElementById('highlightable-' + window.location.hash.replace('#', ''));
     if (elem) {
         console.log(elem);
         // nastavit vyrazne zvyrazneni
         $(elem).addClass('highlighted');
         // po chvili nastavit (v CSS animovane) slabsi zvyrazneni
-        setTimeout(function() {
+        setTimeout(function () {
             $(elem).addClass('highlighted-fadeout');
         }, 1000);
         // scrollovat k elementu (musime odscrollovat trochu min, protoze nahore je fixni navbar-header)
         // scrollovat tak, aby element byl v prvni tretine obrazovky
         $('html, body').animate({
-            scrollTop: $(elem).offset().top - $('.navbar-header').height() - ($(window).height()-$('.navbar-header').height())/3
+            scrollTop: $(elem).offset().top - $('.navbar-header').height() - ($(window).height() - $('.navbar-header').height()) / 3
         }, 1000);
     }
 });
@@ -73,13 +73,13 @@ $(document).ready(function () {
         event.preventDefault();
         var txt = $(this).attr('tag');
         var urlHref = $(this).attr('href');
-        if(!txt || txt == ''){
+        if (!txt || txt == '') {
             return;
         }
 
         copyTextToClipboard(txt);
 
-        if(!urlHref || urlHref == ''){
+        if (!urlHref || urlHref == '') {
             return;
         }
         var win = window.open(urlHref, '_blank');
@@ -110,19 +110,19 @@ function copyTextToClipboard(text) {
     document.body.appendChild(textArea);
     textArea.select();
     try {
-      var successful = document.execCommand('copy');
-      var msg = successful ? 'successful' : 'unsuccessful';
-      console.log('Copying text command was ' + msg);
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Copying text command was ' + msg);
     } catch (err) {
-      console.log('Oops, unable to copy');
+        console.log('Oops, unable to copy');
     }
     document.body.removeChild(textArea);
 }
 
 function openMikrotikWebfig(ip, username, password) {
     var theHTML = "<!doctype html><html>" +
-        "<head><script>window.name='login="+username+"|"+password+"';window.location.replace('http://"+ip+"/webfig/#Wireless');</script></head><body></body></html>";
-    var webfigWindow = window.open("","");
+        "<head><script>window.name='login=" + username + "|" + password + "';window.location.replace('http://" + ip + "/webfig/#Wireless');</script></head><body></body></html>";
+    var webfigWindow = window.open("", "");
     webfigWindow.document.write(theHTML);
     return false;
 }
@@ -143,7 +143,7 @@ function showMessage(message, type = 'success') {
 
 
 $(document).ready(function () {
-    $('#user-labels').on('click', '.badge-remove', function (e) {
+    $('.user-labels').on('click', '.badge-remove', function (e) {
         e.preventDefault();
 
         const stitekId = $(this).data('stitek-id');
@@ -177,7 +177,10 @@ $(document).ready(function () {
         e.preventDefault(); // Zabráníme reloadu stránky
 
         const stitekId = $(this).data('id'); // Získáme ID štítku
-        const userId = $(this).closest('.dropdown').data('user-id'); // Získáme user_id z dropdown boxu
+        const userId = $(this).closest('.dropdown').parent().data('user-id'); // Získáme user_id z dropdown boxu
+
+        const existing = $(`.user-labels-component[data-user-id=${userId}] .user-labels .badge .badge-remove[data-stitek-id=${stitekId}]`);
+        if (existing.length > 0) return;
 
         // Odeslání AJAX požadavku
         $.ajax({
@@ -189,11 +192,12 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
+                    // uloženo -> zobrazit novej štítek (stejně jako v UserLabelComponents.latte)
                     const newLabel = `<span class="badge" style="background-color: ${response.barva_pozadi}; color: ${response.barva_popredi};">
                             ${response.text}
+                            <span class="badge-remove" data-stitek-id="${stitekId}" data-user-id="${userId}">&times;</span>
                         </span>`;
-                    $('#user-labels').append(newLabel);
-
+                    $(newLabel).hide().appendTo(`.user-labels-component[data-user-id=${userId}] .user-labels`).fadeIn(300);
                     console.log('Štítek byl úspěšně uložen!', 'success');
                 } else {
                     alert('Došlo k chybě: ' + response.message, 'danger');

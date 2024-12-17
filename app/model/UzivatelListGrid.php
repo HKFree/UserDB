@@ -129,16 +129,6 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
-            $latte = new Engine();
-            $params = [
-                'stitky' => $this->stitek->getSeznamStitku(),
-                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
-                'userId' => $item->id,
-            ];
-            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
-            return $latte->renderToString($templatePath, $params);
-        });
 
         if ($canViewOrEdit) {
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
@@ -253,6 +243,17 @@ class UzivatelListGrid
                 })->setSortable();
             }
         }
+
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+            $latte = new Engine();
+            $params = [
+                'stitky' => $this->stitek->getSeznamStitku(),
+                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
+                'userId' => $item->id,
+            ];
+            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
+            return $latte->renderToString($templatePath, $params);
+        });
 
         return $grid;
     }
@@ -403,18 +404,6 @@ class UzivatelListGrid
             return $uidLink;
         })->setSortable();
 
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
-            $latte = new Engine();
-            $params = [
-                'stitky' => $this->stitek->getSeznamStitku(),
-                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
-                'userId' => $item->id,
-            ];
-            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
-            return $latte->renderToString($templatePath, $params);
-
-        });
-
         if ($canViewOrEdit) {
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
                 return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
@@ -528,6 +517,17 @@ class UzivatelListGrid
                 })->setSortable()->setFilterText();
             }
         }
+
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+            $latte = new Engine();
+            $params = [
+                'stitky' => $this->stitek->getSeznamStitku(),
+                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
+                'userId' => $item->id,
+            ];
+            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
+            return $latte->renderToString($templatePath, $params);
+        });
 
         return $grid;
     }
