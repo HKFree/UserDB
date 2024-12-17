@@ -179,6 +179,9 @@ $(document).ready(function () {
         const stitekId = $(this).data('id'); // Získáme ID štítku
         const userId = $(this).closest('.dropdown').parent().data('user-id'); // Získáme user_id z dropdown boxu
 
+        const existing = $(`.user-labels-component[data-user-id=${userId}] .user-labels .badge .badge-remove[data-stitek-id=${stitekId}]`);
+        if (existing.length > 0) return;
+
         // Odeslání AJAX požadavku
         $.ajax({
             url: '/userdb/stitky/saveLabel',
@@ -189,11 +192,12 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
+                    // uloženo -> zobrazit novej štítek (stejně jako v UserLabelComponents.latte)
                     const newLabel = `<span class="badge" style="background-color: ${response.barva_pozadi}; color: ${response.barva_popredi};">
                             ${response.text}
                             <span class="badge-remove" data-stitek-id="${stitekId}" data-user-id="${userId}">&times;</span>
                         </span>`;
-                    $(`.user-labels-component[data-user-id=${userId}] .user-labels`).append(newLabel);
+                    $(newLabel).hide().appendTo(`.user-labels-component[data-user-id=${userId}] .user-labels`).fadeIn(300);
                     console.log('Štítek byl úspěšně uložen!', 'success');
                 } else {
                     alert('Došlo k chybě: ' + response.message, 'danger');
