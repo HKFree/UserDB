@@ -610,6 +610,7 @@ input[readonly] {
     border-color: #383838;
     color: #383838;
     background-color: #38383820;
+    text-decoration: line-through;
 }
 
 /** STITKY **/

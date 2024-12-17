@@ -14,6 +14,7 @@ use Tracy\Debugger;
  */
 class UzivatelActionsPresenter extends UzivatelPresenter
 {
+    private $parameters;
     private $accountActivation;
     private $uzivatel;
     private $pdfGenerator;
@@ -21,7 +22,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $smlouva;
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
 
-    public function __construct(Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva, Services\RequestDruzstvoContract $requestDruzstvoContract) {
+    public function __construct(Model\Parameters $parameters, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva, Services\RequestDruzstvoContract $requestDruzstvoContract) {
+        $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
@@ -76,19 +78,18 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionSendRegActivation() {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-                $hash = base64_encode($uzivatel->id . '-' . md5($this->context->parameters["salt"] . $uzivatel->zalozen));
+                $hash = base64_encode($uzivatel->id . '-' . md5($this->parameters->salt . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
+                $link = "https://moje.hkfree.org/uzivatel/confirm/" . $hash;
                 if ($uzivatel->druzstvo == 1) {
-                    $link = "https://moje.hkfree.org/uzivatel/confirm-druzstvo/" . $hash;
 
                     $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);
                     $this->mailService->sendDruzstvoConfirmationRequestCopy($uzivatel, $so);
 
                     $this->flashMessage('E-mail s žádostí o ověření emailu pro registraci do družstva byl odeslán.');
                 } elseif ($uzivatel->spolek == 1) {
-                    $link = "https://moje.hkfree.org/uzivatel/confirm/" . $hash;
 
                     $this->mailService->sendSpolekConfirmationRequest($uzivatel, $so, $link);
                     $this->mailService->sendSpolekConfirmationRequestCopy($uzivatel, $so);

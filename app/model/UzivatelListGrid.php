@@ -104,8 +104,7 @@ class UzivatelListGrid
                 if ($item->TypClenstvi_id == 1) {
                     $tr->class[] = 'zrusene';
                 }
-                // TODO: spolek / druzstvo
-                if ($item->TypClenstvi_id == 0) {
+                if ($item->TypClenstvi_id === 0) {
                     $tr->class[] = 'planovane';
                 }
                 return $tr;
@@ -364,12 +363,13 @@ class UzivatelListGrid
                     || $item->spolek && $item->druzstvo && $item->TypClenstvi_id == 1 && $item->smazano) {
                     $tr->class[] = 'zrusene';
                 }
-                if (((int)$item->TypClenstvi_id) === 0) {
+                if ($item->TypClenstvi_id === 0) {
                     $tr->class[] = 'planovane';
                 }
                 return $tr;
             });
         }
+        \Tracy\Debugger::barDump($seznamUzivateluCC);
 
         $grid->addColumnText('id', 'UID')->setCustomRender(function ($item) use ($presenter, $canViewOrEdit) {
             $uidLink = Html::el('a')

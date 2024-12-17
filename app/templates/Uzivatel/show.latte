@@ -92,10 +92,14 @@
         <tr n:if="$u->spolek">
             <th>Typ členství</th>
             <td>
-                {if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}
-                <br>
-                {if $u->TypClenstvi->id != 1}
-                <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-file icon-file"></i> Registrační formulář</a>
+                {if $u->TypClenstvi}
+                    {if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}
+                    <br>
+                    {if $u->TypClenstvi->id != 1}
+                    <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-file icon-file"></i> Registrační formulář</a>
+                    {/if}
+                    {else}
+                    n/a
                 {/if}
             </td>
         </tr>

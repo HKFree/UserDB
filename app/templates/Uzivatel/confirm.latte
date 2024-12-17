@@ -25,11 +25,16 @@
 
 <body>
     {if $stav}
-        <h1>Vaše registrace do hkfree.org z.s. byla úspěšně dokončena.</h1>
-        <p>Na váš e-mail byl právě odeslán registrační formulář, ve kterém naleznete všechny potřebné informace.</p>
+        {if $uzivatel->spolek}
+            <h1>Vaše registrace do hkfree.org z.s. byla úspěšně dokončena.</h1>
+            <p>Na váš e-mail byl právě odeslán registrační formulář, ve kterém naleznete všechny potřebné informace.</p>
+        {elseif $uzivatel->druzstvo}
+            <h1>Ověření proběhlo úspěšně</h1>
+            <p>Děkujeme za ověření emailové adresy u hkfree.org internetové družstvo.</p>
+        {/if}
     {else}
         <h1>Chyba</h1>
-        <p>Registraci nebylo možné dokončit.</p>
+        <p>Ověření nebylo možné dokončit.</p>
     {/if}
 
 </body>
