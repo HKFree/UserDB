@@ -45,7 +45,7 @@ class StitekUzivatele extends Table
 
     public function getStitekByUserId($user_id) {
         return $this->database->table($this->tableName)->where("Uzivatel_id", $user_id)
-            ->select('Stitek.id, Stitek.text, Stitek.barva_pozadi, Stitek.barva_popredi')
+            ->select('Stitek.id, Stitek.text, Stitek.barva_pozadi, Stitek.barva_popredi, Stitek.poznamka, StitekUzivatele.kdy_vytvoreno')
             ->order('Stitek.text ASC')->fetchAll();
     }
 
