@@ -38,7 +38,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $form = new Form($this, "editStitekForm");
         $id = $this->getParameter('id');
 
-        $form->addText('text', 'Štítek pro oblasti', 50)->setRequired('Štítek pro oblasti');
+        $form->addText('text', 'Název', 50)->setRequired('Název');
         $form->addText('Oblast_id', 'ID oblasti', 3);
         $form->addText('barva_pozadi', 'Barva pozadí', 10)
             ->setHtmlType('color')
@@ -46,6 +46,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $form->addText('barva_popredi', 'Barva popředí', 10)
             ->setHtmlType('color')
             ->setRequired('Barva popředí');
+        $form->addTextArea('poznamka', 'Poznámka', 100, 15);
         if (empty($id)) {
             $form->addSubmit('send', 'Vytvořit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
         } else {
@@ -58,7 +59,8 @@ class SpravaStitkuPresenter extends SpravaPresenter
                     'text' => $stitek->text,
                     'Oblast_id' => $stitek->Oblast_id,
                     'barva_pozadi' => $stitek->barva_pozadi,
-                    'barva_popredi' => $stitek->barva_popredi
+                    'barva_popredi' => $stitek->barva_popredi,
+                    'poznamka' => $stitek->poznamka
                 ]);
             } else {
                 $this->flashMessage('Štítek nebyl nalezen.', 'error');
@@ -78,7 +80,8 @@ class SpravaStitkuPresenter extends SpravaPresenter
                 'text' => $values->text,
                 'Oblast_id' => $values->Oblast_id,
                 'barva_pozadi' => $values->barva_pozadi,
-                'barva_popredi' => $values->barva_popredi
+                'barva_popredi' => $values->barva_popredi,
+                'poznamka' => $values->poznamka,
             ]);
             $this->flashMessage('Štítek byl úspěšně aktualizován.', 'success');
         } else {
@@ -86,7 +89,8 @@ class SpravaStitkuPresenter extends SpravaPresenter
                 'text' => $values->text,
                 'Oblast_id' => $values->Oblast_id,
                 'barva_pozadi' => $values->barva_pozadi,
-                'barva_popredi' => $values->barva_popredi
+                'barva_popredi' => $values->barva_popredi,
+                'poznamka' => $values->poznamka,
             ]);
             $this->flashMessage('Štítek byl úspěšně vytvořen.', 'success');
         }
