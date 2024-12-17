@@ -60,4 +60,9 @@ class StitekUzivatele extends Table
         return $this->database->table($this->tableName)->where("Stitek_id", $stitekId)
             ->where("Uzivatel_id", $userId)->delete();
     }
+
+    public function uzivatelHasStitek($userId, $stitekId) {
+        return $this->database->table($this->tableName)->where("Uzivatel_id", $userId)
+            ->where("Stitek_id", $stitekId)->fetch();
+    }
 }

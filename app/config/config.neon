@@ -66,7 +66,7 @@ services:
 	cestneClenstviUzivatele: App\Model\CestneClenstviUzivatele
 	log: App\Model\Log
 	pdfGenerator: App\Services\PdfGenerator
-	mailService: App\Services\MailService
+	mailService: App\Services\MailService("%appDir%/templates/email")
 	povoleneSMTP: App\Model\PovoleneSMTP
 	dnat: App\Model\DNat
 	accountActivation: App\Model\AccountActivation
@@ -83,6 +83,7 @@ services:
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
 	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
 	requestDruzstvoContract: App\Services\RequestDruzstvoContract
+	stitkovac: App\Services\Stitkovac
 	status: App\Model\Status
 	stitek: App\Model\Stitek
 	stitekUzivatele: App\Model\StitekUzivatele
