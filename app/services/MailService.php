@@ -13,12 +13,24 @@ use Nette\Mail\Message;
  */
 class MailService
 {
+    private $templateDir;
     private $uzivatel;
     private $mailer;
+    private $linkGenerator;
+    private $templateFactory;
 
-    public function __construct(Nette\Mail\IMailer $mailer, Model\Uzivatel $uzivatel) {
+    public function __construct(
+        string $templateDir,
+        Nette\Mail\IMailer $mailer,
+        Model\Uzivatel $uzivatel,
+        Nette\Application\LinkGenerator $linkGenerator,
+        Nette\Bridges\ApplicationLatte\TemplateFactory $templateFactory
+    ) {
+        $this->templateDir = $templateDir;
         $this->uzivatel = $uzivatel;
         $this->mailer = $mailer;
+        $this->linkGenerator = $linkGenerator;
+        $this->templateFactory = $templateFactory;
     }
 
     public function sendSpolekConfirmationRequest($uzivatel, $so, $link): void {
@@ -154,5 +166,30 @@ class MailService
             $mailso->addTo($sou->email);
         }
         $this->mailer->send($mailso);
+    }
+
+    private function createTemplate(): Nette\Application\UI\Template {
+        $template = $this->templateFactory->createTemplate();
+        $template->getLatte()->addProvider('uiControl', $this->linkGenerator);
+        return $template;
+    }
+
+    public function sendSubscriberContractCallToActionEmail($uzivatel, $oneclick_auth_code) {
+        $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+
+        $template = $this->createTemplate();
+        $params = [
+            'UID' => $uzivatel->id,
+            'oneclick_auth_code' => $oneclick_auth_code,
+        ];
+        //dumpe($template->getLatte()->getLoader());
+        $html = $template->renderToString($this->templateDir . '/druzstvoContractButton.latte', $params);
+
+        $mail = new Nette\Mail\Message();
+        $mail->setHtmlBody($html);
+        $mail->setFrom($fromAddress)
+            ->addTo($uzivatel->email)
+            ->setSubject('hkfree.org se mění na družstvo');
+        $this->mailer->send($mail);
     }
 }
