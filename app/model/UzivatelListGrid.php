@@ -354,7 +354,7 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                if (($item->spolek && $item->TypClenstvi_id == 2) || ($item->druzstvo && !$item->smazano)) {
+                if ($item->spolek && $item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
                 if ($item->spolek && $item->TypClenstvi_id == 1 && (!$item->druzstvo)
