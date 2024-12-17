@@ -18,7 +18,7 @@ class Stitkovac
         if (!$stitek) {
             $stitek = $this->stitek->createStitek([
                 'text' => $string,
-                'barva_pozadi' => '#FFFFFF',
+                'barva_pozadi' => '#5bc0de',
                 'barva_popredi' => '#000000',
             ]);
         }
@@ -30,4 +30,14 @@ class Stitkovac
             ]);
         }
     }
+
+    public function hasStitekByText(\Nette\Database\Table\ActiveRow $uzivatel, string $string) {
+        $stitek = $this->stitek->getStitekByText($string);
+        if (!$stitek) {
+            return false;
+        }
+
+        return $this->stitekUzivatele->uzivatelHasStitek($uzivatel->id, $stitek->id) ? true : false;
+    }
+
 }

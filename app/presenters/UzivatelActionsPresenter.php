@@ -24,7 +24,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
     private Services\Stitkovac $stitkovac;
 
-
     public function __construct(
         Model\Parameters $parameters,
         Services\MailService $mailsvc,
@@ -198,6 +197,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 
+    /* migrace 2025 temporary */
     public function actionSendEmailWithContractButton() {
         $user_id = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($user_id);
@@ -215,7 +215,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
 
         $this->mailService->sendSubscriberContractCallToActionEmail($uzivatel, $oneclick_auth_code);
-        $this->stitkovac->addStitek($uzivatel, 'DEML');
+        $this->stitkovac->addStitek($uzivatel, $this->parameters->migrace2025Stitek1);
 
         $this->flashMessage('E-mail byl odeslán.');
 

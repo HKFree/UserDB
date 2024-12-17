@@ -15,6 +15,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
     ) {
     }
 
+    /* migrace 2025 temporary */
     public function renderRequestDruzstvoContract($id, $hash) {
         $this->setLayout('pub');
         $this->template->error = '';
