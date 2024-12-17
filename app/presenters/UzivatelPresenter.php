@@ -43,7 +43,7 @@ class UzivatelPresenter extends BasePresenter
     private $parameters;
     private $povoleneSMTP;
     private $dnat;
-    private $cryptosvc;
+    protected $cryptosvc;
     private $pdfGenerator;
     private $mailService;
     private $idsConnector;

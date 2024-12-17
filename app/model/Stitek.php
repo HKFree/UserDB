@@ -31,7 +31,7 @@ class Stitek extends Table
     }
 
     public function createStitek(array $data) {
-        $this->database->table($this->tableName)->insert($data);
+        return $this->database->table($this->tableName)->insert($data);
     }
 
     public function getStitekById($id) {
@@ -40,6 +40,10 @@ class Stitek extends Table
 
     public function getStitkyByOblast($id) {
         return ($this->findAll().where("Oblast_id", $id));
+    }
+
+    public function getStitekByText($nazev) {
+        return $this->database->table($this->tableName)->where('text', $nazev)->fetch();
     }
 
 }

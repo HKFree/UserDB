@@ -20,9 +20,22 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $pdfGenerator;
     private $mailService;
     private $smlouva;
-    private Services\RequestDruzstvoContract $requestDruzstvoContract;
 
-    public function __construct(Model\Parameters $parameters, Services\MailService $mailsvc, Services\PdfGenerator $pdf, Model\AccountActivation $accActivation, Model\Uzivatel $uzivatel, Model\Smlouva $smlouva, Services\RequestDruzstvoContract $requestDruzstvoContract) {
+    private Services\RequestDruzstvoContract $requestDruzstvoContract;
+    private Services\Stitkovac $stitkovac;
+
+
+    public function __construct(
+        Model\Parameters $parameters,
+        Services\MailService $mailsvc,
+        Services\PdfGenerator $pdf,
+        Model\AccountActivation $accActivation,
+        Model\Uzivatel $uzivatel,
+        Model\Smlouva $smlouva,
+        Services\RequestDruzstvoContract $requestDruzstvoContract,
+        Services\Stitkovac $stitkovac,
+        Services\CryptoSluzba $cryptosvc
+    ) {
         $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
@@ -30,6 +43,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->mailService = $mailsvc;
         $this->smlouva = $smlouva;
         $this->requestDruzstvoContract = $requestDruzstvoContract;
+        $this->stitkovac = $stitkovac;
+        $this->cryptosvc = $cryptosvc;
     }
 
     public function actionMoneyActivate() {
@@ -180,6 +195,30 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
         $this->flashMessage(sprintf('Nová smlouva číslo %u bude odeslána na e-mail %s.', $newId, $current_user->email));
         // Tady call na generaci nove smlouvy a odeslani
+        $this->redirect('Uzivatel:show', array('id' => $user_id));
+    }
+
+    public function actionSendEmailWithContractButton() {
+        $user_id = $this->getParameter('id');
+        $uzivatel =  $this->uzivatel->find($user_id);
+
+        // generate auth code and encrypt it to DB if not already generated
+        if (!$uzivatel->oneclick_auth) {
+            $code_length = 32;
+            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', ceil($code_length / strlen($x)))), 1, $code_length);
+            $oneclick_auth_code_encrypted = $this->cryptosvc->encrypt($oneclick_auth_code);
+            $this->uzivatel->update($uzivatel->id, [
+                'oneclick_auth' => $oneclick_auth_code_encrypted,
+            ]);
+        } else {
+            $oneclick_auth_code = $this->cryptosvc->decrypt($uzivatel->oneclick_auth);
+        }
+
+        $this->mailService->sendSubscriberContractCallToActionEmail($uzivatel, $oneclick_auth_code);
+        $this->stitkovac->addStitek($uzivatel, 'DEML');
+
+        $this->flashMessage('E-mail byl odeslán.');
+
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 }
