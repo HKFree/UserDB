@@ -48,7 +48,7 @@ class MailService
             ->addTo($so->email)
             ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s. - UID ' . $uzivatel->id)
             ->setHtmlBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na ' .
-                'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID ' . $uzivatel->id . '<br><br>' .
+                'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel UID ' . $uzivatel->id . '<br><br>' .
                 'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, ' .
                 'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. ' .
                 'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
@@ -90,7 +90,7 @@ class MailService
             ->addTo($so->email)
             ->setSubject('kopie - Ověření adresy, potvrďte prosím, UID ' . $uzivatel->id)
             ->setHtmlBody('Dobrý den,<br><br>pro ověření platnosti Vaší e-mailové adresy je nutné kliknout na ' .
-                'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID ' . $uzivatel->id . '<br><br>' .
+                'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel UID ' . $uzivatel->id . '<br><br>' .
                 'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://druzstvo.hkfree.org">druzstvo.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org internetové družstvo');
         if (!empty($so->email2)) {

@@ -139,8 +139,8 @@ class UzivatelPresenter extends BasePresenter
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
         try {
-            $this->mailService->sendConfirmationRequest($newUser, $so, $link);
-            $this->mailService->sendConfirmationRequestCopy($newUser, $so);
+            $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
+            $this->mailService->sendSpolekConfirmationRequestCopy($newUser, $so);
 
             $this->flashMessage('E-mail s žádostí o potvrzení registrace do spolku byl odeslán.');
         } catch (Nette\Mail\SmtpException $e) {
@@ -151,7 +151,7 @@ class UzivatelPresenter extends BasePresenter
     public function sendDruzstvoRegistrationEmail($idUzivatele) {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
-        $link = 'https://moje.hkfree.org/uzivatel/confirm-druzstvo/'.$hash;
+        $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
@@ -168,39 +168,27 @@ class UzivatelPresenter extends BasePresenter
     public function renderConfirm() {
         if ($this->getParameter('id')) {
             list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
-
             if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
+
                 if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
                     die('Incorrect request (invalid hash)');
                 }
 
-                if (0 == $uzivatel->regform_downloaded_password_sent) {
-                    $pdftemplate = $this->createTemplate()->setFile(__DIR__.'/../templates/Uzivatel/pdf-form.latte');
-                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                if ($uzivatel->spolek) {
+                    if (0 == $uzivatel->regform_downloaded_password_sent) {
+                        $pdftemplate = $this->createTemplate()->setFile(__DIR__.'/../templates/Uzivatel/pdf-form.latte');
+                        $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
 
-                    $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
-                }
-                $this->template->stav = true;
-            } else {
-                $this->template->stav = false;
-            }
-        } else {
-            $this->template->stav = false;
-        }
-    }
-
-    public function renderConfirmDruzstvo() {
-        if ($this->getParameter('id')) {
-            list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
-
-            if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
-                if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
-                    die('Incorrect request (invalid hash)');
+                        $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
+                    }
                 }
 
-                $this->requestDruzstvoContract->execute($uzivatel->id);
+                if ($uzivatel->druzstvo) {
+                    $this->requestDruzstvoContract->execute($uzivatel->id);
+                }
 
                 $this->template->stav = true;
+                $this->template->uzivatel = $uzivatel;
             } else {
                 $this->template->stav = false;
             }
