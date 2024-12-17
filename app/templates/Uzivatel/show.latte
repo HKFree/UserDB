@@ -206,34 +206,42 @@
     </table>
     </div>
     <div class="panel-right">
+        {* migrace 2025 temporary *}
+        <p>
+            <h4>Migrace 2025</h4>
+            {if $maStitek}
+                E-mail s tlačítkem na smlouvu byl odeslán. Pokud potřebuješ odeslat znovu, odstraň štítek {$migrace2025Stitek1}.
+            {else}
+                <a href="{link UzivatelActions:sendEmailWithContractButton id=>$u->id}" class="btn btn-info btn-sm" role="button">
+                    <i class="glyphicon glyphicon-info-sign"></i> Odeslat inf. email s tlačítkem na smlouvu
+                </a>
+            {/if}
+        </p>
+        <br/>
+
         <h4>Smlouvy</h4>
-    <table class="table table-nonfluid table-right">
-    <tbody>
-      <tr>
-        <th>ID</th>
-        <th>Typ</th>
-        <th>Ze dne</th>
-        <th>Stav</th>
-      </tr>
-      <tr n:foreach="$smlouvy as $smlouva">
-        <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->id}</a></td>
-        <td>{$smlouva->typ|firstUpper}</td>
-        <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
-        <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
-      </tr>
-      </tbody>
-      </table>
+        <table class="table table-nonfluid table-right">
+        <tbody>
+        <tr>
+            <th>ID</th>
+            <th>Typ</th>
+            <th>Ze dne</th>
+            <th>Stav</th>
+        </tr>
+        <tr n:foreach="$smlouvy as $smlouva">
+            <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->id}</a></td>
+            <td>{$smlouva->typ|firstUpper}</td>
+            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
+            <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
+        </tr>
+        </tbody>
+        </table>
         <p>
             <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-success btn-sm" id="btn-handle-subscriber-contract" role="button">
                 <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva...
             </a>
             <a href="{link UzivatelActions:handleSubscriberContractPreview id=>$u->id}" class="btn btn-default btn-sm" id="btn-handle-subscriber-contract" role="button">
                  náhled
-            </a>
-        </p>
-        <p>
-            <a href="{link UzivatelActions:sendEmailWithContractButton id=>$u->id}" class="btn btn-success btn-sm" role="button">
-                <i class="glyphicon glyphicon-info-sign"></i> Odeslat inf. email s tlačítkem na smlouvu
             </a>
         </p>
       </div>

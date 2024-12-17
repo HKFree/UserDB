@@ -49,6 +49,9 @@ class UzivatelPresenter extends BasePresenter
     private $idsConnector;
     private $aplikaceToken;
     private $stitek;
+
+    private Services\Stitkovac $stitkovac;
+
     private $stitkyUzivatele;
     private Explorer $databaseExplorer;
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
@@ -82,6 +85,7 @@ class UzivatelPresenter extends BasePresenter
         Model\AplikaceToken $aplikaceToken,
         Model\Stitek $stitek,
         Model\StitekUzivatele $stitkyUzivatele,
+        Services\Stitkovac $stitkovac,
         Explorer $databaseExplorer,
         Services\RequestDruzstvoContract $requestDruzstvoContract,
     ) {
@@ -110,6 +114,7 @@ class UzivatelPresenter extends BasePresenter
         $this->aplikaceToken = $aplikaceToken;
         $this->stitek = $stitek;
         $this->stitkyUzivatele = $stitkyUzivatele;
+        $this->stitkovac = $stitkovac;
         $this->databaseExplorer = $databaseExplorer;
         $this->requestDruzstvoContract = $requestDruzstvoContract;
     }
@@ -306,6 +311,10 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->igw = $this->getParameter('igw', false);
                 $this->template->smlouvaStavSluzba = $this->smlouvaStavSluzba;
                 $this->template->smlouvy = $this->smlouva->getByUzivatelId($uid);
+
+                /* migrace 2025 temporary */
+                $this->template->migrace2025Stitek1 = $this->parameters->migrace2025Stitek1;
+                $this->template->maStitek = $this->stitkovac->hasStitekByText($uzivatel, $this->parameters->migrace2025Stitek1);
             }
         }
     }
