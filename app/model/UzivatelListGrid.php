@@ -376,7 +376,7 @@ class UzivatelListGrid
             ->setText($item->id);
 
             $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
-            $spanSpolek->addClass($item->TypClenstvi_id > 1 ? "label-spolek" : "label-neaktivni");
+            $spanSpolek->addClass($item->TypClenstvi_id != 1 ? "label-spolek" : "label-neaktivni");
 
             $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
             $spanDruzstvo->addClass(!$item->smazano ? "label-druzstvo" : "label-neaktivni");
