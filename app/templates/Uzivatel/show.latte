@@ -207,7 +207,7 @@
     </div>
     <div class="panel-right">
         {* migrace 2025 temporary *}
-        <p>
+        <p n:if="!$u->druzstvo">
             <h4>Migrace 2025</h4>
             {if $maStitek}
                 E-mail s tlačítkem na smlouvu byl odeslán. Pokud potřebuješ odeslat znovu, odstraň štítek {$migrace2025Stitek1}.
