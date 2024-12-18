@@ -390,7 +390,6 @@ class UzivatelListGrid
                 $uidLink .= $spanDruzstvo;
             }
 
-            $uidLink .= "TYP[{$item->TypClenstvi_id}]";
             if ($canViewOrEdit) {
                 // edit button
                 $anchor = Html::el('a')
