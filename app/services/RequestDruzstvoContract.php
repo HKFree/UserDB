@@ -3,19 +3,29 @@
 namespace App\Services;
 
 use Nette;
+use App\Model;
+use DateTime;
 
 class RequestDruzstvoContract
 {
     private $connection;
-    public function __construct(Nette\Database\Connection $connection) {
+    private Model\Log $logger;
+
+    public function __construct(
+        Nette\Database\Connection $connection,
+        Model\Log $logger,
+    ) {
         $this->connection = $connection;
+        $this->logger = $logger;
     }
 
     public function execute(int $userId): int {
+        $now = new DateTime();
+
         $this->connection->query('INSERT INTO Smlouva ?', [
             'Uzivatel_id' => $userId,
             'typ' => 'ucastnicka',
-            'kdy_vygenerovano' => new \Nette\Utils\DateTime()
+            'kdy_vygenerovano' => $now
         ]);
         $newId = $this->connection->getInsertId();
 
@@ -24,7 +34,16 @@ class RequestDruzstvoContract
         error_log("RUN: [$cmd2]", );
         proc_close(proc_open($cmd2, array(), $foo));
 
-        return $newId;
-    }
+        $log = [];
+        $new_data = [
+            'id' => $newId,
+            'Uzivatel_id' => $userId,
+            'typ' => 'ucastnicka',
+            'kdy_vygenerovano' => $now
+        ];
+        $this->logger->logujInsert($new_data, 'Smlouva', $log);
+        $this->logger->loguj('Smlouva', $newId, $log);
 
+        return (int) $newId;
+    }
 }
