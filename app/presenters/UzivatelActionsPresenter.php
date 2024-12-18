@@ -19,12 +19,10 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $pdfGenerator;
     private $mailService;
     private $smlouva;
-    private $database;
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
     private Services\Stitkovac $stitkovac;
 
     public function __construct(
-        \Nette\Database\Connection $database,
         Model\Parameters $parameters,
         Services\MailService $mailsvc,
         Services\PdfGenerator $pdf,
@@ -35,7 +33,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         Services\Stitkovac $stitkovac,
         Services\CryptoSluzba $cryptosvc,
     ) {
-        $this->database = $database;
         $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
