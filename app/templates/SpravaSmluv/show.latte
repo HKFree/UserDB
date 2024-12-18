@@ -50,14 +50,14 @@
 
         <tr>
             <th>Vygenerováno</th>
-            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y \v H:h')}</td>
+            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y \v H:i')}</td>
         </tr>
 
         <tr>
             <th>Ukončeno</th>
             <td>
                 {ifset $smlouva->kdy_ukonceno}
-                    {$smlouva->kdy_ukonceno->format('d.m.Y \v H:h')}
+                    {$smlouva->kdy_ukonceno->format('d.m.Y \v H:i')}
                 {else}
                     - - -
                 {/ifset}
