@@ -39,7 +39,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $id = $this->getParameter('id');
 
         $form->addText('text', 'Název', 50)->setRequired('Název');
-        $form->addText('Oblast_id', 'ID oblasti', 3);
+        // $form->addText('Oblast_id', 'ID oblasti', 3);
         $form->addText('barva_pozadi', 'Barva pozadí', 10)
             ->setHtmlType('color')
             ->setRequired('Barva pozadí');
@@ -57,7 +57,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
             if ($stitek) {
                 $form->setDefaults([
                     'text' => $stitek->text,
-                    'Oblast_id' => $stitek->Oblast_id,
+                    // 'Oblast_id' => $stitek->Oblast_id,
                     'barva_pozadi' => $stitek->barva_pozadi,
                     'barva_popredi' => $stitek->barva_popredi,
                     'poznamka' => $stitek->poznamka
@@ -73,12 +73,12 @@ class SpravaStitkuPresenter extends SpravaPresenter
 
     public function processEditStitekForm(Form $form, \stdClass $values): void {
         $id = $this->getParameter('id');
-        $values->Oblast_id = $values->Oblast_id === '' ? null : $values->Oblast_id;
+        // $values->Oblast_id = $values->Oblast_id === '' ? null : $values->Oblast_id;
 
         if ($id) {
             $this->stitek->updateStitek($id, [
                 'text' => $values->text,
-                'Oblast_id' => $values->Oblast_id,
+                // 'Oblast_id' => $values->Oblast_id,
                 'barva_pozadi' => $values->barva_pozadi,
                 'barva_popredi' => $values->barva_popredi,
                 'poznamka' => $values->poznamka,
@@ -87,7 +87,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         } else {
             $this->stitek->createStitek([
                 'text' => $values->text,
-                'Oblast_id' => $values->Oblast_id,
+                // 'Oblast_id' => $values->Oblast_id,
                 'barva_pozadi' => $values->barva_pozadi,
                 'barva_popredi' => $values->barva_popredi,
                 'poznamka' => $values->poznamka,
