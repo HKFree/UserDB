@@ -128,22 +128,24 @@ function process_digisign_webhook($hook) {
                     }
                 }
             }
+
             // 4. zrušit členství ve spolku (pokud existuje)
             if ($uzivatel->spolek) {
                 $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
             }
+
             // 5. nastavit "vztah" s družstvem
             $uzivatel->update(['druzstvo' => 1]);
-
-            // 6. zalogovat, že smlouva byla podepsána
-            $Logger->logujInsert(['kdy_podepsano' => $hook->time], 'Smlouva', $log);
-            $Logger->loguj('Smlouva', $smlouva->id, $log);
 
             // 7. Uživatele označit štítkem /* migrace 2025 temporary */
             $Stitkovac->addStitek($uzivatel, 'Mig3');
 
             // 8. Odstranit oneclick_auth (odkaz v e-mailu už nebude fungovat) /* migrace 2025 temporary */
             $uzivatel->update(['oneclick_auth' => null]);
+
+            // 9. zalogovat, že smlouva byla podepsána
+            $Logger->logujInsert(['kdy_podepsano' => $hook->time], 'Smlouva', $log);
+            $Logger->loguj('Smlouva', $smlouva->id, $log);
 
             break;
         case 'envelopeDeclined': // obálka byla odmítnuta
