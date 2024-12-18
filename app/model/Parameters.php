@@ -16,7 +16,7 @@ class Parameters
     public $salt;
 
     /* migrace 2025 temporary */
-    public $migrace2025Stitek1 = 'DEML';
+    public $migrace2025Stitek1 = 'Mig1';
 
     public function __construct($clenskyPrispevek, $salt) {
         $this->clenskyPrispevek = $clenskyPrispevek;
