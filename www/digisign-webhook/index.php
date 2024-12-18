@@ -19,10 +19,10 @@ if (!$hook) {
     return;
 }
 
-print_and_log(sprintf("%s %s %s START", $hook->event, $hook->entityName, $hook->entityId));
+print_and_log(sprintf("%s (%s %s) START", $hook->event, $hook->entityName, $hook->entityId));
 
 process_digisign_webhook($hook);
 
-print_and_log(sprintf("%s %s %s DONE", $hook->event, $hook->entityName, $hook->entityId));
+print_and_log(sprintf("%s (%s %s) DONE", $hook->event, $hook->entityName, $hook->entityId));
 
 http_response_code(200);
