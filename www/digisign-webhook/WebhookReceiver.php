@@ -137,13 +137,13 @@ function process_digisign_webhook($hook) {
             // 5. nastavit "vztah" s družstvem
             $uzivatel->update(['druzstvo' => 1]);
 
-            // 7. Uživatele označit štítkem /* migrace 2025 temporary */
+            // 6. Uživatele označit štítkem /* migrace 2025 temporary */
             $Stitkovac->addStitek($uzivatel, 'Mig3');
 
-            // 8. Odstranit oneclick_auth (odkaz v e-mailu už nebude fungovat) /* migrace 2025 temporary */
+            // 7. Odstranit oneclick_auth (odkaz v e-mailu už nebude fungovat) /* migrace 2025 temporary */
             $uzivatel->update(['oneclick_auth' => null]);
 
-            // 9. zalogovat, že smlouva byla podepsána
+            // 8. zalogovat, že smlouva byla podepsána
             $Logger->logujInsert(['kdy_podepsano' => $hook->time], 'Smlouva', $log);
             $Logger->loguj('Smlouva', $smlouva->id, $log);
 
