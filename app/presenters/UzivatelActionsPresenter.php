@@ -221,4 +221,21 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
+
+    /* migrace 2025 temporary */
+    public function actionPreviewEmailWithContract() {
+        $user_id = $this->getParameter('id');
+        $uzivatel =  $this->uzivatel->find($user_id);
+
+        $template = $this->createTemplate();
+        $params = [
+            'UID' => $uzivatel->id,
+            'oneclick_auth_code' => 'neklikej na to, tohle je jenom nahled',
+        ];
+
+        $html = $template->renderToString('../app/templates/email/druzstvoContractButton.latte', $params);
+
+        $this->sendResponse(new Nette\Application\Responses\TextResponse($html));
+    }
+
 }
