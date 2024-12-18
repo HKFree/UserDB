@@ -23,7 +23,15 @@
 		{
 			"type": "git",
 			"url": "https://github.com/Gappa/FormsReplicator.git"
-		}
+		},
+                {
+                    "type": "git",
+                    "url": "https://github.com/HKFree/Net_Transmitter.git"
+                },
+                {
+                    "type": "git",
+                    "url": "https://github.com/HKFree/Net_RouterOS.git"
+                }
 	],
 	"require": {
 		"php": "~8.2.0",
@@ -31,8 +39,8 @@
 		"o5/grido": "dev-nette-3.2#539b04b65326dcf56a7ac588f959f62e6bfb6beb",
 		"mpdf/mpdf": ">= 5.6.5",
 		"jkuchar/pdfresponse": "dev-master#152f4c80057f0be66f47310253810a860f11dc12",
-		"pear2/net_transmitter": ">=1.0.0a4",
-		"pear2/net_routeros": "dev-develop#40466961229f641e2cccbe84f5db6fe0d01fef6e",
+		"pear2/net_transmitter": "dev-develop#8373abbddb3a89891e6bc335de8c1c2a5268ed24@dev",
+		"pear2/net_routeros": "dev-develop#83c40f71edaae0d98e17d81b6b827b658581047d@dev",
 		"nextras/migrations": "^3.3",
 		"guzzlehttp/guzzle": "~7.9.2",
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
