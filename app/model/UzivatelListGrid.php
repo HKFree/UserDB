@@ -60,6 +60,7 @@ class UzivatelListGrid
 
         $list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných', 'planned' => 'pouze plánovaná');
 
+        // TODO: spolek / druzstvo
         $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
             ->setDefaultValue('active')
             ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0'),'planned' => array('TypClenstvi_id',  '= ?', '0') ));
@@ -79,6 +80,7 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
+                // TODO: spolek / druzstvo
                 if ($item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
@@ -94,13 +96,15 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
+                // TODO: spolek / druzstvo
                 if ($item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
+                // TODO: spolek / druzstvo
                 if ($item->TypClenstvi_id == 1) {
                     $tr->class[] = 'zrusene';
                 }
-                if ($item->TypClenstvi_id == 0) {
+                if ($item->TypClenstvi_id === 0) {
                     $tr->class[] = 'planovane';
                 }
                 return $tr;
@@ -125,16 +129,6 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
-            $latte = new Engine();
-            $params = [
-                'stitky' => $this->stitek->getSeznamStitku(),
-                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
-                'userId' => $item->id,
-            ];
-            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
-            return $latte->renderToString($templatePath, $params);
-        });
 
         if ($canViewOrEdit) {
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
@@ -250,6 +244,17 @@ class UzivatelListGrid
             }
         }
 
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+            $latte = new Engine();
+            $params = [
+                'stitky' => $this->stitek->getSeznamStitku(),
+                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
+                'userId' => $item->id,
+            ];
+            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
+            return $latte->renderToString($templatePath, $params);
+        });
+
         return $grid;
     }
 
@@ -335,7 +340,7 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                if ($item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
                 return $tr;
@@ -358,7 +363,7 @@ class UzivatelListGrid
                     || $item->spolek && $item->druzstvo && $item->TypClenstvi_id == 1 && $item->smazano) {
                     $tr->class[] = 'zrusene';
                 }
-                if ($item->TypClenstvi_id == 0) {
+                if ($item->TypClenstvi_id === 0) {
                     $tr->class[] = 'planovane';
                 }
                 return $tr;
@@ -372,7 +377,7 @@ class UzivatelListGrid
             ->setText($item->id);
 
             $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
-            $spanSpolek->addClass($item->TypClenstvi_id > 1 ? "label-spolek" : "label-neaktivni");
+            $spanSpolek->addClass($item->TypClenstvi_id != 1 ? "label-spolek" : "label-neaktivni");
 
             $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
             $spanDruzstvo->addClass(!$item->smazano ? "label-druzstvo" : "label-neaktivni");
@@ -397,18 +402,6 @@ class UzivatelListGrid
 
             return $uidLink;
         })->setSortable();
-
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
-            $latte = new Engine();
-            $params = [
-                'stitky' => $this->stitek->getSeznamStitku(),
-                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
-                'userId' => $item->id,
-            ];
-            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
-            return $latte->renderToString($templatePath, $params);
-
-        });
 
         if ($canViewOrEdit) {
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
@@ -523,6 +516,17 @@ class UzivatelListGrid
                 })->setSortable()->setFilterText();
             }
         }
+
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+            $latte = new Engine();
+            $params = [
+                'stitky' => $this->stitek->getSeznamStitku(),
+                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
+                'userId' => $item->id,
+            ];
+            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
+            return $latte->renderToString($templatePath, $params);
+        });
 
         return $grid;
     }

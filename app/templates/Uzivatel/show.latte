@@ -25,9 +25,14 @@
     {if $deactivaceVisible}<a href="{link UzivatelActions:moneyDeactivate id=>$u->id}" class="btn btn-danger btn-sm" role="button"><i class="glyphicon glyphicon-remove-circle"></i> Deaktivace</a>{/if}
     <a n:if="$igw" href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-check"></i> Zobrazit stav na IGW</a>
     <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
-
-    {control userLabels userId => $u->id}
     </div>
+
+    <section style="margin-top:10px;">
+        <div class="d-flex">
+            <b style="line-height: -20px;">Štítky: </b>
+            {control userLabels userId => $u->id}
+        </div>
+    </section>
 
     <br><br>
     <style>
@@ -92,10 +97,14 @@
         <tr n:if="$u->spolek">
             <th>Typ členství</th>
             <td>
-                {if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}
-                <br>
-                {if $u->TypClenstvi->id != 1}
-                <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-file icon-file"></i> Registrační formulář</a>
+                {if $u->TypClenstvi}
+                    {if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}
+                    <br>
+                    {if $u->TypClenstvi->id != 1}
+                    <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-file icon-file"></i> Registrační formulář</a>
+                    {/if}
+                    {else}
+                    n/a
                 {/if}
             </td>
         </tr>
@@ -197,29 +206,44 @@
     </table>
     </div>
     <div class="panel-right">
+        {* migrace 2025 temporary *}
+        <p n:if="!$u->druzstvo">
+            <h4>Migrace 2025</h4>
+            {if $maStitek}
+                E-mail s tlačítkem na smlouvu byl odeslán. Pokud potřebuješ odeslat znovu, odstraň štítek {$migrace2025Stitek1}.
+            {else}
+                <a href="{link UzivatelActions:sendEmailWithContractButton id=>$u->id}" class="btn btn-info btn-sm" role="button">
+                    <i class="glyphicon glyphicon-info-sign"></i> Odeslat inf. email s tlačítkem na smlouvu
+                </a>
+            {/if}
+        </p>
+        <br/>
+
         <h4>Smlouvy</h4>
-    <table class="table table-nonfluid table-right">
-    <tbody>
-      <tr>
-        <th>ID</th>
-        <th>Typ</th>
-        <th>Ze dne</th>
-        <th>Stav</th>
-      </tr>
-      <tr n:foreach="$smlouvy as $smlouva">
-        <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->id}</a></td>
-        <td>{$smlouva->typ|firstUpper}</td>
-        <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
-        <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
-      </tr>
-      </tbody>
-      </table>
-        <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-success btn-sm" id="btn-handle-subscriber-contract" role="button">
-            <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva
-        </a>
-        <a href="{link UzivatelActions:handleSubscriberContractPreview id=>$u->id}" class="btn btn-default btn-sm" id="btn-handle-subscriber-contract" role="button">
-             náhled
-        </a>
+        <table class="table table-nonfluid table-right">
+        <tbody>
+        <tr>
+            <th>ID</th>
+            <th>Typ</th>
+            <th>Ze dne</th>
+            <th>Stav</th>
+        </tr>
+        <tr n:foreach="$smlouvy as $smlouva">
+            <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->id}</a></td>
+            <td>{$smlouva->typ|firstUpper}</td>
+            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
+            <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
+        </tr>
+        </tbody>
+        </table>
+        <p>
+            <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-success btn-sm" id="btn-handle-subscriber-contract" role="button">
+                <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva...
+            </a>
+            <a href="{link UzivatelActions:handleSubscriberContractPreview id=>$u->id}" class="btn btn-default btn-sm" id="btn-handle-subscriber-contract" role="button">
+                 náhled
+            </a>
+        </p>
       </div>
     </div>
         <h4>IP Adresy</h4>

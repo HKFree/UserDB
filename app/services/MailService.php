@@ -13,16 +13,28 @@ use Nette\Mail\Message;
  */
 class MailService
 {
+    private $templateDir;
     private $uzivatel;
     private $mailer;
+    private $linkGenerator;
+    private $templateFactory;
 
-    public function __construct(Nette\Mail\IMailer $mailer, Model\Uzivatel $uzivatel) {
+    public function __construct(
+        string $templateDir,
+        Nette\Mail\IMailer $mailer,
+        Model\Uzivatel $uzivatel,
+        Nette\Application\LinkGenerator $linkGenerator,
+        Nette\Bridges\ApplicationLatte\TemplateFactory $templateFactory
+    ) {
+        $this->templateDir = $templateDir;
         $this->uzivatel = $uzivatel;
         $this->mailer = $mailer;
+        $this->linkGenerator = $linkGenerator;
+        $this->templateFactory = $templateFactory;
     }
 
-    public function sendConfirmationRequest($uzivatel, $so, $link): void {
-        $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+    public function sendSpolekConfirmationRequest($uzivatel, $so, $link): void {
+        $fromAddress = 'spolek hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mail = new Message();
         $mail->setFrom($fromAddress)
@@ -40,19 +52,59 @@ class MailService
         $this->mailer->send($mail);
     }
 
-    public function sendConfirmationRequestCopy($uzivatel, $so): void {
-        $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+    public function sendSpolekConfirmationRequestCopy($uzivatel, $so): void {
+        $fromAddress = 'spolek hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mailso = new Message();
         $mailso->setFrom($fromAddress)
             ->addTo($so->email)
             ->setSubject('kopie - Žádost o potvrzení registrace člena hkfree.org z.s. - UID ' . $uzivatel->id)
             ->setHtmlBody('Dobrý den,<br><br>pro dokončení registrace člena hkfree.org z.s. je nutné kliknout na ' .
-                'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel  UID ' . $uzivatel->id . '<br><br>' .
+                'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel UID ' . $uzivatel->id . '<br><br>' .
                 'Kliknutím vyjadřujete svůj souhlas se Stanovami zapsaného spolku v platném znění, ' .
                 'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. ' .
                 'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org z.s.');
+        if (!empty($so->email2)) {
+            $mailso->addTo($so->email2);
+        }
+
+        $seznamSpravcu = $this->uzivatel->getSeznamSpravcuUzivatele($uzivatel->id);
+        foreach ($seznamSpravcu as $sou) {
+            $mailso->addTo($sou->email);
+        }
+        //\Tracy\Debugger::barDump($mailso);exit();
+        $this->mailer->send($mailso);
+    }
+
+    public function sendDruzstvoConfirmationRequest($uzivatel, $so, $link): void {
+        $fromAddress = 'hkfree.org internetové družstvo, oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+
+        $mail = new Message();
+        $mail->setFrom($fromAddress)
+            ->addTo($uzivatel->email)
+            ->setSubject('Ověření adresy, potvrďte prosím, UID ' . $uzivatel->id)
+            ->setHtmlBody('Dobrý den,<br><br>pro ověření platnosti Vaší e-mailové adresy je nutné kliknout na ' .
+                'následující odkaz:<br><br><a href="' . $link . '">' . $link . '</a><br><br>' .
+                'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://druzstvo.hkfree.org">druzstvo.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
+                'S pozdravem hkfree.org internetové družstvo');
+        if (!empty($uzivatel->email2)) {
+            $mail->addTo($uzivatel->email2);
+        }
+        $this->mailer->send($mail);
+    }
+
+    public function sendDruzstvoConfirmationRequestCopy($uzivatel, $so): void {
+        $fromAddress = 'hkfree.org internetové družstvo, oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+
+        $mailso = new Message();
+        $mailso->setFrom($fromAddress)
+            ->addTo($so->email)
+            ->setSubject('kopie - Ověření adresy, potvrďte prosím, UID ' . $uzivatel->id)
+            ->setHtmlBody('Dobrý den,<br><br>pro ověření platnosti Vaší e-mailové adresy je nutné kliknout na ' .
+                'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel UID ' . $uzivatel->id . '<br><br>' .
+                'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://druzstvo.hkfree.org">druzstvo.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
+                'S pozdravem hkfree.org internetové družstvo');
         if (!empty($so->email2)) {
             $mailso->addTo($so->email2);
         }
@@ -114,5 +166,30 @@ class MailService
             $mailso->addTo($sou->email);
         }
         $this->mailer->send($mailso);
+    }
+
+    private function createTemplate(): Nette\Application\UI\Template {
+        $template = $this->templateFactory->createTemplate();
+        $template->getLatte()->addProvider('uiControl', $this->linkGenerator);
+        return $template;
+    }
+
+    public function sendSubscriberContractCallToActionEmail($uzivatel, $oneclick_auth_code) {
+        $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+
+        $template = $this->createTemplate();
+        $params = [
+            'UID' => $uzivatel->id,
+            'oneclick_auth_code' => $oneclick_auth_code,
+        ];
+        //dumpe($template->getLatte()->getLoader());
+        $html = $template->renderToString($this->templateDir . '/druzstvoContractButton.latte', $params);
+
+        $mail = new Nette\Mail\Message();
+        $mail->setHtmlBody($html);
+        $mail->setFrom($fromAddress)
+            ->addTo($uzivatel->email)
+            ->setSubject('hkfree.org se mění na družstvo');
+        $this->mailer->send($mail);
     }
 }

@@ -16,6 +16,7 @@ function process_digisign_webhook($hook) {
     $SmlouvaModel = $container->getByType(\App\Model\Smlouva::class);
     $Logger = $container->getByType(\App\Model\Log::class);
     $PodpisSmlouvyModel = $container->getByType(\App\Model\PodpisSmlouvy::class);
+    $Stitkovac = $container->getByType(\App\Services\Stitkovac::class);
     $log = [];
 
     $FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
@@ -67,6 +68,10 @@ function process_digisign_webhook($hook) {
                 $odeslano_kam
             );
             $smlouva->update(['poznamka' => $novaPoznamka]);
+
+            // 2. Uživatele označit štítkem /* migrace 2025 temporary */
+            $uzivatel = $UzivatelModel->find($smlouva->uzivatel);
+            $Stitkovac->addStitek($uzivatel, 'Mig2');
 
             break;
         case 'envelopeCompleted': // obálka dokončena (podepsána všemi podepisujícími)
@@ -133,6 +138,12 @@ function process_digisign_webhook($hook) {
             // 6. zalogovat, že smlouva byla podepsána
             $Logger->logujInsert(['kdy_podepsano' => $hook->time], 'Smlouva', $log);
             $Logger->loguj('Smlouva', $smlouva->id, $log);
+
+            // 7. Uživatele označit štítkem /* migrace 2025 temporary */
+            $Stitkovac->addStitek($uzivatel, 'Mig3');
+
+            // 8. Odstranit oneclick_auth (odkaz v e-mailu už nebude fungovat) /* migrace 2025 temporary */
+            $uzivatel->update(['oneclick_auth' => null]);
 
             break;
         case 'envelopeDeclined': // obálka byla odmítnuta

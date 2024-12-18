@@ -1,5 +1,5 @@
-<div class="d-flex align-items-center">
-    <div class="dropdown me-2" data-user-id="{$userId}">
+<div class="d-flex align-items-center user-labels-component" data-user-id="{$userId}">
+    <div class="dropdown me-2">
         <button class="btn btn-default dropdown-toggle btn-sm" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             +
             <span class="caret"></span>
@@ -18,10 +18,12 @@
     </div>
 
     <!-- Existující štítky uživatele -->
-    <div id="user-labels">
+    <div class="user-labels">
         {foreach $stitkyUzivatele as $stitekUzivatele}
             <span class="badge position-relative" style="background-color: {$stitekUzivatele->barva_pozadi|noescape}; color: {$stitekUzivatele->barva_popredi|noescape};">
-                {$stitekUzivatele->text}
+                <abbr title="{$stitekUzivatele->kdy_vytvoreno->format('d.m.Y H:h') . "\n\n" . $stitekUzivatele->poznamka}">
+                    {$stitekUzivatele->text}
+                </abbr>
                 <span class="badge-remove" data-stitek-id="{$stitekUzivatele->id}" data-user-id="{$userId}">&times;</span>
         </span>
         {/foreach}
