@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d34c764c52ed87cbeb600b83b11d4e05",
+    "content-hash": "7039de694b6736d773a00c64bf6f1773",
     "packages": [
         {
             "name": "contributte/console",
@@ -2597,18 +2597,12 @@
             "version": "dev-develop",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pear2/Net_RouterOS.git",
-                "reference": "40466961229f641e2cccbe84f5db6fe0d01fef6e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pear2/Net_RouterOS/zipball/40466961229f641e2cccbe84f5db6fe0d01fef6e",
-                "reference": "40466961229f641e2cccbe84f5db6fe0d01fef6e",
-                "shasum": ""
+                "url": "https://github.com/HKFree/Net_RouterOS.git",
+                "reference": "83c40f71edaae0d98e17d81b6b827b658581047d"
             },
             "require": {
                 "pear2/net_transmitter": ">=1.0.0b1 || dev-develop@dev",
-                "php": ">=5.3"
+                "php": ">=8.2"
             },
             "require-dev": {
                 "ext-iconv": "*",
@@ -2636,13 +2630,12 @@
             "type": "library",
             "autoload": {
                 "psr-0": {
-                    "PEAR2\\Cache\\SHM": "vendor/pear2/cache_shm/src/",
-                    "PEAR2\\Console\\Color": "vendor/pear2/console_color/src/",
                     "PEAR2\\Net\\RouterOS\\": "src/",
-                    "PEAR2\\Net\\Transmitter\\": "vendor/pear2/net_transmitter/src/"
+                    "PEAR2\\Net\\Transmitter\\": "vendor/pear2/net_transmitter/src/",
+                    "PEAR2\\Cache\\SHM": "vendor/pear2/cache_shm/src/",
+                    "PEAR2\\Console\\Color": "vendor/pear2/console_color/src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL-2.1-only"
             ],
@@ -2665,30 +2658,26 @@
             ],
             "support": {
                 "issues": "https://github.com/pear2/Net_RouterOS/issues",
-                "source": "https://github.com/pear2/Net_RouterOS/tree/develop",
                 "wiki": "https://github.com/pear2/Net_RouterOS/wiki"
             },
-            "time": "2022-04-21T19:23:45+00:00"
+            "time": "2024-12-18T11:10:43+00:00"
         },
         {
             "name": "pear2/net_transmitter",
-            "version": "1.0.0b2",
+            "version": "dev-develop",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pear2/Net_Transmitter.git",
-                "reference": "5abea5cd481ac9631f446cfb8fb415f4c43318f6"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pear2/Net_Transmitter/zipball/5abea5cd481ac9631f446cfb8fb415f4c43318f6",
-                "reference": "5abea5cd481ac9631f446cfb8fb415f4c43318f6",
-                "shasum": ""
+                "url": "https://github.com/HKFree/Net_Transmitter.git",
+                "reference": "8373abbddb3a89891e6bc335de8c1c2a5268ed24"
             },
             "require": {
-                "php": ">=5.3.0"
+                "php": ">=8.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "@stable"
+                "pear2/cache_shm": "dev-develop",
+                "phpunit/phpunit": "@stable",
+                "scrutinizer/ocular": "@stable",
+                "squizlabs/php_codesniffer": "@stable"
             },
             "suggest": {
                 "ext-apc": "This, APCu or Wincache is required for persistent connections.",
@@ -2703,9 +2692,8 @@
                     "PEAR2\\Net\\Transmitter\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "LGPL-2.1"
+                "LGPL-2.1-only"
             ],
             "authors": [
                 {
@@ -2717,20 +2705,19 @@
             "description": "A stream wrapper that ensures data integrity. Particularly useful for sockets.",
             "homepage": "http://pear2.github.com/Net_Transmitter/",
             "keywords": [
-                "Socket",
                 "integrity",
                 "network",
                 "networking",
                 "package",
                 "pear2",
+                "socket",
                 "sockets"
             ],
             "support": {
                 "issues": "http://github.com/pear2/Net_Transmitter/issues",
-                "source": "https://github.com/pear2/Net_Transmitter/tree/1.0.0b2",
                 "wiki": "http://github.com/pear2/Net_Transmitter/wiki"
             },
-            "time": "2017-05-13T13:41:29+00:00"
+            "time": "2024-12-18T11:09:50+00:00"
         },
         {
             "name": "php-http/discovery",
@@ -6112,7 +6099,7 @@
         "o5/grido": 20,
         "pauluswebster/shutterstock-rickshaw": 20,
         "pear2/net_routeros": 20,
-        "pear2/net_transmitter": 15
+        "pear2/net_transmitter": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

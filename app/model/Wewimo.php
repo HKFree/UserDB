@@ -196,7 +196,7 @@ class Wewimo
         if (array_key_exists($attributeName, $assocArray)) {
             if (!mb_detect_encoding($assocArray[$attributeName], 'UTF-8', true)) {
                 // if not valid UTF-8 string, convert from latin-1 to UTF-8
-                $assocArray[$attributeName] = utf8_encode($assocArray[$attributeName]); // TODO maybe detect which encoding is used in source string
+                $assocArray[$attributeName] =  mb_convert_encoding($assocArray[$attributeName], 'UTF-8', 'ISO-8859-1'); // TODO maybe detect which encoding is used in source string
                 //$assocArray[$attributeName] = urlencode($assocArray[$attributeName]); // for debugging purpose
             }
         }
