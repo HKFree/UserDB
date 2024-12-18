@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Services;
+
 use DateTime;
+use App\Model;
 
 class GeneratorSmlouvy
 {
@@ -40,18 +42,27 @@ class GeneratorSmlouvy
         }
 
         $ip4Adresy = [];
-        $IPAdresa = $container->getByType('App\Model\IPAdresa');
+        $IPAdresaModel = $container->getByType('App\Model\IPAdresa');
+        $subnetModel =  $container->getByType('App\Model\Subnet');
+
         foreach (
-            $IPAdresa->findAll()->where(['Uzivatel_id' => $uzivatel->id])->fetchPairs('ip_adresa') as $adresa => $record
+            $IPAdresaModel->findAll()->where(['Uzivatel_id' => $uzivatel->id])->fetchPairs('ip_adresa') as $adresa => $record
         ) {
-            $adresaLomenoMaska = "$adresa/24"; // TODO /24
-            $gateway = ""; // TODO: k IP adresám dotáhnout a zobrazovat gatewaye
+            $adresaLomenoMaska = "$adresa";
+            $gateway = "";
+
+            $subnet = $subnetModel->getSubnetOfIP($adresa);
+            if (!isset($subnet["error"])) {
+                $gateway = $subnet["gateway"];
+                $adresaLomenoMaska .= "/" . $subnet["cidr"];
+            }
+
             array_push($ip4Adresy, [$adresaLomenoMaska, $gateway]);
         }
 
         $parametrySmlouvy = [
           'cislo' => $cislo_smlouvy ?? '0',
-          'ze_dne' => new DateTime()->format('d.m.Y'),
+          'ze_dne' => (new DateTime())->format('d.m.Y'),
           'uid' => (string) $uzivatel->id,
           'jmeno_prijmeni' => $jmenoString,
           'upresneni' => 'Datum narození',
@@ -69,7 +80,7 @@ class GeneratorSmlouvy
         }
         for ($i = 1; $i <= count($ip4Adresy); ++$i) {
             $parametrySmlouvy["IPv4-$i"] = $ip4Adresy[$i - 1][0];
-            $parametrySmlouvy["GW-$i"] = $ip4Adresy[$i - 1][1];  // TODO
+            $parametrySmlouvy["GW-$i"] = $ip4Adresy[$i - 1][1];
             if ($i == 4) {
                 $parametrySmlouvy["IPv4-more"] = sprintf('... a další (%u)', count($ip4Adresy) - 4);
                 break;
