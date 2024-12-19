@@ -30,7 +30,12 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
                 if ($oneclick_auth_code !== $hash) {
                     $this->template->error = 'Neplatný odkaz';
                 } else {
-                    $this->requestDruzstvoContract->execute($uzivatel->id);
+                    if (!empty($uzivatel->oneclick_auth_used_at)) {
+                        $this->template->error = 'Smlouva k podpisu již byla zaslána. Tento odkaz funguje pouze jednou.';
+                    } else {
+                        $this->requestDruzstvoContract->execute($uzivatel->id);
+                        $uzivatel->update(['oneclick_auth_used_at' => new \DateTime()]);
+                    }
                 }
             }
         }
