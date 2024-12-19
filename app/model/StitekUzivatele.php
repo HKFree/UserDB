@@ -33,14 +33,18 @@ class StitekUzivatele extends Table
     public function createStitekUzivatele(array $data) {
         $this->database->table($this->tableName)->insert($data);
         //print_r($data);
+        error_log("createStitekUzivatele1 " . print_r($data, true));
+
         $stitek = $this->stitek->getStitekById($data["Stitek_id"]);
         $stara_data = array(
             "stitek" => $stitek->text
         );
         $l = [];
+        error_log("createStitekUzivatele2");
         $this->log->logujInsert($stara_data, "Uzivatel", $l);
+        error_log("createStitekUzivatele3");
         $this->log->loguj("Uzivatel", $data["Uzivatel_id"], $l);
-
+        error_log("createStitekUzivatele4");
     }
 
     public function getStitekByUserId($user_id) {
