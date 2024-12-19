@@ -16,6 +16,8 @@ function process_digisign_webhook($hook) {
     $SmlouvaModel = $container->getByType(\App\Model\Smlouva::class);
     $PodpisSmlouvyModel = $container->getByType(\App\Model\PodpisSmlouvy::class);
     $Stitkovac = $container->getByType(\App\Services\Stitkovac::class);
+    $SpravceOblasti = $container->getByType(\App\Model\SpravceOblasti::class);
+    $AplikaceLog = $container->getByType(\App\Model\AplikaceLog::class);
 
     $FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
     $FILE_STORAGE_PATH .= '/ucastnickeSmlouvy';
@@ -124,7 +126,18 @@ function process_digisign_webhook($hook) {
             }
             // 4. zrušit členství ve spolku (pokud existuje)
             if ($uzivatel->spolek) {
-                $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
+                $soAndZso = array_unique(
+                    array_keys($SpravceOblasti->getSO()->fetchPairs('Uzivatel_id', 'Uzivatel_id')) +
+                    array_keys($SpravceOblasti->getZSO()->fetchPairs('Uzivatel_id', 'Uzivatel_id'))
+                );
+
+                $AplikaceLog->log("digisign-webhook", "Overime ze UID {$uzivatel->id} neni SO nebo ZSO, zde je jejich seznam (" . implode(', ', $soAndZso). ")");
+
+                // 4.1. rozhodnutim SO rusime clenstvi ve spolku clenum, kteri nejsou SO ci ZSO
+                if (in_array($uzivatel->id, $soAndZso) === false) {
+                    $AplikaceLog->log("digisign-webhook", "Uzivatel UID {$uzivatel->id} neni SO ani ZSO, nastavujeme mu TypClenstvi_id = 1 (zrusene)");
+                    $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
+                }
             }
             // 5. nastavit "vztah" s družstvem
             $uzivatel->update(['druzstvo' => 1]);
