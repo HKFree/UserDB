@@ -72,14 +72,19 @@ function process_digisign_webhook($hook) {
             error_log("1c");
 
             // 2. Uživatele označit štítkem /* migrace 2025 temporary */
-            error_log("2. Uživatele označit štítkem /* migrace 2025 temporary */");
-            $uzivatel = $UzivatelModel->find($smlouva->uzivatel);
-            error_log("2b");
-            error_log(print_r($uzivatel, true));
+            try {
+                error_log("2. Uživatele označit štítkem /* migrace 2025 temporary */");
+                $uzivatel = $UzivatelModel->find($smlouva->uzivatel);
+                error_log("2b");
+                error_log(print_r($uzivatel->id, true));
 
-            $Stitkovac->addStitek($uzivatel, 'Mig2');
-            error_log("2c");
-
+                $Stitkovac->addStitek($uzivatel, 'Mig2');
+                error_log("2c");
+            } catch (Exception $e) {
+                error_log("------- Exception! Je to v tahu! -------");
+                error_log(print_r($e, true));
+                error_log("----------------------------------------");
+            }
             break;
         case 'envelopeCompleted': // obálka dokončena (podepsána všemi podepisujícími)
             /**
