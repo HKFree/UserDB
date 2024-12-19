@@ -19,8 +19,18 @@ if (!$hook) {
     return;
 }
 
-print_and_log(sprintf("%s %s %s", $hook->event, $hook->entityName, $hook->entityId));
+print_and_log(sprintf("%s (%s %s) START", $hook->event, $hook->entityName, $hook->entityId));
 
-process_digisign_webhook($hook);
+try {
+    process_digisign_webhook($hook);
+} catch (Exception $e) {
+    error_log("------- Exception! Je to v tahu! -------");
+    error_log(print_r($e, true));
+    error_log("----------------------------------------");
+    http_response_code(500);
+    exit;
+}
+
+print_and_log(sprintf("%s (%s %s) DONE", $hook->event, $hook->entityName, $hook->entityId));
 
 http_response_code(200);
