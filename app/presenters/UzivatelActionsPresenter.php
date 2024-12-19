@@ -7,7 +7,6 @@ use App\Model;
 use App\Services;
 use DateInterval;
 use DateTime;
-use Tracy\Debugger;
 
 /**
  * Uzivatel actions presenter.
@@ -20,7 +19,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $pdfGenerator;
     private $mailService;
     private $smlouva;
-
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
     private Services\Stitkovac $stitkovac;
 
@@ -33,7 +31,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         Model\Smlouva $smlouva,
         Services\RequestDruzstvoContract $requestDruzstvoContract,
         Services\Stitkovac $stitkovac,
-        Services\CryptoSluzba $cryptosvc
+        Services\CryptoSluzba $cryptosvc,
     ) {
         $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
@@ -172,8 +170,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionHandleSubscriberContract() {
-        // TODO: Logování změn
-
         if (!$this->getParameter('id')) {
             $this->flashMessage('Žádné id.');
             $this->redirect('UzivatelList:listall');
@@ -188,11 +184,12 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
 
         // Kontrola, že od poslední generace uběhlo aspoň 5 minut...
-        // $this->checkTimeSinceLastGenerateContract();
+        $this->checkTimeSinceLastGenerateContract();
 
         $newId = $this->requestDruzstvoContract->execute($user_id);
 
         $this->flashMessage(sprintf('Nová smlouva číslo %u bude odeslána na e-mail %s.', $newId, $current_user->email));
+
         // Tady call na generaci nove smlouvy a odeslani
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }

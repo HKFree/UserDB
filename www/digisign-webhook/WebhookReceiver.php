@@ -14,8 +14,10 @@ function process_digisign_webhook($hook) {
 
     $UzivatelModel = $container->getByType(\App\Model\Uzivatel::class);
     $SmlouvaModel = $container->getByType(\App\Model\Smlouva::class);
+    $Logger = $container->getByType(\App\Model\Log::class);
     $PodpisSmlouvyModel = $container->getByType(\App\Model\PodpisSmlouvy::class);
     $Stitkovac = $container->getByType(\App\Services\Stitkovac::class);
+    $log = [];
 
     $FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
     $FILE_STORAGE_PATH .= '/ucastnickeSmlouvy';
@@ -87,6 +89,7 @@ function process_digisign_webhook($hook) {
             $podpis = $PodpisSmlouvyModel->findOneBy(['smlouva_id' => $smlouva->id, 'smluvni_strana' => 'ucastnik']);
             $podpis->update(['kdy_podepsano' => $hook->time]);
             print_and_log(sprintf("smlouva #%u podpis ucastnika \"%s\" datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
+
             // 2. stáhnout podepsaný PDF a uložit
             $fileResponse = $ENVELOPES->download($envelope->id);
             $documentFullName = "{$FILE_STORAGE_PATH}/{$envelope->documents[0]->name}";
@@ -95,14 +98,17 @@ function process_digisign_webhook($hook) {
             $smlouva->update(['podepsany_dokument_nazev' => $envelope->documents[0]->name]);
             $smlouva->update(['podepsany_dokument_content_type' => 'application/pdf']);
             $smlouva->update(['podepsany_dokument_path' => $documentFullName]);
+
             // 3. pokud nemáme datum narození, zkusíme parsovat vyplněný ze smlouvy
             $uzivatel = $UzivatelModel->find($smlouva->uzivatel);
             if (!$uzivatel->datum_narozeni) {
                 $recipient1 = $ENVELOPES->recipients($envelope)->get($envelope->recipients[0]->id);
                 $tags = $recipient1->tags->toArray();
+
                 foreach ($tags as $tag) {
                     if ($tag['recipientClaim'] == 'birthdate') {
                         $birthdate_dirty = $tag['value'];
+
                         try {
                             $d = new DateTime(preg_replace('/\s+/', '', $birthdate_dirty) . " 00:00:00");
                             print_and_log(sprintf('datum narozeni [%s] parsovano jako %s', $birthdate_dirty, $d->format('Y-m-d')));
@@ -122,10 +128,12 @@ function process_digisign_webhook($hook) {
                     }
                 }
             }
+
             // 4. zrušit členství ve spolku (pokud existuje)
             if ($uzivatel->spolek) {
                 $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
             }
+
             // 5. nastavit "vztah" s družstvem
             $uzivatel->update(['druzstvo' => 1]);
 
@@ -134,6 +142,10 @@ function process_digisign_webhook($hook) {
 
             // 7. Odstranit oneclick_auth (odkaz v e-mailu už nebude fungovat) /* migrace 2025 temporary */
             $uzivatel->update(['oneclick_auth' => null]);
+
+            // 8. zalogovat, že smlouva byla podepsána
+            $Logger->logujInsert(['kdy_podepsano' => $hook->time], 'Smlouva', $log);
+            $Logger->loguj('Smlouva', $smlouva->id, $log);
 
             break;
         case 'envelopeDeclined': // obálka byla odmítnuta
@@ -150,6 +162,7 @@ function process_digisign_webhook($hook) {
             $podpis = $PodpisSmlouvyModel->findOneBy(['smlouva_id' => $smlouva->id, 'smluvni_strana' => 'ucastnik']);
             $podpis->update(['kdy_odmitnuto' => $hook->time]);
             print_and_log(sprintf("smlouva #%u podpis \"%s\" odmitnut, datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
+
             // 2. důvod odmítnutí uložit do poznámky
             if (!empty($envelope->recipients[0]->declineReason)) {
                 $novaPoznamka = sprintf(
@@ -161,6 +174,15 @@ function process_digisign_webhook($hook) {
                 );
                 $smlouva->update(['poznamka' => $novaPoznamka]);
             }
+
+            // 3. zalogovat, že smlouva byla odmítnnuta
+            $new_data = [
+                'kdy_odmitnuto' => $hook->time,
+                'poznamka' => $novaPoznamka
+            ];
+            $Logger->logujInsert($new_data, 'Smlouva', $log);
+            $Logger->loguj('Smlouva', $smlouva->id, $log);
+
             break;
         case 'envelopeExpired': // obálka expirovala
             // ověřit skutečný stav
@@ -177,6 +199,15 @@ function process_digisign_webhook($hook) {
                 empty($smlouva->poznamka) ? '' : "\n",
                 $envelope->recipients[0]->declinedAt->format('d.m.Y H:i'),
             );
+
+            // 2. zalogovat že smlouva vypršela
+            $Logger->logujUpdate(
+                ['poznamka' => $smlouva->poznamka],
+                ['poznamka' => $novaPoznamka],
+                'Smlouva',
+                $log
+            );
+            $Logger->loguj('Smlouva', $smlouva->id, $log);
             $smlouva->update(['poznamka' => $novaPoznamka]);
             break;
         case 'envelopeCancelled': // obálka byla zrušena

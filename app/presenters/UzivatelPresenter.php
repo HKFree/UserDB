@@ -296,7 +296,6 @@ class UzivatelPresenter extends BasePresenter
                         $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
                     }
                 }
-                // \Tracy\Debugger::barDump($seznamUzivatelu);
 
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
                                                     || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())

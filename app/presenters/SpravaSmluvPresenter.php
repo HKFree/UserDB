@@ -12,10 +12,13 @@ class SpravaSmluvPresenter extends BasePresenter
 
     protected $smlouva;
     protected $podpis;
+    protected $logger;
 
-    public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis) {
+    public function __construct(Model\Smlouva $smlouva,
+    Model\PodpisSmlouvy $podpis, Model\Log $logger) {
         $this->smlouva = $smlouva;
         $this->podpis = $podpis;
+        $this->logger = $logger;
     }
 
     // Zkontroluje ze jsme dostali ID a existuje smlouva s timto ID
@@ -85,8 +88,6 @@ class SpravaSmluvPresenter extends BasePresenter
     }
 
     public function actionCancelContract() {
-        // TODO: Logování změn
-
         $contract_id = $this->getParameter('id');
         $this->idAndContractExists($contract_id);
         $this->userCanChange($contract_id);
@@ -97,12 +98,19 @@ class SpravaSmluvPresenter extends BasePresenter
             $this->redirect('SpravaSmluv:show');
         }
 
+        $now = new DateTime();
         $updated_row = $current_contract->update([
-            'kdy_ukonceno' => new DateTime()
+            'kdy_ukonceno' => $now
         ]);
 
         if ($updated_row) {
             $this->flashMessage('Smlouva č. ' . $contract_id . ' vypovězena!');
+            $log = [];
+            $this->logger->logujUpdate(
+                ['kdy_ukonceno' => null], ['kdy_ukonceno' => $now],
+                'Smlouva', $log
+            );
+            $this->logger->loguj('Smlouva', $current_contract->id, $log);
         } else {
             $this->flashMessage('Chyba ve vypovezení smlouvy.', 'danger');
         }
@@ -110,8 +118,6 @@ class SpravaSmluvPresenter extends BasePresenter
     }
 
     public function actionUpdateNote() {
-        // TODO: Logování změn
-
         $request = $this->getHttpRequest();
         $contract_id = $this->getParameter('id');
 
@@ -123,12 +129,20 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->idAndContractExists($contract_id);
         $this->userCanChange($contract_id);
 
-        $updated_row = $this->smlouva->find($contract_id)->update([
+        $current_contract = $this->smlouva->find($contract_id);
+        $old_note = $current_contract->poznamka;
+        $updated_row = $current_contract->update([
             'poznamka' => $request->getPost('interni-poznamka')
         ]);
 
         if ($updated_row) {
             $this->flashMessage('Poznámka uložena');
+            $log = [];
+            $this->logger->logujUpdate(
+                ['poznamka' => $old_note], ['poznamka' => $request->getPost('interni-poznamka')],
+                'Smlouva', $log
+            );
+            $this->logger->loguj('Smlouva', $current_contract->id, $log);
         } else {
             $this->flashMessage('Chyba při update poznámky.', 'danger');
         }
