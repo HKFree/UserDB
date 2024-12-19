@@ -33,6 +33,4 @@ try {
 
 print_and_log(sprintf("%s (%s %s) DONE", $hook->event, $hook->entityName, $hook->entityId));
 
-print_and_log(sprintf("%s (%s %s) DONE", $hook->event, $hook->entityName, $hook->entityId));
-
 http_response_code(200);
