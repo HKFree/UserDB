@@ -44,7 +44,7 @@ class StitekUzivatele extends Table
         $this->log->logujInsert($stara_data, "Uzivatel", $l);
         error_log("createStitekUzivatele3a data=".print_r($data, true));
         error_log("createStitekUzivatele3b l=".print_r($l, true));
-        $this->log->loguj("Uzivatel", $data["Uzivatel_id"], $l);
+        $this->log->loguj("Uzivatel", $data["Uzivatel_id"], $l, $data["Uzivatel_id"]);
         error_log("createStitekUzivatele4");
     }
 
