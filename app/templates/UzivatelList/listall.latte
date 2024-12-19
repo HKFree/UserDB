@@ -2,7 +2,7 @@
 <h3>Kompletní seznam členů</h3>
 
 {if $search}
-  <p>Fulltextové vyhledávání (vždy pouze první nalezený záznam): {$search}</p>
+  <p>Fulltextové vyhledávání: <code>{$search}</code></p>
 
 {/if}
 &nbsp;&nbsp;
@@ -25,10 +25,9 @@
     <li n:if="$money">Počet aktivních členů: {$u_aktivnich}</li>
     <li>Počet všech členů: {$u_celkem}</li>
     <li>Počet všech členů včetně zrušených: {$u_celkemz}</li>
-</ul>  
+</ul>
 {/if}
 
 {import '../pinger.latte'}
 {include listPinger}
 {/block}
-

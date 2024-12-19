@@ -296,7 +296,7 @@ class UzivatelListGrid
                 'spolek' => 'pouze spolek',
                 'druzstvo' => 'pouze družstvo'))
             ->setDefaultValue('all')
-            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+            ->setWhere(function ($value, $connection) {
                 if ($value == 'spolek') {
                     return ($connection->where('spolek = ? AND druzstvo = ?', ['1','0']));
                 }
@@ -309,7 +309,7 @@ class UzivatelListGrid
         $list = array('active' => 'bez zrušených, plánovaných a smazaných', 'all' => 'včetně zrušených, plánovaných a smazaných', 'planned' => 'pouze plánovaná členství ve spolku');
 
         $tz = $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
-            ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+            ->setWhere(function ($value, $connection) {
                 if ($value == 'active') {
                     return ($connection->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)'));
                 }
