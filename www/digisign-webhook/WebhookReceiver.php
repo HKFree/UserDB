@@ -16,6 +16,7 @@ function process_digisign_webhook($hook) {
     $SmlouvaModel = $container->getByType(\App\Model\Smlouva::class);
     $PodpisSmlouvyModel = $container->getByType(\App\Model\PodpisSmlouvy::class);
     $Stitkovac = $container->getByType(\App\Services\Stitkovac::class);
+    $SpravceOblasti = $container->getByType(\App\Model\SpravceOblasti::class);
 
     $FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
     $FILE_STORAGE_PATH .= '/ucastnickeSmlouvy';
@@ -124,7 +125,15 @@ function process_digisign_webhook($hook) {
             }
             // 4. zrušit členství ve spolku (pokud existuje)
             if ($uzivatel->spolek) {
-                $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
+                $soAndZso = array_unique(
+                    array_keys($SpravceOblasti->getSO()->fetchPairs('id', 'id')) +
+                    array_keys($SpravceOblasti->getZSO()->fetchPairs('id', 'id'))
+                );
+
+                // 4.1. rozhodnutim SO rusime clenstvi ve spolku clenum, kteri nejsou SO ci ZSO
+                if (in_array($uzivatel->id, $soAndZso, true) === false) {
+                    $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
+                }
             }
             // 5. nastavit "vztah" s družstvem
             $uzivatel->update(['druzstvo' => 1]);
