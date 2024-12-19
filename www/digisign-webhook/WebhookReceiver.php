@@ -58,6 +58,7 @@ function process_digisign_webhook($hook) {
             $odeslano_kam = $envelope->recipients[0]->email;
 
             // 1. uložit do DB že je smlouva odeslaná
+            error_log("1. uložit do DB že je smlouva odeslaná");
             $novaPoznamka = sprintf(
                 "%s%sSmlouva odeslána %s na adresu %s.",
                 $smlouva->poznamka,
@@ -65,11 +66,19 @@ function process_digisign_webhook($hook) {
                 $odeslano_kdy->format('d.m.Y H:i'),
                 $odeslano_kam
             );
+            error_log("1b");
+            error_log(print_r($novaPoznamka, true));
             $smlouva->update(['poznamka' => $novaPoznamka]);
+            error_log("1c");
 
             // 2. Uživatele označit štítkem /* migrace 2025 temporary */
+            error_log("2. Uživatele označit štítkem /* migrace 2025 temporary */");
             $uzivatel = $UzivatelModel->find($smlouva->uzivatel);
+            error_log("2b");
+            error_log(print_r($uzivatel, true));
+
             $Stitkovac->addStitek($uzivatel, 'Mig2');
+            error_log("2c");
 
             break;
         case 'envelopeCompleted': // obálka dokončena (podepsána všemi podepisujícími)
