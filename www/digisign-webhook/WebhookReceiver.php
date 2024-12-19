@@ -127,15 +127,15 @@ function process_digisign_webhook($hook) {
             // 4. zrušit členství ve spolku (pokud existuje)
             if ($uzivatel->spolek) {
                 $soAndZso = array_unique(
-                    array_keys($SpravceOblasti->getSO()->fetchPairs('id', 'id')) +
-                    array_keys($SpravceOblasti->getZSO()->fetchPairs('id', 'id'))
+                    array_keys($SpravceOblasti->getSO()->fetchPairs('Uzivatel_id', 'Uzivatel_id')) +
+                    array_keys($SpravceOblasti->getZSO()->fetchPairs('Uzivatel_id', 'Uzivatel_id'))
                 );
 
-                $AplikaceLog->log("digisign-webhook", "Overime ze {$uzivatel->id} neni SO nebo ZSO, zde je jejich seznam (" . implode(', ', $soAndZso). ")");
+                $AplikaceLog->log("digisign-webhook", "Overime ze UID {$uzivatel->id} neni SO nebo ZSO, zde je jejich seznam (" . implode(', ', $soAndZso). ")");
 
                 // 4.1. rozhodnutim SO rusime clenstvi ve spolku clenum, kteri nejsou SO ci ZSO
                 if (in_array($uzivatel->id, $soAndZso) === false) {
-                    $AplikaceLog->log("digisign-webhook", "Uzivatel neni SO ani ZSO, nastavujeme mu TypClenstvi_id = 1 (zrusene)");
+                    $AplikaceLog->log("digisign-webhook", "Uzivatel UID {$uzivatel->id} neni SO ani ZSO, nastavujeme mu TypClenstvi_id = 1 (zrusene)");
                     $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
                 }
             }
