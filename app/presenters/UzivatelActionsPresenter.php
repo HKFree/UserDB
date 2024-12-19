@@ -212,6 +212,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             ]);
         } else {
             $oneclick_auth_code = $this->cryptosvc->decrypt($uzivatel->oneclick_auth);
+            $this->uzivatel->update($uzivatel->id, ['oneclick_auth_used_at' => null]);
         }
 
         $this->mailService->sendSubscriberContractCallToActionEmail($uzivatel, $oneclick_auth_code);
