@@ -131,7 +131,7 @@ function process_digisign_webhook($hook) {
                 );
 
                 // 4.1. rozhodnutim SO rusime clenstvi ve spolku clenum, kteri nejsou SO ci ZSO
-                if (in_array($uzivatel->id, $soAndZso, true) === false) {
+                if (in_array($uzivatel->id, $soAndZso) === false) {
                     $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
                 }
             }
