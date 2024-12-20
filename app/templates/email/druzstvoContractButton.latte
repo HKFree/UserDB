@@ -282,16 +282,21 @@
                   <ul style="">
                     <li style="font-size:11pt; color:#000000; font-weight:400; text-decoration:none;">
                       <span style="font-size:11pt; color:#000000; font-weight:400; text-decoration:none;">
-                      <b>Stejná cena</b> 290 Kč za měsíc, placeno předem</span>
-                    </li>
-                    <li style="font-size:11pt; color:#000000; font-weight:400; text-decoration:none;">
-                      <span style="font-size:11pt; color:#000000; font-weight:400; text-decoration:none;">
                       <b>Stejná kvalita</b> připojení, žádné omezení rychlosti, žádný FUP</span>
                     </li>
                     <li style="font-size:11pt; color:#000000; font-weight:400; text-decoration:none;">
                       <span style="font-size:11pt; color:#000000; font-weight:400; text-decoration:none;">
                       <b>Žádné závazky</b>
                       </span>
+                    </li>
+                    <li style="font-size:11pt; color:#000000; font-weight:400; text-decoration:none;">
+                      <span style="font-size:11pt; color:#000000; font-weight:400; text-decoration:none;">
+                      {{if !$hasCC}}
+                        <b>Stejná cena</b> 290 Kč za měsíc, placeno předem
+                      {{else}}
+                        <b>Stejná cena</b> 0 Kč za měsíc (i přesto je třeba smlouvu podepsat)
+                      {{/if}}
+                    </span>
                     </li>
                   </ul>
                   <div style=""><span

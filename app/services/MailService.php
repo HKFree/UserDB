@@ -18,19 +18,22 @@ class MailService
     private $mailer;
     private $linkGenerator;
     private $templateFactory;
+    private $cestneClenstviUzivatele;
 
     public function __construct(
         string $templateDir,
         Nette\Mail\IMailer $mailer,
         Model\Uzivatel $uzivatel,
         Nette\Application\LinkGenerator $linkGenerator,
-        Nette\Bridges\ApplicationLatte\TemplateFactory $templateFactory
+        Nette\Bridges\ApplicationLatte\TemplateFactory $templateFactory,
+        Model\CestneClenstviUzivatele $cestneClenstviUzivatele
     ) {
         $this->templateDir = $templateDir;
         $this->uzivatel = $uzivatel;
         $this->mailer = $mailer;
         $this->linkGenerator = $linkGenerator;
         $this->templateFactory = $templateFactory;
+        $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
     }
 
     public function sendSpolekConfirmationRequest($uzivatel, $so, $link): void {
@@ -181,6 +184,7 @@ class MailService
         $params = [
             'UID' => $uzivatel->id,
             'oneclick_auth_code' => $oneclick_auth_code,
+            'hasCC' => $this->cestneClenstviUzivatele->getHasCC($uzivatel->id)
         ];
         //dumpe($template->getLatte()->getLoader());
         $html = $template->renderToString($this->templateDir . '/druzstvoContractButton.latte', $params);
