@@ -23,6 +23,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
     private Services\Stitkovac $stitkovac;
+    private $cestneClenstviUzivatele;
 
     public function __construct(
         Model\Parameters $parameters,
@@ -33,7 +34,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         Model\Smlouva $smlouva,
         Services\RequestDruzstvoContract $requestDruzstvoContract,
         Services\Stitkovac $stitkovac,
-        Services\CryptoSluzba $cryptosvc
+        Services\CryptoSluzba $cryptosvc,
+        Model\CestneClenstviUzivatele $cestneClenstviUzivatele
     ) {
         $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
@@ -44,6 +46,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->requestDruzstvoContract = $requestDruzstvoContract;
         $this->stitkovac = $stitkovac;
         $this->cryptosvc = $cryptosvc;
+        $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
     }
 
     public function actionMoneyActivate() {
@@ -232,6 +235,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $params = [
             'UID' => $uzivatel->id,
             'oneclick_auth_code' => 'neklikej na to, tohle je jenom nahled',
+            'hasCC' => $this->cestneClenstviUzivatele->getHasCC($uzivatel->id)
         ];
 
         $html = $template->renderToString('../app/templates/email/druzstvoContractButton.latte', $params);
