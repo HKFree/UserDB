@@ -2,9 +2,9 @@
 
 namespace App\Model;
 
-use Nette,
-    App\Services\MexSmsSender,
-    App\Model\Uzivatel;
+use Nette;
+use App\Services\MexSmsSender;
+use App\Model\Uzivatel;
 
 /**
  * @author bkralik
@@ -28,7 +28,7 @@ class Komunikace extends Table
         $cisla = [];
         foreach ($uzivateleID as $uid) {
             $u = $this->uzivatel->getUzivatel($uid);
-            if($this->smsSender->checkCzechNumber($u->telefon)) {
+            if ($this->smsSender->checkCzechNumber($u->telefon)) {
                 $cisla[] = $u->telefon;
             }
         }

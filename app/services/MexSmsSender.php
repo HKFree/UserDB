@@ -12,8 +12,8 @@ use Nette\Caching\Cache;
  * Class MaxSmsSender
  * @author bkralik <bkralik@hkfree.org>
  */
-class MexSmsSender {
-
+class MexSmsSender
+{
     /** @var string */
     private $mexUrl;
 
@@ -37,34 +37,32 @@ class MexSmsSender {
         $this->cache = $cache;
     }
 
-    public function checkCzechNumber(string $number): bool
-    {
-        return(strlen($this->formatCzechNumber($number, false))>0);
+    public function checkCzechNumber(string $number): bool {
+        return (strlen($this->formatCzechNumber($number, false)) > 0);
     }
 
-    private function formatCzechNumber(string $number, bool $strict = true): string
-    {
+    private function formatCzechNumber(string $number, bool $strict = true): string {
         $number_cleared = preg_replace('/\s/', '', $number);
 
         // match 777222555
         if (preg_match('/^\d{9}$/', $number_cleared)) {
-            return("00420" . $number);
+            return ("00420" . $number);
         }
 
         // match +420777222555
         if (preg_match('/^\+420(\d{9})$/', $number_cleared, $matches)) {
-            return("00420" . $matches[1]);
+            return ("00420" . $matches[1]);
         }
 
         // match 420777222555 (not really valid)
         if (preg_match('/^420(\d{9})$/', $number_cleared, $matches)) {
-            return("00420" . $matches[1]);
+            return ("00420" . $matches[1]);
         }
 
-        if($strict) {
+        if ($strict) {
             throw new SmsSenderException("Zadané číslo (" . $number . ") neni validní pro odeslání SMS.");
         } else {
-            return("");
+            return ("");
         }
     }
 
@@ -95,7 +93,7 @@ class MexSmsSender {
         }
 
         $rBody = (string) $r->getBody();
-        return(json_decode($rBody, TRUE));
+        return (json_decode($rBody, true));
     }
 
     private function login() {
@@ -106,13 +104,13 @@ class MexSmsSender {
 
         $res = $this->apiCall("/login", $data, "POST", true);
 
-        return($res["token"]);
+        return ($res["token"]);
     }
 
     private function getToken() {
-        return($this->cache->load("authToken", function (&$dependencies) {
+        return ($this->cache->load("authToken", function (&$dependencies) {
             $dependencies[Cache::EXPIRE] = '50 minutes';
-            return($this->login());
+            return ($this->login());
         }));
     }
 
@@ -134,6 +132,6 @@ class MexSmsSender {
 
 }
 
-class SmsSenderException extends Exception {
-
+class SmsSenderException extends Exception
+{
 }

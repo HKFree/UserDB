@@ -269,7 +269,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         try {
             $this->komunikace->posliSMS($uzivateleID, $message);
             $this->flashMessage('SMS byla odeslána na ' . count($uzivateleID) . ' čísel.');
-        } catch(SmsSenderException $e) {
+        } catch (SmsSenderException $e) {
             $this->flashMessage('SMS nebyla odeslána. ' . $e, "danger");
         }
     }
