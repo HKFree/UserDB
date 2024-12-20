@@ -7,7 +7,7 @@ use Nette\Application\UI\Form;
 use Nette\Mail\Message;
 use Nette\Utils\Validators;
 use App\Components;
-use App\Services\SmsSender;
+use App\Services\SmsSenderException;
 
 /**
  * Uzivatel presenter.
@@ -16,16 +16,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 {
     private $uzivatel;
     private $ap;
+    private $komunikace;
 
-    /** @var Components\LogTableFactory @inject **/
-    public $logTableFactory;
-
-    private $smsSender;
-
-    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, SmsSender $smsSender) {
+    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, Model\Komunikace $k) {
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
-        $this->smsSender = $smsSender;
+        $this->komunikace = $k;
     }
 
     public function renderEmail() {
@@ -207,7 +203,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     public function smsFormSucceded($form, $values) {
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
-        $this->sendSMSAndValidate($this->getIdentity(), [ $user->telefon ], $values->message);
+        $this->sendSMSAndValidate([ $user->id ], $values->message);
 
         $this->redirect('Uzivatel:show', array('id' => $this->getParameter('id')));
         return true;
@@ -257,25 +253,24 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
 
         $validni = [];
-        foreach ($telefony as $tl) {
+        foreach ($telefony as $uid => $tl) {
             if (!empty($tl) && $tl != 'missing') {
-                $validni[] = $tl;
+                $validni[] = $uid;
             }
         }
 
-        $this->sendSMSAndValidate($this->getIdentity(), $validni, $values->message);
+        $this->sendSMSAndValidate($validni, $values->message);
 
         $this->redirect('UzivatelList:list', array('id' => $this->getParameter('id')));
         return true;
     }
 
-    private function sendSMSAndValidate($ident, $numbers, $message) {
-        $output = $this->smsSender->sendSms($ident, $numbers, $message);
-
-        if ($output["status"] == SmsSender::STATUS_OK) {
-            $this->flashMessage('SMS byla odeslána. Output: ' . $output["msg"]);
-        } else {
-            $this->flashMessage('SMS nebyla odeslána. ' . $output["msg"], "danger");
+    private function sendSMSAndValidate($uzivateleID, $message) {
+        try {
+            $this->komunikace->posliSMS($uzivateleID, $message);
+            $this->flashMessage('SMS byla odeslána na ' . count($uzivateleID) . ' čísel.');
+        } catch (SmsSenderException $e) {
+            $this->flashMessage('SMS nebyla odeslána. ' . $e, "danger");
         }
     }
 }
