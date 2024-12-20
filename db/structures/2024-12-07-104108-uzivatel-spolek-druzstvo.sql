@@ -1,0 +1,1 @@
+ALTER TABLE `Uzivatel` ADD `spolek` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'Ma/mel pravni vztah ke spolku' AFTER `TypClenstvi_id`, ADD `druzstvo` BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Ma/mel pravni vztah k druzstvu' AFTER `spolek`, ADD `smazano` BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Je smazany v druzstvu?' AFTER `druzstvo`;

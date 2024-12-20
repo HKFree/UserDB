@@ -1,0 +1,26 @@
+{block scan}
+<table class="table table-striped">
+<tr>
+    <th>Oblast</th>
+    <th>Uživatel</th>
+    <th>IP adresa</th>
+    <th>Otevřené porty</th>
+</tr>
+
+<tr n:foreach="$scan as $ip => $line">
+    <td {if !$line['uzivatel']}colspan=2{/if}>{$line["oblast"]}</td>
+    <td n:if="$line['uzivatel']"><a n:href="Uzivatel:show, id=>$line['uzivatel']->id">{$line["uzivatel"]->id}</a> - {$line["uzivatel"]->nick}</td>
+    <td>{$ip}</td>
+    <td>{implode(", ", $line["porty"])}</td>
+</tr>
+</table>
+{/block}
+
+{block content}
+
+<h1>Vnější scanner veřejných IP</h1>
+Scanuje se z UHK, scanner spravuje Locutus. Scan se obnovuje jednou za 24 hodin. Aktuální data jsou z {$scanDate|date:'G:i j. n. Y'}
+<br><br>
+{include scan, scan => $scan}
+
+{/block}

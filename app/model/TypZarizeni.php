@@ -4,10 +4,8 @@ namespace App\Model;
 
 use Nette;
 
-
-
 /**
- * @author 
+ * @author
  */
 class TypZarizeni extends Table
 {
@@ -16,8 +14,7 @@ class TypZarizeni extends Table
     */
     protected $tableName = 'TypZarizeni';
 
-    public function getTypyZarizeni()
-    {
-        return($this->findAll());
+    public function getTypyZarizeni() {
+        return ($this->findAll());
     }
 }

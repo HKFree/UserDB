@@ -1,0 +1,24 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: ["testing"]
+  pull_request:
+    branches: ["testing"]
+
+env:
+  CLOUD_HOSTNAME: ${{ vars.CLOUD_HOSTNAME }}
+  CLOUD_USERNAME: ${{ vars.CLOUD_USERNAME }}
+  CLOUD_SSH_KEY: ${{ secrets.CLOUD_SSH_KEY }}
+
+jobs:
+  deploy_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the Docker image
+        run: ls -la
+      - run: mkdir ~/.ssh
+      - run: echo "$CLOUD_SSH_KEY" >> ~/.ssh/id_rsa
+      - run: chmod 0600 ~/.ssh/id_rsa
+      - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "./deploy-userdb-test.sh"

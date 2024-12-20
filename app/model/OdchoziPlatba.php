@@ -5,7 +5,7 @@ namespace App\Model;
 use Nette;
 
 /**
- * @author 
+ * @author
  */
 class OdchoziPlatba extends Table
 {
@@ -14,12 +14,11 @@ class OdchoziPlatba extends Table
     */
     protected $tableName = 'OdchoziPlatba';
 
-    public function getOdchoziPlatby()
-    {
-        return($this->findAll());
+    public function getOdchoziPlatby() {
+        return ($this->findAll());
     }
-    
+
     public function getOdchoziPlatba($id) {
-	   return($this->find($id));
+        return ($this->find($id));
     }
 }

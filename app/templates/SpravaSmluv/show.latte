@@ -1,0 +1,128 @@
+{block content}
+
+<h1>{isset($smlouva->kdy_ukonceno) ? 'Vypovězená smlouva' : 'Smlouva'} č. {$id}</h1>
+
+<div style="margin-top:3px;">
+    <a href="{link Uzivatel:show id=>$smlouva->uzivatel->id}" class="btn btn-default btn-sm" role="button">
+        <i class="glyphicon glyphicon-chevron-left"></i> Na uživatele
+    </a>
+    {if $smlouva->podepsany_dokument_path}
+    <a href="{link SpravaSmluv:handleDownload id=>$smlouva->id}" class="btn btn-default btn-sm" role="button">
+        <i class="glyphicon glyphicon-cloud-download"></i> Stáhnout
+    </a>
+    {/if}
+    <a {ifset $smlouva->kdy_ukonceno}disabled{/ifset} href="{link SpravaSmluv:cancelContract}" id="btn-cancel-contract" class="btn btn-danger btn-sm" role="button">
+        <i class="glyphicon glyphicon-remove"></i> Vypovědět
+    </a>
+</div>
+
+<br>
+
+<table class="table table-nonfluid">
+    <tbody>
+        <tr>
+            <th>typ</th>
+            <td>{$smlouva->typ}</td>
+        </tr>
+
+        <tr>
+            <th>Uživatel</th>
+            <td><a href="{link Uzivatel:show id=>$smlouva->Uzivatel->id}">{$smlouva->uzivatel->id} {$smlouva->uzivatel->firma_nazev} {$smlouva->uzivatel->jmeno} {$smlouva->uzivatel->prijmeni}</a></td>
+        </tr>
+
+        <tr>
+            <th>Ze šablony</th>
+            <td>{$smlouva->sablona}</td>
+        </tr>
+
+        <tr>
+            <th>Soubor</th>
+            <td>
+                {if $smlouva->podepsany_dokument_path}
+                <a href="{link SpravaSmluv:handleDownload id=>$smlouva->id}">
+                    {$smlouva->podepsany_dokument_nazev}
+                </a>
+                {else}
+                {$smlouva->podepsany_dokument_nazev}
+                {/if}
+            </td>
+        </tr>
+
+        <tr>
+            <th>Vygenerováno</th>
+            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y \v H:i')}</td>
+        </tr>
+
+        <tr>
+            <th>Ukončeno</th>
+            <td>
+                {ifset $smlouva->kdy_ukonceno}
+                    {$smlouva->kdy_ukonceno->format('d.m.Y \v H:i')}
+                {else}
+                    - - -
+                {/ifset}
+            </td>
+        </tr>
+
+        <tr>
+            <th>Parametry smlouvy</th>
+            <td>
+                <pre style="font-size: 75%">{$smlouva->parametry_smlouvy}</pre>
+            </td>
+        </tr>
+
+        <tr>
+            <th>Interní poznámka<br/></th>
+            <th>
+                <form id="poznamka-form" action="{link SpravaSmluv:updateNote}" method="post">
+                    <textarea rows="5" cols="50" name="interni-poznamka" id="txtara-interni-poznamka">{$smlouva->poznamka}</textarea>
+                </form>
+                <button form="poznamka-form" href="{$smlouva->id}" class="btn btn-success btn-sm" type="submit" role="submit">
+                    <i class="glyphicon glyphicon-cloud-upload"></i> Uložit
+                </button>
+            </th>
+        </tr>
+
+        <tr>
+            <th>Podpisy</th>
+            <td>
+                {if !count($podpisy)}
+                    ❌ Zatím žádné podpisy
+                {/if}
+                <ol>
+                {foreach $podpisy as $podpis}
+                    <li>
+                        za {$podpis->smluvni_strana} {$podpis->jmeno}:
+                        {if isset($podpis->kdy_podepsano)}
+                            ✅ podepsáno
+                            {$podpis->kdy_podepsano->format('d.m.Y H:i')}
+                        {/if}
+                        {if isset($podpis->kdy_odmitnuto)}
+                            {* Zde predpokladame ze kdy_zruseno nemuze byt v budoucnosti *}
+                            ⚠️ tento podpis byl <b>odmítnut</b>
+                            {$podpis->kdy_odmitnuto->format('d.m.Y H:i')}
+                        {/if}
+                        {if !isset($podpis->kdy_odmitnuto) && !isset($podpis->kdy_podepsano)}
+                            ⏳ ještě nepodapsáno
+                        {/if}
+                    </li>
+                {/foreach}
+                </ol>
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+
+<script>
+$('#btn-cancel-contract').on('click', function() {
+    let c = confirm("Chystáš se vypovědět smlouvu.\nTato akce NELZE vrátit.\nJsi si opravdu jistý?");
+    if (c) {
+        // Ok
+    } else {
+        // Cancel
+        event.preventDefault();
+    }
+})</script>
+
+{/block}

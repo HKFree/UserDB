@@ -8,16 +8,18 @@ class AreasPresenter extends ApiPresenter
 {
     private $oblast;
 
-    function __construct(\App\Model\Oblast $oblast)
-    {
+    public function __construct(\App\Model\Oblast $oblast) {
         $this->oblast = $oblast;
     }
 
-    public function actionDefault()
-    {
+    public function actionDefault() {
         $oblasti = [];
         $oblastiData = $this->oblast->getSeznamOblasti();
         foreach ($oblastiData as $idoblast => $o) {
+            if ($o['id'] < 0) {
+                continue;
+            }
+
             $oblasti[$idoblast] = [
                 'id' => $o['id'],
                 'jmeno' => $o['jmeno'],
@@ -27,8 +29,13 @@ class AreasPresenter extends ApiPresenter
             $apcka = [];
             foreach ($apckaData as $idApcka => $apcko) {
                 $apcka[$idApcka] = [
+                    'aktivni' => $apcko['aktivni'],
                     'jmeno' => $apcko['jmeno'],
                     'id' => $apcko['id'],
+                    'gps' => $apcko['gps'],
+                    'ulice_cp' => $apcko['ulice_cp'],
+                    'mesto' => $apcko['mesto'],
+                    'psc' => $apcko['psc']
                 ];
             }
             $oblasti[$idoblast]['aps'] = $apcka;
@@ -36,6 +43,10 @@ class AreasPresenter extends ApiPresenter
             $spravci = [];
             foreach ($o->related('SpravceOblasti.Oblast_id')->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())') as $spravceMtm) {
                 $spravce = $spravceMtm->ref('Uzivatel', 'Uzivatel_id');
+                if ($spravce['systemovy']) {
+                    continue;
+                }
+
                 $role = $spravceMtm->ref('TypSpravceOblasti', 'TypSpravceOblasti_id');
                 $spravci[$spravce['id']] = [
                     'id' => $spravce['id'],
@@ -46,6 +57,6 @@ class AreasPresenter extends ApiPresenter
             }
             $oblasti[$idoblast]['admins'] = $spravci;
         }
-        $this->sendResponse( new JsonResponse($oblasti) );
+        $this->sendResponse(new JsonResponse($oblasti));
     }
 }

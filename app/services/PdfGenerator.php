@@ -2,24 +2,23 @@
 
 namespace App\Services;
 
-use Nette,
-    PdfResponse\PdfResponse,
-    App\Model,
-    DateInterval;
+use Nette;
+use PdfResponse\PdfResponse;
+use App\Model;
+use DateInterval;
 
 /**
- * @author 
+ * @author
  */
 class PdfGenerator
 {
     private $subnet;
 
-    function __construct(Model\Subnet $subnet) {
+    public function __construct(Model\Subnet $subnet) {
         $this->subnet = $subnet;
     }
-    
-    public function generatePdf($uzivatel, $template): PdfResponse
-    {
+
+    public function generatePdf($uzivatel, $template): PdfResponse {
         $template->oblast = $uzivatel->Ap->Oblast->jmeno;
         $oblastid = $uzivatel->Ap->Oblast->id;
         $template->oblastemail = "oblast$oblastid@hkfree.org";
@@ -30,7 +29,7 @@ class PdfGenerator
         $template->ico = $uzivatel->firma_ico;
         $template->nick = $uzivatel->nick;
         $template->uid = $uzivatel->id;
-        $template->heslo = $uzivatel->regform_downloaded_password_sent==0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
+        $template->heslo = $uzivatel->regform_downloaded_password_sent == 0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
         $template->email = $uzivatel->email;
         $template->telefon = $uzivatel->telefon;
         $template->ulice = $uzivatel->ulice_cp;
@@ -38,13 +37,13 @@ class PdfGenerator
         $template->psc = $uzivatel->psc;
         $template->clenstvi = $uzivatel->TypClenstvi->text;
         $template->nthmesic = "prvního";
-        $template->nthmesicname = $this->mesicName($uzivatel->zalozen,1);
-        $template->nthmesicdate = $this->mesicDate($uzivatel->zalozen,0);
+        $template->nthmesicname = $this->mesicName($uzivatel->zalozen, 1);
+        $template->nthmesicdate = $this->mesicDate($uzivatel->zalozen, 0);
         $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
-        foreach($ipadrs as $ip) {
+        foreach ($ipadrs as $ip) {
             $subnet = $this->subnet->getSubnetOfIP($ip);
 
-            if(isset($subnet["error"])) {
+            if (isset($subnet["error"])) {
                 $errorText = 'subnet není v databázi';
                 $out[] = array('ip' => $ip, 'subnet' => $errorText, 'gateway' => $errorText, 'mask' => $errorText);
             } else {
@@ -52,7 +51,7 @@ class PdfGenerator
             }
         }
 
-        if(count($ipadrs) == 0) {
+        if (count($ipadrs) == 0) {
             $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');
         }
         $template->ips = $out;
@@ -66,8 +65,8 @@ class PdfGenerator
 
         return $pdf;
     }
-  
-    public function mesicName($indate, $addmonth){
+
+    public function mesicName($indate, $addmonth) {
         $date = new Nette\Utils\DateTime($indate);
         $date->add(new \DateInterval('P'.$addmonth.'M'));
         $datestr = $date->format('F');
@@ -78,7 +77,7 @@ class PdfGenerator
         return $datum;
     }
 
-    public function mesicDate($indate, $addmonth){
+    public function mesicDate($indate, $addmonth) {
         $date = new Nette\Utils\DateTime($indate);
         $date->add(new \DateInterval('P'.$addmonth.'M'));
         return $date->format('17.m.Y');

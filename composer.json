@@ -3,37 +3,82 @@
 	"description": "HKFree.org UserDB",
 	"homepage": "http://nette.org",
 	"type": "project",
-	"license": ["Proprietary"],
-	"authors": [
+	"license": [
+		"Proprietary"
+	],
+	"authors": [],
+	"repositories": [
 		{
-			"name": "David Grudl",
-			"homepage": "http://davidgrudl.com"
+			"type": "git",
+			"url": "https://github.com/mhucik/Console.git"
 		},
 		{
-			"name": "Nette Community",
-			"homepage": "http://nette.org/contributors"
-		}
+			"type": "git",
+			"url": "https://github.com/slepic/grido.git"
+		},
+		{
+			"type": "git",
+			"url": "https://github.com/marekskopal/PdfResponse.git"
+		},
+		{
+			"type": "git",
+			"url": "https://github.com/Gappa/FormsReplicator.git"
+		},
+                {
+                    "type": "git",
+                    "url": "https://github.com/HKFree/Net_Transmitter.git"
+                },
+                {
+                    "type": "git",
+                    "url": "https://github.com/HKFree/Net_RouterOS.git"
+                }
 	],
 	"require": {
-		"php": ">= 7.2.0",
-		"nette/nette": "~2.4.0",
+		"php": "~8.2.0",
 		"dg/adminer-custom": "~1.5",
-		"kdyby/forms-replicator": "@dev",
-		"o5/grido": "~3.0.0",
+		"o5/grido": "dev-nette-3.2#539b04b65326dcf56a7ac588f959f62e6bfb6beb",
 		"mpdf/mpdf": ">= 5.6.5",
-		"jkuchar/pdfresponse": "~0.4.0-beta2",
-	  	"pear2/net_transmitter": ">=1.0.0a4",
-		"pear2/net_routeros": "dev-develop#3c0125d4426ebd01866104c4677de97cd96382cf",
-		"nextras/migrations": "^3.0",
-		"guzzlehttp/guzzle": "~6.0",
+		"jkuchar/pdfresponse": "dev-master#152f4c80057f0be66f47310253810a860f11dc12",
+		"pear2/net_transmitter": "dev-develop#8373abbddb3a89891e6bc335de8c1c2a5268ed24@dev",
+		"pear2/net_routeros": "dev-develop#83c40f71edaae0d98e17d81b6b827b658581047d@dev",
+		"nextras/migrations": "^3.3",
+		"guzzlehttp/guzzle": "~7.9.2",
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
-		"kdyby/console": "~2.7.1",
 		"defuse/php-encryption": "~2.2.1",
 		"ext-json": "*",
-		"influxdb/influxdb-php": "^1.15"
-        },
-	"require-dev": {
-		"nette/tester": "~1.0"
+		"influxdb/influxdb-php": "~1.15.2",
+		"nette/application": "~3.2.0",
+		"nette/forms": "~3.2.0",
+		"nette/di": "~3.2.0",
+		"nette/bootstrap": "~3.2.0",
+		"latte/latte": "~2.5",
+		"nette/security": "~3.2.0",
+		"nette/database": "~3.2.0",
+		"nette/mail": "~4.0.0",
+		"nette/utils": "~4.0.5",
+		"kdyby/forms-replicator": "dev-master#5a71bc343d5d0a2e183ee8dc6b0b4dc645955030",
+		"tracy/tracy": "^2.10",
+		"contributte/console": "^0.10.1",
+                "digitalcz/digisign": "^2.5"
 	},
-	"minimum-stability": "stable"
+	"require-dev": {
+		"nette/tester": "~1.0",
+		"friendsofphp/php-cs-fixer": "^3.65"
+	},
+        "autoload": {
+            "psr-4": {
+                "App\\": "app",
+                "App\\Model\\": "app/model/",
+                "App\\Router\\": "app/router/",
+                "App\\Services\\": "app/services/",
+                "App\\Presenters\\": "app/presenters/",
+                "App\\Components\\": "app/components/"
+            }
+        },
+	"minimum-stability": "stable",
+	"config": {
+		"allow-plugins": {
+			"php-http/discovery": true
+		}
+	}
 }

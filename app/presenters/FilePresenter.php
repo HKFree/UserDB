@@ -2,8 +2,9 @@
 
 namespace App\Presenters;
 
-use App\Model,
-    Nette\Application\Responses;
+use App\Model;
+use Nette\Application\Responses;
+
 /**
  * File presenter.
  */
@@ -11,23 +12,21 @@ class FilePresenter extends BasePresenter
 {
     /** @var Model\IPAdresa **/
     private $ipAdresa;
-    
+
     /** @var Model\Ap **/
     private $ap;
-    
-    function __construct(Model\IPAdresa $ipAdresa, Model\AP $ap) {
-    	$this->ipAdresa = $ipAdresa;
+
+    public function __construct(Model\IPAdresa $ipAdresa, Model\AP $ap) {
+        $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
     }
 
-
     public function actionDownloadWinboxCmd($id) {
-        if($id) {
+        if ($id) {
             $ip = $this->ipAdresa->getIPAdresa($id);
             if ($ip) {
                 $apOfIp = $this->ipAdresa->getAPOfIP($ip);
-                if($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($apOfIp, $this->getUser())) {
-
+                if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($apOfIp, $this->getUser())) {
                     $cmd = "winbox.exe " . $ip->ip_adresa . " " . $ip->login . "\n";
                     $t = tempnam(sys_get_temp_dir(), 'wbx');
                     file_put_contents($t, $cmd);

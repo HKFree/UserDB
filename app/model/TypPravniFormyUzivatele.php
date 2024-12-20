@@ -4,10 +4,8 @@ namespace App\Model;
 
 use Nette;
 
-
-
 /**
- * @author 
+ * @author
  */
 class TypPravniFormyUzivatele extends Table
 {
@@ -16,8 +14,7 @@ class TypPravniFormyUzivatele extends Table
     */
     protected $tableName = 'TypPravniFormyUzivatele';
 
-    public function getTypyPravniFormyUzivatele()
-    {
-        return($this->findAll());
+    public function getTypyPravniFormyUzivatele() {
+        return ($this->findAll());
     }
 }

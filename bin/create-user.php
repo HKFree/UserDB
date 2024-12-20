@@ -1,12 +1,12 @@
 <?php
 
 if (!isset($_SERVER['argv'][2])) {
-	echo '
+    echo '
 Add new user to database.
 
 Usage: create-user.php <name> <password>
 ';
-	exit(1);
+    exit(1);
 }
 
 list(, $user, $password) = $_SERVER['argv'];

@@ -1,0 +1,15 @@
+{
+  /* Automatically remove whitespaces */
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "editor.trimAutoWhitespace": true,
+  "editor.insertSpaces": true,
+  /* Automaticke formatovani PHP kodu pri ulozeni */
+  "php-cs-fixer.executablePath": "${workspaceRoot}/vendor/friendsofphp/php-cs-fixer/php-cs-fixer",
+  "php-cs-fixer.documentFormattingProvider": true,
+  "php-cs-fixer.onsave": true,
+  "[php]": {
+    "editor.defaultFormatter": "junstyle.php-cs-fixer"
+  },
+}

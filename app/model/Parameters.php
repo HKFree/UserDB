@@ -13,14 +13,17 @@ class Parameters
     * @var int
     */
     protected $clenskyPrispevek;
-    
-    public function __construct($clenskyPrispevek)
-    {
+    public $salt;
+
+    /* migrace 2025 temporary */
+    public $migrace2025Stitek1 = 'Mig1';
+
+    public function __construct($clenskyPrispevek, $salt) {
         $this->clenskyPrispevek = $clenskyPrispevek;
-    }   
-    
-    public function getVyseClenskehoPrispevku()
-    {
-        return($this->clenskyPrispevek);
+        $this->salt = $salt;
+    }
+
+    public function getVyseClenskehoPrispevku() {
+        return ($this->clenskyPrispevek);
     }
 }

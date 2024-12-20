@@ -1,12 +1,14 @@
 {block content}
 {ifset $ap}
 
-<h3>oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno} {if $ap->gps}<small>GPS: {$ap->gps} <a href="http://mapa.hkfree.org/?lat={$ap->gps|replace:',','&lon='}">hkfree mapa</a> <a href="http://maps.google.com/maps?q={$ap->gps|replace:',','+'}">google mapa</a></small>{/if}</h3>
+<h3><s n:tag-if="!$ap->aktivni">oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno}</s> {if $ap->gps}<small>GPS: {$ap->gps} <a href="http://mapa.hkfree.org/?lat={$ap->gps|replace:',','&lon='}">hkfree mapa</a> <a href="http://maps.google.com/maps?q={$ap->gps|replace:',','+'}">google mapa</a></small>{/if}</h3>
 {if $canViewOrEdit}
 <a href="{link Ap:edit id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
 {/if}
 <a href="{link UzivatelList:list id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-user"></i> Zobrazit uživatele</a>
 <br><br>
+<span n:if="$ap->ulice_cp"><b>Adresa AP:</b> {$ap->ulice_cp}, {$ap->mesto}, {$ap->psc}<br><br></span>
+
 <pre>
 {$ap->poznamka}
 </pre>
@@ -39,7 +41,7 @@
     <tr>
         <td>apikey{$apiKlic['id']}</td>
         <td>{$apiKlic['klic']}</td>
-        <td>{$apiKlic['plati_do']|date:'%d.%m.%Y'}{if $apiKlic['expired']} <span class="text-danger glyphicon glyphicon-warning-sign" aria-hidden="true"></span>{/if}</td>
+        <td>{$apiKlic['plati_do']|date:'d.m.Y'}{if $apiKlic['expired']} <span class="text-danger glyphicon glyphicon-warning-sign" aria-hidden="true"></span>{/if}</td>
         <td>{$apiKlic['poznamka']}</td>
     </tr>
 {/foreach}
@@ -59,4 +61,3 @@
 
 {/ifset}
 {/block}
-

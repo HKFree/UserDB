@@ -5,7 +5,7 @@ namespace App\Model;
 use Nette;
 
 /**
- * @author 
+ * @author
  */
 class BankovniUcet extends Table
 {
@@ -14,8 +14,7 @@ class BankovniUcet extends Table
     */
     protected $tableName = 'BankovniUcet';
 
-    public function getBankovniUcty()
-    {
-        return($this->findAll());
+    public function getBankovniUcty() {
+        return ($this->findAll());
     }
 }

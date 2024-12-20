@@ -30,13 +30,14 @@
         <script src="{$basePath}/js/rickshaw.min.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v17">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v19">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/rickshaw.min.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v5"></script>
+        <script src="{$basePath}/js/main.js?v6"></script>
 	{block head}{/block}
+    {import 'spolekdruzstvo.latte'}
 </head>
 
 <body>
@@ -60,7 +61,9 @@
                 <ul class="dropdown-menu">
                     <li><a n:href="Status:default id=>null"><span class="glyphicon glyphicon-globe small" aria-hidden="true"></span> Status AP</a></li>
                     <li><a n:href="SpravaGrafu:usersgraph id=>null">Graf počtu uživatelů</a></li>
+                    <li><a n:href="VnejsiScanner:default id=>null">Vnější scan veřejných IP</a></li>
                     <li><a n:href="SpravaCc:prehledcc id=>null">Přehled platných čestných členství</a></li>
+                    <li><a n:href="SpravaStitku:default id=>null">Štítky</a></li>
                     <li role="separator" class="divider"></li>
                     <li><a n:href="SpravaUctu:ucty id=>null"><i class="glyphicon glyphicon-usd small"></i> Aktuální stavy účtů</a></li>
                     <li><a n:href="SpravaPlateb:odchoziplatby id=>null"><i class="glyphicon glyphicon-usd small"></i> Přehled odchozích plateb</a></li>
@@ -101,12 +104,12 @@
                 {var $apcka = $o->related('Ap.Oblast_id')->order("jmeno")}
                 {if count($apcka) == 1}
                   {var $ap = $apcka->fetch()}
-                  <li><a n:href="UzivatelList:list id=>$ap->id">{$ap->jmeno} ({$ap->id})</a></li>
+                  <li><a n:href="UzivatelList:list id=>$ap->id"><s n:tag-if="!$ap->aktivni">{$ap->jmeno} ({$ap->id})</s></a></li>
                 {else}
                   <li><a n:href="Ap:list id=>$o->id">{$o->jmeno}</a>
                     <ul class="nav">
                     {foreach $apcka as $idap => $theAp}
-                      <li><a n:href="UzivatelList:list id=>$theAp->id">{$theAp->jmeno} ({$theAp->id})</a></li>
+                      <li><a n:href="UzivatelList:list id=>$theAp->id"><s n:tag-if="!$theAp->aktivni">{$theAp->jmeno} ({$theAp->id})</s></a></li>
                     {/foreach}
                     </ul>
                   </li>
@@ -119,7 +122,9 @@
 <!--          <h1 class="page-header">Dashboard</h1> -->
 	  <script> document.documentElement.className+=' js' </script>
 
-	  <div n:foreach="$flashes as $flash" class="alert alert-{ifset $flash->type}{$flash->type}{elseifset $flash->type}info{/ifset}">{$flash->message}</div>
+	  <div n:foreach="$flashes as $flash" class="h4 alert alert-{ifset $flash->type}{$flash->type}{elseifset $flash->type}info{/ifset}">
+      {$flash->message}
+    </div>
 
 	  {include content}
         </div>

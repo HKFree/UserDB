@@ -8,13 +8,11 @@ class IdsPresenter extends ApiPresenter
 {
     private $idsConnector;
 
-    function __construct(\App\Model\IdsConnector $idsConnector)
-    {
+    public function __construct(\App\Model\IdsConnector $idsConnector) {
         $this->idsConnector = $idsConnector;
     }
 
-    public function actionDefault()
-    {
-        $this->sendResponse( new JsonResponse($this->idsConnector->getUniqueIpsFromPrivateSubnets()) );
+    public function actionDefault() {
+        $this->sendResponse(new JsonResponse($this->idsConnector->getUniqueIpsFromPrivateSubnets()));
     }
 }

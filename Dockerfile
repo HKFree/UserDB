@@ -1,30 +1,27 @@
 ####################################################################################################
 # 1st stage (composer deps only, in order to populate cache and speed up builds)
-FROM php:7.2-apache-stretch AS userdb-runtime
+FROM php:8.2-apache-bookworm AS userdb-runtime
 
 RUN a2enmod rewrite
 RUN a2enmod headers
-
-# Debian 9 "stretch" je uz starej -> lze stahovat pouze z archivu
-RUN echo '\n\
-deb http://archive.debian.org/debian stretch main contrib non-free\n\
-deb-src http://archive.debian.org/debian stretch main contrib non-free\n\
-deb http://archive.debian.org/debian-security/ stretch/updates main contrib non-free\n\
-deb-src http://archive.debian.org/debian-security/ stretch/updates main contrib non-free' > /etc/apt/sources.list
+#COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+#COPY resolv.conf /etc/resolv.conf
 
 # Install extenstions: MySQL PDO, GD
 RUN apt-get update && apt-get install -y \
-        git \
-        zip \
-        unzip \
-        libpq-dev \
-        libfreetype6-dev \
-        libjpeg62-turbo-dev \
-        libpng-dev \
-        python \
+    git \
+    zip \
+    unzip \
+    libpq-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libzip-dev \
+    libicu-dev \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install pdo pdo_mysql gd zip
+    && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install pdo pdo_mysql gd zip intl
 
 # Enable and configure xdebug
 #RUN pecl install xdebug

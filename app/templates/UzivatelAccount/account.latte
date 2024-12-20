@@ -6,8 +6,10 @@
 {if $canViewOrEdit}
 
 <table class="table table-nonfluid">
-<tr><th>Souhrn členských příspěvků</th><td>{$sum_input}</td></tr>
-<tr><th>Souhrn stržených členských příspěvků</th><td>{$sum_output}</td></tr>
+<tr><th>Souhrn členských příspěvků spolku</th><td>{$sum_input_spolek}</td></tr>
+<tr><th>Souhrn stržených členských příspěvků spolkem</th><td>{$sum_output_spolek}</td></tr>
+<tr><th>Souhrn příchozích plateb družstvu</th><td>{$sum_input_druzstvo}</td></tr>
+<tr><th>Souhrn stržených poplatků družstvem</th><td>{$sum_output_druzstvo}</td></tr>
 </table>
 
 {control accountgrid}

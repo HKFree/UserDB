@@ -10,6 +10,7 @@ parameters:
 	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
 	urlPrefix: '/userdb'
 	sojkaPingerURL: 'http://sojka.hkfree.org/pinger/'
+	outerScannerURL: 'https://shibbtest.uhk.cz/.hkfreePortScanner'
 	salt: %env.USERDB_SALT%
 	influxUrl: %env.INFLUX_URL%
 	googleMapsApiKey: %env.USERDB_GOOGLE_MAPS_KEY%
@@ -23,10 +24,6 @@ parameters:
 php:
 	date.timezone: Europe/Prague
 
-latte:
-    macros:
-        - App\Model\MyMacroSet
-
 application:
     errorPresenter: Error
     mapping:
@@ -36,18 +33,20 @@ session:
     expiration: 14 days
 
 extensions:
-    console: Kdyby\Console\DI\ConsoleExtension
+    console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
     migrations: Nextras\Migrations\Bridges\NetteDI\MigrationsExtension
+    replicator: Kdyby\Replicator\DI\ReplicatorExtension
 
 migrations:
     dir: %appDir%/../db         # migrations base directory
     driver: mysql               # pgsql or mysql
     dbal: nette                 # nextras, nette, doctrine or dibi
+    withDummyData: %debugMode%
 
 services:
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
-	- App\RouterFactory
-	router: @App\RouterFactory::createRouter(%urlPrefix%)
+	- App\Router\RouterFactory
+	router: @App\Router\RouterFactory::createRouter(%urlPrefix%)
 	uzivatel: App\Model\Uzivatel
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
@@ -71,12 +70,12 @@ services:
 	cestneClenstviUzivatele: App\Model\CestneClenstviUzivatele
 	log: App\Model\Log
 	pdfGenerator: App\Services\PdfGenerator
-	mailService: App\Services\MailService
+	mailService: App\Services\MailService("%appDir%/templates/email")
 	povoleneSMTP: App\Model\PovoleneSMTP
 	dnat: App\Model\DNat
 	accountActivation: App\Model\AccountActivation
 	logTableFactory: App\Components\LogTableFactory
-	parameters: App\Model\Parameters(%clenskyPrispevek%)
+	parameters: App\Model\Parameters(%clenskyPrispevek%, %salt%)
 	cryptoSluzba: App\Services\CryptoSluzba(%env.USERDB_ENCRYPTION_PASSPHRASE%)
 	wewimo: App\Model\Wewimo
 	apiKlic: App\Model\ApiKlic
@@ -88,11 +87,23 @@ services:
 	mexSmsSender: App\Services\MexSmsSender(%maternaMexUrl%, %maternaMexUser%, %maternaMexPass%, %maternaMexANumber%, Nette\Caching\Cache(namespace: 'sms-sender'))
 	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%, %env.USERDB_IDS_IPS_WHITELIST%)
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
+	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
+	requestDruzstvoContract: App\Services\RequestDruzstvoContract
+	stitkovac: App\Services\Stitkovac
 	status: App\Model\Status
+	stitek: App\Model\Stitek
+	stitekUzivatele: App\Model\StitekUzivatele
+	smlouva: App\Model\Smlouva
+	podpisSmlouvy: App\Model\PodpisSmlouvy
+	smlouvaStavSluzba: App\Services\SmlouvaStavSluzba
 	SpravaPresenter:
 		class: App\Presenters\SpravaPresenter
 		setup:
 			- setGoogleMapsApiKey(%env.USERDB_GOOGLE_MAPS_KEY%)
+	settings: App\Settings(%debug.fakeUser%)
+	- App\Console\UpdateLocationsCommand(%googleMapsApiKey%)
+	- App\Console\Wewimo2InfluxCommand(%influxUrl%)
+	- App\Console\DigisignGenerovatUcastnickouSmlouvu
 
 console:
 	commands:

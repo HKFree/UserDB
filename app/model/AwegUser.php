@@ -2,10 +2,8 @@
 
 namespace App\Model;
 
-use Nette,
-    Nette\Utils\Html;
-
-
+use Nette;
+use Nette\Utils\Html;
 
 /**
  * @author bkralik
@@ -14,20 +12,18 @@ use Nette,
  */
 class AwegUser extends Table
 {
-
     /**
     * @var string
     */
     protected $tableName = 'AwegUsers';
-    
-    
+
     public function getAwegUser($uid) {
         $r = $this->findOneBy(["hkfree_uid" => $uid]);
-        
-        if($r) {
-            return($r);
+
+        if ($r) {
+            return ($r);
         } else {
-            return(FALSE);
+            return (false);
         }
     }
 }

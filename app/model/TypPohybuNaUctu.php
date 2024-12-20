@@ -5,7 +5,7 @@ namespace App\Model;
 use Nette;
 
 /**
- * @author 
+ * @author
  */
 class TypPohybuNaUctu extends Table
 {
@@ -14,8 +14,7 @@ class TypPohybuNaUctu extends Table
     */
     protected $tableName = 'TypPohybuNaUctu';
 
-    public function getTypPohybuNaUctu()
-    {
-        return($this->findAll());
+    public function getTypPohybuNaUctu() {
+        return ($this->findAll());
     }
 }

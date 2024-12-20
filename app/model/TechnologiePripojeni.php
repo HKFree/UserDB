@@ -5,7 +5,7 @@ namespace App\Model;
 use Nette;
 
 /**
- * @author 
+ * @author
  */
 class TechnologiePripojeni extends Table
 {
@@ -14,8 +14,7 @@ class TechnologiePripojeni extends Table
     */
     protected $tableName = 'TechnologiePripojeni';
 
-    public function getTechnologiePripojeni()
-    {
-        return($this->findAll());
+    public function getTechnologiePripojeni() {
+        return ($this->findAll());
     }
 }

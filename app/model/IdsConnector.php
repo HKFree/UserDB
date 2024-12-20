@@ -2,7 +2,6 @@
 
 namespace App\Model;
 
-
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use Psr\Http\Message\RequestInterface;
@@ -18,7 +17,7 @@ class IdsConnector
     /**
      * Nedulezite a nevyladene (caste false-positive) typy udalosti:
      */
-    const IGNORED_ALERTS = [
+    public const IGNORED_ALERTS = [
         ['match_phrase' => ['alert.category.raw' => 'Potential Corporate Privacy Violation'],],
         ['match_phrase' => ['alert.category.raw' => 'Potentially Bad Traffic'],],
         ['match_phrase' => ['alert.category.raw' => 'Not Suspicious Traffic'],],
@@ -32,16 +31,14 @@ class IdsConnector
     /**
      * IdsConnector constructor.
      */
-    public function __construct(string $idsUrl, string $idsUsername, string $idsPassword, string $idsIpsWhitelist)
-    {
+    public function __construct(string $idsUrl, string $idsUsername, string $idsPassword, string $idsIpsWhitelist) {
         $this->idsUrl = $idsUrl;
         $this->idsUsername = $idsUsername;
         $this->idsPassword = $idsPassword;
         $this->idsIpsWhitelist = explode(',', $idsIpsWhitelist);
     }
 
-    protected function getElasticHttpClient(): \GuzzleHttp\Client
-    {
+    protected function getElasticHttpClient(): \GuzzleHttp\Client {
         $stack = HandlerStack::create();
         $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
             $contentsRequest = (string)$request->getBody();
@@ -49,11 +46,10 @@ class IdsConnector
             return $request;
         }));
 
-
         $client = new \GuzzleHttp\Client(['verify' => false, 'handler' => $stack]);
         $jar = new \GuzzleHttp\Cookie\CookieJar();
 
-        $loginFormResponse = $client->request('GET', $this->idsUrl, ['cookies' => $jar]);
+        $loginFormResponse = $client->request('GET', $this->idsUrl, ['cookies' => $jar, 'connect_timeout' => 3, 'timeout' => 5]);
         if (preg_match('/csrfmiddlewaretoken.*value=\'(.+)\'/', $loginFormResponse->getBody(), $matches)) {
             $csrfToken = $matches[1];
             $headers = ['Referer' => $this->idsUrl.'/accounts/login/'];
@@ -67,7 +63,9 @@ class IdsConnector
                         'username' => $this->idsUsername,
                         'password' => $this->idsPassword,
                         'csrfmiddlewaretoken' => $csrfToken,
-                    ]
+                    ],
+                    'connect_timeout' => 3,
+                    'timeout' => 5
                 ]
             );
             $headers2 = [ 'kbn-xsrf' => 'reporting' ];
@@ -81,8 +79,7 @@ class IdsConnector
         throw new \RuntimeException('Error getting IDS CSRF token');
     }
 
-    protected function getRange($daysBack): array
-    {
+    protected function getRange($daysBack): array {
         return ['range' => ['@timestamp' => ['gte' => 'now-' . $daysBack . 'd', 'lte' => 'now']]];
     }
 
@@ -93,14 +90,14 @@ class IdsConnector
         $date->setTimezone(new \DateTimeZone('GMT'));
         //$indexes = [$prefix.'2019.01.22',$prefix.'2019.01.23'];
         for ($i = 0; $i <= $daysBack; $i++) {
-            $indexes []= $prefix.$date->format('Y.m.d');;
+            $indexes [] = $prefix.$date->format('Y.m.d');
+            ;
             $date = $date->modify('-1 day');
         }
         return $indexes;
     }
 
-    public function getEventsForIps(array $ips, $daysBack=7, $limit=1000)
-    {
+    public function getEventsForIps(array $ips, $daysBack = 7, $limit = 1000) {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
 
@@ -138,11 +135,12 @@ class IdsConnector
         }
     }
 
-    public function getUniqueIpsFromPrivateSubnets($daysBack=7, $limit=2000)
-    {
+    public function getUniqueIpsFromPrivateSubnets($daysBack = 7, $limit = 2000) {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
-        $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
+        $elasticResponse = $client->request(
+            'POST',
+            $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true',
             [
                 'json' => [
                     'size' => 0,
@@ -170,7 +168,7 @@ class IdsConnector
         );
         $json = json_decode($elasticResponse->getBody(), true);
         $resultArray = $json['aggregations']['uniq_ip']['buckets'];
-        $resultArrayFiltered = array_filter($resultArray, function($k) {
+        $resultArrayFiltered = array_filter($resultArray, function ($k) {
             return !in_array($k['key'], $this->idsIpsWhitelist, true);
         });
         if ($json) {

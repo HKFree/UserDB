@@ -1,56 +1,114 @@
 {block content}
 {ifset $u}
 
-    <h3>{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})<small n:if="$u->systemovy"> - <span class="text-danger">Systémový uživatel</span></small> <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
+    <h2>{if $canViewOrEdit}UID {$u->id} - {$u->jmeno} {$u->prijmeni} {/if}({$u->nick})
+        {include spolekDruzstvoLabelUzivatel $u}
+        <small n:if="$u->systemovy"> - <span class="text-danger">Systémový uživatel</span></small> <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small>
+    </h2>
     {if $canViewOrEdit}
     <a href="{link Uzivatel:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
     <a href="{link UzivatelRightsCc:editrights id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a>
-    <a href="{link UzivatelRightsCc:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a>
+    <a n:if="$u->spolek" href="{link UzivatelRightsCc:editcc id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a>
     <a href="{link UzivatelMailSms:email id=>$u->id}" class="btn btn-default btn-sm" role="button"><b>@</b> Odeslat E-mail</a>
     <a href="{link UzivatelMailSms:sms id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS</a>
-    <a href="{link UzivatelActions:exportPdf id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-file"></i> Registrační formulář</a>
-    {if $u->regform_downloaded_password_sent==0}
-    <a href="{link UzivatelActions:sendRegActivation id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat znovu aktivační link e-mailem</a>
-    {else}
-    <a href="{link UzivatelActions:exportAndSendRegForm id=>$u->id}" class="btn btn-default btn-sm" role="button">Odeslat registrační formulář e-mailem</a>
+    <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Comverga</a>
     {/if}
-    <a href="https://aweg3.maternacz.com/profil/index.php" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-right"></i> SMS Materna</a>
+    {if $u->regform_downloaded_password_sent==0}
+    <a n:href="UzivatelActions:sendRegActivation id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat znovu aktivační link e-mailem</a>
+    {else}
+    <a n:href="UzivatelActions:exportAndSendRegForm id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat registrační formulář e-mailem</a>
     {/if}
     <a href="{link UzivatelList:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>
     <div style="margin-top:3px;">
-    <a href="{link UzivatelAccount:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Přehled plateb</a>
     {if $activaceVisible}<a href="{link UzivatelActions:moneyActivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Aktivace</a>{/if}
     {if $reactivaceVisible}<a href="{link UzivatelActions:moneyReactivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Reaktivace</a>{/if}
     {if $deactivaceVisible}<a href="{link UzivatelActions:moneyDeactivate id=>$u->id}" class="btn btn-danger btn-sm" role="button"><i class="glyphicon glyphicon-remove-circle"></i> Deaktivace</a>{/if}
     <a n:if="$igw" href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-check"></i> Zobrazit stav na IGW</a>
     <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
-
     </div>
+
+    <section style="margin-top:10px;">
+        <div class="d-flex">
+            <b style="line-height: -20px;">Štítky: </b>
+            {control userLabels userId => $u->id}
+        </div>
+    </section>
 
     <br><br>
     <style>
 	.table-nonfluid {
 	    width: auto;
-	 }
+	}
+
+        .flex-content{
+            display:flex;
+        }
+        .panel-right{
+            height: fit-content;
+            margin-left: 40px;
+        }
+        .panel-right .table>tbody>tr>td {
+            padding: 2px 24px 2px 4px !important;
+        }
+        h4{
+            font-size: 24px;
+            font-weight: bold;
+        }
+        @media (max-width: 1200px) {
+            .flex-content{
+                flex-direction: column;
+            }
+            .panel-right{
+                margin-left: 0px;
+            }
+        }
+
+        .nested-payments {
+            width: 100%;
+        }
+        .nested-payments tr > * {
+            width: 50%;
+        }
     </style>
-
-    <table class="table table-nonfluid">
-
+    <div class="flex-content">
+        <div class="panel-left">
+        <h4>Detail informací</h4>
+    <table class="table table-nonfluid table-left">
         {if $master}
-        <tr class="error"><th>Sloučen pod uživatele </th><td><a n:href="Uzivatel:show, id=>$master->id">{$master->nick}</a></td></tr>
+        <tr class="error">
+            <th>Sloučen pod uživatele </th>
+            <td><a n:href="Uzivatel:show, id=>$master->id">{$master->nick}</a></td>
+        </tr>
         <tr><td colspan="2">&nbsp;</td></tr>
         {/if}
 
         {if $slaves}
-        <tr n:foreach="$slaves as $slave" class="error"><th>Sloučený uživatel </th><td><a n:href="Uzivatel:show, id=>$slave">{$slave}</a></td></tr>
+        <tr n:foreach="$slaves as $slave" class="error">
+            <th>Sloučený uživatel </th>
+            <td><a n:href="Uzivatel:show, id=>$slave">{$slave}</a></td>
+        </tr>
         <tr><td colspan="2">&nbsp;</td></tr>
         {/if}
 
-	<tr><th>ID</th><td>{$u->id}</td></tr>
-	<tr><th>Oblast - AP</th><td><a n:href="Ap:list, id => $u->Ap->Oblast->id">{$u->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u->Ap->id">{$u->Ap->jmeno}</a></td></tr>
-    <tr><th>Typ členství</th><td>{if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}</td></tr>
+	<tr>
+            <th>Oblast - AP</th>
+            <td><a n:href="Ap:list, id => $u->Ap->Oblast->id">{$u->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u->Ap->id">{$u->Ap->jmeno}</a></td>
+        </tr>
+        <tr n:if="$u->spolek">
+            <th>Typ členství</th>
+            <td>
+                {if $u->TypClenstvi}
+                    {if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}
+                    <br>
+                    {if $u->TypClenstvi->id != 1}
+                    <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-file icon-file"></i> Registrační formulář</a>
+                    {/if}
+                    {else}
+                    n/a
+                {/if}
+            </td>
+        </tr>
 	<tr><td colspan="2">&nbsp;</td></tr>
-
 
     <tr><th>Přezdívka</th><td>{$u->nick}</td></tr>
     {if $canViewOrEdit}
@@ -59,6 +117,7 @@
         <tr n:if="isset($u->firma_ico) || ($u->TypPravniFormyUzivatele->text == 'PO')"><th>IČO</th><td>{$u->firma_ico}</td></tr>
         <tr><th>Číslo členské karty</th><td>{$u->cislo_clenske_karty}</td></tr>
         <tr><th>Jméno a příjmení</th><td>{$u->jmeno} {$u->prijmeni}</td></tr>
+        <tr><th>Datum narození</th><td>{isset($u->datum_narozeni) ? $u->datum_narozeni->format('d.m.Y') : '-'}</td></tr>
 
         {var $hasLocation = $u->location_status == 'valid' || $u->location_status == 'approx'}
         <tr>
@@ -78,25 +137,60 @@
           </td>
         </tr>
         <tr><th>Email</th><td>{$u->email}</td></tr>
-        <tr><th>Sekundární email</th><td>{$u->email2}</td></tr>
+        <tr n:if="isset($u->email2)"><th>Sekundární email</th><td>{$u->email2}</td></tr>
         <tr><th>Telefon</th><td>{$u->telefon}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
 
-        <tr><th>Index spokojenosti člena</th><td><div class="br-widget-show"><span class="lebka-zluta"></span>{for $i=1;$i<6;$i++}{if $i<=$u->index_potizisty}<span class="lebka-cervena"></span>{else}<span class="lebka-seda"></span>{/if}{/for}</div></td></tr>
         <tr><th>Technologie připojení</th><td>{$u->TechnologiePripojeni->text}</td></tr>
         <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni->text}</td></tr>
-        <tr><th>Poznámka</th><td><pre class="well well-sm">{$u->poznamka}</pre></td></tr>
-        <tr><th>GPG klíč</th><td><pre class="well well-sm">{$u->gpg}</pre></td></tr>
+        <tr><th>Poznámka</th><td>{$u->poznamka|breakLines}</td></tr>
+        <tr><th>GPG klíč</th><td>{$u->gpg}</td></tr>
         <tr><th>Založen</th><td>{$u->zalozen}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
 
         <tr><th>Kauce na mobilní tarify</th><td>{$u->kauce_mobil}</td></tr>
         <tr><th>Aktivní</th><td>{$money_act}</td></tr>
         <tr><th>Deaktivace</th><td>{$money_dis}</td></tr>
-        <tr><th>Poslední platba</th><td>{$money_lastpay}</td></tr>
         <tr><th>Poslední aktivace</th><td>{$money_lastact}</td></tr>
-        <tr><th>Stav účtu</th><td>{$money_bal}</td></tr>
-        <tr><th>Souhrn členských příspěvků od 1.11.2017</th><td>{$money_dph}</td></tr>
+        <tr>
+            <th>Stav účtu</th>
+            <td>
+                <table class="nested-payments">
+                    <thead>
+                        <tr>
+                            <th n:if="$u->spolek">Spolek</th>
+                            <th n:if="$u->druzstvo">Družstvo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td n:if="$u->spolek">{$money_bal_spolek}</td>
+                            <td n:if="$u->druzstvo">{$money_bal_druzstvo}</td>
+                        </tr>
+                        <tr>
+                            <td n:if="$u->spolek">
+                                <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'spolek'">Přehled plateb</a>
+                            </td>
+                            <td n:if="$u->druzstvo">
+                                <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'druzstvo'">Přehled plateb</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <th>Poslední platba</th>
+            <td>
+                <table class="nested-payments">
+                    <tr>
+                        <td n:if="$u->spolek">{$money_lastpay_spolek}</td>
+                        <td n:if="$u->druzstvo">{$money_lastpay_druzstvo}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr n:if="$u->spolek"><th>Souhrn členských příspěvků od 1.11.2017</th><td>{$money_dph}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
 
     <script src="{$basePath}/js/gps.js"></script>
@@ -110,7 +204,51 @@
 
     {/if}
     </table>
+    </div>
+    <div class="panel-right">
+        {* migrace 2025 temporary *}
+        <p n:if="!$u->druzstvo">
+            <h4>Migrace 2025</h4>
+            {if $maStitek}
+                E-mail s tlačítkem na smlouvu byl odeslán. Pokud potřebuješ odeslat znovu, odstraň štítek {$migrace2025Stitek1}.
+            {else}
+                <a href="{link UzivatelActions:sendEmailWithContractButton id=>$u->id}" class="btn btn-info btn-sm" role="button">
+                    <i class="glyphicon glyphicon-info-sign"></i> Odeslat inf. email s tlačítkem na smlouvu
+                </a>
+                <a href="{link UzivatelActions:previewEmailWithContract id=>$u->id}" class="btn btn-default btn-sm" role="button">
+                     náhled
+                </a>
+            {/if}
+        </p>
+        <br/>
 
+        <h4>Smlouvy</h4>
+        <table class="table table-nonfluid table-right">
+        <tbody>
+        <tr>
+            <th>ID</th>
+            <th>Typ</th>
+            <th>Ze dne</th>
+            <th>Stav</th>
+        </tr>
+        <tr n:foreach="$smlouvy as $smlouva">
+            <td><a n:href="SpravaSmluv:show, id=>$smlouva->id">{$smlouva->id}</a></td>
+            <td>{$smlouva->typ|firstUpper}</td>
+            <td>{$smlouva->kdy_vygenerovano->format('d.m.Y')}</td>
+            <td>{$smlouvaStavSluzba->getStav($smlouva)}</td>
+        </tr>
+        </tbody>
+        </table>
+        <p>
+            <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-success btn-sm" id="btn-handle-subscriber-contract" role="button">
+                <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva...
+            </a>
+            <a href="{link UzivatelActions:handleSubscriberContractPreview id=>$u->id}" class="btn btn-default btn-sm" id="btn-handle-subscriber-contract" role="button">
+                 náhled
+            </a>
+        </p>
+      </div>
+    </div>
         <h4>IP Adresy</h4>
         {if $canViewOrEdit}
             {$adresy}
@@ -132,6 +270,15 @@
                 $(".logstable").hide();
             });
 
+            $('#btn-handle-subscriber-contract').on('click', function() {
+                const c = confirm("Nová účastnická smloua bude odeslána k podpisu na e-mail "+{$u->email}+".\n\n(e-mail dorazí během 2 minut)\n\nPokračovat?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
         </script>
         <h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
 
@@ -159,4 +306,3 @@ $(function(){
 
 </script>
 {/block}
-

@@ -8,14 +8,12 @@ class DeviceDbPresenter extends ApiPresenter
 {
     private $oblast;
 
-    function __construct(\App\Model\Oblast $oblast)
-    {
+    public function __construct(\App\Model\Oblast $oblast) {
         $this->oblast = $oblast;
     }
 
-    public function actionDefault()
-    {
+    public function actionDefault() {
         $oblastiData = $this->oblast->getSeznamOblastiBezAP();
-        $this->sendResponse( new JsonResponse($oblastiData) );
+        $this->sendResponse(new JsonResponse($oblastiData));
     }
 }

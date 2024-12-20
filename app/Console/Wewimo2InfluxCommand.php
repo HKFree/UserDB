@@ -6,35 +6,32 @@ use App\Model\AP;
 use App\Model\Wewimo;
 use InfluxDB;
 use InfluxDB\Point;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'app:wewimo2influx',
+    description: 'Ziskat Wewimo data ze vsech sledovanych RB a zapsat do InfluxDB (Grafany)'
+)]
 class Wewimo2InfluxCommand extends Command
 {
-
+    private $influxUrl;
     /** @var AP */
     private $ap;
     /** @var Wewimo */
     private $wewimo;
 
-    public function __construct(AP $ap, Wewimo $wewimo)
-    {
+    public function __construct(string $influxUrl, AP $ap, Wewimo $wewimo) {
         parent::__construct();
+        $this->influxUrl = $influxUrl;
         $this->ap = $ap;
         $this->wewimo = $wewimo;
     }
 
-    protected function configure()
-    {
-        $this->setName('app:wewimo2influx')
-            ->setDescription('Ziskat Wewimo data ze vsech sledovanych RB a zapsat do InfluxDB (Grafany)');
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output) {
-        $influxUrl = $this->getHelper('container')->getParameter('influxUrl');
-
-        $database = InfluxDB\Client::fromDSN($influxUrl); // 'influxdb://user:pass@host:port/db'
+    protected function execute(InputInterface $input, OutputInterface $output): int {
+        $database = InfluxDB\Client::fromDSN($this->influxUrl); // 'influxdb://user:pass@host:port/db'
 
         // projit vsechny RB, u kterych je zaskrtnut priznak Wewimo
         $aps = $this->ap->findAll()->order('id');
@@ -87,10 +84,10 @@ class Wewimo2InfluxCommand extends Command
                 echo " ERROR: " .$ex->getMessage(). "\n";
             }
         }
+        return 0;
     }
 
-    private function addFloatField(&$fields, $dstField, $station, $srcField)
-    {
+    private function addFloatField(&$fields, $dstField, $station, $srcField) {
         $val = $station[$srcField] ?? null;
         if (!is_null($val)) {
             $fields[$dstField] = floatval($val);

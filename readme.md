@@ -16,7 +16,7 @@ cd UserDB
 composer install
 cp app/config/config.local.DIST.neon app/config/config.local.neon
 vi app/config/config.local.neon www/.htaccess docker-compose.yml
-php www/index.php migrations:continue
+php bin/console migrations:continue
 ```
 
 ## Development
@@ -25,18 +25,26 @@ php www/index.php migrations:continue
 
 Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig.org/#download)
 
+#### VSCode PHP Formatting
+
+To activate formatting in VSCode, install extension "[php cs fixer](https://marketplace.visualstudio.com/items?itemName=junstyle.php-cs-fixer)". The extension will obey the rules set in `.vscode/settings.json` and `.php-cs-fixer.dist.php`. Formatting will be done on every filesave.
+
 ### Run locally
 
 Override environment variables defined in `docker-compose.yml` using `docker-compose.override.yml` when necessary. Don't forget that some settings are still present in `app/config/config.local.neon`.
 
 ```bash
-docker-compose build
-docker-compose up
-docker-compose exec web composer install
-docker-compose exec web php www/index.php migrations:continue
+docker compose build
+docker compose up
+docker compose exec web composer install
+docker compose exec web chmod 777 -R log
+docker compose exec web chmod 777 -R temp
+docker compose exec web chmod 777 -R vendor/mpdf/mpdf/tmp
+cp app/config/config.local.DIST.neon app/config/config.local.neon
+docker compose exec web php bin/console migrations:continue
 ```
 
-Now the app is up and running in Docker on host's port 80, PhpMyAdmin on host's port 8080.
+Now the app is up and running in Docker on host's port 10107, PhpMyAdmin on host's port 10108.
 If you don't know your docker's IP, `docker-machine list` is your friend.
 
 ### Build, commit
@@ -44,7 +52,7 @@ If you don't know your docker's IP, `docker-machine list` is your friend.
 ```bash
 git pull origin master
 composer install
-php www/index.php migrations continue
+php bin/console migrations:continue
 # develop your freaking cool feature
 git pull origin master
 git push origin master
@@ -74,24 +82,24 @@ Crontab record example: `*/5 * * * * (docker exec userdb php www/index.php app:u
 ###Creating new change-script
 
 Run
-`docker exec -it userdb_web_1 php www/index.php migrations:create s short-description-of-the-change`
+`docker exec -it userdb_web_1 php bin/console migrations:create s short-description-of-the-change`
 and edit the change-script created.
 
 - s = structures (applied always)
 - b = basic-data (eg. lists-of-values, applied always)
-- d = dummy-data (eg. testing records, applied only when `--production` omitted, should not be run on production)
+- d = dummy-data (eg. testing records, applied only when `debugMode` is enabled, should not be run on production)
 
 ### Applying changes
 
 Make sure the cache is clean by running `rm -rf temp/cache` and run
-`php www/index.php migrations:continue --production`
+`php bin/console migrations:continue` (while paying attention to deactivated `debugMode`)
 in order to apply the change-scripts to the DB configured in neon config.
 
 #### On development or testing machines
 
-Omit `--production` when you want to apply dummy-data scripts too (on development or testing machine).
+As mentioned - when `debugMode` is enabled (as is default), dummy data are loaded.
 
-You can run `php www/index.php migrations:reset` in order to drop all tables in the database and create them from scratch running all
+You can run `php bin/console migrations:reset` in order to drop all tables in the database and create them from scratch running all
  change-scripts. Run it on dev/test machine in order to test that the whole schema is completely described in change-scripts. DO NOT RUN IN PRODUCTION! WILL DELETE ALL DATA!
 
 #### On moving to nextras/migrations
@@ -129,3 +137,8 @@ You'll need the credentials (click Authorize in interactive docs). Create creden
 
 ## Push to production server2
 
+## Update Path and Known Issues
+
+Known current issue: Wewimo not working, `pear2/net_routeros` need to be fixed.
+
+Consider updating Latte to 3.0 (?).
