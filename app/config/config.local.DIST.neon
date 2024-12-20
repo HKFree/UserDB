@@ -1,5 +1,7 @@
 # DEVELOPEMENT
 parameters:
+	maternaMexUser: 'xxx'
+	maternaMexPass: 'yyy'
 	https: false
 	debug:
 		tracy: true
