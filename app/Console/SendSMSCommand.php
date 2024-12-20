@@ -13,7 +13,8 @@ use App\Services\MexSmsSender;
     name: 'app:send_sms',
     description: 'Poslat SMS pomoci MexSMS API.'
 )]
-class SendSMSCommand extends Command {
+class SendSMSCommand extends Command
+{
     private MexSmsSender $mexSender;
 
     public function __construct(MexSmsSender $m) {
@@ -30,7 +31,6 @@ class SendSMSCommand extends Command {
         $smsNumber = $input->getArgument('cislo');
         $smsText = $input->getArgument('text');
 
-        //$mexSender = $this->getHelper('container')->getByType('\App\Services\MexSmsSender');
         $this->mexSender->sendSMS([$smsNumber], $smsText);
         return 0;
     }
