@@ -23,17 +23,13 @@ class MexSmsSender
     /** @var string */
     private $mexPass;
 
-    /** @var string */
-    private $mexANumber;
-
     /** @var Cache */
     private $cache;
 
-    public function __construct(string $mexUrl, string $mexUser, string $mexPass, string $mexANumber, Cache $cache) {
+    public function __construct(string $mexUrl, string $mexUser, string $mexPass, Cache $cache) {
         $this->mexUrl = $mexUrl;
         $this->mexUser = $mexUser;
         $this->mexPass = $mexPass;
-        $this->mexANumber = $mexANumber;
         $this->cache = $cache;
     }
 
@@ -118,7 +114,7 @@ class MexSmsSender
         $data = array();
         foreach ($bnumbers as $bnumber) {
             $data[] = [
-                "aNumber" => $this->mexANumber,
+                "textId" => 'hkfree.org',
                 "bNumber" => $this->formatCzechNumber($bnumber),
                 "messageType" => "SMS",
                 "text" => $text,

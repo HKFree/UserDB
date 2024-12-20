@@ -17,7 +17,6 @@ parameters:
 	maternaMexUrl: 'https://api.maternacz.com:443/mex'
 	maternaMexUser: %env.MATERNA_MEX_USER%
 	maternaMexPass: %env.MATERNA_MEX_PASS%
-	maternaMexANumber: '00420910301455'
 	debug:
 		fakeUser: false
 
@@ -84,7 +83,7 @@ services:
 	awegUser: App\Model\AwegUser
 	komunikace: App\Model\Komunikace
 	smsSender: App\Services\SmsSender("%appDir%/../bin/smsbackend.py")
-	mexSmsSender: App\Services\MexSmsSender(%maternaMexUrl%, %maternaMexUser%, %maternaMexPass%, %maternaMexANumber%, Nette\Caching\Cache(namespace: 'sms-sender'))
+	mexSmsSender: App\Services\MexSmsSender(%maternaMexUrl%, %maternaMexUser%, %maternaMexPass%, Nette\Caching\Cache(namespace: 'sms-sender'))
 	idsConnector: App\Model\IdsConnector("https://10.107.252.102", %env.USERDB_IDS_USERNAME%, %env.USERDB_IDS_PASSWORD%, %env.USERDB_IDS_IPS_WHITELIST%)
 	sojka: App\Model\Sojka(%sojkaPingerURL%)
 	vnejsiScanner: App\Model\VnejsiScanner(%outerScannerURL%)
