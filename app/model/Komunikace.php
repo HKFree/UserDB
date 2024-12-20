@@ -11,16 +11,18 @@ use Nette,
  */
 class Komunikace extends Table
 {
-    /** @var MexSmsSender @inject **/
     public $smsSender;
-
-    /** @var Uzivatel @inject **/
     public $uzivatel;
 
     /**
      * @var string
      */
     protected $tableName = 'Komunikace';
+
+    public function __construct(MexSmsSender $m, Uzivatel $u) {
+        $this->smsSender = $m;
+        $this->uzivatel = $u;
+    }
 
     public function posliSMS(array $uzivateleID, string $zprava) {
         $cisla = [];
@@ -34,4 +36,3 @@ class Komunikace extends Table
         $this->smsSender->sendSMS($cisla, $zprava);
     }
 }
-

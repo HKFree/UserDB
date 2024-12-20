@@ -129,7 +129,7 @@ class MexSmsSender {
 
         $res = $this->apiCall("/sms/send", $data, "POST");
 
-        print_r($res);
+        // TODO: Osetrit chybu pri odeslani SMS
     }
 
 }
