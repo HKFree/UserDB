@@ -117,4 +117,4 @@ mail:
     host: smtp.hkfree.org
 
 http:
-    proxy: 172.17.0.0/16
+    proxy: 172.16.0.0/12

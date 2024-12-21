@@ -12,6 +12,9 @@ parameters:
 	igw1IpCheckerUrl: http://localhost/
 	igw2IpCheckerUrl: http://localhost/
 
+http:
+    proxy: null
+
 # Many options moved to environment variables.
 # These are defined in `docker-compose.yml` for development deployment.
 # Use `docker-compose.override.yml` to override them when necessary.

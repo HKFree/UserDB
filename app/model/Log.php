@@ -182,9 +182,7 @@ class Log extends Table
         // vytvari uz tady a ne az triggerem v DB!
         $ted = new Nette\Utils\DateTime();
 
-        if ($tabulka == 'Uzivatel' && !empty($tabulka_id)) {
-            $uzivatel_id = $tabulka_id;
-        } elseif ($uzivatel_id === null) {
+        if (empty($uzivatel_id)) {
             $uzivatel_id = $this->userService->getId();
         }
 
