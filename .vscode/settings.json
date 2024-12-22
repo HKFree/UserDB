@@ -7,6 +7,7 @@
   "editor.insertSpaces": true,
   /* Automaticke formatovani PHP kodu pri ulozeni */
   "php-cs-fixer.executablePath": "${workspaceRoot}/vendor/friendsofphp/php-cs-fixer/php-cs-fixer",
+  "php-cs-fixer.executablePathWindows": "php-cs-fixer.bat",   //eg: php-cs-fixer.bat
   "php-cs-fixer.documentFormattingProvider": true,
   "php-cs-fixer.onsave": true,
   "[php]": {

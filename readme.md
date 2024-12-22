@@ -29,6 +29,8 @@ Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig
 
 To activate formatting in VSCode, install extension "[php cs fixer](https://marketplace.visualstudio.com/items?itemName=junstyle.php-cs-fixer)". The extension will obey the rules set in `.vscode/settings.json` and `.php-cs-fixer.dist.php`. Formatting will be done on every filesave.
 
+Windows users: install PHP (8.3) and add to PATH, install composer globally, install package php-cs-fixer globally
+
 ### Run locally
 
 Override environment variables defined in `docker-compose.yml` using `docker-compose.override.yml` when necessary. Don't forget that some settings are still present in `app/config/config.local.neon`.
