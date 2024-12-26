@@ -57,7 +57,17 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                 ->setText("Převést");
         });
 
-        $grid->addColumnText('castka', 'Částka')->setSortable()->setFilterText();
+        $grid->addColumnText('castka', 'Částka')->setCustomRender(function ($item) {
+            $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label label-spolek')->setAttribute('style', 'margin-left: 4px;');
+            $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label label-druzstvo')->setAttribute('style', 'margin-left: 4px;');
+
+            if ($item->spolek) {
+                return $item->castka . $spanSpolek;
+            }
+            if ($item->druzstvo) {
+                return $item->castka . $spanDruzstvo;
+            }
+        })->setSortable()->setFilterText();
 
         $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
 
@@ -149,6 +159,9 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
 
         $form->addText('Uzivatel_prev', 'ID původního uživatele', 50)->setDisabled(true);
 
+        $form->addCheckbox('spolek', 'Spolková platba')->setDisabled(true);
+        $form->addCheckbox('druzstvo', 'Družstevní platba')->setDisabled(true);
+
         $form->addText('Uzivatel_id', 'ID správného uživatele', 50)->setRequired('Zadejte UID cílového uživatele');
         $form->addTextArea('poznamka', 'Poznámka', 72, 10);
 
@@ -177,7 +190,9 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                         'PrichoziPlatba_vs' => $pPlatba->vs,
                         'PrichoziPlatba_ss' => $pPlatba->ss,
                         'castka' => $pPlatba->castka,
-                        'poznamka' => 'Chybná platba.'
+                        'poznamka' => 'Chybná platba.',
+                        'spolek' => $pPlatba->spolek,
+                        'druzstvo' => $pPlatba->druzstvo
                     ));
             }
         }
@@ -205,6 +220,8 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
             $values->datum = new Nette\Utils\DateTime();
             $values->zmenu_provedl = $this->getIdentity()->getUid();
             $values->castka = -$pPlatba->castka;
+            $values->druzstvo = $pPlatba->druzstvo;
+            $values->spolek = $pPlatba->spolek;
 
             if (empty($values->id)) {
                 $this->uzivatelskeKonto->insert($values);
