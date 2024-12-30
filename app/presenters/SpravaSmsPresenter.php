@@ -2,9 +2,9 @@
 
 namespace App\Presenters;
 
-use App\Services\SmsSender;
 use App\Model;
 use Nette\Application\UI\Form;
+use App\Services\SmsSenderException;
 
 /**
  * Sprava presenter.
@@ -13,11 +13,11 @@ class SpravaSmsPresenter extends SpravaPresenter
 {
     private $spravceOblasti;
 
-    private $smsSender;
+    private $komunikace;
 
-    public function __construct(Model\SpravceOblasti $sob, SmsSender $smsSender) {
+    public function __construct(Model\SpravceOblasti $sob, Model\Komunikace $k) {
         $this->spravceOblasti = $sob;
-        $this->smsSender = $smsSender;
+        $this->komunikace = $k;
     }
 
     public function renderSms() {
@@ -49,15 +49,22 @@ class SpravaSmsPresenter extends SpravaPresenter
         foreach ($sos as $so) {
             $tl = $so->Uzivatel->telefon;
             if (!empty($tl) && $tl != 'missing') {
-                $validni[] = $tl;
+                $validni[] = $so->Uzivatel->id;
             }
         }
 
-        $output = $this->smsSender->sendSms($this->getIdentity(), $validni, $values->message);
-
-        $this->flashMessage('SMS byly odeslány. Output: ' . $output);
+        $this->sendSMSAndValidate($validni, $values->message);
 
         $this->redirect('Sprava:nastroje', array('id' => null));
         return true;
+    }
+
+    private function sendSMSAndValidate($uzivateleID, $message) {
+        try {
+            $this->komunikace->posliSMS($uzivateleID, $message);
+            $this->flashMessage('SMS byla odeslána na ' . count($uzivateleID) . ' čísel.');
+        } catch (SmsSenderException $e) {
+            $this->flashMessage('SMS nebyla odeslána. ' . $e, "danger");
+        }
     }
 }
