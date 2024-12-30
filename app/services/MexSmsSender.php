@@ -42,7 +42,7 @@ class MexSmsSender
 
         // match 777222555
         if (preg_match('/^\d{9}$/', $number_cleared)) {
-            return ("00420" . $number);
+            return ("00420" . $number_cleared);
         }
 
         // match +420777222555
