@@ -92,9 +92,9 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             if (!empty($pravo->id) && !$pravo->override) {
                 $starePravo = null;
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
-                if (($starePravo->od != null && $starePravo->od->format('d.m.Y') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('d.m.Y') != $pravo->do)
+                if (($starePravo->od != null && $starePravo->od != $pravo->od) || ($starePravo->do != null && $starePravo->do != $pravo->do)
                 || $starePravo->Oblast_id != $pravo->Oblast_id || $starePravo->TypSpravceOblasti_id != $pravo->TypSpravceOblasti_id) {
-                    $form->addError('NERECYKLUJTE. Práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!.');
+                    $form->addError('NERECYKLUJTE. Upravili jste starší právo a nezaškrtli jste tlačítko OPRAVA. Mysleli jste to vážně?');
                 }
             }
         }
