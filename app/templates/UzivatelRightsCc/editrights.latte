@@ -10,6 +10,8 @@
         {$right['do']->label} {$right['do']->control}<br>
         {$right['override']->control}
     </fieldset>
+    <i>Pozor, práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!, ale pokud vytváříte oprávnění nové, přidejte opravdu nové a nezneužívejte starší právo.<i>
+    <br><br>
     <h4 n:if="$form->hasErrors()">Chyby</h4>
     <ul class="errors" n:if="$form->hasErrors()">
         <li n:foreach="$form->errors as $error">{$error}</li>
@@ -22,4 +24,3 @@
 {/if}
 
 {/block}
-

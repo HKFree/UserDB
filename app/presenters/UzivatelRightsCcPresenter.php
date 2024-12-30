@@ -92,9 +92,9 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             if (!empty($pravo->id) && !$pravo->override) {
                 $starePravo = null;
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
-                if (($starePravo->od != null && $starePravo->od->format('d.m.Y') != $pravo->od) || ($starePravo->do != null && $starePravo->do->format('d.m.Y') != $pravo->do)
+                if (($starePravo->od != null && $starePravo->od != $pravo->od) || ($starePravo->do != null && $starePravo->do != $pravo->do)
                 || $starePravo->Oblast_id != $pravo->Oblast_id || $starePravo->TypSpravceOblasti_id != $pravo->TypSpravceOblasti_id) {
-                    $form->addError('NERECYKLUJTE. Práva slouží jako historický údaj např. pro hlasování. Pokud jde pouze o prodloužení, nebo opravu chyby použijte zaškrtávátko !!! OPRAVA !!!.');
+                    $form->addError('NERECYKLUJTE. Upravili jste starší právo a nezaškrtli jste tlačítko OPRAVA. Mysleli jste to vážně?');
                 }
             }
         }
@@ -122,17 +122,15 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
                 $pravo->do = null;
             }
 
-            $popisek = $this->spravceOblasti->getTypPravaPopisek($typRole[$pravo->TypSpravceOblasti_id], $pravo->Oblast_id);
-
             if (empty($pravo->id)) {
                 $pravoId = $this->spravceOblasti->insert($pravo)->id;
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
-                $this->log->logujInsert($novePravo, 'Pravo['.$popisek.']', $log);
+                $this->log->logujInsert($novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             } else {
                 $starePravo = $this->spravceOblasti->getPravo($pravoId);
                 $this->spravceOblasti->update($pravoId, $pravo);
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
-                $this->log->logujUpdate($starePravo, $novePravo, 'Pravo['.$popisek.']', $log);
+                $this->log->logujUpdate($starePravo, $novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             }
         }
 
