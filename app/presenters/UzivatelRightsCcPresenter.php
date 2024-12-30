@@ -122,17 +122,15 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
                 $pravo->do = null;
             }
 
-            $popisek = $this->spravceOblasti->getTypPravaPopisek($typRole[$pravo->TypSpravceOblasti_id], $pravo->Oblast_id);
-
             if (empty($pravo->id)) {
                 $pravoId = $this->spravceOblasti->insert($pravo)->id;
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
-                $this->log->logujInsert($novePravo, 'Pravo['.$popisek.']', $log);
+                $this->log->logujInsert($novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             } else {
                 $starePravo = $this->spravceOblasti->getPravo($pravoId);
                 $this->spravceOblasti->update($pravoId, $pravo);
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
-                $this->log->logujUpdate($starePravo, $novePravo, 'Pravo['.$popisek.']', $log);
+                $this->log->logujUpdate($starePravo, $novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             }
         }
 
