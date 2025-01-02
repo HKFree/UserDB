@@ -60,7 +60,11 @@ class SendEmailWithContractButton extends Command
         }
 
         $this->mailService->sendSubscriberContractCallToActionEmail($uzivatel, $oneclick_auth_code);
-        $this->stitkovac->addStitek($uzivatel, 'Mig1');
+        try {
+            $this->stitkovac->addStitek($uzivatel, 'Mig1');
+        } catch (\Exception $ex) {
+            return 0;
+        }
 
         return 0;
     }
