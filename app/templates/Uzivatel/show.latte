@@ -158,20 +158,20 @@
                 <table class="nested-payments">
                     <thead>
                         <tr>
-                            <th n:if="$u->spolek">Spolek</th>
-                            <th n:if="$u->druzstvo">Družstvo</th>
+                            <th>Spolek</th>
+                            <th>Družstvo</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td n:if="$u->spolek">{$money_bal_spolek}</td>
-                            <td n:if="$u->druzstvo">{$money_bal_druzstvo}</td>
+                            <td>{$money_bal_spolek}</td>
+                            <td>{$money_bal_druzstvo}</td>
                         </tr>
                         <tr>
-                            <td n:if="$u->spolek">
+                            <td>
                                 <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'spolek'">Přehled plateb</a>
                             </td>
-                            <td n:if="$u->druzstvo">
+                            <td>
                                 <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'druzstvo'">Přehled plateb</a>
                             </td>
                         </tr>
