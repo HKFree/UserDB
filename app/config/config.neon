@@ -104,6 +104,7 @@ services:
 	- App\Console\Wewimo2InfluxCommand(%influxUrl%)
 	- App\Console\DigisignGenerovatUcastnickouSmlouvu
 	- App\Console\SendSMSCommand
+	- App\Console\SendEmailWithContractButton
 
 database:
 	dsn: "mysql:host=%env.USERDB_DB_HOST%;dbname=%env.USERDB_DB_NAME%"
