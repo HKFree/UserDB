@@ -99,7 +99,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
-                $link = $this->link('//SelfService:confirmEmail') . '/' . $hash;
+                $link = $this->link('//SelfService:confirmEmail', $hash);
 
                 if ($uzivatel->druzstvo == 1) {
 

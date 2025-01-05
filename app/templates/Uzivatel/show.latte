@@ -16,7 +16,8 @@
     {if $u->regform_downloaded_password_sent==0}
     <a n:href="UzivatelActions:sendRegActivation id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat znovu aktivační link e-mailem</a>
     {else}
-    <a n:href="UzivatelActions:exportAndSendRegForm id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat registrační formulář e-mailem</a>
+    {* TODO předělat registrační form spolku podle nových stanov 2/2025 *}
+    {* <a n:href="UzivatelActions:exportAndSendRegForm id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat registrační formulář e-mailem</a> *}
     {/if}
     <a href="{link UzivatelList:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>
     <div style="margin-top:3px;">
