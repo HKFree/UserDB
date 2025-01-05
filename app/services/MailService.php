@@ -89,7 +89,7 @@ class MailService
             ->setSubject('Ověření adresy, potvrďte prosím, UID ' . $uzivatel->id)
             ->setHtmlBody('Dobrý den,<br><br>pro ověření platnosti Vaší e-mailové adresy je nutné kliknout na ' .
                 'následující odkaz:<br><br><a href="' . $link . '">' . $link . '</a><br><br>' .
-                'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://druzstvo.hkfree.org">druzstvo.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
+                'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org internetové družstvo');
         if (!empty($uzivatel->email2)) {
             $mail->addTo($uzivatel->email2);
@@ -106,7 +106,7 @@ class MailService
             ->setSubject('kopie - Ověření adresy, potvrďte prosím, UID ' . $uzivatel->id)
             ->setHtmlBody('Dobrý den,<br><br>pro ověření platnosti Vaší e-mailové adresy je nutné kliknout na ' .
                 'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel UID ' . $uzivatel->id . '<br><br>' .
-                'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://druzstvo.hkfree.org">druzstvo.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
+                'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org internetové družstvo');
         if (!empty($so->email2)) {
             $mailso->addTo($so->email2);
