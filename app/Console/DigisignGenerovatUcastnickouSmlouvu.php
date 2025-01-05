@@ -25,7 +25,11 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
     private $smlouvaModel;
     private $podpisSmlouvyModel;
 
-    public function __construct(Uzivatel $uzivatelModel, Smlouva $smlouvaModel, PodpisSmlouvy $podpisSmlouvyModel) {
+    public function __construct(
+        Uzivatel $uzivatelModel,
+        Smlouva $smlouvaModel,
+        PodpisSmlouvy $podpisSmlouvyModel,
+    ) {
         parent::__construct();
         $this->uzivatelModel = $uzivatelModel;
         $this->smlouvaModel = $smlouvaModel;
@@ -72,6 +76,34 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         $template = $dgs->envelopeTemplates()->get($uzivatel->spolek ? $this->template1Id : $this->template2Id);
         printf("Template %s name: \"%s\"\n", $template->id, $template->title);
         $smlouva->update(['sablona' => $template->title]);
+
+        // Zrušit předchozí nepodepsanou smlouvu
+        $chybejiciPodpis = $this->podpisSmlouvyModel->findOneBy([
+          'PodpisSmlouvy.smluvni_strana' => 'ucastnik',
+          'PodpisSmlouvy.kdy_podepsano' => null,
+          'Smlouva.Uzivatel_id' => $uzivatel->id,
+          'Smlouva.id !=' => $smlouva_id,
+          'Smlouva.typ' => 'ucastnicka',
+          'Smlouva.kdy_ukonceno' => null,
+        ]);
+
+        if ($chybejiciPodpis && $chybejiciPodpis->smlouva->externi_id) {
+            $zrusitSmlouvu = $chybejiciPodpis->smlouva;
+
+            printf("Krok %u: zrušit předchozí nepodepsanou smlouvu %u (datum %s) externi_id=%s\n", ++$krok, $zrusitSmlouvu->id, $zrusitSmlouvu->kdy_vygenerovano, $zrusitSmlouvu->externi_id);
+            $zrusitSmlouvu->update(['kdy_ukonceno' => new \DateTime()]);
+
+            $novaPoznamka = sprintf(
+                "%s%sSmlouva zrušena před podepsáním a nahrazena smlouvou č. %u (ze dne %s)",
+                $zrusitSmlouvu->poznamka,
+                empty($zrusitSmlouvu->poznamka) ? '' : "\n",
+                $smlouva_id,
+                (new \DateTime())->format('d.m.Y H:i'),
+            );
+            $zrusitSmlouvu->update(['poznamka' => $novaPoznamka]);
+
+            $ENVELOPES->discard($zrusitSmlouvu->externi_id);
+        }
 
         printf("Krok %u: create envelope from template\n", ++$krok);
         $envelope = $dgs->envelopeTemplates()->use($template->id);
