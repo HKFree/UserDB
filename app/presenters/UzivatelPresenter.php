@@ -147,16 +147,16 @@ class UzivatelPresenter extends BasePresenter
             $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
             $this->mailService->sendSpolekConfirmationRequestCopy($newUser, $so);
 
-            $this->flashMessage('E-mail s žádostí o potvrzení registrace do spolku byl odeslán.');
+            $this->flashMessage('E-mail s žádostí o potvrzení e-mailu byl odeslán.');
         } catch (Nette\Mail\SmtpException $e) {
-            $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace do spolku se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
+            $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení e-mailu se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
         }
     }
 
     public function sendDruzstvoRegistrationEmail($idUzivatele) {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
-        $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
+        $link = $this->link('//SelfService:confirmEmail') . '/' . $hash;
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
