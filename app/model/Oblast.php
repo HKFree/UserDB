@@ -34,8 +34,8 @@ class Oblast extends Table
     public function formatujOblastiSAP($oblasti) {
         $aps = array();
         foreach ($oblasti as $oblast) {
-            $apcka_oblasti = $oblast->related('Ap.Oblast_id');
-            foreach ($oblast->related('Ap.Oblast_id')->order("jmeno") as $apid => $ap) {
+            $apcka_oblasti = $oblast->related('Ap.Oblast_id')->where('aktivni');
+            foreach ($apcka_oblasti->order("jmeno") as $apid => $ap) {
                 if (count($apcka_oblasti) == 1) {
                     $aps[$apid] = $ap->jmeno . ' (' . $ap->id . ')';
                 } else {
