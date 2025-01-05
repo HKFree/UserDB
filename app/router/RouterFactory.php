@@ -39,6 +39,7 @@ class RouterFactory
         $router->addRoute($urlPrefix . '/stitky/saveLabel', ['presenter' => 'SpravaStitku','action' => 'saveLabel',]);
         $router->addRoute($urlPrefix . '/stitky/deleteLabel', ['presenter' => 'SpravaStitku','action' => 'deleteLabel',]);
         $router->addRoute($urlPrefix . '/pub/zaslat-smlouvu/<id>/<hash>', ['presenter' => 'SelfService','action' => 'requestDruzstvoContract',]);
+        $router->addRoute($urlPrefix . '/pub/user-confirm/<id>', ['presenter' => 'Uzivatel','action' => 'confirm',]);
 
         $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
             'module' => 'Api'
