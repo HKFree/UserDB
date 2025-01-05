@@ -170,38 +170,6 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderConfirm() {
-        if ($this->getParameter('id')) {
-            list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
-            if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
-
-                if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
-                    die('Incorrect request (invalid hash)');
-                }
-
-                if ($uzivatel->spolek) {
-                    if (0 == $uzivatel->regform_downloaded_password_sent) {
-                        $pdftemplate = $this->createTemplate()->setFile(__DIR__.'/../templates/Uzivatel/pdf-form.latte');
-                        $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
-
-                        $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
-                    }
-                }
-
-                if ($uzivatel->druzstvo) {
-                    $this->requestDruzstvoContract->execute($uzivatel->id);
-                }
-
-                $this->template->stav = true;
-                $this->template->uzivatel = $uzivatel;
-            } else {
-                $this->template->stav = false;
-            }
-        } else {
-            $this->template->stav = false;
-        }
-    }
-
     public function renderShow() {
         if ($this->getParameter('id')) {
             $uid = $this->getParameter('id');
