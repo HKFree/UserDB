@@ -147,16 +147,16 @@ class UzivatelPresenter extends BasePresenter
             $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
             $this->mailService->sendSpolekConfirmationRequestCopy($newUser, $so);
 
-            $this->flashMessage('E-mail s žádostí o potvrzení registrace do spolku byl odeslán.');
+            $this->flashMessage('E-mail s žádostí o potvrzení e-mailu byl odeslán.');
         } catch (Nette\Mail\SmtpException $e) {
-            $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace do spolku se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
+            $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení e-mailu se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
         }
     }
 
     public function sendDruzstvoRegistrationEmail($idUzivatele) {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
-        $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
+        $link = $this->link('//SelfService:confirmEmail', $hash);
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
@@ -167,38 +167,6 @@ class UzivatelPresenter extends BasePresenter
             $this->flashMessage('E-mail s žádostí o potvrzení registrace do družstva byl odeslán.');
         } catch (Nette\Mail\SmtpException $e) {
             $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace do družstva se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
-        }
-    }
-
-    public function renderConfirm() {
-        if ($this->getParameter('id')) {
-            list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
-            if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
-
-                if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
-                    die('Incorrect request (invalid hash)');
-                }
-
-                if ($uzivatel->spolek) {
-                    if (0 == $uzivatel->regform_downloaded_password_sent) {
-                        $pdftemplate = $this->createTemplate()->setFile(__DIR__.'/../templates/Uzivatel/pdf-form.latte');
-                        $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
-
-                        $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
-                    }
-                }
-
-                if ($uzivatel->druzstvo) {
-                    $this->requestDruzstvoContract->execute($uzivatel->id);
-                }
-
-                $this->template->stav = true;
-                $this->template->uzivatel = $uzivatel;
-            } else {
-                $this->template->stav = false;
-            }
-        } else {
-            $this->template->stav = false;
         }
     }
 

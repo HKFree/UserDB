@@ -99,7 +99,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 
-                $link = "https://moje.hkfree.org/uzivatel/confirm/" . $hash;
+                $link = $this->link('//SelfService:confirmEmail', $hash);
+
                 if ($uzivatel->druzstvo == 1) {
 
                     $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);

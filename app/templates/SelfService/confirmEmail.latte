@@ -27,7 +27,8 @@
     {if $stav}
         {if $uzivatel->spolek}
             <h1>Vaše registrace do hkfree.org z.s. byla úspěšně dokončena.</h1>
-            <p>Na váš e-mail byl právě odeslán registrační formulář, ve kterém naleznete všechny potřebné informace.</p>
+            {* TODO pořešit registrační formulář podle nových stanov 2/2025 *}
+            {* <p>Na váš e-mail byl právě odeslán registrační formulář, ve kterém naleznete všechny potřebné informace.</p> *}
         {elseif $uzivatel->druzstvo}
             <h1>Ověření proběhlo úspěšně</h1>
             <p>Děkujeme za ověření emailové adresy u hkfree.org internetové družstvo.</p>
