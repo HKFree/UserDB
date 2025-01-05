@@ -156,7 +156,7 @@ class UzivatelPresenter extends BasePresenter
     public function sendDruzstvoRegistrationEmail($idUzivatele) {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
-        $link = $this->link('//SelfService:confirmEmail') . '/' . $hash;
+        $link = $this->link('//SelfService:confirmEmail', $hash);
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
 

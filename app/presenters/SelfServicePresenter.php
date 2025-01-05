@@ -20,11 +20,12 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
     ) {
     }
 
-    public function renderConfirmEmail() {
+    public function renderConfirmEmail($key) {
+        $this->setLayout('pub');
         $this->template->stav = false;
-        if ($this->getParameter('id')) {
+        if ($key) {
 
-            list($uid, $hash) = explode('-', base64_decode($this->getParameter('id')));
+            list($uid, $hash) = explode('-', base64_decode($key));
 
             $uzivatel = $this->uzivatelModel->getUzivatel($uid);
             if ($uzivatel) {
