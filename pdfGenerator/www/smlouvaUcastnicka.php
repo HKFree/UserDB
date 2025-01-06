@@ -37,7 +37,15 @@ system("cd $templateRandomizedName && zip -q -0 -X ../$templateRandomizedName.od
 /**
  * Konverze ODS -> PDF
  */
-system("/usr/bin/libreoffice --headless --convert-to pdf $templateRandomizedName.odt --outdir /tmp >/dev/null");
+$num_attempts = 0;
+while (++$num_attempts <= 10) {
+    system("/usr/bin/libreoffice --headless --convert-to pdf $templateRandomizedName.odt --outdir /tmp >/dev/null");
+
+    if (file_exists("/tmp/$templateRandomizedName.pdf")) {
+        break;
+    }
+    sleep(5);
+}
 
 /**
  * výstup - hotové PDFko
