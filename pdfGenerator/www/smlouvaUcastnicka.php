@@ -30,15 +30,19 @@ $content = preg_replace('/\{[a-zA-Z0-9-._]+\}/', '', $content, -1);
 
 file_put_contents("$templateRandomizedName/content.xml", $content);
 
+error_log("Zpátky zabalit ODS");
 /**
  * Zpátky zabalit ODS
  */
 system("cd $templateRandomizedName && zip -q -0 -X ../$templateRandomizedName.odt mimetype && zip -q -r ../$templateRandomizedName.odt * -x mimetype");
+error_log(shell_exec("ls -la $templateRandomizedName.odt"));
 
+error_log("Konverze ODS -> PDF");
 /**
  * Konverze ODS -> PDF
  */
 system("/usr/bin/libreoffice --headless --convert-to pdf $templateRandomizedName.odt --outdir /tmp >/dev/null");
+error_log(shell_exec("ls -la $templateRandomizedName.pdf"));
 
 /**
  * výstup - hotové PDFko
