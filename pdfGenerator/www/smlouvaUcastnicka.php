@@ -51,6 +51,7 @@ do {
     if (file_exists("/tmp/$templateRandomizedName.pdf")) {
         break;
     }
+    sleep(5);
 } while (++$num_attempts <= 10);
 
 /**
