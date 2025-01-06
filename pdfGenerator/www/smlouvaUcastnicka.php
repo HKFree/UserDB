@@ -41,7 +41,11 @@ error_log("Konverze ODS -> PDF");
 /**
  * Konverze ODS -> PDF
  */
-system("/usr/bin/libreoffice --headless --convert-to pdf $templateRandomizedName.odt --outdir /tmp >/dev/null");
+$num_attempts = 0;
+while (!file_exists("$templateRandomizedName.pdf" && ++$num_attempts < 10)) {
+    error_log("Konverze ODS -> PDF run $num_attempts");
+    system("/usr/bin/libreoffice --headless --convert-to pdf $templateRandomizedName.odt --outdir /tmp >/dev/null");
+}
 error_log(shell_exec("ls -la $templateRandomizedName.pdf"));
 
 /**
