@@ -9,7 +9,6 @@ $TEMPLATE_FILE_NAME = "SmlouvaUcastnicka_v7_template.odt";
 
 chdir("/tmp");
 $templateRandomizedName = str_replace('.odt', sprintf('_%u', rand(1, 1e9)), $TEMPLATE_FILE_NAME);
-error_log("templateRandomizedName:$templateRandomizedName");
 
 /**
  * Rozbalit ODS
@@ -30,23 +29,17 @@ $content = preg_replace('/\{[a-zA-Z0-9-._]+\}/', '', $content, -1);
 
 file_put_contents("$templateRandomizedName/content.xml", $content);
 
-error_log("Zpátky zabalit ODS");
 /**
  * Zpátky zabalit ODS
  */
 system("cd $templateRandomizedName && zip -q -0 -X ../$templateRandomizedName.odt mimetype && zip -q -r ../$templateRandomizedName.odt * -x mimetype");
-error_log(shell_exec("ls -la $templateRandomizedName.odt"));
 
-error_log("Konverze ODS -> PDF");
 /**
  * Konverze ODS -> PDF
  */
 $num_attempts = 0;
 while (++$num_attempts <= 10) {
-    error_log("Konverze ODS -> PDF run $num_attempts START");
     system("/usr/bin/libreoffice --headless --convert-to pdf $templateRandomizedName.odt --outdir /tmp >/dev/null");
-    error_log(shell_exec("ls -la $templateRandomizedName.pdf"));
-    error_log("Konverze ODS -> PDF run $num_attempts END");
 
     if (file_exists("/tmp/$templateRandomizedName.pdf")) {
         break;
