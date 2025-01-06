@@ -9,6 +9,7 @@ $TEMPLATE_FILE_NAME = "SmlouvaUcastnicka_v7_template.odt";
 
 chdir("/tmp");
 $templateRandomizedName = str_replace('.odt', sprintf('_%u', rand(1, 1e9)), $TEMPLATE_FILE_NAME);
+error_log("templateRandomizedName:$templateRandomizedName");
 
 /**
  * Rozbalit ODS
@@ -51,3 +52,5 @@ echo file_get_contents("/tmp/$templateRandomizedName.pdf");
 system("rm -r /tmp/$templateRandomizedName");
 system("rm -r /tmp/$templateRandomizedName.odt");
 system("rm -r /tmp/$templateRandomizedName.pdf");
+
+// rm: cannot remove '/tmp/SmlouvaUcastnicka_v7_template_191573422.pdf': No such file or directory
