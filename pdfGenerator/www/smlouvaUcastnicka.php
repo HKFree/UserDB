@@ -21,7 +21,7 @@ system("unzip -q -o /opt/templates/$TEMPLATE_FILE_NAME -d $templateRandomizedNam
 $content = file_get_contents("$templateRandomizedName/content.xml");
 $content = str_replace(
     array_map(fn ($s): string => '{'.$s.'}', array_keys($_GET)),
-    array_values($_GET),
+    array_map(fn ($s): string => htmlspecialchars($s), array_values($_GET)),
     $content
 );
 // Zbylý placeholdery vyhodit
