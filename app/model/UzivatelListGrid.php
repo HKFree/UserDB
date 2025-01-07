@@ -293,15 +293,15 @@ class UzivatelListGrid
 
         $grid->addFilterSelect('spolek_druzstvo', 'Zobrazit', array(
                 'all' => 'spolek i družstvo',
-                'spolek' => 'pouze spolek',
-                'druzstvo' => 'pouze družstvo'))
+                'spolek' => 'spolek',
+                'druzstvo' => 'družstvo'))
             ->setDefaultValue('all')
             ->setWhere(function ($value, $connection) {
                 if ($value == 'spolek') {
-                    return ($connection->where('spolek = ? AND druzstvo = ?', ['1','0']));
+                    return ($connection->where('spolek = ?', ['1']));
                 }
                 if ($value == 'druzstvo') {
-                    return ($connection->where('druzstvo = ? AND spolek = ?', ['1', '0']));
+                    return ($connection->where('druzstvo = ?', ['1']));
                 }
                 return ($connection);
             });
