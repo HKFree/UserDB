@@ -181,16 +181,16 @@ class Log extends Table
         // Je bezpodminecne nutne mit stejny cas pro vsechny polozky, proto se
         // vytvari uz tady a ne az triggerem v DB!
         $ted = new Nette\Utils\DateTime();
-        if (empty($uzivatel_id) & $tabulka == 'Uzivatel') {
-            $uzivatel_id = $tabulka_id;
-        }
         if (empty($uzivatel_id)) {
             $uzivatel_id = $this->userService->getId();
+        }
+        if (empty($uzivatel_id) & $tabulka == 'Uzivatel') {
+            $uzivatel_id = $tabulka_id;
         }
 
         $spolecne = array(
             'Uzivatel_id' => $uzivatel_id,
-            'ip_adresa' => $this->request->getRemoteAddress(),
+            'ip_adresa' => $this->request->getRemoteAddress() ?? '',
             'tabulka' => $tabulka,
             'tabulka_id' => $tabulka_id,
             'datum' => $ted
