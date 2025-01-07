@@ -293,15 +293,15 @@ class UzivatelListGrid
 
         $grid->addFilterSelect('spolek_druzstvo', 'Zobrazit', array(
                 'all' => 'spolek i družstvo',
-                'spolek' => 'pouze spolek',
-                'druzstvo' => 'pouze družstvo'))
+                'spolek' => 'spolek',
+                'druzstvo' => 'družstvo'))
             ->setDefaultValue('all')
             ->setWhere(function ($value, $connection) {
                 if ($value == 'spolek') {
-                    return ($connection->where('spolek = ? AND druzstvo = ?', ['1','0']));
+                    return ($connection->where('spolek = ?', ['1']));
                 }
                 if ($value == 'druzstvo') {
-                    return ($connection->where('druzstvo = ? AND spolek = ?', ['1', '0']));
+                    return ($connection->where('druzstvo = ?', ['1']));
                 }
                 return ($connection);
             });
@@ -324,6 +324,29 @@ class UzivatelListGrid
         } else {
             $tz->setDefaultValue('active');
         }
+
+        $seznamStitku = $this->stitek->getSeznamStitku()->fetchPairs("id", "text");
+        $seznamNotStitku = [];
+        foreach ($seznamStitku as $stitekId => $stitekText) {
+            $seznamNotStitku[-$stitekId] = "NOT " . $stitekText;
+        }
+
+        $stitkyKFiltrovani[0] = "---";
+        $stitkyKFiltrovani += $seznamStitku;
+        $stitkyKFiltrovani += $seznamNotStitku;
+
+        $grid->addFilterSelect('stitek', 'Hledej štítek', $stitkyKFiltrovani)
+            ->setWhere(function ($value, $connection) {
+                if ($value > 0) {
+                    return ($connection->where(":StitekUzivatele.Stitek_id = ?", $value));
+                } elseif ($value < 0) {
+                    return ($connection->whereOr([
+                        ":StitekUzivatele.Stitek_id != ?" => -$value,
+                        ":StitekUzivatele.Stitek_id ?" => null,
+                    ]));
+                }
+                return ($connection);
+            });
 
         if ($money) {
             $thisparams = $this->parameters;
