@@ -173,6 +173,7 @@ class Log extends Table
         }
     }
 
+    // Uzivatel_id je ten, kdo zmenu provedl
     public function loguj($tabulka, $tabulka_id, $data, $uzivatel_id = null) {
         if (!is_array($data) || count($data) == 0) {
             return true;
@@ -181,11 +182,20 @@ class Log extends Table
         // Je bezpodminecne nutne mit stejny cas pro vsechny polozky, proto se
         // vytvari uz tady a ne az triggerem v DB!
         $ted = new Nette\Utils\DateTime();
+
+        // Zmenu udelal prihlaseny uzivatel
         if (empty($uzivatel_id)) {
             $uzivatel_id = $this->userService->getId();
         }
+
+        // Pokud neni zadny uzivatel prihlaseny (napr verejny callback) a logujeme neco u uzivatele, vem jeho
         if (empty($uzivatel_id) & $tabulka == 'Uzivatel') {
             $uzivatel_id = $tabulka_id;
+        }
+
+        // A pokud ani to nevyjde, zaloguj to pod systemovym uzivatelem
+        if (empty($uzivatel_id)) {
+            $uzivatel_id = 1;
         }
 
         $spolecne = array(
