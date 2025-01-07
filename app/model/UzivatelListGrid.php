@@ -337,10 +337,13 @@ class UzivatelListGrid
 
         $grid->addFilterSelect('stitek', 'Hledej štítek', $stitkyKFiltrovani)
             ->setWhere(function ($value, $connection) {
-                if ($value > 0) {
+                if ($value > 0) { // YES podmínka
                     return ($connection->where(":StitekUzivatele.Stitek_id = ?", $value));
-                } elseif ($value < 0) {
-                    return ($connection->whereOr([
+                } elseif ($value < 0) { // NOT podmínka
+                    // Pro NOT podmínku musíme filtrovat v joinu a to se dělá pomocí joinWhere
+                    return ($connection
+                    ->joinWhere(':StitekUzivatele', ':StitekUzivatele.Stitek_id = ?', -$value)
+                    ->whereOr([
                         ":StitekUzivatele.Stitek_id != ?" => -$value,
                         ":StitekUzivatele.Stitek_id ?" => null,
                     ]));
