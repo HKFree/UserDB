@@ -325,6 +325,29 @@ class UzivatelListGrid
             $tz->setDefaultValue('active');
         }
 
+        $seznamStitku = $this->stitek->getSeznamStitku()->fetchPairs("id", "text");
+        $seznamNotStitku = [];
+        foreach ($seznamStitku as $stitekId => $stitekText) {
+            $seznamNotStitku[-$stitekId] = "NOT " . $stitekText;
+        }
+
+        $stitkyKFiltrovani[0] = "---";
+        $stitkyKFiltrovani += $seznamStitku;
+        $stitkyKFiltrovani += $seznamNotStitku;
+
+        $grid->addFilterSelect('stitek', 'Hledej štítek', $stitkyKFiltrovani)
+            ->setWhere(function ($value, $connection) {
+                if ($value > 0) {
+                    return ($connection->where(":StitekUzivatele.Stitek_id = ?", $value));
+                } elseif ($value < 0) {
+                    return ($connection->whereOr([
+                        ":StitekUzivatele.Stitek_id != ?" => -$value,
+                        ":StitekUzivatele.Stitek_id ?" => null,
+                    ]));
+                }
+                return ($connection);
+            });
+
         if ($money) {
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
