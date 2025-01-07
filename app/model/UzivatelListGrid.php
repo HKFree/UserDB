@@ -298,10 +298,10 @@ class UzivatelListGrid
             ->setDefaultValue('all')
             ->setWhere(function ($value, $connection) {
                 if ($value == 'spolek') {
-                    return ($connection->where('spolek = ?', ['1']));
+                    return ($connection->where('spolek = ?', 1));
                 }
                 if ($value == 'druzstvo') {
-                    return ($connection->where('druzstvo = ?', ['1']));
+                    return ($connection->where('druzstvo = ?', 1));
                 }
                 return ($connection);
             });
