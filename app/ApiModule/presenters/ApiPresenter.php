@@ -107,7 +107,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     protected function forceMethod($method) {
         if ($this->httpRequest->getMethod() != $method) {
             $this->httpResponse->setCode(Response::S405_METHOD_NOT_ALLOWED);
-            $this->sendResponse(new JsonResponse(['result' => 'METHOD_NOT_ALLOWED: Use http method ' . $method]));
+            $this->sendResponse(new JsonResponse(['result' => 'METHOD_NOT_ALLOWED: Use http method ' . $method, 'resultNumeric' => -1]));
         }
     }
 
@@ -118,12 +118,12 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     protected function sendForbidden($reason) {
         //throw new \Nette\Application\ForbiddenRequestException;
         $this->httpResponse->setCode(Response::S403_FORBIDDEN);
-        $this->sendResponse(new JsonResponse(['result' => 'FORBIDDEN: '.$reason]));
+        $this->sendResponse(new JsonResponse(['result' => 'FORBIDDEN: '.$reason, 'resultNumeric' => -1]));
     }
 
     protected function sendAuthRequired($reason) {
         $this->httpResponse->setCode(Response::S401_UNAUTHORIZED);
         $this->httpResponse->addHeader('WWW-Authenticate', 'Basic realm="UserDB API"');
-        $this->sendResponse(new JsonResponse(['result' => 'UNAUTHORIZED: '.$reason]));
+        $this->sendResponse(new JsonResponse(['result' => 'UNAUTHORIZED: '.$reason, 'resultNumeric' => -1]));
     }
 }

@@ -16,7 +16,7 @@ class KomunikacePresenter extends ApiPresenter
     }
 
     public function renderDefault() {
-        $this->sendResponse(new JsonResponse(['result' => 'Method not implemented']));
+        $this->sendResponse(new JsonResponse(['result' => 'Method not implemented', 'resultNumeric' => -1]));
     }
 
     public function actionSendSMS() {
@@ -27,7 +27,7 @@ class KomunikacePresenter extends ApiPresenter
 
         $u = $this->uzivatel->getUzivatel($uid);
         if (!$u) {
-            $this->sendResponse(new JsonResponse(['result' => 'User ID not found', 'serverTime' => date("c")]));
+            $this->sendResponse(new JsonResponse(['result' => 'User ID not found', 'resultNumeric' => -2, 'serverTime' => date("c")]));
         }
 
         parent::checkApID($u->Ap->id);
@@ -35,9 +35,9 @@ class KomunikacePresenter extends ApiPresenter
         try {
             $this->komunikace->posliSMS([$u], $text);
         } catch (Exception $e) {
-            $this->sendResponse(new JsonResponse(['result' => 'SMS send failed', 'reason' => strval($e), 'serverTime' => date("c")]));
+            $this->sendResponse(new JsonResponse(['result' => 'SMS send failed', 'resultNumeric' => -3, 'reason' => strval($e), 'serverTime' => date("c")]));
         }
 
-        $this->sendResponse(new JsonResponse(['result' => 'OK']));
+        $this->sendResponse(new JsonResponse(['result' => 'OK', 'resultNumeric' => 1]));
     }
 }
