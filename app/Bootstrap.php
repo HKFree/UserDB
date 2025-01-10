@@ -33,7 +33,9 @@ class Bootstrap
     }
 
     public function initializeEnvironment(): void {
-        if (getenv('TRACY_ENABLE', true)) {
+        // set TRACY_ENABLE in application environment to enable debug.
+        // set RequestHeader set Publicpage 1 in Apache to disable debug in specific location.
+        if (getenv('TRACY_ENABLE', true) && !isset($_SERVER["HTTP_PUBLICPAGE"])) {
             $this->configurator->setDebugMode(true); // enable for all IP
         }
         // Nette is smart, and the development mode turns on automatically,
