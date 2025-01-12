@@ -32,6 +32,10 @@ class KomunikacePresenter extends ApiPresenter
 
         parent::checkApID($u->Ap->id);
 
+        if (!$this->komunikace->maValidniCislo($u)) {
+            $this->sendResponse(new JsonResponse(['result' => 'User doesnt have valid number', 'resultNumeric' => -4, 'serverTime' => date("c")]));
+        }
+
         try {
             $this->komunikace->posliSMS([$u], $text);
         } catch (Exception $e) {

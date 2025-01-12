@@ -35,4 +35,9 @@ class Komunikace extends Table
 
         $this->smsSender->sendSMS($cisla, $zprava);
     }
+
+    public function maValidniCislo($uid) {
+        $u = $this->uzivatel->getUzivatel($uid);
+        return ($this->smsSender->checkCzechNumber($u->telefon));
+    }
 }
