@@ -210,7 +210,6 @@ class UzivatelPresenter extends BasePresenter
                     $stavUctuDruzstvo = 0;
                 }
 
-
                 $this->template->money_bal_druzstvo = $stavUctuDruzstvo;
                 if ($uzivatel->kauce_mobil > 0) {
                     $this->template->money_bal_spolek = ($stavUctuSpolek - $uzivatel->kauce_mobil).' (kauce: '.$uzivatel->kauce_mobil.')';
