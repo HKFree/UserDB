@@ -51,10 +51,6 @@
         .panel-right .table>tbody>tr>td {
             padding: 2px 24px 2px 4px !important;
         }
-        h4{
-            font-size: 24px;
-            font-weight: bold;
-        }
         @media (max-width: 1200px) {
             .flex-content{
                 flex-direction: column;
@@ -185,8 +181,8 @@
             <td>
                 <table class="nested-payments">
                     <tr>
-                        <td n:if="$u->spolek">{$money_lastpay_spolek}</td>
-                        <td n:if="$u->druzstvo">{$money_lastpay_druzstvo}</td>
+                        <td>{$money_lastpay_spolek}</td>
+                        <td>{$money_lastpay_druzstvo}</td>
                     </tr>
                 </table>
             </td>

@@ -210,12 +210,12 @@ class UzivatelPresenter extends BasePresenter
                     $stavUctuDruzstvo = 0;
                 }
 
+                $this->template->money_bal_druzstvo = $stavUctuDruzstvo;
                 if ($uzivatel->kauce_mobil > 0) {
                     $this->template->money_bal_spolek = ($stavUctuSpolek - $uzivatel->kauce_mobil).' (kauce: '.$uzivatel->kauce_mobil.')';
-                    $this->template->money_bal_druzstvo = ($stavUctuDruzstvo - $uzivatel->kauce_mobil).' (kauce: '.$uzivatel->kauce_mobil.')';
+                    // $this->template->money_bal_druzstvo = ($stavUctuDruzstvo - $uzivatel->kauce_mobil).' (kauce: '.$uzivatel->kauce_mobil.')';
                 } else {
                     $this->template->money_bal_spolek = $stavUctuSpolek;
-                    $this->template->money_bal_druzstvo = $stavUctuDruzstvo;
                 }
 
                 $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
