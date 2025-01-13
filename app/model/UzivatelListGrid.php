@@ -486,14 +486,7 @@ class UzivatelListGrid
                     $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
                     if ($posledniPlatba->count() > 0) {
                         $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
-                    }
-                    return "?";
-                })->setCustomRender(function ($item) {
-                    $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
-                    if ($posledniPlatba->count() > 0) {
-                        $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+                        return ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . "," . ($posledniPlatbaData->druzstvo ? "D" : "S") . ")");
                     }
                     return "?";
                 });
@@ -505,23 +498,9 @@ class UzivatelListGrid
                         return ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
                     }
                     return "?";
-                })->setCustomRender(function ($item) {
-                    $posledniAktivace = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 4)->order('id DESC')->limit(1);
-                    if ($posledniAktivace->count() > 0) {
-                        $posledniAktivaceData = $posledniAktivace->fetch();
-                        return ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
-                    }
-                    return "?";
                 });
 
                 $grid->addColumnText('acc', 'Stav účtu')->setColumn(function ($item) {
-                    $stavUctu = $item->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
-                    if ($item->kauce_mobil > 0) {
-                        return ($stavUctu - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')';
-                    } else {
-                        return $stavUctu;
-                    }
-                })->setCustomRender(function ($item) {
                     $stavUctu = $item->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
                     if ($item->kauce_mobil > 0) {
                         return ($stavUctu - $item->kauce_mobil) . ' (kauce: '.$item->kauce_mobil.')';
