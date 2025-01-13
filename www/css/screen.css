@@ -642,7 +642,7 @@ input[readonly] {
     height: 16px;
 }
 
-.label {
+.label-druzstvo, .label-spolek, .label-neaktivni  {
     border-width: 1px;
     border-style: solid;
 }
