@@ -486,7 +486,7 @@ class UzivatelListGrid
                     $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
                     if ($posledniPlatba->count() > 0) {
                         $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+                        return ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . "," . ($posledniPlatbaData->druzstvo ? "D" : "S") . ")");
                     }
                     return "?";
                 });
