@@ -88,7 +88,7 @@ class UzivatelListGrid
                     return $tr;
                 }
                 // TODO: spolek / druzstvo
-                if ($item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
                 return $tr;
@@ -103,12 +103,12 @@ class UzivatelListGrid
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                // TODO: spolek / druzstvo
-                if ($item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id == 2) {
                     $tr->class[] = 'primarni';
                 }
-                // TODO: spolek / druzstvo
-                if ($item->TypClenstvi_id == 1) {
+                if ($item->spolek && $item->TypClenstvi_id == 1 && (!$item->druzstvo)
+                    || $item->druzstvo && $item->smazano && (!$item->spolek)
+                    || $item->spolek && $item->druzstvo && $item->TypClenstvi_id == 1 && $item->smazano) {
                     $tr->class[] = 'zrusene';
                 }
                 if ($item->TypClenstvi_id === 0) {
