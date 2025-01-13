@@ -58,12 +58,19 @@ class UzivatelListGrid
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
         $grid->setDefaultSort(array('zalozen' => 'ASC'));
 
-        $list = array('active' => 'bez zrušených a plánovaných', 'all' => 'včetně zrušených a plánovaných', 'planned' => 'pouze plánovaná');
+        $list = array('active' => 'bez zrušených, plánovaných a smazaných', 'all' => 'včetně zrušených, plánovaných a smazaných', 'planned' => 'pouze plánovaná členství ve spolku');
 
-        // TODO: spolek / druzstvo
         $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
             ->setDefaultValue('active')
-            ->setCondition(array('active' => array('TypClenstvi_id',  '> ?', '1'),'all' => array('TypClenstvi_id',  '>= ?', '0'),'planned' => array('TypClenstvi_id',  '= ?', '0') ));
+            ->setWhere(function ($value, $connection) {
+                if ($value == 'active') {
+                    return ($connection->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)'));
+                }
+                if ($value == 'planned') {
+                    return ($connection->where('spolek = 1 AND TypClenstvi_id = 0'));
+                }
+                return ($connection);
+            });
 
         if ($money) {
             $thisparams = $this->parameters;
