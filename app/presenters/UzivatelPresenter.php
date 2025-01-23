@@ -503,21 +503,21 @@ class UzivatelPresenter extends BasePresenter
 
         $values = $form->getUntrustedValues();
 
-        if (($values->spolek == 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo == 1 && $values->smazano == 0)) {
-            $duplMail = $this->uzivatel->getDuplicateEmailArea($values->email, $values->id);
+        // if (($values->spolek == 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo == 1 && $values->smazano == 0)) {
+        //     $duplMail = $this->uzivatel->getDuplicateEmailArea($values->email, $values->id);
 
-            if ($duplMail) {
-                $form->addError('Tento email již v DB existuje v oblasti: '.$duplMail);
-            }
+        //     if ($duplMail) {
+        //         $form->addError('Tento email již v DB existuje v oblasti: '.$duplMail);
+        //     }
 
-            if (!empty($values->email2)) {
-                $duplMail2 = $this->uzivatel->getDuplicateEmailArea($values->email2, $values->id);
+        //     if (!empty($values->email2)) {
+        //         $duplMail2 = $this->uzivatel->getDuplicateEmailArea($values->email2, $values->id);
 
-                if ($duplMail2) {
-                    $form->addError('Tento email již v DB existuje v oblasti: '.$duplMail2);
-                }
-            }
-        }
+        //         if ($duplMail2) {
+        //             $form->addError('Tento email již v DB existuje v oblasti: '.$duplMail2);
+        //         }
+        //     }
+        // }
     }
 
     public function uzivatelFormSucceded($form, $values) {
