@@ -271,10 +271,24 @@ class UzivatelPresenter extends BasePresenter
                                                     || in_array($uid, $seznamUzivatelu);
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
 
-                $this->template->activaceVisible = 0 == $uzivatel->money_aktivni && 0 == $uzivatel->money_deaktivace && ($stavUctuSpolek - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku() && ($stavUctuDruzstvo - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku();
-                $this->template->reactivaceVisible = (0 == $uzivatel->money_aktivni && 1 == $uzivatel->money_deaktivace && ($stavUctuSpolek - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku() && ($stavUctuDruzstvo - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku())
-                                                        || (1 == $uzivatel->money_aktivni && 1 == $uzivatel->money_deaktivace);
-                $this->template->deactivaceVisible = 1 == $uzivatel->money_aktivni && 0 == $uzivatel->money_deaktivace;
+                $this->template->activaceVisible = false;
+                $this->template->reactivaceVisible = false;
+                if ($uzivatel->money_aktivni == 0
+                    && (
+                        ($stavUctuSpolek - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku()
+                        || ($stavUctuDruzstvo - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku()
+                    )
+                ) {
+                    if ($uzivatel->money_deaktivace == 0) {
+                        $this->template->activaceVisible = true;
+                    }
+                    if ($uzivatel->money_deaktivace == 1) {
+                        $this->template->reactivaceVisible = true;
+                    }
+                }
+                $this->template->deactivaceVisible =
+                    1 == $uzivatel->money_aktivni
+                    && 0 == $uzivatel->money_deaktivace;
 
                 $this->template->igw = $this->getParameter('igw', false);
                 $this->template->smlouvaStavSluzba = $this->smlouvaStavSluzba;
