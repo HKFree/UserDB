@@ -298,32 +298,20 @@ class UzivatelListGrid
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
         $grid->setDefaultSort(array('zalozen' => 'ASC'));
 
-        $grid->addFilterSelect('spolek_druzstvo', 'Zobrazit', array(
-                'all' => 'spolek i družstvo',
+        $tz = $grid->addFilterSelect('spolek_druzstvo', 'Zobrazit', array(
+                'active' => 'spolek i družstvo',
                 'spolek' => 'spolek',
                 'druzstvo' => 'družstvo',
-                'nedruzstvo' => 'není družstvo'))
-            ->setDefaultValue('all')
-            ->setWhere(function ($value, $connection) {
-                if ($value == 'spolek') {
-                    return ($connection->where('spolek = ?', 1));
-                } elseif ($value == 'druzstvo') {
-                    return ($connection->where('druzstvo = ?', 1));
-                } elseif ($value == 'nedruzstvo') {
-                    return ($connection->where('druzstvo = ?', 0));
-                }
-                return ($connection);
-            });
-
-        $list = array('active' => 'bez zrušených, plánovaných a smazaných', 'all' => 'včetně zrušených, plánovaných a smazaných', 'planned' => 'pouze plánovaná členství ve spolku');
-
-        $tz = $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
+                'all' => 'spolek i družstvo včetně zrušených a smazaných'))
             ->setWhere(function ($value, $connection) {
                 if ($value == 'active') {
-                    return ($connection->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)'));
-                }
-                if ($value == 'planned') {
-                    return ($connection->where('spolek = 1 AND TypClenstvi_id = 0'));
+                    return ($connection->where('(spolek = ? AND TypClenstvi_id > ?) OR (druzstvo = ? AND smazano = ?)', 1, 1, 1, 0));
+                } elseif ($value == 'spolek') {
+                    return ($connection->where('spolek = ? AND TypClenstvi_id > ?', 1, 1));
+                } elseif ($value == 'druzstvo') {
+                    return ($connection->where('druzstvo = ? AND smazano = ?', 1, 0));
+                    // } elseif ($value == 'nedruzstvo') {
+                    // return ($connection->where('druzstvo = ?', 0));
                 }
                 return ($connection);
             });
