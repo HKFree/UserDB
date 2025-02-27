@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Generátor PDF dokumentu podle ODS šablony s nahrazením placeholderů
+ * Generátor PDF dokumentu podle ODT šablony s nahrazením placeholderů
  * Použití: http://localhost:10109/smlouvaUcastnicka.php?jmeno_prijmeni=Josef+Skočdopole&telefon=158
  */
 
@@ -11,7 +11,7 @@ chdir("/tmp");
 $templateRandomizedName = str_replace('.odt', sprintf('_%u', rand(1, 1e9)), $TEMPLATE_FILE_NAME);
 
 /**
- * Rozbalit ODS
+ * Rozbalit ODT
  */
 system("unzip -q -o /opt/templates/$TEMPLATE_FILE_NAME -d $templateRandomizedName");
 
@@ -30,12 +30,12 @@ $content = preg_replace('/\{[a-zA-Z0-9-._]+\}/', '', $content, -1);
 file_put_contents("$templateRandomizedName/content.xml", $content);
 
 /**
- * Zpátky zabalit ODS
+ * Zpátky zabalit ODT
  */
 system("cd $templateRandomizedName && zip -q -0 -X ../$templateRandomizedName.odt mimetype && zip -q -r ../$templateRandomizedName.odt * -x mimetype");
 
 /**
- * Konverze ODS -> PDF
+ * Konverze ODT -> PDF
  */
 $num_attempts = 0;
 while (++$num_attempts <= 10) {
