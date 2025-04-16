@@ -34,12 +34,35 @@ class SpravaPlatebPresenter extends SpravaPresenter
         $grid->setDefaultPerPage(100);
         $grid->setDefaultSort(array('datum' => 'DESC'));
 
+        $grid->addFilterSelect('ucet', 'Účet', array('vsechny' => 'Všechny', 'spolek' => 'Spolek', 'druzstvo' => 'Družstvo'))
+        ->setDefaultValue('vsechny')
+        ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
+            if ($value == 'spolek') {
+                return ($connection->where('spolek', 1));
+            }
+            if ($value == 'druzstvo') {
+                return ($connection->where('druzstvo', 1));
+            }
+            return ($connection);
+        });
+
         $grid->setRowCallback(function ($item, $tr) {
             if ($item->datum_platby == null) {
                 $tr->class[] = 'primarni';
             }
 
             return $tr;
+        });
+
+        $grid->addColumnText('ucet', 'Účet')->setCustomRender(function ($item) {
+            $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label label-spolek')->setAttribute('style', 'margin-left: 4px;');
+            $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label label-druzstvo')->setAttribute('style', 'margin-left: 4px;');
+
+            if ($item->spolek) {
+                return ($spanSpolek);
+            }
+
+            return ($spanDruzstvo);
         });
 
         $grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();
