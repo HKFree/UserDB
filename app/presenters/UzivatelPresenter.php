@@ -333,7 +333,7 @@ class UzivatelPresenter extends BasePresenter
         $zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id', 'text');
         $technologiePripojeni = $this->technologiePripojeni->getTechnologiePripojeni()->fetchPairs('id', 'text');
 
-        $aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti());
+        $aps = $this->oblast->formatujOblastiSAP($this->oblast->getSeznamOblasti(), false);
 
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
         if (count($oblastiSpravce) > 0) {

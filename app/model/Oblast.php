@@ -31,10 +31,14 @@ class Oblast extends Table
         return ($this->find($IDoblasti)->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id', 'Uzivatel'));
     }
 
-    public function formatujOblastiSAP($oblasti) {
+    public function formatujOblastiSAP($oblasti, $pouzeAktivni = true) {
         $aps = array();
         foreach ($oblasti as $oblast) {
-            $apcka_oblasti = $oblast->related('Ap.Oblast_id')->where('aktivni');
+            $apcka_oblasti = $oblast->related('Ap.Oblast_id');
+            if ($pouzeAktivni) {
+                $apcka_oblasti = $apcka_oblasti->where('aktivni');
+            }
+
             foreach ($apcka_oblasti->order("jmeno") as $apid => $ap) {
                 if (count($apcka_oblasti) == 1) {
                     $aps[$apid] = $ap->jmeno . ' (' . $ap->id . ')';
