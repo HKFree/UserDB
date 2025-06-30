@@ -293,10 +293,6 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->igw = $this->getParameter('igw', false);
                 $this->template->smlouvaStavSluzba = $this->smlouvaStavSluzba;
                 $this->template->smlouvy = $this->smlouva->getByUzivatelId($uid);
-
-                /* migrace 2025 temporary */
-                $this->template->migrace2025Stitek1 = $this->parameters->migrace2025Stitek1;
-                $this->template->maStitek = $this->stitkovac->hasStitekByText($uzivatel, $this->parameters->migrace2025Stitek1);
             }
         }
     }
