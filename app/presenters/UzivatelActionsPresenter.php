@@ -201,47 +201,4 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 
-    /* migrace 2025 temporary */
-    public function actionSendEmailWithContractButton() {
-        $user_id = $this->getParameter('id');
-        $uzivatel =  $this->uzivatel->find($user_id);
-
-        // generate auth code and encrypt it to DB if not already generated
-        if (!$uzivatel->oneclick_auth) {
-            $code_length = 32;
-            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', ceil($code_length / strlen($x)))), 1, $code_length);
-            $oneclick_auth_code_encrypted = $this->cryptosvc->encrypt($oneclick_auth_code);
-            $this->uzivatel->update($uzivatel->id, [
-                'oneclick_auth' => $oneclick_auth_code_encrypted,
-            ]);
-        } else {
-            $oneclick_auth_code = $this->cryptosvc->decrypt($uzivatel->oneclick_auth);
-            $this->uzivatel->update($uzivatel->id, ['oneclick_auth_used_at' => null]);
-        }
-
-        $this->mailService->sendSubscriberContractCallToActionEmail($uzivatel, $oneclick_auth_code);
-        $this->stitkovac->addStitek($uzivatel, $this->parameters->migrace2025Stitek1);
-
-        $this->flashMessage('E-mail byl odeslán.');
-
-        $this->redirect('Uzivatel:show', array('id' => $user_id));
-    }
-
-    /* migrace 2025 temporary */
-    public function actionPreviewEmailWithContract() {
-        $user_id = $this->getParameter('id');
-        $uzivatel =  $this->uzivatel->find($user_id);
-
-        $template = $this->createTemplate();
-        $params = [
-            'UID' => $uzivatel->id,
-            'oneclick_auth_code' => 'neklikej na to, tohle je jenom nahled',
-            'hasCC' => $this->cestneClenstviUzivatele->getHasCC($uzivatel->id)
-        ];
-
-        $html = $template->renderToString('../app/templates/email/druzstvoContractButton.latte', $params);
-
-        $this->sendResponse(new Nette\Application\Responses\TextResponse($html));
-    }
-
 }

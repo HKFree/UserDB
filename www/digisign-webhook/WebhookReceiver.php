@@ -69,10 +69,6 @@ function process_digisign_webhook($hook) {
             );
             $smlouva->update(['poznamka' => $novaPoznamka]);
 
-            // 2. Uživatele označit štítkem /* migrace 2025 temporary */
-            $uzivatel = $UzivatelModel->find($smlouva->uzivatel);
-            $Stitkovac->addStitek($uzivatel, 'Mig2');
-
             break;
         case 'envelopeCompleted': // obálka dokončena (podepsána všemi podepisujícími)
             /**
@@ -141,12 +137,6 @@ function process_digisign_webhook($hook) {
             }
             // 5. nastavit "vztah" s družstvem
             $uzivatel->update(['druzstvo' => 1]);
-
-            // 6. Uživatele označit štítkem /* migrace 2025 temporary */
-            $Stitkovac->addStitek($uzivatel, 'Mig3');
-
-            // 7. Odstranit oneclick_auth (odkaz v e-mailu už nebude fungovat) /* migrace 2025 temporary */
-            $uzivatel->update(['oneclick_auth' => null]);
 
             break;
         case 'envelopeDeclined': // obálka byla odmítnuta

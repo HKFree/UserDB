@@ -176,24 +176,4 @@ class MailService
         $template->getLatte()->addProvider('uiControl', $this->linkGenerator);
         return $template;
     }
-
-    public function sendSubscriberContractCallToActionEmail($uzivatel, $oneclick_auth_code) {
-        $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
-
-        $template = $this->createTemplate();
-        $params = [
-            'UID' => $uzivatel->id,
-            'oneclick_auth_code' => $oneclick_auth_code,
-            'hasCC' => $this->cestneClenstviUzivatele->getHasCC($uzivatel->id)
-        ];
-        //dumpe($template->getLatte()->getLoader());
-        $html = $template->renderToString($this->templateDir . '/druzstvoContractButton.latte', $params);
-
-        $mail = new Nette\Mail\Message();
-        $mail->setHtmlBody($html);
-        $mail->setFrom($fromAddress)
-            ->addTo($uzivatel->email)
-            ->setSubject('hkfree.org se mění na družstvo');
-        $this->mailer->send($mail);
-    }
 }
