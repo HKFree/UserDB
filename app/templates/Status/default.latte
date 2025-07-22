@@ -26,7 +26,7 @@
             </h3>
             <p>
             {foreach $ips as list($ip, $problem, $ping)}
-                <b>{$ip->ip_adresa}{if !empty($ip->hostname)} ({$ip->hostname}){/if}</b> {include problem, problem => $problem, ping => $ping}<br>
+                <b>{$ip->ip_adresa}{if !empty($ip->hostname)} ({$ip->hostname}){elseif !empty($ip->popis)} (<i>{$ip->popis}</i>){/if}</b> {include problem, problem => $problem, ping => $ping}<br>
             {/foreach}
             </p>
         {/foreach}
