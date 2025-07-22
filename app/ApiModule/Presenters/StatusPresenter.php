@@ -9,18 +9,43 @@ class StatusPresenter extends ApiPresenter
     private $oblast;
     private $sojka;
     private $ipadresa;
+    private $status;
 
     // Pokud je IP mrtva dele nez $lookback sekund, nezajima nas a ignorujeme je
     private $lookback = 7 * 24 * 60 * 60;
 
-    public function __construct(\App\Model\Oblast $oblast, \App\Model\Sojka $sojka, \App\Model\IPAdresa $ipadresa) {
+    public function __construct(\App\Model\Oblast $oblast, \App\Model\Sojka $sojka, \App\Model\IPAdresa $ipadresa, \App\Model\Status $status) {
         $this->oblast = $oblast;
         $this->sojka = $sojka;
         $this->ipadresa = $ipadresa;
+        $this->status = $status;
     }
 
     public function renderDefault() {
         $this->sendResponse(new JsonResponse(['result' => 'Method not implemented']));
+    }
+
+    public function actionGetProblemoveIp() {
+        parent::forceMethod("GET");
+
+        $vypadky = $this->status->getProblemoveAP();
+
+        $out = array();
+        foreach ($vypadky as list($oblast, $aps)) {
+            foreach ($aps as list($ap, $ips)) {
+                $apoblast = count($aps) > 1 ? $oblast->jmeno . " - " . $ap->jmeno : $ap->jmeno;
+                foreach ($ips as list($ip, $problem, $ping)) {
+                    $out[$apoblast][$ip->ip_adresa] = array(
+                        "problem" => $problem,
+                        "loss" => $ping["loss"],
+                        "rtt" => $ping["rtt"],
+                        "time_lastpong" => $ping["time_lastpong"],
+                        "ip-popis" => $ip->popis,
+                    );
+                }
+            }
+        }
+        $this->sendResponse(new JsonResponse($out));
     }
 
     public function actionGetOblasti() {
