@@ -41,6 +41,7 @@ class StatusPresenter extends ApiPresenter
                         "rtt" => $ping["rtt"],
                         "time_lastpong" => $ping["time_lastpong"],
                         "ip-popis" => $ip->popis,
+                        "ip-hostname" => $ip->hostname,
                     );
                 }
             }
