@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7039de694b6736d773a00c64bf6f1773",
+    "content-hash": "b059dbee97753e651da2a88cf5fb6bbc",
     "packages": [
         {
             "name": "contributte/console",
@@ -653,8 +653,14 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/marekskopal/PdfResponse.git",
-                "reference": "152f4c80057f0be66f47310253810a860f11dc12"
+                "url": "https://github.com/jkuchar/PdfResponse.git",
+                "reference": "99c59d0656943b6de10f0cd5a4e805b2c244f692"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jkuchar/PdfResponse/zipball/99c59d0656943b6de10f0cd5a4e805b2c244f692",
+                "reference": "99c59d0656943b6de10f0cd5a4e805b2c244f692",
+                "shasum": ""
             },
             "require": {
                 "mpdf/mpdf": "^8.0",
@@ -676,18 +682,7 @@
                     "PdfResponse\\": "src"
                 }
             },
-            "scripts": {
-                "verify": [
-                    "@phpstan",
-                    "@tester"
-                ],
-                "tester": [
-                    "vendor/bin/tester test"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyze src -c phpstan.neon --memory-limit 1G -l 1 --error-format compact"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL-2.0-or-later"
             ],
@@ -698,7 +693,11 @@
                 }
             ],
             "description": "PdfResponse is wrapper of mPDF for Nette.",
-            "time": "2024-03-20T21:31:50+00:00"
+            "support": {
+                "issues": "https://github.com/jkuchar/PdfResponse/issues",
+                "source": "https://github.com/jkuchar/PdfResponse/tree/v0.6.5"
+            },
+            "time": "2025-09-02T11:54:45+00:00"
         },
         {
             "name": "kdyby/forms-replicator",
