@@ -3,6 +3,8 @@ parameters:
 	maternaMexUser: 'xxx'
 	maternaMexPass: 'yyy'
 	https: false
+	googleMapsApiKey: 'xxx'
+	withDummyData: true
 	debug:
 		tracy: true
 		fakeUser:

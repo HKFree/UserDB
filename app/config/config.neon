@@ -17,6 +17,7 @@ parameters:
 	maternaMexUrl: 'https://api.maternacz.com:443/mex'
 	maternaMexUser: %env.MATERNA_MEX_USER%
 	maternaMexPass: %env.MATERNA_MEX_PASS%
+	withDummyData: false
 	debug:
 		fakeUser: false
 
@@ -40,7 +41,7 @@ migrations:
     dir: %appDir%/../db         # migrations base directory
     driver: mysql               # pgsql or mysql
     dbal: nette                 # nextras, nette, doctrine or dibi
-    withDummyData: %debugMode%
+    withDummyData: %withDummyData%
 
 services:
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
