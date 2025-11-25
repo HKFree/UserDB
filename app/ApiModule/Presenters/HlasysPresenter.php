@@ -10,10 +10,12 @@ class HlasysPresenter extends ApiPresenter
 {
     private $spravceOblasti;
     private $typSpravceOblasti;
+    private $uzivatel;
 
-    public function __construct(\App\Model\SpravceOblasti $spravceOblasti, TypSpravceOblasti $typSpravceOblasti) {
+    public function __construct(\App\Model\SpravceOblasti $spravceOblasti, TypSpravceOblasti $typSpravceOblasti, \App\Model\Uzivatel $uzivatel) {
         $this->spravceOblasti = $spravceOblasti;
         $this->typSpravceOblasti = $typSpravceOblasti;
+        $this->uzivatel = $uzivatel;
     }
 
     public function actionGetSpravce($typSpravce) {
@@ -30,5 +32,16 @@ class HlasysPresenter extends ApiPresenter
         }
 
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'spravci' => $out, 'typSpravce' => $typSpravce]));
+    }
+
+    public function actionGetClenySpolku() {
+        $clenove = $this->uzivatel->findAll()->where('spolek = ? AND TypClenstvi_id > ?', 1, 1);
+
+        $out = array();
+        foreach ($clenove as $clen) {
+            $out[$clen->id] = $clen->nick;
+        }
+
+        $this->sendResponse(new JsonResponse(['result' => 'OK', 'clenove' => $out]));
     }
 }
