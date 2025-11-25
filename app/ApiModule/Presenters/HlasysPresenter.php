@@ -35,7 +35,7 @@ class HlasysPresenter extends ApiPresenter
     }
 
     public function actionGetClenySpolku() {
-        $clenove = $this->uzivatel->findAll()->where('spolek = ? AND TypClenstvi_id > ?', 1, 1);
+        $clenove = $this->uzivatel->findAll()->where('spolek = ? AND TypClenstvi_id > ?', 1, 1)->where('systemovy = ?', 0);
 
         $out = array();
         foreach ($clenove as $clen) {
