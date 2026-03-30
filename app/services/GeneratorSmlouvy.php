@@ -30,8 +30,8 @@ class GeneratorSmlouvy
 
         $jmenoString = sprintf("%s %s", $uzivatel->jmeno, $uzivatel->prijmeni);
         $adresaString = sprintf("%s, %s %s", $uzivatel->ulice_cp, $uzivatel->psc, $uzivatel->mesto);
-        $cenaString = '290 Kč za měsíc';
-        // $cenaString .= ' včetně DPH'; // tohle odkomentovat až bude družstvo plátcem DPH
+        $cenaString = '290 Kč za započatý kalendářní měsíc';
+        $cenaString .= ' (včetně DPH)'; // tohle odkomentovat až bude družstvo plátcem DPH
         if ($cestneClenstviUzivateleModel->getHasCC($uzivatel->id)) {
             $cenaString = '0 Kč (zdarma)';
         }
