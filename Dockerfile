@@ -46,7 +46,20 @@ RUN echo "<?php header('Location: /userdb/');" > /var/www/html/index.php
 
 RUN mkdir -p /opt/userdb
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+# Copy local CA certificates if provided (for corporate proxies like zscaler)
+# To use: copy your CA certs to userdb/ca-certificates.crt before building
+COPY ca-certificates.cr[t] /tmp/
+RUN if [ -f /tmp/ca-certificates.crt ]; then \
+        cp /tmp/ca-certificates.crt /usr/local/share/ca-certificates/local-ca.crt && \
+        update-ca-certificates && \
+        git config --global http.sslCAInfo /etc/ssl/certs/ca-certificates.crt; \
+    fi
+
+# Install composer (with explicit error checking)
+RUN curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php \
+    && php /tmp/composer-setup.php --install-dir=/usr/bin --filename=composer \
+    && rm /tmp/composer-setup.php \
+    && composer --version
 
 WORKDIR /opt/userdb
 
@@ -55,7 +68,7 @@ RUN mkdir vendor
 # intentional caching of the composer-deps layer
 COPY composer.json composer.lock /opt/userdb/
 
-RUN composer install
+RUN composer install --prefer-dist --no-interaction
 
 ####################################################################################################
 # 2nd stage (in order to support composer deps caching)
