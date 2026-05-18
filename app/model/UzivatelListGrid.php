@@ -260,6 +260,13 @@ class UzivatelListGrid
             ];
             $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
             return $latte->renderToString($templatePath, $params);
+        })->setCustomRenderExport(function ($item) {
+            $stitkyUzivatele = $this->stitekUzivatele->getStitekByUserId($item->id);
+            $out = [];
+            foreach ($stitkyUzivatele as $stitekUzivateleItem) {
+                $out[] = $stitekUzivateleItem->text;
+            }
+            return join(", ", $out);
         });
 
         return $grid;
@@ -528,6 +535,13 @@ class UzivatelListGrid
             ];
             $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
             return $latte->renderToString($templatePath, $params);
+        })->setCustomRenderExport(function ($item) {
+            $stitkyUzivatele = $this->stitekUzivatele->getStitekByUserId($item->id);
+            $out = [];
+            foreach ($stitkyUzivatele as $stitekUzivateleItem) {
+                $out[] = $stitekUzivateleItem->text;
+            }
+            return join(", ", $out);
         });
 
         return $grid;
