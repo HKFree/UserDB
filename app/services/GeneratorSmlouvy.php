@@ -12,7 +12,8 @@ class GeneratorSmlouvy
      */
     public static function nahledUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
 
-        $parametry = self::parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy);
+        $starsi_smlouva_id = self::posledniPlatnaSmlouva($uzivatel);
+        $parametry = self::parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy, $starsi_smlouva_id);
 
         if (!getenv('PDF_GENERATOR_URL')) {
             throw new \Exception("Missing PDF_GENERATOR_URL environment variable\n");
@@ -23,10 +24,34 @@ class GeneratorSmlouvy
         return file_get_contents("$url?$params");
     }
 
-    public static function parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
+    public static function posledniPlatnaSmlouva($uzivatel) {
+        global $container;
+
+        // autodetekce puvodni smlouvy, kterou nahrazujeme
+        $PodpisSmlouvyModel = $container->getByType('App\Model\PodpisSmlouvy');
+        $podpis = $PodpisSmlouvyModel->findOneBy([
+            'Smlouva.uzivatel_id' => $uzivatel->id,
+            'Smlouva.typ' => 'ucastnicka',
+            'PodpisSmlouvy.smluvni_strana' => 'ucastnik',
+            'Smlouva.kdy_ukonceno' => null,
+            'PodpisSmlouvy.kdy_odmitnuto' => null,
+            'PodpisSmlouvy.kdy_podepsano NOT' => null,
+        ]);
+
+        \Tracy\Debugger::barDump($podpis);
+
+        if ($podpis) {
+            return $podpis->smlouva_id;
+        }
+
+        return null;
+    }
+
+    public static function parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null, $nahrazuje_smlouvu_id = null) {
         global $container;
 
         $cestneClenstviUzivateleModel = $container->getByType('App\Model\CestneClenstviUzivatele');
+        $smlouvaModel = $container->getByType('App\Model\Smlouva');
 
         $jmenoString = sprintf("%s %s", $uzivatel->jmeno, $uzivatel->prijmeni);
         $adresaString = sprintf("%s, %s %s", $uzivatel->ulice_cp, $uzivatel->psc, $uzivatel->mesto);
@@ -36,6 +61,8 @@ class GeneratorSmlouvy
             $cena1 = 0;
             $cena1poznamka = '(zdarma)';
         }
+
+        // TODO
 
         // $sluzba2 = '';
         // $cena2 = null;
@@ -66,22 +93,13 @@ class GeneratorSmlouvy
             array_push($ip4Adresy, [$adresaLomenoMaska, $gateway]);
         }
 
-        // TODO tohle patri o uroven vejs!
-        // autodetekce puvodni smlouvy, kterou nahrazujeme
-        $smlouvaModel = $container->getByType('App\Model\Smlouva');
-        $PodpisSmlouvyModel = $container->getByType('App\Model\PodpisSmlouvy');
-        $podpis = $PodpisSmlouvyModel->findOneBy([
-            'Smlouva.uzivatel_id' => $uzivatel->id,
-            'Smlouva.typ' => 'ucastnicka',
-            'PodpisSmlouvy.smluvni_strana' => 'ucastnik',
-            'Smlouva.kdy_ukonceno' => null,
-            'PodpisSmlouvy.kdy_odmitnuto' => null,
-            'PodpisSmlouvy.kdy_podepsano' => 'is not null',
-        ]);
-
         $nahrazuje_smlouvu_text = '';
-        if ($podpis) {
-            $nahrazuje_smlouvu_text = sprintf('která nahrazuje předchozí smlouvu č. %u ze dne %s', $podpis->smlouva_id, $podpis->kdy_podepsano);
+        if ($nahrazuje_smlouvu_id) {
+            $puvodni_smlouva = $smlouvaModel->find($nahrazuje_smlouvu_id);
+            $nahrazuje_smlouvu_text = sprintf('která nahrazuje předchozí smlouvu č. %u ze dne %s',
+                $puvodni_smlouva->id,
+                $puvodni_smlouva->kdy_vygenerovano->format('d.m.Y') // TODO tady by asi melo bejt datum kdy podepsano
+            );
         }
 
         $parametrySmlouvy = [
