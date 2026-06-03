@@ -50,7 +50,7 @@ services:
 	uzivatel: App\Model\Uzivatel
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
-	uzivatelTelevize: App\Model\uzivatelTelevize
+	uzivatelTelevize: App\Model\UzivatelTelevize
 	prichoziPlatba: App\Model\PrichoziPlatba
 	odchoziPlatba: App\Model\OdchoziPlatba
 	stavBankovnihoUctu: App\Model\StavBankovnihoUctu
