@@ -180,6 +180,15 @@ class UzivatelPresenter extends BasePresenter
 
                 $this->template->money_act = (1 == $uzivatel->money_aktivni) ? 'ANO' : 'NE';
                 $this->template->money_dis = (1 == $uzivatel->money_deaktivace) ? 'ANO' : 'NE';
+
+                $televize = $uzivatel->related('UzivatelTelevize.id')->fetch();
+                $this->template->televize_aktivni = 'n/a';
+                $this->template->televize_aktivovana = 'n/a';
+                if ($televize) {
+                    $this->template->televize_aktivni = (1 == $televize->aktivni) ? 'ANO' : 'NE';
+                    $this->template->televize_aktivovana = (1 == $televize->aktivovana) ? 'ANO' : 'NE';
+                }
+
                 $posledniPlatbaSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('spolek', 1)->order('id DESC')->limit(1);
                 $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);
                 if ($posledniPlatbaSpolek->count() > 0) {

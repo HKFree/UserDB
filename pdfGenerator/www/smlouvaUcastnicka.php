@@ -5,7 +5,7 @@
  * Použití: http://localhost:10109/smlouvaUcastnicka.php?jmeno_prijmeni=Josef+Skočdopole&telefon=158
  */
 
-$TEMPLATE_FILE_NAME = "SmlouvaUcastnicka_v7_template.odt";
+$TEMPLATE_FILE_NAME = "SmlouvaUcastnicka_v8_template.odt";
 
 chdir("/tmp");
 $templateRandomizedName = str_replace('.odt', sprintf('_%u', rand(1, 1e9)), $TEMPLATE_FILE_NAME);

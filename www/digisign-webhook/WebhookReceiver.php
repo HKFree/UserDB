@@ -138,6 +138,24 @@ function process_digisign_webhook($hook) {
             // 5. nastavit "vztah" s družstvem
             $uzivatel->update(['druzstvo' => 1]);
 
+            // 6. dodatečná smlouva? Ukončit tu předchozí.
+            if ($smlouva->nahrazuje_id) {
+                $smlouva0 = $SmlouvaModel->findOneBy(['id' => $smlouva->nahrazuje_id]);
+                $today = (new DateTime())->format('d.m.Y');
+                $novaPoznamka = sprintf(
+                    "%s%sSmlouva nahrazena novou smlouvou č. %u dne %s",
+                    $smlouva0->poznamka,
+                    empty($smlouva0->poznamka) ? '' : "\n",
+                    $smlouva->id,
+                    $today
+                );
+                $smlouva0->update([
+                    'kdy_ukonceno' => new DateTime(),
+                    'poznamka' => $novaPoznamka
+                ]);
+
+            }
+
             break;
         case 'envelopeDeclined': // obálka byla odmítnuta
             /**

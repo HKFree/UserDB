@@ -20,13 +20,6 @@
     {* <a n:href="UzivatelActions:exportAndSendRegForm id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat registrační formulář e-mailem</a> *}
     {/if}
     <a href="{link UzivatelList:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>
-    <div style="margin-top:3px;">
-    {if $activaceVisible}<a href="{link UzivatelActions:moneyActivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Aktivace</a>{/if}
-    {if $reactivaceVisible}<a href="{link UzivatelActions:moneyReactivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Reaktivace</a>{/if}
-    {if $deactivaceVisible}<a href="{link UzivatelActions:moneyDeactivate id=>$u->id}" class="btn btn-danger btn-sm" role="button"><i class="glyphicon glyphicon-remove-circle"></i> Deaktivace</a>{/if}
-    <a n:if="$igw" href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-check"></i> Zobrazit stav na IGW</a>
-    <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
-    </div>
 
     <section style="margin-top:10px;">
         <div class="d-flex">
@@ -144,11 +137,7 @@
         <tr><th>GPG klíč</th><td>{$u->gpg}</td></tr>
         <tr><th>Založen</th><td>{$u->zalozen}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
-
         <tr><th>Kauce na mobilní tarify</th><td>{$u->kauce_mobil}</td></tr>
-        <tr><th>Aktivní</th><td>{$money_act}</td></tr>
-        <tr><th>Deaktivace</th><td>{$money_dis}</td></tr>
-        <tr><th>Poslední aktivace</th><td>{$money_lastact}</td></tr>
         <tr>
             <th>Stav účtu</th>
             <td>
@@ -228,6 +217,33 @@
                  náhled
             </a>
         </p>
+
+        <br/>
+        <h4>
+            Internet
+            {if $activaceVisible}<a href="{link UzivatelActions:moneyActivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Aktivace</a>{/if}
+            {if $reactivaceVisible}<a href="{link UzivatelActions:moneyReactivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Reaktivace</a>{/if}
+            {if $deactivaceVisible}<a href="{link UzivatelActions:moneyDeactivate id=>$u->id}" class="btn btn-danger btn-sm" role="button"><i class="glyphicon glyphicon-remove-circle"></i> Deaktivace</a>{/if}
+            <a n:if="$igw" href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-check"></i> Zobrazit stav na IGW</a>
+            <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
+        </h4>
+        <table class="table table-nonfluid table-right">
+        <tbody>
+            <tr><th>Aktivní</th><td>{$money_act}</td></tr>
+            <tr><th>Deaktivace</th><td>{$money_dis}</td></tr>
+            <tr><th>Poslední aktivace</th><td>{$money_lastact}</td></tr>
+        </tbody>
+        </table>
+
+        <br/>
+        <h4>Televize</h4>
+        <table class="table table-nonfluid table-right">
+        <tbody>
+            <tr><th>Aktivní</th><td>{$televize_aktivni}</td></tr>
+            <tr><th>Aktivovaná</th><td>{$televize_aktivovana}</td></tr>
+        </tbody>
+        </table>
+
       </div>
     </div>
         <h4>IP Adresy</h4>

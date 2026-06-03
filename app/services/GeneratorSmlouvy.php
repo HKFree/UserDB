@@ -30,11 +30,17 @@ class GeneratorSmlouvy
 
         $jmenoString = sprintf("%s %s", $uzivatel->jmeno, $uzivatel->prijmeni);
         $adresaString = sprintf("%s, %s %s", $uzivatel->ulice_cp, $uzivatel->psc, $uzivatel->mesto);
-        $cenaString = '290 Kč za započatý kalendářní měsíc';
-        $cenaString .= ' (včetně DPH)'; // tohle odkomentovat až bude družstvo plátcem DPH
+        $cena1 = 290;
+        $cena1poznamka = '';
         if ($cestneClenstviUzivateleModel->getHasCC($uzivatel->id)) {
-            $cenaString = '0 Kč (zdarma)';
+            $cena1 = 0;
+            $cena1poznamka = '(zdarma)';
         }
+
+        // $sluzba2 = '';
+        // $cena2 = null;
+        $sluzba2 = "Televize - START balíček SledovaniTV";
+        $cena2 = 190;
 
         $subjectPrefix = getenv('AGREEMENT_NAME_PREFIX');
         if (!empty($subjectPrefix)) {
@@ -60,6 +66,24 @@ class GeneratorSmlouvy
             array_push($ip4Adresy, [$adresaLomenoMaska, $gateway]);
         }
 
+        // TODO tohle patri o uroven vejs!
+        // autodetekce puvodni smlouvy, kterou nahrazujeme
+        $smlouvaModel = $container->getByType('App\Model\Smlouva');
+        $PodpisSmlouvyModel = $container->getByType('App\Model\PodpisSmlouvy');
+        $podpis = $PodpisSmlouvyModel->findOneBy([
+            'Smlouva.uzivatel_id' => $uzivatel->id,
+            'Smlouva.typ' => 'ucastnicka',
+            'PodpisSmlouvy.smluvni_strana' => 'ucastnik',
+            'Smlouva.kdy_ukonceno' => null,
+            'PodpisSmlouvy.kdy_odmitnuto' => null,
+            'PodpisSmlouvy.kdy_podepsano' => 'is not null',
+        ]);
+
+        $nahrazuje_smlouvu_text = '';
+        if ($podpis) {
+            $nahrazuje_smlouvu_text = sprintf('která nahrazuje předchozí smlouvu č. %u ze dne %s', $podpis->smlouva_id, $podpis->kdy_podepsano);
+        }
+
         $parametrySmlouvy = [
           'cislo' => $cislo_smlouvy ?? '0',
           'ze_dne' => (new DateTime())->format('d.m.Y'),
@@ -71,7 +95,12 @@ class GeneratorSmlouvy
           'telefon' => $uzivatel->telefon,
           'adresa' => $adresaString,
           'email_spravce_oblasti' => sprintf('oblast%u@hkfree.org', $uzivatel->Ap->Oblast->id),
-          'cena' => $cenaString
+          'cena1' => sprintf('%u Kč', $cena1),
+          'cena1poznamka' => $cena1poznamka,
+          'sluzba2' => $sluzba2,
+          'cena2' => $cena2 ? sprintf('%u Kč', $cena2) : '',
+          'cena_celkem' => sprintf('%u Kč', $cena1 + $cena2),
+          'nahrazuje_smlouvu' => $nahrazuje_smlouvu_text
         ];
         if ($uzivatel->TypPravniFormyUzivatele->text == "PO") {
             $parametrySmlouvy['upresneni'] = 'Firma';
