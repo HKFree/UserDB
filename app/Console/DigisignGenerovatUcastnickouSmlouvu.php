@@ -18,8 +18,7 @@ use DigitalCz\DigiSign\DigiSign;
 )]
 class DigisignGenerovatUcastnickouSmlouvu extends Command
 {
-    private $template1Id = "0193b32a-d60f-7077-9fae-123a91d1a308"; # účastnická smlouva v7 (migrace)
-    private $template2Id = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
+    private $templateId = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
     private $FILE_STORAGE_PATH;
     private $uzivatelModel;
     private $smlouvaModel;
@@ -78,7 +77,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         $krok = 0;
 
         printf("Krok %u: check template\n", ++$krok);
-        $template = $dgs->envelopeTemplates()->get($uzivatel->spolek ? $this->template1Id : $this->template2Id);
+        $template = $dgs->envelopeTemplates()->get($this->templateId);
         printf("Template %s name: \"%s\"\n", $template->id, $template->title);
         $smlouva->update(['sablona' => $template->title]);
 
