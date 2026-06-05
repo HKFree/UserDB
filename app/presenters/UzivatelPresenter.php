@@ -17,7 +17,6 @@ use Tracy\Debugger;
 use Nette\Utils\Validators;
 use Nette\Utils\Strings;
 use App\Components;
-use Nette\Forms\Controls\SubmitButton;
 
 /**
  * Uzivatel presenter.
@@ -170,6 +169,24 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
+    public function renderTelevize() {
+        $uid = $this->getParameter('id');
+        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $this->template->u = $uzivatel;
+
+        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
+        $this->template->televizeRow = $televizeRow;
+
+        $this->template->televizeAktivniDnesRow = $uzivatel->related('UzivatelTelevizeAktivni')
+            ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
+            ->order('datum_od DESC')
+            ->limit(1)
+            ->fetch();
+
+        $this->template->televizeAktivniRows = $uzivatel->related('UzivatelTelevizeAktivni')->order('datum_od');
+
+        $this->template->televizeReportRows = $uzivatel->related('UzivatelTelevizeReport')->order('rok, mesic');
+    }
     public function renderShow() {
         if ($this->getParameter('id')) {
             $uid = $this->getParameter('id');
@@ -181,13 +198,16 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->money_act = (1 == $uzivatel->money_aktivni) ? 'ANO' : 'NE';
                 $this->template->money_dis = (1 == $uzivatel->money_deaktivace) ? 'ANO' : 'NE';
 
-                $televize = $uzivatel->related('UzivatelTelevize.id')->fetch();
-                $this->template->televize_aktivni = 'n/a';
-                $this->template->televize_aktivovana = 'n/a';
-                if ($televize) {
-                    $this->template->televize_aktivni = (1 == $televize->aktivni) ? 'ANO' : 'NE';
-                    $this->template->televize_aktivovana = (1 == $televize->aktivovana) ? 'ANO' : 'NE';
-                }
+                $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
+                $this->template->televize_objednana = $televizeRow?->objednana == 1;
+                $this->template->televize_cena = $televizeRow?->cena;
+                $televizeAktivniRow = $uzivatel->related('UzivatelTelevizeAktivni')
+                    ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
+                    ->order('datum_od DESC')
+                    ->limit(1)
+                    ->fetch();
+                $this->template->televize_aktivni = $televizeAktivniRow ? true : false;
+                $this->template->televize_aktivni_poznamka = $televizeAktivniRow?->poznamka;
 
                 $posledniPlatbaSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('spolek', 1)->order('id DESC')->limit(1);
                 $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);
