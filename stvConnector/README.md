@@ -29,7 +29,7 @@ docker compose exec web php bin/console migrations:continue
 
 Spustit shell
 ```shell
-docker compose run --build --rm --entrypoint /bin/bash  stv-connector
+docker compose run --build --rm --entrypoint /bin/bash stv-connector
 ```
 
 Ruční spuštění mimo cron:
