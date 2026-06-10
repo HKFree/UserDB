@@ -28,7 +28,7 @@
                     <th>Aktivní</th>
                     <td>
                         {if $televizeAktivniDnesRow}
-                            ANO ({$televizeAktivniDnesRow->poznamka})
+                            ANO <i>{$televizeAktivniDnesRow->poznamka}</i> do: {$televizeAktivniDnesRow->datum_do|date:'j. n. Y'}
                         {else}
                             NE
                         {/if}

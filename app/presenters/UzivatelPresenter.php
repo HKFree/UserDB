@@ -208,6 +208,7 @@ class UzivatelPresenter extends BasePresenter
                     ->fetch();
                 $this->template->televize_aktivni = $televizeAktivniRow ? true : false;
                 $this->template->televize_aktivni_poznamka = $televizeAktivniRow?->poznamka;
+                $this->template->televize_aktivni_do = $televizeAktivniRow?->datum_do;
 
                 $posledniPlatbaSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('spolek', 1)->order('id DESC')->limit(1);
                 $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);

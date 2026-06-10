@@ -257,7 +257,7 @@
                 <th>Aktivní</th>
                 <td>
                 {if $televize_aktivni}
-                    ANO ({$televize_aktivni_poznamka})
+                    ANO <i>{$televize_aktivni_poznamka}</i> do: {$televize_aktivni_do|date:'j. n. Y'}
                 {else}
                     NE
                 {/if}

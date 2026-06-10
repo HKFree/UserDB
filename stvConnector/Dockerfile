@@ -5,8 +5,8 @@ RUN apk add python3 py3-requests py3-dotenv py3-mysqlclient
 
 COPY . /opt
 
-RUN echo -e "#!/bin/sh\n/opt/downloadStvUserReport.py" > /etc/periodic/hourly/downloadStvUserReport.sh
-RUN chmod +x /etc/periodic/hourly/downloadStvUserReport.sh
+RUN rm /var/spool/cron/crontabs/root
+RUN ln -s /opt/crontab.txt /var/spool/cron/crontabs/root
 
 WORKDIR /opt
 
