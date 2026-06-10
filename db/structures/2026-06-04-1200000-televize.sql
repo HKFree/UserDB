@@ -24,5 +24,5 @@ CREATE TABLE `UzivatelTelevizeReport` (
   `mesic` numeric(2) NULL,
   `poznamka` text,
   `posledni_zmena` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-  FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci COMMENT="Report o využití služby televize (alespoň 1x v měsíci = záznam)";
+  UNIQUE(`Uzivatel_id`, `rok`, `mesic`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci COMMENT="Report o využití služby televize (alespoň 1x v měsíci = záznam zde)";

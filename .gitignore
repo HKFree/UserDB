@@ -30,5 +30,5 @@ resolv.conf
 .php_cs.cache
 
 # Tyka se digisign API:
-.env*
+.env
 trace*json
