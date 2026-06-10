@@ -76,9 +76,12 @@ def download_stv_user_report():
     print("Expected a JSON object with a 'users' array.", file=sys.stderr)
     sys.exit(1)
 
+  # counters
   total = len(data['users'])
+  skipped = 0
+  updated = 0
   counter = 0
-  # Process each item
+
   for item in data['users']:
     counter += 1
     print(f"User {counter}/{total}: {item}")
@@ -86,6 +89,7 @@ def download_stv_user_report():
     uzivatel_id = item.get('partnerid')
     if not uzivatel_id or uzivatel_id == None:
       print("User record missing 'partnerid' field.", file=sys.stderr)
+      skipped += 1
       continue
     uzivatel_id = int(uzivatel_id)
     sql = (
@@ -96,11 +100,22 @@ def download_stv_user_report():
     try:
       cursor.execute(sql, (uzivatel_id, year, month, item))
       conn.commit()
+    except MySQLdb.IntegrityError as e:
+      print(f"User {counter}/{total}: UID {uzivatel_id} missing in UserDB, skipped")
+      skipped += 1
+      continue
+
     except MySQLdb.Error as e:
       print(f"Error executing query for user {uzivatel_id}: {e}", file=sys.stderr)
       continue
 
-    print(f"User {counter}/{total}: OK")
+    updated += 1
+    print(f"User {counter}/{total}: Done")
+
   cursor.close()
 
+  print(f"SledovaniTV User Report: Out of {total} records, {updated} updated in UserDB, {skipped} skipped.")
+
 download_stv_user_report()
+
+print("Done.")
