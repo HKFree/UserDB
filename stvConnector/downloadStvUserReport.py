@@ -27,17 +27,17 @@ if not STV_PARTNER or not STV_PASSWORD:
 # MariaDB connection details from environment variables
 USERDB_DB_HOST = os.environ.get('USERDB_DB_HOST', 'localhost')
 USERDB_DB_PORT = int(os.environ.get('USERDB_DB_PORT', 3306))
-USERDB_DB_USER = os.environ.get('USERDB_DB_USER')
+USERDB_DB_USERNAME = os.environ.get('USERDB_DB_USERNAME')
 USERDB_DB_PASSWORD = os.environ.get('USERDB_DB_PASSWORD')
 USERDB_DB_NAME = os.environ.get('USERDB_DB_NAME')
 
-if not all([USERDB_DB_USER, USERDB_DB_PASSWORD, USERDB_DB_NAME]):
-  print("MariaDB environment variables (USERDB_DB_USER, USERDB_DB_PASSWORD, USERDB_DB_NAME) must be set.", file=sys.stderr)
+if not all([USERDB_DB_USERNAME, USERDB_DB_PASSWORD, USERDB_DB_NAME]):
+  print("MariaDB environment variables (USERDB_DB_USERNAME, USERDB_DB_PASSWORD, USERDB_DB_NAME) must be set.", file=sys.stderr)
   sys.exit(1)
 
 try:
   conn = MySQLdb.connect(
-    user=USERDB_DB_USER,
+    user=USERDB_DB_USERNAME,
     password=USERDB_DB_PASSWORD,
     host=USERDB_DB_HOST,
     port=USERDB_DB_PORT,
