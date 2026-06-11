@@ -582,7 +582,7 @@ class UzivatelPresenter extends BasePresenter
             $values->zalozen = new \DateTime();
             $values->heslo = $this->uzivatel->generateStrongPassword();
             $values->heslo_hash = $this->uzivatel->generateWeakHash($values->heslo);
-            $values->heslo_strong_hash = $this->uzivatel->generateStrongHash($values->heslo);
+            $values->heslo_strong_hash = $this->uzivatel->hashStrongPassword($values->heslo);
             $values->id = $this->uzivatel->getNewID();
 
             $uzivatel = $this->uzivatel->insert($values);

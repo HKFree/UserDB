@@ -41,7 +41,12 @@ class AppPresenter extends ApiPresenter
             $this->sendLoginFailed($uid);
         }
 
-        if ($u->heslo_strong_hash === $this->uzivatel->generateStrongHash($heslo)) {
+        $rehashNeeded = false;
+        if ($this->uzivatel->verifyStrongPassword($heslo, $u->heslo_strong_hash, $rehashNeeded)) {
+            // Postupná migrace ze starého (nesoleného SHA-256) na bcrypt hash při úspěšném loginu
+            if ($rehashNeeded) {
+                $u->update(['heslo_strong_hash' => $this->uzivatel->hashStrongPassword($heslo)]);
+            }
             $token = $this->aplikaceToken->createAplikaceToken($uid);
             $this->aplikaceLog->log('app.getToken.successful', array($token->id));
             $this->sendResponse(new JsonResponse(['result' => 'OK', 'token' => $token->token]));

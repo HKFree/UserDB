@@ -248,6 +248,44 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return (crypt($password, 'hk'));
     }
 
+    /**
+     * Vytvoří bezpečný hash hesla pro uložení do sloupce heslo_strong_hash.
+     * Používá password_hash() (aktuálně bcrypt), tedy solený a pomalý hash.
+     */
+    public function hashStrongPassword($password) {
+        return password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    /**
+     * Ověří heslo proti uloženému hashi.
+     *
+     * Podporuje i historický formát (nesolený SHA-256, 64 hex znaků) kvůli
+     * zpětné kompatibilitě. Pokud byl použit starý formát nebo je potřeba
+     * přehashovat aktuálnějšími parametry, nastaví $rehashNeeded na true –
+     * volající by pak měl uložit nový hash z hashStrongPassword().
+     *
+     * Veškerá porovnání jsou konstantní v čase (hash_equals / password_verify).
+     */
+    public function verifyStrongPassword($password, $storedHash, &$rehashNeeded = false) {
+        $rehashNeeded = false;
+        if ($storedHash === null || $storedHash === '') {
+            return false;
+        }
+        // Starý formát: 64 hex znaků = nesolený SHA-256
+        if (preg_match('/^[0-9a-f]{64}$/i', $storedHash)) {
+            if (hash_equals($storedHash, hash('sha256', $password))) {
+                $rehashNeeded = true;
+                return true;
+            }
+            return false;
+        }
+        if (password_verify($password, $storedHash)) {
+            $rehashNeeded = password_needs_rehash($storedHash, PASSWORD_DEFAULT);
+            return true;
+        }
+        return false;
+    }
+
     public function getNewID() {
         return $this->getConnection()->query('SELECT t1.id+1 AS Free
 FROM Uzivatel AS t1
