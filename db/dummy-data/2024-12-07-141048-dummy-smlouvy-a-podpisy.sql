@@ -10,7 +10,6 @@ VALUES
 (150001, UUID(), 'druzstvo', 'Ing. Předseda Světa', NULL, NULL);
 
 /* Smlouva odmítnutá */
-
 INSERT INTO Smlouva (id, uzivatel_id, externi_id, typ, kdy_vygenerovano, poznamka)
 VALUES (150002, 1001, UUID(), 'ucastnicka', NOW(), "on to vodmitnul, ani se o tom semnou nepobavil! nehezký přístup"); -- Petr Novak
 
