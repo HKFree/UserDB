@@ -197,7 +197,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $newId = $this->requestDruzstvoContract->execute($user_id);
 
         $this->flashMessage(sprintf('Nová smlouva číslo %u bude odeslána na e-mail %s.', $newId, $current_user->email));
-        // Tady call na generaci nove smlouvy a odeslani
+
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 

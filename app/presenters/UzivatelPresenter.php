@@ -169,24 +169,6 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderTelevize() {
-        $uid = $this->getParameter('id');
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
-        $this->template->u = $uzivatel;
-
-        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-        $this->template->televizeRow = $televizeRow;
-
-        $this->template->televizeAktivniDnesRow = $uzivatel->related('UzivatelTelevizeAktivni')
-            ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
-            ->order('datum_od DESC')
-            ->limit(1)
-            ->fetch();
-
-        $this->template->televizeAktivniRows = $uzivatel->related('UzivatelTelevizeAktivni')->order('datum_od');
-
-        $this->template->televizeReportRows = $uzivatel->related('UzivatelTelevizeReport')->order('rok, mesic');
-    }
     public function renderShow() {
         if ($this->getParameter('id')) {
             $uid = $this->getParameter('id');
@@ -200,7 +182,7 @@ class UzivatelPresenter extends BasePresenter
 
                 $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
                 $this->template->televize_objednana = $televizeRow?->objednana == 1;
-                $this->template->televize_cena = $televizeRow?->cena;
+                $this->template->televize_cena = $televizeRow?->cena ?: $this->parameters->getCenaSledovaniTV();
                 $televizeAktivniRow = $uzivatel->related('UzivatelTelevizeAktivni')
                     ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
                     ->order('datum_od DESC')

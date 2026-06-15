@@ -4,5 +4,5 @@ namespace App\Model;
 
 class UzivatelTelevize extends Table
 {
-    protected $tableName = 'UzivatelTelevize';
+    public $tableName = 'UzivatelTelevize';
 }

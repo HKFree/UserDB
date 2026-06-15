@@ -1,0 +1,26 @@
+{block content}
+
+<h2>
+    <a href="{link Uzivatel:show id=>$u->id}">UID {$u->id} - {$u->jmeno} {$u->prijmeni} ({$u->nick})</a>
+    {include spolekDruzstvoLabelUzivatel $u}
+</h2>
+
+<h3>služba Televize - cena</h3>
+
+<div class="d-flex">
+  Původně: {$televize_cena} Kč/měsíc
+
+</div>
+
+<form n:name=televizeCenaForm class=form>
+  <div>
+    <label n:name=cena>
+      Nová cena:
+      <input type="number" n:name=cena min="0" max="9999" step="1" autofocus>
+      Kč/měsíc
+    </label>
+  </div>
+  <div>
+    <input n:name=send class="btn btn-default">
+  </div>
+</form>

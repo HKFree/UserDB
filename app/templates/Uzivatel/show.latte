@@ -193,8 +193,8 @@
     </div>
     <div class="panel-right">
         <h4>Smlouvy &nbsp;
-            <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-success btn-sm" id="btn-handle-subscriber-contract" role="button">
-                <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva...
+            <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-primary btn-sm" id="btn-handle-subscriber-contract" role="button">
+                <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva
             </a>
             <a href="{link UzivatelActions:handleSubscriberContractPreview id=>$u->id}" class="btn btn-default btn-sm" id="btn-handle-subscriber-contract" role="button">
                  náhled
@@ -237,7 +237,18 @@
         </table>
 
         <br/>
-        <h4>Televize</h4>
+        <h4>
+            Televize
+            {if !$televize_objednana}
+            <a href="{link UzivatelTelevizeActions:subscribe id=>$u->id}" class="btn btn-primary btn-sm" id="btn-televize-objednat" role="button">
+                <i class="glyphicon glyphicon-ok-circle"></i> Objednat
+            </a>
+            {else}
+            <a href="{link UzivatelTelevizeActions:unsubscribe id=>$u->id}" class="btn btn-danger btn-sm" id="btn-televize-odobjednat" role="button">
+                <i class="glyphicon glyphicon-remove-circle"></i> Odhlásit
+            </a>
+            {/if}
+        </h4>
         <table class="table table-nonfluid table-right">
         <tbody>
             <tr>
@@ -246,13 +257,21 @@
                 {if $televize_objednana}
                     <span title="Služba televize je objednaná, pravidelně odečítat kredit, aktivovat-deaktivovat">
                     ANO
-                    </span>
-                    ({$televize_cena} Kč/měsíc)
                 {else}
                     NE
                 {/if}
                 </td>
             </tr>
+            <tr>
+                <th>
+                    Cena
+                </th>
+                <td>
+                    {$televize_cena} Kč/měsíc
+                    <a href="{link UzivatelTelevize:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> změnit cenu</a>
+                </td>
+            </tr>
+
             <tr>
                 <th>Aktivní</th>
                 <td>
@@ -265,7 +284,27 @@
             </tr>
         </tbody>
         </table>
-        <a href="{link Uzivatel:televize id=>$u->id}">podrobnosti</a>
+        <a href="{link UzivatelTelevize:show id=>$u->id}">podrobnosti</a>
+        <script>
+            $('#btn-televize-objednat').on('click', function() {
+                const c = confirm("Objednání placené služby SledovaniTV.\n\nNezapomeň poslat k podpisu novou smlouvu.\n\nPokračovat?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
+            $('#btn-televize-odobjednat').on('click', function() {
+                const c = confirm("Zrušení placené služby SledovaniTV. Televize pojede ještě do konce tohoto měsíce.\n\nNezapomeň poslat k podpisu novou smlouvu.\n\nPokračovat?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
+        </script>
 
       </div>
     </div>

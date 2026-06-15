@@ -18,12 +18,17 @@
                             <span title="Služba televize je objednaná, pravidelně odečítat kredit, aktivovat-deaktivovat">
                                 ANO
                             </span>
-                            ({$televizeRow->cena} Kč/měsíc)
                         {else}
                             NE
                         {/if}
                     </td>
                 </tr>
+                <tr>
+                    <th>Cena</th>
+                    <td>
+                        {$televizeRow->cena} Kč/měsíc
+                        <a href="{link UzivatelTelevize:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> změnit cenu</a>
+                    </td>
                 <tr>
                     <th>Aktivní</th>
                     <td>
@@ -36,6 +41,8 @@
                 </tr>
             </tbody>
         </table>
+
+        <br/>
 
         <h3>Aktivní od-do</h3>
         <table class="table">
@@ -58,6 +65,8 @@
                 </tr>
             </tbody>
         </table>
+
+        <br/>
 
         <h3>Report využití po měsících</h3>
         <table class="table">
