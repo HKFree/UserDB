@@ -2,20 +2,9 @@
 
 namespace App\Presenters;
 
-use App\Components\UserLabelsComponent;
-use App\Services\CryptoSluzba;
-use App\Services\SmlouvaStavSluzba;
 use Nette;
 use App\Model;
-use App\Services;
 use Nette\Application\UI\Form;
-use Nette\Application\UI\Presenter;
-use Nette\Database\Explorer;
-use Nette\Forms\Container;
-use Nette\Utils\Html;
-use Tracy\Debugger;
-use Nette\Utils\Validators;
-use Nette\Utils\Strings;
 use App\Components;
 
 /**
@@ -49,7 +38,9 @@ class UzivatelTelevizePresenter extends BasePresenter
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $this->template->u = $uzivatel;
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-        $this->template->televizeRow = $televizeRow;
+
+        $this->template->televize_objednana = $televizeRow?->objednana == 1;
+        $this->template->televize_cena = $televizeRow?->cena ?: $this->parameters->getCenaSledovaniTV();
 
         $this->template->televizeAktivniDnesRow = $uzivatel->related('UzivatelTelevizeAktivni')
             ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])

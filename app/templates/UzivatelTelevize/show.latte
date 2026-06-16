@@ -14,7 +14,7 @@
                 <tr>
                     <th>Objednaná</th>
                     <td>
-                        {if $televizeRow?->objednana}
+                        {if $televize_objednana}
                             <span title="Služba televize je objednaná, pravidelně odečítat kredit, aktivovat-deaktivovat">
                                 ANO
                             </span>
@@ -26,7 +26,7 @@
                 <tr>
                     <th>Cena</th>
                     <td>
-                        {$televizeRow->cena} Kč/měsíc
+                        {$televize_cena} Kč/měsíc
                         <a href="{link UzivatelTelevize:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> změnit cenu</a>
                     </td>
                 <tr>
