@@ -55,6 +55,8 @@ class GeneratorSmlouvy
 
         $jmenoString = sprintf("%s %s", $uzivatel->jmeno, $uzivatel->prijmeni);
         $adresaString = sprintf("%s, %s %s", $uzivatel->ulice_cp, $uzivatel->psc, $uzivatel->mesto);
+
+        // Služba 1 internet - je tam vždy
         $cena1 = 290;
         $cena1poznamka = '';
         if ($cestneClenstviUzivateleModel->getHasCC($uzivatel->id)) {
@@ -62,12 +64,15 @@ class GeneratorSmlouvy
             $cena1poznamka = '(zdarma)';
         }
 
-        // TODO
+        // Služba 2 televize - podmíněně
+        $sluzba2 = '';
+        $cena2 = null;
 
-        // $sluzba2 = '';
-        // $cena2 = null;
-        $sluzba2 = "Televize - START balíček SledovaniTV";
-        $cena2 = 190;
+        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
+        if ($televizeRow?->objednana == 1) {
+            $sluzba2 = "Televize - START balíček SledovaniTV";
+            $cena2 = intval($televizeRow?->cena);
+        }
 
         $subjectPrefix = getenv('AGREEMENT_NAME_PREFIX');
         if (!empty($subjectPrefix)) {
