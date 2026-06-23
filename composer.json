@@ -38,7 +38,7 @@
 		"pear2/net_transmitter": "dev-develop#8373abbddb3a89891e6bc335de8c1c2a5268ed24@dev",
 		"pear2/net_routeros": "dev-develop#83c40f71edaae0d98e17d81b6b827b658581047d@dev",
 		"nextras/migrations": "^3.3",
-		"guzzlehttp/guzzle": "~7.9.2",
+		"guzzlehttp/guzzle": "~7.12.1",
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
 		"defuse/php-encryption": "~2.2.1",
 		"ext-json": "*",
