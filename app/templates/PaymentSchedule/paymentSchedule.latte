@@ -55,7 +55,7 @@
     <div class="col-md-6">
       <center>
         <h2>QR kód pro rychlou platbu</h2>
-        <img src="{link QrCode:png text=>$spayd}">
+        <img src="{$qrImagePngBase64|nocheck}">
         <br/>
         {$platby_celkem|number:2} Kč
         <br/>
