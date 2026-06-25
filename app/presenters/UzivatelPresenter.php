@@ -309,6 +309,48 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
+    public function renderPaymentSummary() {
+        $uid = $this->getParameter('id');
+        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
+
+        $this->template->u = $uzivatel;
+        $this->template->stavUctu = $stavUctu;
+        $this->template->today = new \DateTime();
+
+        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
+
+        $pravidelne_mesicni_platby = [['Pevný přístup k internetu', $this->parameters->getVyseClenskehoPrispevku()]];
+        if ($televizeRow?->objednana == 1) {
+            array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow?->cena ?: $this->parameters->getCenaSledovaniTV()]);
+        }
+
+        $this->template->pravidelne_mesicni_platby = $pravidelne_mesicni_platby;
+        $platby_celkem = array_sum(array_map(fn($a)=>$a[1], $pravidelne_mesicni_platby));
+        $this->template->platby_celkem = $platby_celkem;
+
+        $nazev_pripojence = $uzivatel->TypPravniFormyUzivatele->text == 'PO'
+            ? $uzivatel->firma_nazev
+            : "{$uzivatel->jmeno} {$uzivatel->prijmeni}";
+        $this->template->nazev_pripojence = $nazev_pripojence;
+
+        $cisloUctu = '107207255/2010';
+        $cisloUctuIBAN = 'CZ0820100000000107207255';
+        $this->template->cisloUctu = $cisloUctu;
+
+        $datumPlatby = (new \DateTime());
+        $this->template->datumPlatby = $datumPlatby;
+
+        $poznamka = "{$nazev_pripojence} UID{$uzivatel->id} QR1";
+
+        $spayd = sprintf('SPD*1.0*ACC:%s*AM:%.2f*CC:CZK*MSG:%s*X-VS:%u', $cisloUctuIBAN, $platby_celkem, $poznamka, $uzivatel->id);
+        if ($datumPlatby) {
+            $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
+        }
+
+        $this->template->spayd = $spayd;
+    }
+
     public function createComponentLogTable() {
         return $this->logTableFactory->create($this);
     }

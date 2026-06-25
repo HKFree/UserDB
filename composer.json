@@ -55,7 +55,8 @@
 		"kdyby/forms-replicator": "dev-master#5a71bc343d5d0a2e183ee8dc6b0b4dc645955030",
 		"tracy/tracy": "^2.10",
 		"contributte/console": "^0.10.1",
-                "digitalcz/digisign": "^2.5"
+		"digitalcz/digisign": "^2.5",
+		"mpdf/qrcode": "^1.2"
 	},
 	"require-dev": {
 		"nette/tester": "~1.0",

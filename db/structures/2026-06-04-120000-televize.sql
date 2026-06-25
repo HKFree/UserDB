@@ -11,7 +11,7 @@ CREATE TABLE `UzivatelTelevizeAktivni` (
   `Uzivatel_id` int(11) NOT NULL,
   `datum_od` date NULL,
   `datum_do` date NULL,
-  `prvni_bezplatne_obdobi` tinyint(1) NULL,
+  `prvni_bezplatne_obdobi` tinyint(1) NOT NULL DEFAULT 0,
   `poznamka` text,
   `posledni_zmena` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   FOREIGN KEY (`Uzivatel_id`) REFERENCES `Uzivatel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE

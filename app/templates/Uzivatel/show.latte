@@ -190,6 +190,12 @@
 
     {/if}
     </table>
+    <h2>Rozpis plateb</h2>
+    <a n:href="UzivatelActions:sendPaymentInfo id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat e-mailem</a>
+    <a n:href="Uzivatel:paymentSummary id=>$u->id" class="btn btn-default btn-sm" role="button">
+        náhled
+    </a>
+
     </div>
     <div class="panel-right">
         <h4>Smlouvy &nbsp;

@@ -201,4 +201,21 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 
+    public function actionSendPaymentInfo() {
+
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($uzivatel->druzstvo != 1) return;
+
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        \Tracy\Debugger::barDump($so);
+
+        // TODO
+        // $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);
+        // $this->mailService->sendDruzstvoConfirmationRequestCopy($uzivatel, $so);
+
+        $this->flashMessage('E-mail s rozpisem plateb odeslán.');
+
+        $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
+    }
+
 }
