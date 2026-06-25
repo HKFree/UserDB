@@ -1,0 +1,9 @@
+{block content}
+<h1>
+  <a href="{link Uzivatel:show id=>$u->id}">UID {$u->id} - {$u->jmeno} {$u->prijmeni} ({$u->nick})</a>
+  - rozpis plateb
+</h1>
+
+{include 'paymentSchedule.latte'}
+
+{/block}

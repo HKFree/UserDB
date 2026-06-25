@@ -329,19 +329,21 @@ class UzivatelPresenter extends BasePresenter
         $platby_celkem = array_sum(array_map(fn($a)=>$a[1], $pravidelne_mesicni_platby));
         $this->template->platby_celkem = $platby_celkem;
 
-        $nazev_pripojence = $uzivatel->TypPravniFormyUzivatele->text == 'PO'
-            ? $uzivatel->firma_nazev
-            : "{$uzivatel->jmeno} {$uzivatel->prijmeni}";
-        $this->template->nazev_pripojence = $nazev_pripojence;
+        $nazev_uzivatele = $this->uzivatel->nazevUzivatele($uzivatel->id);
+        $this->template->nazev_uzivatele = $nazev_uzivatele;
 
         $cisloUctu = '107207255/2010';
         $cisloUctuIBAN = 'CZ0820100000000107207255';
         $this->template->cisloUctu = $cisloUctu;
 
-        $datumPlatby = (new \DateTime());
+        $today = new \DateTime();
+        $datumPlatby = new \DateTime($today->format('Y-m-25')); // 25. den v mesici
+        if ((int)$today->format('j') > 25) {
+            $datumPlatby = (clone $today)->modify('+7 days'); // dnes + 7 dni
+        }
         $this->template->datumPlatby = $datumPlatby;
 
-        $poznamka = "{$nazev_pripojence} UID{$uzivatel->id} QR1";
+        $poznamka = "{$nazev_uzivatele} UID{$uzivatel->id} QR1";
 
         $spayd = sprintf('SPD*1.0*ACC:%s*AM:%.2f*CC:CZK*MSG:%s*X-VS:%u', $cisloUctuIBAN, $platby_celkem, $poznamka, $uzivatel->id);
         if ($datumPlatby) {

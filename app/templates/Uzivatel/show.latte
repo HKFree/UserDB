@@ -30,10 +30,9 @@
 
     <br><br>
     <style>
-	.table-nonfluid {
-	    width: auto;
-	}
-
+        .table-nonfluid {
+            width: auto;
+        }
         .flex-content{
             display:flex;
         }
@@ -58,6 +57,9 @@
         }
         .nested-payments tr > * {
             width: 50%;
+        }
+        th+th, td+td {
+          padding-left: 1em;
         }
     </style>
     <div class="flex-content">
@@ -129,72 +131,77 @@
         <tr><th>Email</th><td>{$u->email}</td></tr>
         <tr n:if="isset($u->email2)"><th>Sekundární email</th><td>{$u->email2}</td></tr>
         <tr><th>Telefon</th><td>{$u->telefon}</td></tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
-
         <tr><th>Technologie připojení</th><td>{$u->TechnologiePripojeni->text}</td></tr>
-        <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni?->text}</td></tr>
+        <!-- <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni?->text}</td></tr> -->
         <tr><th>Poznámka</th><td>{$u->poznamka|breakLines}</td></tr>
         <tr><th>GPG klíč</th><td>{$u->gpg}</td></tr>
         <tr><th>Založen</th><td>{$u->zalozen}</td></tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
-        <tr><th>Kauce na mobilní tarify</th><td>{$u->kauce_mobil}</td></tr>
-        <tr>
-            <th>Stav účtu</th>
-            <td>
-                <table class="nested-payments">
-                    <thead>
-                        <tr>
-                            <th>Spolek</th>
-                            <th>Družstvo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{$money_bal_spolek}</td>
-                            <td>{$money_bal_druzstvo}</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'spolek'">Přehled plateb</a>
-                            </td>
-                            <td>
-                                <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'druzstvo'">Přehled plateb</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <th>Poslední platba</th>
-            <td>
-                <table class="nested-payments">
-                    <tr>
-                        <td>{$money_lastpay_spolek}</td>
-                        <td>{$money_lastpay_druzstvo}</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        <tr n:if="$u->spolek"><th>Souhrn členských příspěvků od 1.11.2017</th><td>{$money_dph}</td></tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
+        <!-- <tr><th>Kauce na mobilní tarify</th><td>{$u->kauce_mobil}</td></tr> -->
 
-    <script src="{$basePath}/js/gps.js"></script>
-    <script>
-      $(document).ready(function() {
-        $("#gpsCoordsButton").click(function() {
-          rotateGPSFormat($("#gpsCoords"));
+        <script src="{$basePath}/js/gps.js"></script>
+        <script>
+        $(document).ready(function() {
+            $("#gpsCoordsButton").click(function() {
+            rotateGPSFormat($("#gpsCoords"));
+            });
         });
-      });
-    </script>
-
+        </script>
     {/if}
     </table>
-    <h2>Rozpis plateb</h2>
-    <a n:href="UzivatelActions:sendPaymentInfo id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat e-mailem</a>
-    <a n:href="Uzivatel:paymentSummary id=>$u->id" class="btn btn-default btn-sm" role="button">
-        náhled
-    </a>
+
+    {if $canViewOrEdit}
+        <h4>Platby
+            &nbsp;
+            <a n:href="paymentSchedule:sendPaymentScheduleEmail id=>$u->id" role="button" class="btn btn-primary btn-sm" id="btn-handle-sendPaymentScheduleEmail">
+                <b>@</b> Odeslat rozpis plateb e-mailem</a>
+            <a n:href="paymentSchedule:show id=>$u->id" class="btn btn-default btn-sm" role="button">
+                náhled
+            </a>
+        </h4>
+        <table class="table table-nonfluid">
+            <tr>
+                <th>Stav účtu</th>
+                <td>
+                    <table class="nested-payments">
+                        <thead>
+                            <tr>
+                                <th>Spolek</th>
+                                <th>Družstvo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{$money_bal_spolek}</td>
+                                <td>{$money_bal_druzstvo}</td>
+                            </tr>
+                            <tr>
+                                <td nowrap>
+                                    <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'spolek'">Přehled plateb</a>
+                                </td>
+                                <td nowrap>
+                                    <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'druzstvo'">Přehled plateb</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <th>Poslední platba</th>
+                <td>
+                    <table class="nested-payments">
+                        <tr>
+                            <td>{$money_lastpay_spolek}</td>
+                            <td>{$money_lastpay_druzstvo}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr n:if="$u->spolek"><th>Souhrn členských příspěvků od 1.11.2017</th><td>{$money_dph}</td></tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+
+        </table>
+    {/if}
 
     </div>
     <div class="panel-right">
@@ -244,7 +251,7 @@
 
         <br/>
         <h4>
-            Televize
+            Televize &nbsp;
             {if !$televize_objednana}
             <a href="{link UzivatelTelevizeActions:subscribe id=>$u->id}" class="btn btn-primary btn-sm" id="btn-televize-objednat" role="button">
                 <i class="glyphicon glyphicon-ok-circle"></i> Objednat
@@ -344,6 +351,17 @@
                     event.preventDefault();
                 }
             })
+
+            $('#btn-handle-sendPaymentScheduleEmail').on('click', function() {
+                const c = confirm("Rozpis plateb bude odeslán na e-mail "+{$u->email}+".\n\nPokračovat?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
+
         </script>
         <h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
 

@@ -1,14 +1,8 @@
-{block content}
-<h1>
-  <a href="{link Uzivatel:show id=>$u->id}">UID {$u->id} - {$u->jmeno} {$u->prijmeni} ({$u->nick})</a>
-  - rozpis plateb
-</h1>
-
 <section id="rozpis">
 
   <h1>
     Rozpis plateb pro UID {$u->id}
-    <i>{$nazev_pripojence}</i>
+    <i>{$nazev_uzivatele}</i>
   </h1>
 
   stav předplaceného účtu: {$stavUctu|number:2} Kč
@@ -46,13 +40,17 @@
         </tr>
         <tr>
           <td>Poznámka pro příjemce</td>
-          <td>{$nazev_pripojence} UID{$u->id}</td>
+          <td>{$nazev_uzivatele} UID{$u->id}</td>
         </tr>
         <tr>
           <td>Datum příští platby</td>
           <td>{$datumPlatby|date:'j. n. Y'}</td>
         </tr>
       </table>
+      <br/>
+      <div class="alert alert-info">
+        Doporučení: založte si <b>trvalý příkaz</b> na 25. den v měsíci, částka <b>{$platby_celkem|number:2}</b> Kč, opakování měsíčně.
+      </div>
     </div>
     <div class="col-md-6">
       <center>
@@ -64,9 +62,7 @@
       </center>
     </div>
   </div>
-
 </section>
-
 
 <style>
   section#rozpis {
@@ -80,5 +76,3 @@
     padding-bottom: 5px;
   }
 </style>
-
-{/block}

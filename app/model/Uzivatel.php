@@ -271,4 +271,12 @@ ORDER BY t1.id LIMIT 1')->fetchField();
         }
         return null;
     }
+
+    public function nazevUzivatele($id) {
+        $uzivatel = $this->find($id);
+
+        return $uzivatel->TypPravniFormyUzivatele->text == 'PO'
+            ? $uzivatel->firma_nazev
+            : "{$uzivatel->jmeno} {$uzivatel->prijmeni}";
+    }
 }
