@@ -4,6 +4,24 @@
   - rozpis plateb
 </h1>
 
+<a n:href="PaymentSchedule:sendPaymentScheduleEmail id=>$u->id" role="button" class="btn btn-primary btn-sm" id="btn-handle-sendPaymentScheduleEmail">
+    <b>@</b> Odeslat rozpis plateb e-mailem na adresu {$u->email}
+</a>
+<br/>
+<br/>
+
 {include 'paymentSchedule.latte'}
+
+<script>
+  $('#btn-handle-sendPaymentScheduleEmail').on('click', function() {
+      const c = confirm("Rozpis plateb bude odeslán na e-mail "+{$u->email}+".\n\nPokračovat?");
+      if (c) {
+          // Ok
+      } else {
+          // Cancel
+          event.preventDefault();
+      }
+  })
+</script>
 
 {/block}

@@ -11,7 +11,6 @@ URL: http://localhost:10109/smlouvaUcastnicka.php
 | Název šablony                      | URL |
 | ----------------------------------- | --- |
 | SmlouvaUcastnicka_v7_template.odt   | účastnická smlouva, natvrdo 1 služba (internet) |
-| SmlouvaUcastnicka_v8_template.odt   | účastnická smlouva, natvrdo 1 služba (internet), volitelně druhá služba (televize) |
 
 
 ## použití z CLI

@@ -86,7 +86,7 @@ class UzivatelTelevizePresenter extends BasePresenter
           $this->uzivatelTelevize->tableName, $uid, $data->cena )
       );
 
-      $this->flashMessage(sprintf('Cena služba Televize změněna na %u Kč/měsíc. Nezapomeň poslat smlouvu k podpisu.', $data->cena));
+      $this->flashMessage(sprintf('Cena služby Televize změněna na %u Kč/měsíc.', $data->cena));
 
       $this->redirect('Uzivatel:show', ['id' => $uid]);
     }

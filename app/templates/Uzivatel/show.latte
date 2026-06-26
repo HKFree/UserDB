@@ -153,7 +153,8 @@
         <h4>Platby
             &nbsp;
             <a n:href="PaymentSchedule:sendPaymentScheduleEmail id=>$u->id" role="button" class="btn btn-primary btn-sm" id="btn-handle-sendPaymentScheduleEmail">
-                <b>@</b> Odeslat rozpis plateb e-mailem</a>
+                <b>@</b> Odeslat rozpis plateb e-mailem
+            </a>
             <a n:href="PaymentSchedule:show id=>$u->id" class="btn btn-default btn-sm" role="button">
                 náhled
             </a>
@@ -300,7 +301,7 @@
         <a href="{link UzivatelTelevize:show id=>$u->id}">podrobnosti</a>
         <script>
             $('#btn-televize-objednat').on('click', function() {
-                const c = confirm("Objednání placené služby SledovaniTV.\n\nNezapomeň poslat k podpisu novou smlouvu.\n\nPokračovat?");
+                const c = confirm("Objednání placené služby SledovaniTV.\n\nPokračovat?");
                 if (c) {
                     // Ok
                 } else {
@@ -309,7 +310,7 @@
                 }
             })
             $('#btn-televize-odobjednat').on('click', function() {
-                const c = confirm("Zrušení placené služby SledovaniTV. Televize pojede ještě do konce tohoto měsíce.\n\nNezapomeň poslat k podpisu novou smlouvu.\n\nPokračovat?");
+                const c = confirm("Zrušení placené služby SledovaniTV. Televize pojede ještě do konce tohoto měsíce.\n\nPokračovat?");
                 if (c) {
                     // Ok
                 } else {

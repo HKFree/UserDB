@@ -26,12 +26,14 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
     public function actionSubscribe() {
         $user_id = $this->getParameter('id');
 
+        $cena = $this->parameters->getCenaSledovaniTV();
+
         $this->connection->query(
             sprintf('INSERT INTO %s (id,objednana,cena) VALUES (%u,1,%u) ON DUPLICATE KEY UPDATE objednana=1',
-            $this->uzivatelTelevize->tableName, $user_id, $this->parameters->getCenaSledovaniTV() )
+            $this->uzivatelTelevize->tableName, $user_id, $cena )
         );
 
-        $this->flashMessage('Objednána služba Televize. Nezapomeň poslat smlouvu k podpisu.');
+        $this->flashMessage(sprintf('Objednána služba Televize za cenu %u Kč/měsíc.', $cena));
 
         $this->redirect('Uzivatel:show', ['id' => $user_id]);
     }
@@ -44,7 +46,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
           $this->uzivatelTelevize->tableName, $user_id )
       );
 
-      $this->flashMessage('Služba Televize zrušena. Bude deaktivována 1. den v příštím měsíci. Nezapomeň poslat smlouvu k podpisu.');
+      $this->flashMessage('Služba Televize zrušena. Bude deaktivována 1. den v příštím měsíci.');
 
       $this->redirect('Uzivatel:show', ['id' => $user_id]);
   }

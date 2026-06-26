@@ -12,8 +12,7 @@ class GeneratorSmlouvy
      */
     public static function nahledUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
 
-        $starsi_smlouva_id = self::posledniPlatnaSmlouva($uzivatel);
-        $parametry = self::parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy, $starsi_smlouva_id);
+        $parametry = self::parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy);
 
         if (!getenv('PDF_GENERATOR_URL')) {
             throw new \Exception("Missing PDF_GENERATOR_URL environment variable\n");
@@ -24,54 +23,17 @@ class GeneratorSmlouvy
         return file_get_contents("$url?$params");
     }
 
-    public static function posledniPlatnaSmlouva($uzivatel) {
-        global $container;
-
-        // autodetekce puvodni smlouvy, kterou nahrazujeme
-        $PodpisSmlouvyModel = $container->getByType('App\Model\PodpisSmlouvy');
-        $podpis = $PodpisSmlouvyModel->findOneBy([
-            'Smlouva.uzivatel_id' => $uzivatel->id,
-            'Smlouva.typ' => 'ucastnicka',
-            'PodpisSmlouvy.smluvni_strana' => 'ucastnik',
-            'Smlouva.kdy_ukonceno' => null,
-            'PodpisSmlouvy.kdy_odmitnuto' => null,
-            'PodpisSmlouvy.kdy_podepsano NOT' => null,
-        ]);
-
-        \Tracy\Debugger::barDump($podpis);
-
-        if ($podpis) {
-            return $podpis->smlouva_id;
-        }
-
-        return null;
-    }
-
-    public static function parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null, $nahrazuje_smlouvu_id = null) {
+    public static function parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
         global $container;
 
         $cestneClenstviUzivateleModel = $container->getByType('App\Model\CestneClenstviUzivatele');
-        $smlouvaModel = $container->getByType('App\Model\Smlouva');
 
         $jmenoString = sprintf("%s %s", $uzivatel->jmeno, $uzivatel->prijmeni);
         $adresaString = sprintf("%s, %s %s", $uzivatel->ulice_cp, $uzivatel->psc, $uzivatel->mesto);
-
-        // Služba 1 internet - je tam vždy
-        $cena1 = 290;
-        $cena1poznamka = '';
+        $cenaString = '290 Kč za započatý kalendářní měsíc';
+        $cenaString .= ' (včetně DPH)'; // tohle odkomentovat až bude družstvo plátcem DPH
         if ($cestneClenstviUzivateleModel->getHasCC($uzivatel->id)) {
-            $cena1 = 0;
-            $cena1poznamka = '(zdarma)';
-        }
-
-        // Služba 2 televize - podmíněně
-        $sluzba2 = '';
-        $cena2 = null;
-
-        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-        if ($televizeRow?->objednana == 1) {
-            $sluzba2 = "Televize - START balíček SledovaniTV";
-            $cena2 = intval($televizeRow?->cena);
+            $cenaString = '0 Kč (zdarma)';
         }
 
         $subjectPrefix = getenv('AGREEMENT_NAME_PREFIX');
@@ -98,15 +60,6 @@ class GeneratorSmlouvy
             array_push($ip4Adresy, [$adresaLomenoMaska, $gateway]);
         }
 
-        $nahrazuje_smlouvu_text = '';
-        if ($nahrazuje_smlouvu_id) {
-            $puvodni_smlouva = $smlouvaModel->find($nahrazuje_smlouvu_id);
-            $nahrazuje_smlouvu_text = sprintf('která nahrazuje předchozí smlouvu č. %u ze dne %s',
-                $puvodni_smlouva->id,
-                $puvodni_smlouva->kdy_vygenerovano->format('d.m.Y') // TODO tady by asi melo bejt datum kdy podepsano
-            );
-        }
-
         $parametrySmlouvy = [
           'cislo' => $cislo_smlouvy ?? '0',
           'ze_dne' => (new DateTime())->format('d.m.Y'),
@@ -118,12 +71,7 @@ class GeneratorSmlouvy
           'telefon' => $uzivatel->telefon,
           'adresa' => $adresaString,
           'email_spravce_oblasti' => sprintf('oblast%u@hkfree.org', $uzivatel->Ap->Oblast->id),
-          'cena1' => sprintf('%u Kč', $cena1),
-          'cena1poznamka' => $cena1poznamka,
-          'sluzba2' => $sluzba2,
-          'cena2' => $cena2 ? sprintf('%u Kč', $cena2) : '',
-          'cena_celkem' => sprintf('%u Kč', $cena1 + $cena2),
-          'nahrazuje_smlouvu' => $nahrazuje_smlouvu_text
+          'cena' => $cenaString
         ];
         if ($uzivatel->TypPravniFormyUzivatele->text == "PO") {
             $parametrySmlouvy['upresneni'] = 'Firma';
