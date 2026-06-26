@@ -53,7 +53,6 @@ class UzivatelPresenter extends BasePresenter
 
     private $stitkyUzivatele;
     private Explorer $databaseExplorer;
-    private Services\RequestDruzstvoContract $requestDruzstvoContract;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
@@ -86,7 +85,6 @@ class UzivatelPresenter extends BasePresenter
         Model\StitekUzivatele $stitkyUzivatele,
         Services\Stitkovac $stitkovac,
         Explorer $databaseExplorer,
-        Services\RequestDruzstvoContract $requestDruzstvoContract,
     ) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
@@ -115,7 +113,6 @@ class UzivatelPresenter extends BasePresenter
         $this->stitkyUzivatele = $stitkyUzivatele;
         $this->stitkovac = $stitkovac;
         $this->databaseExplorer = $databaseExplorer;
-        $this->requestDruzstvoContract = $requestDruzstvoContract;
     }
 
     protected function createComponentUserLabels(): UserLabelsComponent {

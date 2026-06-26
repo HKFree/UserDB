@@ -128,6 +128,7 @@ class MailService
         $mail = new Message();
         $mail->setFrom($fromAddress)
             ->addTo($uzivatel->email)
+            ->addReplyTo('podpora@hkfree.org')
             ->setSubject($subject)
             ->setHtmlBody($htmlContent);
         if (!empty($uzivatel->email2)) {

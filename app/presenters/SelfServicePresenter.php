@@ -56,4 +56,15 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
             }
         }
     }
+
+    public function renderUserEmailFeedback($id, $hash, $nextStep) {
+        $this->setLayout('pub');
+        $this->template->error = null;
+
+        // TODO
+
+        \Tracy\Debugger::barDump($id);
+        \Tracy\Debugger::barDump($hash);
+        \Tracy\Debugger::barDump($nextStep);
+    }
 }
