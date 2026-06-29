@@ -179,7 +179,7 @@ class UzivatelPresenter extends BasePresenter
 
                 $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
                 $this->template->televize_objednana = $televizeRow?->objednana == 1;
-                $this->template->televize_cena = $televizeRow?->cena ?: $this->parameters->getCenaSledovaniTV();
+                $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
                 $televizeAktivniRow = $uzivatel->related('UzivatelTelevizeAktivni')
                     ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
                     ->order('datum_od DESC')
@@ -319,7 +319,7 @@ class UzivatelPresenter extends BasePresenter
 
         $pravidelne_mesicni_platby = [['Pevný přístup k internetu', $this->parameters->getVyseClenskehoPrispevku()]];
         if ($televizeRow?->objednana == 1) {
-            array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow?->cena ?: $this->parameters->getCenaSledovaniTV()]);
+            array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV()]);
         }
 
         $this->template->pravidelne_mesicni_platby = $pravidelne_mesicni_platby;

@@ -33,7 +33,7 @@ class PaymentSchedulePresenter extends BasePresenter
 
       $pravidelne_mesicni_platby = [['Pevný přístup k internetu', $this->parameters->getVyseClenskehoPrispevku()]];
       if ($televizeRow?->objednana == 1) {
-          array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow?->cena ?: $this->parameters->getCenaSledovaniTV()]);
+          array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV()]);
       }
 
       $this->template->pravidelne_mesicni_platby = $pravidelne_mesicni_platby;

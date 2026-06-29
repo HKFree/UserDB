@@ -9,18 +9,8 @@
 
 <div class="d-flex">
   Původně: {$televize_cena} Kč/měsíc
-
 </div>
 
-<form n:name=televizeCenaForm class=form>
-  <div>
-    <label n:name=cena>
-      Nová cena:
-      <input type="number" n:name=cena min="0" max="9999" step="1" autofocus>
-      Kč/měsíc
-    </label>
-  </div>
-  <div>
-    <input n:name=send class="btn btn-default">
-  </div>
-</form>
+<br/>
+
+{include '../form.latte', form => televizeCenaForm}

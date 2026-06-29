@@ -40,7 +40,7 @@ class UzivatelTelevizePresenter extends BasePresenter
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
         $this->template->televize_objednana = $televizeRow?->objednana == 1;
-        $this->template->televize_cena = $televizeRow?->cena ?: $this->parameters->getCenaSledovaniTV();
+        $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
 
         $this->template->televizeAktivniDnesRow = $uzivatel->related('UzivatelTelevizeAktivni')
             ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
@@ -57,16 +57,24 @@ class UzivatelTelevizePresenter extends BasePresenter
     {
       $uzivatel = $this->uzivatel->getUzivatel($uid);
       $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-      return $televizeRow?->cena ?: $this->parameters->getCenaSledovaniTV();
+      return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
     protected function createComponentTelevizeCenaForm(): Form
     {
       $uid = $this->getParameter('id');
       $form = new Form;
-      $form->addText('cena')->setRequired()->setDefaultValue($this->cena($uid));
+
+      $form->addRadioList('cena','Nová cena', [
+        "0" => " 0 Kč/měsíc",
+        $this->parameters->getCenaSledovaniTV()  => sprintf(" %s Kč/měsíc", $this->parameters->getCenaSledovaniTV())
+      ])->setDefaultValue(
+        $this->cena($uid) == 0 ? 0 : $this->parameters->getCenaSledovaniTV()
+      );
+
       $form->addSubmit('send', 'uložit');
       $form->onSuccess[] = $this->formSucceeded(...);
+
       return $form;
     }
 
@@ -83,7 +91,8 @@ class UzivatelTelevizePresenter extends BasePresenter
 
       $this->connection->query(
           sprintf('INSERT INTO %s (id,cena) VALUES (%u,%u) ON DUPLICATE KEY UPDATE cena=values(cena)',
-          $this->uzivatelTelevize->tableName, $uid, $data->cena )
+          $this->uzivatelTelevize->tableName, $uid, $data->cena
+          )
       );
 
       $this->flashMessage(sprintf('Cena služby Televize změněna na %u Kč/měsíc.', $data->cena));
