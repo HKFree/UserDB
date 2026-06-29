@@ -59,9 +59,14 @@ class PaymentSchedulePresenter extends BasePresenter
         $this->template->cisloUctu = $cisloUctu;
 
         $today = new \DateTime();
-        $datumPlatby = new \DateTime($today->format('Y-m-25')); // 25. den v mesici
-        if ((int)$today->format('j') > 25) {
-            $datumPlatby = (clone $today)->modify('+7 days'); // dnes + 7 dni
+        $datumPlatby = new \DateTime($today->format('Y-m-25')); // 25. den tento mesic
+        if ($stavUctu >= $platby_celkem) {
+            $datumPlatby = (clone $today)->modify('+1 month');
+            $datumPlatby = new \DateTime($datumPlatby->format('Y-m-25')); // 25. den pristi mesic
+        } else {
+            if ((int)$today->format('j') > 25) {
+                $datumPlatby = (clone $today)->modify('+7 days'); // dnes + 7 dni
+            }
         }
         $this->template->datumPlatby = $datumPlatby;
 
