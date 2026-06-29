@@ -6,24 +6,23 @@
   </h1>
 
   stav předplaceného účtu: {$stavUctu|number:2} Kč
-  <br/>
+  <br />
   <small>platí k {$today|date:'j. n. Y'}</small>
-  <br/>
-
-  <h2>pravidelné platby</h2>
-  <table>
-    <tr n:foreach="$pravidelne_mesicni_platby as $item">
-      <td>{$item[0]}</td>
-      <th>{$item[1]|number:2} Kč</th>
-    </tr>
-    <tr>
-      <td>celkem:</td>
-      <td><b>{$platby_celkem|number:2} Kč</b> měsíčně včetně DPH</td>
-    </tr>
-  </table>
+  <br />
 
   <div class="row">
     <div class="col-md-6">
+      <h2>pravidelné platby</h2>
+      <table>
+        <tr n:foreach="$pravidelne_mesicni_platby as $item">
+          <td>{$item[0]}</td>
+          <th>{$item[1]|number:2} Kč</th>
+        </tr>
+        <tr>
+          <td>celkem:</td>
+          <td><b>{$platby_celkem|number:2} Kč</b> měsíčně včetně DPH</td>
+        </tr>
+      </table>
       <h2>bankovní převod</h2>
       <table>
         <tr>
@@ -47,19 +46,26 @@
           <td>{$datumPlatby|date:'j. n. Y'}</td>
         </tr>
       </table>
-      <br/>
+      <br />
       <div class="alert alert-info">
-        Doporučení: založte si <b>trvalý příkaz</b> na 25. den v měsíci, částka <b>{$platby_celkem|number:2}</b> Kč, opakování měsíčně.
+        Doporučení: založte si <b>trvalý příkaz</b> na 25. den v měsíci, částka <b>{$platby_celkem|number:2}</b> Kč,
+        opakování měsíčně.
       </div>
+
     </div>
     <div class="col-md-6">
-      <center>
-        <h2>QR kód pro rychlou platbu</h2>
-        <img src="{$qrImagePngBase64|nocheck}">
-        <br/>
-        {$platby_celkem|number:2} Kč
-        <br/>
-      </center>
+    </div>
+    <div class="col-md-6">
+      <h2>jednorázová platba na příští měsíc</h2>
+      <div style="width: 270px;">
+        <center>
+      Načtěte QR kód ve Vaší mobilní aplikaci
+      <br/>
+      <img src="{$qrImagePngBase64|nocheck}">
+      <br />
+      {$platby_celkem|number:2} Kč
+    </center>
+    </div>
     </div>
   </div>
 </section>
@@ -69,10 +75,16 @@
     padding: 1em;
     border: 1px solid gray;
   }
-  td+th, td+td {
+
+  td+th,
+  td+td {
     padding-left: 15px;
     padding-right: 15px;
     padding-top: 5px;
     padding-bottom: 5px;
   }
+</style>
+
+<style>
+  {$copy_of_bootstrap_css ?? '' |noescape}
 </style>
