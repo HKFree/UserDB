@@ -10,7 +10,9 @@
 <br/>
 <br/>
 
+<div id="rozpis-preview">
 {include 'paymentSchedule.latte'}
+</div>
 
 <script>
   $('#btn-handle-sendPaymentScheduleEmail').on('click', function() {
@@ -23,5 +25,12 @@
       }
   })
 </script>
+
+<style>
+  div#rozpis-preview {
+    padding: 1em;
+    border: 1px solid gray;
+  }
+</style>
 
 {/block}
