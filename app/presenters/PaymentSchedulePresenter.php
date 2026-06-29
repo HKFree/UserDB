@@ -70,7 +70,7 @@ class PaymentSchedulePresenter extends BasePresenter
         }
         $this->template->datumPlatby = $datumPlatby;
 
-        $poznamka = "{$nazev_uzivatele} UID{$uzivatel->id} QR1";
+        $poznamka = "QR-rozpis";
 
         $spayd = sprintf('SPD*1.0*ACC:%s*AM:%.2f*CC:CZK*MSG:%s*X-VS:%u', $cisloUctuIBAN, $platby_celkem, $poznamka, $uzivatel->id);
         if ($datumPlatby) {
