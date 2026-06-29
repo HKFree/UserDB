@@ -47,25 +47,29 @@
         </tr>
       </table>
       <br />
-      <div class="alert alert-info">
-        Doporučení: založte si <b>trvalý příkaz</b> na 25. den v měsíci, částka <b>{$platby_celkem|number:2}</b> Kč,
-        opakování měsíčně.
+      <div class="alert alert-success text-large">
+        <span style="font-size: 150%;">
+          ✅ Doporučujeme
+          <br />
+          <br />Založte si <b>trvalý příkaz</b> na 25. den v měsíci, částka <b>{$platby_celkem|number:2}</b> Kč,
+          opakování měsíčně.
+        </span>
       </div>
 
     </div>
     <div class="col-md-6">
     </div>
     <div class="col-md-6">
-      <h2>jednorázová platba na příští měsíc</h2>
       <div style="width: 270px;">
         <center>
-      Načtěte QR kód ve Vaší mobilní aplikaci
-      <br/>
-      <img src="{$qrImagePngBase64|nocheck}">
-      <br />
-      {$platby_celkem|number:2} Kč
-    </center>
-    </div>
+          <h2>jednorázová platba</h2>
+          Načtěte QR kód ve Vaší mobilní aplikaci
+          <br />
+          <img src="{$qrImagePngBase64|nocheck}">
+          <br />
+          {$platby_celkem|number:2} Kč
+        </center>
+      </div>
     </div>
   </div>
 </section>

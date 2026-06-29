@@ -65,7 +65,7 @@ class PaymentSchedulePresenter extends BasePresenter
             $datumPlatby = new \DateTime($datumPlatby->format('Y-m-25')); // 25. den pristi mesic
         } else {
             if ((int)$today->format('j') > 25) {
-                $datumPlatby = (clone $today)->modify('+7 days'); // dnes + 7 dni
+                $datumPlatby = (clone $today); // dnes
             }
         }
         $this->template->datumPlatby = $datumPlatby;
@@ -97,10 +97,10 @@ class PaymentSchedulePresenter extends BasePresenter
         }
         $this->computeTemplateParams();
 
-
         $template = $this->mailService->addLinkGeneratorToTemplate($this->template);
-        $this->template->copy_of_bootstrap_css = file_get_contents("../www/css/bootstrap.css");
 
+        // TODO tady be se dalo ušetřit ~120kB velikosti e-mailu kdyby se poslaly jen ty potřebný styly
+        $this->template->copy_of_bootstrap_css = file_get_contents("../www/css/bootstrap.min.css");
 
         $subject = "Rozpis plateb pro UID {$uzivatel->id} - {$this->uzivatel->nazevUzivatele($uzivatel->id)}";
         $template->setFile(__DIR__ . '/../templates/PaymentSchedule/paymentSchedule.latte');
