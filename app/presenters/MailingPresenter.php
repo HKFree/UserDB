@@ -19,7 +19,6 @@ class MailingPresenter extends UzivatelPresenter
     private $smlouva;
 
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
-    private Services\Stitkovac $stitkovac;
     private $cestneClenstviUzivatele;
 
     public function __construct(
@@ -30,7 +29,6 @@ class MailingPresenter extends UzivatelPresenter
         Model\Uzivatel $uzivatel,
         Model\Smlouva $smlouva,
         Services\RequestDruzstvoContract $requestDruzstvoContract,
-        Services\Stitkovac $stitkovac,
         Services\CryptoSluzba $cryptosvc,
         Model\CestneClenstviUzivatele $cestneClenstviUzivatele
     ) {
@@ -41,7 +39,6 @@ class MailingPresenter extends UzivatelPresenter
         $this->mailService = $mailsvc;
         $this->smlouva = $smlouva;
         $this->requestDruzstvoContract = $requestDruzstvoContract;
-        $this->stitkovac = $stitkovac;
         $this->cryptosvc = $cryptosvc;
         $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
     }

@@ -7,6 +7,7 @@ use App\Services\CryptoSluzba;
 use App\Services\RequestDruzstvoContract;
 use App\Model\Parameters;
 use App\Model;
+use App\Services;
 use Nette;
 
 class SelfServicePresenter extends \Nette\Application\UI\Presenter
@@ -18,6 +19,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
         private CryptoSluzba $cryptosvc,
         private Parameters $parameters,
         private Nette\Database\Connection $connection,
+        private Services\Stitkovac $stitkovac,
     ) {
     }
 
@@ -80,12 +82,16 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
     }
 
     public function handleZpoplatneniTelevize2026($uid, $nextStep) {
+        $uzivatel = $this->uzivatelModel->find($uid);
+
         if ($nextStep == 'ANO') {
             $cena = $this->parameters->getCenaSledovaniTV();
             $this->connection->query(
                 sprintf('INSERT INTO %s (id,objednana,cena) VALUES (%u,1,%u) ON DUPLICATE KEY UPDATE objednana=1',
                 $this->uzivatelTelevize->tableName, $uid, $cena )
             );
+
+            $this->stitkovac->addStitek($uzivatel, 'TV-platit');
 
             $this->template->feedbackText = sprintf('Objednána služba Televize za cenu %u Kč/měsíc.', $cena);
         }
@@ -95,6 +101,8 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
                 sprintf('INSERT INTO %s (id,objednana) VALUES (%u,0) ON DUPLICATE KEY UPDATE objednana=0',
                 $this->uzivatelTelevize->tableName, $uid )
             );
+
+            $this->stitkovac->addStitek($uzivatel, 'TV-zrušit');
 
             $this->template->feedbackText = 'Služba Televize zrušena. Bude deaktivována 1. den v příštím měsíci.';
         }

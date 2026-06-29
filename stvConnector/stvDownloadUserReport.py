@@ -43,6 +43,20 @@ def insert_into_TelevizeAktivni(uzivatel_id):
 
   return True
 
+def insert_stitek_pouziva_stv(uzivatel_id):
+  try:
+    stitek_id = 202631 # TV-sleduje ... Používá Sledování TV (alespoň jednou)
+    query = (
+      "INSERT INTO StitekUzivatele (Uzivatel_id, Stitek_id) "
+      "VALUES (%s, %s) "
+      "ON DUPLICATE KEY UPDATE Stitek_id=VALUES(Stitek_id)"
+    )
+    udb_cursor.execute(query, (uzivatel_id, stitek_id))
+    udb_conn.commit()
+  except:
+    'noop'
+
+
 def download_stv_user_report():
   # Determine month as YYYY-MM, from yesterday's date
   yesterday = datetime.now() - timedelta(days=1)
@@ -99,6 +113,8 @@ def download_stv_user_report():
     except MySQLdb.Error as e:
       print(f"User {counter}/{total} UID {uzivatel_id}: Error executing query: {e}", file=sys.stderr)
       continue
+
+    insert_stitek_pouziva_stv(uzivatel_id)
 
     updated += 1
     print(f"User {counter}/{total} UID {uzivatel_id}: Done")
