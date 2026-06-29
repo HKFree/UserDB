@@ -45,7 +45,7 @@ def insert_into_TelevizeAktivni(uzivatel_id):
 
 def insert_stitek_pouziva_stv(uzivatel_id):
   try:
-    stitek_id = 202631 # TV-sleduje ... Používá Sledování TV (alespoň jednou)
+    stitek_id = 20263 # TV-sleduje ... Používá Sledování TV (alespoň jednou)
     query = (
       "INSERT INTO StitekUzivatele (Uzivatel_id, Stitek_id) "
       "VALUES (%s, %s) "
@@ -54,7 +54,7 @@ def insert_stitek_pouziva_stv(uzivatel_id):
     udb_cursor.execute(query, (uzivatel_id, stitek_id))
     udb_conn.commit()
   except:
-    'noop'
+    print(f"UID {uzivatel_id}: error štítek TV-sleduje")
 
 
 def download_stv_user_report():
