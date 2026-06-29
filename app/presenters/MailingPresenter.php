@@ -72,7 +72,6 @@ class MailingPresenter extends UzivatelPresenter
         $this->template->oneclick_auth_code = $this->oneclickAuthCode($uzivatel);
     }
 
-
     private function loadTemplateAndSubject($variant) {
         $subject = file_get_contents(__DIR__ . "/../templates/email/{$variant}_subject.latte");
         $this->template->subject = $subject;
@@ -83,11 +82,9 @@ class MailingPresenter extends UzivatelPresenter
     }
 
     public function renderPreviewUserEmail() {
-        $uid = $this->getParameter('id');
         $variant = $this->getParameter('variant');
-        $uzivatel =  $this->uzivatel->find($uid);
 
-        $subject = $this->loadTemplateAndSubject($variant);
+        $this->loadTemplateAndSubject($variant);
         $this->setCommonTemplateParams();
     }
 
@@ -103,6 +100,6 @@ class MailingPresenter extends UzivatelPresenter
 
         $this->flashMessage(sprintf('E-mail %s odeslán na %s.', $variant, $uzivatel->email));
 
-        $this->redirect('Uzivatel:show', array('id' => $uid));
+        $this->redirect('Uzivatel:show', ['id' => $uid]);
     }
 }
