@@ -1,0 +1,40 @@
+name: Testy
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+
+jobs:
+  nette_tester:
+    runs-on: ubuntu-latest
+    # Dummy hodnoty pro %env.*% z app/config/config.neon.
+    # DI kontejner se z nich pouze sestaví; k databázi se Nette připojuje
+    # až líně při prvním dotazu, takže testy bez DB projdou.
+    env:
+      USERDB_SALT: ci-dummy-salt
+      INFLUX_URL: http://localhost:8086
+      USERDB_GOOGLE_MAPS_KEY: ci-dummy
+      MATERNA_MEX_USER: ci-dummy
+      MATERNA_MEX_PASS: ci-dummy
+      USERDB_ENCRYPTION_PASSPHRASE: ci-dummy-passphrase
+      USERDB_IDS_USERNAME: ci-dummy
+      USERDB_IDS_PASSWORD: ci-dummy
+      USERDB_IDS_IPS_WHITELIST: 127.0.0.1
+      USERDB_DB_HOST: 127.0.0.1
+      USERDB_DB_NAME: userdb
+      USERDB_DB_USERNAME: userdb
+      USERDB_DB_PASSWORD: ci-dummy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build . --tag userdb-web-tests
+      - name: Run Nette Tester
+        run: |
+          docker run \
+            -e USERDB_SALT -e INFLUX_URL -e USERDB_GOOGLE_MAPS_KEY \
+            -e MATERNA_MEX_USER -e MATERNA_MEX_PASS \
+            -e USERDB_ENCRYPTION_PASSPHRASE \
+            -e USERDB_IDS_USERNAME -e USERDB_IDS_PASSWORD -e USERDB_IDS_IPS_WHITELIST \
+            -e USERDB_DB_HOST -e USERDB_DB_NAME -e USERDB_DB_USERNAME -e USERDB_DB_PASSWORD \
+            userdb-web-tests ./vendor/bin/tester -C tests
