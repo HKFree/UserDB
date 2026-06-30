@@ -60,6 +60,13 @@ services:
     volumes:
       - ./pdfGenerator/www:/var/www/html
       - ./pdfGenerator/templates:/opt/templates
+  stv-connector:
+    build: ./stvConnector
+    hostname: stv-connector
+    networks:
+      - local-userdb-net
+    volumes:
+      - ./stvConnector:/opt
 networks:
   local-userdb-net:
     name: local-userdb-net

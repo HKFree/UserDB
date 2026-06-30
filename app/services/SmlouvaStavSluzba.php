@@ -17,7 +17,6 @@ class SmlouvaStavSluzba
     }
 
     public function getStav(Nette\Database\Table\ActiveRow $smlouva): string {
-        $sid = $smlouva->id;
         $konec = $smlouva->kdy_ukonceno;
 
         $podpisy = $smlouva->related('PodpisSmlouvy.smlouva_id');

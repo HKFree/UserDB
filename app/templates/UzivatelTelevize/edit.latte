@@ -1,0 +1,16 @@
+{block content}
+
+<h2>
+    <a href="{link Uzivatel:show id=>$u->id}">UID {$u->id} - {$u->jmeno} {$u->prijmeni} ({$u->nick})</a>
+    {include spolekDruzstvoLabelUzivatel $u}
+</h2>
+
+<h3>služba Televize - cena</h3>
+
+<div class="d-flex">
+  Původně: {$televize_cena} Kč/měsíc
+</div>
+
+<br/>
+
+{include '../form.latte', form => televizeCenaForm}

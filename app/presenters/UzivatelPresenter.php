@@ -17,7 +17,6 @@ use Tracy\Debugger;
 use Nette\Utils\Validators;
 use Nette\Utils\Strings;
 use App\Components;
-use Nette\Forms\Controls\SubmitButton;
 
 /**
  * Uzivatel presenter.
@@ -54,7 +53,6 @@ class UzivatelPresenter extends BasePresenter
 
     private $stitkyUzivatele;
     private Explorer $databaseExplorer;
-    private Services\RequestDruzstvoContract $requestDruzstvoContract;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
@@ -87,7 +85,6 @@ class UzivatelPresenter extends BasePresenter
         Model\StitekUzivatele $stitkyUzivatele,
         Services\Stitkovac $stitkovac,
         Explorer $databaseExplorer,
-        Services\RequestDruzstvoContract $requestDruzstvoContract,
     ) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
@@ -116,7 +113,6 @@ class UzivatelPresenter extends BasePresenter
         $this->stitkyUzivatele = $stitkyUzivatele;
         $this->stitkovac = $stitkovac;
         $this->databaseExplorer = $databaseExplorer;
-        $this->requestDruzstvoContract = $requestDruzstvoContract;
     }
 
     protected function createComponentUserLabels(): UserLabelsComponent {
@@ -180,6 +176,19 @@ class UzivatelPresenter extends BasePresenter
 
                 $this->template->money_act = (1 == $uzivatel->money_aktivni) ? 'ANO' : 'NE';
                 $this->template->money_dis = (1 == $uzivatel->money_deaktivace) ? 'ANO' : 'NE';
+
+                $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
+                $this->template->televize_objednana = $televizeRow?->objednana == 1;
+                $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+                $televizeAktivniRow = $uzivatel->related('UzivatelTelevizeAktivni')
+                    ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
+                    ->order('datum_od DESC')
+                    ->limit(1)
+                    ->fetch();
+                $this->template->televize_aktivni = $televizeAktivniRow ? true : false;
+                $this->template->televize_aktivni_poznamka = $televizeAktivniRow?->poznamka;
+                $this->template->televize_aktivni_do = $televizeAktivniRow?->datum_do;
+
                 $posledniPlatbaSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('spolek', 1)->order('id DESC')->limit(1);
                 $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);
                 if ($posledniPlatbaSpolek->count() > 0) {
@@ -295,6 +304,50 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->smlouvy = $this->smlouva->getByUzivatelId($uid);
             }
         }
+    }
+
+    public function renderPaymentSummary() {
+        $uid = $this->getParameter('id');
+        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
+
+        $this->template->u = $uzivatel;
+        $this->template->stavUctu = $stavUctu;
+        $this->template->today = new \DateTime();
+
+        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
+
+        $pravidelne_mesicni_platby = [['Pevný přístup k internetu', $this->parameters->getVyseClenskehoPrispevku()]];
+        if ($televizeRow?->objednana == 1) {
+            array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV()]);
+        }
+
+        $this->template->pravidelne_mesicni_platby = $pravidelne_mesicni_platby;
+        $platby_celkem = array_sum(array_map(fn($a)=>$a[1], $pravidelne_mesicni_platby));
+        $this->template->platby_celkem = $platby_celkem;
+
+        $nazev_uzivatele = $this->uzivatel->nazevUzivatele($uzivatel->id);
+        $this->template->nazev_uzivatele = $nazev_uzivatele;
+
+        $cisloUctu = '107207255/2010';
+        $cisloUctuIBAN = 'CZ0820100000000107207255';
+        $this->template->cisloUctu = $cisloUctu;
+
+        $today = new \DateTime();
+        $datumPlatby = new \DateTime($today->format('Y-m-25')); // 25. den v mesici
+        if ((int)$today->format('j') > 25) {
+            $datumPlatby = (clone $today)->modify('+7 days'); // dnes + 7 dni
+        }
+        $this->template->datumPlatby = $datumPlatby;
+
+        $poznamka = "{$nazev_uzivatele} UID{$uzivatel->id} QR1";
+
+        $spayd = sprintf('SPD*1.0*ACC:%s*AM:%.2f*CC:CZK*MSG:%s*X-VS:%u', $cisloUctuIBAN, $platby_celkem, $poznamka, $uzivatel->id);
+        if ($datumPlatby) {
+            $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
+        }
+
+        $this->template->spayd = $spayd;
     }
 
     public function createComponentLogTable() {

@@ -120,6 +120,23 @@ class MailService
         $this->mailer->send($mailso);
     }
 
+    public function sendEmailFromTemplate($uzivatel, $subject, $renderovatTemplate): void {
+        $fromAddress = 'hkfree.org internetové družstvo <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
+
+        $htmlContent = $renderovatTemplate->renderToString();
+
+        $mail = new Message();
+        $mail->setFrom($fromAddress)
+            ->addTo($uzivatel->email)
+            ->addReplyTo('podpora@hkfree.org')
+            ->setSubject($subject)
+            ->setHtmlBody($htmlContent);
+        if (!empty($uzivatel->email2)) {
+            $mail->addTo($uzivatel->email2);
+        }
+        $this->mailer->send($mail);
+    }
+
     public function mailPdf(PdfResponse $pdf, $uzivatel, $request, $response, $userid): void {
         $so = $this->uzivatel->getUzivatel($userid);
 
@@ -169,6 +186,11 @@ class MailService
             $mailso->addTo($sou->email);
         }
         $this->mailer->send($mailso);
+    }
+
+    public function addLinkGeneratorToTemplate($t): Nette\Application\UI\Template {
+        $t->getLatte()->addProvider('uiControl', $this->linkGenerator);
+        return $t;
     }
 
     private function createTemplate(): Nette\Application\UI\Template {

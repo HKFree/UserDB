@@ -1,0 +1,93 @@
+<section id="rozpis">
+
+  <h1>
+    Rozpis plateb pro UID {$u->id}
+    <i>{$nazev_uzivatele}</i>
+  </h1>
+
+  stav předplaceného účtu: {$stavUctu|number:2} Kč
+  <br />
+  <small>platí k {$today|date:'j. n. Y'}</small>
+  <br />
+
+  <div class="row">
+    <div class="col-md-6">
+      <h2>pravidelné platby</h2>
+      <table>
+        <tr n:foreach="$pravidelne_mesicni_platby as $item">
+          <td>{$item[0]}</td>
+          <th>{$item[1]|number:2} Kč</th>
+        </tr>
+        <tr>
+          <td>celkem:</td>
+          <td><b>{$platby_celkem|number:2} Kč</b> měsíčně včetně DPH</td>
+        </tr>
+      </table>
+      <h2>bankovní převod</h2>
+      <table>
+        <tr>
+          <td>Částka</td>
+          <td>{$platby_celkem|number:2} Kč</td>
+        </tr>
+        <tr>
+          <td>Číslo účtu</td>
+          <td>{$cisloUctu}</td>
+        </tr>
+        <tr>
+          <td>Variabilní Symbol (VS)</td>
+          <td>{$u->id}</td>
+        </tr>
+        <tr>
+          <td>Poznámka pro příjemce</td>
+          <td>{$nazev_uzivatele} UID{$u->id}</td>
+        </tr>
+        <tr>
+          <td>Datum příští platby</td>
+          <td>{$datumPlatby|date:'j. n. Y'}</td>
+        </tr>
+      </table>
+      <br />
+      <div class="alert alert-success text-large">
+        <span style="font-size: 150%;">
+          ✅ Doporučujeme
+          <br />
+          <br />Založte si <b>trvalý příkaz</b> na 25. den v měsíci, částka <b>{$platby_celkem|number:2}</b> Kč,
+          opakování měsíčně.
+        </span>
+      </div>
+      <br />
+      <br />
+    </div>
+    <div class="col-md-6">
+    </div>
+    <div class="col-md-6">
+      <div style="width: 270px;">
+        <center>
+          <h2>jednorázová platba</h2>
+          Načtěte QR kód ve Vaší mobilní aplikaci
+          <br />
+          <img src="{$qrImagePngBase64|nocheck}">
+          <br />
+          {$platby_celkem|number:2} Kč
+        </center>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  section#rozpis {
+    padding: 1em;
+  }
+  td+th,
+  td+td {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+</style>
+
+<style>
+  {$copy_of_bootstrap_css ?? '' |noescape}
+</style>

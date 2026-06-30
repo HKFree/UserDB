@@ -18,8 +18,7 @@ use DigitalCz\DigiSign\DigiSign;
 )]
 class DigisignGenerovatUcastnickouSmlouvu extends Command
 {
-    private $template1Id = "0193b32a-d60f-7077-9fae-123a91d1a308"; # účastnická smlouva v7 (migrace)
-    private $template2Id = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
+    private $templateId = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
     private $FILE_STORAGE_PATH;
     private $uzivatelModel;
     private $smlouvaModel;
@@ -57,9 +56,14 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
 
         $uzivatel = $this->uzivatelModel->find($smlouva->uzivatel_id);
 
-        $parametry = \App\Services\GeneratorSmlouvy::parametryUcastnickeSmlouvy($uzivatel, $smlouva_id);
+        $starsi_smlouva_id = \App\Services\GeneratorSmlouvy::posledniPlatnaSmlouva($uzivatel);
 
+        $parametry = \App\Services\GeneratorSmlouvy::parametryUcastnickeSmlouvy($uzivatel, $smlouva_id, $starsi_smlouva_id);
         $smlouva->update(['parametry_smlouvy' => json_encode($parametry, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)]);
+
+        if ($starsi_smlouva_id) {
+            $smlouva->update(['nahrazuje_id' => $starsi_smlouva_id]);
+        }
 
         print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
 
@@ -73,7 +77,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         $krok = 0;
 
         printf("Krok %u: check template\n", ++$krok);
-        $template = $dgs->envelopeTemplates()->get($uzivatel->spolek ? $this->template1Id : $this->template2Id);
+        $template = $dgs->envelopeTemplates()->get($this->templateId);
         printf("Template %s name: \"%s\"\n", $template->id, $template->title);
         $smlouva->update(['sablona' => $template->title]);
 
@@ -162,7 +166,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
               'address' => $parametry['adresa'],
               'emailBody' => str_replace(
                   ['{UID}',        '{cena}',   '{adresa}'],
-                  [$uzivatel->id, $parametry['cena'], $parametry['adresa']],
+                  [$uzivatel->id, $parametry['cena_celkem'], $parametry['adresa']],
                   $envelope->emailBody
               ),
             ]

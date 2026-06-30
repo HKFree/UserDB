@@ -1,0 +1,94 @@
+{block content}
+
+<h2>
+    <a href="{link Uzivatel:show id=>$u->id}">UID {$u->id} - {$u->jmeno} {$u->prijmeni} ({$u->nick})</a>
+    {include spolekDruzstvoLabelUzivatel $u}
+</h2>
+
+<h3>služba Televize</h3>
+
+<div class="d-flex">
+    <div class="panel-left">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th>Objednaná</th>
+                    <td>
+                        {if $televize_objednana}
+                            <span title="Služba televize je objednaná, pravidelně odečítat kredit, aktivovat-deaktivovat">
+                                ANO
+                            </span>
+                        {else}
+                            NE
+                        {/if}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Cena</th>
+                    <td>
+                        {$televize_cena} Kč/měsíc
+                        <a href="{link UzivatelTelevize:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> změnit cenu</a>
+                    </td>
+                <tr>
+                    <th>Aktivní</th>
+                    <td>
+                        {if $televizeAktivniDnesRow}
+                            ANO <i>{$televizeAktivniDnesRow->poznamka}</i> do: {$televizeAktivniDnesRow->datum_do|date:'j. n. Y'}
+                        {else}
+                            NE
+                        {/if}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <br/>
+
+        <h3>Aktivní od-do</h3>
+        <table class="table">
+            <thead>
+                <th>od</th>
+                <th>do</th>
+                <th></th>
+            </thead>
+            <tbody>
+                <tr n:foreach="$televizeAktivniRows as $row">
+                    <td>
+                        {$row->datum_od|date:'j. n. Y'}
+                    </td>
+                    <td>
+                        {$row->datum_do|date:'j. n. Y'}
+                    </td>
+                    <td>
+                        {$row->poznamka}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <br/>
+
+        <h3>Report využití po měsících</h3>
+        <table class="table">
+            <thead>
+                <th>měsíc</th>
+                <th>datum/čas</th>
+                <th></th>
+            </thead>
+            <tbody>
+                <tr n:foreach="$televizeReportRows as $row">
+                    <td>
+                        {$row->mesic}/{$row->rok}
+                    </td>
+                    <td>
+                        {$row->posledni_zmena}
+                    </td>
+                    <td>
+                        {$row->poznamka}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>

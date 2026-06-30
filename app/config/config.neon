@@ -6,6 +6,7 @@
 #
 parameters:
 	clenskyPrispevek: 290
+	cenaTelevize: 160
 	igw1IpCheckerUrl: http://10.107.0.1:8080/ip4info/
 	igw2IpCheckerUrl: http://10.107.0.2:8080/ip4info/
 	urlPrefix: '/userdb'
@@ -50,6 +51,9 @@ services:
 	uzivatel: App\Model\Uzivatel
 	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
+	uzivatelTelevize: App\Model\UzivatelTelevize
+	uzivatelTelevizeAktivni: App\Model\UzivatelTelevizeAktivni
+	uzivatelTelevizeReport: App\Model\UzivatelTelevizeReport
 	prichoziPlatba: App\Model\PrichoziPlatba
 	odchoziPlatba: App\Model\OdchoziPlatba
 	stavBankovnihoUctu: App\Model\StavBankovnihoUctu
@@ -75,7 +79,7 @@ services:
 	dnat: App\Model\DNat
 	accountActivation: App\Model\AccountActivation
 	logTableFactory: App\Components\LogTableFactory
-	parameters: App\Model\Parameters(%clenskyPrispevek%, %salt%)
+	parameters: App\Model\Parameters(%clenskyPrispevek%, %cenaTelevize%, %salt%)
 	cryptoSluzba: App\Services\CryptoSluzba(%env.USERDB_ENCRYPTION_PASSPHRASE%)
 	wewimo: App\Model\Wewimo
 	apiKlic: App\Model\ApiKlic

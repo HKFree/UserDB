@@ -20,13 +20,6 @@
     {* <a n:href="UzivatelActions:exportAndSendRegForm id=>$u->id" role="button" class="btn btn-default btn-sm"><b>@</b> Odeslat registrační formulář e-mailem</a> *}
     {/if}
     <a href="{link UzivatelList:list id=>$u->Ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět do AP</a>
-    <div style="margin-top:3px;">
-    {if $activaceVisible}<a href="{link UzivatelActions:moneyActivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Aktivace</a>{/if}
-    {if $reactivaceVisible}<a href="{link UzivatelActions:moneyReactivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Reaktivace</a>{/if}
-    {if $deactivaceVisible}<a href="{link UzivatelActions:moneyDeactivate id=>$u->id}" class="btn btn-danger btn-sm" role="button"><i class="glyphicon glyphicon-remove-circle"></i> Deaktivace</a>{/if}
-    <a n:if="$igw" href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-check"></i> Zobrazit stav na IGW</a>
-    <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
-    </div>
 
     <section style="margin-top:10px;">
         <div class="d-flex">
@@ -37,10 +30,9 @@
 
     <br><br>
     <style>
-	.table-nonfluid {
-	    width: auto;
-	}
-
+        .table-nonfluid {
+            width: auto;
+        }
         .flex-content{
             display:flex;
         }
@@ -65,6 +57,9 @@
         }
         .nested-payments tr > * {
             width: 50%;
+        }
+        th+th, td+td {
+          padding-left: 1em;
         }
     </style>
     <div class="flex-content">
@@ -109,9 +104,9 @@
 
     <tr><th>Přezdívka</th><td>{$u->nick}</td></tr>
     {if $canViewOrEdit}
-        <tr><th>Typ právní formy</th><td>{$u->TypPravniFormyUzivatele->text}</td></tr>
-        <tr n:if="$u->TypPravniFormyUzivatele->text == 'PO'"><th>Název firmy</th><td>{$u->firma_nazev}</td></tr>
-        <tr n:if="isset($u->firma_ico) || ($u->TypPravniFormyUzivatele->text == 'PO')"><th>IČO</th><td>{$u->firma_ico}</td></tr>
+        <tr><th>Typ právní formy</th><td>{$u->TypPravniFormyUzivatele?->text}</td></tr>
+        <tr n:if="$u->TypPravniFormyUzivatele?->text == 'PO'"><th>Název firmy</th><td>{$u->firma_nazev}</td></tr>
+        <tr n:if="isset($u->firma_ico) || ($u->TypPravniFormyUzivatele?->text == 'PO')"><th>IČO</th><td>{$u->firma_ico}</td></tr>
         <tr><th>Číslo členské karty</th><td>{$u->cislo_clenske_karty}</td></tr>
         <tr><th>Jméno a příjmení</th><td>{$u->jmeno} {$u->prijmeni}</td></tr>
         <tr><th>Datum narození</th><td>{isset($u->datum_narozeni) ? $u->datum_narozeni->format('d.m.Y') : '-'}</td></tr>
@@ -136,74 +131,89 @@
         <tr><th>Email</th><td>{$u->email}</td></tr>
         <tr n:if="isset($u->email2)"><th>Sekundární email</th><td>{$u->email2}</td></tr>
         <tr><th>Telefon</th><td>{$u->telefon}</td></tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
-
         <tr><th>Technologie připojení</th><td>{$u->TechnologiePripojeni->text}</td></tr>
-        <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni->text}</td></tr>
+        <!-- <tr><th>Způsob připojení</th><td>{$u->ZpusobPripojeni?->text}</td></tr> -->
         <tr><th>Poznámka</th><td>{$u->poznamka|breakLines}</td></tr>
         <tr><th>GPG klíč</th><td>{$u->gpg}</td></tr>
         <tr><th>Založen</th><td>{$u->zalozen}</td></tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
+        <!-- <tr><th>Kauce na mobilní tarify</th><td>{$u->kauce_mobil}</td></tr> -->
 
-        <tr><th>Kauce na mobilní tarify</th><td>{$u->kauce_mobil}</td></tr>
-        <tr><th>Aktivní</th><td>{$money_act}</td></tr>
-        <tr><th>Deaktivace</th><td>{$money_dis}</td></tr>
-        <tr><th>Poslední aktivace</th><td>{$money_lastact}</td></tr>
-        <tr>
-            <th>Stav účtu</th>
-            <td>
-                <table class="nested-payments">
-                    <thead>
-                        <tr>
-                            <th>Spolek</th>
-                            <th>Družstvo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{$money_bal_spolek}</td>
-                            <td>{$money_bal_druzstvo}</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'spolek'">Přehled plateb</a>
-                            </td>
-                            <td>
-                                <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'druzstvo'">Přehled plateb</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <th>Poslední platba</th>
-            <td>
-                <table class="nested-payments">
-                    <tr>
-                        <td>{$money_lastpay_spolek}</td>
-                        <td>{$money_lastpay_druzstvo}</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        <tr n:if="$u->spolek"><th>Souhrn členských příspěvků od 1.11.2017</th><td>{$money_dph}</td></tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
-
-    <script src="{$basePath}/js/gps.js"></script>
-    <script>
-      $(document).ready(function() {
-        $("#gpsCoordsButton").click(function() {
-          rotateGPSFormat($("#gpsCoords"));
+        <script src="{$basePath}/js/gps.js"></script>
+        <script>
+        $(document).ready(function() {
+            $("#gpsCoordsButton").click(function() {
+            rotateGPSFormat($("#gpsCoords"));
+            });
         });
-      });
-    </script>
-
+        </script>
     {/if}
     </table>
+
+    {if $canViewOrEdit}
+        <h4>Platby
+            &nbsp;
+            <a n:href="PaymentSchedule:sendPaymentScheduleEmail id=>$u->id" role="button" class="btn btn-primary btn-sm" id="btn-handle-sendPaymentScheduleEmail">
+                <b>@</b> Odeslat rozpis plateb e-mailem
+            </a>
+            <a n:href="PaymentSchedule:show id=>$u->id" class="btn btn-default btn-sm" role="button">
+                náhled
+            </a>
+        </h4>
+        <table class="table table-nonfluid">
+            <tr>
+                <th>Stav účtu</th>
+                <td>
+                    <table class="nested-payments">
+                        <thead>
+                            <tr>
+                                <th>Spolek</th>
+                                <th>Družstvo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{$money_bal_spolek}</td>
+                                <td>{$money_bal_druzstvo}</td>
+                            </tr>
+                            <tr>
+                                <td nowrap>
+                                    <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'spolek'">Přehled plateb</a>
+                                </td>
+                                <td nowrap>
+                                    <a n:href="UzivatelAccount:account id=>$u->id, 'accountgrid-filter[ucet]'=>'druzstvo'">Přehled plateb</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <th>Poslední platba</th>
+                <td>
+                    <table class="nested-payments">
+                        <tr>
+                            <td>{$money_lastpay_spolek}</td>
+                            <td>{$money_lastpay_druzstvo}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr n:if="$u->spolek"><th>Souhrn členských příspěvků od 1.11.2017</th><td>{$money_dph}</td></tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+
+        </table>
+    {/if}
+
     </div>
     <div class="panel-right">
-        <h4>Smlouvy</h4>
+        <h4>Smlouvy &nbsp;
+            <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-primary btn-sm" id="btn-handle-subscriber-contract" role="button">
+                <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva
+            </a>
+            <a href="{link UzivatelActions:handleSubscriberContractPreview id=>$u->id}" class="btn btn-default btn-sm" id="btn-handle-subscriber-contract" role="button">
+                 náhled
+            </a>
+        </h4>
         <table class="table table-nonfluid table-right">
         <tbody>
         <tr>
@@ -221,13 +231,105 @@
         </tbody>
         </table>
         <p>
-            <a href="{link UzivatelActions:handleSubscriberContract id=>$u->id}" class="btn btn-success btn-sm" id="btn-handle-subscriber-contract" role="button">
-                <i class="glyphicon glyphicon-pencil icon-pencil"></i> Nová účastnická smlouva...
-            </a>
-            <a href="{link UzivatelActions:handleSubscriberContractPreview id=>$u->id}" class="btn btn-default btn-sm" id="btn-handle-subscriber-contract" role="button">
-                 náhled
-            </a>
         </p>
+
+        <br/>
+        <h4>
+            Internet &nbsp;
+            {if $activaceVisible}<a href="{link UzivatelActions:moneyActivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Aktivace</a>{/if}
+            {if $reactivaceVisible}<a href="{link UzivatelActions:moneyReactivate id=>$u->id}" class="btn btn-success btn-sm" role="button"><i class="glyphicon glyphicon-ok-circle"></i> Reaktivace</a>{/if}
+            {if $deactivaceVisible}<a href="{link UzivatelActions:moneyDeactivate id=>$u->id}" class="btn btn-danger btn-sm" role="button"><i class="glyphicon glyphicon-remove-circle"></i> Deaktivace</a>{/if}
+            <a n:if="$igw" href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm active" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-check"></i> Zobrazit stav na IGW</a>
+            <a n:if="!$igw" href="{link Uzivatel:show id=>$u->id, igw=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit stav na IGW"><i class="glyphicon glyphicon-unchecked"></i> Zobrazit stav na IGW</a>
+        </h4>
+        <table class="table table-nonfluid table-right">
+        <tbody>
+            <tr><th>Aktivní</th><td>{$money_act}</td></tr>
+            <tr><th>Deaktivace</th><td>{$money_dis}</td></tr>
+            <tr><th>Poslední aktivace</th><td>{$money_lastact}</td></tr>
+        </tbody>
+        </table>
+
+        <br/>
+        <h4>
+            Televize &nbsp;
+            {if !$televize_objednana}
+            <a href="{link UzivatelTelevizeActions:subscribe id=>$u->id}" class="btn btn-primary btn-sm" id="btn-televize-objednat" role="button">
+                <i class="glyphicon glyphicon-ok-circle"></i> Objednat
+            </a>
+            {else}
+            <a href="{link UzivatelTelevizeActions:unsubscribe id=>$u->id}" class="btn btn-danger btn-sm" id="btn-televize-odobjednat" role="button">
+                <i class="glyphicon glyphicon-remove-circle"></i> Odhlásit
+            </a>
+            {/if}
+        </h4>
+        <table class="table table-nonfluid table-right">
+        <tbody>
+            <tr>
+                <th>Objednaná</th>
+                <td>
+                {if $televize_objednana}
+                    <span title="Služba televize je objednaná, pravidelně odečítat kredit, aktivovat-deaktivovat">
+                    ANO
+                {else}
+                    NE
+                {/if}
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Cena
+                </th>
+                <td>
+                    {$televize_cena} Kč/měsíc
+                    <a href="{link UzivatelTelevize:edit id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> změnit cenu</a>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Aktivní</th>
+                <td>
+                {if $televize_aktivni}
+                    ANO <i>{$televize_aktivni_poznamka}</i> do: {$televize_aktivni_do|date:'j. n. Y'}
+                {else}
+                    NE
+                {/if}
+                </td>
+            </tr>
+        </tbody>
+        </table>
+        <a href="{link UzivatelTelevize:show id=>$u->id}">podrobnosti</a>
+        <br/>
+        <br/>
+        <div>
+            <a href="{link Mailing:sendUserEmail variant=>ZpoplatneniTelevize2026,id=>$u->id}" class="btn btn-info btn-sm" role="button">
+                <i class="glyphicon glyphicon-info-sign"></i> Odeslat email s aktivačním tlačítkem (MÁM ZÁJEM - NEMÁM ZÁJEM)
+            </a>
+            <a href="{link Mailing:previewUserEmail variant=>ZpoplatneniTelevize2026,id=>$u->id}" class="btn btn-default btn-sm" role="button">
+                <i class="glyphicon glyphicon-info-sign"></i> náhled
+            </a>
+        </div>
+        <script>
+            $('#btn-televize-objednat').on('click', function() {
+                const c = confirm("Objednání placené služby SledovaniTV.\n\nPokračovat?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
+            $('#btn-televize-odobjednat').on('click', function() {
+                const c = confirm("Zrušení placené služby SledovaniTV. Televize pojede ještě do konce tohoto měsíce.\n\nPokračovat?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
+        </script>
+
       </div>
     </div>
         <h4>IP Adresy</h4>
@@ -260,6 +362,17 @@
                     event.preventDefault();
                 }
             })
+
+            $('#btn-handle-sendPaymentScheduleEmail').on('click', function() {
+                const c = confirm("Rozpis plateb bude odeslán na e-mail "+{$u->email}+".\n\nPokračovat?");
+                if (c) {
+                    // Ok
+                } else {
+                    // Cancel
+                    event.preventDefault();
+                }
+            })
+
         </script>
         <h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
 
