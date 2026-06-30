@@ -21,6 +21,8 @@ class MailingPresenter extends UzivatelPresenter
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
     private $cestneClenstviUzivatele;
 
+    private Services\Stitkovac $stitkovac;
+
     public function __construct(
         Model\Parameters $parameters,
         Services\MailService $mailsvc,
@@ -30,7 +32,8 @@ class MailingPresenter extends UzivatelPresenter
         Model\Smlouva $smlouva,
         Services\RequestDruzstvoContract $requestDruzstvoContract,
         Services\CryptoSluzba $cryptosvc,
-        Model\CestneClenstviUzivatele $cestneClenstviUzivatele
+        Model\CestneClenstviUzivatele $cestneClenstviUzivatele,
+         Services\Stitkovac $stitkovac,
     ) {
         $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
@@ -41,6 +44,7 @@ class MailingPresenter extends UzivatelPresenter
         $this->requestDruzstvoContract = $requestDruzstvoContract;
         $this->cryptosvc = $cryptosvc;
         $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
+        $this->stitkovac = $stitkovac;
     }
 
     // generate auth code and encrypt it to DB if not already generated
@@ -96,6 +100,8 @@ class MailingPresenter extends UzivatelPresenter
         $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $this->template);
 
         $this->flashMessage(sprintf('E-mail %s odeslán na %s.', $variant, $uzivatel->email));
+
+        $this->stitkovac->addStitek($uzivatel, 'Odesláno:' . $variant);
 
         $this->redirect('Uzivatel:show', ['id' => $uid]);
     }
