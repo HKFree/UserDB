@@ -33,7 +33,7 @@ class MailingPresenter extends UzivatelPresenter
         Services\RequestDruzstvoContract $requestDruzstvoContract,
         Services\CryptoSluzba $cryptosvc,
         Model\CestneClenstviUzivatele $cestneClenstviUzivatele,
-         Services\Stitkovac $stitkovac,
+        Services\Stitkovac $stitkovac,
     ) {
         $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
@@ -71,6 +71,7 @@ class MailingPresenter extends UzivatelPresenter
         $this->template->UID = $uid;
         $this->template->nazevUzivatele = $this->uzivatel->nazevUzivatele($uzivatel->id);
         $this->template->oneclick_auth_code = $this->oneclickAuthCode($uzivatel);
+        $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uid);
     }
 
     private function loadTemplateAndSubject($variant) {

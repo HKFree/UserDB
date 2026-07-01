@@ -214,7 +214,6 @@
     </tbody>
   </table>
 
-
   <table width="100%" border="0" cellspacing="0" cellpadding="0" data-edit-description="Text" data-editable=""
     data-edit-id="29" class="">
     <tbody>
@@ -262,10 +261,17 @@
                       <br />
                       <small>
                         Nová výše plateb:<br>
-                        290 Kč za internet <br />
+                        {{if !$hasCC}} 290 {{else}} 0 {{/if}}
+                        Kč za internet <br />
                         160 Kč za televizi <br />
-                        <b>450 Kč</b> celkem <br />
-                        Nezapomeňte prosím navýšit platby (trvalý příkaz) počínaje od července 2026.
+                        <b>
+                          {{if !$hasCC}} 450 {{else}} 160 {{/if}}
+                          Kč
+                        </b> celkem
+                        <br />
+                        Nezapomeňte prosím
+                        {{if !$hasCC}} navýšit {{else}} nastavit {{/if}}
+                        platby (trvalý příkaz) počínaje od července 2026.
                       </small>
                       <br>
 
@@ -279,7 +285,8 @@
                       <br />
                       <small>
                         Žádná změna:<br>
-                        290 Kč za internet <br />
+                        {{if !$hasCC}} 290 {{else}} 0 {{/if}}
+                        Kč za internet <br />
                         <br />
                         Služba SledovaniTV bude od 1.8.2026 deaktivována.
                       </small>
