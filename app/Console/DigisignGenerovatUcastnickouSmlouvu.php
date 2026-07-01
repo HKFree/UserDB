@@ -56,14 +56,9 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
 
         $uzivatel = $this->uzivatelModel->find($smlouva->uzivatel_id);
 
-        $starsi_smlouva_id = \App\Services\GeneratorSmlouvy::posledniPlatnaSmlouva($uzivatel);
-
-        $parametry = \App\Services\GeneratorSmlouvy::parametryUcastnickeSmlouvy($uzivatel, $smlouva_id, $starsi_smlouva_id);
+        $parametry = \App\Services\GeneratorSmlouvy::parametryUcastnickeSmlouvy($uzivatel, $smlouva_id);
         $smlouva->update(['parametry_smlouvy' => json_encode($parametry, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)]);
 
-        if ($starsi_smlouva_id) {
-            $smlouva->update(['nahrazuje_id' => $starsi_smlouva_id]);
-        }
 
         print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
 
