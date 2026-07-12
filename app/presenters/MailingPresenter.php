@@ -67,11 +67,13 @@ class MailingPresenter extends UzivatelPresenter
     private function setCommonTemplateParams() {
         $uid = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($uid);
+        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
         $this->template->UID = $uid;
         $this->template->nazevUzivatele = $this->uzivatel->nazevUzivatele($uzivatel->id);
         $this->template->oneclick_auth_code = $this->oneclickAuthCode($uzivatel);
         $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uid);
+        $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
     private function loadTemplateAndSubject($variant) {

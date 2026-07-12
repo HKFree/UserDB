@@ -240,7 +240,7 @@
                     <span style=" color:#000000; font-weight:400; text-decoration:none;">
                       &nbsp;
                       V síti hkfree zdarma využíváte oblíbenou službu on-line televize SledovaniTV. Bezplatné období
-                      trvá ještě do 31.7.2026. Od srpna bude základní balíček zpoplatněn. Cena je 160 Kč měsíčně.
+                      trvá ještě do 31.7.2026. Od srpna bude základní balíček zpoplatněn. Cena je {{$televize_cena}} Kč měsíčně.
                     </span>
                   </div>
                   <div style=""><span
@@ -263,9 +263,9 @@
                         Nová výše plateb:<br>
                         {{if !$hasCC}} 290 {{else}} 0 {{/if}}
                         Kč za internet <br />
-                        160 Kč za televizi <br />
+                        {{$televize_cena}} Kč za televizi <br />
                         <b>
-                          {{if !$hasCC}} 450 {{else}} 160 {{/if}}
+                          {{if !$hasCC}} {{290+$televize_cena}} {{else}} {{$televize_cena}} {{/if}}
                           Kč
                         </b> celkem
                         <br />
@@ -317,11 +317,11 @@
                   <b>Výhodná cena i nadále</b>
                   <p>
                     Pokud máte tuto službu rádi, můžete ji používat nadále. Díky naší velikosti
-                    a dobrými vztahy se Sledování TV jsme pro Vás zprostředkovali výhodnější cenu 160 Kč měsíčně za základní balíček.
+                    a dobrými vztahy se Sledování TV jsme pro Vás zprostředkovali výhodnější cenu {{$televize_cena}} Kč měsíčně za základní balíček.
                   </p>
                   <b>Jak na další TV programy a doplňkové balíčky</b>
                   <p>
-                    Pokud si již dnes připlácíte za doplňkové balíčky, na tomto se nic nemění. Jediná změna je zpoplatnění 160 Kč za základní (tzv. START balíček).
+                    Pokud si již dnes připlácíte za doplňkové balíčky, na tomto se nic nemění. Jediná změna je zpoplatnění {{$televize_cena}} Kč za základní (tzv. START balíček).
                   </p><p>
                     <a href="https://druzstvo.hkfree.org/tv.htm">Kompletní nabídka TV a rozhlasových kanálů zde</a>
                   </p>
