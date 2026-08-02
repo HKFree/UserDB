@@ -15,7 +15,11 @@ if len(sys.argv) > 1 and sys.argv[1] == '--go':
 
 def deactivate_all():
 
-  query = ("SELECT Uzivatel_id, datum_do FROM UzivatelTelevizeAktivni WHERE datum_do = date_sub(curdate(), interval 1 day)")
+  query = """SELECT * FROM UzivatelTelevizeAktivni uta
+    LEFT JOIN (SELECT Uzivatel_id, max(datum_do) as posledni_datum_do FROM UzivatelTelevizeAktivni GROUP BY Uzivatel_id) uta_posledni ON (uta_posledni.Uzivatel_id=uta.Uzivatel_id)
+    WHERE posledni_datum_do = date_sub(curdate(), interval 1 day)
+    ORDER BY uta.Uzivatel_id
+    """
   udb_cursor.execute(query)
 
   if udb_cursor.rowcount == 0:
