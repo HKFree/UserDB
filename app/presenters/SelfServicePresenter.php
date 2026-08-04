@@ -76,11 +76,12 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
 
         switch ($variant) {
             case 'ZpoplatneniTelevize2026':
-                $this->handleZpoplatneniTelevize2026($uid, $nextStep);
+                $this->template->error = 'Odkaz pro aktivaci/deaktivaci televize již neplatí. Kontaktujte svého Správce nebo infolinku.';
             break;
         }
     }
 
+    /*
     public function handleZpoplatneniTelevize2026($uid, $nextStep) {
         $uzivatel = $this->uzivatelModel->find($uid);
 
@@ -107,4 +108,5 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
             $this->template->feedbackText = 'Služba Televize zrušena. Bude deaktivována 1. den v příštím měsíci.';
         }
     }
+    */
 }
