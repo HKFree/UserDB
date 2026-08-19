@@ -23,6 +23,13 @@ pro uživatele kteří měli službu aktivní do včera a dnes už nemají
 
 Spouští se z cronu automaticky 1x za den.
 
+## stvActivateAll.py
+
+Volá [`activate-user` ze SledovaniTV API](https://redoc.moderntv.app/?url=https://sledovanitv.cz/partner/api/_/apidoc#operation/get-activate-user)
+pro uživatele kteří měli službu neaktivní a teď už mají aktivní. Souvisí s tlačítkem [Aktivovat] v UserDB.
+
+Spouští se z cronu automaticky každé 3 minuty.
+
 ## Jak spustit z ruky
 
 ```shell
@@ -46,4 +53,5 @@ Ruční spuštění mimo cron:
 ```shell
 stv-connector:/opt # ./stvDownloadUserReport.py
 stv-connector:/opt # ./stvDeactivateAll.py
+stv-connector:/opt # ./stvActivateAll.py
 ```

@@ -18,6 +18,7 @@ def deactivate_all():
   query = """SELECT uta.Uzivatel_id FROM UzivatelTelevizeAktivni uta
     LEFT JOIN (SELECT Uzivatel_id, max(datum_do) as posledni_datum_do FROM UzivatelTelevizeAktivni GROUP BY Uzivatel_id) uta_posledni ON (uta_posledni.Uzivatel_id=uta.Uzivatel_id)
     WHERE posledni_datum_do = date_sub(curdate(), interval 1 day)
+    AND uta.datum_do = posledni_datum_do
     ORDER BY uta.Uzivatel_id
     """
   udb_cursor.execute(query)
@@ -42,6 +43,8 @@ def deactivate_all():
       try:
         resp = requests.get(url)
         resp.raise_for_status()
+        udb_cursor.execute("UPDATE UzivatelTelevize SET posledni_deaktivace = NOW() WHERE id = %s", (uid,))
+        udb_conn.commit()
       except requests.RequestException as e:
         print(f"User {counter}/{total} UID {uid}: Request failed: {e}", file=sys.stderr)
         continue
