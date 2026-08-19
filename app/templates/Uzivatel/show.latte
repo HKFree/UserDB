@@ -258,6 +258,13 @@
                 <i class="glyphicon glyphicon-ok-circle"></i> Objednat
             </a>
             {else}
+            {if !$televize_aktivni}
+                {if $money_bal_druzstvo >= $televize_cena}
+                <a href="{link UzivatelTelevizeActions:activate id=>$u->id}" class="btn btn-success btn-sm" id="btn-televize-aktivovat" role="button">
+                    <i class="glyphicon glyphicon-ok-circle"></i> Aktivovat
+                </a>
+                {/if}
+            {/if}
             <a href="{link UzivatelTelevizeActions:unsubscribe id=>$u->id}" class="btn btn-danger btn-sm" id="btn-televize-odobjednat" role="button">
                 <i class="glyphicon glyphicon-remove-circle"></i> Odhlásit
             </a>
@@ -318,6 +325,11 @@
                     // Ok
                 } else {
                     // Cancel
+                    event.preventDefault();
+                }
+            })
+            $('#btn-televize-aktivovat').on('click', function() {
+                if (!confirm("Aktivace služby SledovaniTV během 15 minut.\nZ uživatelského účtu bude strženo {$televize_cena} Kč.\n\nPokračovat?")) {
                     event.preventDefault();
                 }
             })

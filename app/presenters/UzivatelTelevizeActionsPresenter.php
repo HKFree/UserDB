@@ -7,21 +7,16 @@ use App\Model;
 
 class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
 {
-    private $parameters;
-    private $uzivatel;
-    private $uzivatelTelevize;
-    private $connection;
     public function __construct(
-        Model\Parameters $parameters,
-        Model\Uzivatel $uzivatel,
-        Model\UzivatelTelevize $uzivatelTelevize,
-        Nette\Database\Connection $connection
+        private Model\Parameters $parameters,
+        private Model\Uzivatel $uzivatel,
+        private Model\UzivatelTelevize $uzivatelTelevize,
+        private Model\UzivatelTelevizeAktivni $uzivatelTelevizeAktivni,
+        private Nette\Database\Connection $connection,
+        private Model\UzivatelskeKonto $uzivatelskeKonto
     ) {
-        $this->parameters = $parameters;
-        $this->uzivatel = $uzivatel;
-        $this->uzivatelTelevize = $uzivatelTelevize;
-        $this->connection = $connection;
     }
+
 
     public function actionSubscribe() {
         $user_id = $this->getParameter('id');
@@ -34,6 +29,33 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
         );
 
         $this->flashMessage(sprintf('Objednána služba Televize za cenu %u Kč/měsíc.', $cena));
+
+        $this->redirect('Uzivatel:show', ['id' => $user_id]);
+    }
+
+    public function actionActivate() {
+        $user_id = $this->getParameter('id');
+
+        $cena = $this->parameters->getCenaSledovaniTV();
+        $poznamkaSluzba = "Placená aktivace na 1 kalendářní měsíc";
+        $poznamkaKonto = "[UID" . $this->getUser()->getIdentity()->getId() ." ". $this->getUser()->getIdentity()->getNick() . "] Aktivace služby Televize na 1 kalendářní měsíc";
+
+        $this->connection->query('INSERT INTO ' . $this->uzivatelTelevizeAktivni->tableName . ' ?', [
+            'Uzivatel_id' => $user_id,
+            'datum_od' => new \Nette\Database\SqlLiteral('curdate()'),
+            'datum_do' => new \Nette\Database\SqlLiteral('last_day(curdate())'),
+            'poznamka' => $poznamkaSluzba
+        ]);
+
+        $this->uzivatelskeKonto->insert(array('Uzivatel_id' => $user_id,
+            'TypPohybuNaUctu_id' => 4,
+            'druzstvo' => 1,
+            'castka' => -$cena,
+            'datum' => new Nette\Utils\DateTime(),
+            'poznamka' => $poznamkaKonto,
+            'zmenu_provedl' => $this->getUser()->getIdentity()->getId()));
+
+        $this->flashMessage('Služba Televize bude aktivní během 15 minut');
 
         $this->redirect('Uzivatel:show', ['id' => $user_id]);
     }
