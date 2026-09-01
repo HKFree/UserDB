@@ -18,7 +18,9 @@ def activate_all():
 
   query = """SELECT ut.id FROM UzivatelTelevize ut
     LEFT JOIN (SELECT DISTINCT Uzivatel_id FROM UzivatelTelevizeAktivni WHERE curdate() BETWEEN datum_od AND datum_do) aktivni_ids ON (aktivni_ids.Uzivatel_id=ut.id)
-    WHERE ut.posledni_deaktivace IS NOT NULL
+    WHERE
+    aktivni_ids.Uzivatel_id IS NOT NULL
+    AND ut.posledni_deaktivace IS NOT NULL
     AND (ut.posledni_aktivace IS NULL OR ut.posledni_aktivace < ut.posledni_deaktivace)
     ORDER BY ut.id
     """
