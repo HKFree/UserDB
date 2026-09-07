@@ -29,19 +29,18 @@ class MonitoringPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'typyZarizeni' => $out]));
     }
 
-    public function actionGetZarizeni($typ, $uzivatele = 0, $ap = null) {
-        parent::checkApID($ap);
+    public function actionGetZarizeni($typ = null, $uzivatele = 0, $ap = null) {
+        $ap = parent::checkApID($ap);
 
-        $typZarizeni = $this->typZarizeni->find($typ);
+        $adresy = $this->ipAdresa->findAll();
 
-        if (!$typZarizeni) {
-            $this->sendResponse(new JsonResponse(['result' => 'ERROR, typZarizeni ' . $typ . ' not valid']));
-        }
+        if($typ) {
+            $typZarizeni = $this->typZarizeni->find($typ);
 
-        $adresy = $this->ipAdresa->findAll()->where('TypZarizeni_id', $typZarizeni->id);
-
-        if (!$uzivatele) {
-            $adresy = $adresy->where('Ap_id IS NOT NULL');
+            if (!$typZarizeni) {
+                $this->sendResponse(new JsonResponse(['result' => 'ERROR, typZarizeni ' . $typ . ' not valid']));
+            }
+            $adresy = $adresy->where('TypZarizeni_id', $typZarizeni->id);
         }
 
         if ($ap) {
@@ -49,12 +48,18 @@ class MonitoringPresenter extends ApiPresenter
             if (!$apRec) {
                 $this->sendResponse(new JsonResponse(['result' => 'ERROR, AP ID ' . $ap . ' does not exist']));
             }
-
-            $adresy = $adresy->where("Ap_id", $apRec->id);
-        }
-
-        if ($ap && $uzivatele) {
-            $this->sendResponse(new JsonResponse(['result' => 'ERROR, selecting AP with uzivatele not implemented yet']));
+            if ($uzivatele) {
+                $adresy = $adresy->whereOr([
+                    'IPAdresa.Ap_id' => $ap,
+                    'Uzivatel.Ap_id' => $ap,
+                ]);
+            } else {
+                $adresy = $adresy->where("Ap_id", $apRec->id);
+            }
+        } else {
+            if (!$uzivatele) {
+                $adresy = $adresy->where('Ap_id IS NOT NULL');
+            }
         }
 
         $out = array();

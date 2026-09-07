@@ -97,11 +97,15 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
 
     // If function returns sensitive data, check whether API key has access!
     // Call before doing any action! parent::checkApID($apID);
-    protected function checkApID($requestedApId) {
-        // Check if key is restricted to an AP and does not match to requested AP
-        if ($this->keyApID && $requestedApId != $this->keyApID) {
-            $this->sendForbidden('not allowed to view AP ' . $requestedApId);
+    protected function checkApID($requestedApId=null) {
+        if ($requestedApId !== null) {
+            // Check if key is restricted to an AP and does not match to requested AP
+            if ($this->keyApID && $requestedApId != $this->keyApID) {
+                $this->sendForbidden('not allowed to view AP ' . $requestedApId);
+            }
+            return $requestedApId;
         }
+        return $this->keyApID;
     }
 
     protected function forceMethod($method) {
