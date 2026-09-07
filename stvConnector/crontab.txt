@@ -1,4 +1,4 @@
 # min   hour    day     month   weekday command
-30      1       *       *       *       /opt/stvDownloadUserReport.py
-14      0       *       *       *       /opt/stvDeactivateAll.py --go
-*/3     *       *       *       *       /opt/stvActivateAll.py --go
+30      1       *       *       *       /opt/stvDownloadUserReport.py 2>&1 | sed 's/^/stvDownloadUserReport: /'
+14      0       *       *       *       /opt/stvDeactivateAll.py --go 2>&1 | sed 's/^/stvDeactivateAll: /'
+*/3     1-23    *       *       *       /opt/stvActivateAll.py --go 2>&1 | sed 's/^/stvActivateAll: /'
