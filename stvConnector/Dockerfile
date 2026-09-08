@@ -1,7 +1,9 @@
 FROM alpine:3.24.0
 
-RUN apk add bash wget
+RUN apk add bash wget tzdata
 RUN apk add python3 py3-requests py3-dotenv py3-mysqlclient
+
+ENV TZ=Europe/Prague
 
 COPY . /opt
 
