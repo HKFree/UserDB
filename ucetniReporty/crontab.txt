@@ -1,0 +1,2 @@
+# min   hour    day     month   weekday command
+00      5       10      *       *       /opt/kredityCronjob.py 2>&1 | sed 's/^/kredityCronjob: /'
