@@ -1,3 +1,2 @@
 # min   hour    day     month   weekday command
 00      8       10      *       *       /opt/cronjob.py 2>&1 | sed 's/^/cronjob: /'
-00      17      14      *       *       /opt/cronjob.py 2>&1 | sed 's/^/cronjob: /'
