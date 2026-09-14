@@ -32,6 +32,8 @@ month = last_month.strftime("%m")
 
 xlsx_filename = f"hkfree přehled spotřebovaných kreditů {year}-{month}.xlsx"
 
+os.chdir('/opt')
+
 # Execute the report generation script
 try:
     subprocess.run(
