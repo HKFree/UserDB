@@ -13,6 +13,9 @@ try {
 function vTransakci(Nette\Database\Explorer $db, callable $test): void {
     $db->beginTransaction();
     try {
+        foreach (['PushDoruceni', 'PushNotifikace', 'PushPreference', 'PushOdber'] as $t) {
+            $db->table($t)->delete(); // nezávislost na datech z E2E; vrátí rollback
+        }
         $test();
     } finally {
         $db->rollBack();
