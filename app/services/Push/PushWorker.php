@@ -2,6 +2,7 @@
 
 namespace App\Services\Push;
 
+use App\Model\Uzivatel;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 use Nette\Database\Explorer;
@@ -19,20 +20,35 @@ class PushWorker
     ) {
     }
 
-    /** @return int počet zpracovaných notifikací */
+    /** @return int počet zpracovaných notifikací (odeslaných i chybných) */
     public function zpracuj(): int {
-        $this->uklid();
-        $hotovo = 0;
+        if (empty($this->vapid['subject']) || empty($this->vapid['publicKey']) || empty($this->vapid['privateKey'])) {
+            throw new \RuntimeException('Chybí proměnné prostředí USERDB_VAPID_SUBJECT/PUBLIC_KEY/PRIVATE_KEY.');
+        }
+        // Po pádu workeru uprostřed odesílání: neopakuje se, aby nikdo nedostal notifikaci dvakrát
+        $this->db->table('PushNotifikace')->where('stav', 'odesila')->where('odeslano < ?', new \DateTime('-1 hour'))
+            ->update(['stav' => 'chyba']);
+
+        $zpracovano = 0;
         foreach ($this->db->table('PushNotifikace')->where('stav', 'cekajici')->order('id')->limit(20)->fetchAll() as $n) {
             // Zámek proti souběžnému workeru: notifikaci zpracuje jen ten, komu se povede změnit stav
-            if ($this->db->table('PushNotifikace')->where(['id' => $n->id, 'stav' => 'cekajici'])->update(['stav' => 'odesila']) !== 1) {
+            if ($this->db->table('PushNotifikace')->where(['id' => $n->id, 'stav' => 'cekajici'])
+                ->update(['stav' => 'odesila', 'odeslano' => new \DateTime()]) !== 1) {
                 continue;
             }
-            $pocet = $this->odesli($n);
-            $n->update(['stav' => 'odeslano', 'odeslano' => new \DateTime(), 'pocet_prijemcu' => $pocet]);
-            $hotovo++;
+            try {
+                $pocet = $this->odesli($n);
+                $n->update(['stav' => 'odeslano', 'odeslano' => new \DateTime(), 'pocet_prijemcu' => $pocet]);
+            } catch (\Throwable $e) {
+                Debugger::log($e, 'push');
+                $n->update(['stav' => 'chyba']);
+            }
+            $zpracovano++;
         }
-        return $hotovo;
+        if ($zpracovano) {
+            $this->uklid();
+        }
+        return $zpracovano;
     }
 
     private function odesli($n): int {
@@ -75,7 +91,7 @@ class PushWorker
     private function uklid(): void {
         $this->db->table('PushDoruceni')->where('vytvoreno < ?', new \DateTime('-' . self::DORUCENI_DNU . ' days'))->delete();
         $this->db->query("DELETE o FROM PushOdber o JOIN Uzivatel u ON u.id = o.Uzivatel_id
-            WHERE o.publikum = 'clenove' AND NOT COALESCE(" . PushPrijemci::AKTIVNI_CLEN . ', 0)');
+            WHERE o.publikum = 'clenove' AND NOT COALESCE(" . Uzivatel::sqlAktivniClen('u') . ', 0)');
         $this->db->query("DELETE o FROM PushOdber o WHERE o.publikum = 'spravci' AND NOT EXISTS (
             SELECT 1 FROM SpravceOblasti s WHERE s.Uzivatel_id = o.Uzivatel_id AND " . PushPrijemci::AKTIVNI_ROLE . ')');
     }

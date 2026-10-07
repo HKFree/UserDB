@@ -7,6 +7,7 @@ use App\Services\Push\PushOdesilani;
 use App\Services\Push\PushOpravneni;
 use Nette\Application\UI\Form;
 use Nette\Database\Explorer;
+use Nette\Database\UniqueConstraintViolationException;
 
 /** Push notifikace pro správce: nastavení odběru, odeslání, správa kanálů (VV). */
 class PushPresenter extends BasePresenter
@@ -117,7 +118,12 @@ class PushPresenter extends BasePresenter
             }
             $id = (int) $v['id'];
             unset($v['id']);
-            $id ? $this->db->table('PushKanal')->where('id', $id)->update($v) : $this->db->table('PushKanal')->insert($v);
+            try {
+                $id ? $this->db->table('PushKanal')->where('id', $id)->update($v) : $this->db->table('PushKanal')->insert($v);
+            } catch (UniqueConstraintViolationException $e) {
+                $form['kod']->addError('Kanál s tímto kódem už existuje.');
+                return;
+            }
             $this->flashMessage('Kanál uložen.');
             $this->redirect('kanaly', ['kanal' => null]);
         };

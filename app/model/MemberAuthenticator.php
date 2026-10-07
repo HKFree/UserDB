@@ -2,7 +2,6 @@
 
 namespace App\Model;
 
-use App\Services\Push\PushPrijemci;
 use Nette\Database\Explorer;
 use Nette\Security\AuthenticationException;
 use Nette\Security\SimpleIdentity;
@@ -15,7 +14,7 @@ class MemberAuthenticator
 
     public function authenticate(string $uid): SimpleIdentity {
         $u = ctype_digit($uid) ? $this->db->query('SELECT u.id, u.nick FROM Uzivatel u WHERE u.id = ? AND '
-            . PushPrijemci::AKTIVNI_CLEN, (int) $uid)->fetch() : null;
+            . Uzivatel::sqlAktivniClen('u'), (int) $uid)->fetch() : null;
         if (!$u) {
             throw new AuthenticationException('Přístup jen pro aktivní členy.');
         }

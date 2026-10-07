@@ -22,7 +22,11 @@ class PushOdbery
             || !is_string($auth) || strlen($auth) > 64 || !preg_match($base64url, $auth)) {
             throw new PushException('Neplatná subscription.', 400);
         }
-        // Stejný prohlížeč po přihlášení jiného uživatele: subscription přejde na nového uživatele
+        // Cizí subscription lze převzít jen se stejným tajemstvím auth, tj. ze stejného prohlížeče
+        $puvodni = $this->db->table('PushOdber')->where('endpoint_hash', hash('sha256', $endpoint))->fetch();
+        if ($puvodni && $puvodni->Uzivatel_id !== $uid && !hash_equals($puvodni->auth, $auth)) {
+            throw new PushException('Toto zařízení je přihlášené k odběru jiného uživatele.', 409);
+        }
         $this->db->query('INSERT INTO PushOdber ? ON DUPLICATE KEY UPDATE Uzivatel_id = VALUES(Uzivatel_id),
             publikum = VALUES(publikum), p256dh = VALUES(p256dh), auth = VALUES(auth), zarizeni = VALUES(zarizeni)', [
             'Uzivatel_id' => $uid,

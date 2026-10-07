@@ -18,6 +18,14 @@ vTransakci($db, function () use ($db, $odbery, $sub) {
     Assert::exception(fn() => $odbery->uloz(1001, 'clenove', ['endpoint' => 'https://fcm.googleapis.com/x', 'keys' => ['p256dh' => '<x>', 'auth' => 'a']], null), PushException::class);
     Assert::exception(fn() => $odbery->uloz(1001, 'clenove', ['endpoint' => ['x']], null), PushException::class);
 
+    // Cizí endpoint bez stejného auth převzít nejde, ze stejného prohlížeče (stejné auth) ano
+    $ciziKlice = ['endpoint' => 'https://fcm.googleapis.com/fcm/send/a', 'keys' => ['p256dh' => 'BBB', 'auth' => 'jineAuth']];
+    Assert::exception(fn() => $odbery->uloz(1021, 'clenove', $ciziKlice, null), PushException::class);
+    Assert::count(1, $odbery->zarizeni(1001, 'clenove'));
+    $odbery->uloz(1021, 'clenove', $sub('https://fcm.googleapis.com/fcm/send/a'), null);
+    Assert::count(0, $odbery->zarizeni(1001, 'clenove'));
+    $odbery->uloz(1001, 'clenove', $sub('https://fcm.googleapis.com/fcm/send/a'), null);
+
     // Cizí subscription smazat nejde (IDOR)
     $id = $odbery->zarizeni(1001, 'clenove')[array_key_first($odbery->zarizeni(1001, 'clenove'))]->id;
     $odbery->smaz(1021, $id);

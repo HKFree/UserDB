@@ -12,12 +12,20 @@ XSS (Latte escapuje, notifikace jsou prostý text), únik dat v historii a chyb�
 Přijato záměrně: CSRF přes same-site cookie `_nss` (H4), důvěra v `HTTP_UID` a `Host` (ověřit v produkci, R16),
 souběh u limitu odesílání.
 
-## Code review (`/code-review`)
+## Code review (`/code-review`, 2026-10-08)
 
-Probíhá – výsledky budou doplněny.
+| # | Nález | Řešení |
+|---|---|---|
+| 1 | Výjimka při odesílání nechala notifikaci navždy ve stavu `odesila` a zastavila zbytek dávky | **opraveno** – chybějící VAPID se ověří před zpracováním; výjimka → stav `chyba` + `log/push.log`, dávka pokračuje; `odesila` starší 1 h po pádu workeru → `chyba` (bez opakování, aby nikdo nedostal notifikaci dvakrát) |
+| 2 | Uložení preferencí s mezitím vypnutým kanálem a duplicitní kód kanálu skončily chybovou stránkou | **opraveno** – chyba formuláře |
+| 3 | Kdo zná cizí endpoint, mohl subscription převzít | **opraveno** – převzetí jen se stejným `auth` (tentýž prohlížeč), jinak 409; test v `PushOdberyTest` |
+| 4 | Úklid (DELETE s JOINy) běžel každou minutu i s prázdnou frontou | **opraveno** – úklid jen po zpracování notifikací |
+| 5 | Podmínka aktivního člena zkopírovaná do push kódu | **opraveno** – `Uzivatel::sqlAktivniClen()`; 10 starších kopií v `Uzivatel`, `UzivatelMailSms`, `UzivatelListGrid`, `SpravaPresenter` zatím zůstává (mimo rozsah PR) |
+| – | Souběh u limitu 5/hod | přijato (R12) |
+| – | INSERT doručenky po jednom, 3 dotazy na kanál při ukládání preferencí, nepoužitá `smazEndpoint()` | ponecháno, nízká priorita |
 
 ## Známá omezení
 
-- Notifikace ve stavu `odesila` zůstane viset, pokud worker spadne uprostřed odesílání (bez automatického opakování).
+- Notifikace ve stavu `chyba` se automaticky neopakují; správce ji může poslat znovu.
 - E2E scénář 3 (cizí oblast) ověřuje odmítnutí přes UI, kde zasáhne už validace selectu; serverovou kontrolu
   oprávnění pokrývají unit testy `PushOdesilaniTest` a `PushOpravneniTest`.

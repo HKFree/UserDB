@@ -54,8 +54,13 @@ trait PushNastaveniTrait
         }
         $form->addSubmit('ulozit', 'Uložit')->setHtmlAttribute('class', 'btn btn-primary btn-sm');
         $form->onSuccess[] = function (Form $form, array $values): void {
-            foreach ($values['kanaly'] as $id => $zapnuto) {
-                $this->pushOdbery->nastav($this->uid(), self::PUBLIKUM, (int) $id, $zapnuto);
+            try {
+                foreach ($values['kanaly'] as $id => $zapnuto) {
+                    $this->pushOdbery->nastav($this->uid(), self::PUBLIKUM, (int) $id, $zapnuto);
+                }
+            } catch (PushException $e) {
+                $form->addError('Některý kanál mezitím přestal být dostupný, zkontrolujte nastavení.');
+                return;
             }
             $this->flashMessage('Nastavení kanálů uloženo.');
             $this->redirect('this');

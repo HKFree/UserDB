@@ -2,13 +2,13 @@
 
 namespace App\Services\Push;
 
+use App\Model\Uzivatel;
 use Nette\Database\Explorer;
 use Nette\Database\Row;
 
 /** Vyhodnocení příjemců v okamžiku odeslání (R7, H2, H11). */
 class PushPrijemci
 {
-    public const AKTIVNI_CLEN = '((u.spolek = 1 AND u.TypClenstvi_id > 1) OR (u.druzstvo = 1 AND u.smazano = 0)) AND u.systemovy = 0';
     public const AKTIVNI_ROLE = 's.od <= CURDATE() AND (s.do IS NULL OR s.do > CURDATE())';
 
     public function __construct(private Explorer $db) {
@@ -24,7 +24,7 @@ class PushPrijemci
         if ($kanal->publikum === 'clenove') {
             $cil = ['sit' => '', 'oblast' => 'AND a.Oblast_id = ?', 'ap' => 'AND u.Ap_id = ?'][$rozsah];
             $kdo = 'SELECT 1 FROM Uzivatel u JOIN Ap a ON a.id = u.Ap_id
-                WHERE u.id = o.Uzivatel_id AND ' . self::AKTIVNI_CLEN . " $cil";
+                WHERE u.id = o.Uzivatel_id AND ' . Uzivatel::sqlAktivniClen('u') . " $cil";
         } else {
             // VV a TECH dostávají vše, SO/ZSO jen svou oblast (nebo vše při rozsahu celé sítě)
             $cil = $rozsah === 'sit' ? '' : 'AND s.Oblast_id = ?';
