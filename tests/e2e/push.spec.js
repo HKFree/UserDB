@@ -107,9 +107,9 @@ test.describe.serial('push notifikace', () => {
 
     test('1+2: člen dostane notifikaci ze své oblasti, člen jiné oblasti ne', async ({ browser }) => {
         clenA = await zapniNotifikace(browser, 1001, noveZarizeni('a'));
-        await zapniNotifikace(browser, 1011, noveZarizeni('b'));
+        await zapniNotifikace(browser, 1021, noveZarizeni('b'));
 
-        const page = await odesli(browser, 1010, 'Výpadek E2E');
+        const page = await odesli(browser, 1020, 'Výpadek E2E');
         await expect(page.locator('body')).toContainText('ve frontě');
         await worker();
 
@@ -119,7 +119,7 @@ test.describe.serial('push notifikace', () => {
     });
 
     test('3: SO nemůže poslat do cizí oblasti', async ({ browser }) => {
-        const page = await odesli(browser, 1010, 'Cizí oblast', '8102');
+        const page = await odesli(browser, 1020, 'Cizí oblast', '8102');
         await expect(page.locator('body')).not.toContainText('ve frontě');
         await worker();
         expect(zarizeni.b.prijato).toEqual([]);

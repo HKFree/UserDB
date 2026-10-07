@@ -2,6 +2,7 @@
 
 // DB testy běží nad migracemi s dummy daty, každý test v transakci s rollbackem
 $container = require __DIR__ . '/../bootstrap.php';
+Tester\Environment::lock('push-db', __DIR__ . '/../../temp'); // DB testy sdílí data, neběží paralelně
 Tracy\Debugger::$logDirectory = __DIR__ . '/../../temp';
 $db = $container->getByType(Nette\Database\Explorer::class);
 try {

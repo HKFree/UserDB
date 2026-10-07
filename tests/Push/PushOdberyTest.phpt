@@ -20,7 +20,7 @@ vTransakci($db, function () use ($db, $odbery, $sub) {
 
     // Cizí subscription smazat nejde (IDOR)
     $id = $odbery->zarizeni(1001, 'clenove')[array_key_first($odbery->zarizeni(1001, 'clenove'))]->id;
-    $odbery->smaz(1011, $id);
+    $odbery->smaz(1021, $id);
     Assert::count(1, $odbery->zarizeni(1001, 'clenove'));
     $odbery->smaz(1001, $id);
     Assert::count(0, $odbery->zarizeni(1001, 'clenove'));

@@ -19,11 +19,11 @@ $kod = function (callable $f) {
 
 vTransakci($db, function () use ($db, $odesilani, $n, $kod) {
     // SO-1: vlastní oblast a AP ano, cizí oblast, cizí AP a celá síť ne
-    Assert::type('int', $odesilani->vytvor($n(), 1010, ['SO-1']));
-    Assert::type('int', $odesilani->vytvor($n(['rozsah' => 'ap', 'cil_id' => 1]), 1010, ['SO-1']));
-    Assert::same(403, $kod(fn() => $odesilani->vytvor($n(['cil_id' => 8102]), 1010, ['SO-1'])));
-    Assert::same(403, $kod(fn() => $odesilani->vytvor($n(['rozsah' => 'ap', 'cil_id' => 8127]), 1010, ['SO-1'])));
-    Assert::same(403, $kod(fn() => $odesilani->vytvor($n(['rozsah' => 'sit', 'cil_id' => null]), 1010, ['SO-1'])));
+    Assert::type('int', $odesilani->vytvor($n(), 1020, ['SO-1']));
+    Assert::type('int', $odesilani->vytvor($n(['rozsah' => 'ap', 'cil_id' => 1]), 1020, ['SO-1']));
+    Assert::same(403, $kod(fn() => $odesilani->vytvor($n(['cil_id' => 8102]), 1020, ['SO-1'])));
+    Assert::same(403, $kod(fn() => $odesilani->vytvor($n(['rozsah' => 'ap', 'cil_id' => 8127]), 1020, ['SO-1'])));
+    Assert::same(403, $kod(fn() => $odesilani->vytvor($n(['rozsah' => 'sit', 'cil_id' => null]), 1020, ['SO-1'])));
 
     // Validace
     Assert::same(404, $kod(fn() => $odesilani->vytvor($n(['kanal' => 'neexistuje']), 1, ['VV'])));
@@ -33,9 +33,9 @@ vTransakci($db, function () use ($db, $odesilani, $n, $kod) {
 
     // Limit 5/hod: dvě už odeslal, tři projdou, šestá ne
     for ($i = 0; $i < 3; $i++) {
-        $odesilani->vytvor($n(), 1010, ['SO-1']);
+        $odesilani->vytvor($n(), 1020, ['SO-1']);
     }
-    Assert::same(429, $kod(fn() => $odesilani->vytvor($n(), 1010, ['SO-1'])));
+    Assert::same(429, $kod(fn() => $odesilani->vytvor($n(), 1020, ['SO-1'])));
     Assert::type('int', $odesilani->vytvor($n(), 1, ['VV'])); // limit je na odesílatele
 
     // API klíč 20: jen kanál 'vypadky', ne celá síť, ne jiný kanál
