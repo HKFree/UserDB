@@ -31,7 +31,8 @@ jobs:
           # VAPID klíče jen pro tento běh
           $COMPOSE exec -T -u www-data web php bin/console app:push_vapid_keys >> .local.env
           $COMPOSE up -d --force-recreate web
-          until $COMPOSE exec -T db mysqladmin ping -uroot -prootpwd654 --silent; do sleep 2; done
+          # Přes TCP: při první inicializaci běží MariaDB dočasně jen na socketu
+          until $COMPOSE exec -T db mysqladmin ping -h 127.0.0.1 -uroot -prootpwd654 --silent; do sleep 2; done
           # PHP jako www-data, aby cache v temp/ mohl zapisovat i Apache
           $COMPOSE exec -T -u www-data web php bin/console migrations:continue
           code=$(curl -sS -o smoke.html -w '%{http_code}' -H 'UID: 1001' http://moje.localhost:10107/userdb/clen/ --resolve moje.localhost:10107:127.0.0.1)
