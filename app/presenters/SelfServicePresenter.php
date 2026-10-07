@@ -77,7 +77,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
         switch ($variant) {
             case 'ZpoplatneniTelevize2026':
                 $this->template->error = 'Odkaz pro aktivaci/deaktivaci televize již neplatí. Kontaktujte svého Správce nebo infolinku.';
-            break;
+                break;
         }
     }
 

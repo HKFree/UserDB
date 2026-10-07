@@ -34,7 +34,7 @@ class MonitoringPresenter extends ApiPresenter
 
         $adresy = $this->ipAdresa->findAll();
 
-        if($typ) {
+        if ($typ) {
             $typZarizeni = $this->typZarizeni->find($typ);
 
             if (!$typZarizeni) {

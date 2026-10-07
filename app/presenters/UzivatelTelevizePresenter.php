@@ -53,29 +53,27 @@ class UzivatelTelevizePresenter extends BasePresenter
         $this->template->televizeReportRows = $uzivatel->related('UzivatelTelevizeReport')->order('rok, mesic');
     }
 
-    private function cena($uid)
-    {
-      $uzivatel = $this->uzivatel->getUzivatel($uid);
-      $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-      return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+    private function cena($uid) {
+        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
+        return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
-    protected function createComponentTelevizeCenaForm(): Form
-    {
-      $uid = $this->getParameter('id');
-      $form = new Form;
+    protected function createComponentTelevizeCenaForm(): Form {
+        $uid = $this->getParameter('id');
+        $form = new Form();
 
-      $form->addRadioList('cena','Nová cena', [
-        "0" => " 0 Kč/měsíc",
-        $this->parameters->getCenaSledovaniTV()  => sprintf(" %s Kč/měsíc", $this->parameters->getCenaSledovaniTV())
-      ])->setDefaultValue(
-        $this->cena($uid) == 0 ? 0 : $this->parameters->getCenaSledovaniTV()
-      );
+        $form->addRadioList('cena', 'Nová cena', [
+          "0" => " 0 Kč/měsíc",
+          $this->parameters->getCenaSledovaniTV()  => sprintf(" %s Kč/měsíc", $this->parameters->getCenaSledovaniTV())
+        ])->setDefaultValue(
+            $this->cena($uid) == 0 ? 0 : $this->parameters->getCenaSledovaniTV()
+        );
 
-      $form->addSubmit('send', 'uložit');
-      $form->onSuccess[] = $this->formSucceeded(...);
+        $form->addSubmit('send', 'uložit');
+        $form->onSuccess[] = $this->formSucceeded(...);
 
-      return $form;
+        return $form;
     }
 
     public function renderEdit() {
@@ -85,18 +83,20 @@ class UzivatelTelevizePresenter extends BasePresenter
         $this->template->televize_cena = $this->cena($uid);
     }
 
-    private function formSucceeded(Form $form, $data): void
-    {
-      $uid = $this->getParameter('id');
+    private function formSucceeded(Form $form, $data): void {
+        $uid = $this->getParameter('id');
 
-      $this->connection->query(
-          sprintf('INSERT INTO %s (id,cena) VALUES (%u,%u) ON DUPLICATE KEY UPDATE cena=values(cena)',
-          $this->uzivatelTelevize->tableName, $uid, $data->cena
-          )
-      );
+        $this->connection->query(
+            sprintf(
+                'INSERT INTO %s (id,cena) VALUES (%u,%u) ON DUPLICATE KEY UPDATE cena=values(cena)',
+                $this->uzivatelTelevize->tableName,
+                $uid,
+                $data->cena
+            )
+        );
 
-      $this->flashMessage(sprintf('Cena služby Televize změněna na %u Kč/měsíc.', $data->cena));
+        $this->flashMessage(sprintf('Cena služby Televize změněna na %u Kč/měsíc.', $data->cena));
 
-      $this->redirect('Uzivatel:show', ['id' => $uid]);
+        $this->redirect('Uzivatel:show', ['id' => $uid]);
     }
 }

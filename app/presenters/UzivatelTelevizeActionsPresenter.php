@@ -17,15 +17,18 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
     ) {
     }
 
-
     public function actionSubscribe() {
         $user_id = $this->getParameter('id');
 
         $cena = $this->parameters->getCenaSledovaniTV();
 
         $this->connection->query(
-            sprintf('INSERT INTO %s (id,objednana,cena) VALUES (%u,1,%u) ON DUPLICATE KEY UPDATE objednana=1',
-            $this->uzivatelTelevize->tableName, $user_id, $cena )
+            sprintf(
+                'INSERT INTO %s (id,objednana,cena) VALUES (%u,1,%u) ON DUPLICATE KEY UPDATE objednana=1',
+                $this->uzivatelTelevize->tableName,
+                $user_id,
+                $cena
+            )
         );
 
         $this->flashMessage(sprintf('Objednána služba Televize za cenu %u Kč/měsíc.', $cena));
@@ -33,11 +36,10 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', ['id' => $user_id]);
     }
 
-    private function cena($uid)
-    {
-      $uzivatel = $this->uzivatel->getUzivatel($uid);
-      $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-      return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+    private function cena($uid) {
+        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
+        return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
     public function actionActivate() {
@@ -74,16 +76,19 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
     }
 
     public function actionUnsubscribe() {
-      $user_id = $this->getParameter('id');
+        $user_id = $this->getParameter('id');
 
-      $this->connection->query(
-          sprintf('INSERT INTO %s (id,objednana) VALUES (%u,0) ON DUPLICATE KEY UPDATE objednana=0',
-          $this->uzivatelTelevize->tableName, $user_id )
-      );
+        $this->connection->query(
+            sprintf(
+                'INSERT INTO %s (id,objednana) VALUES (%u,0) ON DUPLICATE KEY UPDATE objednana=0',
+                $this->uzivatelTelevize->tableName,
+                $user_id
+            )
+        );
 
-      $this->flashMessage('Služba Televize zrušena. Bude deaktivována 1. den v příštím měsíci.');
+        $this->flashMessage('Služba Televize zrušena. Bude deaktivována 1. den v příštím měsíci.');
 
-      $this->redirect('Uzivatel:show', ['id' => $user_id]);
-  }
+        $this->redirect('Uzivatel:show', ['id' => $user_id]);
+    }
 
 }
