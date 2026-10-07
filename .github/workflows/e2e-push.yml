@@ -29,13 +29,16 @@ jobs:
           $COMPOSE exec -T web composer install --no-interaction
           $COMPOSE exec -T web chmod -R 777 log temp
           # VAPID klíče jen pro tento běh
-          $COMPOSE exec -T web php bin/console app:push_vapid_keys >> .local.env
+          $COMPOSE exec -T -u www-data web php bin/console app:push_vapid_keys >> .local.env
           $COMPOSE up -d --force-recreate web
-          for i in $(seq 1 30); do $COMPOSE exec -T web php bin/console migrations:continue && break; sleep 2; done
-          curl -sf -o /dev/null -H 'UID: 1001' http://moje.localhost:10107/userdb/clen/ --resolve moje.localhost:10107:127.0.0.1
+          until $COMPOSE exec -T db mysqladmin ping -uroot -prootpwd654 --silent; do sleep 2; done
+          # PHP jako www-data, aby cache v temp/ mohl zapisovat i Apache
+          $COMPOSE exec -T -u www-data web php bin/console migrations:continue
+          code=$(curl -sS -o smoke.html -w '%{http_code}' -H 'UID: 1001' http://moje.localhost:10107/userdb/clen/ --resolve moje.localhost:10107:127.0.0.1)
+          [ "$code" = 200 ] || { echo "HTTP $code"; head -c 3000 smoke.html; exit 1; }
 
       - name: Unit testy
-        run: $COMPOSE exec -T web vendor/bin/tester tests/
+        run: $COMPOSE exec -T -u www-data web vendor/bin/tester tests/
 
       - uses: actions/setup-node@v4
         with:
@@ -46,7 +49,7 @@ jobs:
       - name: E2E testy
         working-directory: tests/e2e
         env:
-          E2E_WORKER_CMD: cd ../.. && $COMPOSE exec -T web php bin/console app:push_send
+          E2E_WORKER_CMD: cd ../.. && $COMPOSE exec -T -u www-data web php bin/console app:push_send
           E2E_PUSH_HOST: host.docker.internal
         run: |
           npm ci
