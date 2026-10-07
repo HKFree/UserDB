@@ -83,7 +83,11 @@ async function odesli(browser, uid, titulek, oblast = '1') {
 
 // Asynchronně – synchronní exec by zablokoval mock server v tomto procesu
 async function worker() {
-    await exec(WORKER, { cwd: __dirname });
+    try {
+        await exec(WORKER, { cwd: __dirname });
+    } catch (e) {
+        throw new Error(`Worker selhal (${e.code}):\n${e.stdout}\n${e.stderr}`);
+    }
 }
 
 async function dorucDoServiceWorkeru(page, payload) {

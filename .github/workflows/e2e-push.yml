@@ -35,6 +35,7 @@ jobs:
           until $COMPOSE exec -T db mysqladmin ping -h 127.0.0.1 -uroot -prootpwd654 --silent; do sleep 2; done
           # PHP jako www-data, aby cache v temp/ mohl zapisovat i Apache
           $COMPOSE exec -T -u www-data web php bin/console migrations:continue
+          $COMPOSE exec -T -u www-data web php bin/console app:push_send
           code=$(curl -sS -o smoke.html -w '%{http_code}' -H 'UID: 1001' http://moje.localhost:10107/userdb/clen/ --resolve moje.localhost:10107:127.0.0.1)
           [ "$code" = 200 ] || { echo "HTTP $code"; head -c 3000 smoke.html; exit 1; }
 
