@@ -1,0 +1,20 @@
+{* Sdílené nastavení notifikací – správci (Push:default) i členové (Member:Notifikace:default) *}
+<div id="push-odber" data-vapid="{$vapidPublicKey ?: ''}" data-sw="{$basePath}/sw.js" data-ulozit="{link ulozOdber!}">
+    <p class="push-stav"></p>
+    <button type="button" class="btn btn-success push-zapnout" hidden>Zapnout notifikace v tomto prohlížeči</button>
+</div>
+
+<h4>Moje zařízení</h4>
+<p n:if="!$zarizeni">Notifikace zatím nemáte zapnuté na žádném zařízení.</p>
+<table n:if="$zarizeni" class="table table-condensed push-zarizeni">
+    <tr n:foreach="$zarizeni as $z">
+        <td>{$z->zarizeni}</td>
+        <td>{$z->vytvoreno|date:'j. n. Y H:i'}</td>
+        <td><form method="post" action="{link smazOdber! odber => $z->id}"><button class="btn btn-default btn-xs">Odebrat</button></form></td>
+    </tr>
+</table>
+
+<h4>Kanály</h4>
+{control kanalyForm}
+
+<script src="{$basePath}/js/push.js"></script>

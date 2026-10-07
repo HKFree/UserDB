@@ -11,6 +11,7 @@ parameters:
 			userID: 1
 			userName: 'tester'
 			passwordHash: 'xxx'    # optional; mandatory for SMS sending; use crypt(plainPassword, salt)
+	memberHost: moje.localhost # členská část (moje.hkfree.org) lokálně na http://moje.localhost:10107/userdb/clen/
 	igw1IpCheckerUrl: http://localhost/
 	igw2IpCheckerUrl: http://localhost/
 

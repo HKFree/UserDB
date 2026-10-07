@@ -14,7 +14,7 @@ Notifikace se posílají do **kanálů** (témat) a cílí na **rozsah** (celá 
 prohlížeč ──(1) subscribe──▶ UserDB (Member / Admin presenter) ──▶ PushOdber
 správce   ──(2) formulář───▶ UserDB ──┐
 systém    ──(2) POST /api/push/send ──┴─▶ PushNotifikace (stav=cekajici)
-cron      ──(3) bin/console push:send ──▶ vyhodnotí příjemce ──▶ push služba prohlížeče (FCM/Mozilla/Apple)
+cron      ──(3) bin/console app:push_send ─▶ vyhodnotí příjemce ──▶ push služba prohlížeče (FCM/Mozilla/Apple)
                                                       └──▶ PushDoruceni (výsledek, maže se po 10 dnech)
 prohlížeč ◀──(4) push událost ── sw.js zobrazí notifikaci
 ```

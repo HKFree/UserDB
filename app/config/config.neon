@@ -120,6 +120,7 @@ services:
 	- App\Services\Push\PushOdesilani
 	- App\Services\Push\PushOdbery(povoleneEndpointy: %pushEndpointy%)
 	- App\Services\Push\PushPrijemci
+	- App\Model\MemberAuthenticator
 	- App\Services\Push\PushWorker(vapid: [
 		subject: ::getenv('USERDB_VAPID_SUBJECT'),
 		publicKey: ::getenv('USERDB_VAPID_PUBLIC_KEY'),

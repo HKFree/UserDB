@@ -101,3 +101,7 @@ Schválil: Jiří (autor PR). Upřesnění vzniklá při implementaci jsou ozna�
 - **Rozhodnutí:** `require-dev` povýšen na `nette/tester ^2.5`, `tests/bootstrap.php` načítá env stejně jako aplikace.
   DB testy (`tests/Push/*`) běží nad migracemi s dummy daty v transakci s rollbackem; bez DB se přeskočí.
   `composer.json` má `config.platform.php = 8.2.29`, aby lock odpovídal PHP v Docker obrazu.
+
+## R20 – (upřesnění) Oprávnění API klíčů ke kanálům bez UI
+- **Rozhodnutí:** Tabulka `ApiKlic_PushKanal` se ve v1 spravuje přímo v DB (phpMyAdmin/SQL), bez formuláře.
+- **Důvod:** Systémových odesílatelů je málo, ušetří se kód. UI lze doplnit později ke správě API klíčů u AP.
