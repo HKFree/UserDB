@@ -3,6 +3,7 @@ const { test, expect } = require('@playwright/test');
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec);
 const crypto = require('crypto');
+const fs = require('fs');
 const http = require('http');
 const ece = require('http_ece');
 
@@ -117,7 +118,9 @@ test.describe.serial('push notifikace', () => {
         await expect(page.locator('body')).toContainText('ve frontě');
         await worker();
 
-        expect(zarizeni.a.prijato.map((p) => p.titulek)).toEqual(['Výpadek E2E']);
+        const log = `${__dirname}/../../log/push.log`;
+        expect(zarizeni.a.prijato.map((p) => p.titulek), fs.existsSync(log) ? fs.readFileSync(log, 'utf8').slice(-3000) : 'push.log neexistuje')
+            .toEqual(['Výpadek E2E']);
         expect(zarizeni.b.prijato).toEqual([]);
         await dorucDoServiceWorkeru(clenA, zarizeni.a.prijato[0]);
     });
