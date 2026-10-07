@@ -83,11 +83,11 @@ Odpověď `{"result": "OK", "resultNumeric": 1, "id": <ID notifikace>}`, chyby 4
 
 ```bash
 # jednorázově: vygenerovat VAPID klíče a dát je do env
-php bin/console push:vapid-keys
+php bin/console app:push_vapid_keys
 # USERDB_VAPID_PUBLIC_KEY, USERDB_VAPID_PRIVATE_KEY, USERDB_VAPID_SUBJECT=mailto:...
 
 # crontab
-* * * * * (docker exec userdb php www/index.php push:send) 2>&1 | /usr/bin/logger -t userdb_push
+* * * * * (docker exec userdb php bin/console app:push_send) 2>&1 | /usr/bin/logger -t userdb_push
 ```
 
 Apache pro `moje.hkfree.org` musí mapovat `/userdb` na stejnou aplikaci a předávat Shibboleth `UID` jako pro userdb,
@@ -102,7 +102,7 @@ v `config.local.neon` nastavit `memberHost: moje.hkfree.org`.
 ## Ruční test (před nasazením)
 
 1. Na userdb kliknout „Zapnout notifikace“ → povolit → zařízení se objeví v seznamu.
-2. Jako SO poslat notifikaci do své oblasti → po spuštění `push:send` přijde.
+2. Jako SO poslat notifikaci do své oblasti → po spuštění `app:push_send` přijde.
 3. Zkusit poslat do cizí oblasti → chyba oprávnění.
 4. Šestá notifikace během hodiny → chyba limitu.
 5. Odebrat zařízení → další notifikace nepřijde.

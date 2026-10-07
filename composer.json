@@ -59,7 +59,7 @@
 		"minishlink/web-push": "^10.0"
 	},
 	"require-dev": {
-		"nette/tester": "~1.0",
+		"nette/tester": "^2.5",
 		"friendsofphp/php-cs-fixer": "^3.65"
 	},
         "autoload": {

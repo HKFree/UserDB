@@ -49,7 +49,7 @@ Schválil: Jiří (autor PR). Upřesnění vzniklá při implementaci jsou ozna�
 
 ## R10 – Doručování: fronta v DB + PHP worker z cronu
 - **Kontext:** Zvažován samostatný Node daemon na jiném portu.
-- **Rozhodnutí:** Tabulka `PushNotifikace` slouží jako fronta, `bin/console push:send` spouští cron každou minutu.
+- **Rozhodnutí:** Tabulka `PushNotifikace` slouží jako fronta, `bin/console app:push_send` spouští cron každou minutu.
 - **Důvod:** Web Push nevyžaduje trvalá spojení se klienty (drží je push služby prohlížečů), odeslání jsou jen HTTP
   POSTy. Node by přidal další runtime, nasazení, otevřený port a druhou cestu autentizace.
   Pokud bude potřeba nižší latence, lze stejný příkaz pustit jako dlouhoběžící proces.
@@ -95,3 +95,9 @@ Schválil: Jiří (autor PR). Upřesnění vzniklá při implementaci jsou ozna�
   Push služba prohlížeče je v E2E nahrazena mock serverem. Node je jen pro testy, ne v produkci.
   Workflow běží na PR do `master` a push do `push-notifications`.
   Review: `/security-review` + `/code-review` (výsledky v [review.md](review.md)) a lidské review autorem.
+
+## R19 – (upřesnění) Nette Tester 2.x
+- **Kontext:** `nette/tester` 1.7 na PHP 8 nefunguje (spadne už na existujícím `ExampleTest`).
+- **Rozhodnutí:** `require-dev` povýšen na `nette/tester ^2.5`, `tests/bootstrap.php` načítá env stejně jako aplikace.
+  DB testy (`tests/Push/*`) běží nad migracemi s dummy daty v transakci s rollbackem; bez DB se přeskočí.
+  `composer.json` má `config.platform.php = 8.2.29`, aby lock odpovídal PHP v Docker obrazu.
