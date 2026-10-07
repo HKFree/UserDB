@@ -96,8 +96,18 @@ v `config.local.neon` nastavit `memberHost: moje.hkfree.org`.
 ## Testy
 
 - Unit (`nette/tester`): `tests/Push/*.phpt` (oprávnění, příjemci, validace obsahu, limit).
-- E2E (Playwright): `tests/e2e/`, workflow `.github/workflows/e2e-push.yml`. Push služba prohlížeče je nahrazena
-  mock serverem v testu, doručení do service workeru přes CDP `ServiceWorker.deliverPushMessage`.
+- E2E (Playwright): `tests/e2e/`, workflow `.github/workflows/e2e-push.yml` (Docker obraz s Apache + MariaDB 10.1).
+  Push služba prohlížeče je nahrazena mock serverem v testu, doručení do service workeru přes CDP
+  `ServiceWorker.deliverPushMessage`. `pushManager.subscribe` je v testu podvržen, zbytek UI je skutečný.
+
+Lokálně: postup z workflow (Docker), nebo bez Dockeru přes `php -S`:
+
+```bash
+# config.local.neon: fakeUser: false, memberHost: moje.localhost, pushEndpointy: ['http://127.0.0.1:9999']
+php vendor/bin/tester tests/
+PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:10107 tests/e2e/router.php &
+cd tests/e2e && npm ci && npx playwright install chromium && npx playwright test
+```
 
 ## Ruční test (před nasazením)
 

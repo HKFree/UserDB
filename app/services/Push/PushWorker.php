@@ -5,6 +5,7 @@ namespace App\Services\Push;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 use Nette\Database\Explorer;
+use Tracy\Debugger;
 
 /** Zpracování fronty PushNotifikace a úklid (R10, R14). */
 class PushWorker
@@ -60,6 +61,9 @@ class PushWorker
                 'uspech' => (int) $report->isSuccess(),
                 'vytvoreno' => new \DateTime(),
             ]);
+            if (!$report->isSuccess()) {
+                Debugger::log("notifikace {$n->id}, odber $odberId: " . $report->getReason(), 'push');
+            }
             if ($report->isSubscriptionExpired() && $odberId) {
                 $this->db->table('PushOdber')->where('id', $odberId)->delete();
             }

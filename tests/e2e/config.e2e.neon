@@ -1,0 +1,16 @@
+# Konfigurace pro E2E v CI (kopíruje se do app/config/config.local.neon)
+parameters:
+	maternaMexUser: 'x'
+	maternaMexPass: 'x'
+	googleMapsApiKey: 'x'
+	withDummyData: true
+	debug:
+		fakeUser: false
+	memberHost: moje.localhost
+	pushEndpointy:
+		- 'http://host.docker.internal:9999' # mock push služba v E2E testu
+	igw1IpCheckerUrl: http://localhost/
+	igw2IpCheckerUrl: http://localhost/
+
+http:
+	proxy: null

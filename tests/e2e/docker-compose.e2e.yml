@@ -1,0 +1,7 @@
+# Doplněk k docker-compose.yml pro E2E: worker v kontejneru musí dosáhnout na mock push službu na hostu
+services:
+  web:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - USERDB_VAPID_SUBJECT=mailto:e2e@example.hkfree.org

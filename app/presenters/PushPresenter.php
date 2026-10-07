@@ -57,7 +57,6 @@ class PushPresenter extends BasePresenter
         }
 
         $form = new Form();
-        $form->addProtection();
         $form->addSelect('kanal', 'Kanál', $this->db->table('PushKanal')->where('aktivni', 1)->order('publikum, nazev')->fetchPairs('kod', 'nazev'))
             ->setRequired();
         $form->addSelect('rozsah', 'Rozsah', $this->mojeOblasti() === null ? self::ROZSAHY : array_diff_key(self::ROZSAHY, ['sit' => 1]))
@@ -104,7 +103,6 @@ class PushPresenter extends BasePresenter
 
     protected function createComponentKanalForm(): Form {
         $form = new Form();
-        $form->addProtection();
         $form->addHidden('id');
         $form->addText('kod', 'Kód')->setRequired()->addRule(Form::Pattern, 'Jen a-z, 0-9 a pomlčka.', '[a-z0-9-]{1,50}');
         $form->addText('nazev', 'Název')->setRequired()->setMaxLength(100);

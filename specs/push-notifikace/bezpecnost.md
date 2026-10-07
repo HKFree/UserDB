@@ -14,7 +14,7 @@
 | H1 | SO pošle notifikaci do cizí oblasti nebo celé sítě | Kontrola rozsahu podle aktivních rolí na serveru, ne podle formuláře | `PushOpravneni::muzeOdeslat` |
 | H2 | Člen se přihlásí ke kanálu pro správce | Seznam i uložení preferencí filtrované podle publika; příjemci filtrovaní při odeslání | `PushPrijemci`, `PushOdbery` |
 | H3 | Odhlášení / úprava cizí subscription (IDOR) | Mazání vždy s podmínkou `Uzivatel_id = přihlášený` | `PushOdbery::smaz` |
-| H4 | CSRF – podvržené přihlášení k odběru nebo odeslání notifikace | Nette formuláře s CSRF ochranou; JSON endpointy jen POST, kontrola tokenu v hlavičce | presentery |
+| H4 | CSRF – podvržené přihlášení k odběru nebo odeslání notifikace | Nette same-site ochrana formulářů i signálů (cookie `_nss` se `SameSite=Strict`), měnící signály jen POST. Token v session (`addProtection`) nelze použít – `BasePresenter` volá `login()` při každém požadavku a tím založí novou session | presentery |
 | H5 | XSS / phishing v obsahu | Prostý text (Notification API nevykresluje HTML), délkové limity, URL jen `https://*.hkfree.org` | `PushObsah::validuj`, `sw.js` |
 | H6 | Spam / zahlcení | Limit 5/hod na odesílatele, odmítnutí do `log/push.log` | `PushOdesilani::vytvor` |
 | H7 | Únik VAPID klíče | Jen v env proměnné, nikdy v repozitáři ani v DB; veřejný klíč je veřejný | `config.neon` |

@@ -47,7 +47,6 @@ trait PushNastaveniTrait
 
     protected function createComponentKanalyForm(): Form {
         $form = new Form();
-        $form->addProtection();
         $kanaly = $form->addContainer('kanaly');
         foreach ($this->pushOdbery->kanaly($this->uid(), self::PUBLIKUM) as $id => $k) {
             $kanaly->addCheckbox((string) $id, $k['kanal']->nazev)
