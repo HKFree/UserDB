@@ -1,0 +1,22 @@
+name: Gitleaks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # celá historie
+
+      # Docker obraz místo gitleaks-action (ta vyžaduje licenci pro organizace); známé nálezy v .gitleaksignore
+      - name: Hledání tajných údajů v historii
+        run: >
+          docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1
+          git /repo --no-banner --redact --verbose --gitleaks-ignore-path /repo/.gitleaksignore

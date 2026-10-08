@@ -1,11 +1,13 @@
 # Bezpečnostní nálezy v existujícím kódu
 
 Nalezeno při práci na push notifikacích (větev `push-notifications`, 2026-10-08). Podle rozhodnutí R17 se v tomto PR
-**neopravují** (kromě č. 1), každý by měl jít do samostatného issue/PR. Seřazeno od nejzávažnějšího.
+**neopravují** (kromě č. 1), každý by měl jít do samostatného issue/PR. Seřazeno od nejzávažnějšího. Nálezy v historii git hledá CI workflow `gitleaks.yml`; známé jsou v `.gitleaksignore`.
 
 | # | Závažnost | Nález | Kde | Stav |
 |---|---|---|---|---|
 | 1 | střední | API klíč porovnáván `==` (timing, PHP loose comparison) | `ApiPresenter::checkRequirements` | **opraveno v tomto PR** (`hash_equals`, R15) |
+| 2a | **kritická** | Skutečné klíče **DigiSign** (`DIGISIGN_ACCESS_KEY`, `DIGISIGN_SECRET_KEY`) commitnuté v `.local.env` (commit `2bdda05`, 12/2024); soubor později smazán, ale klíče zůstávají ve veřejné historii na GitHubu | git historie | otevřené – **klíče rotovat v DigiSign**; přepis historie nestačí (forky, klony) |
+| 2b | nízká | Google Maps API klíč v šabloně (je veřejný v prohlížeči) – ověřit omezení na HTTP referrer `*.hkfree.org` v Google Cloud | `Sprava/mapa.latte` (historie `17bcffa`) | ověřit |
 | 2 | vysoká | Oprávnění jen v šabloně: obsluha formulářů nekontroluje roli, POST může poslat kdokoli přihlášený do userdb (i role DRUŽSTEVNÍK, SKLADNÍK…) | `SpravaSms`, `SpravaSlucovani`, `SpravaSifrovani`, `SpravaCc`, `SpravaOblasti` (`*FormSucceded`) | otevřené |
 | 3 | vysoká | Shibboleth posílá **heslo v plaintextu** v hlavičce `Initials`, ukládá se do identity (session) a dál do SMS backendu | `Authenticator.php:45`, `HkfIdentity`, `SmsSender.php:50` | otevřené (TODO v kódu) |
 | 4 | vysoká | Závislosti se známými zranitelnostmi: `guzzlehttp/guzzle` < 7.12.1 (1× high, 8× medium), `guzzlehttp/psr7` < 2.10.2 (4× medium), `setasign/fpdi` < 2.6.4 (2× medium) – `composer audit` | `composer.lock` | otevřené (existují dependabot větve) |
