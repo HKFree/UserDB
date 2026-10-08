@@ -18,18 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Konfigurace
-        run: |
-          cp tests/e2e/config.e2e.neon app/config/config.local.neon
-          printf 'DIGISIGN_ACCESS_KEY=x\nDIGISIGN_SECRET_KEY=x\n' > .local.env
-
       - name: Start aplikace (Apache + MariaDB 10.1 z docker-compose.yml)
         run: |
           $COMPOSE up -d --build web db
           $COMPOSE exec -T web composer install --no-interaction
           $COMPOSE exec -T web chmod -R 777 log temp
           # VAPID klíče jen pro tento běh
-          $COMPOSE exec -T -u www-data web php bin/console app:push_vapid_keys >> .local.env
+          $COMPOSE exec -T -u www-data web php bin/console app:push_vapid_keys > tests/e2e/e2e.env
           $COMPOSE up -d --force-recreate web
           # Přes TCP: při první inicializaci běží MariaDB dočasně jen na socketu
           until $COMPOSE exec -T db mysqladmin ping -h 127.0.0.1 -uroot -prootpwd654 --silent; do sleep 2; done
