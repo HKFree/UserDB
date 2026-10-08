@@ -40,7 +40,7 @@ případně `RequestHeader unset UID early` před autentizací.
 - [ ] SQL příjemců (`PushPrijemci`) filtruje publikum, aktivní členství/role, preference a rozsah.
 - [ ] Žádný endpoint nevrací data jiného uživatele; mazání subscription je vázané na přihlášeného uživatele.
 - [ ] Všechny měnící akce jsou POST s CSRF tokenem.
-- [ ] `sw.js` nepoužívá `innerHTML` a otevírá jen ověřené URL.
-- [ ] Privátní VAPID klíč není v repozitáři (`git grep -i vapid`).
+- [x] `sw.js` nepoužívá `innerHTML` a otevírá jen ověřené URL – **automaticky** `tests/e2e/sw.spec.js`.
+- [x] Privátní VAPID klíč ani jiná tajemství nejsou v repozitáři – **automaticky** workflow `gitleaks.yml`.
 - [ ] Správcovské stránky nejsou dostupné na `memberHost` a naopak.
 - [ ] E2E workflow prochází.
