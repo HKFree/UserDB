@@ -147,12 +147,14 @@ test.describe('bezpečnost', () => {
     // Odeslání formuláře ze stránky jiného původu (about:blank) – prohlížeč nepošle SameSite=Strict cookie _nss
     async function ciziFormular(page, action, pole, enctype = 'application/x-www-form-urlencoded') {
         await page.goto('about:blank');
+        const odpoved = page.waitForResponse((r) => r.request().method() === 'POST');
         await page.evaluate(({ action, pole, enctype }) => {
             const f = Object.assign(document.createElement('form'), { method: 'post', action, enctype });
             for (const [name, value] of Object.entries(pole)) f.append(Object.assign(document.createElement('input'), { name, value }));
             document.body.append(f);
             f.submit();
         }, { action, pole, enctype });
+        await odpoved; // jinak by další goto mohl odeslání přerušit
         await page.waitForLoadState();
     }
 
@@ -166,11 +168,13 @@ test.describe('bezpečnost', () => {
         const id = (await zarizeniClena(clen))[0];
         const cizi = await (await prihlas(browser, 1021, CLEN)).newPage();
         await cizi.goto(`${CLEN}/clen/`);
+        const odpoved = cizi.waitForResponse((r) => r.request().method() === 'POST');
         await cizi.evaluate((id) => {
             const f = Object.assign(document.createElement('form'), { method: 'post', action: `?do=smazOdber&odber=${id}` });
             document.body.append(f);
             f.submit();
         }, id);
+        await odpoved;
         await cizi.waitForLoadState();
         expect(await zarizeniClena(clen)).toContain(id);
     });

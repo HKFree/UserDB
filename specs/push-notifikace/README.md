@@ -111,6 +111,9 @@ E2E_WORKER_CMD='cd ../.. && $COMPOSE exec -T -u www-data web php bin/console app
 E2E_PUSH_URL=http://mockpush:9999 npx playwright test
 ```
 
+Testovací SO (1020) pošle za běh jednu notifikaci; po 5 bězích za hodinu narazí na limit – pak `$COMPOSE down -v`
+a znovu kroky „Start aplikace“.
+
 Bez Dockeru (`php -S`, Playwright si mock spustí sám): v `config.local.neon` nastavit `fakeUser: false`,
 `memberHost: moje.localhost`, `pushEndpointy: ['http://127.0.0.1:9999']` a pak
 `PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:10107 tests/e2e/router.php` a `npx playwright test`.
