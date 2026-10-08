@@ -36,11 +36,13 @@ případně `RequestHeader unset UID early` před autentizací.
 
 ## Checklist pro lidské review
 
-- [ ] Kontrola oprávnění (`PushOpravneni`) odpovídá R8 a unit testy pokrývají SO cizí oblasti a AP cizí oblasti.
-- [ ] SQL příjemců (`PushPrijemci`) filtruje publikum, aktivní členství/role, preference a rozsah.
-- [ ] Žádný endpoint nevrací data jiného uživatele; mazání subscription je vázané na přihlášeného uživatele.
-- [ ] Všechny měnící akce jsou POST s CSRF tokenem.
+Položky označené **automaticky** hlídá CI; člověk ověřuje jen zbylé a věcnou správnost pravidel.
+
+- [x] Kontrola oprávnění (`PushOpravneni`) odpovídá R8 – **automaticky** `PushOpravneniTest`, `PushOdesilaniTest`; pravidlo potvrzeno autorem (R8).
+- [ ] SQL příjemců (`PushPrijemci`) filtruje publikum, aktivní členství/role, preference a rozsah – testy `PushPrijemciTest`; člověk ověří, že žádný případ nechybí.
+- [x] Žádný endpoint nevrací data jiného uživatele; mazání subscription je vázané na přihlášeného uživatele – **automaticky** `PushOdberyTest`, E2E „IDOR“.
+- [x] Měnící akce jen POST a ze stejného webu (same-site `_nss`) – **automaticky** E2E „CSRF“ (GET, formulář z cizího webu i JSON přes `text/plain`); ověřeno, že test bez ochrany selže.
 - [x] `sw.js` nepoužívá `innerHTML` a otevírá jen ověřené URL – **automaticky** `tests/e2e/sw.spec.js`.
 - [x] Privátní VAPID klíč ani jiná tajemství nejsou v repozitáři – **automaticky** workflow `gitleaks.yml`.
-- [ ] Správcovské stránky nejsou dostupné na `memberHost` a naopak.
-- [ ] E2E workflow prochází.
+- [x] Správcovské stránky nejsou dostupné na `memberHost` a naopak – **automaticky** E2E „správcovská část není na členské doméně“.
+- [x] E2E workflow prochází – **automaticky** CI.

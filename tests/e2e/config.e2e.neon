@@ -1,4 +1,4 @@
-# Konfigurace pro E2E v CI (kopíruje se do app/config/config.local.neon)
+# Konfigurace pro E2E (v kontejneru připojena jako app/config/config.local.neon, viz docker-compose.e2e.yml)
 parameters:
 	maternaMexUser: 'x'
 	maternaMexPass: 'x'
@@ -14,3 +14,6 @@ parameters:
 
 http:
 	proxy: null
+
+application:
+	catchExceptions: true # chybové stránky jako v produkci i se zapnutým Tracy

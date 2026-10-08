@@ -31,6 +31,10 @@ souběh u limitu odesílání.
 - Bez rozšíření `gmp` knihovna web-push hlásí `E_USER_NOTICE`, Tracy v debug režimu ho mění na výjimku.
   **Opraveno** – `gmp` přidáno do `Dockerfile`.
 
+- Chyba na moje.hkfree.org (např. 403 pro nečlena, 404) končila 500: `ErrorPresenter` dědí z `BasePresenter`,
+  který na členské doméně znovu vyhodí chybu a vyžaduje přihlášení správce. **Opraveno** – na `memberHost`
+  přesměruje na `Member:Error` (bez přihlášení). Nalezeno E2E testem oddělení domén.
+
 ## Známá omezení
 
 - Notifikace ve stavu `chyba` se automaticky neopakují; správce ji může poslat znovu.
