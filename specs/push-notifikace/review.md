@@ -24,6 +24,13 @@ souběh u limitu odesílání.
 | – | Souběh u limitu 5/hod | přijato (R12) |
 | – | INSERT doručenky po jednom, 3 dotazy na kanál při ukládání preferencí, nepoužitá `smazEndpoint()` | ponecháno, nízká priorita |
 
+## Chyby nalezené v CI (E2E v Dockeru)
+
+- Worker padal se studenou cache Nette (`Database refetch failed`): řádek načtený výběrem podle `stav` nešel po změně
+  stavu dočíst. **Opraveno** – po zamčení se notifikace načte znovu jen podle `id`.
+- Bez rozšíření `gmp` knihovna web-push hlásí `E_USER_NOTICE`, Tracy v debug režimu ho mění na výjimku.
+  **Opraveno** – `gmp` přidáno do `Dockerfile`.
+
 ## Známá omezení
 
 - Notifikace ve stavu `chyba` se automaticky neopakují; správce ji může poslat znovu.

@@ -90,6 +90,7 @@ php bin/console app:push_vapid_keys
 * * * * * (docker exec userdb php bin/console app:push_send) 2>&1 | /usr/bin/logger -t userdb_push
 ```
 
+PHP potřebuje rozšíření `gmp` (v Docker obrazu je; bez něj je šifrování pomalé a knihovna hlásí varování).
 Apache pro `moje.hkfree.org` musí mapovat `/userdb` na stejnou aplikaci a předávat Shibboleth `UID` jako pro userdb,
 v `config.local.neon` nastavit `memberHost: moje.hkfree.org`.
 
@@ -100,14 +101,19 @@ v `config.local.neon` nastavit `memberHost: moje.hkfree.org`.
   Push služba prohlížeče je nahrazena mock serverem v testu, doručení do service workeru přes CDP
   `ServiceWorker.deliverPushMessage`. `pushManager.subscribe` je v testu podvržen, zbytek UI je skutečný.
 
-Lokálně: postup z workflow (Docker), nebo bez Dockeru přes `php -S`:
+Lokálně s Dockerem (stejně jako CI; mock push služba běží jako kontejner `mockpush`, lokální konfigurace se nemění):
 
 ```bash
-# config.local.neon: fakeUser: false, memberHost: moje.localhost, pushEndpointy: ['http://127.0.0.1:9999']
-php vendor/bin/tester tests/
-PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:10107 tests/e2e/router.php &
-cd tests/e2e && npm ci && npx playwright install chromium && npx playwright test
+export COMPOSE="docker compose -f docker-compose.yml -f tests/e2e/docker-compose.e2e.yml"
+# jednorázově: kroky „Start aplikace“ z .github/workflows/e2e-push.yml
+cd tests/e2e && npm ci && npx playwright install chromium
+E2E_WORKER_CMD='cd ../.. && $COMPOSE exec -T -u www-data web php bin/console app:push_send' \
+E2E_PUSH_URL=http://mockpush:9999 npx playwright test
 ```
+
+Bez Dockeru (`php -S`, Playwright si mock spustí sám): v `config.local.neon` nastavit `fakeUser: false`,
+`memberHost: moje.localhost`, `pushEndpointy: ['http://127.0.0.1:9999']` a pak
+`PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:10107 tests/e2e/router.php` a `npx playwright test`.
 
 ## Ruční test (před nasazením)
 

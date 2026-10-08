@@ -4,45 +4,34 @@ const { promisify } = require('util');
 const exec = promisify(require('child_process').exec);
 const crypto = require('crypto');
 const fs = require('fs');
-const http = require('http');
 const ece = require('http_ece');
 
 const ADMIN = 'http://localhost:10107/userdb';
 const CLEN = 'http://moje.localhost:10107/userdb';
 const WORKER = process.env.E2E_WORKER_CMD || 'php ../../bin/console app:push_send';
-// Adresa mock push služby, jak ji vidí worker (v CI z Docker kontejneru přes host.docker.internal)
-const PUSH_HOST = process.env.E2E_PUSH_HOST || '127.0.0.1';
+// Mock push služba (mock-push.js): test ji čte z hostu, worker ji volá adresou E2E_PUSH_URL
+const MOCK = 'http://127.0.0.1:9999';
+const PUSH_URL = process.env.E2E_PUSH_URL || MOCK;
 
-// Mock push služby: dešifruje payload klíči „zařízení“ jako skutečný prohlížeč
+// Klíče „zařízení“; id je unikátní pro běh, aby nevadila data z předchozích běhů mocku
 const zarizeni = {};
-let server;
 
-test.beforeAll(async () => {
-    server = http.createServer((req, res) => {
-        const casti = [];
-        req.on('data', (c) => casti.push(c));
-        req.on('end', () => {
-            const z = zarizeni[req.url.split('/').pop()];
-            if (!z) {
-                res.writeHead(410).end();
-                return;
-            }
-            const data = ece.decrypt(Buffer.concat(casti), { version: 'aes128gcm', privateKey: z.ecdh, authSecret: z.auth });
-            z.prijato.push(JSON.parse(data.toString()));
-            res.writeHead(201).end();
-        });
-    });
-    await new Promise((r) => server.listen(9999, '0.0.0.0', r));
-});
-
-test.afterAll(() => server.close());
-
-function noveZarizeni(id) {
+function noveZarizeni(nazev) {
     const ecdh = crypto.createECDH('prime256v1');
     ecdh.generateKeys();
     const auth = crypto.randomBytes(16);
-    zarizeni[id] = { ecdh, auth, prijato: [] };
-    return { endpoint: `http://${PUSH_HOST}:9999/push/${id}`, keys: { p256dh: ecdh.getPublicKey('base64url'), auth: auth.toString('base64url') } };
+    const id = `${nazev}-${Date.now()}`;
+    zarizeni[nazev] = { id, ecdh, auth };
+    return { endpoint: `${PUSH_URL}/push/${id}`, keys: { p256dh: ecdh.getPublicKey('base64url'), auth: auth.toString('base64url') } };
+}
+
+// Stáhne zprávy doručené zařízení a dešifruje je jako skutečný prohlížeč
+async function prijato(nazev) {
+    const z = zarizeni[nazev];
+    const zpravy = await (await fetch(`${MOCK}/prijato/${z.id}`)).json();
+    return zpravy.map((b) => JSON.parse(ece.decrypt(Buffer.from(b, 'base64'), {
+        version: 'aes128gcm', privateKey: z.ecdh, authSecret: z.auth,
+    }).toString()));
 }
 
 // Shibboleth je v testu nahrazen hlavičkami, které by jinak nastavil Apache
@@ -59,8 +48,9 @@ async function zapniNotifikace(browser, uid, sub) {
     }, sub);
     const page = await context.newPage();
     await page.goto(`${CLEN}/clen/`);
+    const pred = await page.locator('.push-zarizeni tr').count(); // DB může mít zařízení z předchozích běhů
     await page.click('.push-zapnout');
-    await expect(page.locator('.push-zarizeni tr')).toHaveCount(1);
+    await expect(page.locator('.push-zarizeni tr')).toHaveCount(pred + 1);
     return page;
 }
 
@@ -82,7 +72,7 @@ async function odesli(browser, uid, titulek, oblast = '1') {
     return page;
 }
 
-// Asynchronně – synchronní exec by zablokoval mock server v tomto procesu
+// Worker app:push_send – lokálně přes PHP, v CI v Docker kontejneru (E2E_WORKER_CMD)
 async function worker() {
     try {
         await exec(WORKER, { cwd: __dirname });
@@ -119,33 +109,35 @@ test.describe.serial('push notifikace', () => {
         await worker();
 
         const log = `${__dirname}/../../log/push.log`;
-        expect(zarizeni.a.prijato.map((p) => p.titulek), fs.existsSync(log) ? fs.readFileSync(log, 'utf8').slice(-3000) : 'push.log neexistuje')
+        const a = await prijato('a');
+        expect(a.map((p) => p.titulek), fs.existsSync(log) ? fs.readFileSync(log, 'utf8').slice(-3000) : 'push.log neexistuje')
             .toEqual(['Výpadek E2E']);
-        expect(zarizeni.b.prijato).toEqual([]);
-        await dorucDoServiceWorkeru(clenA, zarizeni.a.prijato[0]);
+        expect(await prijato('b')).toEqual([]);
+        await dorucDoServiceWorkeru(clenA, a[0]);
     });
 
     test('3: SO nemůže poslat do cizí oblasti', async ({ browser }) => {
         const page = await odesli(browser, 1020, 'Cizí oblast', '8102');
         await expect(page.locator('body')).not.toContainText('ve frontě');
         await worker();
-        expect(zarizeni.b.prijato).toEqual([]);
+        expect(await prijato('b')).toEqual([]);
     });
 
     test('4: po odebrání zařízení nic nepřijde', async ({ browser }) => {
-        await clenA.click('.push-zarizeni button');
-        await expect(clenA.locator('.push-zarizeni tr')).toHaveCount(0);
+        const pred = await clenA.locator('.push-zarizeni tr').count();
+        await clenA.click('.push-zarizeni button'); // první řádek = nejnovější zařízení z tohoto běhu
+        await expect(clenA.locator('.push-zarizeni tr')).toHaveCount(pred - 1);
 
         const page = await odesli(browser, 1, 'Po odebrání');
         await expect(page.locator('body')).toContainText('ve frontě');
         await worker();
-        expect(zarizeni.a.prijato).toHaveLength(1);
+        expect(await prijato('a')).toHaveLength(1);
     });
 
     test('5: člen nevidí kanál pro správce', async ({ browser }) => {
         const page = await (await prihlas(browser, 1001, CLEN)).newPage();
         await page.goto(`${CLEN}/clen/`);
-        await expect(page.locator('form')).toContainText('Výpadky');
+        await expect(page.locator('#frm-kanalyForm')).toContainText('Výpadky');
         await expect(page.locator('body')).not.toContainText('Správci:');
     });
 });

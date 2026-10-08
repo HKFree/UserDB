@@ -1,4 +1,4 @@
-# Doplněk k docker-compose.yml pro E2E: vlastní konfigurace a env, worker dosáhne na mock push službu na hostu
+# Doplněk k docker-compose.yml pro E2E: vlastní konfigurace a env, mock push služba v síti aplikace
 services:
   web:
     volumes:
@@ -6,9 +6,16 @@ services:
     env_file:
       - path: tests/e2e/e2e.env # VAPID klíče vygenerované pro běh testu
         required: false
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
       - USERDB_VAPID_SUBJECT=mailto:e2e@example.hkfree.org
       - DIGISIGN_ACCESS_KEY=x
       - DIGISIGN_SECRET_KEY=x
+  mockpush:
+    image: node:22-alpine
+    command: node /mock/mock-push.js
+    volumes:
+      - ./tests/e2e/mock-push.js:/mock/mock-push.js:ro
+    ports:
+      - "9999:9999"
+    networks:
+      - local-userdb-net

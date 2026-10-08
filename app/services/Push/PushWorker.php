@@ -30,12 +30,14 @@ class PushWorker
             ->update(['stav' => 'chyba']);
 
         $zpracovano = 0;
-        foreach ($this->db->table('PushNotifikace')->where('stav', 'cekajici')->order('id')->limit(20)->fetchAll() as $n) {
+        foreach ($this->db->table('PushNotifikace')->where('stav', 'cekajici')->order('id')->limit(20)->fetchPairs(null, 'id') as $id) {
             // Zámek proti souběžnému workeru: notifikaci zpracuje jen ten, komu se povede změnit stav
-            if ($this->db->table('PushNotifikace')->where(['id' => $n->id, 'stav' => 'cekajici'])
+            if ($this->db->table('PushNotifikace')->where(['id' => $id, 'stav' => 'cekajici'])
                 ->update(['stav' => 'odesila', 'odeslano' => new \DateTime()]) !== 1) {
                 continue;
             }
+            // Načíst znovu jen podle id – řádek z výběru podle stavu by Nette nedokázal dočíst (stav se změnil)
+            $n = $this->db->table('PushNotifikace')->get($id);
             try {
                 $pocet = $this->odesli($n);
                 $n->update(['stav' => 'odeslano', 'odeslano' => new \DateTime(), 'pocet_prijemcu' => $pocet]);

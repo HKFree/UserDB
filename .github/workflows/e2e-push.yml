@@ -20,7 +20,7 @@ jobs:
 
       - name: Start aplikace (Apache + MariaDB 10.1 z docker-compose.yml)
         run: |
-          $COMPOSE up -d --build web db
+          $COMPOSE up -d --build web db mockpush
           $COMPOSE exec -T web composer install --no-interaction
           $COMPOSE exec -T web chmod -R 777 log temp
           # VAPID klíče jen pro tento běh
@@ -47,7 +47,7 @@ jobs:
         working-directory: tests/e2e
         env:
           E2E_WORKER_CMD: cd ../.. && $COMPOSE exec -T -u www-data web php bin/console app:push_send
-          E2E_PUSH_HOST: host.docker.internal
+          E2E_PUSH_URL: http://mockpush:9999
         run: |
           npm ci
           npx playwright install --with-deps chromium
