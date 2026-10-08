@@ -10,7 +10,7 @@ Nalezeno při práci na push notifikacích (větev `push-notifications`, 2026-10
 | 2b | nízká | Google Maps API klíč v šabloně (je veřejný v prohlížeči) – ověřit omezení na HTTP referrer `*.hkfree.org` v Google Cloud | `Sprava/mapa.latte` (historie `17bcffa`) | ověřit |
 | 2 | vysoká | Oprávnění jen v šabloně: obsluha formulářů nekontroluje roli, POST může poslat kdokoli přihlášený do userdb (i role DRUŽSTEVNÍK, SKLADNÍK…) | `SpravaSms`, `SpravaSlucovani`, `SpravaSifrovani`, `SpravaCc`, `SpravaOblasti` (`*FormSucceded`) | otevřené |
 | 3 | vysoká | Shibboleth posílá **heslo v plaintextu** v hlavičce `Initials`, ukládá se do identity (session) a dál do SMS backendu | `Authenticator.php:45`, `HkfIdentity`, `SmsSender.php:50` | otevřené (TODO v kódu) |
-| 4 | vysoká | Závislosti se známými zranitelnostmi: `guzzlehttp/guzzle` < 7.12.1 (1× high, 8× medium), `guzzlehttp/psr7` < 2.10.2 (4× medium), `setasign/fpdi` < 2.6.4 (2× medium) – `composer audit` | `composer.lock` | otevřené (existují dependabot větve) |
+| 4 | vysoká | Závislosti se známými zranitelnostmi (`guzzlehttp/guzzle`, `guzzlehttp/psr7`, `setasign/fpdi`) | `composer.lock` | **vyřešeno v master** (dependabot PR #167, #174, #175); `composer audit` bez nálezů |
 | 5 | střední | Odkaz pro potvrzení e-mailu: hash `md5(salt . zalozen)` je odvoditelný při znalosti soli a data založení, porovnání `!=`, neexpiruje | `SelfServicePresenter::renderConfirmEmail` | otevřené |
 | 6 | střední | Generování API klíčů přes `str_shuffle` (není kryptograficky bezpečné, znaky se neopakují víc, než je délka abecedy) | `ApiKlic::generateKey` | otevřené – použít `random_bytes` / `Nette\Utils\Random::generate` |
 | 7 | střední | API klíče uložené v DB v čitelné podobě | tabulka `ApiKlic.klic` | otevřené – ukládat hash |
