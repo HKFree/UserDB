@@ -19,8 +19,14 @@
                 stav.textContent = 'Notifikace jsou v prohlížeči zakázané.';
                 return;
             }
-            var reg = await navigator.serviceWorker.register(el.dataset.sw);
+            // `domu` = stránka, kterou otevře klik na notifikaci bez odkazu
+            var reg = await navigator.serviceWorker.register(el.dataset.sw + '?domu=' + encodeURIComponent(el.dataset.domu));
             await navigator.serviceWorker.ready;
+            // Stará subscription s jiným VAPID klíčem (po výměně klíčů) by subscribe() odmítl
+            var stara = await reg.pushManager.getSubscription();
+            if (stara && String(new Uint8Array(stara.options.applicationServerKey || [])) !== String(klic)) {
+                await stara.unsubscribe();
+            }
             var sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: klic });
             var odpoved = await fetch(el.dataset.ulozit, {
                 method: 'POST', credentials: 'same-origin',

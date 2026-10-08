@@ -3,11 +3,12 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const vm = require('vm');
 
-function nactiServiceWorker() {
+function nactiServiceWorker(swUrl = 'https://moje.hkfree.org/userdb/sw.js?domu=https%3A%2F%2Fmoje.hkfree.org%2Fuserdb%2Fclen%2F') {
     const posluchaci = {};
     const otevreno = [];
     const zobrazeno = [];
     const self = {
+        location: new URL(swUrl),
         addEventListener: (typ, fn) => { posluchaci[typ] = fn; },
         registration: {
             scope: 'https://moje.hkfree.org/userdb/',
@@ -47,11 +48,18 @@ test('push: nepovolená URL se zahodí, text zůstane prostý', async () => {
     expect(zobrazeno[1]).toMatchObject({ titulek: 'HKFree', body: '', data: { url: null } });
 });
 
-test('klik otevře ověřenou URL, jinak stránku původu', async () => {
-    const { posluchaci, otevreno, udalost } = nactiServiceWorker();
-    const klik = (url) => posluchaci.notificationclick(udalost({ notification: { close: () => {}, data: { url } } }));
-    klik('https://moje.hkfree.org/userdb/clen/');
-    klik('https://evil.com/');
-    klik(null);
-    expect(otevreno).toEqual(['https://moje.hkfree.org/userdb/clen/', 'https://moje.hkfree.org/userdb/', 'https://moje.hkfree.org/userdb/']);
+test('klik otevře ověřenou URL, jinak domovskou stránku notifikací', async () => {
+    const klikni = (sw, url) => sw.posluchaci.notificationclick(sw.udalost({ notification: { close: () => {}, data: { url } } }));
+    const sw = nactiServiceWorker();
+    klikni(sw, 'https://moje.hkfree.org/userdb/clen/');
+    klikni(sw, 'https://evil.com/');
+    klikni(sw, null);
+    expect(sw.otevreno).toEqual(['https://moje.hkfree.org/userdb/clen/', 'https://moje.hkfree.org/userdb/clen/', 'https://moje.hkfree.org/userdb/clen/']);
+
+    // Bez parametru nebo s cizím originem jen scope service workeru
+    for (const swUrl of ['https://moje.hkfree.org/userdb/sw.js', 'https://moje.hkfree.org/userdb/sw.js?domu=https%3A%2F%2Fevil.com%2F']) {
+        const jiny = nactiServiceWorker(swUrl);
+        klikni(jiny, null);
+        expect(jiny.otevreno, swUrl).toEqual(['https://moje.hkfree.org/userdb/']);
+    }
 });

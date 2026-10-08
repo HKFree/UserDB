@@ -3,6 +3,7 @@
 namespace App\Services\Push;
 
 use App\Model\Uzivatel;
+use GuzzleHttp\Psr7\Uri;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 use Nette\Database\Explorer;
@@ -38,6 +39,12 @@ class PushWorker
             }
             // Načíst znovu jen podle id – řádek z výběru podle stavu by Nette nedokázal dočíst (stav se změnil)
             $n = $this->db->table('PushNotifikace')->get($id);
+            if (!$n->ref('PushKanal')->aktivni) {
+                Debugger::log("notifikace $id: kanál byl mezitím vypnut, neodesílá se", 'push');
+                $n->update(['stav' => 'chyba']);
+                $zpracovano++;
+                continue;
+            }
             try {
                 $pocet = $this->odesli($n);
                 $n->update(['stav' => 'odeslano', 'odeslano' => new \DateTime(), 'pocet_prijemcu' => $pocet]);
@@ -63,7 +70,8 @@ class PushWorker
         $payload = json_encode(['titulek' => $n->titulek, 'text' => $n->text, 'url' => $n->url], JSON_THROW_ON_ERROR);
         $podleEndpointu = [];
         foreach ($odbery as $o) {
-            $podleEndpointu[$o->endpoint] = $o->id;
+            // Klíč jako URI požadavku – report vrací endpoint po normalizaci Guzzlem
+            $podleEndpointu[(string) new Uri($o->endpoint)] = $o->id;
             $webPush->queueNotification(Subscription::create([
                 'endpoint' => $o->endpoint,
                 'keys' => ['p256dh' => $o->p256dh, 'auth' => $o->auth],
@@ -95,6 +103,7 @@ class PushWorker
         $this->db->query("DELETE o FROM PushOdber o JOIN Uzivatel u ON u.id = o.Uzivatel_id
             WHERE o.publikum = 'clenove' AND NOT COALESCE(" . Uzivatel::sqlAktivniClen('u') . ', 0)');
         $this->db->query("DELETE o FROM PushOdber o WHERE o.publikum = 'spravci' AND NOT EXISTS (
-            SELECT 1 FROM SpravceOblasti s WHERE s.Uzivatel_id = o.Uzivatel_id AND " . PushPrijemci::AKTIVNI_ROLE . ')');
+            SELECT 1 FROM SpravceOblasti s JOIN TypSpravceOblasti t ON t.id = s.TypSpravceOblasti_id
+            WHERE s.Uzivatel_id = o.Uzivatel_id AND t.text IN (?) AND " . PushPrijemci::AKTIVNI_ROLE . ')', PushOpravneni::ROLE_SPRAVCU);
     }
 }

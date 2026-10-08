@@ -24,3 +24,9 @@ Assert::false(PushOpravneni::smiOdeslat([], 'oblast', 1));
 
 Assert::true(PushOpravneni::smiSpravovatKanaly(['VV']));
 Assert::false(PushOpravneni::smiSpravovatKanaly(['TECH', 'SO-1']));
+
+// Kdo dostává notifikace pro správce (stránka Push:default, příjemci i úklid)
+Assert::true(PushOpravneni::jeSpravce(['VV']));
+Assert::true(PushOpravneni::jeSpravce(['DRUŽSTEVNÍK-1', 'ZSO-3']));
+Assert::false(PushOpravneni::jeSpravce(['DRUŽSTEVNÍK-1', 'SKLADNIK', 'KONTROLA']));
+Assert::false(PushOpravneni::jeSpravce(['SOx-1']));

@@ -26,14 +26,17 @@ class PushPrijemci
             $kdo = 'SELECT 1 FROM Uzivatel u JOIN Ap a ON a.id = u.Ap_id
                 WHERE u.id = o.Uzivatel_id AND ' . Uzivatel::sqlAktivniClen('u') . " $cil";
         } else {
-            // VV a TECH dostávají vše, SO/ZSO jen svou oblast (nebo vše při rozsahu celé sítě)
+            // Globální role dostávají vše, oblastní jen svou oblast (nebo vše při rozsahu celé sítě)
             $cil = $rozsah === 'sit' ? '' : 'AND s.Oblast_id = ?';
             $kdo = 'SELECT 1 FROM SpravceOblasti s JOIN TypSpravceOblasti t ON t.id = s.TypSpravceOblasti_id
                 WHERE s.Uzivatel_id = o.Uzivatel_id AND ' . self::AKTIVNI_ROLE . "
-                AND (t.text IN ('VV', 'TECH') OR (t.text IN ('SO', 'ZSO') $cil))";
+                AND (t.text IN (?) OR (t.text IN (?) $cil))";
         }
 
         $args = [$kanalId, $kanal->publikum, $kanal->vychozi_zapnuto];
+        if ($kanal->publikum === 'spravci') {
+            array_push($args, PushOpravneni::GLOBALNI_ROLE, PushOpravneni::OBLASTNI_ROLE);
+        }
         if ($rozsah !== 'sit') {
             $args[] = $rozsah === 'ap' && $kanal->publikum === 'clenove' ? $apId : $oblastId;
         }

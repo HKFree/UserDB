@@ -16,10 +16,8 @@ class PushOdbery
         $endpoint = $sub['endpoint'] ?? null;
         $p256dh = $sub['keys']['p256dh'] ?? null;
         $auth = $sub['keys']['auth'] ?? null;
-        $base64url = '~^[A-Za-z0-9_-]+={0,2}$~D';
         if (!is_string($endpoint) || !PushObsah::jePovolenyEndpoint($endpoint, $this->povoleneEndpointy)
-            || !is_string($p256dh) || strlen($p256dh) > 255 || !preg_match($base64url, $p256dh)
-            || !is_string($auth) || strlen($auth) > 64 || !preg_match($base64url, $auth)) {
+            || !PushObsah::jsouPlatneKlice($p256dh, $auth)) {
             throw new PushException('Neplatná subscription.', 400);
         }
         // Cizí subscription lze převzít jen se stejným tajemstvím auth, tj. ze stejného prohlížeče

@@ -17,9 +17,13 @@ vTransakci($db, function () use ($db, $odbery, $sub) {
     Assert::exception(fn() => $odbery->uloz(1001, 'clenove', $sub('https://10.107.0.1/x'), null), PushException::class);
     Assert::exception(fn() => $odbery->uloz(1001, 'clenove', ['endpoint' => 'https://fcm.googleapis.com/x', 'keys' => ['p256dh' => '<x>', 'auth' => 'a']], null), PushException::class);
     Assert::exception(fn() => $odbery->uloz(1001, 'clenove', ['endpoint' => ['x']], null), PushException::class);
+    $spatnyKlic = $sub('https://fcm.googleapis.com/fcm/send/b');
+    $spatnyKlic['keys']['p256dh'] = 'AAAA'; // projde regexem, ale nejde použít – zablokoval by celou dávku
+    Assert::exception(fn() => $odbery->uloz(1001, 'clenove', $spatnyKlic, null), PushException::class);
 
     // Cizí endpoint bez stejného auth převzít nejde, ze stejného prohlížeče (stejné auth) ano
-    $ciziKlice = ['endpoint' => 'https://fcm.googleapis.com/fcm/send/a', 'keys' => ['p256dh' => 'BBB', 'auth' => 'jineAuth']];
+    $ciziKlice = $sub('https://fcm.googleapis.com/fcm/send/a');
+    $ciziKlice['keys']['auth'] = 'AAAAAAAAAAAAAAAAAAAAAA';
     Assert::exception(fn() => $odbery->uloz(1021, 'clenove', $ciziKlice, null), PushException::class);
     Assert::count(1, $odbery->zarizeni(1001, 'clenove'));
     $odbery->uloz(1021, 'clenove', $sub('https://fcm.googleapis.com/fcm/send/a'), null);

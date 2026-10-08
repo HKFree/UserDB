@@ -32,7 +32,8 @@ final class PushObsah
     /** @param string[] $povolene např. "https://fcm.googleapis.com", "https://*.push.apple.com" */
     public static function jePovolenyEndpoint(string $endpoint, array $povolene): bool {
         $e = parse_url($endpoint);
-        if (!$e || isset($e['user']) || strlen($endpoint) > 1000 || preg_match('~[\s\\\\]~', $endpoint)) {
+        // Jen tisknutelné ASCII (sloupec je ascii) a bez `\` – obejití kontroly hostu
+        if (!$e || isset($e['user']) || strlen($endpoint) > 1000 || !preg_match('~^[\x21-\x7e]+$~D', $endpoint) || str_contains($endpoint, '\\')) {
             return false;
         }
         foreach ($povolene as $vzor) {
@@ -43,6 +44,21 @@ final class PushObsah
             }
         }
         return false;
+    }
+
+    /** Klíče subscription musí jít použít k šifrování, jinak by worker selhal pro celou dávku. */
+    public static function jsouPlatneKlice(mixed $p256dh, mixed $auth): bool {
+        return is_string($p256dh) && is_string($auth)
+            && ($k = self::base64url($p256dh)) !== null && strlen($k) === 65 && $k[0] === "\x04"
+            && ($a = self::base64url($auth)) !== null && strlen($a) === 16;
+    }
+
+    private static function base64url(string $s): ?string {
+        if (!preg_match('~^[A-Za-z0-9_-]+={0,2}$~D', $s)) {
+            return null;
+        }
+        $bin = base64_decode(strtr(rtrim($s, '='), '-_', '+/'), true);
+        return $bin === false ? null : $bin;
     }
 
     /** "*.example.org" odpovídá example.org i libovolné subdoméně. */

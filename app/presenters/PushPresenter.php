@@ -20,6 +20,13 @@ class PushPresenter extends BasePresenter
     public function __construct(private Explorer $db, private PushOdesilani $odesilani) {
     }
 
+    public function startup() {
+        parent::startup();
+        if (!PushOpravneni::jeSpravce($this->getUser()->getRoles())) {
+            $this->error('Notifikace pro správce jsou jen pro SO, ZSO, TECH a VV.', 403);
+        }
+    }
+
     /** Oblasti, kam smí uživatel posílat; null = všechny (VV, TECH). */
     private function mojeOblasti(): ?array {
         $role = $this->getUser()->getRoles();
@@ -33,12 +40,6 @@ class PushPresenter extends BasePresenter
             }
         }
         return $ids;
-    }
-
-    public function actionOdeslat(): void {
-        if ($this->mojeOblasti() === []) {
-            $this->error('Odesílat notifikace mohou jen SO, ZSO, TECH a VV.', 403);
-        }
     }
 
     public function renderOdeslat(): void {

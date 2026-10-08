@@ -31,7 +31,15 @@ Assert::true(PushObsah::jePovolenyEndpoint('http://127.0.0.1:9999/push/1', $povo
 foreach ([
     'http://fcm.googleapis.com/x', 'https://fcm.googleapis.com.evil.com/x', 'https://evil.com/fcm.googleapis.com',
     'https://u:p@fcm.googleapis.com/x', 'https://fcm.googleapis.com:444/x', 'http://127.0.0.1/x', 'http://10.107.0.1:9999/x',
-    'https://fcm.googleapis.com\@evil.com/', 'nonsense',
+    'https://fcm.googleapis.com\@evil.com/', 'nonsense', 'https://fcm.googleapis.com/fcm/send/ž',
 ] as $bad) {
     Assert::false(PushObsah::jePovolenyEndpoint($bad, $povolene), $bad);
 }
+
+// Klíče musí jít použít k šifrování (P-256 bod 65 B začínající 0x04, auth 16 B)
+$p256dh = 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM';
+Assert::true(PushObsah::jsouPlatneKlice($p256dh, 'tBHItJI5svbpez7KI4CCXg'));
+Assert::false(PushObsah::jsouPlatneKlice('AAAA', 'tBHItJI5svbpez7KI4CCXg'));
+Assert::false(PushObsah::jsouPlatneKlice('A' . substr($p256dh, 1), 'tBHItJI5svbpez7KI4CCXg')); // nezačíná 0x04
+Assert::false(PushObsah::jsouPlatneKlice($p256dh, 'krátký'));
+Assert::false(PushObsah::jsouPlatneKlice($p256dh, null));

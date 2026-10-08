@@ -24,6 +24,20 @@ souběh u limitu odesílání.
 | – | Souběh u limitu 5/hod | přijato (R12) |
 | – | INSERT doručenky po jednom, 3 dotazy na kanál při ukládání preferencí, nepoužitá `smazEndpoint()` | ponecháno, nízká priorita |
 
+## Druhý code review (`/code-review`, po merge s master)
+
+| # | Nález | Řešení |
+|---|---|---|
+| 1 | Člen mohl uložit subscription s nepoužitelným klíčem (`p256dh='AAAA'`) a tím shodit odeslání celé dávky všem členům | **opraveno** – klíče se dekódují a ověří (65 B, `0x04`; auth 16 B); testy `PushObsahTest`, `PushOdberyTest` |
+| 2 | Klik na notifikaci bez odkazu otevřel na moje.hkfree.org správcovskou úvodní stránku (404) | **opraveno** – stránka `domu` se předává service workeru při registraci (jen stejný origin); test `sw.spec.js` |
+| 3 | Endpoint s ne-ASCII znaky prošel kontrolou a INSERT do ASCII sloupce skončil 500 | **opraveno** – jen tisknutelné ASCII; test `PushObsahTest` |
+| 4 | Role mimo SO/ZSO/TECH/VV se mohly přihlásit k odběru správců, nic nedostaly a úklid je nemazal | **opraveno** – jedna definice `PushOpravneni::ROLE_SPRAVCU` pro přístup, příjemce i úklid; testy `PushOpravneniTest`, `PushWorkerTest` |
+| 5 | Doručenky se párovaly podle endpointu bez normalizace Guzzlem | **opraveno** – klíč `(string) new Uri($endpoint)` |
+| 6 | Notifikace ve frontě se odeslala i po vypnutí kanálu | **opraveno** – stav `chyba` + `log/push.log`; test `PushWorkerTest` |
+| 7 | Po výměně VAPID klíčů nešlo notifikace znovu zapnout (`InvalidStateError`) | **opraveno** – `push.js` odhlásí starou subscription s jiným klíčem (bez automatického testu) |
+| – | Souběh u limitu 5/hod | přijato (R12) |
+| – | U rozsahu AP se neukládá oblast, worker ji dohledává znovu | ponecháno, nízká priorita |
+
 ## Chyby nalezené v CI (E2E v Dockeru)
 
 - Worker padal se studenou cache Nette (`Database refetch failed`): řádek načtený výběrem podle `stav` nešel po změně

@@ -1,5 +1,5 @@
 {* Sdílené nastavení notifikací – správci (Push:default) i členové (Member:Notifikace:default) *}
-<div id="push-odber" data-vapid="{$vapidPublicKey ?: ''}" data-sw="{$basePath}/sw.js" data-ulozit="{link ulozOdber!}">
+<div id="push-odber" data-vapid="{$vapidPublicKey ?: ''}" data-sw="{$basePath}/sw.js" data-domu="{link //default}" data-ulozit="{link ulozOdber!}">
     <p class="push-stav"></p>
     <button type="button" class="btn btn-success push-zapnout" hidden>Zapnout notifikace v tomto prohlížeči</button>
 </div>

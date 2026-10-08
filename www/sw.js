@@ -20,9 +20,20 @@ self.addEventListener('push', function (event) {
     }));
 });
 
-// Klik otevře ověřenou URL, bez URL stránku, ze které notifikace přišla
+// Stránka pro klik bez odkazu (předává ji push.js při registraci); jen ze stejného originu
+function domu() {
+    var d = new URL(self.location.href).searchParams.get('domu');
+    try {
+        var u = new URL(d || '', self.registration.scope);
+        return u.origin === new URL(self.registration.scope).origin ? u.href : self.registration.scope;
+    } catch (e) {
+        return self.registration.scope;
+    }
+}
+
+// Klik otevře ověřenou URL, bez URL domovskou stránku notifikací
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     var url = event.notification.data && event.notification.data.url;
-    event.waitUntil(clients.openWindow((url && povolenaUrl(url)) || self.registration.scope));
+    event.waitUntil(clients.openWindow((url && povolenaUrl(url)) || domu()));
 });
