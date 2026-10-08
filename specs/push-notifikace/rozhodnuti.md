@@ -1,7 +1,7 @@
 # Rozhodnutí – push notifikace
 
 Záznam rozhodnutí z návrhového rozhovoru (2026-10-08). Formát: kontext → rozhodnutí → důvod.
-Schválil: Jiří (autor PR). Upřesnění vzniklá při implementaci jsou označena **(upřesnění)**.
+Schválil: Jiří (autor PR) – R1–R20 schváleno při review 2026-10-08. Upřesnění vzniklá při implementaci jsou označena **(upřesnění)**.
 
 ## R1 – Technologie: standardní Web Push (VAPID)
 - **Kontext:** Alternativy byly služba třetí strany (ntfy, Firebase) nebo nativní aplikace.
