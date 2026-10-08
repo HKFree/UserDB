@@ -42,6 +42,7 @@ Schválil: Jiří (autor PR). Upřesnění vzniklá při implementaci jsou ozna�
 
 ## R8 – Oprávnění odesílatele kopíruje role `SpravceOblasti`
 - **Rozhodnutí:** VV a TECH libovolný rozsah, SO a ZSO jen své oblasti a jejich AP.
+- **Potvrzeno (2026-10-08):** TECH smí posílat do celé sítě – záměr, ne chyba.
 
 ## R9 – Systémoví odesílatelé přes API
 - **Rozhodnutí:** `POST /api/push/send`, klíč omezený na presenter `Api:Push`, seznam povolených kanálů
