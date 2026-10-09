@@ -1,0 +1,5 @@
+{block title}Chyba {$kod}{/block}
+{block content}
+<h3>{if $kod === 404}Stránka nenalezena{elseif $kod === 403}Přístup odepřen{else}Něco se pokazilo{/if}</h3>
+<p n:if="$zprava">{$zprava}</p>
+{/block}

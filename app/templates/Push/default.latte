@@ -1,0 +1,8 @@
+{block content}
+<h3>Notifikace</h3>
+<p>
+    <a n:href="odeslat" class="btn btn-default btn-sm">Odeslat notifikaci</a>
+    <a n:if="$user->isInRole('VV')" n:href="kanaly" class="btn btn-default btn-sm">Správa kanálů</a>
+</p>
+{include 'nastaveni.latte'}
+{/block}

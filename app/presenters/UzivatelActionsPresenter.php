@@ -222,7 +222,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->template->UID = $uid;
         $this->template->oneclick_auth_code = $oneclick_auth_code;
 
-        switch($variant) {
+        switch ($variant) {
             case 'Televize2026AnoNe':
                 $template = $this->mailService->addLinkGeneratorToTemplate($this->template);
                 $subject = "Služba SledovaniTV zdarma do 31.7.2026 v síti hkfree";
@@ -230,7 +230,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $template);
 
                 $this->flashMessage(sprintf('E-mail %s odeslán na %s.', $variant, $uzivatel->email));
-            break;
+                break;
             default:
                 $this->flashMessage(sprintf('Error: undefined UserEmail variant "%s", no action', $variant));
         }

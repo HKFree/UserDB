@@ -1,0 +1,22 @@
+# Známé nálezy gitleaks v historii (nelze odstranit bez přepisu historie); CI hlásí jen nové.
+
+# .local.env: SKUTEČNÉ klíče DigiSign v historii – nutná rotace, viz specs/bezpecnostni-nalezy.md
+2bdda05913e1b8085805259911a7234ff03bbe9a:.local.env:generic-api-key:1
+2bdda05913e1b8085805259911a7234ff03bbe9a:.local.env:generic-api-key:2
+
+# app/templates/Sprava/mapa.latte: Google Maps klíč pro prohlížeč (veřejný) – omezit referrerem, viz specs/bezpecnostni-nalezy.md
+17bcffa09f3c318fb0577caddd0b4b16e683b072:app/templates/Sprava/mapa.latte:gcp-api-key:4
+
+# app/templates/email/ZpoplatneniTelevize2026_body.latte: falešný nález – Latte proměnná oneclick_auth_code
+399678b9b1c276073611ce08aeca1a3b1b0a9d56:app/templates/email/ZpoplatneniTelevize2026_body.latte:generic-api-key:257
+399678b9b1c276073611ce08aeca1a3b1b0a9d56:app/templates/email/ZpoplatneniTelevize2026_body.latte:generic-api-key:275
+3c20b6811e6252ed939c336dffc81c7d52588608:app/templates/email/ZpoplatneniTelevize2026_body.latte:generic-api-key:257
+3c20b6811e6252ed939c336dffc81c7d52588608:app/templates/email/ZpoplatneniTelevize2026_body.latte:generic-api-key:275
+7605c1830c69025d7a11898daaa1592725c14542:app/templates/email/ZpoplatneniTelevize2026_body.latte:generic-api-key:257
+7605c1830c69025d7a11898daaa1592725c14542:app/templates/email/ZpoplatneniTelevize2026_body.latte:generic-api-key:274
+
+# swagger.yaml: ukázková odpověď v dokumentaci API
+fff99f51499d643d0cdf6db7ab50aba5c209eb42:swagger.yaml:generic-api-key:226
+
+# tests/Push/PushOdberyTest.phpt: falešný nález – testovací hodnota
+faafc8920f9ac5fc192787973a595686f499c10d:tests/Push/PushOdberyTest.phpt:generic-api-key:10

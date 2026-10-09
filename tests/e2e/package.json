@@ -1,0 +1,11 @@
+{
+  "name": "userdb-e2e",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "http_ece": "^1.2.0"
+  }
+}

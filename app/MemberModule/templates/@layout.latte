@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{ifset #title}{include title|striptags} | {/ifset}moje.hkfree.org</title>
+    <link href="{$basePath}/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h2>moje<span style="color:#666666">.hkfree</span><span style="color:#cc0000">.org</span></h2>
+    <div n:foreach="$flashes as $flash" class="alert alert-info">{$flash->message}</div>
+    {include content}
+</div>
+</body>
+</html>

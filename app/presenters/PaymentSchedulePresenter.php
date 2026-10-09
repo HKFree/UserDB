@@ -48,7 +48,7 @@ class PaymentSchedulePresenter extends BasePresenter
         }
 
         $this->template->pravidelne_mesicni_platby = $pravidelne_mesicni_platby;
-        $platby_celkem = array_sum(array_map(fn($a)=>$a[1], $pravidelne_mesicni_platby));
+        $platby_celkem = array_sum(array_map(fn ($a) => $a[1], $pravidelne_mesicni_platby));
         $this->template->platby_celkem = $platby_celkem;
 
         $nazev_uzivatele = $this->uzivatel->nazevUzivatele($uzivatel->id);

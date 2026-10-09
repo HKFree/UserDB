@@ -22,6 +22,9 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     /** @var integer */
     protected $keyApID;
 
+    /** @var integer */
+    protected $keyID;
+
     // to access these actions, only valid key is required;
     // no checks against AP-id and/or module restrictions is done regarding the API key
     protected $alwaysAllowedActions = ['Api:HealthCheck'];
@@ -63,9 +66,10 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
             $keyRec = $this->apiKlicModel->getApiKlic($apiKeyId);
 
             // Check if the key is valid and not expired
-            if ($keyRec && $password == $keyRec->klic && $this->apiKlicModel->isNotExpired($keyRec->plati_do)) {
+            if ($keyRec && hash_equals((string) $keyRec->klic, $password) && $this->apiKlicModel->isNotExpired($keyRec->plati_do)) {
                 // Save keyApID for later check
                 $this->keyApID = $keyRec->Ap_id;
+                $this->keyID = $keyRec->id;
 
                 $requestedModule = $this->getName();
 
@@ -97,7 +101,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
 
     // If function returns sensitive data, check whether API key has access!
     // Call before doing any action! parent::checkApID($apID);
-    protected function checkApID($requestedApId=null) {
+    protected function checkApID($requestedApId = null) {
         if ($requestedApId !== null) {
             // Check if key is restricted to an AP and does not match to requested AP
             if ($this->keyApID && $requestedApId != $this->keyApID) {

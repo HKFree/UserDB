@@ -1,0 +1,19 @@
+# Konfigurace pro E2E (v kontejneru připojena jako app/config/config.local.neon, viz docker-compose.e2e.yml)
+parameters:
+	maternaMexUser: 'x'
+	maternaMexPass: 'x'
+	googleMapsApiKey: 'x'
+	withDummyData: true
+	debug:
+		fakeUser: false
+	memberHost: moje.localhost
+	pushEndpointy:
+		- 'http://mockpush:9999' # mock push služba v E2E testu (docker-compose.e2e.yml)
+	igw1IpCheckerUrl: http://localhost/
+	igw2IpCheckerUrl: http://localhost/
+
+http:
+	proxy: null
+
+application:
+	catchExceptions: true # chybové stránky jako v produkci i se zapnutým Tracy

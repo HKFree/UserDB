@@ -2,7 +2,7 @@
 
 $finder = (new PhpCsFixer\Finder())
   ->in(__DIR__)
-  ->exclude(['temp'])
+  ->exclude(['temp', 'lib']) // lib/ = knihovny třetích stran (phpqrcode), neformátovat
 ;
 
 return (new PhpCsFixer\Config())

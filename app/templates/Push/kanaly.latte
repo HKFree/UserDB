@@ -1,0 +1,14 @@
+{block content}
+<h3>Kanály notifikací</h3>
+<table class="table table-condensed">
+    <tr><th>Kód</th><th>Název</th><th>Publikum</th><th>Výchozí</th><th>Aktivní</th><th></th></tr>
+    <tr n:foreach="$kanaly as $k">
+        <td>{$k->kod}</td><td>{$k->nazev}</td><td>{$k->publikum}</td>
+        <td>{$k->vychozi_zapnuto ? 'zapnuto' : 'vypnuto'}</td><td>{$k->aktivni ? 'ano' : 'ne'}</td>
+        <td><a n:href="kanaly kanal => $k->id">Upravit</a></td>
+    </tr>
+</table>
+<h4>Nový / upravit kanál</h4>
+{control kanalForm}
+<p>Oprávnění API klíčů ke kanálům se zatím nastavují v tabulce <code>ApiKlic_PushKanal</code>.</p>
+{/block}

@@ -32,3 +32,6 @@ resolv.conf
 # Tyka se digisign API:
 .env
 trace*json
+
+# Nette Tester
+tests/**/output/
