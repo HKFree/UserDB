@@ -21,12 +21,6 @@ parameters:
 	withDummyData: false
 	debug:
 		fakeUser: false
-	memberHost: 'moje.hkfree.org'
-	pushEndpointy: # povolené push služby prohlížečů (ochrana proti SSRF)
-		- 'https://fcm.googleapis.com'
-		- 'https://updates.push.services.mozilla.com'
-		- 'https://*.push.apple.com'
-		- 'https://*.notify.windows.com'
 
 php:
 	date.timezone: Europe/Prague
@@ -110,22 +104,11 @@ services:
 		class: App\Presenters\SpravaPresenter
 		setup:
 			- setGoogleMapsApiKey(%env.USERDB_GOOGLE_MAPS_KEY%)
-	settings: App\Settings(%debug.fakeUser%, %memberHost%, ::getenv('USERDB_VAPID_PUBLIC_KEY'))
+	settings: App\Settings(%debug.fakeUser%)
 	- App\Console\UpdateLocationsCommand(%googleMapsApiKey%)
 	- App\Console\Wewimo2InfluxCommand(%influxUrl%)
 	- App\Console\DigisignGenerovatUcastnickouSmlouvu
 	- App\Console\SendSMSCommand
-	- App\Console\PushSendCommand
-	- App\Console\PushVapidKeysCommand
-	- App\Services\Push\PushOdesilani
-	- App\Services\Push\PushOdbery(povoleneEndpointy: %pushEndpointy%)
-	- App\Services\Push\PushPrijemci
-	- App\Model\MemberAuthenticator
-	- App\Services\Push\PushWorker(vapid: [
-		subject: ::getenv('USERDB_VAPID_SUBJECT'),
-		publicKey: ::getenv('USERDB_VAPID_PUBLIC_KEY'),
-		privateKey: ::getenv('USERDB_VAPID_PRIVATE_KEY'),
-	])
 
 database:
 	dsn: "mysql:host=%env.USERDB_DB_HOST%;dbname=%env.USERDB_DB_NAME%"

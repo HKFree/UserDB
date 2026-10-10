@@ -10,14 +10,6 @@ use Tracy\Debugger;
  */
 class ErrorPresenter extends BasePresenter
 {
-    public function startup() {
-        // Na členské doméně vlastní chybová stránka – BasePresenter by vyžadoval přihlášení správce
-        if ($this->getHttpRequest()->getUrl()->getHost() === $this->settings->memberHost) {
-            $this->forward(':Member:Error:', $this->getParameters());
-        }
-        parent::startup();
-    }
-
     /**
      * @param  \Exception
      * @return void
