@@ -64,7 +64,7 @@ class UzivatelListGrid
             ->setDefaultValue('active')
             ->setWhere(function ($value, $connection) {
                 if ($value == 'active') {
-                    return ($connection->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)'));
+                    return ($connection->where(Uzivatel::AKTIVNI_CLEN));
                 }
                 if ($value == 'planned') {
                     return ($connection->where('spolek = 1 AND TypClenstvi_id = 0'));
