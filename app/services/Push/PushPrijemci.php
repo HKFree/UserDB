@@ -24,7 +24,7 @@ class PushPrijemci
         if ($kanal->publikum === 'clenove') {
             $cil = ['sit' => '', 'oblast' => 'AND a.Oblast_id = ?', 'ap' => 'AND u.Ap_id = ?'][$rozsah];
             $kdo = 'SELECT 1 FROM Uzivatel u JOIN Ap a ON a.id = u.Ap_id
-                WHERE u.id = o.Uzivatel_id AND u.systemovy = 0 AND ' . Uzivatel::AKTIVNI_CLEN . " $cil";
+                WHERE u.id = o.Uzivatel_id AND ' . Uzivatel::sqlAktivniClen('u') . " $cil";
         } else {
             // Globální role dostávají vše, oblastní jen svou oblast (nebo vše při rozsahu celé sítě)
             $cil = $rozsah === 'sit' ? '' : 'AND s.Oblast_id = ?';

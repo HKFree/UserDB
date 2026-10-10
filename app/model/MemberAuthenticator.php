@@ -13,8 +13,8 @@ class MemberAuthenticator
     }
 
     public function authenticate(string $uid): SimpleIdentity {
-        $u = ctype_digit($uid) ? $this->db->table('Uzivatel')->select('id, nick')
-            ->where(Uzivatel::AKTIVNI_CLEN)->where('systemovy', 0)->get((int) $uid) : null;
+        $u = ctype_digit($uid) ? $this->db->query('SELECT u.id, u.nick FROM Uzivatel u WHERE u.id = ? AND '
+            . Uzivatel::sqlAktivniClen('u'), (int) $uid)->fetch() : null;
         if (!$u) {
             throw new AuthenticationException('Přístup jen pro aktivní členy.');
         }

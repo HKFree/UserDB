@@ -101,7 +101,7 @@ class PushWorker
     private function uklid(): void {
         $this->db->table('PushDoruceni')->where('vytvoreno < ?', new \DateTime('-' . self::DORUCENI_DNU . ' days'))->delete();
         $this->db->query("DELETE o FROM PushOdber o JOIN Uzivatel u ON u.id = o.Uzivatel_id
-            WHERE o.publikum = 'clenove' AND NOT COALESCE(u.systemovy = 0 AND " . Uzivatel::AKTIVNI_CLEN . ', 0)');
+            WHERE o.publikum = 'clenove' AND NOT COALESCE(" . Uzivatel::sqlAktivniClen('u') . ', 0)');
         $this->db->query("DELETE o FROM PushOdber o WHERE o.publikum = 'spravci' AND NOT EXISTS (
             SELECT 1 FROM SpravceOblasti s JOIN TypSpravceOblasti t ON t.id = s.TypSpravceOblasti_id
             WHERE s.Uzivatel_id = o.Uzivatel_id AND t.text IN (?) AND " . PushPrijemci::AKTIVNI_ROLE . ')', PushOpravneni::ROLE_SPRAVCU);
