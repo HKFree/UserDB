@@ -16,11 +16,6 @@ class Uzivatel extends Table
     */
     protected $tableName = 'Uzivatel';
 
-    /** SQL podmínka aktivního člena (spolek nebo družstvo), bez systémových uživatelů; $u = alias tabulky Uzivatel. */
-    public static function sqlAktivniClen(string $u = 'Uzivatel'): string {
-        return "(($u.spolek = 1 AND $u.TypClenstvi_id > 1) OR ($u.druzstvo = 1 AND $u.smazano = 0)) AND $u.systemovy = 0";
-    }
-
     public function getSeznamSpravcuUzivatele($id_uzivatel) {
         return $this->getConnection()->query('SELECT SO . *
 FROM  `Uzivatel` U

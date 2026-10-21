@@ -41,8 +41,6 @@ class RouterFactory
         $router->addRoute($urlPrefix . '/pub/user-email-feedback/<uid>/<hash>/<variant>/<nextStep>', ['presenter' => 'SelfService','action' => 'userEmailFeedback',]);
         $router->addRoute($urlPrefix . '/pub/user-confirm-email/<key>', ['presenter' => 'SelfService','action' => 'confirmEmail',]);
 
-        // Členská část (moje.hkfree.org); presentery samy odmítnou jinou doménu
-        $router->addRoute($urlPrefix . '/clen/<presenter=Notifikace>[/<action=default>]', ['module' => 'Member']);
         $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
             'module' => 'Api'
         ]);

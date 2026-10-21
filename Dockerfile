@@ -18,11 +18,10 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libzip-dev \
     libicu-dev \
-    libgmp-dev \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ \
     && docker-php-ext-configure intl \
-    && docker-php-ext-install pdo pdo_mysql gd zip intl gmp # gmp: rychlá kryptografie pro web-push
+    && docker-php-ext-install pdo pdo_mysql gd zip intl
 
 # Enable and configure xdebug
 #RUN pecl install xdebug

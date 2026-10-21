@@ -36,9 +36,6 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     public function startup() {
         parent::startup();
-        if ($this->getHttpRequest()->getUrl()->getHost() === $this->settings->memberHost) {
-            $this->error(); // správcovská část není na členské doméně dostupná (R4)
-        }
 
         //$uri = $this->getHttpRequest()->getUrl();
         if ($this->settings->fakeUser == false) {
