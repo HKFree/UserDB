@@ -22,7 +22,7 @@ class SpravaOblastiPresenter extends SpravaPresenter
     }
 
     public function renderNovaoblast() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
     protected function createComponentNovaoblastForm() {
@@ -47,6 +47,8 @@ class SpravaOblastiPresenter extends SpravaPresenter
     }
 
     public function novaoblastFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
         $idOblasti = $values->id;
 
         if (empty($values->id)) {
@@ -62,7 +64,7 @@ class SpravaOblastiPresenter extends SpravaPresenter
     }
 
     public function renderNoveap() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
     protected function createComponentNoveapForm() {
@@ -92,6 +94,8 @@ class SpravaOblastiPresenter extends SpravaPresenter
     }
 
     public function noveapFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
         $idAp = $values->id;
 
         if (empty($values->id)) {

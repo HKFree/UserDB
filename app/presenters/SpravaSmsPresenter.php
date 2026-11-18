@@ -21,7 +21,7 @@ class SpravaSmsPresenter extends SpravaPresenter
     }
 
     public function renderSms() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
     protected function createComponentSmsForm() {
@@ -39,6 +39,8 @@ class SpravaSmsPresenter extends SpravaPresenter
     }
 
     public function smsFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
         if ($values->komu == 0) {
             $sos = $this->spravceOblasti->getSO();
         } else {

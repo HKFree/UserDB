@@ -143,7 +143,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
     }
 
     public function renderPrevod() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
     protected function createComponentPrevodForm() {
@@ -201,6 +201,8 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
     }
 
     public function prevodFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
         $id = $this->getParameter('id');
         $pPlatba = $this->prichoziPlatba->getPrichoziPlatba($id);
         $posledniPohyb = $this->uzivatelskeKonto->getUzivatelskeKontoByPrichoziPlatba($id);

@@ -64,7 +64,7 @@ class SpravaCcPresenter extends SpravaPresenter
             }
         }
 
-        $this->template->canApproveCC = $this->getUser()->isInRole('VV');
+        $this->template->canApproveCC = $this->jeVV();
         $uzivatele = array();
         foreach ($this->cestneClenstviUzivatele->getNeschvalene() as $cc_id => $cc_data) {
             $uzivatele[] = $cc_data->Uzivatel_id;
@@ -120,6 +120,8 @@ class SpravaCcPresenter extends SpravaPresenter
     * Schválení čestného členství
     */
     public function spravaCCFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->jeVV());
+
         $log = array();
         $prava = $values->rights;
 

@@ -45,6 +45,16 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         }
     }
 
+    /**
+     * Obsluha formuláře nebo akce pokračuje jen s oprávněním, jinak 403.
+     * Podmínka má být stejná, jakou dostává šablona: šablona formulář jen skryje, odeslat ho jde i bez ní.
+     */
+    protected function vyzadujOpravneni(bool $smi): void {
+        if (!$smi) {
+            $this->error('Nemáte oprávnění.', Nette\Http\IResponse::S403_Forbidden);
+        }
+    }
+
     protected function beforeRender() {
         parent::__construct();
         parent::beforeRender();
