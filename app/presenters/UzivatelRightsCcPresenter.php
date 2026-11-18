@@ -34,8 +34,13 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $this->ap = $ap;
     }
 
+    /** Oprávnění správců přiděluje jen VV */
+    private function smiMenitPrava(): bool {
+        return $this->getUser()->isInRole('VV');
+    }
+
     public function renderEditrights() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
+        $this->template->canViewOrEdit = $this->smiMenitPrava();
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
@@ -101,6 +106,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
     }
 
     public function uzivatelRightsFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->smiMenitPrava());
+
         $log = array();
         $idUzivatele = $values->id;
         $prava = $values->rights;
@@ -140,9 +147,20 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return true;
     }
 
+    /** Čestné členství člena upravuje EXTSUPPORT nebo správce jeho AP */
+    private function smiUpravitCc($idUzivatele): bool {
+        $uzivatel = $this->uzivatel->getUzivatel($idUzivatele);
+        return $uzivatel && ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()));
+    }
+
+    /** Žádost o ČČ schvaluje nebo zamítá jen VV */
+    private function smiSchvalitCc(): bool {
+        return $this->getUser()->isInRole('VV');
+    }
+
     public function renderEditcc() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
-        $this->template->canApprove = $this->getUser()->isInRole('VV');
+        $this->template->canViewOrEdit = $this->smiUpravitCc($this->getParameter('id'));
+        $this->template->canApprove = $this->smiSchvalitCc();
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
@@ -207,6 +225,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
     }
 
     public function uzivatelCCFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->smiUpravitCc($values->id));
+
         $log = array();
         $idUzivatele = $values->id;
         $prava = $values->rights;
@@ -226,7 +246,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             if (empty($pravo->plati_do)) {
                 $pravo->plati_do = null;
             }
-            if (empty($pravo->schvaleno)) {
+            if (empty($pravo->schvaleno) || !$this->smiSchvalitCc()) {
+                // ostatním šablona pole stavu nezobrazí, takže ho formulář ani neposílá
                 $pravo->schvaleno = 0;
             }
 
