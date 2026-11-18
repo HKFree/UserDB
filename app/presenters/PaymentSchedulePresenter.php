@@ -83,11 +83,19 @@ class PaymentSchedulePresenter extends BasePresenter
         $this->template->qrImagePngBase64 = $qrImagePngBase64;
     }
 
+    /** Rozpis plateb ukazuje detail člena jen tomu, kdo smí člena upravovat */
+    private function vyzadujOpravneniKClenovi() {
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        $this->vyzadujOpravneni($uzivatel && $this->smiUpravitUzivatele($uzivatel));
+    }
+
     public function renderShow() {
+        $this->vyzadujOpravneniKClenovi();
         $this->computeTemplateParams();
     }
 
     public function actionSendPaymentScheduleEmail() {
+        $this->vyzadujOpravneniKClenovi();
         $uid = $this->getParameter('id');
 
         $uzivatel = $this->uzivatel->getUzivatel($uid);

@@ -263,21 +263,7 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->adresyline = null;
                 }
 
-                $seznamUzivatelu = [];
-                $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
-                foreach ($oblastiAktualnihoUzivatele as $oblast) {
-                    foreach ($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-                        // \Tracy\Debugger::barDump($ap->id);
-                        $apcko = $this->ap->getAP($ap->id);
-                        $subnety = $apcko->related('Subnet.Ap_id');
-                        $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
-                    }
-                }
-                // \Tracy\Debugger::barDump($seznamUzivatelu);
-
-                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
-                                                    || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
-                                                    || in_array($uid, $seznamUzivatelu);
+                $this->template->canViewOrEdit = $this->smiUpravitUzivatele($uzivatel);
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
 
                 $this->template->activaceVisible = false;
@@ -356,21 +342,7 @@ class UzivatelPresenter extends BasePresenter
 
     public function renderEdit() {
         if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-            $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-            $seznamUzivatelu = [];
-            $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
-            foreach ($oblastiAktualnihoUzivatele as $oblast) {
-                foreach ($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-                    // \Tracy\Debugger::barDump($ap->id);
-                    $apcko = $this->ap->getAP($ap->id);
-                    $subnety = $apcko->related('Subnet.Ap_id');
-                    $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
-                }
-            }
-
-            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
-                                                || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
-                                                || in_array($uzivatel->id, $seznamUzivatelu);
+            $this->template->canViewOrEdit = $this->smiUpravitUzivatele($uzivatel);
         } else {
             $this->template->canViewOrEdit = true;
         }
@@ -584,6 +556,12 @@ class UzivatelPresenter extends BasePresenter
     }
 
     public function uzivatelFormSucceded($form, $values) {
+        // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
+        if (!empty($values->id)) {
+            $uzivatel = $this->uzivatel->getUzivatel($values->id);
+            $this->vyzadujOpravneni($uzivatel && $this->smiUpravitUzivatele($uzivatel));
+        }
+
         $log = array();
         $idUzivatele = $values->id;
         $ips = $values->ip;
