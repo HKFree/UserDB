@@ -23,7 +23,7 @@ class CestneClenstviUzivatele extends Table
     }
 
     public function getListCCOfAP($apID) {
-        return $this->getConnection()->query('SELECT CC.id,CC.Uzivatel_id FROM CestneClenstviUzivatele CC JOIN Uzivatel U ON CC.Uzivatel_id=U.id WHERE U.Ap_id='.$apID.' AND CC.schvaleno=1 AND CC.plati_od < NOW() AND (CC.plati_do IS NULL OR CC.plati_do > NOW())')
+        return $this->getConnection()->query('SELECT CC.id,CC.Uzivatel_id FROM CestneClenstviUzivatele CC JOIN Uzivatel U ON CC.Uzivatel_id=U.id WHERE U.Ap_id = ? AND CC.schvaleno=1 AND CC.plati_od < NOW() AND (CC.plati_do IS NULL OR CC.plati_do > NOW())', $apID)
                         ->fetchPairs('id', 'Uzivatel_id');
     }
 

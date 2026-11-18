@@ -23,7 +23,7 @@ LEFT JOIN Ap A ON U.Ap_id = A.id
 LEFT JOIN Oblast O ON A.Oblast_id = O.id
 LEFT JOIN SpravceOblasti S ON S.Oblast_id = O.id
 LEFT JOIN Uzivatel SO ON SO.id = S.Uzivatel_id
-WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.id ='.$id_uzivatel)
+WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.id = ?', $id_uzivatel)
                         ->fetchAll();
     }
 
@@ -54,9 +54,9 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             from Uzivatel U
             LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id
             LEFT JOIN Ap A on A.id=U.Ap_id
-            where A.id!=$referentialApId
-            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - $cidr))) = inet_aton('$network')
-            order by U.id")->fetchPairs('id', 'id');
+            where A.id != ?
+            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)
+            order by U.id", $referentialApId, (int) $cidr, $network)->fetchPairs('id', 'id');
 
             if (!empty($userids)) {
                 //\Tracy\Debugger::barDump($userids);
@@ -82,9 +82,9 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             from Uzivatel U
             LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id
             LEFT JOIN Ap A on A.id=U.Ap_id
-            where A.id!=$referentialApId
-            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - $cidr))) = inet_aton('$network')
-            order by U.id")->fetchPairs('id', 'id');
+            where A.id != ?
+            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)
+            order by U.id", $referentialApId, (int) $cidr, $network)->fetchPairs('id', 'id');
 
             if (!empty($userids)) {
                 //\Tracy\Debugger::barDump($userids);
@@ -115,9 +115,9 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         $completeMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
                                             LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id
                                             WHERE (
-                                            Uzivatel.id = '$search'
-                                            OR  IPAdresa.ip_adresa = '$search'
-                                            ) LIMIT 1")->fetchField();
+                                            Uzivatel.id = ?
+                                            OR  IPAdresa.ip_adresa = ?
+                                            ) LIMIT 1", $search, $search)->fetchField();
         if (!empty($completeMatchId)) {
             return ($this->findBy(array('id' => $completeMatchId)));
         }
@@ -125,28 +125,29 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         $partialMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
                                             LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id
                                             WHERE (
-                                            Uzivatel.id LIKE '$search%'
-                                            ) LIMIT 1")->fetchField();
+                                            Uzivatel.id LIKE ?
+                                            ) LIMIT 1", $search . '%')->fetchField();
         if (!empty($partialMatchId)) {
             return ($this->findBy(array('id' => $partialMatchId)));
         }
 
         if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV') && !$Uzivatel->isInRole('KONTROLA') && !$Uzivatel->isInRole('EXTSUPPORT')) {
             $uid = $Uzivatel->getIdentity()->getId();
-            $secureMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
+            $like = '%' . $search . '%';
+            $secureMatchId = $this->getConnection()->queryArgs("SELECT Uzivatel.id FROM Uzivatel
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id
                                             JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
                                             WHERE (
-                                            Uzivatel.telefon LIKE '%$search%'
-                                            OR Uzivatel.email LIKE '%$search%'
-                                            OR Uzivatel.email2 LIKE '%$search%'
-                                            OR CONVERT(Uzivatel.nick USING utf8) LIKE '%$search%'
-                                            OR CONVERT(Uzivatel.jmeno USING utf8) LIKE '%$search%'
-                                            OR CONVERT(Uzivatel.prijmeni USING utf8) LIKE '%$search%'
-                                            OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE '%$search%'
-                                            OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE '%$search%'
-                                            OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE '%$search%'
-                                            ) AND (SpravceOblasti.Uzivatel_id = $uid AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))")->fetchPairs('id', 'id');
+                                            Uzivatel.telefon LIKE ?
+                                            OR Uzivatel.email LIKE ?
+                                            OR Uzivatel.email2 LIKE ?
+                                            OR CONVERT(Uzivatel.nick USING utf8) LIKE ?
+                                            OR CONVERT(Uzivatel.jmeno USING utf8) LIKE ?
+                                            OR CONVERT(Uzivatel.prijmeni USING utf8) LIKE ?
+                                            OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
+                                            OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
+                                            OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE ?
+                                            ) AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...array_fill(0, 9, $like), $uid])->fetchPairs('id', 'id');
 
             if (!empty($secureMatchId)) {
                 //\Tracy\Debugger::barDump($secureMatchId);
