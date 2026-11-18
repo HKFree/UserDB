@@ -40,8 +40,8 @@ class AP extends Table
         $completeMatchId = $this->getConnection()->query("SELECT Ap.id FROM Ap
                                             LEFT JOIN  IPAdresa ON Ap.id = IPAdresa.Ap_id
                                             WHERE (
-                                            IPAdresa.ip_adresa = '$search'
-                                            ) LIMIT 1")->fetchField();
+                                            IPAdresa.ip_adresa = ?
+                                            ) LIMIT 1", $search)->fetchField();
         if (!empty($completeMatchId)) {
             return ($this->findBy(array('id' => $completeMatchId)));
         }
