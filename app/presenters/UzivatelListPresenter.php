@@ -46,7 +46,7 @@ class UzivatelListPresenter extends BasePresenter
             $this->redirect("Homepage:default", array("id" => null)); // a přesměrujeme
         }
 
-        $this->template->money = $this->getParameter("money", false);
+        $this->template->money = $this->getParameter("money", false) && $this->template->canViewOrEdit; // přepínač jen s oprávněním
         $this->template->fullnotes = $this->getParameter("fullnotes", false);
     }
 
@@ -64,7 +64,7 @@ class UzivatelListPresenter extends BasePresenter
         }
 
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-        $this->template->money = $this->getParameter("money", false);
+        $this->template->money = $this->getParameter("money", false) && $this->template->canViewOrEdit; // přepínač jen s oprávněním
         $this->template->search = $this->getParameter('search', false);
     }
 

@@ -19,10 +19,12 @@ class SpravaMailuPresenter extends SpravaPresenter
     }
 
     public function renderMailinglist() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
+        $this->template->canViewOrEdit = $this->jeVV();
     }
 
     protected function createComponentMailinglistGrid($name) {
+        $this->vyzadujOpravneni($this->jeVV()); // i export a stránkování gridu
+
         $grid = new \Grido\Grid($this, $name);
         $grid->translator->setLang('cs');
         $grid->setExport('mailinglist_export');
