@@ -16,4 +16,5 @@ Pravidla platí pro všechny vývojáře a agenty: změny se připravují pouze 
 - Větev `testing` nepoužívat: existující `deploy-userdb-test.yml` spouští vzdálený deploy při PR/push do této větve.
 - Test runner i jeho podprocesy musí používat PHP z projektového Flox prostředí.
 - Instalace Floxu v CI sama neaktivuje prostředí. Při úpravách víceřádkového kroku zachovat aktivaci pro celý skript a přepínače shellu `--noprofile --norc -e -o pipefail`, aby chyba příkazu či pipeline nezůstala skrytá.
+- Při aktualizaci pinovaných GitHub Actions ověřovat i `runs.using` v jejich `action.yml`: zastaralý Node runtime vyvolává varování nezávisle na verzi PHP ve Floxu.
 - Testovací bootstrap načítá lokální konfiguraci a sdílí aplikační `temp`. Ověřovat ve vlastním checkoutu s prázdným `config.local.neon` a syntetickými DB proměnnými, bez převzetí skutečných přístupů. Existující konfiguraci ani `.env` nepřepisovat.
