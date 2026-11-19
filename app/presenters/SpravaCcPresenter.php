@@ -149,13 +149,15 @@ class SpravaCcPresenter extends SpravaPresenter
                     $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
 
                     $stav = $pravo->schvaleno == 1 ? "schválena" : "zamítnuta";
+                    $platiOd = $pravo->plati_od->format('d.m.Y');
+                    $platiDo = $pravo->plati_do?->format('d.m.Y') ?? 'neomezeně';
 
                     $mail = new Message();
                     $mail->setFrom('UserDB <userdb@hkfree.org>')
                         ->addTo($navrhovatel->email)
                         ->addTo($schvaleny->email)
                         ->setSubject('Žádost o čestné členství')
-                        ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $pravo->plati_od - $pravo->plati_do.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
+                        ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $platiOd - $platiDo.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
 
                     $this->mailer->send($mail);
                 }
