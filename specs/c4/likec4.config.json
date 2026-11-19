@@ -1,0 +1,12 @@
+{
+  "$schema": "https://likec4.dev/schemas/config.json",
+  "name": "userdb",
+  "title": "UserDB – architektura",
+  "styles": {
+    "defaults": {
+      "relationship": {
+        "line": "solid"
+      }
+    }
+  }
+}

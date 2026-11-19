@@ -1,0 +1,395 @@
+// C4 model systému UserDB (LikeC4).
+//
+// Odvozeno z kódu ve stavu commitu f7f37e5 (origin/master). Každý prvek a vazba má
+// oporu v kódu; prvky s tagem #usudek a vazby druhu `usudek` z kódu plynou jen nepřímo.
+// Slovní popis a vykreslené diagramy: ../architektura-c4.md
+model {
+
+  // ------------------------------------------------------------------ lidé
+  spravce = osoba "Správce" {
+    description "Uživatel s rolí (SO, ZSO, VV, TECH, KONTROLA, EXTSUPPORT a další). Spravuje uživatele, síť, platby a smlouvy."
+  }
+  clen = osoba "Člen / účastník" {
+    description "Uživatel bez role. Potvrzuje e-mail, podepisuje smlouvu, platí převodem, dostává e-maily a SMS."
+  }
+
+  // ------------------------------------------------------- okolní systémy
+  shibboleth = externiSystem "Shibboleth" {
+    description "Jednotné přihlášení. Předává aplikaci UID, nick a heslo přihlášeného v hlavičkách požadavku."
+  }
+  digisign = externiSystem "DigiSign" {
+    description "Služba elektronického podpisu: obálky se smlouvami, výzvy k podpisu, webhooky."
+  }
+  fioBanka = externiSystem "Fio banka" {
+    description "Bankovní účet družstva; API s pohyby na účtu."
+  }
+  sledovaniTv = externiSystem "SledovaniTV" {
+    description "Poskytovatel televize; partnerské API pro aktivaci, deaktivaci a report využití."
+  }
+  maternaMex = externiSystem "Materna MEX" {
+    description "SMS brána."
+  }
+  smtpServer = externiSystem "SMTP server" {
+    description "smtp.hkfree.org; odesílání e-mailů."
+  }
+  routerOs = externiSystem "Zařízení RouterOS" {
+    description "Síťové prvky na AP s povoleným API."
+  }
+  sojka = externiSystem "Sojka" {
+    description "Server s pingerem a Grafanou."
+  }
+  influxDb = externiSystem "InfluxDB" {
+    description "Časové řady síly signálu bezdrátových stanic."
+  }
+  ids = externiSystem "IDS" {
+    description "Intrusion Detection System; bezpečnostní události v Elasticsearch."
+  }
+  vnejsiSkener = externiSystem "Vnější skener portů" {
+    description "Pravidelný sken veřejných IP adres zvenčí; výsledek jako textový soubor."
+  }
+  igw = externiSystem "IGW" {
+    description "Brána, která umí sdělit, zda je IP adresa povolená do internetu."
+  }
+  googleMaps = externiSystem "Google Maps Platform" {
+    description "Geocoding API a mapové podklady (JavaScript API)."
+  }
+  ruian = externiSystem "RÚIAN (ČÚZK)" {
+    description "Vyhledávací služba nad adresními místy; záložní geokódování."
+  }
+  apiKlienti = externiSystem "Klienti REST API" {
+    #usudek
+    description "Systémy sítě, které čtou data z UserDB. Podle názvů presenterů: SmokePing, DeviceDB, Hlasys, monitoring, členská aplikace."
+  }
+  mimoRepozitar = externiSystem "Procesy mimo repozitář" {
+    #usudek
+    description "Měsíční automat strhávání příspěvků a generátory konfigurace sítě. Pracují přímo nad databází; v repozitáři nejsou."
+  }
+
+  // --------------------------------------------------------------- UserDB
+  userdb = system "UserDB" {
+    description "Evidence uživatelů, plateb, smluv a adresního plánu sítě hkfree.org."
+
+    aplikace = kontejner "Aplikace UserDB" {
+      description "Webové rozhraní pro správce, REST API, veřejné stránky, webhook a konzolové příkazy. Jeden obraz, jeden kód."
+      technology "PHP 8.2, Nette 3.2, Apache"
+
+      webUi = komponenta "Webové rozhraní správců" {
+        description "Presentery a šablony: uživatelé, konta, AP, subnety, IP adresy, role, čestná členství, štítky, nástroje správy."
+        technology "Nette presentery, Latte, Grido (app/presenters, app/templates)"
+      }
+      verejneStranky = komponenta "Veřejné stránky" {
+        description "Potvrzení e-mailu a zpětná vazba z kampaní; bez přihlášení."
+        technology "SelfServicePresenter"
+      }
+      restApi = komponenta "REST API" {
+        description "Čtecí a několik zápisových operací pro další systémy; přihlášení API klíčem."
+        technology "Nette presentery (app/ApiModule)"
+      }
+      webhook = komponenta "DigiSign webhook" {
+        description "Přijímá události obálek a promítá je do smluv a uživatelů."
+        technology "Samostatný PHP skript (www/digisign-webhook)"
+      }
+      konzole = komponenta "Konzolové příkazy" {
+        description "Migrace, geokódování adres, export Wewima do InfluxDB, generování smlouvy do DigiSign, odeslání SMS."
+        technology "Contributte Console (app/Console, bin/console)"
+      }
+      prihlaseni = komponenta "Přihlášení a role" {
+        description "Sestaví identitu z hlaviček Shibbolethu a platných rolí; pomocné funkce pro přístup k AP."
+        technology "Authenticator, HkfIdentity, BasePresenter, AP::canViewOrEdit*"
+      }
+      modely = komponenta "Datové modely" {
+        description "Třídy tabulek, pravidla aktivace konta, validace IP adres a subnetů."
+        technology "Nette Database Explorer (app/model)"
+      }
+      auditniLog = komponenta "Auditní log" {
+        description "Zápis změn po sloupcích a jejich zobrazení v historii."
+        technology "Model Log, komponenta LogTable"
+      }
+      smlouvy = komponenta "Smlouvy" {
+        description "Založení smlouvy, parametry a náhled PDF, odvozený stav smlouvy."
+        technology "RequestDruzstvoContract, GeneratorSmlouvy, SmlouvaStavSluzba"
+      }
+      posta = komponenta "E-maily" {
+        description "Potvrzovací, notifikační a šablonové e-maily."
+        technology "MailService, Nette Mail"
+      }
+      sms = komponenta "SMS" {
+        description "Odesílání SMS na česká čísla."
+        technology "Komunikace, MexSmsSender"
+      }
+      sifrovani = komponenta "Šifrování" {
+        description "Šifrování hesel zařízení a jednorázových kódů."
+        technology "CryptoSluzba (defuse/php-encryption)"
+      }
+      wewimo = komponenta "Wewimo" {
+        description "Čte bezdrátové klienty ze zařízení na AP a páruje je s evidencí."
+        technology "Model Wewimo (pear2/net_routeros)"
+      }
+      stavSite = komponenta "Stav sítě" {
+        description "Vyhodnocuje odezvu a ztrátovost IP adres AP."
+        technology "Modely Status, Sojka"
+      }
+      idsKonektor = komponenta "IDS konektor" {
+        description "Načítá bezpečnostní události k IP adresám."
+        technology "IdsConnector (Guzzle)"
+      }
+      vnejsiSken = komponenta "Vnější sken" {
+        description "Stahuje a zpracovává výsledek skenu portů."
+        technology "Model VnejsiScanner (Guzzle)"
+      }
+
+      // ------------------------------------------- vazby uvnitř aplikace
+      webUi -> prihlaseni "Přihlašuje uživatele při každém požadavku"
+      webUi -> modely "Čte a zapisuje data"
+      webUi -> auditniLog "Zapisuje změny, zobrazuje historii"
+      webUi -> smlouvy "Žádá o novou smlouvu a o náhled"
+      webUi -> posta "Odesílá e-maily"
+      webUi -> sms "Odesílá SMS"
+      webUi -> sifrovani "Šifruje a dešifruje hesla zařízení"
+      webUi -> wewimo "Zobrazuje bezdrátové klienty"
+      webUi -> stavSite "Zobrazuje stav AP a odezvu adres"
+      webUi -> idsKonektor "Zobrazuje události z IDS"
+      webUi -> vnejsiSken "Zobrazuje otevřené porty"
+
+      verejneStranky -> modely "Ověřuje odkaz, zapisuje potvrzení"
+      verejneStranky -> smlouvy "Po potvrzení e-mailu žádá o smlouvu"
+      verejneStranky -> sifrovani "Ověřuje jednorázový kód"
+
+      restApi -> modely "Čte data, ověřuje API klíče a tokeny"
+      restApi -> auditniLog "Loguje změnu přístupových údajů"
+      restApi -> sifrovani "Šifruje a dešifruje hesla zařízení"
+      restApi -> wewimo "Vrací bezdrátové klienty AP"
+      restApi -> stavSite "Vrací stav AP"
+      restApi -> idsKonektor "Vrací podezřelé IP adresy"
+      restApi -> sms "Odesílá SMS uživateli"
+
+      webhook -> modely "Zapisuje podpisy, mění vztah uživatele k družstvu a spolku"
+
+      smlouvy -> modely "Zakládá smlouvu, čte uživatele a IP adresy"
+      smlouvy -> konzole "Spouští generování smlouvy na pozadí" {
+        technology "Proces (proc_open)"
+      }
+
+      konzole -> modely "Čte a zapisuje data, spouští migrace"
+      konzole -> smlouvy "Sestavuje parametry a PDF smlouvy"
+      konzole -> wewimo "Načítá signály stanic"
+      konzole -> sms "Odesílá SMS"
+
+      wewimo -> modely "Čte IP adresy AP, zapisuje poslední viděné SSID"
+      wewimo -> sifrovani "Dešifruje hesla zařízení"
+      stavSite -> modely "Čte IP adresy AP"
+      vnejsiSken -> modely "Dohledává oblast a uživatele k IP adrese"
+    }
+
+    databaze = databaze "Databáze UserDB" {
+      description "Uživatelé, konta, platby, smlouvy, adresní plán, role, auditní log. Sdílí ji aplikace i satelitní komponenty."
+      technology "MariaDB"
+    }
+    ulozisteSmluv = uloziste "Úložiště smluv" {
+      description "Vygenerovaná a podepsaná PDF smluv (FILE_STORAGE_PATH)."
+      technology "Souborový systém"
+    }
+    pdfGenerator = kontejner "pdf-generator" {
+      description "Vyplní šablonu účastnické smlouvy a převede ji do PDF."
+      technology "PHP 8.2, Apache, LibreOffice"
+    }
+    fio2userdb = kontejner "fio2userdb" {
+      description "Stahuje pohyby z banky a připisuje platby na konta podle variabilního symbolu."
+      technology "Perl, cron"
+    }
+    stvConnector = kontejner "stvConnector" {
+      description "Aktivuje a deaktivuje televizi u poskytovatele, stahuje report využití."
+      technology "Python 3, cron"
+    }
+    ucetniReporty = kontejner "ucetniReporty" {
+      description "Měsíční report spotřebovaných kreditů ve formátu XLSX."
+      technology "Python 3, cron"
+    }
+
+    // ------------------------------- vazby aplikace na ostatní kontejnery
+    aplikace.prihlaseni -> databaze "Čte platné role" {
+      technology "SQL"
+    }
+    aplikace.modely -> databaze "Čte a zapisuje" {
+      technology "SQL (PDO)"
+    }
+    aplikace.auditniLog -> databaze "Čte a zapisuje tabulku Log" {
+      technology "SQL"
+    }
+    aplikace.webUi -> ulozisteSmluv "Čte podepsaná PDF ke stažení" {
+      technology "Souborový systém"
+    }
+    aplikace.webhook -> ulozisteSmluv "Ukládá podepsané PDF" {
+      technology "Souborový systém"
+    }
+    aplikace.konzole -> ulozisteSmluv "Ukládá vygenerované PDF" {
+      technology "Souborový systém"
+    }
+    aplikace.smlouvy -> pdfGenerator "Žádá o vyplněné PDF" {
+      technology "HTTP GET"
+    }
+
+    // ----------------------------------- satelitní komponenty a databáze
+    fio2userdb -> databaze "Zapisuje platby a pohyby na kontech" {
+      technology "SQL (DBI)"
+    }
+    stvConnector -> databaze "Čte aktivní období, zapisuje report, štítky a bezplatná období" {
+      technology "SQL"
+    }
+    ucetniReporty -> databaze "Čte pohyby na kontech" {
+      technology "SQL"
+    }
+  }
+
+  // -------------------------------------------------- vazby: lidé a okolí
+  spravce -> shibboleth "Přihlašuje se" {
+    technology "HTTPS"
+  }
+  shibboleth -> userdb.aplikace.prihlaseni "Předává identitu přihlášeného" {
+    technology "HTTP hlavičky UID, givenName, initials"
+  }
+  spravce -> userdb.aplikace.webUi "Spravuje uživatele, síť, platby a smlouvy" {
+    technology "HTTPS"
+  }
+  clen -> userdb.aplikace.verejneStranky "Otevírá odkazy z e-mailů" {
+    technology "HTTPS"
+  }
+  clen -> digisign "Podepisuje účastnickou smlouvu" {
+    technology "HTTPS"
+  }
+  clen -> fioBanka "Platí převodem, variabilní symbol = UID"
+  digisign -> clen "Posílá výzvu k podpisu" {
+    technology "E-mail"
+  }
+  smtpServer -> clen "Doručuje e-maily"
+  maternaMex -> clen "Doručuje SMS"
+  apiKlienti -[usudek]-> userdb.aplikace.restApi "Čtou data, ukládají přístupové údaje zařízení, posílají SMS" {
+    technology "HTTPS, JSON, HTTP Basic (API klíč)"
+  }
+  digisign -> userdb.aplikace.webhook "Oznamuje události obálek" {
+    technology "HTTPS POST, JSON"
+  }
+
+  // ------------------------------------- vazby: aplikace na okolní systémy
+  userdb.aplikace.webUi -> googleMaps "Vkládá mapu uživatelů" {
+    technology "JavaScript API v prohlížeči"
+  }
+  userdb.aplikace.webhook -> digisign "Ověřuje stav obálky, stahuje podepsané PDF" {
+    technology "HTTPS (SDK)"
+  }
+  userdb.aplikace.konzole -> digisign "Zakládá obálku, nahrává PDF, odesílá k podpisu" {
+    technology "HTTPS (SDK)"
+  }
+  userdb.aplikace.konzole -> influxDb "Zapisuje signály stanic" {
+    technology "InfluxDB (influxdb-php)"
+  }
+  userdb.aplikace.konzole -> googleMaps "Geokóduje adresy uživatelů" {
+    technology "HTTPS"
+  }
+  userdb.aplikace.konzole -> ruian "Záložní geokódování" {
+    technology "HTTP"
+  }
+  userdb.aplikace.wewimo -> routerOs "Čte rozhraní, sousedy a registrační tabulku" {
+    technology "RouterOS API"
+  }
+  userdb.aplikace.stavSite -> sojka "Zjišťuje odezvu a ztrátovost" {
+    technology "HTTP POST, JSON"
+  }
+  userdb.aplikace.idsKonektor -> ids "Přihlašuje se a dotazuje události" {
+    technology "HTTPS"
+  }
+  userdb.aplikace.vnejsiSken -> vnejsiSkener "Stahuje výsledek skenu" {
+    technology "HTTPS GET"
+  }
+  userdb.aplikace.posta -> smtpServer "Odesílá e-maily" {
+    technology "SMTP"
+  }
+  userdb.aplikace.sms -> maternaMex "Přihlašuje se a odesílá SMS" {
+    technology "HTTPS, JSON"
+  }
+  userdb.aplikace.modely -> igw "Ověřuje, zda je IP adresa povolená do internetu" {
+    technology "HTTP GET"
+  }
+
+  // ----------------------------- vazby: satelitní komponenty a okolí
+  userdb.fio2userdb -> fioBanka "Stahuje pohyby na účtu" {
+    technology "HTTPS GET (curl), token"
+  }
+  userdb.stvConnector -> sledovaniTv "Aktivuje, deaktivuje, stahuje report využití" {
+    technology "HTTPS GET"
+  }
+  userdb.ucetniReporty -> smtpServer "Odesílá report" {
+    technology "SMTP"
+  }
+  mimoRepozitar -[usudek]-> userdb.databaze "Čtou a zapisují přímo" {
+    technology "SQL"
+  }
+}
+
+// --------------------------------------------------------------- nasazení
+deployment {
+
+  // Podle docker-compose.yml.
+  vyvoj = prostredi "Vývoj" {
+    description "Služby z docker-compose.yml ve společné síti local-userdb-net."
+
+    pc = hostitel "Vývojářský počítač" {
+      technology "Docker Compose"
+
+      web = dockerKontejner "web" {
+        description "Port 10107; zdrojový kód připojen jako svazek."
+        technology "php:8.2-apache-bookworm"
+        instanceOf userdb.aplikace
+        instanceOf userdb.ulozisteSmluv
+      }
+      db = dockerKontejner "db" {
+        description "Port 10306."
+        technology "mariadb:10.1"
+        instanceOf userdb.databaze
+      }
+      pdf = dockerKontejner "pdf-generator" {
+        description "Port 10109."
+        technology "php:8.2-apache-bookworm, LibreOffice"
+        instanceOf userdb.pdfGenerator
+      }
+      stv = dockerKontejner "stv-connector" {
+        description "crond."
+        technology "alpine, Python 3"
+        instanceOf userdb.stvConnector
+      }
+      phpmyadmin = infrastruktura "phpMyAdmin" {
+        description "Správa databáze při vývoji. Port 10108."
+        technology "phpmyadmin/phpmyadmin"
+      }
+    }
+  }
+
+  // Podle git-hooks/post-receive.sample; jen část doložená v repozitáři.
+  produkce = prostredi "Produkce" {
+    description "Nasazení příkazem git push; hook post-receive sestaví obraz a vymění kontejner."
+
+    server = hostitel "Server userdb.hkfree.org" {
+      technology "Linux, Docker"
+
+      proxy = infrastruktura "Reverzní proxy se Shibbolethem" {
+        #usudek
+        description "V repozitáři není. Plyne z toho, že kontejner naslouchá jen na 127.0.0.1:8080 a aplikace čte identitu z hlaviček."
+        technology "Webový server"
+      }
+      kontejnerUserdb = dockerKontejner "userdb" {
+        description "Obraz userdb:<hash commitu>; port 127.0.0.1:8080."
+        technology "php:8.2-apache-bookworm"
+        aplikace = instanceOf userdb.aplikace
+      }
+    }
+    dbServer = hostitel "Databázový server" {
+      description "Adresa v proměnné USERDB_DB_HOST."
+      technology "MariaDB / MySQL"
+      instanceOf userdb.databaze
+    }
+
+    server.proxy -[usudek]-> server.kontejnerUserdb.aplikace "Předává požadavky a hlavičky s identitou" {
+      technology "HTTP"
+    }
+  }
+}

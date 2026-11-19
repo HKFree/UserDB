@@ -1,0 +1,93 @@
+// Slovník modelu C4 systému UserDB: druhy prvků, vazeb a uzlů nasazení.
+specification {
+
+  // Prvek nebo vazba, které z kódu plynou jen nepřímo.
+  tag usudek
+
+  element osoba {
+    notation "Osoba"
+    style {
+      shape person
+      color indigo
+    }
+  }
+
+  element system {
+    notation "Systém UserDB"
+    style {
+      color primary
+    }
+  }
+
+  element externiSystem {
+    notation "Okolní systém"
+    style {
+      color slate
+    }
+  }
+
+  element kontejner {
+    notation "Kontejner"
+    style {
+      color primary
+    }
+  }
+
+  element databaze {
+    notation "Databáze"
+    style {
+      shape storage
+      color primary
+    }
+  }
+
+  element uloziste {
+    notation "Souborové úložiště"
+    style {
+      shape cylinder
+      color primary
+    }
+  }
+
+  element komponenta {
+    notation "Komponenta"
+    style {
+      shape component
+      color sky
+    }
+  }
+
+  // Vazba, která není v kódu doložena přímo.
+  relationship usudek {
+    line dashed
+    color amber
+  }
+
+  deploymentNode prostredi {
+    notation "Prostředí"
+    style {
+      color gray
+    }
+  }
+
+  deploymentNode hostitel {
+    notation "Hostitel"
+    style {
+      color gray
+    }
+  }
+
+  deploymentNode dockerKontejner {
+    notation "Kontejner Dockeru"
+    style {
+      color gray
+    }
+  }
+
+  deploymentNode infrastruktura {
+    notation "Infrastruktura"
+    style {
+      color slate
+    }
+  }
+}

@@ -1,0 +1,103 @@
+// Pohledy na model: tři úrovně C4 a dvě nasazení.
+views {
+
+  // Prvky, které z kódu plynou jen nepřímo, jsou ve všech pohledech odlišené.
+  style element.tag = #usudek {
+    color muted
+    border dashed
+  }
+
+  view index {
+    title "Kontext"
+    description "Úroveň 1: UserDB, jeho uživatelé a okolní systémy."
+    include *
+    // Souhrnné popisky tam, kde jednu šipku tvoří více vazeb z nižších úrovní.
+    include userdb -> digisign with {
+      title "Zakládá obálky se smlouvami, ověřuje jejich stav, stahuje podepsaná PDF"
+      technology "HTTPS (SDK)"
+    }
+    include userdb -> smtpServer with {
+      title "Odesílá e-maily a účetní report"
+      technology "SMTP"
+    }
+    include userdb -> googleMaps with {
+      title "Geokóduje adresy, zobrazuje mapu uživatelů"
+      technology "HTTPS"
+    }
+    autoLayout LeftRight
+  }
+
+  view kontejnery of userdb {
+    title "Kontejnery"
+    description "Úroveň 2: samostatně běžící části UserDB."
+    include *
+    include userdb.aplikace -> userdb.databaze with {
+      title "Čte a zapisuje"
+      technology "SQL (PDO)"
+    }
+    include userdb.aplikace -> userdb.ulozisteSmluv with {
+      title "Ukládá a čte PDF smluv"
+      technology "Souborový systém"
+    }
+    include userdb.aplikace -> digisign with {
+      title "Zakládá obálky se smlouvami, ověřuje jejich stav, stahuje podepsaná PDF"
+      technology "HTTPS (SDK)"
+    }
+    include userdb.aplikace -> googleMaps with {
+      title "Geokóduje adresy, zobrazuje mapu uživatelů"
+      technology "HTTPS"
+    }
+    // Vazby mezi lidmi a okolními systémy, které se UserDB týkají nepřímo.
+    include spravce -> shibboleth
+    include clen <-> digisign
+    include clen -> fioBanka
+    include smtpServer -> clen
+    include maternaMex -> clen
+    autoLayout LeftRight
+  }
+
+  view komponenty of userdb.aplikace {
+    title "Komponenty aplikace"
+    description "Úroveň 3: vnitřní členění aplikace UserDB."
+    include *
+    // Hranice systému, aby bylo vidět, které sousední prvky patří k UserDB.
+    include userdb
+    // Vazby mezi lidmi a okolními systémy, které se UserDB týkají nepřímo.
+    include spravce -> shibboleth
+    include clen <-> digisign
+    include smtpServer -> clen
+    include maternaMex -> clen
+    autoLayout LeftRight
+  }
+
+  deployment view nasazeniVyvoj {
+    title "Nasazení – vývoj"
+    description "Vývojové prostředí podle docker-compose.yml."
+    include vyvoj.pc, vyvoj.pc.*, vyvoj.pc.**
+    include vyvoj.pc.web.aplikace -> vyvoj.pc.db.databaze with {
+      title "Čte a zapisuje"
+      technology "SQL (PDO)"
+    }
+    include vyvoj.pc.web.aplikace -> vyvoj.pc.web.ulozisteSmluv with {
+      title "Ukládá a čte PDF smluv"
+      technology "Souborový systém"
+    }
+    autoLayout LeftRight
+  }
+
+  deployment view nasazeniProdukce {
+    title "Nasazení – produkce"
+    description "Produkce podle git-hooks/post-receive.sample; jen část doložená v repozitáři."
+    include produkce.**
+    include produkce.server.kontejnerUserdb.aplikace -> produkce.dbServer.databaze with {
+      title "Čte a zapisuje"
+      technology "SQL (PDO)"
+    }
+    // Proxy v repozitáři není; její existence je úsudek.
+    style produkce.server.proxy {
+      color muted
+      border dashed
+    }
+    autoLayout LeftRight
+  }
+}
