@@ -465,7 +465,6 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
                 // ssid
-                $wewimoTag;
                 if ($wewimoLink) {
                     // SSID jako link do wewimo
                     $wewimoTag = $tr->create('td')->create('a')

@@ -88,7 +88,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         }
         $stavUctu = $u1->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
         if ($u1->kauce_mobil > 0) {
-            $this->template->u1money_bal = ($stavUctu - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
+            $this->template->u1money_bal = ($stavUctu - $u1->kauce_mobil) . ' (kauce: ' . $u1->kauce_mobil . ')';
         } else {
             $this->template->u1money_bal = $stavUctu;
         }
@@ -121,7 +121,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         }
         $stavUctu2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->sum('castka');
         if ($u2->kauce_mobil > 0) {
-            $this->template->u2money_bal = ($stavUctu2 - $uzivatel->kauce_mobil) . ' (kauce: ' . $uzivatel->kauce_mobil . ')';
+            $this->template->u2money_bal = ($stavUctu2 - $u2->kauce_mobil) . ' (kauce: ' . $u2->kauce_mobil . ')';
         } else {
             $this->template->u2money_bal = $stavUctu2;
         }

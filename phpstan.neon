@@ -1,0 +1,19 @@
+includes:
+    - vendor/phpstan/phpstan-nette/extension.neon
+
+parameters:
+    level: 0
+    phpVersion: 80200
+    tmpDir: temp/phpstan
+    fileExtensions:
+        - php
+        - phpt
+    paths:
+        - app
+        - bin/console
+        - bin/create-user.php
+        - tests
+        - www
+        - pdfGenerator/www
+    scanDirectories:
+        - lib/phpqrcode

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-require_once('../lib/phpqrcode/qrlib.php');
+require_once __DIR__ . '/../../lib/phpqrcode/qrlib.php';
 
 class QrCodeGenerator
 {

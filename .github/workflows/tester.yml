@@ -1,4 +1,4 @@
-name: Nette Tester
+name: PHP checks
 
 on:
   pull_request:
@@ -24,9 +24,10 @@ jobs:
       - uses: flox/install-flox-action@5bb9eaaffbeaa699a8251a1ae21ecf4c8e0e37d4 # v2.7.0
         with:
           disable-metrics: true
-      - name: Install dependencies and run Nette Tester
+      - name: Install dependencies, run Nette Tester and PHPStan
         shell: flox activate -- bash --noprofile --norc -e -o pipefail {0}
         run: |
           composer install --no-interaction --prefer-dist --no-progress
           test -e app/config/config.local.neon || touch app/config/config.local.neon
           vendor/bin/tester -C tests
+          vendor/bin/phpstan analyse --no-progress --memory-limit=512M

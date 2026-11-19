@@ -43,9 +43,12 @@ test -e app/config/config.local.neon || touch app/config/config.local.neon
 export USERDB_DB_HOST=127.0.0.1 USERDB_DB_NAME=userdb_test
 export USERDB_DB_USERNAME=userdb_test USERDB_DB_PASSWORD=test-only
 flox activate -- vendor/bin/tester -C tests
+flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
 ```
 
-The bootstrap reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. No database or Docker is needed for the current `ExampleTest.phpt`: it compiles DI and checks `Assert::true(true)`. This demonstrates dependency installation and CI execution, not application coverage.
+The bootstrap reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. The tests run without a database or Docker. `ExampleTest.phpt` compiles DI and checks `Assert::true(true)`; the other tests cover regressions in downloads, tag filtering, SSID rendering, QR library loading and user merge balances. This is limited regression coverage, not a full application test suite.
+
+PHPStan runs at **level 0**, with the Nette extension and no baseline or ignored errors. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
 CI follows the [official Flox CI/CD tutorial](https://flox.dev/docs/tutorials/ci-cd): install Flox and run the same commands against the committed environment and lockfile, without FloxHub credentials.
 
