@@ -64,7 +64,8 @@ class UzivatelListPresenter extends BasePresenter
         }
 
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-        $this->template->money = $this->getParameter("money", false) && $this->template->canViewOrEdit; // přepínač jen s oprávněním
+        // režim money se řídí stejnou podmínkou jako grid (UzivatelListGrid pouští i EXTSUPPORT)
+        $this->template->money = $this->getParameter("money", false) && ($this->getUser()->isInRole('EXTSUPPORT') || $this->template->canViewOrEdit);
         $this->template->search = $this->getParameter('search', false);
     }
 
