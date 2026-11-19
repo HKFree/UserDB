@@ -1,0 +1,32 @@
+name: Nette Tester
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      USERDB_DB_HOST: 127.0.0.1
+      USERDB_DB_NAME: userdb_test
+      USERDB_DB_USERNAME: userdb_test
+      USERDB_DB_PASSWORD: test-only
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: flox/install-flox-action@5bb9eaaffbeaa699a8251a1ae21ecf4c8e0e37d4 # v2.7.0
+        with:
+          disable-metrics: true
+      - name: Install dependencies and run Nette Tester
+        shell: flox activate -- bash --noprofile --norc -e -o pipefail {0}
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          test -e app/config/config.local.neon || touch app/config/config.local.neon
+          vendor/bin/tester -C tests

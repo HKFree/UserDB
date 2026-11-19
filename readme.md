@@ -21,6 +21,33 @@ php bin/console migrations:continue
 
 ## Development
 
+### Tests with Flox
+
+Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2 and Composer for Apple Silicon macOS and x86_64 Linux, including CI.
+
+Check availability with `flox --version`. If Flox is missing, install the current release:
+
+```sh
+curl -fsSL https://get.flox.dev | sh
+flox --version
+```
+
+See the [installation instructions](https://flox.dev/docs/install-flox/) for platform-specific options and the [Flox in 5 minutes tutorial](https://flox.dev/docs/flox-5-minutes) for an introduction.
+
+From the root of a fresh checkout without real credentials, use the committed environment:
+
+```sh
+flox activate -- composer install --no-interaction --prefer-dist --no-progress
+test -e app/config/config.local.neon || touch app/config/config.local.neon
+export USERDB_DB_HOST=127.0.0.1 USERDB_DB_NAME=userdb_test
+export USERDB_DB_USERNAME=userdb_test USERDB_DB_PASSWORD=test-only
+flox activate -- vendor/bin/tester -C tests
+```
+
+The bootstrap reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. No database or Docker is needed for the current `ExampleTest.phpt`: it compiles DI and checks `Assert::true(true)`. This demonstrates dependency installation and CI execution, not application coverage.
+
+CI follows the [official Flox CI/CD tutorial](https://flox.dev/docs/tutorials/ci-cd): install Flox and run the same commands against the committed environment and lockfile, without FloxHub credentials.
+
 ### Editor
 
 Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig.org/#download)

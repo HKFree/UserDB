@@ -1,0 +1,142 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "schema-version": "1.19.0",
+    "install": {
+      "composer": {
+        "pkg-path": "php82Packages.composer"
+      },
+      "php": {
+        "pkg-path": "php82"
+      }
+    },
+    "options": {
+      "systems": [
+        "aarch64-darwin",
+        "x86_64-linux"
+      ]
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "php82Packages.composer",
+      "broken": false,
+      "derivation": "/nix/store/6pxwjwb8bwcsd716f3s5xv0hax3d82ld-composer-2.10.3.drv",
+      "description": "Dependency Manager for PHP",
+      "install_id": "composer",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "composer-2.10.3",
+      "pname": "composer",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T05:50:29.033465Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "2.10.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/qbzn7rw4gnk0n8cyr1s0r2d6fsyqs12j-composer-2.10.3"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82Packages.composer",
+      "broken": false,
+      "derivation": "/nix/store/l1w0c56y2m91pvjpdsyb1ir873yr4chk-composer-2.10.3.drv",
+      "description": "Dependency Manager for PHP",
+      "install_id": "composer",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "composer-2.10.3",
+      "pname": "composer",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T07:05:52.951578Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "2.10.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/7hf858j4k1y1l7a0dw8yhkqhx403dbgn-composer-2.10.3"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82",
+      "broken": false,
+      "derivation": "/nix/store/ja8asgx885ipfnn3bjn3kjyz5vwyp31z-php-with-extensions-8.2.34.drv",
+      "description": "HTML-embedded scripting language",
+      "install_id": "php",
+      "license": "PHP-3.01",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "php-with-extensions-8.2.34",
+      "pname": "php82",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T05:50:29.033109Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "8.2.34",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/p2fyg8khnl37d6gdz4yl7x3mgfdlnb2z-php-with-extensions-8.2.34"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82",
+      "broken": false,
+      "derivation": "/nix/store/m7ggaxn5zk7q71zal32ix6vmwk48fjq5-php-with-extensions-8.2.34.drv",
+      "description": "HTML-embedded scripting language",
+      "install_id": "php",
+      "license": "PHP-3.01",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "php-with-extensions-8.2.34",
+      "pname": "php82",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T07:05:52.951162Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "8.2.34",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/8icsnkczhxfiy93659q90cbhrnz918rr-php-with-extensions-8.2.34"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}

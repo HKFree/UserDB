@@ -1,0 +1,8 @@
+schema-version = "1.19.0"
+
+[install]
+php.pkg-path = "php82"
+composer.pkg-path = "php82Packages.composer"
+
+[options]
+systems = ["aarch64-darwin", "x86_64-linux"]
