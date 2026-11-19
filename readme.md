@@ -4,9 +4,10 @@ Powerful [HKFree.org](http://www.hkfree.org) user and IP management system
 Developed by powerful team - Evil, ZitnyP, Bkralik & pavkriz
 
 ## Before you begin
- - install PHP 7.2
- - install https://getcomposer.org/
- - install https://www.docker.com/get-started
+
+- PHP **8.2.x** is required (`~8.2.0` in `composer.json`).
+- Install [Flox](https://flox.dev/docs/install-flox/). The project environment provides PHP 8.2 and Composer; see [Tests with Flox](#tests-with-flox) for setup. Run `flox activate` from the repository root before using the local PHP and Composer commands below.
+- Install [Docker](https://www.docker.com/get-started) for the Docker Compose setup described below. The test workflow runs directly in Flox.
 
 ## Installation
 
@@ -56,7 +57,7 @@ Please use [editor or IDE that obeys .editorconfig settings](http://editorconfig
 
 To activate formatting in VSCode, install extension "[php cs fixer](https://marketplace.visualstudio.com/items?itemName=junstyle.php-cs-fixer)". The extension will obey the rules set in `.vscode/settings.json` and `.php-cs-fixer.dist.php`. Formatting will be done on every filesave.
 
-Windows users: install PHP (8.3) and add to PATH, install composer globally, install package php-cs-fixer globally
+Configure the formatter to use PHP 8.2. PHP CS Fixer is included in the project's Composer development dependencies; its CLI is available through `flox activate -- vendor/bin/php-cs-fixer`.
 
 ### Run locally
 
