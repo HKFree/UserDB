@@ -6,6 +6,18 @@ composer.pkg-path = "php82Packages.composer"
 mariadb.pkg-path = "mariadb_1011"
 mariadb.pkg-group = "mariadb"
 mariadb.version = "10.11.19"
+libreoffice-macos.pkg-path = "libreoffice-bin"
+libreoffice-macos.pkg-group = "pdf"
+libreoffice-macos.systems = ["aarch64-darwin"]
+libreoffice-linux.pkg-path = "libreoffice"
+libreoffice-linux.pkg-group = "pdf"
+libreoffice-linux.systems = ["x86_64-linux"]
+zip.pkg-path = "zip"
+zip.pkg-group = "pdf"
+unzip.pkg-path = "unzip"
+unzip.pkg-group = "pdf"
+poppler.pkg-path = "poppler-utils"
+poppler.pkg-group = "pdf"
 
 [options]
 systems = ["aarch64-darwin", "x86_64-linux"]
@@ -14,6 +26,13 @@ systems = ["aarch64-darwin", "x86_64-linux"]
 on-activate = '''
 socket_id=$(php -r 'echo substr(hash("sha256", getenv("FLOX_ENV_CACHE")), 0, 20);')
 export USERDB_MARIADB_SOCKET="/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock"
+if [ -z "${USERDB_LIBREOFFICE:-}" ]; then
+  if [ -d "$FLOX_ENV/Applications/LibreOffice.app" ]; then
+    export USERDB_LIBREOFFICE="$FLOX_ENV/Applications/LibreOffice.app/Contents/MacOS/soffice"
+  else
+    export USERDB_LIBREOFFICE="$FLOX_ENV/bin/libreoffice"
+  fi
+fi
 '''
 
 [services.mariadb]

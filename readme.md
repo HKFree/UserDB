@@ -24,7 +24,7 @@ php bin/console migrations:continue
 
 ### Tests with Flox
 
-Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2, Composer and MariaDB 10.11.19 for Apple Silicon macOS and x86_64 Linux, including CI.
+Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2, Composer, MariaDB 10.11.19 and LibreOffice for Apple Silicon macOS and x86_64 Linux, including CI.
 
 Check availability with `flox --version`. If Flox is missing, install the current release:
 
@@ -48,13 +48,13 @@ flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
 
 The DI smoke test reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. `-s` starts the local MariaDB service. The database test uses its own restricted `userdb_test` account and database, ignoring application credentials and local configuration. It checks tag writes, reads, updates, area filtering, Czech text, unique and foreign-key constraints, and the server's SQL mode. Its minimal schema is in `tests/fixtures/stitek.sql`; inserted data is rolled back after each run. A missing database fails the test instead of skipping it.
 
-The remaining tests cover DI compilation, downloads, SSID rendering, QR library loading, user merge balances and local mail capture. This is limited regression coverage, not a full application test suite. Docker is not needed.
+The remaining tests cover DI compilation, downloads, SSID rendering, QR generation, user merge balances and local mail capture. The PDF test converts the actual contract template using LibreOffice and checks Czech text, empty optional fields and cleanup after conversion errors. This is limited regression coverage, not a full application test suite. Docker is not needed.
 
 PHPStan runs at **level 0**, with the Nette extension and no baseline or ignored errors. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
 CI follows the [official Flox CI/CD tutorial](https://flox.dev/docs/tutorials/ci-cd): install Flox and run the same commands against the committed environment and lockfile, without FloxHub credentials.
 
-### Local web and database with Flox
+### Local web, database and PDF with Flox
 
 Each worktree has its own MariaDB data under `.flox/cache/mariadb`, private Unix socket, development database, encryption key, session storage and session cookie name. MariaDB opens no TCP port. Its SQL mode matches the supplied server configuration: `ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION`.
 
@@ -70,7 +70,9 @@ The OS assigns a free web port and PHP prints the URL. Repeat these commands in 
 
 The `userdb_dev` / `dev-only` and `userdb_test` / `test-only` credentials are exclusively for these local databases. They cannot access each other's database. Local email is captured as `.eml` files under `.flox/cache/mail`; contract storage lives under `.flox/cache/storage`. Services stop when the last Flox activation exits; database data and keys remain. Inspect MariaDB with `flox services status` inside Flox and logs in `.flox/cache/logs/`.
 
-PHP extensions are included and frontend assets are already committed, so no Node build is required. Contract PDF generation additionally needs LibreOffice, zip/unzip and adaptation of its fixed Linux paths. QR/PDF code using `/dev/shm` also needs a portable path on macOS. SledovaniTV, accounting reports and Fio imports have separate Python/Perl workers and external credentials; they are not started by this local web setup.
+Contract previews work directly in the local application. Flox provides LibreOffice, zip/unzip and Poppler for PDF checks. The local bootstrap enables direct conversion without a separate HTTP service or PDF port. Each conversion uses a private directory and LibreOffice profile under `.flox/cache/pdf`, cleaned up on success or failure. Templates come from this worktree, and previews are marked `LOCAL TEST`. Font substitution can differ from production; the test checks content, not pixel-identical rendering. Outside this local bootstrap, the application continues to use `PDF_GENERATOR_URL`.
+
+PHP extensions are included and frontend assets are already committed, so no Node build is required. SledovaniTV, accounting reports and Fio imports have separate Python/Perl workers and external credentials; they are not started by this local web setup. External signing and other real integrations are not part of the local PDF preview.
 
 ### Editor
 

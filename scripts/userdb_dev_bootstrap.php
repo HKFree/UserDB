@@ -18,6 +18,7 @@ return (static function () {
     }
     putenv('FILE_STORAGE_PATH=' . $cache . '/storage');
     putenv('AGREEMENT_NAME_PREFIX=LOCAL TEST');
+    putenv('USERDB_LOCAL_PDF=1');
     putenv('CONTEXT_DOCUMENT_ROOT=' . $root . '/www');
 
     $env = array_replace(getenv(), [

@@ -6,6 +6,20 @@
       "composer": {
         "pkg-path": "php82Packages.composer"
       },
+      "libreoffice-linux": {
+        "pkg-path": "libreoffice",
+        "pkg-group": "pdf",
+        "systems": [
+          "x86_64-linux"
+        ]
+      },
+      "libreoffice-macos": {
+        "pkg-path": "libreoffice-bin",
+        "pkg-group": "pdf",
+        "systems": [
+          "aarch64-darwin"
+        ]
+      },
       "mariadb": {
         "pkg-path": "mariadb_1011",
         "pkg-group": "mariadb",
@@ -13,10 +27,22 @@
       },
       "php": {
         "pkg-path": "php82"
+      },
+      "poppler": {
+        "pkg-path": "poppler-utils",
+        "pkg-group": "pdf"
+      },
+      "unzip": {
+        "pkg-path": "unzip",
+        "pkg-group": "pdf"
+      },
+      "zip": {
+        "pkg-path": "zip",
+        "pkg-group": "pdf"
       }
     },
     "hook": {
-      "on-activate": "socket_id=$(php -r 'echo substr(hash(\"sha256\", getenv(\"FLOX_ENV_CACHE\")), 0, 20);')\nexport USERDB_MARIADB_SOCKET=\"/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock\"\n"
+      "on-activate": "socket_id=$(php -r 'echo substr(hash(\"sha256\", getenv(\"FLOX_ENV_CACHE\")), 0, 20);')\nexport USERDB_MARIADB_SOCKET=\"/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock\"\nif [ -z \"${USERDB_LIBREOFFICE:-}\" ]; then\n  if [ -d \"$FLOX_ENV/Applications/LibreOffice.app\" ]; then\n    export USERDB_LIBREOFFICE=\"$FLOX_ENV/Applications/LibreOffice.app/Contents/MacOS/soffice\"\n  else\n    export USERDB_LIBREOFFICE=\"$FLOX_ENV/bin/libreoffice\"\n  fi\nfi\n"
     },
     "options": {
       "systems": [
@@ -91,6 +117,244 @@
       },
       "system": "x86_64-linux",
       "group": "mariadb",
+      "priority": 5
+    },
+    {
+      "attr_path": "libreoffice",
+      "broken": false,
+      "derivation": "/nix/store/x8xpx5jsgwb8zl3144q2qzrh5x4wl2aj-libreoffice-26.8.0.3-wrapped.drv",
+      "description": "Comprehensive, professional-quality productivity suite, a variant of openoffice.org",
+      "install_id": "libreoffice-linux",
+      "license": "[ MPL-2.0, LGPL-3.0-or-later, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "libreoffice-26.8.0.3-wrapped",
+      "pname": "libreoffice",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:20.703997Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.8.0.3-wrapped",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/pjc9vq553dnk82dkyqmbmgznq9lqjrag-libreoffice-26.8.0.3-wrapped"
+      },
+      "system": "x86_64-linux",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "libreoffice-bin",
+      "broken": false,
+      "derivation": "/nix/store/l5fa7cmaamfawyvah6lqmxh350mmawga-libreoffice-26.2.5.drv",
+      "description": "Comprehensive, professional-quality productivity suite, a variant of openoffice.org",
+      "install_id": "libreoffice-macos",
+      "license": "LGPL-3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "libreoffice-26.2.5",
+      "pname": "libreoffice-bin",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.257430Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.2.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/spkm94m3gbsq5gg400il6nbn6q63an3c-libreoffice-26.2.5"
+      },
+      "system": "aarch64-darwin",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "poppler-utils",
+      "broken": false,
+      "derivation": "/nix/store/wlm0px9njgpm3ddz3xbndxj3ma7h2b30-poppler-utils-26.11.0.drv",
+      "description": "PDF rendering library",
+      "install_id": "poppler",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "poppler-utils-26.11.0",
+      "pname": "poppler-utils",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.363511Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.11.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/smqa5n3bydya75d22qfzswxljckr42g4-poppler-utils-26.11.0-dev",
+        "out": "/nix/store/63b7spm7sqsjwq612n0v20zj2xpck6a2-poppler-utils-26.11.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "poppler-utils",
+      "broken": false,
+      "derivation": "/nix/store/75pwmkw9cjpjz9qi63d9a66f2gq60bkp-poppler-utils-26.11.0.drv",
+      "description": "PDF rendering library",
+      "install_id": "poppler",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "poppler-utils-26.11.0",
+      "pname": "poppler-utils",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:20.777579Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.11.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/p7drj2hywj7lpsj3jimdzk9vh2yy43g1-poppler-utils-26.11.0-dev",
+        "out": "/nix/store/nx16mjcv442bx13rn80az81a83aw2xvy-poppler-utils-26.11.0"
+      },
+      "system": "x86_64-linux",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "unzip",
+      "broken": false,
+      "derivation": "/nix/store/bf85iqm4rccbm3q6qyziab9pwmnirrs6-unzip-6.0.drv",
+      "description": "Extraction utility for archives compressed in .zip format",
+      "install_id": "unzip",
+      "license": "Info-ZIP",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "unzip-6.0",
+      "pname": "unzip",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.811714Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/jqm7c3xsjzcf80m4qpzfyi4abrpmn4mp-unzip-6.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "unzip",
+      "broken": false,
+      "derivation": "/nix/store/72b0ba1q37jsczk6nn95jk8yjxabzbxi-unzip-6.0.drv",
+      "description": "Extraction utility for archives compressed in .zip format",
+      "install_id": "unzip",
+      "license": "Info-ZIP",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "unzip-6.0",
+      "pname": "unzip",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:20.989815Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/fl6ffqm8pxv0cdmm4gx0d7vk3njd4dbc-unzip-6.0"
+      },
+      "system": "x86_64-linux",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "zip",
+      "broken": false,
+      "derivation": "/nix/store/kcd4rsg2hmrq808lx9bcra00xwz36w6v-zip-3.0.drv",
+      "description": "Compressor/archiver for creating and modifying zipfiles",
+      "install_id": "zip",
+      "license": "BSD-4-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "zip-3.0",
+      "pname": "zip",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.834832Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/z0l79y7m9zxrwyky0jr26da67wzzzyhw-zip-3.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "zip",
+      "broken": false,
+      "derivation": "/nix/store/ls72aa78vpyp2rn1acfz2w6icc71jz43-zip-3.0.drv",
+      "description": "Compressor/archiver for creating and modifying zipfiles",
+      "install_id": "zip",
+      "license": "BSD-4-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "zip-3.0",
+      "pname": "zip",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:21.009912Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/iz5r7d5g87msk5afq2pgfcg1qnvqcs2p-zip-3.0"
+      },
+      "system": "x86_64-linux",
+      "group": "pdf",
       "priority": 5
     },
     {
