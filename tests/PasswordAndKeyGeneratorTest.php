@@ -14,7 +14,7 @@ require_once __DIR__ . '/bootstrap.php';
 /**
  * Shape of generated passwords and API keys. The generators use no database or services.
  */
-final class GeneratedSecretsTest extends TestCase
+final class PasswordAndKeyGeneratorTest extends TestCase
 {
     private const PASSWORD_CHAR = '[a-hjkmnp-zA-HJKMNP-Z2-9]';
     private const KEY_CHAR = '[2-9a-km-np-zA-NP-Z]';
@@ -31,6 +31,7 @@ final class GeneratedSecretsTest extends TestCase
     /** @dataProvider passwordCases */
     public function testStrongPassword(int $length, bool $dashes, string $shape): void {
         $model = (new \ReflectionClass(Uzivatel::class))->newInstanceWithoutConstructor();
+        $passwords = [];
         for ($i = 0; $i < 20; $i++) {
             $password = $model->generateStrongPassword($length, $dashes);
             Assert::match('~^' . self::PASSWORD_CHAR . $shape . '$~', $password);
@@ -38,7 +39,9 @@ final class GeneratedSecretsTest extends TestCase
             Assert::match('~[a-z]~', $password);
             Assert::match('~[A-Z]~', $password);
             Assert::match('~[2-9]~', $password);
+            $passwords[] = $password;
         }
+        Assert::true(count(array_unique($passwords)) > 1, 'The generator returned the same password 20 times.');
     }
 
     public function keyCases(): array {
@@ -48,11 +51,14 @@ final class GeneratedSecretsTest extends TestCase
     /** @dataProvider keyCases */
     public function testApiKey(int $length): void {
         $model = (new \ReflectionClass(ApiKlic::class))->newInstanceWithoutConstructor();
+        $keys = [];
         for ($i = 0; $i < 20; $i++) {
-            Assert::match('~^' . self::KEY_CHAR . '{' . $length . '}$~', $model->generateKey($length));
+            $keys[] = $key = $model->generateKey($length);
+            Assert::match('~^' . self::KEY_CHAR . '{' . $length . '}$~', $key);
         }
+        Assert::true(count(array_unique($keys)) > 1, 'The generator returned the same key 20 times.');
         Assert::same(30, strlen($model->generateKey()));
     }
 }
 
-(new GeneratedSecretsTest())->run();
+(new PasswordAndKeyGeneratorTest())->run();
