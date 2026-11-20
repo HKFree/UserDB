@@ -85,6 +85,28 @@ flox activate -s -- php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
 Podrobnosti jsou v [README](readme.md#development). Docker Compose popsaný
 tamtéž má pevné porty a síť; pro práci ve více worktrees použij Flox.
 
+## Skills pro Nette
+
+Oficiální plugin `nette` z [nette/agent-plugins](https://github.com/nette/agent-plugins)
+dává agentovi skills s konvencemi Nette, Latte, NEON a Nette Testeru. Obsahuje
+jen skills a dokumentaci, žádné hooky. Když ve svém seznamu skills nevidíš
+`nette-*` ani `latte-templates`, nainstaluj si ho před prací na kódu a začni
+novou session:
+
+```sh
+# Claude Code
+claude plugin marketplace add nette/agent-plugins
+claude plugin install nette@nette
+# Codex
+codex plugin marketplace add nette/agent-plugins
+codex plugin add nette@nette
+```
+
+- Kde se skill rozchází s tímto souborem nebo s okolním kódem, platí repo:
+  aplikace běží na Latte 2 a má vlastní styl kódu.
+- Plugin `php-fixer` ze stejného zdroje neinstaluj. Bez `dresscode.neon`
+  formátuje podle standardu Nette, tento projekt hlídá `.php-cs-fixer.dist.php`.
+
 ## Kde co je
 
 | Cesta | Obsah |
