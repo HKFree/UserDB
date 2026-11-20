@@ -144,7 +144,6 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
 
         $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
-        return true;
     }
 
     /** Čestné členství člena upravuje EXTSUPPORT nebo správce jeho AP */
@@ -268,6 +267,5 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         }
 
         $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
-        return true;
     }
 }

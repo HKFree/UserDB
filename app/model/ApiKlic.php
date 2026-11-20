@@ -32,7 +32,7 @@ class ApiKlic extends Table
     }
 
     public function generateKey($length = 30) {
-        return substr(str_shuffle(str_repeat($x = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ', ceil($length / strlen($x)))), 1, $length);
+        return substr(str_shuffle(str_repeat($x = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ', (int) ceil($length / strlen($x)))), 1, $length);
     }
 
     public function getEditForm(Nette\Forms\Container &$container, $form) {

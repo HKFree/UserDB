@@ -16,7 +16,6 @@ class Authenticator implements Security\IAuthenticator
 {
     protected $context;
     private $fakeUser;
-    private $spravceOb;
 
     public function __construct($fakeUser, Nette\Database\Context $ctx) {
         $this->context = $ctx;

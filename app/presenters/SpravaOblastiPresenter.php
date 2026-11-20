@@ -60,7 +60,6 @@ class SpravaOblastiPresenter extends SpravaPresenter
         }
 
         $this->redirect('Sprava:nastroje');
-        return true;
     }
 
     public function renderNoveap() {
@@ -106,6 +105,5 @@ class SpravaOblastiPresenter extends SpravaPresenter
         }
 
         $this->redirect('Sprava:nastroje');
-        return true;
     }
 }

@@ -27,15 +27,12 @@ class UzivatelPresenter extends BasePresenter
     private $cestneClenstviUzivatele;
     private $typClenstvi;
     private $typPravniFormyUzivatele;
-    private $typSpravceOblasti;
     private $zpusobPripojeni;
     private $technologiePripojeni;
     private $uzivatel;
     private $ipAdresa;
-    private $ap;
     private $typZarizeni;
     private $log;
-    private $subnet;
     private $sloucenyUzivatel;
     private $smlouva;
     private $smlouvaStavSluzba;
@@ -43,23 +40,18 @@ class UzivatelPresenter extends BasePresenter
     private $povoleneSMTP;
     private $dnat;
     protected $cryptosvc;
-    private $pdfGenerator;
     private $mailService;
     private $idsConnector;
     private $aplikaceToken;
     private $stitek;
 
-    private Services\Stitkovac $stitkovac;
-
     private $stitkyUzivatele;
-    private Explorer $databaseExplorer;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
     public function __construct(
         Services\MailService $mailsvc,
-        Services\PdfGenerator $pdf,
         CryptoSluzba $cryptosvc,
         Model\PovoleneSMTP $alowedSMTP,
         Model\DNat $dnat,
@@ -67,7 +59,6 @@ class UzivatelPresenter extends BasePresenter
         Model\SloucenyUzivatel $slUzivatel,
         Model\Smlouva $smlouva,
         SmlouvaStavSluzba $smlouvaStavSluzba,
-        Model\Subnet $subnet,
         Model\SpravceOblasti $prava,
         Model\CestneClenstviUzivatele $cc,
         Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
@@ -76,15 +67,12 @@ class UzivatelPresenter extends BasePresenter
         Model\TechnologiePripojeni $technologiePripojeni,
         Model\Uzivatel $uzivatel,
         Model\IPAdresa $ipAdresa,
-        Model\AP $ap,
         Model\TypZarizeni $typZarizeni,
         Model\Log $log,
         Model\IdsConnector $idsConnector,
         Model\AplikaceToken $aplikaceToken,
         Model\Stitek $stitek,
         Model\StitekUzivatele $stitkyUzivatele,
-        Services\Stitkovac $stitkovac,
-        Explorer $databaseExplorer,
     ) {
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
@@ -95,30 +83,25 @@ class UzivatelPresenter extends BasePresenter
         $this->technologiePripojeni = $technologiePripojeni;
         $this->uzivatel = $uzivatel;
         $this->ipAdresa = $ipAdresa;
-        $this->ap = $ap;
         $this->typZarizeni = $typZarizeni;
         $this->log = $log;
-        $this->subnet = $subnet;
         $this->sloucenyUzivatel = $slUzivatel;
         $this->smlouva = $smlouva;
         $this->smlouvaStavSluzba = $smlouvaStavSluzba;
         $this->parameters = $parameters;
         $this->povoleneSMTP = $alowedSMTP;
         $this->dnat = $dnat;
-        $this->pdfGenerator = $pdf;
         $this->mailService = $mailsvc;
         $this->idsConnector = $idsConnector;
         $this->aplikaceToken = $aplikaceToken;
         $this->stitek = $stitek;
         $this->stitkyUzivatele = $stitkyUzivatele;
-        $this->stitkovac = $stitkovac;
-        $this->databaseExplorer = $databaseExplorer;
     }
 
     protected function createComponentUserLabels(): UserLabelsComponent {
-        // Předej do komponenty databázi a aktuální user ID
+        // Předej do komponenty aktuální user ID
         $userId = $this->getParameter('id'); // Nebo jiný způsob získání ID uživatele
-        $ulc = new UserLabelsComponent($this->databaseExplorer, $this->stitek, $this->stitkyUzivatele);
+        $ulc = new UserLabelsComponent($this->stitek, $this->stitkyUzivatele);
         $ulc->setUserId($userId);
         return $ulc;
     }
@@ -329,9 +312,7 @@ class UzivatelPresenter extends BasePresenter
         $poznamka = "{$nazev_uzivatele} UID{$uzivatel->id} QR1";
 
         $spayd = sprintf('SPD*1.0*ACC:%s*AM:%.2f*CC:CZK*MSG:%s*X-VS:%u', $cisloUctuIBAN, $platby_celkem, $poznamka, $uzivatel->id);
-        if ($datumPlatby) {
-            $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
-        }
+        $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
 
         $this->template->spayd = $spayd;
     }
@@ -366,9 +347,9 @@ class UzivatelPresenter extends BasePresenter
         $form = new Form($this, 'uzivatelForm');
         $form->addHidden('id');
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
-        $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::Filled, 'Vyberte typ právní formy');
-        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::Equal, 2)->setRequired('Zadejte název firmy');
-        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::Equal, 2)->setRequired('Zadejte IČ');
+        $pravniForma = $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::Filled, 'Vyberte typ právní formy');
+        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($pravniForma, Form::Equal, 2)->setRequired('Zadejte název firmy');
+        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($pravniForma, Form::Equal, 2)->setRequired('Zadejte IČ');
         //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
         $form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
@@ -651,8 +632,6 @@ class UzivatelPresenter extends BasePresenter
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
                 $this->uzivatel->delete(['id' => [$idUzivatele]]);
                 $this->redirect('UzivatelList:list', ['id' => $olduzivatel->Ap_id]);
-
-                return true;
             }
 
             // TODO: spolek / druzstvo
@@ -755,8 +734,6 @@ class UzivatelPresenter extends BasePresenter
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
 
         $this->redirect('Uzivatel:show', ['id' => $idUzivatele]);
-
-        return true;
     }
 
     public function actionIds($id) {

@@ -195,7 +195,7 @@ class Subnet extends Table
         $subnets = array();
         for ($mask = 32; $mask >= 16; $mask--) {
             $lmask = pow(2, 32 - $mask);
-            $subnet = long2ip(floor($lip / $lmask) * $lmask);
+            $subnet = long2ip((int) (floor($lip / $lmask) * $lmask));
             $subnets[] = $subnet."/".$mask;
         }
         return ($subnets);
@@ -379,10 +379,10 @@ class Subnet extends Table
      *
      * například 24 na 255.255.255.0
      *
-     * @param integer $cidr CIDR
+     * @param int|float|numeric-string $cidr CIDR
      * @return string Maska
      */
     public function CIDRToMask($cidr) {
-        return (long2ip(pow(2, 32) - pow(2, 32 - $cidr)));
+        return (long2ip((int) (pow(2, 32) - pow(2, 32 - $cidr))));
     }
 }

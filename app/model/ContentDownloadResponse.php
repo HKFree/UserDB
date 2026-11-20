@@ -50,11 +50,11 @@ class ContentDownloadResponse implements Nette\Application\IResponse
     public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse): void {
         $httpResponse->setContentType($this->contentType);
         $httpResponse->setHeader('Pragma', "public");
-        $httpResponse->setHeader('Expires', 0);
+        $httpResponse->setHeader('Expires', '0');
         $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
         $httpResponse->setHeader('Content-Transfer-Encoding', "binary");
         $httpResponse->setHeader('Content-Description', "File Transfer");
-        $httpResponse->setHeader('Content-Length', mb_strlen($this->content));
+        $httpResponse->setHeader('Content-Length', (string) mb_strlen($this->content));
         $httpResponse->setHeader('Content-Disposition', 'attachment; filename="' . $this->name . '"');
         echo $this->content;
     }

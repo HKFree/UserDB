@@ -13,27 +13,21 @@ use Nette\Mail\Message;
  */
 class MailService
 {
-    private $templateDir;
     private $uzivatel;
     private $mailer;
     private $linkGenerator;
     private $templateFactory;
-    private $cestneClenstviUzivatele;
 
     public function __construct(
-        string $templateDir,
         Nette\Mail\IMailer $mailer,
         Model\Uzivatel $uzivatel,
         Nette\Application\LinkGenerator $linkGenerator,
-        Nette\Bridges\ApplicationLatte\TemplateFactory $templateFactory,
-        Model\CestneClenstviUzivatele $cestneClenstviUzivatele
+        Nette\Bridges\ApplicationLatte\TemplateFactory $templateFactory
     ) {
-        $this->templateDir = $templateDir;
         $this->uzivatel = $uzivatel;
         $this->mailer = $mailer;
         $this->linkGenerator = $linkGenerator;
         $this->templateFactory = $templateFactory;
-        $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
     }
 
     public function sendSpolekConfirmationRequest($uzivatel, $so, $link): void {

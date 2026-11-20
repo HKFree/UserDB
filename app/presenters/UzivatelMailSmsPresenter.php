@@ -96,7 +96,6 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->flashMessage('E-mail byl odeslán.');
 
         $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
-        return true;
     }
 
     public function renderEmailall() {
@@ -179,7 +178,6 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->flashMessage('E-mail byl odeslán.');
 
         $this->redirect('UzivatelList:list', array('id' => $this->getParameter('id')));
-        return true;
     }
 
     public function renderSms() {
@@ -221,7 +219,6 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->sendSMSAndValidate([ $user->id ], $values->message);
 
         $this->redirect('Uzivatel:show', array('id' => $this->getParameter('id')));
-        return true;
     }
 
     public function renderSmsall() {
@@ -279,7 +276,6 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->sendSMSAndValidate($validni, $values->message);
 
         $this->redirect('UzivatelList:list', array('id' => $this->getParameter('id')));
-        return true;
     }
 
     private function sendSMSAndValidate($uzivateleID, $message) {

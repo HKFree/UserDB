@@ -13,12 +13,10 @@ use Nette\Application\Responses\JsonResponse;
 class AjaxApiPresenter extends BasePresenter
 {
     private $subnet;
-    private $ap;
     private $sojka;
 
-    public function __construct(Model\Subnet $subnet, Model\AP $ap, Model\Sojka $sojka) {
+    public function __construct(Model\Subnet $subnet, Model\Sojka $sojka) {
         $this->subnet = $subnet;
-        $this->ap = $ap;
         $this->sojka = $sojka;
     }
 

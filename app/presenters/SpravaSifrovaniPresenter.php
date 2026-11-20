@@ -52,6 +52,5 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
         $this->flashMessage('Hesla ip adres jsou přešifrovány.');
 
         $this->redirect('Sprava:nastroje', array('id' => null));
-        return true;
     }
 }

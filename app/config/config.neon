@@ -74,7 +74,7 @@ services:
 	cestneClenstviUzivatele: App\Model\CestneClenstviUzivatele
 	log: App\Model\Log
 	pdfGenerator: App\Services\PdfGenerator
-	mailService: App\Services\MailService("%appDir%/templates/email")
+	mailService: App\Services\MailService
 	povoleneSMTP: App\Model\PovoleneSMTP
 	dnat: App\Model\DNat
 	accountActivation: App\Model\AccountActivation

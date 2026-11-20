@@ -10,11 +10,7 @@ use App\Model;
  */
 class HomepagePresenter extends BasePresenter
 {
-    /** @var Model\Uzivatel */
-    private $uzivatel;
-
-    public function __construct(Model\Uzivatel $uzivatel) {
-        $this->uzivatel = $uzivatel;
+    public function __construct() {
     }
 
     public function renderDefault() {

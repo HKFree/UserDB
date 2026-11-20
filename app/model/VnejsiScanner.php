@@ -15,17 +15,11 @@ class VnejsiScanner
     */
     protected $outerScannerURL;
 
-    /**
-     * @var IPAdresa
-     */
-    private $ipadresa;
-
     private $scanData;
     private $scanDate;
 
-    public function __construct($outerScannerURL, IPAdresa $iPAdresa) {
+    public function __construct($outerScannerURL) {
         $this->outerScannerURL = $outerScannerURL;
-        $this->ipadresa = $iPAdresa;
     }
 
     public function downloadScan() {

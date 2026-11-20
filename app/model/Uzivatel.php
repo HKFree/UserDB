@@ -234,8 +234,8 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         $dash_len = floor(sqrt($length));
         $dash_str = '';
         while (strlen($password) > $dash_len) {
-            $dash_str .= substr($password, 0, $dash_len) . '-';
-            $password = substr($password, $dash_len);
+            $dash_str .= substr($password, 0, (int) $dash_len) . '-';
+            $password = substr($password, (int) $dash_len);
         }
         $dash_str .= $password;
         return $dash_str;

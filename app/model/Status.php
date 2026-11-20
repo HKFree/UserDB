@@ -26,15 +26,9 @@ class Status
      */
     private $oblast;
 
-    /**
-     * @var IPAdresa
-     */
-    private $ipadresa;
-
-    public function __construct(Sojka $sojka, Oblast $oblast, IPAdresa $ipadresa) {
+    public function __construct(Sojka $sojka, Oblast $oblast) {
         $this->sojka = $sojka;
         $this->oblast = $oblast;
-        $this->ipadresa = $ipadresa;
     }
 
     public function getPingNaIPAP() {

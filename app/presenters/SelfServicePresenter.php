@@ -15,11 +15,8 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
     public function __construct(
         private RequestDruzstvoContract $requestDruzstvoContract,
         private Uzivatel $uzivatelModel,
-        private Model\UzivatelTelevize $uzivatelTelevize,
         private CryptoSluzba $cryptosvc,
         private Parameters $parameters,
-        private Nette\Database\Connection $connection,
-        private Services\Stitkovac $stitkovac,
     ) {
     }
 

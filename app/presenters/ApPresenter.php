@@ -299,8 +299,7 @@ class ApPresenter extends BasePresenter
                 }
 
                 if (
-                    $this->subnet->validateSubnet($subnet['subnet'])
-                    && !$this->subnet->checkColision($subnet['subnet'], \App\Model\Subnet::ARP_PROXY_SUBNET)
+                    !$this->subnet->checkColision($subnet['subnet'], \App\Model\Subnet::ARP_PROXY_SUBNET)
                     && isset($subnet['arp_proxy'])
                 ) {
                     $form->addError('ARP Proxy může být zapnuté pouze u veřejných subnetů!');
@@ -440,7 +439,6 @@ class ApPresenter extends BasePresenter
         $this->log->loguj('Ap', $idAP, $log);
 
         $this->redirect('Ap:show', array('id' => $idAP));
-        return true;
     }
 
     public function actionIds($id) {

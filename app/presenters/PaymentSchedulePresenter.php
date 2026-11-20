@@ -73,9 +73,7 @@ class PaymentSchedulePresenter extends BasePresenter
         $poznamka = "QR-rozpis";
 
         $spayd = sprintf('SPD*1.0*ACC:%s*AM:%.2f*CC:CZK*MSG:%s*X-VS:%u', $cisloUctuIBAN, $platby_celkem, $poznamka, $uzivatel->id);
-        if ($datumPlatby) {
-            $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
-        }
+        $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
 
         $this->template->spayd = $spayd;
 
@@ -101,7 +99,6 @@ class PaymentSchedulePresenter extends BasePresenter
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         if ($uzivatel->druzstvo != 1) {
             $this->error('Jen pro družstvo');
-            return;
         }
         $this->computeTemplateParams();
 

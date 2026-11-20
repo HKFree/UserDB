@@ -164,6 +164,5 @@ class SpravaCcPresenter extends SpravaPresenter
         }
 
         $this->redirect('SpravaCc:schvalovanicc');
-        return true;
     }
 }
