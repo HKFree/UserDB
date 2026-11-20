@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/UserdbMigrationAdapter.php';
 
 $cache = getenv('FLOX_ENV_CACHE');
 $socket = getenv('USERDB_MARIADB_SOCKET');
@@ -25,13 +26,7 @@ if (!$dataDir || realpath($connection->fetchField('SELECT @@datadir')) !== $data
     throw new RuntimeException('Refusing to initialize a database outside this Flox worktree.');
 }
 
-// Historic migrations name a production definer. Use the restricted local account
-// for this local import without editing migrations or granting global privileges.
-$adapter = new class ($connection) extends Nextras\Migrations\Bridges\NetteDatabase\NetteAdapter {
-    public function exec(string $sql): int {
-        return parent::exec(str_replace('DEFINER=`userdb_v2`@`%`', 'DEFINER=CURRENT_USER', $sql));
-    }
-};
+$adapter = new UserdbMigrationAdapter($connection);
 $driver = new Nextras\Migrations\Drivers\MySqlDriver($adapter);
 $runner = new Nextras\Migrations\Engine\Runner($driver, new Nextras\Migrations\Printers\Console());
 $runner->run(Nextras\Migrations\Engine\Runner::MODE_CONTINUE, new Nextras\Migrations\Configurations\DefaultConfiguration(__DIR__ . '/../db', $driver, true));

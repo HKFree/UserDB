@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test;
 
 use App\Model\Stitek;
@@ -8,7 +10,9 @@ use Nette\Database\ForeignKeyConstraintViolationException;
 use Nette\Database\UniqueConstraintViolationException;
 use Tester\Assert;
 
-$database = require __DIR__ . '/database.php';
+require_once __DIR__ . '/bootstrap.php';
+
+$database = TestEnvironment::database();
 $connection = $database->getConnection();
 
 Assert::match('10.11.%a%', $connection->fetchField('SELECT VERSION()'));
@@ -18,7 +22,6 @@ sort($modes);
 Assert::same(['ERROR_FOR_DIVISION_BY_ZERO', 'NO_AUTO_CREATE_USER', 'NO_ENGINE_SUBSTITUTION'], $modes);
 Assert::exception(fn () => $connection->query('USE userdb_dev'), DriverException::class);
 
-$connection->getPdo()->exec(file_get_contents(__DIR__ . '/fixtures/stitek.sql'));
 $database->beginTransaction();
 try {
     $area1 = $database->table('Oblast')->insert(['jmeno' => 'Testovací oblast A', 'datum_zalozeni' => '2026-01-01 00:00:00']);
@@ -32,7 +35,10 @@ try {
     Assert::same('Příliš žluťoučký štítek', $stitky->getStitekById($tag->id)->text);
     Assert::same([$tag->id], array_keys($stitky->getStitkyByOblast($area1->id)->fetchAll()));
     Assert::same([$other->id], array_keys($stitky->getStitkyByOblast($area2->id)->fetchAll()));
-    Assert::same([$global->id], array_keys($stitky->getStitkyByOblast(null)->fetchAll()));
+    $globalIds = array_keys($stitky->getStitkyByOblast(null)->fetchAll());
+    Assert::contains($global->id, $globalIds);
+    Assert::notContains($tag->id, $globalIds);
+    Assert::notContains($other->id, $globalIds);
     Assert::count(0, $stitky->getStitkyByOblast(0)->fetchAll());
 
     $stitky->updateStitek($tag->id, ['text' => 'Upravený štítek', 'poznamka' => 'Poznámka s diakritikou']);

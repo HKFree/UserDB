@@ -39,19 +39,27 @@ From the root of a fresh checkout without real credentials, use the committed en
 
 ```sh
 flox activate -- composer install --no-interaction --prefer-dist --no-progress
-test -e app/config/config.local.neon || touch app/config/config.local.neon
-export USERDB_DB_HOST=127.0.0.1 USERDB_DB_NAME=userdb_test
-export USERDB_DB_USERNAME=userdb_test USERDB_DB_PASSWORD=test-only
 flox activate -s -- vendor/bin/tester -C tests
 flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
 flox activate -- vendor/bin/latte-lint app
 ```
 
-The DI smoke test reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. `-s` starts the local MariaDB service. The database test uses its own restricted `userdb_test` account and database, ignoring application credentials and local configuration. It checks tag writes, reads, updates, area filtering, Czech text, unique and foreign-key constraints, and the server's SQL mode. Its minimal schema is in `tests/fixtures/stitek.sql`; inserted data is rolled back after each run. A missing database fails the test instead of skipping it.
+The test container loads `app/config/config.neon` and `tests/config.test.neon` with a synthetic environment. Mail, SMS and contract requests use recording doubles; the IDS connector, Sojka pinger, outer scanner, IGW IP checkers, MEX and InfluxDB URLs point at `http://127.0.0.1:0/`. It uses in-memory session and user storage and does not read `config.local.neon` or `USERDB_DB_*` variables.
 
-The remaining tests cover DI compilation, downloads, SSID rendering, QR generation, user merge balances and local mail capture. The PDF test converts the actual contract template using LibreOffice and checks Czech text, empty optional fields and cleanup after conversion errors. This is limited regression coverage, not a full application test suite. Docker is not needed.
+`-s` starts MariaDB. Database tests use the restricted `userdb_test` account and database on the Flox Unix socket. The schema is built from migrations in `db/structures` and `db/basic-data`, without dummy data, and rebuilt automatically when migrations change. Database tests run serially and roll back their data after each case. A guard checks the database name and MariaDB data directory and refuses a database outside the checkout. Docker is not needed.
 
-PHPStan runs at **level 5** with the Nette extension. The 168 findings that existed when the level was raised are recorded in `phpstan-baseline.neon`, so only new or changed code has to pass level 5. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
+The suite covers:
+
+- Container services, routing, authentication, API access and representative presenter pages and permissions.
+- Permission matrices for admin tools, rights, AP/member editing, messages and grid access, with recorded side effects.
+- Member edit form validation, saves and audit logs, IP/password handling, registration and planned membership transitions.
+- Schema migrations, tag operations and constraints, account activation and ledger entries.
+- Subnet calculations, downloads, SSID rendering, QR generation and user merge balances.
+- Local mail capture and contract PDF conversion, including Czech text, optional fields and cleanup.
+
+**Adding a test:** Name the file `*Test.php`, `*DatabaseTest.php` for database tests or `*PresenterTest.php` for presenter tests, and require `tests/bootstrap.php`. Nette Tester runs only `*Test.php` files; `TestNamingTest` fails for a file it would skip. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
+
+PHPStan runs at **level 5** with the Nette extension. The findings that existed when the level was raised are recorded in `phpstan-baseline.neon`, so only new or changed code has to pass level 5. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
 When a baselined finding is fixed, PHPStan reports its baseline entry as unmatched; remove the entry, or regenerate the file:
 
@@ -93,7 +101,7 @@ To activate formatting in VSCode, install extension "[php cs fixer](https://mark
 
 Configure the formatter to use PHP 8.2. PHP CS Fixer is included in the project's Composer development dependencies; its CLI is available through `flox activate -- vendor/bin/php-cs-fixer`.
 
-The shared configuration includes both `.php` files and `.phpt` tests. Run the same code style check as CI:
+Tests are ordinary `.php` files and fall under the shared configuration. Run the same code style check as CI:
 
 ```sh
 flox activate -- vendor/bin/php-cs-fixer check --diff
