@@ -26,12 +26,18 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     protected Settings $settings;
 
+    private Model\Uzivatel $uzivatelModel;
+
     public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer, Settings $settings) {
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
         $this->ap = $ap;
         $this->mailer = $mailer;
         $this->settings = $settings;
+    }
+
+    public function injectUzivatelModel(Model\Uzivatel $uzivatel) {
+        $this->uzivatelModel = $uzivatel;
     }
 
     public function startup() {
@@ -53,6 +59,24 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         if (!$smi) {
             $this->error('Nemáte oprávnění.', Nette\Http\IResponse::S403_Forbidden);
         }
+    }
+
+    /**
+     * Kdo smí upravovat člena (canViewOrEdit na detailu a editaci člena): EXTSUPPORT, správce AP člena
+     * (AP::canViewOrEditAP) a SO/ZSO, v jehož subnetech má člen z jiné oblasti IP adresu.
+     */
+    protected function smiUpravitUzivatele($uzivatel): bool {
+        if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())) {
+            return true;
+        }
+        $seznamUzivatelu = [];
+        foreach ($this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid()) as $oblast) {
+            foreach ($oblast->related('Ap.Oblast_id') as $ap) {
+                $subnety = $ap->related('Subnet.Ap_id');
+                $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatelModel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
+            }
+        }
+        return in_array($uzivatel->id, $seznamUzivatelu);
     }
 
     protected function beforeRender() {
