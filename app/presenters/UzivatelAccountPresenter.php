@@ -95,10 +95,9 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
         $grid->setDefaultSort(array('datum_cas' => 'DESC'));
 
-        $presenter = $this;
-        $grid->setRowCallback(function ($item, $tr) use ($presenter) {
+        $grid->setRowCallback(function ($item, $tr) {
             if ($item->PrichoziPlatba_id) {
-                $tr->onclick = "window.location='".$presenter->link('UzivatelAccount:platba', array('id' => $item->PrichoziPlatba_id))."'";
+                $tr->onclick = "window.location='".$this->link('UzivatelAccount:platba', array('id' => $item->PrichoziPlatba_id))."'";
             }
             return $tr;
         });
@@ -148,10 +147,10 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             return $el;
         })->setSortable()->setFilterText();
 
-        $grid->addColumnText('PrichoziPlatba_id', 'Akce')->setCustomRender(function ($item) use ($presenter) {
+        $grid->addColumnText('PrichoziPlatba_id', 'Akce')->setCustomRender(function ($item) {
             if ($item->PrichoziPlatba_id) {
                 $uidLink = Html::el('a')
-                ->href($presenter->link('UzivatelAccount:platba', array('id' => $item->PrichoziPlatba_id)))
+                ->href($this->link('UzivatelAccount:platba', array('id' => $item->PrichoziPlatba_id)))
                 ->title('Příchozí platba')
                 ->setText('Příchozí platba');
                 return $uidLink;

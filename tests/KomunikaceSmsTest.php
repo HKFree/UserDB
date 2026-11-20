@@ -159,12 +159,17 @@ class KomunikaceSmsTest extends TestCase
     }
 
     public function testGatewayErrorHasNoStackTrace(): void {
-        foreach (['smsFormSucceded', 'smsallFormSucceded'] as $handler) {
+        $values = (object) ['message' => 'Test'];
+        $handlers = [
+            fn (SmsPresenter $presenter) => $presenter->smsFormSucceded(null, $values),
+            fn (SmsPresenter $presenter) => $presenter->smsallFormSucceded(null, $values),
+        ];
+        foreach ($handlers as $callHandler) {
             $sender = new RecordingSmsSender();
             $sender->error = new SmsSenderException('SMS brána je nedostupná.');
             $presenter = $this->createPresenter([1 => '777222555'], $sender);
 
-            Assert::exception(fn () => $presenter->$handler(null, (object) ['message' => 'Test']), AbortException::class);
+            Assert::exception(fn () => $callHandler($presenter), AbortException::class);
 
             $this->assertFlash($presenter, 'SMS nebyla odeslána. SMS brána je nedostupná.', 'danger');
             Assert::same([[['777222555'], 'Test']], $sender->calls);

@@ -61,7 +61,8 @@
 		"nette/tester": "^2.5",
 		"friendsofphp/php-cs-fixer": "^3.65",
 		"phpstan/phpstan": "^2.3",
-		"phpstan/phpstan-nette": "^2.0"
+		"phpstan/phpstan-nette": "^2.0",
+		"phpstan/phpstan-strict-rules": "^2.1"
 	},
         "autoload": {
             "psr-4": {

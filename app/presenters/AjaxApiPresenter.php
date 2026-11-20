@@ -34,6 +34,7 @@ class AjaxApiPresenter extends BasePresenter
         );
 
         $ip = $this->getParameter("ip");
+        $out = [];
 
         if (!filter_var($ip, FILTER_VALIDATE_IP)) {
             $out["error"] = "Neplatná IP adresa!";

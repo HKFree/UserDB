@@ -73,6 +73,7 @@ class Subnet extends Table
      * @return string[] Pole s položkami
      */
     public function getAPCSubnets($subnets) {
+        $results = [];
         foreach ($subnets as $subnet) {
             $out = $this->parseSubnet($subnet->subnet);
             //\Tracy\Debugger::barDump(explode(".", $out["network"]));
@@ -80,11 +81,7 @@ class Subnet extends Table
             $resultnet = $a .".". $b .".". $c .".";
             $results[] = $resultnet;
         }
-        if (isset($results)) {
-            return (array_unique($results));
-        } else {
-            return array();
-        }
+        return (array_unique($results));
     }
 
     public function getSubnetTable($subnets) {
@@ -130,9 +127,10 @@ class Subnet extends Table
         $subnets = $this->findAll()->where("subnet", $possibleSubnets);
 
         if (count($subnets) > 1) {
-            $out["error"] = Subnet::ERR_MULTIPLE_GW;
-            $out["multiple_subnets"] = $subnets->fetchPairs("id", "subnet");
-            return ($out);
+            return [
+                "error" => Subnet::ERR_MULTIPLE_GW,
+                "multiple_subnets" => $subnets->fetchPairs("id", "subnet"),
+            ];
         }
 
         if (count($subnets) == 1) {
@@ -154,8 +152,7 @@ class Subnet extends Table
             return ($out);
         }
 
-        $out["error"] = Subnet::ERR_NOT_FOUND;
-        return ($out);
+        return ["error" => Subnet::ERR_NOT_FOUND];
     }
 
     /**
@@ -173,12 +170,12 @@ class Subnet extends Table
     public function parseSubnet($subnet) {
         list($network, $cidr) = explode("/", $subnet);
 
-        $out["subnet"] = $subnet;
-        $out["network"] = $network;
-        $out["cidr"] = $cidr;
-        $out["mask"] = $this->CIDRToMask($cidr);
-
-        return ($out);
+        return [
+            "subnet" => $subnet,
+            "network" => $network,
+            "cidr" => $cidr,
+            "mask" => $this->CIDRToMask($cidr),
+        ];
     }
 
     /**
