@@ -1,0 +1,823 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Class App\\Model\\AP referenced with incorrect case\: App\\Model\\Ap\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: app/ApiModule/Presenters/AppPresenter.php
+
+		-
+			message: '#^Method Nette\\Http\\IRequest\:\:getPost\(\) invoked with 2 parameters, 0\-1 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: app/ApiModule/Presenters/DevicePresenter.php
+
+		-
+			message: '#^Method Nette\\Http\\IRequest\:\:getPost\(\) invoked with 2 parameters, 0\-1 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: app/ApiModule/Presenters/KomunikacePresenter.php
+
+		-
+			message: '#^Property App\\Components\\UserLabelsComponent\:\:\$database is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/components/UserLabelsComponent.php
+
+		-
+			message: '#^Property App\\Model\\AccountActivation\:\:\$prichoziPlatba is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/model/AccountActivation.php
+
+		-
+			message: '#^Call to an undefined method Nette\\ComponentModel\\Container\:\:addDate\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/model/ApiKlic.php
+
+		-
+			message: '#^Call to an undefined method Nette\\ComponentModel\\Container\:\:addHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/model/ApiKlic.php
+
+		-
+			message: '#^Call to an undefined method Nette\\ComponentModel\\Container\:\:addText\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/model/ApiKlic.php
+
+		-
+			message: '#^Parameter \#2 \$times of function str_repeat expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/model/ApiKlic.php
+
+		-
+			message: '#^Property App\\Model\\Authenticator\:\:\$spravceOb is unused\.$#'
+			identifier: property.unused
+			count: 1
+			path: app/model/Authenticator.php
+
+		-
+			message: '#^Variable \$nick might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/model/Authenticator.php
+
+		-
+			message: '#^Variable \$passwordHash might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/model/Authenticator.php
+
+		-
+			message: '#^PHPDoc tag @param has invalid value \(string  MIME content type\)\: Unexpected token "MIME", expected variable at offset 96 on line 4$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: app/model/ContentDownloadResponse.php
+
+		-
+			message: '#^PHPDoc tag @param has invalid value \(string  content\)\: Unexpected token "content", expected variable at offset 27 on line 2$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: app/model/ContentDownloadResponse.php
+
+		-
+			message: '#^PHPDoc tag @param has invalid value \(string  user name name\)\: Unexpected token "user", expected variable at offset 58 on line 3$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: app/model/ContentDownloadResponse.php
+
+		-
+			message: '#^Parameter \#2 \$value of method Nette\\Http\\IResponse\:\:setHeader\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/model/ContentDownloadResponse.php
+
+		-
+			message: '#^Parameter \#2 \$value of method Nette\\Http\\IResponse\:\:setHeader\(\) expects string, int\<0, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/model/ContentDownloadResponse.php
+
+		-
+			message: '#^Binary operation "\-" between 32 and string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: app/model/IPAdresa.php
+
+		-
+			message: '#^Parameter \#3 \$value of function curl_setopt expects bool, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/model/IPAdresa.php
+
+		-
+			message: '#^Variable \$iprange in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: app/model/IPAdresa.php
+
+		-
+			message: '#^Variable \$ipsubnet in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: app/model/IPAdresa.php
+
+		-
+			message: '#^Constructor of class App\\Model\\Log has an unused parameter \$t\.$#'
+			identifier: constructor.unusedParameter
+			count: 1
+			path: app/model/Log.php
+
+		-
+			message: '#^Property App\\Model\\Log\:\:\$typZarizeni is unused\.$#'
+			identifier: property.unused
+			count: 1
+			path: app/model/Log.php
+
+		-
+			message: '#^Variable \$matches might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/model/Log.php
+
+		-
+			message: '#^Method App\\Model\\Sojka\:\:pingIPS\(\) should return object but returns array\.$#'
+			identifier: return.type
+			count: 2
+			path: app/model/Sojka.php
+
+		-
+			message: '#^Method App\\Model\\Sojka\:\:pingIPS\(\) should return object but returns array\<string, string\|true\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/model/Sojka.php
+
+		-
+			message: '#^Method App\\Model\\Sojka\:\:pingIPS\(\) should return object but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: app/model/Sojka.php
+
+		-
+			message: '#^Property App\\Model\\Status\:\:\$ipadresa is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/model/Status.php
+
+		-
+			message: '#^PHPDoc tag @var for property App\\Model\\Stitek\:\:\$database with type string is incompatible with native type Nette\\Database\\Explorer\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/model/Stitek.php
+
+		-
+			message: '#^PHPDoc tag @var for property App\\Model\\StitekUzivatele\:\:\$database with type string is incompatible with native type Nette\\Database\\Explorer\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/model/StitekUzivatele.php
+
+		-
+			message: '#^Binary operation "\-" between 32 and string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 2
+			path: app/model/Subnet.php
+
+		-
+			message: '#^Binary operation "/" between string and 8 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: app/model/Subnet.php
+
+		-
+			message: '#^Method App\\Model\\Subnet\:\:getSubnetOfIP\(\) should return array\<string\> but returns array\<string, array\|int\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/model/Subnet.php
+
+		-
+			message: '#^Method App\\Model\\Subnet\:\:getSubnetOfIP\(\) should return array\<string\> but returns array\<string, int\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/model/Subnet.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$subnet$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/model/Subnet.php
+
+		-
+			message: '#^Parameter \#1 \$cidr of method App\\Model\\Subnet\:\:CIDRToMask\(\) expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/model/Subnet.php
+
+		-
+			message: '#^Parameter \#1 \$cidr of method App\\Model\\Subnet\:\:CIDRToMask\(\) expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/model/Subnet.php
+
+		-
+			message: '#^Parameter \#1 \$ip of function long2ip expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/model/Subnet.php
+
+		-
+			message: '#^Method App\\Model\\Table\:\:delete\(\) should return Nette\\Database\\Table\\ActiveRow\|false but returns int\.$#'
+			identifier: return.type
+			count: 1
+			path: app/model/Table.php
+
+		-
+			message: '#^Parameter \#2 \$offset of function substr expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/model/Uzivatel.php
+
+		-
+			message: '#^Parameter \#3 \$length of function substr expects int\|null, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/model/Uzivatel.php
+
+		-
+			message: '#^Anonymous function has an unused use \$presenter\.$#'
+			identifier: closure.unusedUse
+			count: 6
+			path: app/model/UzivatelListGrid.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Localization\\Translator\:\:setLang\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/model/UzivatelListGrid.php
+
+		-
+			message: '#^Property App\\Model\\VnejsiScanner\:\:\$ipadresa is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/model/VnejsiScanner.php
+
+		-
+			message: '#^Method App\\Presenters\\AjaxApiPresenter\:\:renderGetIpDetails\(\) has invalid return type App\\Presenters\\type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/presenters/AjaxApiPresenter.php
+
+		-
+			message: '#^Method App\\Presenters\\AjaxApiPresenter\:\:renderGetIpsPing\(\) has invalid return type App\\Presenters\\type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/presenters/AjaxApiPresenter.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$ip$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/presenters/AjaxApiPresenter.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$ips$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/presenters/AjaxApiPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\AjaxApiPresenter\:\:\$ap is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/AjaxApiPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Application\\UI\\Form\:\:addDynamic\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/presenters/ApPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Forms\\Controls\\SubmitButton\:\:addRemoveOnClick\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/presenters/ApPresenter.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/presenters/ApPresenter.php
+
+		-
+			message: '#^Method Nette\\Forms\\Container\:\:addCheckbox\(\) invoked with 3 parameters, 1\-2 required\.$#'
+			identifier: arguments.count
+			count: 3
+			path: app/presenters/ApPresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/presenters/ApPresenter.php
+
+		-
+			message: '#^PHPDoc tag @param has invalid value \(\\Exception\)\: Unexpected token "\\n     \* ", expected variable at offset 29 on line 2$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: app/presenters/ErrorPresenter.php
+
+		-
+			message: '#^Class App\\Model\\AP referenced with incorrect case\: App\\Model\\Ap\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: app/presenters/FilePresenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Presenters\\HomepagePresenter\:\:\$context\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/presenters/HomepagePresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\HomepagePresenter\:\:\$uzivatel is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/HomepagePresenter.php
+
+		-
+			message: '#^Parameter \#2 \$times of function str_repeat expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/presenters/MailingPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\MailingPresenter\:\:\$accountActivation is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/MailingPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\MailingPresenter\:\:\$pdfGenerator is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/MailingPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\MailingPresenter\:\:\$requestDruzstvoContract is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/MailingPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\MailingPresenter\:\:\$smlouva is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/MailingPresenter.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/presenters/PaymentSchedulePresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/presenters/PaymentSchedulePresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SelfServicePresenter\:\:\$connection is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SelfServicePresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SelfServicePresenter\:\:\$stitkovac is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SelfServicePresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SelfServicePresenter\:\:\$uzivatelTelevize is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SelfServicePresenter.php
+
+		-
+			message: '#^Anonymous function has an unused use \$data\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/presenters/SpravaCcPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Application\\UI\\Form\:\:addDynamic\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/SpravaCcPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Localization\\Translator\:\:setLang\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/SpravaCcPresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/presenters/SpravaCcPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Localization\\Translator\:\:setLang\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/SpravaMailuPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Localization\\Translator\:\:setLang\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/SpravaNesparovanychPresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 2
+			path: app/presenters/SpravaOblastiPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Localization\\Translator\:\:setLang\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/presenters/SpravaPlatebPresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/presenters/SpravaSifrovaniPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Localization\\Translator\:\:setLang\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/SpravaSlucovaniPresenter.php
+
+		-
+			message: '#^Call to method App\\Presenters\\SpravaSmluvPresenter\:\:userCanChange\(\) on a separate line has no effect\.$#'
+			identifier: method.resultUnused
+			count: 2
+			path: app/presenters/SpravaSmluvPresenter.php
+
+		-
+			message: '#^Call to method App\\Presenters\\SpravaSmluvPresenter\:\:userCanView\(\) on a separate line has no effect\.$#'
+			identifier: method.resultUnused
+			count: 2
+			path: app/presenters/SpravaSmluvPresenter.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 2
+			path: app/presenters/SpravaSmluvPresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/presenters/SpravaSmsPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Localization\\Translator\:\:setLang\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/SpravaUctuPresenter.php
+
+		-
+			message: '#^Cannot call method addFilter\(\) on Nette\\Application\\UI\\Template\|stdClass\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/presenters/StatusPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$cestneClenstviUzivatele is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$log is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$spravceOblasti is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$technologiePripojeni is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$typCestnehoClenstvi is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$typClenstvi is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$typPravniFormyUzivatele is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$typSpravceOblasti is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$typZarizeni is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$uzivatel is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\SubnetPresenter\:\:\$zpusobPripojeni is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/SubnetPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Localization\\Translator\:\:setLang\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/UzivatelAccountPresenter.php
+
+		-
+			message: '#^Variable \$seznamTransakci might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/presenters/UzivatelAccountPresenter.php
+
+		-
+			message: '#^Method App\\Presenters\\UzivatelActionsPresenter\:\:checkTimeSinceLastGenerateContract\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/presenters/UzivatelActionsPresenter.php
+
+		-
+			message: '#^Parameter \#2 \$times of function str_repeat expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/presenters/UzivatelActionsPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\UzivatelActionsPresenter\:\:\$cestneClenstviUzivatele is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/UzivatelActionsPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\UzivatelActionsPresenter\:\:\$stitkovac is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/UzivatelActionsPresenter.php
+
+		-
+			message: '#^Parameter \#1 \$array \(non\-empty\-list\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: app/presenters/UzivatelMailSmsPresenter.php
+
+		-
+			message: '#^Parameter \#1 \$array \(non\-empty\-list\<mixed\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: app/presenters/UzivatelMailSmsPresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 4
+			path: app/presenters/UzivatelMailSmsPresenter.php
+
+		-
+			message: '#^Variable \$oblastMail might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/presenters/UzivatelMailSmsPresenter.php
+
+		-
+			message: '#^Variable \$validni might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: app/presenters/UzivatelMailSmsPresenter.php
+
+		-
+			message: '#^Anonymous function has an unused use \$form\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Application\\UI\\Form\:\:addDynamic\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Forms\\Controls\\SubmitButton\:\:addRemoveOnClick\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Method Nette\\Forms\\Container\:\:addCheckbox\(\) invoked with 3 parameters, 1\-2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Parameter \#1 \$control of method Nette\\Forms\\Controls\\BaseControl\:\:addConditionOn\(\) expects Nette\\Forms\\Control, Nette\\ComponentModel\\IComponent given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\UzivatelPresenter\:\:\$ap is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\UzivatelPresenter\:\:\$pdfGenerator is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\UzivatelPresenter\:\:\$stitkovac is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\UzivatelPresenter\:\:\$subnet is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Property App\\Presenters\\UzivatelPresenter\:\:\$typSpravceOblasti is unused\.$#'
+			identifier: property.unused
+			count: 1
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 2
+			path: app/presenters/UzivatelPresenter.php
+
+		-
+			message: '#^Anonymous function has an unused use \$data\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/presenters/UzivatelRightsCcPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Application\\UI\\Form\:\:addDynamic\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/presenters/UzivatelRightsCcPresenter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 2
+			path: app/presenters/UzivatelRightsCcPresenter.php
+
+		-
+			message: '#^Call to an undefined method Nette\\Security\\IIdentity\:\:getNick\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/presenters/UzivatelTelevizeActionsPresenter.php
+
+		-
+			message: '#^Parameter \#2 \$key of static method Defuse\\Crypto\\Crypto\:\:decrypt\(\) expects Defuse\\Crypto\\Key, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/services/CryptoSluzba.php
+
+		-
+			message: '#^Parameter \#2 \$key of static method Defuse\\Crypto\\Crypto\:\:encrypt\(\) expects Defuse\\Crypto\\Key, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/services/CryptoSluzba.php
+
+		-
+			message: '#^Property App\\Services\\CryptoSluzba\:\:\$passPhrase \(string\) does not accept Defuse\\Crypto\\Key\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/services/CryptoSluzba.php
+
+		-
+			message: '#^Property App\\Services\\MailService\:\:\$cestneClenstviUzivatele is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/services/MailService.php
+
+		-
+			message: '#^Property App\\Services\\MailService\:\:\$templateDir is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/services/MailService.php
+
+		-
+			message: '#^Variable \$out might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/services/PdfGenerator.php
+
+		-
+			message: '#^PHPDoc tag @var above a method has no effect\.$#'
+			identifier: varTag.misplaced
+			count: 1
+			path: app/services/SmlouvaStavSluzba.php
+
+		-
+			message: '#^Call to method getAwegUser\(\) on an unknown class App\\Services\\App\\Model\\AwegUser\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/services/SmsSender.php
+
+		-
+			message: '#^Method App\\Services\\SmsSender\:\:sendSms\(\) should return string but returns array\<string, int\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/services/SmsSender.php
+
+		-
+			message: '#^Method App\\Services\\SmsSender\:\:sendSms\(\) should return string but returns array\<string, int\|string\|false\|null\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/services/SmsSender.php
+
+		-
+			message: '#^Property App\\Services\\SmsSender\:\:\$awegUser \(App\\Services\\App\\Model\\AwegUser\) does not accept App\\Model\\AwegUser\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/services/SmsSender.php
+
+		-
+			message: '#^Property App\\Services\\SmsSender\:\:\$awegUser has unknown class App\\Services\\App\\Model\\AwegUser as its type\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/services/SmsSender.php
+
+		-
+			message: '#^Parameter \#2 \$descriptor_spec of function proc_open expects array\<0\|1\|2, list\<string\>\|resource\>, array\{array\{''file'', ''/dev/null'', ''r''\}, array\{''file'', non\-falsy\-string, ''a''\}, array\{''redirect'', 1\}\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: pdfGenerator/www/ContractPdf.php
+
+		-
+			message: '#^Property Test\\ExampleTest\:\:\$container is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: tests/ExampleTest.phpt
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: www/digisign-webhook/WebhookReceiver.php
