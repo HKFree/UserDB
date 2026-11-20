@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Deploy testing environment (userdb-test)
 
 on:
   push:
@@ -13,12 +13,17 @@ env:
 
 jobs:
   deploy_test:
+    name: Deploy testing branch to the test server
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build the Docker image
+      - name: List repository files
         run: ls -la
-      - run: mkdir ~/.ssh
-      - run: echo "$CLOUD_SSH_KEY" >> ~/.ssh/id_rsa
-      - run: chmod 0600 ~/.ssh/id_rsa
-      - run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "./deploy-userdb-test.sh"
+      - name: Create ~/.ssh directory
+        run: mkdir ~/.ssh
+      - name: Store SSH key
+        run: echo "$CLOUD_SSH_KEY" >> ~/.ssh/id_rsa
+      - name: Set SSH key permissions
+        run: chmod 0600 ~/.ssh/id_rsa
+      - name: Run deploy-userdb-test.sh on the server over SSH
+        run: ssh -o StrictHostKeyChecking=no $CLOUD_USERNAME@$CLOUD_HOSTNAME "./deploy-userdb-test.sh"

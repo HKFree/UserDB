@@ -1,0 +1,23 @@
+name: Docker image build
+
+# Only verifies that the application image builds from the Dockerfile.
+# The image is not pushed anywhere and nothing is deployed.
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  docker_build:
+    name: Build application image (docker build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build image from Dockerfile
+        run: docker build . --tag userdb:ci

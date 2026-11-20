@@ -44,6 +44,7 @@ export USERDB_DB_HOST=127.0.0.1 USERDB_DB_NAME=userdb_test
 export USERDB_DB_USERNAME=userdb_test USERDB_DB_PASSWORD=test-only
 flox activate -s -- vendor/bin/tester -C tests
 flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+flox activate -- vendor/bin/latte-lint app
 ```
 
 The DI smoke test reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. `-s` starts the local MariaDB service. The database test uses its own restricted `userdb_test` account and database, ignoring application credentials and local configuration. It checks tag writes, reads, updates, area filtering, Czech text, unique and foreign-key constraints, and the server's SQL mode. Its minimal schema is in `tests/fixtures/stitek.sql`; inserted data is rolled back after each run. A missing database fails the test instead of skipping it.

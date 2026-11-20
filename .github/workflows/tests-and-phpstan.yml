@@ -1,16 +1,15 @@
-name: PHP checks
+name: Tests and static analysis (Nette Tester, PHPStan)
 
 on:
-  pull_request:
-    branches: [master]
   push:
-    branches: [master]
+  pull_request:
 
 permissions:
   contents: read
 
 jobs:
   test:
+    name: Nette Tester and PHPStan
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
