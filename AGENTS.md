@@ -148,9 +148,8 @@ codex plugin add nette@nette
   a kvalitu, než vynucuje současná úroveň PHPStanu. Ta je minimum, ne měřítko:
   piš úplné typy parametrů, návratových hodnot a vlastností, krátké funkce
   s jedním účelem a výstižná jména, bez mrtvého kódu.
-- PHPStan běží s baseline `phpstan-baseline.neon`, úroveň je v `phpstan.neon`.
-  Nový a měněný kód musí projít. Nález v něm oprav, do baseline ho nepřidávej
-  ani ho neignoruj. Baseline přegeneruj jen kvůli jejímu zmenšení po opravě.
+- PHPStan běží bez baseline, úroveň je v `phpstan.neon`. Projít musí veškerý
+  kód. Nález oprav; baseline nezaváděj a nález neignoruj.
 - Styl hlídá php-cs-fixer (`.php-cs-fixer.dist.php`) a `.editorconfig`, syntaxi
   šablon `latte-lint`.
 - V pojmenování se drž okolního kódu: česká jména podle tabulek (`Uzivatel`,
