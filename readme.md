@@ -51,6 +51,8 @@ The test container loads `app/config/config.neon` and `tests/config.test.neon` w
 The suite covers:
 
 - Container services, routing, authentication, API access and representative presenter pages and permissions.
+- Permission matrices for admin tools, rights, AP/member editing, messages and grid access, with recorded side effects.
+- Member edit form validation, saves and audit logs, IP/password handling, registration and planned membership transitions.
 - Schema migrations, tag operations and constraints, account activation and ledger entries.
 - Subnet calculations, downloads, SSID rendering, QR generation and user merge balances.
 - Local mail capture and contract PDF conversion, including Czech text, optional fields and cleanup.

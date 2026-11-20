@@ -9,6 +9,7 @@ date_default_timezone_set('Europe/Prague');
 foreach (['TestDoubles', 'TestEnvironment', 'Fixtures', 'PresenterRunner', 'DatabaseTestCase'] as $helper) {
     require_once __DIR__ . '/' . $helper . '.php';
 }
+require_once __DIR__ . '/PermissionScenario.php';
 
 $storage = Test\TestEnvironment::TEMP_DIR . '/files';
 Nette\Utils\FileSystem::createDir($storage);

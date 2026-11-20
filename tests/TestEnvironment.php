@@ -109,7 +109,10 @@ final class TestEnvironment
                 $builder->disconnect();
             }
 
-            $database = self::container()->getByType(Explorer::class);
+            $configured = self::container()->getByType(Explorer::class);
+            // No cache storage: one Explorer serves every case of the process, and Nette's accessed-column
+            // cache would make a case load partial rows depending on earlier cases and garbage collection.
+            $database = new Explorer($configured->getConnection(), $configured->getStructure(), $configured->getConventions());
             self::waitForServer($database->getConnection());
             return self::$database = $database;
         } catch (\Throwable $e) {

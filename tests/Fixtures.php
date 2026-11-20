@@ -22,9 +22,9 @@ final class Fixtures
         return $this->insert('Ap', ['Oblast_id' => $areaId, 'jmeno' => $this->name('AP'), 'aktivni' => 1]);
     }
 
-    public function member(int $apId): ActiveRow {
+    public function member(int $apId, array $values = []): ActiveRow {
         $name = $this->name('Member');
-        return $this->insert('Uzivatel', [
+        return $this->insert('Uzivatel', $values + [
             'Ap_id' => $apId,
             'jmeno' => $name,
             'prijmeni' => 'Fixture',
@@ -71,18 +71,33 @@ final class Fixtures
         }
     }
 
-    private function name(string $prefix): string {
+    public function subnet(int $apId, string $subnet, string $gateway): ActiveRow {
+        return $this->insert('Subnet', ['Ap_id' => $apId, 'subnet' => $subnet, 'gateway' => $gateway, 'popis' => 'Test subnet']);
+    }
+
+    public function ipAddress(int $memberId, string $address, array $values = []): ActiveRow {
+        return $this->insert('IPAdresa', $values + [
+            'Uzivatel_id' => $memberId, 'ip_adresa' => $address,
+            'dhcp' => 0, 'mac_filter' => 0, 'internet' => 1, 'smokeping' => 0,
+        ]);
+    }
+
+    public function name(string $prefix): string {
         return $prefix . '-' . bin2hex(random_bytes(8));
     }
 
-    private function lookup(string $table, string $text): int {
+    public function lookup(string $table, string $text): int {
         $row = $this->database->table($table)->where('text', $text)->fetch();
         return $row ? (int) $row->id : throw new \RuntimeException("Missing lookup $table: $text");
     }
 
-    private function insert(string $table, array $data): ActiveRow {
+    /** For tables with the primary key id only; insert into other tables through the Explorer. */
+    public function insert(string $table, array $data): ActiveRow {
         if (!$this->database->getConnection()->getPdo()->inTransaction()) {
             throw new \LogicException('Fixtures require an active test transaction.');
+        }
+        if ($this->database->getStructure()->getPrimaryKey($table) !== 'id') {
+            throw new \LogicException("Fixtures::insert() needs the primary key id, which $table does not have.");
         }
         $row = $this->database->table($table)->insert($data);
         if (!$row instanceof ActiveRow) {
