@@ -348,8 +348,8 @@ class UzivatelPresenter extends BasePresenter
         $form->addHidden('id');
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
         $pravniForma = $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::Filled, 'Vyberte typ právní formy');
-        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($pravniForma, Form::Equal, 2)->setRequired('Zadejte název firmy');
-        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($pravniForma, Form::Equal, 2)->setRequired('Zadejte IČ');
+        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($pravniForma, Form::Equal, Model\TypPravniFormyUzivatele::PRAVNICKA_OSOBA)->setRequired('Zadejte název firmy');
+        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($pravniForma, Form::Equal, Model\TypPravniFormyUzivatele::PRAVNICKA_OSOBA)->setRequired('Zadejte IČ');
         //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
         $form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
@@ -405,7 +405,7 @@ class UzivatelPresenter extends BasePresenter
 
         $form->setDefaults(array(
             'TypClenstvi_id' => -1,
-            'TypPravniFormyUzivatele_id' => 1,
+            'TypPravniFormyUzivatele_id' => Model\TypPravniFormyUzivatele::FYZICKA_OSOBA,
         ));
 
         // pokud editujeme, nacteme existujici ipadresy
@@ -449,7 +449,7 @@ class UzivatelPresenter extends BasePresenter
                 $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
             }
         } else {
-            if ($data['druzstvo'] == 1 && $data['TypPravniFormyUzivatele_id'] == 1) {
+            if ($data['druzstvo'] == 1 && $data['TypPravniFormyUzivatele_id'] == Model\TypPravniFormyUzivatele::FYZICKA_OSOBA) {
                 if (($data['datum_narozeni'] ?? "") == "") {
                     $form->addError('Právní vztah k družstvu vyžaduje zadání data narození.');
                 }
