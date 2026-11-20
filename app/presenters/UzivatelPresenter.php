@@ -449,7 +449,7 @@ class UzivatelPresenter extends BasePresenter
                 $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
             }
         } else {
-            if ($data['druzstvo'] == 1) {
+            if ($data['druzstvo'] == 1 && $data['TypPravniFormyUzivatele_id'] == 1) {
                 if (($data['datum_narozeni'] ?? "") == "") {
                     $form->addError('Právní vztah k družstvu vyžaduje zadání data narození.');
                 }
