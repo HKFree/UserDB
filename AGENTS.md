@@ -75,6 +75,9 @@ flox activate -- vendor/bin/latte-lint app
 
 Stejné kontroly pouští CI při každém pushi a PR. Pusť je lokálně před commitem.
 
+Které řádky testy provedou, změří `flox activate -s -- scripts/userdb_test_coverage.sh`
+(report v `temp/coverage/coverage.html`). Práh pokrytí se nevynucuje.
+
 Lokální web s demo daty; každý worktree má vlastní databázi a port:
 
 ```sh
@@ -119,7 +122,7 @@ codex plugin add nette@nette
 | `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
 | `tests/` | Nette Tester; `tests/bootstrap.php` načte společný základ: testovací kontejner, databázi z migrací ve Floxu a spouštění presenterů |
-| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, router PHP serveru) a očištěný vzor skriptu nasazení testovacího prostředí |
+| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, router PHP serveru), měření pokrytí testy a očištěný vzor skriptu nasazení testovacího prostředí |
 | `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení testovacího prostředí |
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
 | `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |

@@ -25,6 +25,9 @@
         "pkg-group": "mariadb",
         "version": "10.11.19"
       },
+      "pcov": {
+        "pkg-path": "php82Extensions.pcov"
+      },
       "php": {
         "pkg-path": "php82"
       },
@@ -412,6 +415,66 @@
       ],
       "outputs": {
         "out": "/nix/store/7hf858j4k1y1l7a0dw8yhkqhx403dbgn-composer-2.10.3"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82Extensions.pcov",
+      "broken": false,
+      "derivation": "/nix/store/hmdlb6s8k7g3aisvmmjw61ha1wp0bajw-php-pcov-1.0.12.drv",
+      "description": "Self contained php-code-coverage compatible driver for PHP",
+      "install_id": "pcov",
+      "license": "PHP-3.01",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "php-pcov-1.0.12",
+      "pname": "pcov",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T05:50:29.033285Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "1.0.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/v11mv72jy45mvx50lh1ga4mnkggmv57l-php-pcov-1.0.12"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82Extensions.pcov",
+      "broken": false,
+      "derivation": "/nix/store/brxy1wh9i5bjbix3mqw1nc9dl7nryis4-php-pcov-1.0.12.drv",
+      "description": "Self contained php-code-coverage compatible driver for PHP",
+      "install_id": "pcov",
+      "license": "PHP-3.01",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "php-pcov-1.0.12",
+      "pname": "pcov",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T07:05:52.951364Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "1.0.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/c4awn496yhq8wlg66qiv449awnr98dfa-php-pcov-1.0.12"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
