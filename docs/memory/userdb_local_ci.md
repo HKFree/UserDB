@@ -15,7 +15,7 @@ Pravidla platí pro všechny vývojáře a agenty: změny se připravují pouze 
 
 - Větev `testing` nepoužívat: existující `deploy-userdb-test.yml` spouští vzdálený deploy při PR/push do této větve.
 - Test runner i jeho podprocesy musí používat PHP z projektového Flox prostředí.
-- Při cíleném spuštění PHP CS Fixeru s více explicitními cestami (např. `tests/*.phpt`) vždy přidat `--config=.php-cs-fixer.dist.php`; bez něj nedokáže vybrat konfiguraci. Pro běžnou kontrolu celého projektu cesty nepředávat, aby se použil nakonfigurovaný Finder a jeho výjimky.
+- Při cíleném spuštění PHP CS Fixeru s více explicitními cestami (např. `tests/*.php`) vždy přidat `--config=.php-cs-fixer.dist.php`; bez něj nedokáže vybrat konfiguraci. Pro běžnou kontrolu celého projektu cesty nepředávat, aby se použil nakonfigurovaný Finder a jeho výjimky.
 - Instalace Floxu v CI sama neaktivuje prostředí. Při úpravách víceřádkového kroku zachovat aktivaci pro celý skript a přepínače shellu `--noprofile --norc -e -o pipefail`, aby chyba příkazu či pipeline nezůstala skrytá.
 - Při aktualizaci pinovaných GitHub Actions ověřovat i `runs.using` v jejich `action.yml`: zastaralý Node runtime vyvolává varování nezávisle na verzi PHP ve Floxu.
 - Testovací kontejner nečte `config.local.neon` ani skutečné prostředí a má vlastní `temp/tests`; viz [Testy](userdb_tests.md). `LocalDevelopmentTest` dál používá vývojový bootstrap s `temp/flox`. Existující konfiguraci ani `.env` nepřepisovat.

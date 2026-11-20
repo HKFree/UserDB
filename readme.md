@@ -57,7 +57,7 @@ The suite covers:
 - Subnet calculations, downloads, SSID rendering, QR generation and user merge balances.
 - Local mail capture and contract PDF conversion, including Czech text, optional fields and cleanup.
 
-**Adding a test:** Use the suffix `*Test.phpt`, `*DatabaseTest.phpt` for database tests or `*PresenterTest.phpt` for presenter tests, and require `tests/bootstrap.php`. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
+**Adding a test:** Name the file `*Test.php`, `*DatabaseTest.php` for database tests or `*PresenterTest.php` for presenter tests; Nette Tester runs every `*Test.php` file under `tests/`, and require `tests/bootstrap.php`. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
 
 PHPStan runs at **level 5** with the Nette extension. The findings that existed when the level was raised are recorded in `phpstan-baseline.neon`, so only new or changed code has to pass level 5. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
@@ -101,7 +101,7 @@ To activate formatting in VSCode, install extension "[php cs fixer](https://mark
 
 Configure the formatter to use PHP 8.2. PHP CS Fixer is included in the project's Composer development dependencies; its CLI is available through `flox activate -- vendor/bin/php-cs-fixer`.
 
-The shared configuration includes both `.php` files and `.phpt` tests. Run the same code style check as CI:
+Tests are ordinary `.php` files and fall under the shared configuration. Run the same code style check as CI:
 
 ```sh
 flox activate -- vendor/bin/php-cs-fixer check --diff

@@ -14,7 +14,7 @@ Od 20. 11. 2026 běží level 5 s baseline `phpstan-baseline.neon` (168 hlášen
 - Baseline neopravuje chyby, jen je odkládá. Jsou v ní i skutečné vady, ne pouze typové nepřesnosti; ověřené jsou v issue #195. Identifikátor sám nestačí: z hlášení `variable.undefined` byla skutečná jen část, `class.notFound` a `arguments.count` se ukázaly jako neškodné (PHPDoc, ignorovaný argument navíc). Před nahlášením vady vždy přečíst kód.
 - `--generate-baseline` zapíše všechna aktuální hlášení včetně nových. Přegenerovat jen kvůli zmenšení baseline po opravě; neodpovídající záznam PHPStan sám nahlásí jako chybu.
 - Baseline generovat se stejným rozsahem a rozšířeními jako běžná analýza, jinak vzniknou neodpovídající záznamy.
-- Rozsah: `app`, oba PHP vstupy v `bin`, `tests` včetně `.phpt`, `www`, `pdfGenerator/www`. Závislosti neanalyzovat; `lib/phpqrcode` zahrnout jen přes `scanDirectories` pro rozpoznání symbolů.
+- Rozsah: `app`, oba PHP vstupy v `bin`, `tests`, `www`, `pdfGenerator/www`. Závislosti neanalyzovat; `lib/phpqrcode` zahrnout jen přes `scanDirectories` pro rozpoznání symbolů.
 - Pro analýzu načíst `vendor/autoload.php`, nikoliv aplikační či testovací bootstrap. Není potřeba DB ani skutečná konfigurace. Příkaz spouštět z kořene projektu.
 - Výchozí PHP limit 128 MB nestačí pro paralelní analýzu celého projektu; příkaz v README i CI používá `--memory-limit=512M`.
 - Před opravami, bez baseline a ignorovaných chyb: level 0 měl 8 hlášení, 1 měl 29, 2 měl 84, 3 měl 95, 4 měl 158, 5 měl 179, 6 měl 1172, 7 měl 1262, 8 měl 1288, 9 měl 1415 a 10 měl 4953. Tyto počty jsou historické, nikoliv stav po opravách.

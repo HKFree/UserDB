@@ -6,9 +6,6 @@ parameters:
     level: 5
     phpVersion: 80200
     tmpDir: temp/phpstan
-    fileExtensions:
-        - php
-        - phpt
     paths:
         - app
         - bin/console
