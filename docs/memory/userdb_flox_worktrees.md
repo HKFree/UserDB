@@ -21,3 +21,4 @@ Vývojové prostředí musí podporovat více současně běžících worktrees.
 - Flox `libreoffice-bin` pro macOS vystavuje `soffice` jako `open -na ...`, které nečeká na dokončení. Pro headless převod je nutné volat přímo `Applications/LibreOffice.app/Contents/MacOS/soffice` z Flox prostředí. Linux používá katalogový `libreoffice`.
 - Do ODT archivu nepřidávat diagnostické logy. LibreOffice odmítl načíst jinak validní archiv s dodatečným `command.log`; logy musí zůstat mimo dokument.
 - SledovaniTV a účetní reporty mají samostatné Python procesy, Fio import Perl a cron. Pro základní běh webu je nespouštět automaticky; komunikují s externími systémy.
+- Detail uživatele automaticky načítá IDS a síťové kontroly. Lokální konfigurace musí přepsat jejich výchozí externí URL, samotné syntetické přihlašovací údaje odchozím požadavkům nezabrání. Podpis přes Digisign a jeho konzolový worker nejsou součástí lokálního náhledu PDF.
