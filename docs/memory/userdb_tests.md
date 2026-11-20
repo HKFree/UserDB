@@ -104,3 +104,6 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   skončí „Operation not permitted“ po třicetisekundovém čekání. Bez databáze běží `ContainerTest`, `RouterTest`
   a čistě jednotkové testy.
 - PHPStan v takovém prostředí potřebuje `--debug`, paralelní běh si otevírá TCP socket.
+- `Tester\Environment::setup()` čte anotace ze vstupního souboru. Načtení testu přes `php -r 'require ...'`
+  selže na `Unable to read file 'Command line code'`. Pro ověření testu s přednačteným modelem použít
+  skutečný soubor testu a `php -d auto_prepend_file=...` (ověřeno 20. 11. 2026, Tester 2.6.2).
