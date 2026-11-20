@@ -1,0 +1,115 @@
+#!/bin/bash
+#
+# VZOR: očištěná kopie serverového skriptu ~/deploy-userdb-test.sh (stav k 2026-11-20).
+#
+# Skutečný skript leží pouze na testovacím serveru v domovském adresáři uživatele,
+# pod kterým se přihlašuje GitHub Actions (vars.CLOUD_USERNAME @ vars.CLOUD_HOSTNAME).
+# Spouští jej workflow .github/workflows/deploy-userdb-test.yml přes SSH, bez parametrů.
+#
+# Tajné údaje a některá provozní nastavení jsou zde nahrazené zástupnými hodnotami xxx...
+# Skutečný skript obsahuje ostrá hesla a klíče: NIKDY jej nevkládat do repozitáře,
+# issue, PR ani komentáře (repozitář je veřejný).
+#
+# Deployment testovaci userdb
+# viz: https://github.com/HKFree/UserDB/actions
+# do: https://userdb-test.hkfree.org
+set -e
+
+echo "-- git: clone https://github.com/HKFree/UserDB.git --"
+
+BRANCH=${1:-testing}
+
+rm -rf ~/.tmp | true
+mkdir ~/.tmp
+cd ~/.tmp
+git clone https://github.com/HKFree/UserDB.git
+cd UserDB
+git checkout $BRANCH
+
+cd ~/.tmp/UserDB
+rm -rf db/dummy-data || true
+
+echo "-- docker container: build (userdb:$BRANCH) --"
+docker build . --tag userdb:$BRANCH
+echo "-- docker container: build (pdf-generator:$BRANCH) --"
+docker build ./pdfGenerator --tag pdf-generator:$BRANCH
+if [ -d stvConnector ]; then
+  echo "-- docker container: build (stv-connector:$BRANCH) --"
+  docker build ./stvConnector --tag stv-connector:$BRANCH
+fi
+
+echo "-- docker container: stop & remove --"
+docker container stop userdb-testing | true
+docker container rm userdb-testing | true
+docker container stop userdb-pdf-generator-testing | true
+docker container rm userdb-pdf-generator-testing | true
+docker container stop userdb-stv-connector-testing | true
+docker container rm userdb-stv-connector-testing | true
+
+echo "-- docker network userdb-testing-net --"
+docker network create userdb-testing-net | true
+
+echo "-- docker container: run (userdb:testing) --"
+docker container run \
+  --detach \
+  --name userdb-testing \
+  --env TRACY_ENABLE=xxxtracy \
+  --env USERDB_SALT=xxxsalt \
+  --env USERDB_DB_HOST=mariadb-userdb-testing:3306 \
+  --env USERDB_DB_NAME=userdb_test \
+  --env USERDB_DB_USERNAME=root \
+  --env USERDB_DB_PASSWORD=xxxdbpwd \
+  --env USERDB_IDS_USERNAME=xxxidsuser \
+  --env USERDB_IDS_PASSWORD=xxxidspwd \
+  --env USERDB_ENCRYPTION_PASSPHRASE=xxxdefusekey \
+  --env USERDB_IDS_IPS_WHITELIST=xxxip1,xxxip2 \
+  --env USERDB_GOOGLE_MAPS_KEY=xxxmapskey \
+  --env INFLUX_URL=influxdb://xxxinfluxuser:xxxinfluxpwd@xxxinfluxhost:8086/wewimo \
+  --env DIGISIGN_ACCESS_KEY=xxxdigisignaccess \
+  --env DIGISIGN_SECRET_KEY=xxxdigisignsecret \
+  --env PDF_GENERATOR_URL=http://userdb-pdf-generator-testing/ \
+  --env FILE_STORAGE_PATH=/opt/userdb/smlouvy \
+  --env AGREEMENT_NAME_PREFIX=TESTING \
+  --env MATERNA_MEX_USER=xxxmexuser \
+  --env MATERNA_MEX_PASS=xxxmexpwd \
+  --publish 127.0.0.1:8082:80 \
+  --workdir /opt/userdb \
+  --network userdb-testing-net \
+  --volume /var/userdb-smlouvy-testing:/opt/userdb/smlouvy \
+  userdb:$BRANCH \
+  docker-php-entrypoint apache2-foreground
+
+echo "-- docker container: run (pdf-generator:testing) --"
+docker container run \
+  --detach \
+  --name userdb-pdf-generator-testing \
+  --network userdb-testing-net \
+  --publish 127.0.0.1:8083:80 \
+  pdf-generator:$BRANCH
+
+if [ -d stvConnector ]; then
+  echo "-- docker container: run (stv-connector:testing) --"
+  docker container run \
+    --detach \
+    --name userdb-stv-connector-testing \
+    --env USERDB_DB_HOST=mariadb-userdb-testing \
+    --env USERDB_DB_NAME=userdb_test \
+    --env USERDB_DB_USERNAME=root \
+    --env USERDB_DB_PASSWORD=xxxdbpwd \
+    --env STV_PARTNER=xxxstvpartner \
+    --env STV_PASSWORD=xxxstvpwd \
+    --network userdb-testing-net \
+    stv-connector:$BRANCH
+fi
+
+echo "-- docker container: done --"
+
+# Tohle je vicemene NETTE zoufalstvi:
+( sleep 5; docker exec userdb-testing chown -R www-data:www-data temp ) &
+( sleep 15; docker exec userdb-testing chown -R www-data:www-data temp ) &
+( sleep 60; docker exec userdb-testing chown -R www-data:www-data temp ) &
+
+echo "-- migrations: start --"
+docker exec userdb-testing php bin/console migrations:continue
+docker exec userdb-testing chown -R www-data:www-data temp
+echo "-- migrations: done --"

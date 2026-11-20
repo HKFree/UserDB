@@ -44,6 +44,7 @@ export USERDB_DB_HOST=127.0.0.1 USERDB_DB_NAME=userdb_test
 export USERDB_DB_USERNAME=userdb_test USERDB_DB_PASSWORD=test-only
 flox activate -s -- vendor/bin/tester -C tests
 flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+flox activate -- vendor/bin/latte-lint app
 ```
 
 The DI smoke test reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. `-s` starts the local MariaDB service. The database test uses its own restricted `userdb_test` account and database, ignoring application credentials and local configuration. It checks tag writes, reads, updates, area filtering, Czech text, unique and foreign-key constraints, and the server's SQL mode. Its minimal schema is in `tests/fixtures/stitek.sql`; inserted data is rolled back after each run. A missing database fails the test instead of skipping it.
@@ -125,6 +126,35 @@ Run `git push production master` in order to fully deploy the app.
 When something goes wrong, try to run `(cd /opt/UserDB.git; hooks/post-receive)` manually on the server.
 
 See [git-hooks/post-receive.sample](git-hooks/post-receive.sample) for more details what happens during deployment on server side.
+
+### Testing environment (userdb-test.hkfree.org)
+
+1. A push to the `testing` branch (or a pull request targeting it) starts the GitHub Actions workflow
+   [deploy-userdb-test.yml](.github/workflows/deploy-userdb-test.yml).
+2. The workflow connects over SSH (`vars.CLOUD_USERNAME`@`vars.CLOUD_HOSTNAME`, key in `secrets.CLOUD_SSH_KEY`)
+   and runs `./deploy-userdb-test.sh` from that user's home directory. Nothing is built on the GitHub runner
+   and the built images are not pushed to any registry.
+3. The server script:
+   - clones `https://github.com/HKFree/UserDB.git` into `~/.tmp` and checks out `testing`
+     (the branch is the script's first argument, the workflow passes none),
+   - removes `db/dummy-data`,
+   - builds the images `userdb:testing` and `pdf-generator:testing` locally,
+     plus `stv-connector:testing` if the checked-out branch contains `stvConnector/`,
+   - stops and removes the containers `userdb-testing`, `userdb-pdf-generator-testing` and `userdb-stv-connector-testing`
+     and starts new ones from the built images in the Docker network `userdb-testing-net`
+     (web on `127.0.0.1:8082`, PDF generator on `127.0.0.1:8083`, `AGREEMENT_NAME_PREFIX=TESTING`),
+   - runs `php bin/console migrations:continue` inside the new `userdb-testing` container.
+
+The script does not manage the database. The web and STV connector containers connect to the existing
+database `userdb_test` on the host `mariadb-userdb-testing`.
+
+The script always deploys the head of `testing`, so a pull request from a branch of this repository targeting
+`testing` redeploys the current `testing` branch, not the code of the pull request. A pull request from a fork
+starts the workflow without the SSH key, so it deploys nothing.
+
+The real script contains credentials and is kept on the server, not in this repository. A sanitized copy is in
+[scripts/deploy-userdb-test.sh.sample](scripts/deploy-userdb-test.sh.sample). Never paste the real one into
+this repository, an issue or a pull request.
 
 ### Jobs to be run
 

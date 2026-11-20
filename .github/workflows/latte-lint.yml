@@ -1,0 +1,26 @@
+name: Latte templates lint (latte-lint)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  latte_lint:
+    name: Latte linter
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: flox/install-flox-action@5bb9eaaffbeaa699a8251a1ae21ecf4c8e0e37d4 # v2.7.0
+        with:
+          disable-metrics: true
+      - name: Install dependencies and lint templates (latte-lint app)
+        shell: flox activate -- bash --noprofile --norc -e -o pipefail {0}
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          vendor/bin/latte-lint app
