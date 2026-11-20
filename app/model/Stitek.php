@@ -39,7 +39,7 @@ class Stitek extends Table
     }
 
     public function getStitkyByOblast($id) {
-        return ($this->findAll().where("Oblast_id", $id));
+        return $this->getSeznamStitku()->where('Oblast_id', $id);
     }
 
     public function getStitekByText($nazev) {

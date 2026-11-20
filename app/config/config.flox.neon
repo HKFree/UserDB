@@ -1,0 +1,26 @@
+# Loaded only by scripts/userdb_dev_bootstrap.php, never by production.
+includes:
+    - config.local.DIST.neon
+
+parameters:
+    urlPrefix: ''
+    salt: local-development-only
+    influxUrl: 'influxdb://127.0.0.1:0/wewimo'
+    igw1IpCheckerUrl: 'http://127.0.0.1:0/'
+    igw2IpCheckerUrl: 'http://127.0.0.1:0/'
+    sojkaPingerURL: 'http://127.0.0.1:0/'
+    outerScannerURL: 'http://127.0.0.1:0/'
+    maternaMexUrl: 'http://127.0.0.1:0/'
+
+database:
+    dsn: "mysql:unix_socket=%env.USERDB_MARIADB_SOCKET%;dbname=userdb_dev"
+    user: userdb_dev
+    password: dev-only
+
+session:
+    name: %env.USERDB_SESSION_NAME%
+    savePath: %env.FLOX_ENV_CACHE%/sessions
+
+services:
+    mail.mailer: UserdbLocalMailer(%env.FLOX_ENV_CACHE%/mail)
+    idsConnector: App\Model\IdsConnector('http://127.0.0.1:0/', 'local-only', 'local-only', '')

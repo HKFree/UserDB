@@ -166,13 +166,12 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $user_id = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($user_id);
 
-        $tmpname = sprintf('/dev/shm/document_%u.pdf', rand(1, 1e9));
         $pdfData = \App\Services\GeneratorSmlouvy::nahledUcastnickeSmlouvy($uzivatel);
-        file_put_contents($tmpname, $pdfData);
-
-        $this->sendResponse(new Nette\Application\Responses\FileResponse($tmpname, "náhled smlouvy", 'application/pdf', false));
-
-        unlink($tmpname);
+        $this->sendResponse(new Nette\Application\Responses\CallbackResponse(function ($request, $response) use ($pdfData): void {
+            $response->setContentType('application/pdf');
+            $response->setHeader('Content-Disposition', 'inline; filename="contract-preview.pdf"');
+            echo $pdfData;
+        }));
     }
 
     public function actionHandleSubscriberContract() {

@@ -1,0 +1,95 @@
+<?php
+
+namespace Test;
+
+use App\Model;
+use App\Presenters\SpravaSlucovaniPresenter;
+use Nette\Application\UI\Template;
+use Nette\Bridges\ApplicationLatte\DefaultTemplate;
+use Nette\Http;
+use Tester\Assert;
+
+require __DIR__ . '/../vendor/autoload.php';
+\Tester\Environment::setup();
+
+class MergeUserRow
+{
+    public int $money_aktivni = 1;
+    public int $money_deaktivace = 0;
+
+    public function __construct(public int $kauce_mobil, private int $balance) {
+    }
+
+    public function related($relation) {
+        return new class ($this->balance) {
+            public function __construct(private int $balance) {
+            }
+
+            public function where(...$arguments): self {
+                return $this;
+            }
+
+            public function order($order): self {
+                return $this;
+            }
+
+            public function limit($limit): self {
+                return $this;
+            }
+
+            public function count(): int {
+                return 0;
+            }
+
+            public function sum($column): int {
+                return $this->balance;
+            }
+        };
+    }
+}
+
+$cases = [
+    [100, 250, '900 (kauce: 100)', '1750 (kauce: 250)'],
+    [100, 0, '900 (kauce: 100)', 2000],
+    [0, 250, 1000, '1750 (kauce: 250)'],
+    [0, 0, 1000, 2000],
+];
+
+foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
+    $users = new class ([11 => new MergeUserRow($deposit1, 1000), 22 => new MergeUserRow($deposit2, 2000)]) extends Model\Uzivatel {
+        public function __construct(private array $rows) {
+        }
+
+        public function getUzivatel($id) {
+            return $this->rows[$id];
+        }
+    };
+    $memberships = new class () extends Model\CestneClenstviUzivatele {
+        public function __construct() {
+        }
+
+        public function getHasCC($userID) {
+            return false;
+        }
+    };
+    $unusedModel = fn (string $class) => (new \ReflectionClass($class))->newInstanceWithoutConstructor();
+    $presenter = new class ($unusedModel(Model\SloucenyUzivatel::class), $users, $unusedModel(Model\Log::class), $unusedModel(Model\IPAdresa::class), $memberships) extends SpravaSlucovaniPresenter {
+        protected function createTemplate(?string $class = null): Template {
+            return new DefaultTemplate(new \Latte\Engine());
+        }
+    };
+    $user = new class () extends \Nette\Security\User {
+        public function __construct() {
+        }
+
+        public function getRoles(): array {
+            return ['VV'];
+        }
+    };
+    $presenter->injectPrimary(new Http\Request(new Http\UrlScript('http://localhost/')), new Http\Response(), user: $user);
+    $presenter->loadState(['u1' => 11, 'u2' => 22]);
+    $presenter->renderSlucovani();
+
+    Assert::same($expected1, $presenter->getTemplate()->u1money_bal);
+    Assert::same($expected2, $presenter->getTemplate()->u2money_bal);
+}

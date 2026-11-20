@@ -1,0 +1,34 @@
+name: PHP checks
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      USERDB_DB_HOST: 127.0.0.1
+      USERDB_DB_NAME: userdb_test
+      USERDB_DB_USERNAME: userdb_test
+      USERDB_DB_PASSWORD: test-only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: flox/install-flox-action@5bb9eaaffbeaa699a8251a1ae21ecf4c8e0e37d4 # v2.7.0
+        with:
+          disable-metrics: true
+      - name: Install dependencies, run Nette Tester and PHPStan
+        shell: flox activate -s -- bash --noprofile --norc -e -o pipefail {0}
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          test -e app/config/config.local.neon || touch app/config/config.local.neon
+          vendor/bin/tester -C tests
+          vendor/bin/phpstan analyse --no-progress --memory-limit=512M

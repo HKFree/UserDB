@@ -14,6 +14,16 @@ class GeneratorSmlouvy
 
         $parametry = self::parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy);
 
+        if (getenv('USERDB_LOCAL_PDF') === '1') {
+            require_once __DIR__ . '/../../pdfGenerator/www/ContractPdf.php';
+            return \ContractPdf::generate(
+                $parametry,
+                __DIR__ . '/../../pdfGenerator/templates/SmlouvaUcastnicka_v7_template.odt',
+                getenv('USERDB_LIBREOFFICE') ?: 'libreoffice',
+                getenv('FLOX_ENV_CACHE') . '/pdf'
+            );
+        }
+
         if (!getenv('PDF_GENERATOR_URL')) {
             throw new \Exception("Missing PDF_GENERATOR_URL environment variable\n");
         }
