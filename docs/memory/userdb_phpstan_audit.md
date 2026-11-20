@@ -11,7 +11,7 @@ Výchozí průzkum proběhl 19. 11. 2026 nad commitem `1c8f17f`, přes projektov
 
 Od 20. 11. 2026 běží level 5 s baseline `phpstan-baseline.neon` (168 hlášení ve 137 záznamech v době vzniku); nový a měněný kód musí projít levelem 5.
 
-- Baseline neopravuje chyby, jen je odkládá. Jsou v ní i pravděpodobné skutečné vady (`variable.undefined`, `class.notFound`, `arguments.count`), ne pouze typové nepřesnosti.
+- Baseline neopravuje chyby, jen je odkládá. Jsou v ní i skutečné vady, ne pouze typové nepřesnosti; ověřené jsou v issue #195. Identifikátor sám nestačí: z hlášení `variable.undefined` byla skutečná jen část, `class.notFound` a `arguments.count` se ukázaly jako neškodné (PHPDoc, ignorovaný argument navíc). Před nahlášením vady vždy přečíst kód.
 - `--generate-baseline` zapíše všechna aktuální hlášení včetně nových. Přegenerovat jen kvůli zmenšení baseline po opravě; neodpovídající záznam PHPStan sám nahlásí jako chybu.
 - Baseline generovat se stejným rozsahem a rozšířeními jako běžná analýza, jinak vzniknou neodpovídající záznamy.
 - Rozsah: `app`, oba PHP vstupy v `bin`, `tests` včetně `.phpt`, `www`, `pdfGenerator/www`. Závislosti neanalyzovat; `lib/phpqrcode` zahrnout jen přes `scanDirectories` pro rozpoznání symbolů.
