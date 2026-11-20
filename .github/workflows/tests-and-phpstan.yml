@@ -12,11 +12,6 @@ jobs:
     name: Nette Tester and PHPStan
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      USERDB_DB_HOST: 127.0.0.1
-      USERDB_DB_NAME: userdb_test
-      USERDB_DB_USERNAME: userdb_test
-      USERDB_DB_PASSWORD: test-only
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -28,6 +23,5 @@ jobs:
         shell: flox activate -s -- bash --noprofile --norc -e -o pipefail {0}
         run: |
           composer install --no-interaction --prefer-dist --no-progress
-          test -e app/config/config.local.neon || touch app/config/config.local.neon
           vendor/bin/tester -C tests
           vendor/bin/phpstan analyse --no-progress --memory-limit=512M

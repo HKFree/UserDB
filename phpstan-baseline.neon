@@ -811,12 +811,6 @@ parameters:
 			path: pdfGenerator/www/ContractPdf.php
 
 		-
-			message: '#^Property Test\\ExampleTest\:\:\$container is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: tests/ExampleTest.phpt
-
-		-
 			message: '#^Negated boolean expression is always false\.$#'
 			identifier: booleanNot.alwaysFalse
 			count: 1
