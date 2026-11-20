@@ -72,7 +72,7 @@ class UzivatelListGrid
                 return ($connection);
             });
 
-        if ($money) {
+        if ($money && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
 
@@ -355,7 +355,7 @@ class UzivatelListGrid
                 return ($connection);
             });
 
-        if ($money) {
+        if ($money && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
 

@@ -55,10 +55,16 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $this->template->p = $this->prichoziPlatba->getPrichoziPlatba($this->getParameter('id'));
     }
 
+    /** Platby člena vidí správce jeho AP */
+    private function smiVidetPlatby(): bool {
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        return $uzivatel && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+    }
+
     public function renderAccount() {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
+        $this->template->canViewOrEdit = $this->smiVidetPlatby();
         $this->template->u = $uzivatel;
 
         $this->template->sum_input_spolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where('castka>0')->sum('castka');
@@ -68,7 +74,8 @@ class UzivatelAccountPresenter extends UzivatelPresenter
     }
 
     protected function createComponentAccountgrid($name) {
-        $canViewOrEdit = false;
+        $this->vyzadujOpravneni($this->smiVidetPlatby()); // i export a stránkování gridu
+
         $id = $this->getParameter('id');
 
         //\Tracy\Debugger::barDump($search);
@@ -79,8 +86,6 @@ class UzivatelAccountPresenter extends UzivatelPresenter
 
         if ($id) {
             $seznamTransakci = $this->uzivatelskeKonto->getUzivatelskeKontoUzivatele($id);
-
-            $canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
         }
 
         $grid->setModel($seznamTransakci);

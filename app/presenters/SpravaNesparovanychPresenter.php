@@ -24,10 +24,12 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
     }
 
     public function renderNesparovane() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
     protected function createComponentAccountgrid($name) {
+        $this->vyzadujOpravneni($this->jeVVneboTECH()); // i export a stránkování gridu
+
         //\Tracy\Debugger::barDump($search);
 
         $grid = new \Grido\Grid($this, $name);

@@ -79,11 +79,13 @@ class SpravaPlatebPresenter extends SpravaPresenter
     }
 
     public function renderPlatbycu() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
         $this->template->cu = "";
     }
 
     protected function createComponentPaymentgrid($name) {
+        $this->vyzadujOpravneni($this->jeVVneboTECH()); // i export a stránkování gridu
+
         $id = $this->getParameter('type');
 
         $grid = new \Grido\Grid($this, $name);
