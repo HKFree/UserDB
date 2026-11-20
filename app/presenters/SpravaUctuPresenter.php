@@ -23,7 +23,7 @@ class SpravaUctuPresenter extends SpravaPresenter
 
     protected function createComponentStavyuctu($name) {
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
 
         $grid->setModel($this->stavBankovnihoUctu->getAktualniStavyBankovnihoUctu());
 

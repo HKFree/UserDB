@@ -40,6 +40,7 @@ class PdfGenerator
         $template->nthmesicname = $this->mesicName($uzivatel->zalozen, 1);
         $template->nthmesicdate = $this->mesicDate($uzivatel->zalozen, 0);
         $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
+        $out = [];
         foreach ($ipadrs as $ip) {
             $subnet = $this->subnet->getSubnetOfIP($ip);
 

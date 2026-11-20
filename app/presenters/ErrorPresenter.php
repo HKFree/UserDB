@@ -11,7 +11,7 @@ use Tracy\Debugger;
 class ErrorPresenter extends BasePresenter
 {
     /**
-     * @param  \Exception
+     * @param  \Throwable $exception
      * @return void
      */
     public function renderDefault($exception) {

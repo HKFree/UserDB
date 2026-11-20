@@ -22,8 +22,8 @@ class KomunikacePresenter extends ApiPresenter
     public function actionSendSMS() {
         parent::forceMethod("POST");
 
-        $uid = $this->getHttpRequest()->getPost("uid", null);
-        $text = $this->getHttpRequest()->getPost("text", null);
+        $uid = $this->getHttpRequest()->getPost("uid");
+        $text = $this->getHttpRequest()->getPost("text");
 
         $u = $this->uzivatel->getUzivatel($uid);
         if (!$u) {

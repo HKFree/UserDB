@@ -46,6 +46,7 @@ final class ContractPdf
     }
 
     private static function run(array $command, string $directory): void {
+        // @phpstan-ignore argument.type (PHP requires an int redirect target; PHPStan only allows strings in descriptor lists.)
         $process = proc_open($command, [0 => ['file', '/dev/null', 'r'], 1 => ['file', $directory . '/command.log', 'a'], 2 => ['redirect', 1]], $pipes, $directory);
         if (!is_resource($process)) {
             throw new RuntimeException('Cannot start the PDF converter.');

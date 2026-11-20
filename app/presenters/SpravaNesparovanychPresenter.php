@@ -33,7 +33,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         //\Tracy\Debugger::barDump($search);
 
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('account_export');
 
         $seznamTransakci = $this->uzivatelskeKonto->getSeznamNesparovanych();

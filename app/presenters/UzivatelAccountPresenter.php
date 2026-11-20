@@ -81,9 +81,10 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         //\Tracy\Debugger::barDump($search);
 
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('account_export');
 
+        $seznamTransakci = null;
         if ($id) {
             $seznamTransakci = $this->uzivatelskeKonto->getUzivatelskeKontoUzivatele($id);
         }

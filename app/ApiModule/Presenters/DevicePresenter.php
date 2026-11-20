@@ -49,9 +49,9 @@ class DevicePresenter extends ApiPresenter
             'heslo_sifrovane' => $ip->heslo_sifrovane
         );
 
-        $toUpdate = array('login' => $this->getHttpRequest()->getPost("login", null));
+        $toUpdate = array('login' => $this->getHttpRequest()->getPost("login"));
 
-        $heslo = $this->getHttpRequest()->getPost("heslo", null);
+        $heslo = $this->getHttpRequest()->getPost("heslo");
         if ($heslo && strlen($heslo) > 0) {
             $toUpdate["heslo"] = $this->cryptosvc->encrypt($heslo);
             $toUpdate["heslo_sifrovane"] = 1;

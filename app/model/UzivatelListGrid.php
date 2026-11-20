@@ -42,7 +42,7 @@ class UzivatelListGrid
         $canViewOrEdit = false;
 
         $grid = new \Grido\Grid($presenter, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('user_export');
 
         $apcko = $this->ap->getAP($id);
@@ -74,7 +74,7 @@ class UzivatelListGrid
 
         if ($money && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $thisparams) {
 
                 $konto = $item->related('UzivatelskeKonto.Uzivatel_id');
                 if ($item->money_aktivni != 1) {
@@ -94,7 +94,7 @@ class UzivatelListGrid
                 return $tr;
             });
         } else {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC) {
 
                 if ($item->email_invalid == 1) {
                     $tr->class[] = 'invalidemail';
@@ -251,7 +251,7 @@ class UzivatelListGrid
             }
         }
 
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) {
             $latte = new Engine();
             $params = [
                 'stitky' => $this->stitek->getSeznamStitku(),
@@ -276,7 +276,7 @@ class UzivatelListGrid
         $canViewOrEdit = false;
 
         $grid = new \Grido\Grid($presenter, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('user_export');
 
         if ($id) {
@@ -357,7 +357,7 @@ class UzivatelListGrid
 
         if ($money && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $thisparams) {
 
                 $konto = $item->related('UzivatelskeKonto.Uzivatel_id');
                 if ($item->money_aktivni != 1) {
@@ -376,7 +376,7 @@ class UzivatelListGrid
                 return $tr;
             });
         } else {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC) {
 
                 if ($item->email_invalid == 1) {
                     $tr->class[] = 'invalidemail';
@@ -526,7 +526,7 @@ class UzivatelListGrid
             }
         }
 
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) {
             $latte = new Engine();
             $params = [
                 'stitky' => $this->stitek->getSeznamStitku(),

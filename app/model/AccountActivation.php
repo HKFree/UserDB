@@ -11,13 +11,11 @@ class AccountActivation
 {
     private $uzivatel;
     private $uzivatelskeKonto;
-    private $prichoziPlatba;
     private $parameters;
 
-    public function __construct(Parameters $parameters, PrichoziPlatba $platba, UzivatelskeKonto $konto, Uzivatel $uzivatel) {
+    public function __construct(Parameters $parameters, UzivatelskeKonto $konto, Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
         $this->uzivatelskeKonto = $konto;
-        $this->prichoziPlatba = $platba;
         $this->parameters = $parameters;
     }
 

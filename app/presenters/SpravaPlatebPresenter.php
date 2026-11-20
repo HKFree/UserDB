@@ -26,7 +26,7 @@ class SpravaPlatebPresenter extends SpravaPresenter
 
     protected function createComponentOdchplatby($name) {
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('op_export');
 
         $grid->setModel($this->odchoziPlatba->getOdchoziPlatby());
@@ -89,7 +89,7 @@ class SpravaPlatebPresenter extends SpravaPresenter
         $id = $this->getParameter('type');
 
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('payment_export');
 
         $prichoziPlatby = $this->prichoziPlatba->getPrichoziPlatby();

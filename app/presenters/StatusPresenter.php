@@ -8,6 +8,7 @@ use Tracy\Debugger;
 
 /**
  * Status presenter.
+ * @property-read Nette\Bridges\ApplicationLatte\Template $template
  */
 class StatusPresenter extends BasePresenter
 {

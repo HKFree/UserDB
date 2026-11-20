@@ -44,12 +44,8 @@ function process_digisign_webhook($hook) {
     }
 
     // zpetne volat API nacist detaily smlouvy:
+    // Neznámá obálka skončí výjimkou klienta DigiSign.
     $envelope = $ENVELOPES->get($hook->entityId);
-
-    if (!$smlouva) {
-        print_and_log("Smlouvu nezna digisign API -> ignorovat");
-        return;
-    }
 
     switch ($hook->event) {
         case 'envelopeSent': // obálka odeslána

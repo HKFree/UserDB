@@ -13,20 +13,18 @@ use Nette\Application\Responses\JsonResponse;
 class AjaxApiPresenter extends BasePresenter
 {
     private $subnet;
-    private $ap;
     private $sojka;
 
-    public function __construct(Model\Subnet $subnet, Model\AP $ap, Model\Sojka $sojka) {
+    public function __construct(Model\Subnet $subnet, Model\Sojka $sojka) {
         $this->subnet = $subnet;
-        $this->ap = $ap;
         $this->sojka = $sojka;
     }
 
     /**
      *  Najde subnet a gateway k příslušné IP adrese
      *
-     *  @param string $ip Hledaná IP adresa
-     *  @return type Description
+     *  Parametr požadavku ip obsahuje hledanou IP adresu.
+     *  @return void
      */
     public function renderGetIpDetails() {
         $errorTable = array(
@@ -65,8 +63,8 @@ class AjaxApiPresenter extends BasePresenter
     /**
      *  Opingá zadané IP adresy prostřednictvím SojkaPingeru
      *
-     *  @param string[] $ips Hledané IP adresy
-     *  @return type Description
+     *  Parametr požadavku ips obsahuje pole hledaných IP adres.
+     *  @return void
      */
     public function renderGetIpsPing() {
         $ips = $this->getParameter("ips");

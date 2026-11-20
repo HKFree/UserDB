@@ -52,22 +52,18 @@ The suite covers:
 
 - Container services, routing, authentication, API access and representative presenter pages and permissions.
 - Permission matrices for admin tools, rights, AP/member editing, messages and grid access, with recorded side effects.
+- Message forms for a whole AP with no, invalid and valid recipients.
+- AP subnet rows with the ARP proxy rule, administration grid pages and TV service activation.
 - Member edit form validation, saves and audit logs, IP/password handling, registration and planned membership transitions.
-- Schema migrations, tag operations and constraints, account activation and ledger entries.
-- Subnet calculations, downloads, SSID rendering, QR generation and user merge balances.
+- Schema migrations, tag operations and constraints, account activation and ledger entries, and audit-log lookup of deleted IPs and subnets.
+- Subnet calculations and lookups, address lists for bulk adding, generated passwords and API keys, downloads, SSID rendering, QR generation and user merge balances.
 - Local mail capture and contract PDF conversion, including Czech text, optional fields and cleanup.
 
 **Adding a test:** Name the file `*Test.php`, `*DatabaseTest.php` for database tests or `*PresenterTest.php` for presenter tests, and require `tests/bootstrap.php`. Nette Tester runs only `*Test.php` files; `TestNamingTest` fails for a file it would skip. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
 
-PHPStan runs at **level 5** with the Nette extension. The findings that existed when the level was raised are recorded in `phpstan-baseline.neon`, so only new or changed code has to pass level 5. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
+PHPStan runs at **level 5** with the Nette extension and without a baseline. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
-When a baselined finding is fixed, PHPStan reports its baseline entry as unmatched; remove the entry, or regenerate the file:
-
-```sh
-flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M --generate-baseline phpstan-baseline.neon
-```
-
-Regenerating also records every current finding, so do it only to shrink the baseline, never to silence a finding in new code.
+Methods that Kdyby Replicator adds at runtime are described in `phpstan/replicator.stub`. The only suppressed finding is one inline `@phpstan-ignore` in `pdfGenerator/www/ContractPdf.php`, where PHPStan's `proc_open` signature rejects a valid descriptor.
 
 **Code coverage:** `flox activate -s -- scripts/userdb_test_coverage.sh` runs the suite with PCOV and writes the line coverage of the PHP files in `app`, `pdfGenerator/www` and `www/digisign-webhook` to `temp/coverage/coverage.html`; Latte templates are not measured. Pass a path ending in `.xml` to get a Clover report instead. CI runs the same script after the tests, prints the percentage in the job summary and keeps the HTML report as the `coverage-report` artifact for 14 days. No threshold is enforced, and a failure of the coverage step or of the report upload does not fail the job: it shows as a warning annotation on the run.
 

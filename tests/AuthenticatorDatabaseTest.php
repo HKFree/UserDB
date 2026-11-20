@@ -83,6 +83,31 @@ final class AuthenticatorDatabaseTest extends DatabaseTestCase
         );
     }
 
+    public function missingHeaderCases(): array {
+        return [
+            'name' => [['HTTP_GIVENNAME']],
+            'password' => [['HTTP_INITIALS']],
+            'both' => [['HTTP_GIVENNAME', 'HTTP_INITIALS']],
+        ];
+    }
+
+    /**
+     * @dataProvider missingHeaderCases
+     * @param list<string> $missing
+     */
+    public function testMissingIdentityHeaderIsRejected(array $missing): void {
+        $this->fixtures->role($this->member->id, 'VV');
+        foreach ($missing as $header) {
+            unset($_SERVER[$header]);
+        }
+
+        Assert::exception(
+            fn () => $this->authenticator->authenticate([$this->member->id, null]),
+            AuthenticationException::class,
+            'User attributes not provided.',
+        );
+    }
+
     public function testEmptyUserIdIsRejected(): void {
         Assert::exception(
             fn () => $this->authenticator->authenticate(['', null]),

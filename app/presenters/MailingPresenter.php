@@ -12,13 +12,8 @@ use Tracy\Debugger;
 class MailingPresenter extends UzivatelPresenter
 {
     private $parameters;
-    private $accountActivation;
     private $uzivatel;
-    private $pdfGenerator;
     private $mailService;
-    private $smlouva;
-
-    private Services\RequestDruzstvoContract $requestDruzstvoContract;
     private $cestneClenstviUzivatele;
 
     private Services\Stitkovac $stitkovac;
@@ -26,22 +21,14 @@ class MailingPresenter extends UzivatelPresenter
     public function __construct(
         Model\Parameters $parameters,
         Services\MailService $mailsvc,
-        Services\PdfGenerator $pdf,
-        Model\AccountActivation $accActivation,
         Model\Uzivatel $uzivatel,
-        Model\Smlouva $smlouva,
-        Services\RequestDruzstvoContract $requestDruzstvoContract,
         Services\CryptoSluzba $cryptosvc,
         Model\CestneClenstviUzivatele $cestneClenstviUzivatele,
         Services\Stitkovac $stitkovac,
     ) {
         $this->parameters = $parameters;
-        $this->pdfGenerator = $pdf;
-        $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
-        $this->smlouva = $smlouva;
-        $this->requestDruzstvoContract = $requestDruzstvoContract;
         $this->cryptosvc = $cryptosvc;
         $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
         $this->stitkovac = $stitkovac;
@@ -51,7 +38,7 @@ class MailingPresenter extends UzivatelPresenter
     private function oneclickAuthCode($uzivatel) {
         if (!$uzivatel->oneclick_auth) {
             $code_length = 32;
-            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', ceil($code_length / strlen($x)))), 1, $code_length);
+            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', (int) ceil($code_length / strlen($x)))), 1, $code_length);
             $oneclick_auth_code_encrypted = $this->cryptosvc->encrypt($oneclick_auth_code);
             $this->uzivatel->update($uzivatel->id, [
                 'oneclick_auth' => $oneclick_auth_code_encrypted,

@@ -28,20 +28,12 @@ class SpravaSmluvPresenter extends BasePresenter
         }
     }
 
-    private function userCanChange(int $contract_id) {
+    private function userCanChange(int $contract_id): void {
         // TODO: Dodelat tuto logiku
-        if (false) {
-            $this->flashMessage('❌ Na tuhle smlouvy ty šmatlat nemůžeš.', 'danger');
-            $this->redirect('Homepage:default');
-        }
     }
 
-    private function userCanView(int $contract_id) {
+    private function userCanView(int $contract_id): void {
         // TODO: Dodelat tuto logiku
-        if (false) {
-            $this->flashMessage('❌ Na tuhle smlouvy ty koukat nemůžeš.', 'danger');
-            $this->redirect('Homepage:default');
-        }
     }
 
     public function renderShow() {

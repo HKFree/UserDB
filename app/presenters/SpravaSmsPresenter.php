@@ -58,7 +58,6 @@ class SpravaSmsPresenter extends SpravaPresenter
         $this->sendSMSAndValidate($validni, $values->message);
 
         $this->redirect('Sprava:nastroje', array('id' => null));
-        return true;
     }
 
     private function sendSMSAndValidate($uzivateleID, $message) {

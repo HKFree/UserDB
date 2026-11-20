@@ -32,10 +32,10 @@ class ApiKlic extends Table
     }
 
     public function generateKey($length = 30) {
-        return substr(str_shuffle(str_repeat($x = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ', ceil($length / strlen($x)))), 1, $length);
+        return substr(str_shuffle(str_repeat($x = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ', (int) ceil($length / strlen($x)))), 1, $length);
     }
 
-    public function getEditForm(Nette\ComponentModel\Container &$container, $form) {
+    public function getEditForm(Nette\Forms\Container &$container, $form) {
         $container->addHidden('id')->setAttribute('class', 'id');
         $klic = $container->addText('klic', 'Klíč', 20)->setAttribute('readonly', 'readonly')->setAttribute('class', 'klic');
         $container->addDate('plati_do', 'Platnost do');

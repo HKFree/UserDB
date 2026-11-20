@@ -5,8 +5,6 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use App\Services;
-use DateInterval;
-use DateTime;
 use Tracy\Debugger;
 
 /**
@@ -19,11 +17,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     private $uzivatel;
     private $pdfGenerator;
     private $mailService;
-    private $smlouva;
 
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
-    private Services\Stitkovac $stitkovac;
-    private $cestneClenstviUzivatele;
 
     public function __construct(
         Model\Parameters $parameters,
@@ -31,22 +26,16 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         Services\PdfGenerator $pdf,
         Model\AccountActivation $accActivation,
         Model\Uzivatel $uzivatel,
-        Model\Smlouva $smlouva,
         Services\RequestDruzstvoContract $requestDruzstvoContract,
-        Services\Stitkovac $stitkovac,
-        Services\CryptoSluzba $cryptosvc,
-        Model\CestneClenstviUzivatele $cestneClenstviUzivatele
+        Services\CryptoSluzba $cryptosvc
     ) {
         $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
-        $this->smlouva = $smlouva;
         $this->requestDruzstvoContract = $requestDruzstvoContract;
-        $this->stitkovac = $stitkovac;
         $this->cryptosvc = $cryptosvc;
-        $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
     }
 
     public function actionMoneyActivate() {
@@ -141,27 +130,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    private function checkTimeSinceLastGenerateContract(string $interval = 'PT5M') {
-        $user_id = $this->getParameter('id');
-
-        $last_generated = $this->smlouva->findAll()
-            ->where('Uzivatel_id', $user_id)->order('kdy_vygenerovano DESC')->limit(1)->fetch();
-
-        // Pokud neexistuje zadna smlouva, je to v pohode => return
-        if (!$last_generated) {
-            return;
-        }
-
-        $last_generated_datetime = \Nette\Utils\DateTime::from($last_generated['kdy_vygenerovano']);
-        $interval_ago = (new DateTime())
-            ->sub(new DateInterval($interval));
-
-        if ($interval_ago < $last_generated_datetime) {
-            $this->flashMessage('Ochrana proti přetížení: Nelze vytvořit další smlouvu dříve než 5 minut po předchozí. Pokud je to záměr, prosím chvíli počkej.', 'danger');
-            $this->redirect('Uzivatel:show', array('id' => $user_id));
-        }
-    }
-
     public function actionHandleSubscriberContractPreview() {
         $user_id = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($user_id);
@@ -190,9 +158,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             $this->redirect('UzivatelList:listall');
         }
 
-        // Kontrola, že od poslední generace uběhlo aspoň 5 minut...
-        // $this->checkTimeSinceLastGenerateContract();
-
         $newId = $this->requestDruzstvoContract->execute($user_id);
 
         $this->flashMessage(sprintf('Nová smlouva číslo %u bude odeslána na e-mail %s.', $newId, $current_user->email));
@@ -208,7 +173,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         // generate auth code and encrypt it to DB if not already generated
         if (!$uzivatel->oneclick_auth) {
             $code_length = 32;
-            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', ceil($code_length / strlen($x)))), 1, $code_length);
+            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', (int) ceil($code_length / strlen($x)))), 1, $code_length);
             $oneclick_auth_code_encrypted = $this->cryptosvc->encrypt($oneclick_auth_code);
             $this->uzivatel->update($uzivatel->id, [
                 'oneclick_auth' => $oneclick_auth_code_encrypted,

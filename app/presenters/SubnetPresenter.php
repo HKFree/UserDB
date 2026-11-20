@@ -16,35 +16,13 @@ use Nette\Utils\Strings;
  */
 class SubnetPresenter extends BasePresenter
 {
-    private $spravceOblasti;
-    private $cestneClenstviUzivatele;
-    private $typClenstvi;
-    private $typCestnehoClenstvi;
-    private $typPravniFormyUzivatele;
-    private $typSpravceOblasti;
-    private $zpusobPripojeni;
-    private $technologiePripojeni;
-    private $uzivatel;
     private $ipAdresa;
     private $ap;
-    private $typZarizeni;
-    private $log;
     private $subnet;
 
-    public function __construct(Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
-        $this->spravceOblasti = $prava;
-        $this->cestneClenstviUzivatele = $cc;
-        $this->typSpravceOblasti = $typSpravce;
-        $this->typClenstvi = $typClenstvi;
-        $this->typCestnehoClenstvi = $typCestnehoClenstvi;
-        $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
-        $this->zpusobPripojeni = $zpusobPripojeni;
-        $this->technologiePripojeni = $technologiePripojeni;
-        $this->uzivatel = $uzivatel;
+    public function __construct(Model\Subnet $subnet, Model\IPAdresa $ipAdresa, Model\AP $ap) {
         $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
-        $this->typZarizeni = $typZarizeni;
-        $this->log = $log;
         $this->subnet = $subnet;
     }
 

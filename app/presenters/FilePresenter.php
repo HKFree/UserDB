@@ -13,7 +13,7 @@ class FilePresenter extends BasePresenter
     /** @var Model\IPAdresa **/
     private $ipAdresa;
 
-    /** @var Model\Ap **/
+    /** @var Model\AP **/
     private $ap;
 
     public function __construct(Model\IPAdresa $ipAdresa, Model\AP $ap) {

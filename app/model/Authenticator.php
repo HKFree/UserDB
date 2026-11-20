@@ -16,7 +16,6 @@ class Authenticator implements Security\IAuthenticator
 {
     protected $context;
     private $fakeUser;
-    private $spravceOb;
 
     public function __construct($fakeUser, Nette\Database\Context $ctx) {
         $this->context = $ctx;
@@ -39,7 +38,7 @@ class Authenticator implements Security\IAuthenticator
             $passwordHash = $this->fakeUser["passwordHash"] ?? 'dummy';  // optional
             //crypted hash from database
             //$passwordHash = $this->context->table("Uzivatel")->where('id', $userID)->fetchField('heslo_hash');
-        } elseif (array_key_exists('HTTP_GIVENNAME', $_SERVER)) {
+        } elseif (isset($_SERVER['HTTP_GIVENNAME'], $_SERVER['HTTP_INITIALS'])) {
             $nick = $_SERVER['HTTP_GIVENNAME'];
             //plaintext password from shibboleth
             $passwordHash = $_SERVER['HTTP_INITIALS'];
@@ -47,7 +46,7 @@ class Authenticator implements Security\IAuthenticator
             //crypted hash from database
             //$passwordHash = $this->context->table("Uzivatel")->where('id', $userID)->fetchField('heslo_hash');
         } else {
-            $args = array('nick' => 'NoNickFound');
+            throw new Nette\Security\AuthenticationException('User attributes not provided.');
         }
         $date = new DateTime();
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();

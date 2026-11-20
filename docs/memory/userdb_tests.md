@@ -20,6 +20,9 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   `UPDATE`; dělá to `Test\Fixtures::role()`.
 - `Oblast.jmeno` a `Ap.jmeno` jsou unikátní. Fixtures proto generují náhodné názvy a databázové testy běží
   sériově pod jedním zámkem.
+- `Assert::same` u pole porovnává i pořadí klíčů. Řadí-li dotaz podle sloupce se shodnými hodnotami, pořadí
+  řádků není dané: `LogDatabaseTest` kvůli tomu padal zhruba ve 2 bězích ze 120 (ověřeno 20. 11. 2026). Kde na
+  pořadí nezáleží, použít `Assert::equal`.
 - Izolace je transakce a rollback. Funguje jen proto, že test i testovaný kód sdílejí jedno spojení a `app/`
   transakce samo neotevírá. `AUTO_INCREMENT` se rollbackem nevrací a DDL transakci potvrdí.
 - Runner z nextras/migrations chybu migrace nevyhodí, předá ji printeru; `DevNull` ji zahodí. Po běhu navíc nechá

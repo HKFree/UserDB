@@ -104,7 +104,7 @@ abstract class Table
      *
      * @param array $by
      *
-     * @return \Nette\Database\Table\ActiveRow|FALSE
+     * @return int Počet smazaných řádků
      */
     public function delete(array $by) {
         return $this->getTable()->where($by)->delete();

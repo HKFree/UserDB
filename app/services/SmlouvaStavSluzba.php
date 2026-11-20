@@ -9,10 +9,6 @@ use Nette;
  */
 class SmlouvaStavSluzba
 {
-    /**
-     * @var string
-     */
-
     public function __construct() {
     }
 

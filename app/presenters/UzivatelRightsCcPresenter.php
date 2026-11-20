@@ -144,7 +144,6 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
 
         $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
-        return true;
     }
 
     /** Čestné členství člena upravuje EXTSUPPORT nebo správce jeho AP */
@@ -170,8 +169,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
         $typCC = $this->typCestnehoClenstvi->getTypCestnehoClenstvi()->fetchPairs('id', 'text');
 
-        $data = $this->cestneClenstviUzivatele;
-        $rights = $form->addDynamic('rights', function (Container $right) use ($data, $typCC) {
+        $rights = $form->addDynamic('rights', function (Container $right) use ($typCC) {
             $right->addHidden('zadost_podal')->setAttribute('class', 'id ip');
             $right->addHidden('zadost_podana')->setAttribute('class', 'id ip');
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
@@ -269,6 +267,5 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         }
 
         $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
-        return true;
     }
 }
