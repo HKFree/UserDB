@@ -379,7 +379,7 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::Filled)->addRule(Form::Email, 'Musíte zadat platný email');
         $form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
         if (count($this->spravceOblasti->getOblastiSpravce($this->getParameter('id'))) > 0) {
-            $form->addCheckBox('publicPhone', 'Telefon je viditelný pro členy', 30)->setDefaultValue(true);
+            $form->addCheckBox('publicPhone', 'Telefon je viditelný pro členy')->setDefaultValue(true);
         }
         $form->addText('cislo_clenske_karty', 'Číslo členské karty', 30);
         $form->addText('kauce_mobil', 'Kauce na mobilní tarify', 30);
@@ -400,7 +400,7 @@ class UzivatelPresenter extends BasePresenter
 
         $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
         $data = $this->ipAdresa;
-        $ips = $form->addDynamic('ip', function (Container $ip) use ($data, $typyZarizeni, $form) {
+        $ips = $form->addDynamic('ip', function (Container $ip) use ($data, $typyZarizeni) {
             $data->getIPForm($ip, $typyZarizeni);
 
             $ip->addSubmit('remove', '– Odstranit IP')

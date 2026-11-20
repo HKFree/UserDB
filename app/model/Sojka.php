@@ -24,7 +24,7 @@ class Sojka
      * Get latest pinger results from Sojka Pinger
      *
      * @param string[] $ips
-     * @return object
+     * @return array|string|int|float|bool|null Decoded JSON, an empty array or error details
      */
     public function pingIPS($ips) {
         if (empty($ips)) {

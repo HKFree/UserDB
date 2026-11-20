@@ -13,9 +13,9 @@ class ContentDownloadResponse implements Nette\Application\IResponse
     /** @var string */
     private $name;
     /**
-     * @param  string  content
-     * @param  string  user name name
-     * @param  string  MIME content type
+     * @param  string  $content Downloaded content
+     * @param  string  $name User-visible file name
+     * @param  string|null  $contentType MIME content type
      */
     public function __construct($content, $name, $contentType = null) {
         $this->content = $content;

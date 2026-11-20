@@ -30,6 +30,8 @@ class Authenticator implements Security\IAuthenticator
      */
     public function authenticate(array $credentials) {
         list($userID, $password) = $credentials;
+        $nick = null;
+        $passwordHash = null;
         if (!$userID) {
             throw new Nette\Security\AuthenticationException('User not found.');
         }

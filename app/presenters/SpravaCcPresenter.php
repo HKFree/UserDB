@@ -32,7 +32,7 @@ class SpravaCcPresenter extends SpravaPresenter
         $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
 
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('cc_export');
 
         if ($canViewOrEdit) {
@@ -77,8 +77,7 @@ class SpravaCcPresenter extends SpravaPresenter
     protected function createComponentSpravaCCForm() {
         $form = new Form($this, "spravaCCForm");
 
-        $data = $this->cestneClenstviUzivatele;
-        $rights = $form->addDynamic('rights', function (Container $right) use ($data) {
+        $rights = $form->addDynamic('rights', function (Container $right) {
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
             $right->addHidden('id')->setAttribute('class', 'id ip');
 

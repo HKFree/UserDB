@@ -12,7 +12,7 @@ use Defuse\Crypto\Crypto;
 class CryptoSluzba
 {
     /**
-     * @var string
+     * @var Key
      */
     protected $passPhrase;
 

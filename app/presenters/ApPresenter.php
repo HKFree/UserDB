@@ -136,7 +136,7 @@ class ApPresenter extends BasePresenter
     protected function createComponentApForm() {
         $form = new Form($this, 'apForm');
         $form->addHidden('id');
-        $form->addCheckBox('aktivni', 'Je AP aktivní?', 30)->setDefaultValue(true);
+        $form->addCheckBox('aktivni', 'Je AP aktivní?')->setDefaultValue(true);
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno oblasti');
         $form->addSelect('Oblast_id', 'Oblast', $this->oblast->getSeznamOblastiBezAP())->setRequired('Zadejte jméno oblasti');
         $form->addText('gps', 'Zeměpisné souřadnice (GPS)', 30)
@@ -147,8 +147,8 @@ class ApPresenter extends BasePresenter
         $form->addText('ulice_cp', 'Adresa (ulice a čp)', 30)->setRequired('Zadejte ulici a čp');
         $form->addText('mesto', 'Adresa (obec)', 30)->setRequired('Zadejte město');
         $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
-        $form->addCheckBox('no_auto_dns', 'Nechci automaticky generovat DNS z UserDB', 30)->setDefaultValue(false);
-        $form->addCheckBox('no_auto_upgrade', 'Nechci automaticky upgradovat RouterOS', 30)->setDefaultValue(false);
+        $form->addCheckBox('no_auto_dns', 'Nechci automaticky generovat DNS z UserDB')->setDefaultValue(false);
+        $form->addCheckBox('no_auto_upgrade', 'Nechci automaticky upgradovat RouterOS')->setDefaultValue(false);
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);
         $dataIp = $this->ipAdresa;
         $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');

@@ -11,7 +11,7 @@ use Nette\Database\Explorer;
 class Stitek extends Table
 {
     /**
-     * @var string
+     * @var Explorer
      */
 
     private Explorer $database;

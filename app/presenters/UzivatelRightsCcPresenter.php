@@ -170,8 +170,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
         $typCC = $this->typCestnehoClenstvi->getTypCestnehoClenstvi()->fetchPairs('id', 'text');
 
-        $data = $this->cestneClenstviUzivatele;
-        $rights = $form->addDynamic('rights', function (Container $right) use ($data, $typCC) {
+        $rights = $form->addDynamic('rights', function (Container $right) use ($typCC) {
             $right->addHidden('zadost_podal')->setAttribute('class', 'id ip');
             $right->addHidden('zadost_podana')->setAttribute('class', 'id ip');
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');

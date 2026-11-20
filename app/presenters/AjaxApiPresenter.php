@@ -25,8 +25,8 @@ class AjaxApiPresenter extends BasePresenter
     /**
      *  Najde subnet a gateway k příslušné IP adrese
      *
-     *  @param string $ip Hledaná IP adresa
-     *  @return type Description
+     *  Parametr požadavku ip obsahuje hledanou IP adresu.
+     *  @return void
      */
     public function renderGetIpDetails() {
         $errorTable = array(
@@ -65,8 +65,8 @@ class AjaxApiPresenter extends BasePresenter
     /**
      *  Opingá zadané IP adresy prostřednictvím SojkaPingeru
      *
-     *  @param string[] $ips Hledané IP adresy
-     *  @return type Description
+     *  Parametr požadavku ips obsahuje pole hledaných IP adres.
+     *  @return void
      */
     public function renderGetIpsPing() {
         $ips = $this->getParameter("ips");

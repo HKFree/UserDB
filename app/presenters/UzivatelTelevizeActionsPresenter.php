@@ -49,7 +49,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
 
         if ($cena > 0) {
             $poznamkaSluzba = "Placená aktivace na 1 kalendářní měsíc";
-            $poznamkaKonto = "[UID" . $this->getUser()->getIdentity()->getId() ." ". $this->getUser()->getIdentity()->getNick() . "] Aktivace služby Televize na 1 kalendářní měsíc";
+            $poznamkaKonto = "[UID" . $this->getUser()->getIdentity()->getId() ." ". $this->getIdentity()->getNick() . "] Aktivace služby Televize na 1 kalendářní měsíc";
 
             $this->uzivatelskeKonto->insert(['Uzivatel_id' => $user_id,
                 'TypPohybuNaUctu_id' => 4,

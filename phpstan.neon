@@ -4,6 +4,8 @@ includes:
 
 parameters:
     level: 5
+    stubFiles:
+        - phpstan/replicator.stub
     phpVersion: 80200
     tmpDir: temp/phpstan
     paths:

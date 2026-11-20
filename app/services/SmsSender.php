@@ -19,7 +19,7 @@ class SmsSender
     /** @var string */
     private $pythonScript;
 
-    /** @var App\Model\AwegUser */
+    /** @var AwegUser */
     private $awegUser;
 
     public function __construct(string $pythonScript, AwegUser $awegUser) {
@@ -33,7 +33,7 @@ class SmsSender
      * @param HkfIdentity $senderIdentity
      * @param array $recipientMsisdns
      * @param string $message
-     * @return string
+     * @return array{status: int, msg: string|false|null}
      */
     public function sendSms(HkfIdentity $senderIdentity, array $recipientMsisdns, string $message) {
         $awegUser = $this->awegUser->getAwegUser($senderIdentity->getUid());

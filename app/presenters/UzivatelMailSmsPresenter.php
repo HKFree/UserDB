@@ -108,6 +108,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form = new Form($this, "emailallForm");
         $form->addHidden('id');
 
+        $oblastMail = null;
         if ($this->getParameter('id')) {
             $ap = $this->ap->getAP($this->getParameter('id'));
             $oblastMail = 'oblast'.$ap->Oblast_id.'@hkfree.org';
@@ -126,12 +127,13 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if ($this->getParameter('id') && !$submitujeSe) {
             $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
+            $validni = [];
             foreach ($emaily as $email) {
                 if (Validators::isEmail($email)) {
                     $validni[] = $email;
                 }
             }
-            $tolist = join(";", array_values($validni));
+            $tolist = join(";", $validni);
 
             if ($ap) {
                 $form->setValues($ap);
@@ -242,12 +244,13 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         if ($this->getParameter('id') && !$submitujeSe) {
             $ap = $this->ap->getAP($this->getParameter('id'));
             $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
+            $validni = [];
             foreach ($telefony as $tl) {
                 if (!empty($tl) && $tl != 'missing') {
                     $validni[] = $tl;
                 }
             }
-            $tls = join(",", array_values($validni));
+            $tls = join(",", $validni);
 
             if ($ap) {
                 $form->setValues($ap);

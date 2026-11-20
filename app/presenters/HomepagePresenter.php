@@ -20,10 +20,4 @@ class HomepagePresenter extends BasePresenter
     public function renderDefault() {
         $this->template->anyVariable = 'any value';
     }
-
-    public function renderTest() {
-        \Tracy\Debugger::barDump($this->context->parameters);
-        $this->template->test1 = 1;
-        $this->template->test2 = 1;
-    }
 }

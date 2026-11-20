@@ -535,11 +535,11 @@ class IPAdresa extends Table
      */
     public function getListOfIPFromSubnet($ipsubnet) {
         $genaddresses = array();
-        if (isset($ipsubnet) && !empty($ipsubnet)) {
+        if (!empty($ipsubnet)) {
             if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $ipsubnet)) {
                 @list($sip, $slen) = explode('/', $ipsubnet);
                 if (($smin = ip2long($sip)) !== false) {
-                    $smax = ($smin | (1 << (32 - $slen)) - 1);
+                    $smax = ($smin | (1 << (32 - (int) $slen)) - 1);
                     for ($i = $smin; $i < $smax; $i++) {
                         $genaddresses[] = long2ip($i);
                     }
@@ -556,7 +556,7 @@ class IPAdresa extends Table
      */
     public function getListOfIPFromRange($iprange) {
         $genaddresses = array();
-        if (isset($iprange) && !empty($iprange)) {
+        if (!empty($iprange)) {
             if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $iprange)) {
                 $temp = preg_split("/-/", $iprange, -1, PREG_SPLIT_NO_EMPTY);
                 $QRange1 = $temp[0];

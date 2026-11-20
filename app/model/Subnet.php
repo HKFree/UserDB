@@ -69,7 +69,7 @@ class Subnet extends Table
      * Př: vstup 10.107.17.0/26 , 10.107.17.64/26
      *     výstup 10.107.17
      *
-     * @param string $subnet Vstupní subnet
+     * @param iterable<Nette\Database\Table\ActiveRow> $subnets Vstupní subnety
      * @return string[] Pole s položkami
      */
     public function getAPCSubnets($subnets) {
@@ -123,7 +123,7 @@ class Subnet extends Table
      * a udělám WHERE subnet IN ...
      *
      * @param string $ip IP adresa
-     * @return string[] Subnet a informace o něm
+     * @return array{subnet?: string, network?: string, cidr?: string, mask?: string, gateway?: string, error?: int, multiple_subnets?: array<int, string>} Subnet a informace o něm
      */
     public function getSubnetOfIP($ip) {
         $possibleSubnets = $this->genSubnets($ip);
@@ -241,7 +241,7 @@ class Subnet extends Table
      */
     private function getPossiblyColiding($s) {
         list($network, $cidr) = explode("/", $s);
-        $bigCidr = floor($cidr / 8);
+        $bigCidr = floor((float) $cidr / 8);
 
         $bigNetwork = long2ip(ip2long($network) & ip2long($this->CIDRToMask($bigCidr * 8)));
 
@@ -270,10 +270,10 @@ class Subnet extends Table
         list($n2, $c2) = explode("/", $s2);
 
         $first_1 = ip2long($n1);
-        $last_1 = $first_1 + pow(2, 32 - $c1) - 1;
+        $last_1 = $first_1 + pow(2, 32 - (float) $c1) - 1;
 
         $first_2 = ip2long($n2);
-        $last_2 = $first_2 + pow(2, 32 - $c2) - 1;
+        $last_2 = $first_2 + pow(2, 32 - (float) $c2) - 1;
 
         if (($first_1 < $first_2) && ($last_1 < $first_2)) {
             return (false);

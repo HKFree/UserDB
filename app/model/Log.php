@@ -10,14 +10,11 @@ use Nette\Utils\Html;
  */
 class Log extends Table
 {
-    private $typZarizeni;
-
     private $request;
 
     public function __construct(
         Nette\Database\Context $db,
         Nette\Security\User $user,
-        TypZarizeni $t,
         Nette\Http\Request $request
     ) {
         parent::__construct($db, $user);
@@ -113,6 +110,7 @@ class Log extends Table
 
         $out = array();
         foreach ($logy as $log) {
+            $matches = null;
             if ($type == "ip") {
                 preg_match("/^ipadresa\[(\d+)\]\.ip_adresa/i", $log->sloupec, $matches);
             } elseif ($type == "subnet") {
