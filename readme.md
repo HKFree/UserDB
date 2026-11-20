@@ -57,7 +57,7 @@ The suite covers:
 - Subnet calculations, downloads, SSID rendering, QR generation and user merge balances.
 - Local mail capture and contract PDF conversion, including Czech text, optional fields and cleanup.
 
-**Adding a test:** Name the file `*Test.php`, `*DatabaseTest.php` for database tests or `*PresenterTest.php` for presenter tests; Nette Tester runs every `*Test.php` file under `tests/`, and require `tests/bootstrap.php`. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
+**Adding a test:** Name the file `*Test.php`, `*DatabaseTest.php` for database tests or `*PresenterTest.php` for presenter tests, and require `tests/bootstrap.php`. Nette Tester runs only `*Test.php` files; `TestNamingTest` fails for a file it would skip. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
 
 PHPStan runs at **level 5** with the Nette extension. The findings that existed when the level was raised are recorded in `phpstan-baseline.neon`, so only new or changed code has to pass level 5. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
