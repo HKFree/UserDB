@@ -67,9 +67,6 @@ Pokud není dostupný, nabídni uživateli návod k instalaci a tutoriál použi
 
 ```sh
 flox activate -- composer install --no-interaction --prefer-dist --no-progress
-test -e app/config/config.local.neon || touch app/config/config.local.neon
-export USERDB_DB_HOST=127.0.0.1 USERDB_DB_NAME=userdb_test
-export USERDB_DB_USERNAME=userdb_test USERDB_DB_PASSWORD=test-only
 flox activate -s -- vendor/bin/tester -C tests   # testy; -s spustí MariaDB
 flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
 flox activate -- vendor/bin/php-cs-fixer check --diff
@@ -99,7 +96,7 @@ tamtéž má pevné porty a síť; pro práci ve více worktrees použij Flox.
 | `app/Console/` | příkazy pro `bin/console` |
 | `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
-| `tests/` | Nette Tester; `tests/database.php` připojuje testovací MariaDB z Floxu |
+| `tests/` | Nette Tester; `tests/bootstrap.php` načte společný základ: testovací kontejner, databázi z migrací ve Floxu a spouštění presenterů |
 | `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, router PHP serveru) a očištěný vzor skriptu nasazení testovacího prostředí |
 | `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení testovacího prostředí |
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
@@ -119,8 +116,8 @@ tamtéž má pevné porty a síť; pro práci ve více worktrees použij Flox.
 - Schéma měň jen novou migrací v `db/`; existující migrace neupravuj. Lokálně
   je aplikuje `php scripts/userdb_dev_setup.php`.
 - Nový model, službu nebo příkaz zaregistruj v sekci `services` v
-  `app/config/config.neon`. Potom smaž `temp/cache`, jinak testy použijí starý
-  DI kontejner.
+  `app/config/config.neon`. Testy si DI kontejner po změně konfigurace sestaví
+  znovu samy; že se složí a že jde vytvořit každý presenter, hlídá `ContainerTest`.
 - Změnu API zapiš i do `swagger.yaml`.
 - Nový kód psaný agentem musí splňovat výrazně vyšší nároky na čitelnost
   a kvalitu, než vynucuje současná úroveň PHPStanu. Ta je minimum, ne měřítko:
