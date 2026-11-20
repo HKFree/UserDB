@@ -1,7 +1,143 @@
 # UserDB: pokyny pro vývojáře a agenty
 
-- Na začátku práce přečti [projektovou paměť](docs/memory/MEMORY.md).
-- Ve sdílených instrukcích a paměti uchovávej jen informace důležité pro projekt, bez údajů o osobním prostředí jednotlivých vývojářů.
-- Testy spouštěj v projektovém Flox prostředí s MariaDB: `flox activate -s -- vendor/bin/tester -C tests`.
-- Před testováním ověř dostupnost Floxu pomocí `flox --version`. Pokud není dostupný, nabídni uživateli návod k instalaci a tutoriál použití z [README](readme.md#tests-with-flox); v testování pokračuj po jeho zprovoznění.
-- Změny připravuj pouze lokálně. Před jakýmkoliv publikováním musí projít kontrolou a výslovným schválením zadavatele.
+Jediný soubor s pokyny pro AI agenty všech nástrojů (Claude Code, Codex a další).
+`CLAUDE.md`, `.cursorrules` ani jiný soubor pro jeden nástroj do repa nepřidávej.
+
+Repo je veřejné a aplikace pracuje s osobními údaji členů.
+
+## Co to je
+
+UserDB je systém spolku HKFree.org pro správu členů, oblastí, přístupových bodů
+(AP), IP adres, plateb a smluv. Webová aplikace v PHP 8.2 a Nette 3.2 (Latte 2,
+Nette Database, MariaDB), REST API a několik samostatných služeb.
+
+## Paměť projektu
+
+- Na začátku práce přečti [projektovou paměť](docs/memory/MEMORY.md). Tematický
+  soubor otevři, když se týká toho, na čem děláš.
+- Ve sdílených instrukcích a paměti uchovávej jen informace důležité pro projekt,
+  bez údajů o osobním prostředí jednotlivých vývojářů.
+- Poznatek, který není vidět z kódu (past, postup, dohoda), zapiš hned do
+  `docs/memory/userdb_<tema>.md` a do `MEMORY.md` přidej řádek
+  `- [Název](soubor.md) - k čemu to je`. Zápis jde stejnou větví a stejným PR jako
+  změna, se kterou souvisí.
+- Formát souboru: YAML hlavička `name`, `description`, `metadata.type` (`project`,
+  `feedback` nebo `reference`), pak text. U pravidel a rozhodnutí připiš
+  **Why:** a **How to apply:**.
+- Zapisuj jen ověřené a uveď, jak a kdy jsi to ověřil.
+- Do paměti nepatří: co je vidět z kódu, git historie nebo tohoto souboru; tajné
+  a osobní údaje; podrobnosti neopravených bezpečnostních nálezů; stav
+  rozpracované práce.
+- Poznatky o projektu, které smějí být veřejné, neukládej do soukromé paměti
+  svého nástroje. Ostatní agenti ji nevidí.
+- Zapisuje víc agentů a lidí: soubor před úpravou znovu přečti, měň jen dotčené
+  řádky, zastaralý záznam oprav nebo smaž.
+
+## Publikování a provoz
+
+- Změny připravuj pouze lokálně. Před jakýmkoliv publikováním musí projít
+  kontrolou a výslovným schválením zadavatele. Publikování je push, PR (i draft),
+  issue, komentář a spuštění vzdáleného CI.
+- Nasazení dělá člověk. Nespouštěj `git push production`. Schválení publikování
+  není svolení nasadit.
+- Větev `testing` nepoužívej: push i PR do ní spouští nasazení na testovací
+  server (`.github/workflows/deploy-userdb-test.yml`).
+- Do commitů, PR, issue ani paměti nepiš tajné údaje, osobní údaje členů ani
+  postup zneužití neopravené chyby. CI workflow `Gitleaks` prochází celou
+  historii; do `.gitleaksignore` bez pokynu nic nepřidávej.
+- Neposílej skutečné e-maily ani SMS a nevolej produkční služby. Lokální web
+  přes Flox (`app/config/config.flox.neon`) ukládá e-maily do souborů
+  a odpojuje IDS, InfluxDB, síťové kontroly a SMS bránu Materna MEX.
+- Podpis smluv přes Digisign lokálně nefunguje a fungovat nemá. Worker
+  `bin/console app:digisign_generovat_ucastnickou_smlouvu` bez proměnných
+  `DIGISIGN_ACCESS_KEY` a `DIGISIGN_SECRET_KEY` skončí chybou. Klíče lokálně
+  nenastavuj: aplikace nepoužívá testovací režim Digisignu, s klíči by založila
+  skutečnou obálku a rozeslala ji k podpisu.
+- `bin/console` nepoužívá `config.flox.neon`: běží nad `config.neon`
+  a `config.local.neon`, kde `config.neon` míří na skutečné služby.
+- `php bin/console migrations:reset` smaže všechna data. Bez výslovného pokynu
+  ho nespouštěj.
+
+## Příkazy
+
+Vývoj i testy běží v projektovém Flox prostředí (PHP 8.2, Composer, MariaDB,
+LibreOffice). Před testováním ověř dostupnost Floxu pomocí `flox --version`.
+Pokud není dostupný, nabídni uživateli návod k instalaci a tutoriál použití z
+[README](readme.md#tests-with-flox); v testování pokračuj po jeho zprovoznění.
+
+```sh
+flox activate -- composer install --no-interaction --prefer-dist --no-progress
+test -e app/config/config.local.neon || touch app/config/config.local.neon
+export USERDB_DB_HOST=127.0.0.1 USERDB_DB_NAME=userdb_test
+export USERDB_DB_USERNAME=userdb_test USERDB_DB_PASSWORD=test-only
+flox activate -s -- vendor/bin/tester -C tests   # testy; -s spustí MariaDB
+flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+flox activate -- vendor/bin/php-cs-fixer check --diff
+flox activate -- vendor/bin/latte-lint app
+```
+
+Stejné kontroly pouští CI při každém pushi a PR. Pusť je lokálně před commitem.
+
+Lokální web s demo daty; každý worktree má vlastní databázi a port:
+
+```sh
+flox activate -s -- php scripts/userdb_dev_setup.php
+flox activate -s -- php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
+```
+
+Podrobnosti jsou v [README](readme.md#development). Docker Compose popsaný
+tamtéž má pevné porty a síť; pro práci ve více worktrees použij Flox.
+
+## Kde co je
+
+| Cesta | Obsah |
+|---|---|
+| `app/presenters/`, `app/templates/` | webové presentery a jejich Latte šablony |
+| `app/ApiModule/Presenters/` | REST API pod `/userdb/api`, ručně popsané ve `swagger.yaml` |
+| `app/model/` | modely nad tabulkami (Nette Database), společný předek `Table.php` |
+| `app/services/`, `app/components/` | služby (e-mail, SMS, PDF, šifrování, smlouvy) a komponenty |
+| `app/Console/` | příkazy pro `bin/console` |
+| `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
+| `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
+| `tests/` | Nette Tester; `tests/database.php` připojuje testovací MariaDB z Floxu |
+| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, router PHP serveru) a očištěný vzor skriptu nasazení testovacího prostředí |
+| `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení testovacího prostředí |
+| `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
+| `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |
+| `lib/phpqrcode/` | cizí knihovna, neupravuj ji |
+| `specs/` | seznam bezpečnostních nálezů |
+
+## Kód
+
+- Web přebírá identitu z hlavičky `UID` od Shibbolethu (`BasePresenter::startup()`),
+  role z tabulky `SpravceOblasti` (`app/model/Authenticator.php`). API používá
+  HTTP Basic s klíčem (`ApiPresenter::checkRequirements()`).
+- V presenterech odvozených z `BasePresenter` ověř oprávnění na začátku obsluhy
+  akce nebo formuláře voláním `$this->vyzadujOpravneni(...)` se stejnou
+  podmínkou, jakou dostává šablona. Skrytí prvku v šabloně kontrolu nenahrazuje.
+  V API omez přístup k AP přes `ApiPresenter::checkApID()`.
+- Schéma měň jen novou migrací v `db/`; existující migrace neupravuj. Lokálně
+  je aplikuje `php scripts/userdb_dev_setup.php`.
+- Nový model, službu nebo příkaz zaregistruj v sekci `services` v
+  `app/config/config.neon`. Potom smaž `temp/cache`, jinak testy použijí starý
+  DI kontejner.
+- Změnu API zapiš i do `swagger.yaml`.
+- Nový kód psaný agentem musí splňovat výrazně vyšší nároky na čitelnost
+  a kvalitu, než vynucuje současná úroveň PHPStanu. Ta je minimum, ne měřítko:
+  piš úplné typy parametrů, návratových hodnot a vlastností, krátké funkce
+  s jedním účelem a výstižná jména, bez mrtvého kódu.
+- PHPStan běží s baseline `phpstan-baseline.neon`, úroveň je v `phpstan.neon`.
+  Nový a měněný kód musí projít. Nález v něm oprav, do baseline ho nepřidávej
+  ani ho neignoruj. Baseline přegeneruj jen kvůli jejímu zmenšení po opravě.
+- Styl hlídá php-cs-fixer (`.php-cs-fixer.dist.php`) a `.editorconfig`, syntaxi
+  šablon `latte-lint`.
+- V pojmenování se drž okolního kódu: česká jména podle tabulek (`Uzivatel`,
+  `Oblast`), obsluhy formulářů `*FormSucceded` (zavedený název, nepřejmenovávej).
+  Úpravy stylu a přejmenování nemíchej do věcné změny.
+- K opravě chyby přidej regresní test do `tests/`, pokud jde napsat bez nové
+  infrastruktury.
+
+## Commity a PR
+
+- Česky, věcně, co a proč. Jeden PR řeší jednu věc.
+- V popisu PR uveď, jak jsi změnu ověřil. Neověřené tvrzení označ jako neověřené.
