@@ -111,24 +111,28 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
 
     public function findUserByFulltext($search, $Uzivatel) {
         //mobil a email pouze pro ty co maji prava
+        // Do not let MariaDB convert text such as "7name@example.org" to a numeric ID.
+        $searchId = ctype_digit((string) $search) ? $search : null;
 
         $completeMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
                                             LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id
                                             WHERE (
                                             Uzivatel.id = ?
                                             OR  IPAdresa.ip_adresa = ?
-                                            ) LIMIT 1", $search, $search)->fetchField();
+                                            ) LIMIT 1", $searchId, $search)->fetchField();
         if (!empty($completeMatchId)) {
             return ($this->findBy(array('id' => $completeMatchId)));
         }
         //\Tracy\Debugger::barDump($search);
-        $partialMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
+        if ($searchId !== null) {
+            $partialMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
                                             LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id
                                             WHERE (
                                             Uzivatel.id LIKE ?
                                             ) LIMIT 1", $search . '%')->fetchField();
-        if (!empty($partialMatchId)) {
-            return ($this->findBy(array('id' => $partialMatchId)));
+            if (!empty($partialMatchId)) {
+                return ($this->findBy(array('id' => $partialMatchId)));
+            }
         }
 
         if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV') && !$Uzivatel->isInRole('KONTROLA') && !$Uzivatel->isInRole('EXTSUPPORT')) {
