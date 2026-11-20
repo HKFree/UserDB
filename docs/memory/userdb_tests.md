@@ -1,6 +1,6 @@
 ---
 name: UserDB testy
-description: Nástrahy testovacího základu (kontejner, testovací DB z migrací, spouštění presenterů).
+description: Nástrahy testovacího základu (kontejner, testovací DB z migrací, spouštění presenterů) a měření pokrytí.
 metadata:
   type: project
 ---
