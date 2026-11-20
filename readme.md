@@ -93,6 +93,12 @@ To activate formatting in VSCode, install extension "[php cs fixer](https://mark
 
 Configure the formatter to use PHP 8.2. PHP CS Fixer is included in the project's Composer development dependencies; its CLI is available through `flox activate -- vendor/bin/php-cs-fixer`.
 
+The shared configuration includes both `.php` files and `.phpt` tests. Run the same code style check as CI:
+
+```sh
+flox activate -- vendor/bin/php-cs-fixer check --diff
+```
+
 ### Run locally
 
 Override environment variables defined in `docker-compose.yml` using `docker-compose.override.yml` when necessary. Don't forget that some settings are still present in `app/config/config.local.neon`.
