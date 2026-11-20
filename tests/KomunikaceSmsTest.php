@@ -1,0 +1,247 @@
+<?php
+
+/** @testCase */
+
+namespace Test\SmsRegression;
+
+use App\Model;
+use App\Presenters\SpravaSmsPresenter;
+use App\Presenters\UzivatelMailSmsPresenter;
+use App\Services\MexSmsSender;
+use App\Services\SmsSenderException;
+use Nette\Application\AbortException;
+use Nette\Http;
+use Tester\Assert;
+use Tester\TestCase;
+
+require_once __DIR__ . '/bootstrap.php';
+
+// Keep the real number validator, but never construct or call the HTTP client.
+class RecordingSmsSender extends MexSmsSender
+{
+    public array $calls = [];
+    public ?SmsSenderException $error = null;
+
+    public function __construct() {
+    }
+
+    public function sendSMS(array $bnumbers, string $text) {
+        $this->calls[] = [$bnumbers, $text];
+        if ($this->error !== null) {
+            throw $this->error;
+        }
+    }
+}
+
+class SmsUsers extends Model\Uzivatel
+{
+    public function __construct(private array $numbers) {
+    }
+
+    public function getUzivatel($id) {
+        return (object) ['id' => $id, 'telefon' => $this->numbers[$id], 'Ap_id' => 1];
+    }
+}
+
+class SmsPresenter extends UzivatelMailSmsPresenter
+{
+    use SmsFlashMessages;
+
+    public function redirect(string $destination, $args = []): void {
+        throw new AbortException();
+    }
+}
+
+class SmsManagersPresenter extends SpravaSmsPresenter
+{
+    use SmsFlashMessages;
+}
+
+trait SmsFlashMessages
+{
+    public array $messages = [];
+
+    public function flashMessage(string|\stdClass|\Stringable $message, string $type = 'info'): \stdClass {
+        $flash = (object) ['message' => (string) $message, 'type' => $type];
+        $this->messages[] = $flash;
+        return $flash;
+    }
+}
+
+class KomunikaceSmsTest extends TestCase
+{
+    private const NO_NUMBER = 'Žádný z vybraných uživatelů nemá platné české telefonní číslo.';
+
+    public function testInvalidNumbersDoNotCallGateway(): void {
+        foreach (['neplatné', '+421 901 234 567', '12345', '', 'missing'] as $number) {
+            $sender = new RecordingSmsSender();
+            $model = new Model\Komunikace($sender, new SmsUsers([1 => $number]));
+
+            Assert::exception(fn () => $model->posliSMS([1], 'Test'), SmsSenderException::class, self::NO_NUMBER);
+            Assert::same([], $sender->calls);
+        }
+    }
+
+    public function testEmptyRecipientsDoNotCallGateway(): void {
+        $sender = new RecordingSmsSender();
+        $model = new Model\Komunikace($sender, new SmsUsers([]));
+
+        Assert::exception(fn () => $model->posliSMS([], 'Test'), SmsSenderException::class, self::NO_NUMBER);
+        Assert::same([], $sender->calls);
+    }
+
+    public function testValidNumberCallsGateway(): void {
+        foreach (['777222555', '+420 777 222 555', '420777222555'] as $number) {
+            $sender = new RecordingSmsSender();
+            $model = new Model\Komunikace($sender, new SmsUsers([1 => $number]));
+
+            $count = $model->posliSMS([1], 'Testovací zpráva');
+
+            Assert::same([[[$number], 'Testovací zpráva']], $sender->calls);
+            Assert::same(1, $count);
+        }
+    }
+
+    public function testMixedNumbersSendOnlyValidRecipients(): void {
+        $sender = new RecordingSmsSender();
+        $model = new Model\Komunikace($sender, new SmsUsers([
+            1 => 'neplatné', 2 => '777222555', 3 => 'missing', 4 => '+420 777 222 556',
+        ]));
+
+        $count = $model->posliSMS([1, 2, 3, 4], 'Test');
+
+        Assert::same([[['777222555', '+420 777 222 556'], 'Test']], $sender->calls);
+        Assert::same(2, $count);
+    }
+
+    public function testInvalidUserGetsReadableError(): void {
+        $sender = new RecordingSmsSender();
+        $presenter = $this->createPresenter([1 => 'neplatné'], $sender);
+
+        Assert::exception(fn () => $presenter->smsFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+
+        $this->assertFlash($presenter, 'SMS nebyla odeslána. ' . self::NO_NUMBER, 'danger');
+        Assert::same([], $sender->calls);
+    }
+
+    public function testValidUserGetsSuccess(): void {
+        $sender = new RecordingSmsSender();
+        $presenter = $this->createPresenter([1 => '777222555'], $sender);
+
+        Assert::exception(fn () => $presenter->smsFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+
+        $this->assertFlash($presenter, 'SMS byla odeslána na 1 čísel.', 'info');
+        Assert::same([[['777222555'], 'Test']], $sender->calls);
+    }
+
+    public function testApSuccessCountsOnlySentNumbers(): void {
+        $sender = new RecordingSmsSender();
+        $presenter = $this->createPresenter([
+            1 => 'neplatné', 2 => '777222555', 3 => 'missing', 4 => '+420 777 222 556', 5 => '',
+        ], $sender);
+
+        Assert::exception(fn () => $presenter->smsallFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+
+        $this->assertFlash($presenter, 'SMS byla odeslána na 2 čísel.', 'info');
+        Assert::same([[['777222555', '+420 777 222 556'], 'Test']], $sender->calls);
+    }
+
+    public function testApWithoutValidNumbersGetsError(): void {
+        foreach ([[], [1 => 'neplatné', 2 => 'missing', 3 => '']] as $numbers) {
+            $sender = new RecordingSmsSender();
+            $presenter = $this->createPresenter($numbers, $sender);
+
+            Assert::exception(fn () => $presenter->smsallFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+
+            $this->assertFlash($presenter, 'SMS nebyla odeslána. ' . self::NO_NUMBER, 'danger');
+            Assert::same([], $sender->calls);
+        }
+    }
+
+    public function testGatewayErrorHasNoStackTrace(): void {
+        foreach (['smsFormSucceded', 'smsallFormSucceded'] as $handler) {
+            $sender = new RecordingSmsSender();
+            $sender->error = new SmsSenderException('SMS brána je nedostupná.');
+            $presenter = $this->createPresenter([1 => '777222555'], $sender);
+
+            Assert::exception(fn () => $presenter->$handler(null, (object) ['message' => 'Test']), AbortException::class);
+
+            $this->assertFlash($presenter, 'SMS nebyla odeslána. SMS brána je nedostupná.', 'danger');
+            Assert::same([[['777222555'], 'Test']], $sender->calls);
+        }
+    }
+
+    public function testManagersSuccessCountsOnlySentNumbers(): void {
+        $sender = new RecordingSmsSender();
+        $presenter = $this->createManagersPresenter($sender);
+
+        (new \ReflectionMethod(SpravaSmsPresenter::class, 'sendSMSAndValidate'))->invoke($presenter, [1, 2], 'Test');
+
+        $this->assertFlash($presenter, 'SMS byla odeslána na 1 čísel.', 'info');
+        Assert::same([[['777222555'], 'Test']], $sender->calls);
+    }
+
+    public function testManagersGatewayErrorHasNoStackTrace(): void {
+        $sender = new RecordingSmsSender();
+        $sender->error = new SmsSenderException('SMS brána je nedostupná.');
+        $presenter = $this->createManagersPresenter($sender);
+
+        (new \ReflectionMethod(SpravaSmsPresenter::class, 'sendSMSAndValidate'))->invoke($presenter, [2], 'Test');
+
+        $this->assertFlash($presenter, 'SMS nebyla odeslána. SMS brána je nedostupná.', 'danger');
+        Assert::same([[['777222555'], 'Test']], $sender->calls);
+    }
+
+    private function createManagersPresenter(RecordingSmsSender $sender): SmsManagersPresenter {
+        $managers = (new \ReflectionClass(Model\SpravceOblasti::class))->newInstanceWithoutConstructor();
+        $users = new SmsUsers([1 => 'neplatné', 2 => '777222555']);
+        return new SmsManagersPresenter($managers, new Model\Komunikace($sender, $users));
+    }
+
+    private function createPresenter(array $numbers, RecordingSmsSender $sender): SmsPresenter {
+        $users = new SmsUsers($numbers);
+        $ap = new class ($numbers) extends Model\AP {
+            public function __construct(private array $numbers) {
+            }
+
+            public function getAP($id) {
+                return new class ($this->numbers) {
+                    public function __construct(private array $numbers) {
+                    }
+
+                    public function related($relation): self {
+                        return $this;
+                    }
+
+                    public function where($condition): self {
+                        return $this;
+                    }
+
+                    public function fetchPairs($key, $value): array {
+                        return $this->numbers;
+                    }
+                };
+            }
+
+            public function canViewOrEditAP($ApID, $Uzivatel) {
+                return true;
+            }
+        };
+        $presenter = new SmsPresenter($users, $ap, new Model\Komunikace($sender, $users));
+        $user = new class () extends \Nette\Security\User {
+            public function __construct() {
+            }
+        };
+        $presenter->injectPrimary(new Http\Request(new Http\UrlScript('http://localhost/')), new Http\Response(), user: $user);
+        $presenter->loadState(['id' => 1]);
+        return $presenter;
+    }
+
+    private function assertFlash(SmsPresenter|SmsManagersPresenter $presenter, string $message, string $type): void {
+        Assert::count(1, $presenter->messages);
+        Assert::same($message, $presenter->messages[0]->message);
+        Assert::same($type, $presenter->messages[0]->type);
+    }
+}
+
+(new KomunikaceSmsTest())->run();

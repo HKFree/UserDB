@@ -280,10 +280,10 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
     private function sendSMSAndValidate($uzivateleID, $message) {
         try {
-            $this->komunikace->posliSMS($uzivateleID, $message);
-            $this->flashMessage('SMS byla odeslána na ' . count($uzivateleID) . ' čísel.');
+            $pocetCisel = $this->komunikace->posliSMS($uzivateleID, $message);
+            $this->flashMessage('SMS byla odeslána na ' . $pocetCisel . ' čísel.');
         } catch (SmsSenderException $e) {
-            $this->flashMessage('SMS nebyla odeslána. ' . $e, "danger");
+            $this->flashMessage('SMS nebyla odeslána. ' . $e->getMessage(), "danger");
         }
     }
 }

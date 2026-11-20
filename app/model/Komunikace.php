@@ -4,6 +4,7 @@ namespace App\Model;
 
 use Nette;
 use App\Services\MexSmsSender;
+use App\Services\SmsSenderException;
 use App\Model\Uzivatel;
 
 /**
@@ -24,7 +25,7 @@ class Komunikace extends Table
         $this->uzivatel = $u;
     }
 
-    public function posliSMS(array $uzivateleID, string $zprava) {
+    public function posliSMS(array $uzivateleID, string $zprava): int {
         $cisla = [];
         foreach ($uzivateleID as $uid) {
             $u = $this->uzivatel->getUzivatel($uid);
@@ -33,7 +34,12 @@ class Komunikace extends Table
             }
         }
 
+        if ($cisla === []) {
+            throw new SmsSenderException('Žádný z vybraných uživatelů nemá platné české telefonní číslo.');
+        }
+
         $this->smsSender->sendSMS($cisla, $zprava);
+        return count($cisla);
     }
 
     public function maValidniCislo($uid) {
