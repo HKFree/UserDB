@@ -97,6 +97,10 @@ class Log extends Table
      * @return array pole ipId=>ipAdresa
      */
     public function getAdvancedzLogu(array $ids, $type = "ip") {
+        if ($type != "ip" && $type != "subnet") {
+            throw new \InvalidArgumentException("Neznámý typ objektu: ".$type);
+        }
+
         $names = array();
         foreach ($ids as $id) {
             if ($type == "ip") {
@@ -108,13 +112,13 @@ class Log extends Table
 
         $logy = $this->findAll()->where("sloupec", $names)->order("datum ASC");
 
+        $vzor = $type == "ip" ? "/^ipadresa\[(\d+)\]\.ip_adresa/i" : "/^subnet\[(\d+)\]\.subnet/i";
+
         $out = array();
         foreach ($logy as $log) {
-            $matches = null;
-            if ($type == "ip") {
-                preg_match("/^ipadresa\[(\d+)\]\.ip_adresa/i", $log->sloupec, $matches);
-            } elseif ($type == "subnet") {
-                preg_match("/^subnet\[(\d+)\]\.subnet/i", $log->sloupec, $matches);
+            // SQL porovnává sloupec podle kolace, vzor po bajtech; řádek bez čitelného ID nelze přiřadit.
+            if (preg_match($vzor, $log->sloupec, $matches) !== 1) {
+                continue;
             }
 
             $id = $matches[1];

@@ -52,8 +52,9 @@ The suite covers:
 
 - Container services, routing, authentication, API access and representative presenter pages and permissions.
 - Permission matrices for admin tools, rights, AP/member editing, messages and grid access, with recorded side effects.
+- Message forms for a whole AP with no, invalid and valid recipients.
 - Member edit form validation, saves and audit logs, IP/password handling, registration and planned membership transitions.
-- Schema migrations, tag operations and constraints, account activation and ledger entries.
+- Schema migrations, tag operations and constraints, account activation and ledger entries, and audit-log lookup of deleted IPs and subnets.
 - Subnet calculations, downloads, SSID rendering, QR generation and user merge balances.
 - Local mail capture and contract PDF conversion, including Czech text, optional fields and cleanup.
 
