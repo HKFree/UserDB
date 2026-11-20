@@ -24,8 +24,19 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->komunikace = $k;
     }
 
+    /** E-mail a SMS členovi posílá správce jeho AP */
+    private function smiPsatClenovi(): bool {
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        return $uzivatel && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+    }
+
+    /** E-mail a SMS všem členům AP posílá správce AP */
+    private function smiPsatCelemuAp(): bool {
+        return $this->ap->getAP($this->getParameter('id')) && $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+    }
+
     public function renderEmail() {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
+        $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
@@ -60,6 +71,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function emailFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->smiPsatClenovi());
         $idUzivatele = $values->id;
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
@@ -88,7 +100,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function renderEmailall() {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+        $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
     }
 
@@ -135,6 +147,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function emailallFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->smiPsatCelemuAp());
         $idUzivatele = $values->id;
 
         $ap = $this->ap->getAP($this->getParameter('id'));
@@ -168,8 +181,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function renderSms() {
-        $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($user->Ap_id, $this->getUser());
+        $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->uziv = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
@@ -201,6 +213,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function smsFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->smiPsatClenovi());
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
         $this->sendSMSAndValidate([ $user->id ], $values->message);
@@ -210,7 +223,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function renderSmsall() {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+        $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
     }
 
@@ -248,6 +261,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function smsallFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->smiPsatCelemuAp());
         $ap = $this->ap->getAP($this->getParameter('id'));
 
         $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
