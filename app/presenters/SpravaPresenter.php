@@ -30,10 +30,20 @@ class SpravaPresenter extends BasePresenter
     }
 
     public function renderNastroje() {
-        $this->template->canApproveCC = $this->getUser()->isInRole('VV');
-        $this->template->canSeeMailList = $this->getUser()->isInRole('VV');
-        $this->template->canCreateArea = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
-        $this->template->canSeePayments = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canApproveCC = $this->jeVV();
+        $this->template->canSeeMailList = $this->jeVV();
+        $this->template->canCreateArea = $this->jeVVneboTECH();
+        $this->template->canSeePayments = $this->jeVVneboTECH();
+    }
+
+    /** Slučování, schvalování ČČ, mailing list */
+    protected function jeVV(): bool {
+        return $this->getUser()->isInRole('VV');
+    }
+
+    /** Oblasti a AP, platby, SMS správcům, přešifrování */
+    protected function jeVVneboTECH(): bool {
+        return $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
     public function actionShow($id) {

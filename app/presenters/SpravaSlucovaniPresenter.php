@@ -30,9 +30,12 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
     }
 
     public function renderSlouceni() {
+        $this->vyzadujOpravneni($this->jeVV()); // odkaz je jen v nástrojích pro VV
     }
 
     protected function createComponentSlouceniGrid($name) {
+        $this->vyzadujOpravneni($this->jeVV()); // i export a stránkování gridu
+
         $grid = new \Grido\Grid($this, $name);
         $grid->translator->setLang('cs');
         $grid->setExport('slouceni_export');
@@ -49,7 +52,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
     }
 
     public function renderSlucovani() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV');
+        $this->template->canViewOrEdit = $this->jeVV();
 
         $u1id = 1;
         $u2id = 1;
@@ -150,6 +153,8 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
     }
 
     public function slucovaniFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->jeVV());
+
         if ($form->isSubmitted()->name == "nahled") {
             if ($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id, $values->slouceny_uzivatel)) {
                 $this->flashMessage('Takové sloučení již existuje.');

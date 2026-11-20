@@ -22,7 +22,7 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
     }
 
     public function renderPresifrovani() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
     protected function createComponentPresifrovaniForm() {
@@ -38,6 +38,8 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
     }
 
     public function presifrovaniFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
         $nesifrovane = $this->ipAdresa->findBy(array('heslo_sifrovane' => 0));
 
         foreach ($nesifrovane as $ip) {
