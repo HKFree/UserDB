@@ -1,8 +1,9 @@
 includes:
     - vendor/phpstan/phpstan-nette/extension.neon
+    - phpstan-baseline.neon
 
 parameters:
-    level: 0
+    level: 5
     phpVersion: 80200
     tmpDir: temp/phpstan
     fileExtensions:

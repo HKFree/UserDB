@@ -51,7 +51,15 @@ The DI smoke test reads `config.local.neon`; the command creates an empty file o
 
 The remaining tests cover DI compilation, downloads, SSID rendering, QR generation, user merge balances and local mail capture. The PDF test converts the actual contract template using LibreOffice and checks Czech text, empty optional fields and cleanup after conversion errors. This is limited regression coverage, not a full application test suite. Docker is not needed.
 
-PHPStan runs at **level 0**, with the Nette extension and no baseline or ignored errors. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
+PHPStan runs at **level 5** with the Nette extension. The 168 findings that existed when the level was raised are recorded in `phpstan-baseline.neon`, so only new or changed code has to pass level 5. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
+
+When a baselined finding is fixed, PHPStan reports its baseline entry as unmatched; remove the entry, or regenerate the file:
+
+```sh
+flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M --generate-baseline phpstan-baseline.neon
+```
+
+Regenerating also records every current finding, so do it only to shrink the baseline, never to silence a finding in new code.
 
 CI follows the [official Flox CI/CD tutorial](https://flox.dev/docs/tutorials/ci-cd): install Flox and run the same commands against the committed environment and lockfile, without FloxHub credentials.
 
