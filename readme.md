@@ -24,7 +24,7 @@ php bin/console migrations:continue
 
 ### Tests with Flox
 
-Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2 and Composer for Apple Silicon macOS and x86_64 Linux, including CI.
+Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2, Composer and MariaDB 10.11.19 for Apple Silicon macOS and x86_64 Linux, including CI.
 
 Check availability with `flox --version`. If Flox is missing, install the current release:
 
@@ -42,15 +42,35 @@ flox activate -- composer install --no-interaction --prefer-dist --no-progress
 test -e app/config/config.local.neon || touch app/config/config.local.neon
 export USERDB_DB_HOST=127.0.0.1 USERDB_DB_NAME=userdb_test
 export USERDB_DB_USERNAME=userdb_test USERDB_DB_PASSWORD=test-only
-flox activate -- vendor/bin/tester -C tests
+flox activate -s -- vendor/bin/tester -C tests
 flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
 ```
 
-The bootstrap reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. The tests run without a database or Docker. `ExampleTest.phpt` compiles DI and checks `Assert::true(true)`; the other tests cover regressions in downloads, tag filtering, SSID rendering, QR library loading and user merge balances. This is limited regression coverage, not a full application test suite.
+The DI smoke test reads `config.local.neon`; the command creates an empty file only if missing and preserves any existing configuration. `-s` starts the local MariaDB service. The database test uses its own restricted `userdb_test` account and database, ignoring application credentials and local configuration. It checks tag writes, reads, updates, area filtering, Czech text, unique and foreign-key constraints, and the server's SQL mode. Its minimal schema is in `tests/fixtures/stitek.sql`; inserted data is rolled back after each run. A missing database fails the test instead of skipping it.
+
+The remaining tests cover DI compilation, downloads, SSID rendering, QR library loading, user merge balances and local mail capture. This is limited regression coverage, not a full application test suite. Docker is not needed.
 
 PHPStan runs at **level 0**, with the Nette extension and no baseline or ignored errors. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
 CI follows the [official Flox CI/CD tutorial](https://flox.dev/docs/tutorials/ci-cd): install Flox and run the same commands against the committed environment and lockfile, without FloxHub credentials.
+
+### Local web and database with Flox
+
+Each worktree has its own MariaDB data under `.flox/cache/mariadb`, private Unix socket, development database, encryption key, session storage and session cookie name. MariaDB opens no TCP port. Its SQL mode matches the supplied server configuration: `ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION`.
+
+After installing Composer dependencies, run from the worktree root:
+
+```sh
+flox activate -s
+php scripts/userdb_dev_setup.php
+php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
+```
+
+The OS assigns a free web port and PHP prints the URL. Repeat these commands in another worktree to run both simultaneously. The setup command applies existing migrations and demo data to `userdb_dev`; it can be repeated without resetting data. The local migration adapter replaces the historical production definer with the local account, without changing the migration files. The web uses `config.flox.neon` and the existing demo identity, preserving `config.local.neon`.
+
+The `userdb_dev` / `dev-only` and `userdb_test` / `test-only` credentials are exclusively for these local databases. They cannot access each other's database. Local email is captured as `.eml` files under `.flox/cache/mail`; contract storage lives under `.flox/cache/storage`. Services stop when the last Flox activation exits; database data and keys remain. Inspect MariaDB with `flox services status` inside Flox and logs in `.flox/cache/logs/`.
+
+PHP extensions are included and frontend assets are already committed, so no Node build is required. Contract PDF generation additionally needs LibreOffice, zip/unzip and adaptation of its fixed Linux paths. QR/PDF code using `/dev/shm` also needs a portable path on macOS. SledovaniTV, accounting reports and Fio imports have separate Python/Perl workers and external credentials; they are not started by this local web setup.
 
 ### Editor
 

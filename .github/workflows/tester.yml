@@ -12,6 +12,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       USERDB_DB_HOST: 127.0.0.1
       USERDB_DB_NAME: userdb_test
@@ -25,7 +26,7 @@ jobs:
         with:
           disable-metrics: true
       - name: Install dependencies, run Nette Tester and PHPStan
-        shell: flox activate -- bash --noprofile --norc -e -o pipefail {0}
+        shell: flox activate -s -- bash --noprofile --norc -e -o pipefail {0}
         run: |
           composer install --no-interaction --prefer-dist --no-progress
           test -e app/config/config.local.neon || touch app/config/config.local.neon

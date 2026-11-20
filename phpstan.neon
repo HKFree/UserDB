@@ -13,6 +13,7 @@ parameters:
         - bin/console
         - bin/create-user.php
         - tests
+        - scripts
         - www
         - pdfGenerator/www
     scanDirectories:

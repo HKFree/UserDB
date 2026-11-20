@@ -3,6 +3,18 @@ schema-version = "1.19.0"
 [install]
 php.pkg-path = "php82"
 composer.pkg-path = "php82Packages.composer"
+mariadb.pkg-path = "mariadb_1011"
+mariadb.pkg-group = "mariadb"
+mariadb.version = "10.11.19"
 
 [options]
 systems = ["aarch64-darwin", "x86_64-linux"]
+
+[hook]
+on-activate = '''
+socket_id=$(php -r 'echo substr(hash("sha256", getenv("FLOX_ENV_CACHE")), 0, 20);')
+export USERDB_MARIADB_SOCKET="/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock"
+'''
+
+[services.mariadb]
+command = 'exec bash "$FLOX_ENV_PROJECT/scripts/userdb_mariadb.sh"'

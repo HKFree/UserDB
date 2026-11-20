@@ -6,18 +6,93 @@
       "composer": {
         "pkg-path": "php82Packages.composer"
       },
+      "mariadb": {
+        "pkg-path": "mariadb_1011",
+        "pkg-group": "mariadb",
+        "version": "10.11.19"
+      },
       "php": {
         "pkg-path": "php82"
       }
+    },
+    "hook": {
+      "on-activate": "socket_id=$(php -r 'echo substr(hash(\"sha256\", getenv(\"FLOX_ENV_CACHE\")), 0, 20);')\nexport USERDB_MARIADB_SOCKET=\"/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock\"\n"
     },
     "options": {
       "systems": [
         "aarch64-darwin",
         "x86_64-linux"
       ]
+    },
+    "services": {
+      "mariadb": {
+        "command": "exec bash \"$FLOX_ENV_PROJECT/scripts/userdb_mariadb.sh\""
+      }
     }
   },
   "packages": [
+    {
+      "attr_path": "mariadb_1011",
+      "broken": false,
+      "derivation": "/nix/store/hz5ar9dgvnlbmy7r76q9hdnkpzfnskmk-mariadb-server-10.11.19.drv",
+      "description": "Enhanced, drop-in replacement for MySQL",
+      "install_id": "mariadb",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "mariadb-server-10.11.19",
+      "pname": "mariadb_1011",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.288660Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "10.11.19",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "man": "/nix/store/60nxjv0j2wg7bf8765yyv775ypf2gzbf-mariadb-server-10.11.19-man",
+        "out": "/nix/store/6wiish5ybry57n2pcak8x3kqwqpmq6h7-mariadb-server-10.11.19"
+      },
+      "system": "aarch64-darwin",
+      "group": "mariadb",
+      "priority": 5
+    },
+    {
+      "attr_path": "mariadb_1011",
+      "broken": false,
+      "derivation": "/nix/store/hn2v92jml0mwiw9r1zdaykhfvbmv31sw-mariadb-server-10.11.19.drv",
+      "description": "Enhanced, drop-in replacement for MySQL",
+      "install_id": "mariadb",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "mariadb-server-10.11.19",
+      "pname": "mariadb_1011",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:20.731275Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "10.11.19",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "man": "/nix/store/2gsdplw8vkb78nvs0729a6kqfcyqnrl0-mariadb-server-10.11.19-man",
+        "out": "/nix/store/ay5zw12x3r2jm8g3g8d89imb2hw1a2hw-mariadb-server-10.11.19"
+      },
+      "system": "x86_64-linux",
+      "group": "mariadb",
+      "priority": 5
+    },
     {
       "attr_path": "php82Packages.composer",
       "broken": false,
