@@ -18,6 +18,7 @@ unzip.pkg-path = "unzip"
 unzip.pkg-group = "pdf"
 poppler.pkg-path = "poppler-utils"
 poppler.pkg-group = "pdf"
+pcov.pkg-path = "php82Extensions.pcov"
 
 [options]
 systems = ["aarch64-darwin", "x86_64-linux"]

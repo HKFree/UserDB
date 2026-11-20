@@ -1,6 +1,6 @@
 ---
 name: UserDB testy
-description: Nástrahy testovacího základu (kontejner, testovací DB z migrací, spouštění presenterů).
+description: Nástrahy testovacího základu (kontejner, testovací DB z migrací, spouštění presenterů) a měření pokrytí.
 metadata:
   type: project
 ---
@@ -75,6 +75,22 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - Samotný typ odpovědi `Grido\Components\Export` neověří CSV. Data se čtou a CSV vzniká až při `send()`;
   obsah odpovědi lze zachytit output bufferingem nad naplněným gridem.
 - Formulářové `addDate()` vrací `DateTimeImmutable`, který PHP neumí implicitně převést na text.
+
+## Pokrytí
+
+- Pokrytí sbírá PCOV z Floxu přes `scripts/userdb_test_coverage.sh`. Nix balí rozšíření mimo PHP a samo se
+  nenačte; skript ho předává Testeru jako `-d extension=$FLOX_ENV/lib/php/extensions/pcov.so`.
+- `phpdbg` na pokrytí nepoužívat, i když ve Floxu je: Tester s `-p phpdbg` spadne nejméně na
+  `PermissionGridExportsPresenterTest`. S limitem 2 GB se pokusí alokovat přes 4 GB v
+  `Tester\CodeCoverage\Collector`, s limitem 12 GB proces skončí kódem -1 při špičce kolem 830 MB. Vyšší
+  limit paměti tedy nepomůže a procento z takového běhu je zkreslené spadlými testy (ověřeno 20. 11. 2026,
+  PHP 8.2.34, Nette Tester 2.6.2).
+- Procento závisí na stavu `temp/tests/cache`: se smazanou cache vyšlo 41 %, s naplněnou 39 % (ověřeno
+  20. 11. 2026). Soubor, který se za běhu nenačte, počítá Tester celý jako nepokrytý, a kompilace DI kontejneru
+  jich načte víc. CI měří vždy s naplněnou cache, pokrytí tam běží až po testech. Opakované běhy se stejnou
+  cache dávají shodný výsledek.
+- Měří se jen soubory PHP, šablony Latte ne. Provedený řádek neznamená ověřený řádek: pokrytí ukazuje, kam
+  testy vůbec nedojdou, ne že je chování správně.
 
 ## Spouštění
 
