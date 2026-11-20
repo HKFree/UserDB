@@ -147,34 +147,8 @@ When something goes wrong, try to run `(cd /opt/UserDB.git; hooks/post-receive)`
 
 See [git-hooks/post-receive.sample](git-hooks/post-receive.sample) for more details what happens during deployment on server side.
 
-### Testing environment (userdb-test.hkfree.org)
-
-1. A push to the `testing` branch (or a pull request targeting it) starts the GitHub Actions workflow
-   [deploy-userdb-test.yml](.github/workflows/deploy-userdb-test.yml).
-2. The workflow connects over SSH (`vars.CLOUD_USERNAME`@`vars.CLOUD_HOSTNAME`, key in `secrets.CLOUD_SSH_KEY`)
-   and runs `./deploy-userdb-test.sh` from that user's home directory. Nothing is built on the GitHub runner
-   and the built images are not pushed to any registry.
-3. The server script:
-   - clones `https://github.com/HKFree/UserDB.git` into `~/.tmp` and checks out `testing`
-     (the branch is the script's first argument, the workflow passes none),
-   - removes `db/dummy-data`,
-   - builds the images `userdb:testing` and `pdf-generator:testing` locally,
-     plus `stv-connector:testing` if the checked-out branch contains `stvConnector/`,
-   - stops and removes the containers `userdb-testing`, `userdb-pdf-generator-testing` and `userdb-stv-connector-testing`
-     and starts new ones from the built images in the Docker network `userdb-testing-net`
-     (web on `127.0.0.1:8082`, PDF generator on `127.0.0.1:8083`, `AGREEMENT_NAME_PREFIX=TESTING`),
-   - runs `php bin/console migrations:continue` inside the new `userdb-testing` container.
-
-The script does not manage the database. The web and STV connector containers connect to the existing
-database `userdb_test` on the host `mariadb-userdb-testing`.
-
-The script always deploys the head of `testing`, so a pull request from a branch of this repository targeting
-`testing` redeploys the current `testing` branch, not the code of the pull request. A pull request from a fork
-starts the workflow without the SSH key, so it deploys nothing.
-
-The real script contains credentials and is kept on the server, not in this repository. A sanitized copy is in
-[scripts/deploy-userdb-test.sh.sample](scripts/deploy-userdb-test.sh.sample). Never paste the real one into
-this repository, an issue or a pull request.
+There is no shared testing environment. To try a change before it is deployed, run the application locally:
+see [Local web, database and PDF with Flox](#local-web-database-and-pdf-with-flox).
 
 ### Jobs to be run
 

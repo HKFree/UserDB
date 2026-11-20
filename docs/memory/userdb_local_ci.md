@@ -13,7 +13,7 @@ Pravidla platí pro všechny vývojáře a agenty: změny se připravují pouze 
 
 **How to apply:** Před schválením pouze lokální příprava a testy; lokální commit až po úspěšných testech. Žádný push, PR ani draft, issue/komentář, publikování artefaktů či Flox prostředí, vzdálený CI dispatch nebo deploy. Stahování závislostí a čtení dokumentace je povolené. GitHub job označovat jako nespuštěný, dokud skutečně neproběhne po výslovném schválení zadavatele. Schválení publikování není oprávněním k produkčnímu deployi.
 
-- Větev `testing` nepoužívat: existující `deploy-userdb-test.yml` spouští vzdálený deploy při PR/push do této větve.
+- Testovací prostředí `userdb-test` je zrušené (sdělil správce serveru 20. 11. 2026; stav serveru z repa ověřit nejde). Z repa zmizel workflow nasazení a vzor skriptu, na GitHubu větev `testing`, secret a proměnné workflow (ověřeno přes `gh` 20. 11. 2026). Nasazování z CI znovu nezavádět bez dohody se správcem serveru.
 - Test runner i jeho podprocesy musí používat PHP z projektového Flox prostředí.
 - Při cíleném spuštění PHP CS Fixeru s více explicitními cestami (např. `tests/*.php`) vždy přidat `--config=.php-cs-fixer.dist.php`; bez něj nedokáže vybrat konfiguraci. Pro běžnou kontrolu celého projektu cesty nepředávat, aby se použil nakonfigurovaný Finder a jeho výjimky.
 - Instalace Floxu v CI sama neaktivuje prostředí. Při úpravách víceřádkového kroku zachovat aktivaci pro celý skript a přepínače shellu `--noprofile --norc -e -o pipefail`, aby chyba příkazu či pipeline nezůstala skrytá.
