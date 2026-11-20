@@ -121,8 +121,16 @@ class ApPresenter extends BasePresenter
         }
     }
 
+    /** TECH, VV a KONTROLA vždy (i nové AP), SO/ZSO jen existující AP své oblasti (AP::canViewOrEditAP) */
+    private function smiUpravitAp($idAp): bool {
+        if ($this->ap->canViewOrEditAll($this->getUser())) {
+            return true;
+        }
+        return !empty($idAp) && $this->ap->getAP($idAp) && $this->ap->canViewOrEditAP($idAp, $this->getUser());
+    }
+
     public function renderEdit() {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+        $this->template->canViewOrEdit = $this->smiUpravitAp($this->getParameter('id'));
     }
 
     protected function createComponentApForm() {
@@ -311,6 +319,8 @@ class ApPresenter extends BasePresenter
     }
 
     public function apFormSucceded($form, $values) {
+        $this->vyzadujOpravneni($this->smiUpravitAp($values->id)); // AP ze skrytého pole id
+
         $log = array();
         $idAP = $values->id;
         $ips = $values->ip;
