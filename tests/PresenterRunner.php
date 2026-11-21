@@ -53,6 +53,10 @@ final class PresenterRunner
         }
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @param array<string, mixed> $post
+     */
     public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true): PresenterResult {
         $member = $this->database->table('Uzivatel')->get($uid);
         return $this->run($presenter, $parameters, $method, $post, $sameSite, [
@@ -62,7 +66,11 @@ final class PresenterRunner
         ]);
     }
 
-    /** @param array{string, string}|null $credentials */
+    /**
+     * @param array{string, string}|null $credentials
+     * @param array<string, mixed> $parameters
+     * @param array<string, mixed> $post
+     */
     public function api(string $presenter, ?array $credentials = null, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true): PresenterResult {
         return $this->run($presenter, $parameters, $method, $post, $sameSite, $credentials === null ? [] : [
             'PHP_AUTH_USER' => $credentials[0],
@@ -71,6 +79,11 @@ final class PresenterRunner
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     * @param array<string, mixed> $post
+     * @param array<string, string> $server
+     */
     private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server): PresenterResult {
         if (self::$activeRequest !== null) {
             throw new \LogicException('Nested presenter runs are not supported.');

@@ -24,6 +24,7 @@ final class Fixtures
         return $this->insert('Ap', ['Oblast_id' => $areaId, 'jmeno' => $this->name('AP'), 'aktivni' => 1]);
     }
 
+    /** @param array<string, mixed> $values */
     public function member(int $apId, array $values = []): ActiveRow {
         $name = $this->name('Member');
         return $this->insert('Uzivatel', $values + [
@@ -77,6 +78,7 @@ final class Fixtures
         return $this->insert('Subnet', ['Ap_id' => $apId, 'subnet' => $subnet, 'gateway' => $gateway, 'popis' => 'Test subnet']);
     }
 
+    /** @param array<string, mixed> $values */
     public function ipAddress(int $memberId, string $address, array $values = []): ActiveRow {
         return $this->insert('IPAdresa', $values + [
             'Uzivatel_id' => $memberId, 'ip_adresa' => $address,
@@ -93,7 +95,10 @@ final class Fixtures
         return $row ? (int) $row->id : throw new \RuntimeException("Missing lookup $table: $text");
     }
 
-    /** For tables with the primary key id only; insert into other tables through the Explorer. */
+    /**
+     * For tables with the primary key id only; insert into other tables through the Explorer.
+     * @param array<string, mixed> $data
+     */
     public function insert(string $table, array $data): ActiveRow {
         if (!$this->database->getConnection()->getPdo()->inTransaction()) {
             throw new \LogicException('Fixtures require an active test transaction.');

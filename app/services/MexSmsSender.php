@@ -110,6 +110,7 @@ class MexSmsSender
         }));
     }
 
+    /** @param array<array-key, string> $bnumbers */
     public function sendSMS(array $bnumbers, string $text) {
         $data = array();
         foreach ($bnumbers as $bnumber) {
