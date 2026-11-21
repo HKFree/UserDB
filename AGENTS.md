@@ -150,6 +150,9 @@ codex plugin add nette@nette
   s jedním účelem a výstižná jména, bez mrtvého kódu.
 - PHPStan běží bez baseline, úroveň je v `phpstan.neon`. Projít musí veškerý
   kód. Nález oprav; baseline nezaváděj a nález neignoruj.
+- Zapnuté je i rozšíření `phpstan-strict-rules`. Některé skupiny pravidel jsou
+  v `phpstan.neon` vypnuté, protože jimi stávající kód neprojde; další skupinu
+  kvůli nálezu nevypínej.
 - Styl hlídá php-cs-fixer (`.php-cs-fixer.dist.php`) a `.editorconfig`, syntaxi
   šablon `latte-lint`.
 - V pojmenování se drž okolního kódu: česká jména podle tabulek (`Uzivatel`,

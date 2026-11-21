@@ -11,7 +11,8 @@ use Tester\Assert;
 require_once __DIR__ . '/bootstrap.php';
 
 /**
- * Subnet lookups that read the Subnet table: the subnet of an IP address and overlapping subnets.
+ * Subnet lookups over rows of the Subnet table: the subnet of an IP address, overlapping subnets
+ * and the class C prefixes of an AP's subnets.
  */
 final class SubnetLookupDatabaseTest extends DatabaseTestCase
 {
@@ -58,6 +59,18 @@ final class SubnetLookupDatabaseTest extends DatabaseTestCase
         $result = $this->subnets->getSubnetOfIP('10.107.51.5');
         Assert::same(Subnet::ERR_MULTIPLE_GW, $result['error'] ?? null);
         Assert::equal([$outer->id => '10.107.51.0/24', $inner->id => '10.107.51.0/25'], $result['multiple_subnets'] ?? null);
+    }
+
+    public function testClassCPrefixesOfApSubnets(): void {
+        $this->fixtures->subnet($this->ap->id, '10.107.17.0/26', '10.107.17.1');
+        $this->fixtures->subnet($this->ap->id, '10.107.17.64/26', '10.107.17.65');
+        $this->fixtures->subnet($this->ap->id, '10.107.18.0/24', '');
+
+        $prefixes = array_values($this->subnets->getAPCSubnets($this->ap->related('Subnet.Ap_id')));
+        sort($prefixes);
+
+        Assert::same(['10.107.17.', '10.107.18.'], $prefixes);
+        Assert::same([], $this->subnets->getAPCSubnets($this->otherAp->related('Subnet.Ap_id')));
     }
 
     public function testOverlappingSubnet(): void {
