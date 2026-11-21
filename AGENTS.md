@@ -132,7 +132,7 @@ codex plugin add nette@nette
 | `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
 | `tests/` | Nette Tester; `tests/bootstrap.php` načte společný základ: testovací kontejner, databázi z migrací ve Floxu a spouštění presenterů |
-| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, objemová demo data v `UserdbDemoVolume.php`, router PHP serveru, příprava worktree), měření pokrytí testy, skript nasazení na testovací server a jeho přihlašovací formulář |
+| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, objemová demo data v `UserdbDemoVolume.php`, demo osoby v `UserdbDemoPersonas.php`, jejich stránka v `UserdbDemoPersonaPage.php` a Tracy panel v `UserdbDemoPersonaPanel.php`, router PHP serveru, příprava worktree), měření pokrytí testy, skript nasazení na testovací server a jeho přihlašovací formulář |
 | `orca.yaml` | co Orca spustí v každém novém worktree; jen věci platné pro každého, kdo má Orcu a Flox |
 | `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení na testovací server |
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |

@@ -71,6 +71,7 @@
                     <li><a n:href="Sprava:nastroje id=>null">Pokročilé nástroje</a></li>
                 </ul>
             </li>
+            <li n:if="$demoPersonaUrl"><a href="{$demoPersonaUrl}" title="Teď se díváš jako {$demoPersonaName}"><i class="glyphicon glyphicon-user small"></i> Změnit osobu</a></li>
             <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
           </ul>
           {form searchForm}

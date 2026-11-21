@@ -13,8 +13,8 @@ USERDB_DEMO_VOLUME=0 flox activate -s -- php scripts/userdb_dev_setup.php
 Příští spuštění bez této proměnné objem doplní. Opakované spuštění už data nepřidává ani nemění.
 Vypínač již vytvořený objem nemaže. Docker načítá pouze scénářové migrace.
 
-Všichni návštěvníci webu jsou stále člen 1 (Tester Testovací), s rolemi SO oblasti 1 a VV.
-Persony níže jsou připravené pro přepínání identity v navazující změně. Samotná data přihlášenou osobu nemění.
+Výchozí přihlášenou osobou je člen 1 (Tester Testovací), s rolemi SO oblasti 1 a VV.
+Lokální web ve Floxu a testovací instance umožňují [přepínání person](#persony).
 Odkazy v tabulkách jsou cesty od kořene aplikace; pokud aplikace běží pod `/userdb`, přidej tento prefix.
 
 ## Členové a jejich detail
@@ -131,6 +131,14 @@ Hesla IP jsou v otevřeném textu. Formulář Přešifrování je umí zašifrov
 Příznak Smokeping nemá žádná IP adresa: `/api/smokeping` s ním skončí chybou `Filter 'toAscii' is not defined`.
 
 ## Persony
+
+Na lokálním webu ve Floxu a na testovacích instancích klikni v horní liště na „Změnit osobu“ vedle
+Odhlášení, otevři `/demo-osoba`, nebo v Tracy liště rozbal panel s aktivní osobou a klikni na „Přepnout demo osobu“. Výběr odkazu uloží osobu do cookie a vrátí tě na `/`.
+Stránka `/demo-osoba` funguje i při chybě přihlášení v aplikaci, takže se lze vždy vrátit na člena 1.
+Odkaz na přepnutí vedoucí z cizí stránky osobu nezmění, jen zobrazí seznam.
+Cookie platí pro daný prohlížeč a instanci; lokální worktrees mají různá jména cookie i na stejném hostu.
+Bez cookie nebo s nepovolenou hodnotou zůstává přihlášený člen 1. Povolené jsou jen osoby v tabulce níže;
+role se při každém požadavku načítají z databáze. Přepínání není dostupné přes produkční bootstrap.
 
 Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní přihlašovací roli s výjimkou
 20003 před načtením objemu. Prošlá a budoucí role SO nemají být použitelné, aktivní DRUŽSTEVNÍK dovolí přihlášení.

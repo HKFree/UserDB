@@ -3,6 +3,14 @@
 // Router for PHP's development server. The application's production entry stays unchanged.
 $www = realpath(__DIR__ . '/../www');
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+if ($path === '/demo-osoba') {
+    require_once __DIR__ . '/UserdbDemoPersonas.php';
+    require_once __DIR__ . '/UserdbDemoPersonaPage.php';
+    $cookieName = UserdbDemoPersonas::cookieName(dirname(__DIR__));
+    $page = new UserdbDemoPersonaPage(new UserdbDemoPersonas($_COOKIE[$cookieName] ?? null));
+    $page->serve($cookieName, $_GET, $_SERVER, getallheaders());
+    return;
+}
 if (preg_match('~(?:^|/)\.~', $path)) {
     http_response_code(403);
     return;
