@@ -33,6 +33,17 @@ try {
     $crypto = $container->getByType(\App\Services\CryptoSluzba::class);
     Assert::same('local test', $crypto->decrypt($crypto->encrypt('local test')));
 
+    // A presenter reads its settings from the environment when it is created, so a variable the local web
+    // does not provide fails only on the pages of that presenter.
+    foreach ($container->findByType(\Nette\Application\IPresenter::class) as $service) {
+        Assert::type(\Nette\Application\IPresenter::class, $container->getService($service));
+    }
+
+    // The production image raises the limit for forms with many IP addresses. With a lower limit here PHP
+    // would drop the rest of such a form without an error.
+    Assert::same(1, preg_match('~max_input_vars = (\d+)~', FileSystem::read(__DIR__ . '/../Dockerfile'), $productionLimit));
+    Assert::same($productionLimit[1], ini_get('max_input_vars'));
+
     $cookieName = 'userdb_demo_persona_' . substr(hash('sha256', dirname(__DIR__)), 0, 20);
     $containerClass = $container::class;
     $fakeUser = new \ReflectionProperty(\App\Model\Authenticator::class, 'fakeUser');

@@ -45,7 +45,7 @@
       }
     },
     "hook": {
-      "on-activate": "socket_id=$(php -r 'echo substr(hash(\"sha256\", getenv(\"FLOX_ENV_CACHE\")), 0, 20);')\nexport USERDB_MARIADB_SOCKET=\"/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock\"\nif [ -z \"${USERDB_LIBREOFFICE:-}\" ]; then\n  if [ -d \"$FLOX_ENV/Applications/LibreOffice.app\" ]; then\n    export USERDB_LIBREOFFICE=\"$FLOX_ENV/Applications/LibreOffice.app/Contents/MacOS/soffice\"\n  else\n    export USERDB_LIBREOFFICE=\"$FLOX_ENV/bin/libreoffice\"\n  fi\nfi\n"
+      "on-activate": "socket_id=$(php -r 'echo substr(hash(\"sha256\", getenv(\"FLOX_ENV_CACHE\")), 0, 20);')\nexport USERDB_MARIADB_SOCKET=\"/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock\"\nexport PHPRC=\"$FLOX_ENV_PROJECT/scripts/userdb_php\"\nif [ -z \"${USERDB_LIBREOFFICE:-}\" ]; then\n  if [ -d \"$FLOX_ENV/Applications/LibreOffice.app\" ]; then\n    export USERDB_LIBREOFFICE=\"$FLOX_ENV/Applications/LibreOffice.app/Contents/MacOS/soffice\"\n  else\n    export USERDB_LIBREOFFICE=\"$FLOX_ENV/bin/libreoffice\"\n  fi\nfi\n"
     },
     "options": {
       "systems": [
