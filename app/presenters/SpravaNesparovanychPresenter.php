@@ -44,17 +44,16 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
         $grid->setDefaultSort(array('datum' => 'DESC', 'id' => 'DESC'));
 
-        $presenter = $this;
-        $grid->setRowCallback(function ($item, $tr) use ($presenter) {
+        $grid->setRowCallback(function ($item, $tr) {
             if ($item->PrichoziPlatba_id) {
-                $tr->onclick = "window.location='".$presenter->link('UzivatelAccount:platba', array('id' => $item->PrichoziPlatba_id))."'";
+                $tr->onclick = "window.location='".$this->link('UzivatelAccount:platba', array('id' => $item->PrichoziPlatba_id))."'";
             }
             return $tr;
         });
 
-        $grid->addColumnText('PrichoziPlatba_id', 'Akce')->setCustomRender(function ($item) use ($presenter) {
+        $grid->addColumnText('PrichoziPlatba_id', 'Akce')->setCustomRender(function ($item) {
             return Html::el('a')
-                ->href($presenter->link('SpravaNesparovanych:prevod', array('id' => $item->PrichoziPlatba_id)))
+                ->href($this->link('SpravaNesparovanych:prevod', array('id' => $item->PrichoziPlatba_id)))
                 ->title("Převést")
                 ->setText("Převést");
         });

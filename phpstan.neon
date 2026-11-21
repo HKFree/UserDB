@@ -1,5 +1,6 @@
 includes:
     - vendor/phpstan/phpstan-nette/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
 
 parameters:
     level: 5
@@ -17,3 +18,12 @@ parameters:
         - pdfGenerator/www
     scanDirectories:
         - lib/phpqrcode
+    strictRules:
+        # Vypnuto, dokud stávající kód obsahuje nálezy, viz issue #204.
+        disallowedLooseComparison: false
+        booleansInConditions: false
+        requireParentConstructorCall: false
+        disallowedEmpty: false
+        strictFunctionCalls: false
+        # Vypnuto trvale: krátký ternár pro výchozí hodnotu (getenv('X') ?: 'výchozí') zůstává povolený.
+        disallowedShortTernary: false

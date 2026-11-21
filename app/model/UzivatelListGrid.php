@@ -335,7 +335,7 @@ class UzivatelListGrid
             $seznamNotStitku[-$stitekId] = "NOT " . $stitekText;
         }
 
-        $stitkyKFiltrovani[0] = "---";
+        $stitkyKFiltrovani = [0 => "---"];
         $stitkyKFiltrovani += $seznamStitku;
         $stitkyKFiltrovani += $seznamNotStitku;
 

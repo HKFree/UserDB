@@ -63,6 +63,8 @@ The suite covers:
 
 PHPStan runs at **level 5** with the Nette extension and without a baseline. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
+The [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules) extension is enabled as well. Five of its rule groups are switched off in `phpstan.neon` because the current code does not pass them yet: `disallowedLooseComparison`, `booleansInConditions`, `disallowedEmpty`, `strictFunctionCalls` and `requireParentConstructorCall`. `disallowedShortTernary` is switched off for good: the short ternary stays allowed for default values such as `getenv('X') ?: 'default'`. The remaining groups keep the extension's defaults and must pass.
+
 Methods that Kdyby Replicator adds at runtime are described in `phpstan/replicator.stub`. The only suppressed finding is one inline `@phpstan-ignore` in `pdfGenerator/www/ContractPdf.php`, where PHPStan's `proc_open` signature rejects a valid descriptor.
 
 **Code coverage:** `flox activate -s -- scripts/userdb_test_coverage.sh` runs the suite with PCOV and writes the line coverage of the PHP files in `app`, `pdfGenerator/www` and `www/digisign-webhook` to `temp/coverage/coverage.html`; Latte templates are not measured. Pass a path ending in `.xml` to get a Clover report instead. CI runs the same script after the tests, prints the percentage in the job summary and keeps the HTML report as the `coverage-report` artifact for 14 days. No threshold is enforced, and a failure of the coverage step or of the report upload does not fail the job: it shows as a warning annotation on the run.

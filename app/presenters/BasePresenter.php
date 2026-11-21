@@ -80,7 +80,6 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     protected function beforeRender() {
-        parent::__construct();
         parent::beforeRender();
 
         $this->template->oblasti = $this->oblast->getSeznamOblasti();

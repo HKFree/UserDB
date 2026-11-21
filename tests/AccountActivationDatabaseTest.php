@@ -46,7 +46,7 @@ final class AccountActivationDatabaseTest extends DatabaseTestCase
     public function testTransition(string $method, array $before, array $after, bool|string|null $expected, ?int $movement, ?string $note): void {
         $this->member->update(['money_aktivni' => $before[0], 'money_deaktivace' => $before[1]]);
         Assert::same(0, $this->database->table('UzivatelskeKonto')->count('*'));
-        $result = $this->activation->$method($this->user, $this->member->id);
+        $result = $this->callActivation($method, $this->member->id);
         if ($expected !== null) {
             Assert::same($expected, $result);
         }
@@ -80,8 +80,17 @@ final class AccountActivationDatabaseTest extends DatabaseTestCase
         $id = (int) $this->database->table('Uzivatel')->max('id') + 1;
         Assert::null($this->database->table('Uzivatel')->get($id));
         Assert::same(0, $this->database->table('UzivatelskeKonto')->count('*'));
-        Assert::same($expected, $this->activation->$method($this->user, $id));
+        Assert::same($expected, $this->callActivation($method, $id));
         Assert::same(0, $this->database->table('UzivatelskeKonto')->count('*'));
+    }
+
+    private function callActivation(string $method, int $memberId): bool|string {
+        return match ($method) {
+            'activateAccount' => $this->activation->activateAccount($this->user, $memberId),
+            'reactivateAccount' => $this->activation->reactivateAccount($this->user, $memberId),
+            'deactivateAccount' => $this->activation->deactivateAccount($this->user, $memberId),
+            default => throw new \InvalidArgumentException("Neznámá metoda $method."),
+        };
     }
 }
 
