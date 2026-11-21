@@ -50,4 +50,8 @@ vidět. Ověřeno 21. 11. 2026 lokálně ve Floxu (MariaDB 10.11.19), není-li u
   správce s 24 subnety (25 000 členů, 50 000 IP adres) trval 6,5 s proti 1,4 s; načtení 1,5 mil. pohybů 66 s
   proti 8 s.
 - Čas kontroly oprávnění u cizího člena roste s počtem subnetů správce krát počet IP adres. Velikost oblasti
-  „velkého správce“ určuje `UserdbDemoVolume::BIG_AREA_SUBNETS_PER_AP`; 60 subnetů dalo na notebooku 1,6 s.
+  „velkého správce“ určuje `UserdbDemoVolume::BIG_AREA_SUBNETS_PER_AP`. Nad objemovými daty (13 500 členů,
+  18 000 IP adres) trval jeden dotaz kontroly na testovacím serveru 0,047 s; 60 subnetů dalo na notebooku 1,6 s.
+- Hromadné vkládání do `UzivatelskeKonto` musí jít v pořadí primárního klíče. Při vkládání se sestupnými id
+  zabralo 324 000 řádků 426 MB místo 27 MB, tabulka se nevešla do paměti MariaDB na testovacím serveru
+  (128 MB) a dotaz grafu aktivací tam trval 30 s.

@@ -10,7 +10,7 @@ final class UserdbDemoVolume
     public const BIG_AREA = 10000;
     public const BIG_AREA_APS = 30;
     /** Each subnet costs the area administrator one scan of all addresses when opening a foreign member. At most 8. */
-    public const BIG_AREA_SUBNETS_PER_AP = 2;
+    public const BIG_AREA_SUBNETS_PER_AP = 7;
     public const BIG_AREA_SUBNETS = self::BIG_AREA_APS * self::BIG_AREA_SUBNETS_PER_AP;
     /** The AP with 600 active members, outside the big administrator's area. */
     public const CROWDED_AP = 10030;
@@ -128,9 +128,11 @@ final class UserdbDemoVolume
                 '0000000000/2010', 'Objem smyšlený účet', 290, 2010,
                 CONCAT('objem-', u.seq, '-', m.seq), 'Objem měsíční platba', 2
             FROM seq_0_to_4499 u CROSS JOIN seq_0_to_11 m
+            ORDER BY u.seq, m.seq DESC
             SQL);
         // Payment and charge for each of 36 months, including the current month. Newer months get higher
-        // ids: the detail and the lists pick the latest payment and activation by id.
+        // ids: the detail and the lists pick the latest payment and activation by id. Rows are inserted in
+        // the order of their ids; in any other order the table takes ten times the space.
         $this->connection->query(<<<'SQL'
             INSERT INTO UzivatelskeKonto (id, Uzivatel_id, PrichoziPlatba_id, TypPohybuNaUctu_id,
                 spolek, druzstvo, castka, datum, datum_cas, poznamka, zmenu_provedl)
@@ -141,6 +143,7 @@ final class UserdbDemoVolume
                 DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL m.seq MONTH),
                 IF(k.seq = 0, 'Objem měsíční platba', 'Objem měsíční aktivace'), 1
             FROM seq_0_to_4499 u CROSS JOIN seq_0_to_35 m CROSS JOIN seq_0_to_1 k
+            ORDER BY u.seq, m.seq DESC, k.seq
             SQL);
         // 622 movements in the default cooperative filter, with a net-zero extra history.
         $this->connection->query(<<<'SQL'

@@ -386,6 +386,9 @@ final class DemoDataPresenterTest extends TestCase
         Assert::same(3000, $this->database->table('Log')->where('tabulka = ? AND tabulka_id = 100000', 'Uzivatel')->count('*'));
         Assert::same(30, $this->database->table('Ap')->where('Oblast_id', 10000)->count('*'));
         Assert::same(\UserdbDemoVolume::BIG_AREA_SUBNETS, $this->database->table('Subnet')->where('Ap.Oblast_id', 10000)->count('*'));
+        // Rows inserted out of primary key order made this table ten times larger than the server's memory for it.
+        $this->database->query('ANALYZE TABLE UzivatelskeKonto')->fetchAll();
+        Assert::true($this->database->fetchField("SELECT data_length FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'UzivatelskeKonto'") < 100 * 1024 * 1024);
         $this->assertReferences();
         Assert::false($loader->apply());
         foreach ($expected as $table => $count) {
