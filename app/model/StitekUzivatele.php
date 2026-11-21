@@ -37,9 +37,11 @@ class StitekUzivatele
 
     /** @param array<string, mixed> $data */
     public function createStitekUzivatele(array $data): void {
-        $this->database->table($this->tableName)->insert($data);
-        //print_r($data);
         $stitek = $this->stitek->getStitekById($data["Stitek_id"]);
+        if ($stitek === null) {
+            throw new \InvalidArgumentException('Štítek nebyl nalezen.');
+        }
+        $this->database->table($this->tableName)->insert($data);
         $stara_data = array(
             "stitek" => $stitek->text
         );
@@ -65,6 +67,9 @@ class StitekUzivatele
      */
     public function odstranStitek($stitekId, $userId): int {
         $stitek = $this->stitek->getStitekById($stitekId);
+        if ($stitek === null) {
+            return 0;
+        }
         $stara_data = array(
             "stitek" => $stitek->text
         );

@@ -45,7 +45,7 @@ class SpravceOblasti extends Table
     public function getUserRole($userid, $ap): ?string {
         $existujici = $this->findAll()->where('Uzivatel_id = ?', $userid)->where('od < NOW() AND (do IS NULL OR do > NOW())')->where('Oblast_id = ?', $ap)->fetch();
         if ($existujici !== null) {
-            return $existujici->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
+            return $existujici->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')?->text;
         }
         return null;
     }

@@ -58,7 +58,7 @@ class IPAdresa extends Table
 
     /** @param int|string|null $id */
     public function getIPAdresa($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $id === null ? null : $this->find($id);
     }
 
     /**
@@ -623,10 +623,13 @@ class IPAdresa extends Table
     /** @param int|string $id */
     public function getAPOfIP($id): ?int {
         $ip = $this->getIPAdresa($id);
+        if ($ip === null) {
+            return null;
+        }
         if (!in_array($ip->Ap_id, [null, 0], true)) {
             return ($ip->Ap_id);
         } else {
-            return ($ip->uzivatel->Ap_id);
+            return $ip->ref('Uzivatel', 'Uzivatel_id')?->Ap_id;
         }
     }
 

@@ -25,6 +25,9 @@ class Komunikace
         $cisla = [];
         foreach ($uzivateleID as $uid) {
             $u = $this->uzivatel->getUzivatel($uid);
+            if ($u === null) {
+                throw new SmsSenderException('Uživatel pro odeslání SMS nebyl nalezen.');
+            }
             if ($this->smsSender->checkCzechNumber($u->telefon)) {
                 $cisla[] = $u->telefon;
             }
@@ -41,6 +44,6 @@ class Komunikace
     /** @param int|string $uid */
     public function maValidniCislo($uid): bool {
         $u = $this->uzivatel->getUzivatel($uid);
-        return ($this->smsSender->checkCzechNumber($u->telefon));
+        return $u !== null && $this->smsSender->checkCzechNumber($u->telefon);
     }
 }

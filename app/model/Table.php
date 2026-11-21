@@ -133,6 +133,9 @@ abstract class Table
      */
     public function update($id, iterable $data): Nette\Database\Table\ActiveRow {
         $post = $this->find($id);
+        if ($post === null) {
+            throw new \InvalidArgumentException('Záznam pro úpravu nebyl nalezen.');
+        }
         $post->update($data);
         return ($post);
     }

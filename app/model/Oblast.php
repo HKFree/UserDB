@@ -21,7 +21,7 @@ class Oblast extends Table
 
     /** @param int|string|null $id */
     public function getOblast($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $id === null ? null : $this->find($id);
     }
 
     /** @return array<int, string> */
@@ -35,7 +35,11 @@ class Oblast extends Table
      * @return array<int, Nette\Database\Table\ActiveRow>
      */
     public function getSeznamSpravcu($IDoblasti): array {
-        return ($this->find($IDoblasti)->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id', 'Uzivatel'));
+        $oblast = $this->find($IDoblasti);
+        if ($oblast === null) {
+            return [];
+        }
+        return ($oblast->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id', 'Uzivatel'));
     }
 
     /**

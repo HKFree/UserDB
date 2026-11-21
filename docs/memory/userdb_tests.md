@@ -23,6 +23,10 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - `Assert::same` u pole porovnává i pořadí klíčů. Řadí-li dotaz podle sloupce se shodnými hodnotami, pořadí
   řádků není dané: `LogDatabaseTest` kvůli tomu padal zhruba ve 2 bězích ze 120 (ověřeno 20. 11. 2026). Kde na
   pořadí nezáleží, použít `Assert::equal`.
+- Dva nově načtené řádky mají samostatné objekty `DateTime`, takže `Assert::same` nad `toArray()`
+  selže i při shodném obsahu. Pro přesný snímek nezměněných hodnot včetně jejich typů porovnat
+  `serialize($row->toArray())`; samotný `ActiveRow` neserializovat. Ověřeno 21. 11. 2026 podle
+  rozdílu `.expected`/`.actual` a testů odmítnutých změn v `NullableModelsDatabaseTest`.
 - Izolace je transakce a rollback. Funguje jen proto, že test i testovaný kód sdílejí jedno spojení a `app/`
   transakce samo neotevírá. `AUTO_INCREMENT` se rollbackem nevrací a DDL transakci potvrdí.
 - Runner z nextras/migrations chybu migrace nevyhodí, předá ji printeru; `DevNull` ji zahodí. Po běhu navíc nechá

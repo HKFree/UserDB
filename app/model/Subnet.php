@@ -39,7 +39,7 @@ class Subnet extends Table
 
     /** @param int|string|null $id */
     public function getSubnet($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $id === null ? null : $this->find($id);
     }
     /** @param array<array-key, int|string> $subnets */
     public function deleteSubnet(array $subnets): int|true {
@@ -141,9 +141,8 @@ class Subnet extends Table
             ];
         }
 
-        if (count($subnets) === 1) {
-            $subnet = $subnets->fetch();
-
+        $subnet = $subnets->fetch();
+        if ($subnet !== null) {
             if (!in_array($subnet->arp_proxy, [0, false], true)) {
                 $out = $this->parseSubnet(Subnet::ARP_PROXY_SUBNET);
                 $out["gateway"] = Subnet::ARP_PROXY_GW;
