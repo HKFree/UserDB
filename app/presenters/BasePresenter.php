@@ -67,6 +67,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     /**
      * Obsluha formuláře nebo akce pokračuje jen s oprávněním, jinak 403.
      * Podmínka má být stejná, jakou dostává šablona: šablona formulář jen skryje, odeslat ho jde i bez ní.
+     * @phpstan-assert true $smi
      */
     protected function vyzadujOpravneni(bool $smi): void {
         if (!$smi) {
@@ -116,9 +117,8 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     public function searchFormSucceeded(Form $form): void {
         $values = $form->getValues();
-        $ipIsInAp = $this->ap->findAPByIP($values->search);
-        if ($ipIsInAp->count() > 0) {
-            $ap = $ipIsInAp->fetch();
+        $ap = $this->ap->findAPByIP($values->search)->fetch();
+        if ($ap !== null) {
             $this->redirect('Ap:show', array('id' => $ap->id));
         }
         $this->redirect('UzivatelList:listall', array('search' => $values->search, 'id' => null));
@@ -126,6 +126,9 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     /** @param string|null $ipAddress */
     protected function getSubnetLinkFromIpAddress($ipAddress): string {
+        if ($ipAddress === null) {
+            return '';
+        }
         list($a, $b, $c, $d) = explode(".", $ipAddress);
         $resultnet = $a .".". $b .".". $c .".";
         return $this->link('Subnet:detail', array('id' => $resultnet)).'#ip'.$ipAddress;
@@ -138,12 +141,10 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
             if ($apAdresa !== null) {
                 // ok, mame adresu APcka, muze byt navazano na uzivatele (hodne nepravdepodobne),
                 // nebo muze byt navazano na (entitu) AP
-                if ($apAdresa->ref('Uzivatel') !== null) {
-                    $apId = $apAdresa->ref('Uzivatel')->ref('Ap')->id;
-                    return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
-                } elseif ($apAdresa->ref('Ap') !== null) {
-                    $apId = $apAdresa->ref('Ap')->id;
-                    return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
+                $uzivatel = $apAdresa->ref('Uzivatel');
+                $ap = $uzivatel !== null ? $uzivatel->ref('Ap') : $apAdresa->ref('Ap');
+                if ($ap !== null) {
+                    return $this->link('Wewimo:show', array('id' => $ap->id))."#mac:".$ip->w_client_mac;
                 }
             }
         }

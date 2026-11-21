@@ -96,7 +96,13 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->addHidden('id');
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($user === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $form->addSelect('from', 'Odesílatel', array(0 => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1 => 'oblast'.$user->Ap->Oblast_id.'@hkfree.org'))->setDefaultValue(0);
 
         $form->addText('email', 'Příjemce', 70)->setDisabled(true);
@@ -109,13 +115,11 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
-            if ($user !== null) {
-                $form->setValues($user);
-                $form->setDefaults(array(
-                        'from' => 0,
-                        'subject' => 'Zpráva od správce sítě hkfree.org',
-                    ));
-            }
+            $form->setValues($user);
+            $form->setDefaults(array(
+                    'from' => 0,
+                    'subject' => 'Zpráva od správce sítě hkfree.org',
+                ));
         }
 
         return $form;
@@ -127,11 +131,17 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $idUzivatele = $values->id;
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($user === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         $mail = new Message();
 
         if ($values->from === 0) {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+            if ($so === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
              ->addTo($user->email)
              ->setSubject($values->subject)
@@ -160,11 +170,18 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->addHidden('id');
 
         $oblastMail = null;
+        $ap = null;
         if ($this->maVyplnenyParametr('id')) {
             $ap = $this->ap->getAP($this->getParameter('id'));
+            if ($ap === null) {
+                $this->error('AP nebylo nalezeno.');
+            }
             $oblastMail = 'oblast'.$ap->Oblast_id.'@hkfree.org';
         }
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $form->addSelect('from', 'Odesílatel', array(0 => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1 => $oblastMail))->setDefaultValue(0);
 
         $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(true);
@@ -176,7 +193,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'emailallFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($ap !== null && !$submitujeSe) {
             $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
             $validni = [];
             foreach ($emaily as $email) {
@@ -186,14 +203,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             }
             $tolist = join(";", $validni);
 
-            if ($ap !== null) {
-                $form->setValues($ap);
-                $form->setDefaults(array(
-                        'from' => 0,
-                        'email' => $tolist,
-                        'subject' => 'Zpráva od správce sítě hkfree.org',
-                    ));
-            }
+            $form->setValues($ap);
+            $form->setDefaults(array(
+                    'from' => 0,
+                    'email' => $tolist,
+                    'subject' => 'Zpráva od správce sítě hkfree.org',
+                ));
         }
 
         return $form;
@@ -205,11 +220,17 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $idUzivatele = $values->id;
 
         $ap = $this->ap->getAP($this->getParameter('id'));
+        if ($ap === null) {
+            $this->error('AP nebylo nalezeno.');
+        }
         $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
 
         $mail = new Message();
         if ($values->from === 0) {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+            if ($so === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
              ->setSubject($values->subject)
              ->setBody($values->message);
@@ -246,6 +267,9 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->addTextArea('message', 'Text', 72, 10);
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($user === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         if (!in_array($user->telefon ?? null, [null, '', '0'], true) && $user->telefon !== 'missing') {
             $form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
@@ -254,12 +278,10 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
-            if ($user !== null) {
-                $form->setValues($user);
-                $form->setDefaults(array(
-                        'komu' => $user->telefon
-                    ));
-            }
+            $form->setValues($user);
+            $form->setDefaults(array(
+                    'komu' => $user->telefon
+                ));
         }
 
         return $form;
@@ -269,6 +291,9 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     public function smsFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiPsatClenovi());
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($user === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         $this->sendSMSAndValidate([ $user->id ], $values->message);
 
@@ -294,6 +319,9 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $ap = $this->ap->getAP($this->getParameter('id'));
+            if ($ap === null) {
+                $this->error('AP nebylo nalezeno.');
+            }
             $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
             $validni = [];
             foreach ($telefony as $tl) {
@@ -303,12 +331,10 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             }
             $tls = join(",", $validni);
 
-            if ($ap !== null) {
-                $form->setValues($ap);
-                $form->setDefaults(array(
-                        'komu' => $tls
-                    ));
-            }
+            $form->setValues($ap);
+            $form->setDefaults(array(
+                    'komu' => $tls
+                ));
         }
 
         return $form;
@@ -318,6 +344,9 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     public function smsallFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiPsatCelemuAp());
         $ap = $this->ap->getAP($this->getParameter('id'));
+        if ($ap === null) {
+            $this->error('AP nebylo nalezeno.');
+        }
 
         $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
 

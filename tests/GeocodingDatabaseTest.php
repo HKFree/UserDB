@@ -55,6 +55,7 @@ final class GeocodingDatabaseTest extends DatabaseTestCase
 
         Assert::same(['google', 'vugtk'], $command->calls);
         $updated = $this->database->table('Uzivatel')->get($member->id);
+        Assert::true($updated !== null);
         Assert::same($status, $updated->location_status);
         if ($status === 'approx') {
             Assert::same(50.0, (float) $updated->latitude);

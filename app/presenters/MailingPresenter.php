@@ -96,6 +96,9 @@ class MailingPresenter extends UzivatelPresenter
     private function setCommonTemplateParams(): void {
         $uid = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($uid);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
         $this->template->UID = $uid;
@@ -126,6 +129,9 @@ class MailingPresenter extends UzivatelPresenter
         $uid = $this->getParameter('id');
         $variant = $this->getParameter('variant');
         $uzivatel =  $this->uzivatel->find($uid);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         $subject = $this->loadTemplateAndSubject($variant);
         $this->setCommonTemplateParams();

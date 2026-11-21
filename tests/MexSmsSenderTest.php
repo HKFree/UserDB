@@ -26,6 +26,7 @@ final class MexSmsSenderTest extends TestCase
             $sender = $this->sender(new MockHandler([new Response(200, [], $body)]), $history);
             Assert::exception(fn () => $sender->sendSMS(['777000000'], 'Test'), SmsSenderException::class, 'MEX API nevrátilo platný přihlašovací token.');
             Assert::count(1, $history);
+            Assert::true(isset($history[0]['request']));
             Assert::same('/login', $history[0]['request']->getUri()->getPath());
         }
     }
@@ -40,8 +41,10 @@ final class MexSmsSenderTest extends TestCase
         $sender->sendSMS(['777000000'], 'První zpráva');
         $sender->sendSMS(['+420777000000'], 'Druhá zpráva');
         Assert::count(3, $history);
+        Assert::true(isset($history[0]['request']));
         Assert::same('/login', $history[0]['request']->getUri()->getPath());
         foreach ([1 => 'První zpráva', 2 => 'Druhá zpráva'] as $index => $text) {
+            Assert::true(isset($history[$index]['request']));
             $request = $history[$index]['request'];
             Assert::same('/sms/send', $request->getUri()->getPath());
             Assert::same('Bearer fixture-token', $request->getHeaderLine('Authorization'));

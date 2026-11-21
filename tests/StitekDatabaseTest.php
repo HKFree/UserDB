@@ -37,7 +37,9 @@ try {
     Assert::type(\Nette\Database\Table\ActiveRow::class, $other);
     $global = $stitky->createStitek(['Oblast_id' => null, 'text' => 'Globální štítek']);
     Assert::type(\Nette\Database\Table\ActiveRow::class, $global);
-    Assert::same('Příliš žluťoučký štítek', $stitky->getStitekById($tag->id)->text);
+    $found = $stitky->getStitekById($tag->id);
+    Assert::true($found !== null);
+    Assert::same('Příliš žluťoučký štítek', $found->text);
     Assert::same([$tag->id], array_keys($stitky->getStitkyByOblast($area1->id)->fetchAll()));
     Assert::same([$other->id], array_keys($stitky->getStitkyByOblast($area2->id)->fetchAll()));
     $globalIds = array_keys($stitky->getStitkyByOblast(null)->fetchAll());
@@ -47,7 +49,9 @@ try {
     Assert::count(0, $stitky->getStitkyByOblast(0)->fetchAll());
 
     $stitky->updateStitek($tag->id, ['text' => 'Upravený štítek', 'poznamka' => 'Poznámka s diakritikou']);
-    Assert::same('Poznámka s diakritikou', $stitky->getStitekByText('Upravený štítek')->poznamka);
+    $updated = $stitky->getStitekByText('Upravený štítek');
+    Assert::true($updated !== null);
+    Assert::same('Poznámka s diakritikou', $updated->poznamka);
     Assert::exception(fn () => $stitky->createStitek(['Oblast_id' => $area1->id, 'text' => 'Upravený štítek']), UniqueConstraintViolationException::class);
     Assert::exception(fn () => $stitky->createStitek(['Oblast_id' => 0, 'text' => 'Neplatná oblast']), ForeignKeyConstraintViolationException::class);
 } finally {

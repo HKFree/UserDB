@@ -128,7 +128,7 @@ final class ApiTypesPresenterTest extends DatabaseTestCase
                 Assert::same(['result' => 'Token invalid'], $this->appRequest(['action' => $action] + $parameters));
             }
         }
-        Assert::same('2001-01-01', $this->database->table('AplikaceToken')->get($token->id)->pouzit_naposledy->format('Y-m-d'));
+        Assert::same('2001-01-01', $this->requireRow($this->database->table('AplikaceToken')->get($token->id))->pouzit_naposledy->format('Y-m-d'));
         $logs = $this->database->table('AplikaceLog')->where('action', 'app.verifyToken.failed');
         Assert::same(6, $logs->count('*'));
         Assert::same(['192.0.2.100'], array_values(array_unique($logs->fetchPairs('id', 'ip'))));

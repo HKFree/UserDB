@@ -43,6 +43,9 @@ class MexSmsSender
 
     private function formatCzechNumber(string $number, bool $strict = true): string {
         $number_cleared = preg_replace('/\s/', '', $number);
+        if ($number_cleared === null) {
+            throw new SmsSenderException('Telefonní číslo se nepodařilo zpracovat.');
+        }
 
         // match 777222555
         if (preg_match('/^\d{9}$/', $number_cleared) === 1) {

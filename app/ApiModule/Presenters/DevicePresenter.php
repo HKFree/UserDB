@@ -28,8 +28,7 @@ class DevicePresenter extends ApiPresenter
             $this->sendResponse(new JsonResponse(['result' => 'IP address not found', 'serverTime' => date("c")]));
         }
 
-        $apOfIp = $this->ipadresa->getAPOfIP($ip->id);
-        parent::checkApID($apOfIp);
+        $this->checkDeviceAp($ip);
 
         $this->sendResponse(new JsonResponse(['ip' => $ip->ip_adresa, 'login' => $ip->login, 'heslo' => $this->getHeslo($ip)]));
     }
@@ -43,8 +42,7 @@ class DevicePresenter extends ApiPresenter
             $this->sendResponse(new JsonResponse(['result' => 'IP address not found', 'serverTime' => date("c")]));
         }
 
-        $apOfIp = $this->ipadresa->getAPOfIP($ip->id);
-        parent::checkApID($apOfIp);
+        $this->checkDeviceAp($ip);
 
         $beforeUpdate = array(
             'login' => $ip->login,
@@ -75,6 +73,14 @@ class DevicePresenter extends ApiPresenter
         $this->ipadresa->update($ip->id, $toUpdate);
 
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'serverTime' => date("c")]));
+    }
+
+    private function checkDeviceAp(\Nette\Database\Table\ActiveRow $ip): void {
+        $apOfIp = $this->ipadresa->getAPOfIP($ip->id);
+        if ($apOfIp === null && $this->keyApID !== null && $this->keyApID !== 0) {
+            $this->sendForbidden('device AP is unknown');
+        }
+        parent::checkApID($apOfIp);
     }
 
     private function getHeslo(\Nette\Database\Table\ActiveRow $ip): ?string {

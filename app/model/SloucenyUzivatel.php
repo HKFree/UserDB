@@ -40,7 +40,7 @@ class SloucenyUzivatel extends Table
 
     /** @param int|string $userID */
     public function getMaster($userID): ?Nette\Database\Table\ActiveRow {
-        return $this->findAll()->where('slouceny_uzivatel', $userID)->fetch()->ref('Uzivatel', 'Uzivatel_id');
+        return $this->findAll()->where('slouceny_uzivatel', $userID)->fetch()?->ref('Uzivatel', 'Uzivatel_id');
     }
 
     /**

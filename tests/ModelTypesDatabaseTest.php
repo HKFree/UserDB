@@ -45,7 +45,7 @@ final class ModelTypesDatabaseTest extends DatabaseTestCase
         Assert::false($model->verifyToken($other->id, $created->token));
         Assert::false($model->verifyToken($member->id, 'unknown-token'));
         Assert::true($model->verifyToken((string) $member->id, $created->token));
-        Assert::notSame('2001-01-01', $this->database->table('AplikaceToken')->get($created->id)->pouzit_naposledy->format('Y-m-d'));
+        Assert::notSame('2001-01-01', $this->requireRow($this->database->table('AplikaceToken')->get($created->id))->pouzit_naposledy->format('Y-m-d'));
 
         $model->deleteTokensForUID((string) $member->id);
         Assert::false($model->verifyToken($member->id, $created->token));
@@ -66,14 +66,12 @@ final class ModelTypesDatabaseTest extends DatabaseTestCase
         foreach ([null, ''] as $input) {
             Assert::false($model->verifyToken($member->id, $input));
         }
-        Assert::same('2001-01-01 00:00:00', $this->database->table('AplikaceToken')->get($token->id)->pouzit_naposledy->format('Y-m-d H:i:s'));
+        Assert::same('2001-01-01 00:00:00', $this->requireRow($this->database->table('AplikaceToken')->get($token->id))->pouzit_naposledy->format('Y-m-d H:i:s'));
     }
 
     public function testMissingPasswordKeepsLegacyHashInputHandling(): void {
         $model = $this->container->getByType(\App\Model\Uzivatel::class);
-        Assert::error(function () use ($model): void {
-            Assert::same('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', $model->generateStrongHash(null));
-        }, E_DEPRECATED, 'hash(): Passing null to parameter #2 ($data) of type string is deprecated');
+        Assert::same('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', $model->generateStrongHash(null));
     }
 }
 

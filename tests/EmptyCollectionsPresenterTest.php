@@ -74,16 +74,16 @@ final class EmptyCollectionsPresenterTest extends DatabaseTestCase
             if ($remove) {
                 Assert::null($ownRow);
             } else {
-                Assert::notNull($ownRow);
+                Assert::true($ownRow !== null);
                 Assert::same($own->$column, $ownRow->$column);
             }
-            Assert::equal($other->toArray(), $this->database->table($table)->get($other->id)->toArray());
+            Assert::equal($other->toArray(), $this->requireRow($this->database->table($table)->get($other->id))->toArray());
             $deleted = $this->database->table('Log')->where([
                 'tabulka' => 'Ap', 'tabulka_id' => $ap->id, 'akce' => 'D',
                 'sloupec' => $table . '[' . $own->id . '].' . $column,
             ])->fetch();
             if ($remove) {
-                Assert::notNull($deleted);
+                Assert::true($deleted !== null);
                 Assert::same($own->$column, $deleted->puvodni_hodnota);
                 Assert::null($deleted->nova_hodnota);
                 Assert::same($actor->id, $deleted->Uzivatel_id);

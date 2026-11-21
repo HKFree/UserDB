@@ -65,6 +65,7 @@ final class DataConditionsPresenterTest extends DatabaseTestCase
                 $subnet->update(['arp_proxy' => $enabled]);
                 $member->update(['systemovy' => $enabled, 'spolek' => !$enabled, 'druzstvo' => $enabled, 'regform_downloaded_password_sent' => 0]);
                 $storedSubnet = $this->database->table('Subnet')->get($subnet->id);
+                Assert::true($storedSubnet !== null);
                 Assert::same($enabled, $storedSubnet->arp_proxy);
                 $subnetModel = $this->container->getByType(Subnet::class);
                 Assert::contains($enabled ? '>zapnuto<' : '>vypnuto<', (string) $subnetModel->getSubnetTable([$storedSubnet]));
@@ -72,15 +73,15 @@ final class DataConditionsPresenterTest extends DatabaseTestCase
                 Assert::true(isset($subnetInfo['gateway']));
                 Assert::same($enabled ? Subnet::ARP_PROXY_GW : '192.0.2.1', $subnetInfo['gateway']);
 
-                Assert::same($enabled, $this->database->table('Ap')->get($ap->id)->aktivni);
+                Assert::same($enabled, $this->requireRow($this->database->table('Ap')->get($ap->id))->aktivni);
                 $list = $this->presenters->ui($member->id, 'Ap', ['action' => 'list', 'id' => $area->id]);
                 Assert::same(!$enabled, str_contains($list->html, '<s>' . $ap->jmeno . '</s>'));
-                Assert::same($enabled, $this->database->table('Uzivatel')->get($member->id)->systemovy);
+                Assert::same($enabled, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->systemovy);
                 $areas = $this->presenters->api('Api:Areas', ['apikey' . $key->id, $key->klic]);
                 Assert::same($enabled ? [] : [$member->id], array_keys($areas->json[$area->id]['admins']));
 
-                Assert::same($enabled, $this->database->table('Uzivatel')->get($member->id)->druzstvo);
-                Assert::same(!$enabled, $this->database->table('Uzivatel')->get($member->id)->spolek);
+                Assert::same($enabled, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->druzstvo);
+                Assert::same(!$enabled, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->spolek);
                 $confirmation = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail', 'key' => $confirmationKey]);
                 Assert::contains($enabled ? 'Ověření proběhlo úspěšně' : 'Vaše registrace do hkfree.org z.s. byla úspěšně dokončena.', $confirmation->html);
                 Assert::same($enabled ? [$member->id] : [], $this->container->getByType(RecordingContractRequest::class)->calls);
@@ -145,6 +146,7 @@ final class DataConditionsPresenterTest extends DatabaseTestCase
             foreach ([[null, ''], ['', ''], ['0', ''], [false, ''], [0, ''], [0.0, ''], [[], ''], ['00', '00'], ['test-only', 'test-only']] as [$input, $expected]) {
                 $this->presenters->api('Api:Device', ['apikey' . $key->id, $key->klic], ['action' => 'setCredentials', 'id' => $ip->ip_adresa], 'POST', ['login' => 'fixture', 'heslo' => $input]);
                 $stored = $this->database->table('IPAdresa')->get($ip->id);
+                Assert::true($stored !== null);
                 Assert::same($expected === '' ? 0 : 1, $stored->heslo_sifrovane);
                 Assert::same($expected, $expected === '' ? $stored->heslo : $crypto->decrypt($stored->heslo));
             }

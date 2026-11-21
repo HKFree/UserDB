@@ -18,13 +18,16 @@ class SpravceOblasti extends Table
 
     /**
      * @param int|string $userID
-     * @return array<array-key, Nette\Database\Table\ActiveRow|null>
+     * @return array<array-key, Nette\Database\Table\ActiveRow>
      */
     public function getOblastiSpravce($userID): array {
         $OblastiSpravce = $this->findAll()->where('Uzivatel_id', $userID)->where('od < NOW() AND (do IS NULL OR do > NOW())')->where('Oblast_id IS NOT NULL')->order("Oblast.jmeno")->fetchAll();
         $out = array();
         foreach ($OblastiSpravce as $key => $value) {
-            $out[$key] = $value->Oblast;
+            $oblast = $value->ref('Oblast', 'Oblast_id');
+            if ($oblast !== null) {
+                $out[$key] = $oblast;
+            }
         }
         return ($out);
     }
@@ -45,7 +48,7 @@ class SpravceOblasti extends Table
     public function getUserRole($userid, $ap): ?string {
         $existujici = $this->findAll()->where('Uzivatel_id = ?', $userid)->where('od < NOW() AND (do IS NULL OR do > NOW())')->where('Oblast_id = ?', $ap)->fetch();
         if ($existujici !== null) {
-            return $existujici->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
+            return $existujici->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')?->text;
         }
         return null;
     }

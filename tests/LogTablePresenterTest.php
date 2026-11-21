@@ -77,6 +77,24 @@ final class LogTablePresenterTest extends DatabaseTestCase
         ], $this->logRows($result->html));
     }
 
+    public function testMissingCurrentIpAddressUsesHistory(): void {
+        $member = $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id);
+        $this->fixtures->role($member->id, 'VV');
+        $ip = $this->fixtures->insert('IPAdresa', ['ip_adresa' => null]);
+        $this->fixtures->insert('Log', [
+            'Uzivatel_id' => $member->id, 'tabulka' => 'Uzivatel', 'tabulka_id' => $member->id,
+            'sloupec' => 'IPAdresa[' . $ip->id . '].ip_adresa',
+            'puvodni_hodnota' => '192.0.2.42', 'nova_hodnota' => null,
+            'datum' => '2020-01-01 00:00:00', 'ip_adresa' => '127.0.0.1', 'akce' => 'U',
+        ]);
+
+        $result = $this->presenters->ui($member->id, 'Uzivatel', ['action' => 'show', 'id' => $member->id]);
+        Assert::same([
+            ['Kdy', 'Kdo', 'Co', 'Z', 'Na'],
+            ['2020-01-01 00:00:00', $member->nick, 'IP 192.0.2.42', 'Změna ip_adresa z 192.0.2.42 na , '],
+        ], $this->logRows($result->html));
+    }
+
     public function testEmptyMemberLog(): void {
         $area = $this->fixtures->area();
         $member = $this->fixtures->member($this->fixtures->ap($area->id)->id);

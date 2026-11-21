@@ -124,6 +124,7 @@ final class SharedTypesPresenterTest extends DatabaseTestCase
         ]);
         PermissionScenario::assertRedirect($result, 'sprava/nastroje/' . $this->ap->id);
         $stored = $this->database->table('Ap')->get($this->ap->id);
+        Assert::true($stored !== null);
         Assert::same($name, $stored->jmeno);
         Assert::same('Nová poznámka', $stored->poznamka);
         Assert::same(1, $this->database->table('Ap')->count('*'));
@@ -136,12 +137,12 @@ final class SharedTypesPresenterTest extends DatabaseTestCase
         $created = $this->presenters->ui($this->actor->id, 'SpravaStitku', ['action' => 'edit'], 'POST', $post);
         PermissionScenario::assertRedirect($created, 'sprava-stitku/');
         $label = $this->database->table('Stitek')->where('text', $name)->fetch();
-        Assert::notNull($label);
+        Assert::true($label !== null);
         Assert::same('Testovací poznámka', $label->poznamka);
         $post['text'] = $name . '-edit';
         $edited = $this->presenters->ui($this->actor->id, 'SpravaStitku', ['action' => 'edit', 'id' => (string) $label->id], 'POST', $post);
         Assert::same(303, $edited->status);
-        Assert::same($post['text'], $this->database->table('Stitek')->get($label->id)->text);
+        Assert::same($post['text'], $this->requireRow($this->database->table('Stitek')->get($label->id))->text);
         $missing = $this->presenters->ui($this->actor->id, 'SpravaStitku', ['action' => 'saveLabel'], 'POST');
         Assert::same(['success' => false, 'message' => 'Štítek nebyl nalezen.'], json_decode($missing->html, true, 512, JSON_THROW_ON_ERROR));
     }

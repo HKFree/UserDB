@@ -30,6 +30,7 @@ final class StitekUzivateleDatabaseTest extends DatabaseTestCase
             'kdy_vytvoreno' => '2026-01-02 03:04:05',
         ]);
         $assignment = $assignments->uzivatelHasStitek($member->id, $tag->id);
+        Assert::true($assignment !== null);
         Assert::same($member->id, $assignment->Uzivatel_id);
         Assert::same($tag->id, $assignment->Stitek_id);
         $assigned = $assignments->getStitekByUserId($member->id);

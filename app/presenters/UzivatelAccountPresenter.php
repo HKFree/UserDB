@@ -91,7 +91,8 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         //\Tracy\Debugger::barDump($pohyb->Uzivatel);
         if ($pohyb !== null) {
             if (!in_array($pohyb->Uzivatel_id, [null, 0], true)) {
-                $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
+                $uzivatel = $this->uzivatel->getUzivatel($pohyb->Uzivatel_id);
+                $this->template->canViewOrEdit = $uzivatel !== null && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
             } else {
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
             }
@@ -114,6 +115,9 @@ class UzivatelAccountPresenter extends UzivatelPresenter
 
     public function renderAccount(): void {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         $this->template->canViewOrEdit = $this->smiVidetPlatby();
         $this->template->u = $uzivatel;

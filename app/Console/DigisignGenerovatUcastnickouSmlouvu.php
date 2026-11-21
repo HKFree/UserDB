@@ -61,6 +61,9 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         }
 
         $uzivatel = $this->uzivatelModel->find($smlouva->uzivatel_id);
+        if ($uzivatel === null) {
+            throw new \RuntimeException('Člen smlouvy nebyl nalezen.');
+        }
 
         $parametry = \App\Services\GeneratorSmlouvy::parametryUcastnickeSmlouvy($uzivatel, $smlouva_id);
         $smlouva->update(['parametry_smlouvy' => json_encode($parametry, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)]);
@@ -119,6 +122,10 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
 
         $envelope = $ENVELOPES->get($envelopeId);
         // $this::trace_to_file('envelope', $envelope);
+        $prijemce = $envelope->recipients[0] ?? null;
+        if ($prijemce === null) {
+            throw new \RuntimeException('DigiSign nevrátil příjemce obálky.');
+        }
 
         $documentName = "SmlouvaUcastnicka_{$smlouva_id}_uid{$uzivatel->id}.pdf";
         printf("Krok %u: vygenerovat a predvyplnit PDF podle sablony\n", ++$krok);
@@ -133,7 +140,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
           'file' => $file->self()
         ]);
 
-        $recipient1 = $ENVELOPES->recipients($envelope)->get($envelope->recipients[0]->id);
+        $recipient1 = $ENVELOPES->recipients($envelope)->get($prijemce->id);
 
         printf("Krok %u: podpisovy tag\n", ++$krok);
         $tag = $ENVELOPES->tags($envelope)->create([

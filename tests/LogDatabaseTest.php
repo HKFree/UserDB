@@ -82,7 +82,7 @@ final class LogDatabaseTest extends DatabaseTestCase
     }
 
     public function testAuditAuthorUsesExplicitThenSignedInThenSubjectThenSystemUser(): void {
-        $apId = $this->database->table('Uzivatel')->get($this->memberId)->Ap_id;
+        $apId = $this->requireRow($this->database->table('Uzivatel')->get($this->memberId))->Ap_id;
         $system = $this->fixtures->member($apId, ['id' => 1]);
         $actor = $this->fixtures->member($apId);
         $explicit = $this->fixtures->member($apId);
@@ -95,6 +95,7 @@ final class LogDatabaseTest extends DatabaseTestCase
             foreach ([null, '', 0, '0', $explicit->id, (string) $explicit->id] as $input) {
                 $this->log->loguj('Uzivatel', $this->memberId, $entries, $input);
                 $last = $this->database->table('Log')->order('id DESC')->fetch();
+                Assert::true($last !== null);
                 $expected = $input === $explicit->id || $input === (string) $explicit->id
                     ? $explicit->id : ($signedIn ? $actor->id : $this->memberId);
                 Assert::same($expected, $last->Uzivatel_id);
@@ -103,9 +104,9 @@ final class LogDatabaseTest extends DatabaseTestCase
         }
         $user->logout(true);
         $this->log->loguj('Ap', $apId, $entries);
-        Assert::same($system->id, $this->database->table('Log')->order('id DESC')->fetch()->Uzivatel_id);
+        Assert::same($system->id, $this->requireRow($this->database->table('Log')->order('id DESC')->fetch())->Uzivatel_id);
         $this->log->loguj('Uzivatel', '0', $entries);
-        Assert::same($system->id, $this->database->table('Log')->order('id DESC')->fetch()->Uzivatel_id);
+        Assert::same($system->id, $this->requireRow($this->database->table('Log')->order('id DESC')->fetch())->Uzivatel_id);
     }
 
     /** @return array<string, array{mixed, mixed, bool}> */

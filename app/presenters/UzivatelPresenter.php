@@ -121,10 +121,16 @@ class UzivatelPresenter extends BasePresenter
     /** @param int|string $idUzivatele */
     public function sendSpolekRegistrationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+        if ($newUser === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         try {
             $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
@@ -139,10 +145,16 @@ class UzivatelPresenter extends BasePresenter
     /** @param int|string $idUzivatele */
     public function sendDruzstvoRegistrationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+        if ($newUser === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = $this->link('//SelfService:confirmEmail', $hash);
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         try {
             $this->mailService->sendDruzstvoConfirmationRequest($newUser, $so, $link);
@@ -179,21 +191,21 @@ class UzivatelPresenter extends BasePresenter
 
                 $posledniPlatbaSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('spolek', 1)->order('id DESC')->limit(1);
                 $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);
-                if ($posledniPlatbaSpolek->count() > 0) {
-                    $posledniPlatbaData = $posledniPlatbaSpolek->fetch();
+                $posledniPlatbaData = $posledniPlatbaSpolek->fetch();
+                if ($posledniPlatbaData !== null) {
                     $this->template->money_lastpay_spolek = (null === $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
                 } else {
                     $this->template->money_lastpay_spolek = '?';
                 }
-                if ($posledniPlatbaDruzstvo->count() > 0) {
-                    $posledniPlatbaData = $posledniPlatbaDruzstvo->fetch();
+                $posledniPlatbaData = $posledniPlatbaDruzstvo->fetch();
+                if ($posledniPlatbaData !== null) {
                     $this->template->money_lastpay_druzstvo = (null === $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
                 } else {
                     $this->template->money_lastpay_druzstvo = '?';
                 }
                 $posledniAktivace = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', [4, 5])->order('id DESC')->limit(1);
-                if ($posledniAktivace->count() > 0) {
-                    $posledniAktivaceData = $posledniAktivace->fetch();
+                $posledniAktivaceData = $posledniAktivace->fetch();
+                if ($posledniAktivaceData !== null) {
                     $this->template->money_lastact = (null === $posledniAktivaceData->datum) ? 'NIKDY' : ($posledniAktivaceData->datum->format('d.m.Y').' ('.$posledniAktivaceData->castka.')');
                 } else {
                     $this->template->money_lastact = '?';
@@ -274,6 +286,9 @@ class UzivatelPresenter extends BasePresenter
     public function renderPaymentSummary(): void {
         $uid = $this->getParameter('id');
         $uzivatel = $this->uzivatel->getUzivatel($uid);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
 
         $this->template->u = $uzivatel;
@@ -283,7 +298,7 @@ class UzivatelPresenter extends BasePresenter
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
         $pravidelne_mesicni_platby = [['Pevný přístup k internetu', $this->parameters->getVyseClenskehoPrispevku()]];
-        if ((int) $televizeRow?->objednana === 1) {
+        if ($televizeRow !== null && (int) $televizeRow->objednana === 1) {
             array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow->cena]);
         }
 
@@ -538,6 +553,7 @@ class UzivatelPresenter extends BasePresenter
     /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values */
     public function uzivatelFormSucceded(Form $form, ArrayHash $values): void {
         // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
+        $uzivatel = null;
         if (!in_array($values->id, [null, '', 0, '0'], true)) {
             $uzivatel = $this->uzivatel->getUzivatel($values->id);
             $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
@@ -546,6 +562,17 @@ class UzivatelPresenter extends BasePresenter
         $log = array();
         $idUzivatele = $values->id;
         $ips = $values->ip;
+        $existingIPs = [];
+        foreach ($ips as $ip) {
+            if (!in_array($ip->id, [null, '', 0, '0'], true)) {
+                $oldip = $this->ipAdresa->getIPAdresa($ip->id);
+                if ($oldip === null) {
+                    $this->error('IP adresa nebyla nalezena.');
+                }
+                $this->vyzadujOpravneni($uzivatel !== null && $oldip->Uzivatel_id === $uzivatel->id);
+                $existingIPs[$ip->id] = $oldip->toArray();
+            }
+        }
         $ipsubnet = $values->ipsubnet;
         $iprange = $values->iprange;
         // \Tracy\Debugger::barDump($ips);exit;
@@ -615,6 +642,9 @@ class UzivatelPresenter extends BasePresenter
             }
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
+            if ($olduzivatel === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
 
             if (($olduzivatel->email ?? '') !== ($values->email ?? '') || ($olduzivatel->email2 ?? '') !== ($values->email2 ?? '')) {
                 $values->email_invalid = 0;
@@ -628,7 +658,7 @@ class UzivatelPresenter extends BasePresenter
             // TODO: spolek / druzstvo
             if (0 === $olduzivatel->TypClenstvi_id && 1 === $values->TypClenstvi_id) {
                 $this->povoleneSMTP->deleteIPs($smtpIPIDs);
-                $existinguserIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
+                $existinguserIPIDs = array_keys($olduzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
                 $this->uzivatel->delete(['id' => [$idUzivatele]]);
                 $this->redirect('UzivatelList:list', ['id' => $olduzivatel->Ap_id]);
@@ -640,6 +670,7 @@ class UzivatelPresenter extends BasePresenter
                 $values->money_aktivni = 1;
             }
 
+            $uzivatel = $olduzivatel;
             $this->uzivatel->update($idUzivatele, $values);
             $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
 
@@ -684,7 +715,7 @@ class UzivatelPresenter extends BasePresenter
                 $idIp = $this->ipAdresa->insertRow($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);
             } else {
-                $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                $oldip = $existingIPs[$idIp];
                 $this->ipAdresa->update($idIp, $ip);
                 $this->log->logujUpdate($oldip, $ip, 'IPAdresa['.$idIp.']', $log);
             }
@@ -709,11 +740,14 @@ class UzivatelPresenter extends BasePresenter
         }
 
         // A tady smazeme v DB ty ipcka co jsme smazali
-        $userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
+        $userIPIDs = array_keys($uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
         $toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
         if ($toDelete !== []) {
             foreach ($toDelete as $idIp) {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                if ($oldip === null) {
+                    continue;
+                }
                 $this->log->logujDelete($oldip, 'IPAdresa['.$idIp.']', $log);
                 $isSMTP = $this->povoleneSMTP->getIP($oldip->id);
                 if ($isSMTP !== null) {
@@ -746,7 +780,7 @@ class UzivatelPresenter extends BasePresenter
                 try {
                     $this->template->idsEvents = $this->idsConnector->getEventsForIps($ips);
                 } catch (\Exception $ex) {
-                    if (Debugger::$productionMode) {
+                    if (Debugger::$productionMode === true) {
                         throw $ex;
                     }
                     $this->template->idsEvents = []; // silently ignore in non-prod environment

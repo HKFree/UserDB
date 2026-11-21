@@ -119,8 +119,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionExportPdf(): void {
         if ($this->maVyplnenyParametr('id')) {
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
-                $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                $pdf = $this->vytvorRegistracniPdf($uzivatel);
                 $this->sendResponse($pdf);
             }
         }
@@ -131,6 +130,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 $hash = base64_encode($uzivatel->id . '-' . md5($this->parameters->salt . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+                if ($so === null) {
+                    $this->error('Uživatel nebyl nalezen.');
+                }
 
                 $link = $this->link('//SelfService:confirmEmail', $hash);
 
@@ -161,8 +163,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
                     $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
                 } else {
-                    $pdftemplate = $this->createTemplate()->setFile(__DIR__ . "/../templates/Uzivatel/pdf-form.latte");
-                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                    $pdf = $this->vytvorRegistracniPdf($uzivatel);
 
                     $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
 
@@ -174,9 +175,22 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
+    private function vytvorRegistracniPdf(Nette\Database\Table\ActiveRow $uzivatel): \PdfResponse\PdfResponse {
+        $template = $this->createTemplate()->setFile(__DIR__ . '/../templates/Uzivatel/pdf-form.latte');
+        try {
+            return $this->pdfGenerator->generatePdf($uzivatel, $template);
+        } catch (\InvalidArgumentException $e) {
+            $this->flashMessage($e->getMessage(), 'danger');
+            $this->redirect('Uzivatel:show', ['id' => $uzivatel->id]);
+        }
+    }
+
     public function actionHandleSubscriberContractPreview(): void {
         $user_id = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($user_id);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         $pdfData = \App\Services\GeneratorSmlouvy::nahledUcastnickeSmlouvy($uzivatel);
         $this->sendResponse(new Nette\Application\Responses\CallbackResponse(function (Nette\Http\IRequest $request, Nette\Http\IResponse $response) use ($pdfData): void {
@@ -213,6 +227,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $uid = $this->getParameter('id');
         $variant = $this->getParameter('variant');
         $uzivatel =  $this->uzivatel->find($uid);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         // generate auth code and encrypt it to DB if not already generated
         if (in_array($uzivatel->oneclick_auth, [null, '', '0'], true)) {

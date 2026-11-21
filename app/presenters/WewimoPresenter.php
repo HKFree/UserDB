@@ -50,24 +50,24 @@ class WewimoPresenter extends BasePresenter
         foreach ($wewimoMultiData as &$wewimoData) {
             foreach ($wewimoData['interfaces'] as &$interface) {
                 foreach ($interface['stations'] as &$station) {
-                    if (array_key_exists('xx-user-nick', $station)) {
+                    if (isset($station['xx-user-nick'])) {
                         $station['xx-mac-host'] = '('.$station['xx-user-nick'].')';
                     } else {
-                        if ($station['xx-mac-host']) {
+                        if (!in_array($station['xx-mac-host'], [null, false, 0, 0.0, '', '0', []], true)) {
                             $station['xx-mac-host'] = '***';
                         }
                     }
-                    if (array_key_exists('xx-last-ip-user-nick', $station)) {
+                    if (isset($station['xx-last-ip-user-nick'])) {
                         $station['xx-last-ip-host'] = '('.$station['xx-last-ip-user-nick'].')';
                     } else {
-                        if ($station['xx-last-ip-host']) {
+                        if (!in_array($station['xx-last-ip-host'], [null, false, 0, 0.0, '', '0', []], true)) {
                             $station['xx-last-ip-host'] = '***';
                         }
                     }
-                    if ($station['x-identity']) {
+                    if (!in_array($station['x-identity'], [null, false, 0, 0.0, '', '0', []], true)) {
                         $station['x-identity'] = '***';
                     }
-                    if ($station['radio-name']) {
+                    if (!in_array($station['radio-name'], [null, false, 0, 0.0, '', '0', []], true)) {
                         $station['radio-name'] = '***';
                     }
                     $station['mac-address'] = $station['x-anonymous-mac-address'];

@@ -18,6 +18,16 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
+    public function testExistingDeviceMustBelongToEditedMember(): void {
+        $s = $this->scenario;
+        $ip = $this->fixtures->ipAddress($s->otherMember->id, '192.0.2.190');
+        $post = $this->post($s->member, ['poznamka' => 'Changed member']);
+        $post['ip'] = ['n1' => ['id' => (string) $ip->id, 'ip_adresa' => $ip->ip_adresa, 'hostname' => 'changed-device']];
+        $s->assertDenied(fn () => $this->presenters->ui($s->actors['ownSo']->id, 'Uzivatel', [
+            'action' => 'edit', 'id' => $s->member->id,
+        ], 'POST', $post));
+    }
+
     /** @return list<array{string, string, bool}> */
     public function editCases(): array {
         return [
@@ -47,7 +57,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
             return;
         }
         PermissionScenario::assertRedirect($request(), 'uzivatel/show/' . $target->id);
-        Assert::same($post['poznamka'], $this->database->table('Uzivatel')->get($target->id)->poznamka);
+        Assert::same($post['poznamka'], $this->requireRow($this->database->table('Uzivatel')->get($target->id))->poznamka);
     }
 
     /** @return list<array{string, string, bool}> */
@@ -77,7 +87,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
             return;
         }
         PermissionScenario::assertRedirect($request(), 'uzivatel/show/' . $s->member->id);
-        Assert::same($post['poznamka'], $this->database->table('Uzivatel')->get($s->member->id)->poznamka);
+        Assert::same($post['poznamka'], $this->requireRow($this->database->table('Uzivatel')->get($s->member->id))->poznamka);
     }
 
     /** @return list<array{string, string, bool}> */
@@ -113,7 +123,9 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
             $messages = $this->container->getByType(RecordingMailer::class)->messages;
             Assert::count(1, $messages);
             Assert::same([$s->member->email => null], $messages[0]->getHeader('To'));
-            Assert::contains('Rozpis plateb pro UID ' . $s->member->id, $messages[0]->getSubject());
+            $subject = $messages[0]->getSubject();
+            Assert::true($subject !== null);
+            Assert::contains('Rozpis plateb pro UID ' . $s->member->id, $subject);
         }
     }
 
@@ -167,7 +179,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         $post = $this->post($s->otherMember, ['id' => '', 'nick' => $nick, 'druzstvo' => '0', 'poznamka' => 'Created by cooperative actor']);
         $result = $this->presenters->ui($s->actors['cooperative']->id, 'Uzivatel', ['action' => 'edit'], 'POST', $post);
         $created = $this->database->table('Uzivatel')->where('nick', $nick)->fetch();
-        Assert::notNull($created);
+        Assert::true($created !== null);
         Assert::same($s->otherAp->id, $created->Ap_id);
         Assert::same($post['poznamka'], $created->poznamka);
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $created->id);

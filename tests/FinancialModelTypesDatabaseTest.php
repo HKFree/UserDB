@@ -45,12 +45,13 @@ final class FinancialModelTypesDatabaseTest extends DatabaseTestCase
         $expenses = $this->container->getByType(OdchoziPlatba::class);
         $account = $this->container->getByType(UzivatelskeKonto::class);
 
-        Assert::same(290.75, $payments->getPrichoziPlatba((string) $incoming->id)->castka);
-        Assert::same(-160.25, $expenses->getOdchoziPlatba((string) $outgoing->id)->castka);
+        Assert::same(290.75, $this->requireRow($payments->getPrichoziPlatba((string) $incoming->id))->castka);
+        Assert::same(-160.25, $this->requireRow($expenses->getOdchoziPlatba((string) $outgoing->id))->castka);
         $latest = $account->getUzivatelskeKontoByPrichoziPlatba((string) $incoming->id);
+        Assert::true($latest !== null);
         Assert::same($last->id, $latest->id);
         Assert::null($latest->castka);
-        Assert::same($first->id, $account->findPohyb(['id' => $first->id])->id);
+        Assert::same($first->id, $this->requireRow($account->findPohyb(['id' => $first->id]))->id);
         Assert::same([$first->id, $last->id], $account->getUzivatelskeKontoUzivatele((string) $member->id)->order('id')->fetchPairs(null, 'id'));
         Assert::null($payments->getPrichoziPlatba(0));
         Assert::null($payments->getPrichoziPlatba(null));
@@ -77,7 +78,7 @@ final class FinancialModelTypesDatabaseTest extends DatabaseTestCase
         Assert::true($model->getHasCC((string) $member->id));
         Assert::same([$membership->id => $member->id], $model->getListCCOfAP((string) $ap->id));
         Assert::same([$membership->id => $member->id], $model->getListCC());
-        Assert::same($member->id, $model->getCC((string) $membership->id)->Uzivatel_id);
+        Assert::same($member->id, $this->requireRow($model->getCC((string) $membership->id))->Uzivatel_id);
         Assert::null($model->getCC(0));
         Assert::same([], $model->getNeschvalene()->fetchAll());
     }

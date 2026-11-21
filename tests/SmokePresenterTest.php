@@ -145,6 +145,7 @@ final class SmokePresenterTest extends DatabaseTestCase
         $result = $this->presenters->ui($this->actor->id, 'UzivatelMailSms', $parameters, 'POST', $post);
         Assert::same(RedirectResponse::class, $result->response::class);
         Assert::same(303, $result->status);
+        Assert::true($result->redirectUrl !== null);
         Assert::match('http://localhost/userdb/uzivatel/show/' . $member->id . '?_fid=%a%', $result->redirectUrl);
         Assert::count(1, $mailer->messages);
         Assert::same([$post['email'] => null], $mailer->messages[0]->getHeader('To'));
@@ -174,11 +175,9 @@ final class SmokePresenterTest extends DatabaseTestCase
             Assert::same(TextResponse::class, $result->response::class);
             Assert::same(200, $result->status);
             Assert::contains($this->ap->jmeno, $result->html);
-            Assert::type(HkfIdentity::class, $result->identity);
+            Assert::true($result->identity instanceof HkfIdentity);
             Assert::same($member->id, $result->identity->getId());
-            if ($result->identity instanceof HkfIdentity) {
-                Assert::same($member->nick, $result->identity->getNick());
-            }
+            Assert::same($member->nick, $result->identity->getNick());
             Assert::same($server, $_SERVER);
         }
 

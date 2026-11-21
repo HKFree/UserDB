@@ -25,9 +25,8 @@ class PaymentSchedulePresenter extends BasePresenter
         $this->cestneClenstviUzivatele = $cc;
     }
 
-    private function computeTemplateParams(): void {
-        $uid = $this->getParameter('id');
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
+    private function computeTemplateParams(\Nette\Database\Table\ActiveRow $uzivatel): void {
+        $uid = $uzivatel->id;
         $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
 
         $this->template->u = $uzivatel;
@@ -42,7 +41,7 @@ class PaymentSchedulePresenter extends BasePresenter
                 $this->cestneClenstviUzivatele->getHasCC($uid) ? 0 : $this->parameters->getVyseClenskehoPrispevku()
             ]
         ];
-        if ((int) $televizeRow?->objednana === 1) {
+        if ($televizeRow !== null && (int) $televizeRow->objednana === 1) {
             array_push($pravidelne_mesicni_platby, [
                 'Televize - START balíček SledovaniTV',
                 $televizeRow->cena
@@ -84,25 +83,23 @@ class PaymentSchedulePresenter extends BasePresenter
     }
 
     /** Rozpis plateb ukazuje detail člena jen tomu, kdo smí člena upravovat */
-    private function vyzadujOpravneniKClenovi(): void {
+    private function vyzadujOpravneniKClenovi(): \Nette\Database\Table\ActiveRow {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
         $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
+        return $uzivatel;
     }
 
     public function renderShow(): void {
-        $this->vyzadujOpravneniKClenovi();
-        $this->computeTemplateParams();
+        $uzivatel = $this->vyzadujOpravneniKClenovi();
+        $this->computeTemplateParams($uzivatel);
     }
 
     public function actionSendPaymentScheduleEmail(): void {
-        $this->vyzadujOpravneniKClenovi();
-        $uid = $this->getParameter('id');
-
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $uzivatel = $this->vyzadujOpravneniKClenovi();
         if ((int) $uzivatel->druzstvo !== 1) {
             $this->error('Jen pro družstvo');
         }
-        $this->computeTemplateParams();
+        $this->computeTemplateParams($uzivatel);
 
         $template = $this->mailService->addLinkGeneratorToTemplate($this->template);
 

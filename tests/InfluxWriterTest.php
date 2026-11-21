@@ -26,6 +26,7 @@ final class InfluxWriterTest extends TestCase
         ], ['macField' => '02:00:00:00:00:01', 'rx_signal_strength' => -65.5, 'rx_rate' => 0.0]);
 
         $request = $handler->getLastRequest();
+        Assert::true($request !== null);
         Assert::same('POST', $request->getMethod());
         Assert::same('http://localhost:8086/write?db=wewimo&precision=n', (string) $request->getUri());
         Assert::same('Basic ' . base64_encode('user:p@ss+word'), $request->getHeaderLine('Authorization'));
@@ -37,9 +38,11 @@ final class InfluxWriterTest extends TestCase
         $handler = new MockHandler([new Response(204)]);
         $writer = new InfluxWriter('https+influxdb://localhost/wewimo%20test', new Client(['handler' => HandlerStack::create($handler)]));
         $writer->writePoint('station data,1', ['a=b' => 'a b,c=d\\e'], ['string' => '0123 "a"\\b', 'number' => -1.25]);
-        Assert::same('https://localhost:8086/write?db=wewimo%20test&precision=n', (string) $handler->getLastRequest()->getUri());
-        Assert::same('', $handler->getLastRequest()->getHeaderLine('Authorization'));
-        Assert::same('station\\ data\\,1,a\\=b=a\\ b\\,c\\=d\\e string="0123 \\"a\\"\\\\b",number=-1.25', (string) $handler->getLastRequest()->getBody());
+        $request = $handler->getLastRequest();
+        Assert::true($request !== null);
+        Assert::same('https://localhost:8086/write?db=wewimo%20test&precision=n', (string) $request->getUri());
+        Assert::same('', $request->getHeaderLine('Authorization'));
+        Assert::same('station\\ data\\,1,a\\=b=a\\ b\\,c\\=d\\e string="0123 \\"a\\"\\\\b",number=-1.25', (string) $request->getBody());
         $options = $handler->getLastOptions();
         Assert::false($options['allow_redirects']);
         Assert::same(5, $options['connect_timeout']);

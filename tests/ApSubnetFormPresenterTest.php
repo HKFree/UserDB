@@ -80,13 +80,14 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
             'apiKlic' => ['n1' => ['id' => $id, 'klic' => $key, 'plati_do' => '', 'poznamka' => 'Nový klíč']],
         ]);
         $ap = $this->database->table('Ap')->where('jmeno', $name)->fetch();
-        Assert::notNull($ap);
+        Assert::true($ap !== null);
         PermissionScenario::assertRedirect($result, 'ap/show/' . $ap->id);
         Assert::notSame($this->ap->id, $ap->id);
         foreach (['IPAdresa' => ['ip_adresa', '192.0.2.1'], 'Subnet' => ['subnet', '192.0.2.0/24'], 'ApiKlic' => ['klic', $key]] as $table => [$column, $value]) {
             $rows = $this->database->table($table)->where('Ap_id', $ap->id);
             Assert::same(1, $rows->count('*'));
             $row = $rows->fetch();
+            Assert::true($row !== null);
             Assert::same($value, $row->$column);
             Assert::same(1, $this->database->table('Log')->where([
                 'tabulka' => 'Ap', 'tabulka_id' => $ap->id, 'akce' => 'I',

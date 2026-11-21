@@ -29,11 +29,11 @@ final class StrictFunctionTypesDatabaseTest extends DatabaseTestCase
         $this->fixtures->role($member->id, 'SO', $area->id);
         $cc = $this->fixtures->insert('CestneClenstviUzivatele', [
             'Uzivatel_id' => $member->id, 'plati_od' => '2000-01-01', 'schvaleno' => 1,
-            'TypCestnehoClenstvi_id' => $this->database->table('TypCestnehoClenstvi')->fetch()->id,
+            'TypCestnehoClenstvi_id' => $this->requireRow($this->database->table('TypCestnehoClenstvi')->fetch())->id,
             'zadost_podal' => $member->id,
         ]);
 
-        $id = $this->container->getByType(Uzivatel::class)->getUzivatel((string) $member->id)->id;
+        $id = $this->requireRow($this->container->getByType(Uzivatel::class)->getUzivatel((string) $member->id))->id;
         Assert::type('int', $id);
         Assert::same([$cc->id => $id], $this->container->getByType(CestneClenstviUzivatele::class)->getListCC());
         Assert::same([$cc->id => $id], $this->container->getByType(CestneClenstviUzivatele::class)->getListCCOfAP($otherAp->id));

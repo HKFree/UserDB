@@ -87,6 +87,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         }
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $s->member->id);
         $saved = $this->database->table('SpravceOblasti')->get($right->id);
+        Assert::true($saved !== null);
         Assert::same('2000-01-01', $saved->od->format('Y-m-d'));
         Assert::same($values['do'] === '' ? null : $values['do'], $saved->do?->format('Y-m-d'));
         Assert::same($areaId, $saved->Oblast_id);
@@ -96,6 +97,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         Assert::same($changed ? 1 : 0, $logs->count('*'));
         if ($changed) {
             $entry = $logs->fetch();
+            Assert::true($entry !== null);
             Assert::same('SpravceOblasti[' . $right->id . '].do', $entry->sloupec);
             Assert::same($oldEnd === null ? null : '2099-12-31 00:00:00', $entry->puvodni_hodnota);
             Assert::same('2098-12-31 00:00:00', $entry->nova_hodnota);
@@ -122,7 +124,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         }
         PermissionScenario::assertRedirect($request(), 'uzivatel/show/' . $target->id);
         $cc = $this->database->table('CestneClenstviUzivatele')->where('Uzivatel_id', $target->id)->fetch();
-        Assert::notNull($cc);
+        Assert::true($cc !== null);
         Assert::same($note, $cc->poznamka);
         Assert::same($actor === 'vv' ? 1 : 0, $cc->schvaleno);
         Assert::same($s->actors[$actor]->id, $cc->zadost_podal);
@@ -161,7 +163,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         ]);
         PermissionScenario::assertRedirect($submit($row), 'uzivatel/show/' . $s->member->id);
         $stored = $this->database->table('CestneClenstviUzivatele')->where('Uzivatel_id', $s->member->id)->fetch();
-        Assert::notNull($stored);
+        Assert::true($stored !== null);
         Assert::same((int) ($state ?? 0), $stored->schvaleno);
         Assert::same('2026-01-01', $stored->plati_od->format('Y-m-d'));
         Assert::same($until === '' ? null : $until, $stored->plati_do?->format('Y-m-d'));
@@ -169,7 +171,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         $row['poznamka'] = 'Upravená žádost';
         PermissionScenario::assertRedirect($submit($row), 'uzivatel/show/' . $s->member->id);
         Assert::same(1, $this->database->table('CestneClenstviUzivatele')->where('Uzivatel_id', $s->member->id)->count('*'));
-        Assert::same('Upravená žádost', $this->database->table('CestneClenstviUzivatele')->get($stored->id)->poznamka);
+        Assert::same('Upravená žádost', $this->requireRow($this->database->table('CestneClenstviUzivatele')->get($stored->id))->poznamka);
         Assert::count(1, $this->container->getByType(RecordingMailer::class)->messages);
     }
 
@@ -184,9 +186,10 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         $denied = $submit($row);
         Assert::same(200, $denied->status);
         Assert::contains('NERECYKLUJTE.', $denied->html);
-        Assert::same('2000-01-01', $this->database->table('SpravceOblasti')->get($right->id)->od->format('Y-m-d'));
+        Assert::same('2000-01-01', $this->requireRow($this->database->table('SpravceOblasti')->get($right->id))->od->format('Y-m-d'));
         PermissionScenario::assertRedirect($submit($row + ['override' => 'on']), 'uzivatel/show/' . $s->member->id);
         $updated = $this->database->table('SpravceOblasti')->get($right->id);
+        Assert::true($updated !== null);
         Assert::same('2026-01-01', $updated->od->format('Y-m-d'));
         Assert::null($updated->do);
         Assert::same(1, $this->database->table('SpravceOblasti')->where('Uzivatel_id', $s->member->id)->count('*'));

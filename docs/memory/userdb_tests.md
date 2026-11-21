@@ -23,6 +23,10 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - `Assert::same` u pole porovnává i pořadí klíčů. Řadí-li dotaz podle sloupce se shodnými hodnotami, pořadí
   řádků není dané: `LogDatabaseTest` kvůli tomu padal zhruba ve 2 bězích ze 120 (ověřeno 20. 11. 2026). Kde na
   pořadí nezáleží, použít `Assert::equal`.
+- Dva nově načtené řádky mají samostatné objekty `DateTime`, takže `Assert::same` nad `toArray()`
+  selže i při shodném obsahu. Pro přesný snímek nezměněných hodnot včetně jejich typů porovnat
+  `serialize($row->toArray())`; samotný `ActiveRow` neserializovat. Ověřeno 21. 11. 2026 podle
+  rozdílu `.expected`/`.actual` a testů odmítnutých změn v `NullableModelsDatabaseTest`.
 - Izolace je transakce a rollback. Funguje jen proto, že test i testovaný kód sdílejí jedno spojení a `app/`
   transakce samo neotevírá. `AUTO_INCREMENT` se rollbackem nevrací a DDL transakci potvrdí.
 - Runner z nextras/migrations chybu migrace nevyhodí, předá ji printeru; `DevNull` ji zahodí. Po běhu navíc nechá
@@ -36,7 +40,14 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   místě kódu četly, a ukládá to až při úklidu paměti (GC). Další případ ve stejném procesu pak načte jen část
   řádku a výsledek závisí na pořadí případů a načasování GC. Ověřeno 20. 11. 2026: s keší padal
   `MemberEditPresenterTest` po vynuceném `gc_collect_cycles()` mezi případy, bez ní prochází. Testy proto
-  vždy čtou celé řádky; chování aplikace s částečně načteným řádkem nepokrývají.
+  standardně čtou celé řádky. Pro ověření částečného načítání vytvořit vlastní `Explorer` se stejným
+  spojením, strukturou a konvencemi, ale s `MemoryStorage`, a předat ho `TestEnvironment::container()`
+  a `PresenterRunner`. Požadavky musí jít ve smyčce ze stejného místa: klíč keše obsahuje celý backtrace.
+  Mezi požadavky uvolnit výjimky a zavolat `gc_collect_cycles()`. Ověřeno 21. 11. 2026 v
+  `NullableAuditCachePresenterTest` nad Nette Database 3.2.4.
+  **Why:** Čtení dosud nenačteného sloupce z `ActiveRow` může řádek znovu načíst; po zápisu už nejde
+  o původní hodnoty. **How to apply:** Auditní snímek převést přes `toArray()` před změnou a ověřit
+  skutečné hodnoty v `Log`, ne pouze úspěšné uložení formuláře.
 
 ## Testovací kontejner
 
@@ -142,6 +153,10 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   DigiSign klienta. Pro test beze změny produkční inicializace lze oba nahradit přes `class_alias` ještě
   před jejich autoloadem; ověřit, že původní třídy nejsou načtené. Testovací HTTP request musí mít
   `remoteAddress`, protože `AplikaceLog.ip` nepřipouští `NULL`. Ověřeno 21. 11. 2026 v databázovém testu webhooku.
+- MySQL driver Nette Database při zápisu `DateTimeInterface` používá `format('Y-m-d H:i:s')`, sám časovou
+  zónu nepřevádí. Čas z externí události je proto před zápisem nutné převést do časové zóny aplikace;
+  samotný správný Unix timestamp nestačí. Ověřeno 21. 11. 2026 v `DigisignWebhookDatabaseTest`: událost
+  `11:00Z` se před převodem ukládala jako místních 11:00 místo 12:00 v Europe/Prague.
 - Kontrolu přístupu v `www/adminer/index.php` lze testovat v PHP podprocesu požadavkem na
   `?file=adminer.css`: povolená větev načte skutečný soubor z balíčku bez přihlášení nebo spojení s DB,
   zamítnutá větev skončí 403. Ověřeno 21. 11. 2026 s `dg/adminer-custom` 1.15.0.

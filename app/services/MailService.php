@@ -156,6 +156,9 @@ class MailService
      */
     public function mailPdf(PdfResponse $pdf, $uzivatel, $request, $response, $userid): void {
         $so = $this->uzivatel->getUzivatel($userid);
+        if ($so === null) {
+            throw new \InvalidArgumentException('Odesílající uživatel nebyl nalezen.');
+        }
 
         $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
         //\Tracy\Debugger::barDump($fromAddress);
@@ -186,6 +189,9 @@ class MailService
     public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $so = $this->uzivatel->getUzivatel($actuser);
+        if ($newUser === null || $so === null) {
+            throw new \InvalidArgumentException('Uživatel pro odeslání e-mailu nebyl nalezen.');
+        }
 
         $fromAddress = 'hkfree.org oblast ' . $newUser->Ap->Oblast->jmeno . ' <oblast' . $newUser->Ap->Oblast->id . '@hkfree.org>';
 

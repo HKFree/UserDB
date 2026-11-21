@@ -18,7 +18,7 @@ final class ContractTypesDatabaseTest extends DatabaseTestCase
         $member = $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id);
         $contract = $this->fixtures->insert('Smlouva', ['uzivatel_id' => $member->id, 'typ' => 'ucastnicka']);
         $service = new SmlouvaStavSluzba();
-        $state = fn () => $service->getStav($this->database->table('Smlouva')->get($contract->id));
+        $state = fn () => $service->getStav($this->requireRow($this->database->table('Smlouva')->get($contract->id)));
         Assert::same('---', $state());
         $signature = $this->fixtures->insert('PodpisSmlouvy', ['smlouva_id' => $contract->id, 'smluvni_strana' => 'ucastnik', 'jmeno' => 'Fixture']);
         Assert::same('⏳ čeká na podpis', $state());

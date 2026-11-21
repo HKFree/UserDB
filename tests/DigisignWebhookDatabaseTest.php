@@ -74,20 +74,26 @@ final class WebhookEnvelopes
     public ?string $savedPath = null;
     public string $status = 'completed';
     public ?string $declineReason = null;
+    public bool $withRecipient = true;
+    public bool $withDocument = true;
+    public ?string $sentAt = '2026-01-01 12:00:00';
+    public ?string $declinedAt = '2026-01-01 12:00:00';
+    public ?string $expiredAt = null;
 
-    public function get(string $id): \stdClass {
+    public function get(string $id): \DigitalCz\DigiSign\Resource\Envelope {
         $this->calls[] = 'get:' . $id;
-        return (object) [
-            'id' => $id, 'status' => $this->status, 'documents' => [(object) ['name' => 'fixture.pdf']],
-            'recipients' => [(object) [
+        return new \DigitalCz\DigiSign\Resource\Envelope([
+            'id' => $id, 'status' => $this->status, 'expiredAt' => $this->expiredAt,
+            'documents' => $this->withDocument ? [['name' => 'fixture.pdf']] : [],
+            'recipients' => $this->withRecipient ? [[
                 'id' => 'fixture-recipient', 'email' => 'recipient@example.invalid',
-                'sentAt' => new \DateTime('2026-01-01 12:00:00'), 'declinedAt' => new \DateTime('2026-01-01 12:00:00'),
+                'sentAt' => $this->sentAt, 'declinedAt' => $this->declinedAt,
                 'declineReason' => $this->declineReason,
-            ]],
-        ];
+            ]] : [],
+        ]);
     }
 
-    public function recipients(\stdClass $envelope): WebhookRecipients {
+    public function recipients(\DigitalCz\DigiSign\Resource\Envelope $envelope): WebhookRecipients {
         return new WebhookRecipients();
     }
 
@@ -132,8 +138,110 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
                 ob_end_clean();
             }
             Assert::same([], WebhookDigiSign::$envelopes->calls);
-            Assert::same(0, $this->database->table('Uzivatel')->get($member->id)->druzstvo);
+            Assert::same(0, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->druzstvo);
         }
+    }
+
+    /** @return list<array{string, string, string}> */
+    public function missingEnvelopeData(): array {
+        return [
+            ['Sent', 'recipient', 'DigiSign nevrátil příjemce obálky.'],
+            ['Sent', 'sentAt', 'DigiSign nevrátil čas odeslání obálky.'],
+            ['Completed', 'document', 'DigiSign nevrátil podepsaný dokument.'],
+            ['Completed', 'recipient', 'DigiSign nevrátil příjemce obálky.'],
+            ['Completed', 'signature', 'Podpis účastníka nebyl nalezen.'],
+            ['Completed', 'member', 'Člen smlouvy nebyl nalezen.'],
+            ['Declined', 'recipient', 'DigiSign nevrátil příjemce obálky.'],
+            ['Declined', 'declinedAt', 'DigiSign nevrátil čas odmítnutí obálky.'],
+            ['Declined', 'signature', 'Podpis účastníka nebyl nalezen.'],
+        ];
+    }
+
+    /** @dataProvider missingEnvelopeData */
+    public function testIncompleteEnvelopeDoesNotChangeRecordsOrDownload(string $event, string $missing, string $message): void {
+        [$member, $contract, $signature] = $this->contractFixture('Old note');
+        $member->update(['datum_narozeni' => null, 'druzstvo' => 0]);
+        $api = WebhookDigiSign::$envelopes;
+        $api->status = strtolower($event);
+        $api->declineReason = 'Test reason';
+        if ($missing === 'recipient') {
+            $api->withRecipient = false;
+        } elseif ($missing === 'document') {
+            $api->withDocument = false;
+        } elseif ($missing === 'sentAt') {
+            $api->sentAt = null;
+        } elseif ($missing === 'declinedAt') {
+            $api->declinedAt = null;
+        } elseif ($missing === 'signature') {
+            $signature->delete();
+        } elseif ($missing === 'member') {
+            $model = new class () extends \App\Model\Uzivatel {
+                public function __construct() {
+                    parent::__construct(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()));
+                }
+
+                public function find($id): ?\Nette\Database\Table\ActiveRow {
+                    return null;
+                }
+            };
+            foreach ($this->container->findByType(\App\Model\Uzivatel::class) as $name) {
+                $this->container->removeService($name);
+                $this->container->addService($name, $model);
+            }
+        }
+        $before = $this->recordSnapshot();
+        Assert::exception(fn () => $this->processHook($contract, 'envelope' . $event), \RuntimeException::class, $message);
+        Assert::same($before, $this->recordSnapshot());
+        Assert::same(['get:' . $contract->externi_id], $api->calls);
+        Assert::null($api->savedPath);
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testExpiryUsesEventTimeWithoutRecipient(): void {
+        [, $contract] = $this->contractFixture(null);
+        WebhookDigiSign::$envelopes->status = 'expired';
+        WebhookDigiSign::$envelopes->withRecipient = false;
+        $this->processHook($contract, 'envelopeExpired');
+        Assert::same('VYPRŠEL ČAS na podpis 01.01.2026 12:00', $this->requireRow($this->database->table('Smlouva')->get($contract->id))->poznamka);
+        $contract->update(['poznamka' => null]);
+        WebhookDigiSign::$envelopes->expiredAt = '2026-01-01 13:15:00';
+        $this->processHook($contract, 'envelopeExpired');
+        Assert::same('VYPRŠEL ČAS na podpis 01.01.2026 13:15', $this->requireRow($this->database->table('Smlouva')->get($contract->id))->poznamka);
+    }
+
+    public function testInvalidEventTimesDoNotChangeRecords(): void {
+        foreach (['Completed', 'Declined', 'Expired'] as $event) {
+            [, $contract] = $this->contractFixture('Old note');
+            WebhookDigiSign::$envelopes->status = strtolower($event);
+            foreach ([null, '', 'now', '2026-02-30 12:00:00', '2026-01-01 99:00:00'] as $time) {
+                $before = $this->recordSnapshot();
+                Assert::exception(fn () => $this->processHook($contract, 'envelope' . $event, $time), \RuntimeException::class, 'Čas události DigiSign chybí nebo není platný.');
+                Assert::same($before, $this->recordSnapshot());
+                Assert::null(WebhookDigiSign::$envelopes->savedPath);
+            }
+        }
+    }
+
+    public function testEventTimeKeepsExplicitTimezone(): void {
+        foreach (['2026-01-01T12:00:00+01:00', '2026-01-01T11:00:00Z', '2026-01-01T11:00:00.000000Z'] as $time) {
+            Assert::same((new \DateTimeImmutable('2026-01-01 12:00:00 Europe/Prague'))->getTimestamp(), \digisign_webhook_event_time($time)->getTimestamp());
+        }
+    }
+
+    public function testSignatureStoresEventTimeInApplicationTimezone(): void {
+        [, $contract, $signature] = $this->contractFixture(null);
+        $this->processHook($contract, 'envelopeCompleted', '2026-01-01T11:00:00Z');
+        Assert::same('2026-01-01 12:00:00', $this->requireRow($this->database->table('PodpisSmlouvy')->get($signature->id))->kdy_podepsano->format('Y-m-d H:i:s'));
+    }
+
+    private function recordSnapshot(): string {
+        $rows = [];
+        foreach (['Uzivatel', 'Smlouva', 'PodpisSmlouvy'] as $table) {
+            foreach ($this->database->table($table)->order('id') as $row) {
+                $rows[$table][] = $row->toArray();
+            }
+        }
+        return serialize($rows);
     }
 
     /** @return list<array{string|null, bool}> */
@@ -163,10 +271,11 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         }
 
         $updated = $this->database->table('Uzivatel')->get($member->id);
+        Assert::true($updated !== null);
         Assert::type('int', $updated->id);
         Assert::same($preserved ? $originalMembership : 1, $updated->TypClenstvi_id);
         Assert::same(1, $updated->druzstvo);
-        Assert::same('2026-01-01 12:00:00', $this->database->table('PodpisSmlouvy')->get($signature->id)->kdy_podepsano->format('Y-m-d H:i:s'));
+        Assert::same('2026-01-01 12:00:00', $this->requireRow($this->database->table('PodpisSmlouvy')->get($signature->id))->kdy_podepsano->format('Y-m-d H:i:s'));
         Assert::same(['get:' . $contract->externi_id, 'download:' . $contract->externi_id], WebhookDigiSign::$envelopes->calls);
         Assert::same(getenv('FILE_STORAGE_PATH') . '/ucastnickeSmlouvy/fixture.pdf', WebhookDigiSign::$envelopes->savedPath);
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
@@ -187,7 +296,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
             WebhookDigiSign::$envelopes->status = strtolower($event);
             WebhookDigiSign::$envelopes->declineReason = 'Test reason';
             $this->processHook($contract, 'envelope' . $event);
-            Assert::same($prefix . $expected, $this->database->table('Smlouva')->get($contract->id)->poznamka);
+            Assert::same($prefix . $expected, $this->requireRow($this->database->table('Smlouva')->get($contract->id))->poznamka);
         }
     }
 
@@ -202,8 +311,8 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         WebhookDigiSign::$envelopes->status = 'declined';
         WebhookDigiSign::$envelopes->declineReason = $reason;
         $this->processHook($contract, 'envelopeDeclined');
-        Assert::same('Old note', $this->database->table('Smlouva')->get($contract->id)->poznamka);
-        Assert::same('2026-01-01 12:00:00', $this->database->table('PodpisSmlouvy')->get($signature->id)->kdy_odmitnuto->format('Y-m-d H:i:s'));
+        Assert::same('Old note', $this->requireRow($this->database->table('Smlouva')->get($contract->id))->poznamka);
+        Assert::same('2026-01-01 12:00:00', $this->requireRow($this->database->table('PodpisSmlouvy')->get($signature->id))->kdy_odmitnuto->format('Y-m-d H:i:s'));
     }
 
     /** @dataProvider noteCases */
@@ -213,7 +322,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         $this->processHook($contract, 'envelopeCompleted');
         Assert::same(
             $memberPrefix . 'Nejasné datum narození [invalid-date] (z digisign smlouvy #' . $contract->id . ' ze dne 01.01.2026)',
-            $this->database->table('Uzivatel')->get($member->id)->poznamka
+            $this->requireRow($this->database->table('Uzivatel')->get($member->id))->poznamka
         );
     }
 
@@ -237,6 +346,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
             ob_end_clean();
         }
         $updated = $this->database->table('Smlouva')->get($old->id);
+        Assert::true($updated !== null);
         Assert::match($prefix . 'Smlouva zrušena před podepsáním a nahrazena smlouvou č. ' . $new->id . ' (ze dne %d%.%d%.%d% %d%:%d%)', $updated->poznamka);
         Assert::notNull($updated->kdy_ukonceno);
         Assert::same(['discard:' . $old->externi_id], WebhookDigiSign::$envelopes->calls);
@@ -253,11 +363,11 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         return [$member, $contract, $signature];
     }
 
-    private function processHook(\Nette\Database\Table\ActiveRow $contract, string $event): void {
+    private function processHook(\Nette\Database\Table\ActiveRow $contract, string $event, ?string $time = '2026-01-01 12:00:00'): void {
         ob_start();
         try {
             \process_digisign_webhook((object) [
-                'entityName' => 'envelope', 'entityId' => $contract->externi_id, 'event' => $event, 'time' => '2026-01-01 12:00:00',
+                'entityName' => 'envelope', 'entityId' => $contract->externi_id, 'event' => $event, 'time' => $time,
             ]);
         } finally {
             ob_end_clean();

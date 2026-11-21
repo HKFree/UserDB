@@ -35,6 +35,9 @@ class Wewimo
      * @return array{interfaces: array<string, array<string, mixed>>, resources: array<string, mixed>, neighborsByIp: array<string, array<string, mixed>>}
      */
     public function getWewimoData($ip, $username, $password, $invoker): array {
+        if ($username === null || $password === null) {
+            throw new \InvalidArgumentException('Chybí přihlašovací údaje zařízení.');
+        }
         // default values (when not present in $responses) of optional attributes
         $defaultRegistrationRow = array(
             'radio-name' => '',
@@ -270,21 +273,22 @@ class Wewimo
                         $station['xx-grafana-link'] = 'http://sojka.hkfree.org/grafana/d/dKlgTs6mk/wewimo?orgId=1&from=now-20d&to=now&refresh=1h&var-Station_MAC=' . $station['mac-address'];
                         if (array_key_exists($station['mac-address'], $ips)) {
                             $ipRec = $ips[$station['mac-address']];
-                            if (!in_array($ipRec->hostname, [null, '', '0'], true) || in_array($ipRec->Uzivatel_id, [null, 0], true)) {
+                            $uzivatel = $ipRec->ref('Uzivatel');
+                            if (!in_array($ipRec->hostname, [null, '', '0'], true) || $uzivatel === null) {
                                 $station['xx-mac-host'] = $ipRec->hostname;
                             } else {
-                                $station['xx-mac-host'] = '('.$ipRec->ref('Uzivatel')->nick.')';
+                                $station['xx-mac-host'] = '('.$uzivatel->nick.')';
                             }
                             $station['xx-mac-ip-id'] = $ipRec->id;
-                            if (!in_array($ipRec->Uzivatel_id, [null, 0], true)) {
+                            if ($uzivatel !== null) {
                                 $station['xx-mac-link'] = [
                                     'presenter' => 'Uzivatel:show',
                                     'id' => $ipRec->Uzivatel_id,
                                     'anchor' => "#ip" . $ipRec->ip_adresa,
                                 ];
                                 //$this->link('Uzivatel:show', array('id' => $ipRec->Uzivatel_id)) . "#ip" . $ipRec->ip_adresa;
-                                $station['xx-user-nick'] = $ipRec->ref('Uzivatel')->nick;
-                            } else {
+                                $station['xx-user-nick'] = $uzivatel->nick;
+                            } elseif (!in_array($ipRec->Ap_id, [null, 0], true)) {
                                 $station['xx-mac-link'] = [
                                     'presenter' => 'Ap:show',
                                     'id' => $ipRec->Ap_id,
@@ -292,6 +296,9 @@ class Wewimo
                                 ];
                                 //$this->link('Ap:show', array('id' => $ipRec->Ap_id)) . "#ip" . $ipRec->ip_adresa;
                                 $station['xx-user-nick'] = 'AP';
+                            } else {
+                                $station['xx-mac-link'] = null;
+                                $station['xx-user-nick'] = null;
                             }
                             if ($station['x-in-neighbors'] === 0) {
                                 // pokud uz zarizeni nebylo nalezeno v neighbors podle MAC (v ramci metody getWewimoData)
@@ -365,21 +372,22 @@ class Wewimo
      * @param array<string, mixed> $station
      */
     public function prepareIpInfoAndLink(Nette\Database\Table\ActiveRow $ipRec, array &$station): void {
-        if (!in_array($ipRec->hostname, [null, '', '0'], true) || in_array($ipRec->Uzivatel_id, [null, 0], true)) {
+        $uzivatel = $ipRec->ref('Uzivatel');
+        if (!in_array($ipRec->hostname, [null, '', '0'], true) || $uzivatel === null) {
             $station['xx-last-ip-host'] = $ipRec->hostname;
         } else {
-            $station['xx-last-ip-host'] = '('.$ipRec->ref('Uzivatel')->nick.')';
+            $station['xx-last-ip-host'] = '('.$uzivatel->nick.')';
         }
         $station['xx-last-ip-id'] = $ipRec->id;
-        if (!in_array($ipRec->Uzivatel_id, [null, 0], true)) {
+        if ($uzivatel !== null) {
             $station['xx-last-ip-link'] = [
                 'presenter' => 'Uzivatel:show',
                 'id' => $ipRec->Uzivatel_id,
                 'anchor' => "#ip" . $ipRec->ip_adresa,
             ];
             //$this->link('Uzivatel:show', array('id' => $ipRec->Uzivatel_id)) . "#ip" . $ipRec->ip_adresa;
-            $station['xx-last-ip-user-nick'] = $ipRec->ref('Uzivatel')->nick;
-        } else {
+            $station['xx-last-ip-user-nick'] = $uzivatel->nick;
+        } elseif (!in_array($ipRec->Ap_id, [null, 0], true)) {
             $station['xx-last-ip-link'] = [
                 'presenter' => 'Ap:show',
                 'id' => $ipRec->Ap_id,
@@ -387,6 +395,9 @@ class Wewimo
             ];
             //$this->link('Ap:show', array('id' => $ipRec->Ap_id)) . "#ip" . $ipRec->ip_adresa;
             $station['xx-last-ip-user-nick'] = 'AP';
+        } else {
+            $station['xx-last-ip-link'] = null;
+            $station['xx-last-ip-user-nick'] = null;
         }
     }
 }

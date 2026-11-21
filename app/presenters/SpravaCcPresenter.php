@@ -127,8 +127,25 @@ class SpravaCcPresenter extends SpravaPresenter
         $log = array();
         $prava = $values->rights;
 
-        // Zpracujeme prava
-        foreach ($prava as $pravo) {
+        $podklady = [];
+        foreach ($prava as $key => $pravo) {
+            if (in_array($pravo->id, [null, '', 0, '0'], true)) {
+                continue;
+            }
+            $starePravo = $this->cestneClenstviUzivatele->getCC($pravo->id);
+            if ($starePravo === null) {
+                $this->error('Čestné členství nebylo nalezeno.');
+            }
+            $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
+            $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
+            if ($navrhovatel === null || $schvaleny === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
+            $podklady[$key] = [$starePravo, $navrhovatel, $schvaleny];
+        }
+
+        // Zpracujeme prava až po ověření všech podkladů.
+        foreach ($prava as $key => $pravo) {
             $pravoId = $pravo->id;
 
             if (in_array($pravo->schvaleno ?? null, [null, 0, '0'], true)) {
@@ -136,13 +153,10 @@ class SpravaCcPresenter extends SpravaPresenter
             }
 
             if (!in_array($pravo->id, [null, '', 0, '0'], true)) {
-                $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
+                [$starePravo, $navrhovatel, $schvaleny] = $podklady[$key];
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
 
                 if ($starePravo->schvaleno !== $pravo->schvaleno && ($pravo->schvaleno === 1 || $pravo->schvaleno === 2)) {
-                    $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
-                    $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
-
                     $stav = $pravo->schvaleno === 1 ? "schválena" : "zamítnuta";
                     $platiOd = $pravo->plati_od->format('d.m.Y');
                     $platiDo = $pravo->plati_do?->format('d.m.Y') ?? 'neomezeně';

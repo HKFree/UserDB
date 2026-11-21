@@ -53,6 +53,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $result = $this->submit($this->post(['TypClenstvi_id' => '-1']));
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
         $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::true($stored !== null);
         Assert::null($stored->TypClenstvi_id);
         Assert::same(0, $stored->money_aktivni);
         Assert::same('2000-01-01 00:00:00', $stored->zalozen->format('Y-m-d H:i:s'));
@@ -63,6 +64,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $this->member->update(['email2' => '', 'email_invalid' => 1]);
         PermissionScenario::assertRedirect($this->submit($this->post()), 'uzivatel/show/' . $this->member->id);
         $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::true($stored !== null);
         Assert::null($stored->email2);
         Assert::same(1, $stored->email_invalid);
     }
@@ -86,6 +88,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $result = $this->submit($this->post($changes));
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
         $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::true($stored !== null);
         foreach ($changes as $column => $value) {
             Assert::same($value, $stored->$column);
             $this->assertLog('U', 'Uzivatel.' . $column, $old[$column], $value);
@@ -95,6 +98,16 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         }
         Assert::same('pending', $stored->location_status);
         Assert::same($changeEmail || $clearSecondary ? 0 : 1, $stored->email_invalid);
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testMissingDeviceRejectsMemberChangesBeforeSaving(): void {
+        $before = $this->snapshot();
+        $post = $this->post(['jmeno' => 'Nové jméno', 'ip' => [
+            'n1' => $this->ipPost(['id' => '-1', 'ip_adresa' => '192.0.2.100']),
+        ]]);
+        Assert::exception(fn () => $this->submit($post), \Nette\Application\BadRequestException::class, 'IP adresa nebyla nalezena.', 404);
+        Assert::same($before, $this->snapshot());
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
 
@@ -155,6 +168,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         ]]));
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
         $stored = $this->database->table('IPAdresa')->get($a->id);
+        Assert::true($stored !== null);
         Assert::same('new-host', $stored->hostname);
         Assert::same($this->member->id, $stored->Uzivatel_id);
         Assert::same(1, $stored->heslo_sifrovane);
@@ -162,7 +176,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same($password, $this->container->getByType(CryptoSluzba::class)->decrypt($stored->heslo));
         Assert::null($this->database->table('IPAdresa')->get($b->id));
         $c = $this->database->table('IPAdresa')->where('ip_adresa', '10.107.241.3')->fetch();
-        Assert::notNull($c);
+        Assert::true($c !== null);
         Assert::same($this->member->id, $c->Uzivatel_id);
         Assert::same('added-host', $c->hostname);
         Assert::same(2, $this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->count('*'));
@@ -182,7 +196,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $result = $this->submit($this->post(['iprange' => '10.107.242.1-10.107.242.3']));
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
         Assert::same(['10.107.242.1', '10.107.242.3'], array_values($this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->order('ip_adresa')->fetchPairs('id', 'ip_adresa')));
-        Assert::equal($before, $this->database->table('IPAdresa')->get($occupied->id)->toArray());
+        Assert::equal($before, $this->requireRow($this->database->table('IPAdresa')->get($occupied->id))->toArray());
         foreach ($this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id) as $ip) {
             $this->assertLog('I', 'IPAdresa[' . $ip->id . '].ip_adresa', null, $ip->ip_adresa);
         }
@@ -199,7 +213,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $started = time();
         $result = $this->submit($post);
         $created = $this->database->table('Uzivatel')->where('nick', $post['nick'])->fetch();
-        Assert::notNull($created);
+        Assert::true($created !== null);
         Assert::true($created->id > 0);
         Assert::notSame($this->member->id, $created->id);
         Assert::same(1, $created->money_aktivni);
@@ -232,12 +246,13 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         )]]);
         PermissionScenario::assertRedirect($this->submit($post), 'uzivatel/show/' . $this->member->id);
         $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::true($stored !== null);
         foreach (['cislo_clenske_karty', 'firma_nazev', 'poznamka'] as $column) {
             Assert::same($expected, $stored->$column);
         }
         Assert::same($companyId, $stored->firma_ico);
         $ip = $this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->fetch();
-        Assert::notNull($ip);
+        Assert::true($ip !== null);
         Assert::same('192.0.2.20', $ip->ip_adresa);
         foreach (['hostname', 'mac_adresa', 'popis', 'login'] as $column) {
             Assert::same($expected, $ip->$column);
@@ -282,7 +297,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
     /** @dataProvider transitionCases */
     public function testPlannedMembershipTransition(int $membership): void {
         $this->member->update(['druzstvo' => 0, 'spolek' => 1, 'TypClenstvi_id' => 0, 'money_aktivni' => 0]);
-        Assert::same(0, $this->database->table('Uzivatel')->get($this->member->id)->TypClenstvi_id);
+        Assert::same(0, $this->requireRow($this->database->table('Uzivatel')->get($this->member->id))->TypClenstvi_id);
         $ip = $this->fixtures->ipAddress($this->member->id, '10.107.243.1');
         $started = time();
         $result = $this->submit($this->post(['TypClenstvi_id' => (string) $membership]));
@@ -294,7 +309,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
             PermissionScenario::assertRedirect($result, 'uzivatel-list/list/' . $this->member->Ap_id);
             Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
         } else {
-            Assert::notNull($stored);
+            Assert::true($stored !== null);
             Assert::same(3, $stored->TypClenstvi_id);
             Assert::same(1, $stored->money_aktivni);
             $this->assertCurrentTime($stored->zalozen, $started);
@@ -309,7 +324,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $result = $this->submit($this->post(['spolek' => '1', 'TypClenstvi_id' => '1']));
 
         $stored = $this->database->table('Uzivatel')->get($this->member->id);
-        Assert::notNull($stored);
+        Assert::true($stored !== null);
         Assert::same(1, $stored->druzstvo);
         Assert::same(1, $stored->spolek);
         Assert::same(1, $stored->TypClenstvi_id);
@@ -339,7 +354,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $result = $this->submit($this->post(['spolek' => '1', 'TypClenstvi_id' => (string) $membership]));
 
         $stored = $this->database->table('Uzivatel')->get($this->member->id);
-        Assert::notNull($stored);
+        Assert::true($stored !== null);
         Assert::same(1, $stored->druzstvo);
         Assert::same(1, $stored->spolek);
         Assert::same($membership, $stored->TypClenstvi_id);

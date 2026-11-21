@@ -16,7 +16,7 @@ class AP extends Table
 
     /** @param int|string|null $id */
     public function getAP($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $id === null ? null : $this->find($id);
     }
 
     /**
@@ -29,13 +29,12 @@ class AP extends Table
 
     /** @param int|string|null $ApID */
     public function canViewOrEditAP($ApID, Nette\Security\User $Uzivatel): bool {
-        //\Tracy\Debugger::barDump($ApID);
-        //\Tracy\Debugger::barDump($Uzivatel);
-        return $Uzivatel->isInRole('TECH')
-           || $Uzivatel->isInRole('VV')
-           || $Uzivatel->isInRole('KONTROLA')
-           || $Uzivatel->isInRole('SO-'.$this->find($ApID)->Oblast_id)
-           || $Uzivatel->isInRole('ZSO-'.$this->find($ApID)->Oblast_id);
+        if ($this->canViewOrEditAll($Uzivatel)) {
+            return true;
+        }
+        $ap = $this->getAP($ApID);
+        return $ap !== null && ($Uzivatel->isInRole('SO-'.$ap->Oblast_id)
+            || $Uzivatel->isInRole('ZSO-'.$ap->Oblast_id));
     }
 
     public function canViewOrEditAll(Nette\Security\User $Uzivatel): bool {

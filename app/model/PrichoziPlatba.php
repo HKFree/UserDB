@@ -21,6 +21,6 @@ class PrichoziPlatba extends Table
 
     /** @param int|string|null $id */
     public function getPrichoziPlatba($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $id === null ? null : $this->find($id);
     }
 }

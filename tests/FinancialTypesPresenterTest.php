@@ -83,7 +83,7 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         foreach (['99.5', 0, '99.5'] as $price) {
             $form->setValues(['cena' => $price]);
             Assert::exception(fn () => $save->invoke($presenter, $form, $form->getValues()), \Nette\Application\AbortException::class);
-            Assert::same((float) $price, (float) $this->database->table('UzivatelTelevize')->get($this->member->id)->cena);
+            Assert::same((float) $price, (float) $this->requireRow($this->database->table('UzivatelTelevize')->get($this->member->id))->cena);
         }
     }
 
@@ -96,10 +96,11 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
             $presenter->loadState(['id' => $id]);
             Assert::exception($presenter->actionSubscribe(...), \Nette\Application\AbortException::class);
             $subscription = $this->database->table('UzivatelTelevize')->get($this->member->id);
+            Assert::true($subscription !== null);
             Assert::same(99.5, (float) $subscription->cena);
             Assert::same(1, $subscription->objednana);
             Assert::exception($presenter->actionUnsubscribe(...), \Nette\Application\AbortException::class);
-            Assert::same(0, $this->database->table('UzivatelTelevize')->get($this->member->id)->objednana);
+            Assert::same(0, $this->requireRow($this->database->table('UzivatelTelevize')->get($this->member->id))->objednana);
         }
     }
 
@@ -110,7 +111,7 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         ]);
         Assert::same(200, $result->status);
         Assert::same(2, substr_count($result->html, 'Vyberte cenu služby.'));
-        Assert::same(99.5, (float) $this->database->table('UzivatelTelevize')->get($this->member->id)->cena);
+        Assert::same(99.5, (float) $this->requireRow($this->database->table('UzivatelTelevize')->get($this->member->id))->cena);
     }
 
     /** @return list<array{bool, ?float}> */

@@ -124,12 +124,13 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+            if ($user === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
             foreach ($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
                 $rights->createOne($rights_id)->setValues($rights_data);
             }
-            if ($user !== null) {
-                $form->setValues($user);
-            }
+            $form->setValues($user);
         }
 
         return $form;
@@ -151,6 +152,9 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         foreach ($values->rights as $pravo) {
             if (!in_array($pravo->id, [null, '', 0, '0'], true) && !$pravo->override) {
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
+                if ($starePravo === null) {
+                    $this->error('Oprávnění nebylo nalezeno.');
+                }
                 if (($starePravo->od !== null && $starePravo->od->format('Y-m-d') !== $pravo->od?->format('Y-m-d'))
                     || ($starePravo->do !== null && $starePravo->do->format('Y-m-d') !== $pravo->do?->format('Y-m-d'))
                     || $starePravo->Oblast_id !== $pravo->Oblast_id || $starePravo->TypSpravceOblasti_id !== $pravo->TypSpravceOblasti_id) {
@@ -168,7 +172,16 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $idUzivatele = $values->id;
         $prava = $values->rights;
 
-        $typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
+        $staraPrava = [];
+        foreach ($prava as $pravo) {
+            if (!in_array($pravo->id, [null, '', 0, '0'], true)) {
+                $starePravo = $this->spravceOblasti->getPravo($pravo->id);
+                if ($starePravo === null) {
+                    $this->error('Oprávnění nebylo nalezeno.');
+                }
+                $staraPrava[$pravo->id] = $starePravo;
+            }
+        }
 
         // Zpracujeme prava
         foreach ($prava as $pravo) {
@@ -178,13 +191,16 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             $pravoId = $pravo->id;
 
             if (in_array($pravo->id, [null, '', 0, '0'], true)) {
-                $pravoId = $this->spravceOblasti->insertRow($pravo)->id;
-                $novePravo = $this->spravceOblasti->getPravo($pravoId);
+                $novePravo = $this->spravceOblasti->insertRow($pravo);
+                $pravoId = $novePravo->id;
                 $this->log->logujInsert($novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             } else {
-                $starePravo = $this->spravceOblasti->getPravo($pravoId);
+                $starePravo = $staraPrava[$pravoId];
                 $this->spravceOblasti->update($pravoId, $pravo);
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
+                if ($novePravo === null) {
+                    $this->error('Oprávnění nebylo nalezeno.');
+                }
                 $this->log->logujUpdate($starePravo, $novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             }
         }
@@ -199,7 +215,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
      * @param int|string|null $idUzivatele
      */
     private function smiUpravitCc($idUzivatele): bool {
-        $uzivatel = $this->uzivatel->getUzivatel($idUzivatele);
+        $uzivatel = $idUzivatele !== null ? $this->uzivatel->getUzivatel($idUzivatele) : null;
         return $uzivatel !== null && ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()));
     }
 
@@ -262,12 +278,13 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+            if ($user === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
             foreach ($user->related("CestneClenstviUzivatele.Uzivatel_id") as $rights_id => $rights_data) {
                 $rights->createOne($rights_id)->setValues($rights_data);
             }
-            if ($user !== null) {
-                $form->setValues($user);
-            }
+            $form->setValues($user);
         }
 
         return $form;

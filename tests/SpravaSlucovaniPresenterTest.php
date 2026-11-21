@@ -54,6 +54,10 @@ class MergeUserRow extends ActiveRow
                 return 0;
             }
 
+            public function fetch(): ?ActiveRow {
+                return null;
+            }
+
             public function sum(string $column): int {
                 return $this->balance;
             }

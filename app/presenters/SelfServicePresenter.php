@@ -77,7 +77,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
         $this->setLayout('pub');
         $this->template->error = null;
 
-        $uzivatel = $this->uzivatelModel->getUzivatel($uid);
+        $uzivatel = $uid !== null ? $this->uzivatelModel->getUzivatel($uid) : null;
         if ($uzivatel === null) {
             $this->error('neplatný odkaz');
         }

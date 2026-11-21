@@ -61,7 +61,7 @@ try {
         Assert::same(\UserdbDemoPersonas::all()[$expectedId]['name'], $selected->getByType(\App\Settings::class)->demoPersonaName);
         Assert::same($expected, $fakeUser->getValue($selected->getByType(\App\Model\Authenticator::class)));
         $panel = \Tracy\Debugger::getBar()->getPanel('userdb-demo-persona');
-        Assert::type(\UserdbDemoPersonaPanel::class, $panel);
+        Assert::true($panel instanceof \UserdbDemoPersonaPanel);
         Assert::contains('<span class="tracy-label">' . $expectedId . ': ', $panel->getTab());
         Assert::contains('href="/demo-osoba"', $panel->getPanel());
     }

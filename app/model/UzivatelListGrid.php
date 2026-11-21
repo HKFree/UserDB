@@ -52,10 +52,13 @@ class UzivatelListGrid
         $grid->setExport('user_export');
 
         $apcko = $this->ap->getAP($id);
+        if ($apcko === null) {
+            $presenter->error('AP nebylo nalezeno.');
+        }
         $subnety = $apcko->related('Subnet.Ap_id');
 
-        $seznamUzivatelu = $this->uzivatel->findUsersFromOtherAreasByAreaId($id, $subnety);
-        $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
+        $seznamUzivatelu = $this->uzivatel->findUsersFromOtherAreasByAreaId($apcko->id, $subnety);
+        $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($apcko->id);
         $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($id, $loggedUser);
 
         $grid->setModel($seznamUzivatelu);

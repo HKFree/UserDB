@@ -66,6 +66,9 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         }
 
         $u1 = $this->uzivatel->getUzivatel($u1id);
+        if ($u1 === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $this->template->u1 = $u1;
         $this->template->u1hasCC = $this->cestneClenstviUzivatele->getHasCC($u1id);
         $ipAdresyu1 = $u1->related('IPAdresa.Uzivatel_id');
@@ -78,15 +81,15 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         $this->template->u1money_act = ((int) $u1->money_aktivni === 1) ? "ANO" : "NE";
         $this->template->u1money_dis = ((int) $u1->money_deaktivace === 1) ? "ANO" : "NE";
         $posledniPlatba = $u1->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
-        if ($posledniPlatba->count() > 0) {
-            $posledniPlatbaData = $posledniPlatba->fetch();
+        $posledniPlatbaData = $posledniPlatba->fetch();
+        if ($posledniPlatbaData !== null) {
             $this->template->u1money_lastpay = ($posledniPlatbaData->datum === null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
         } else {
             $this->template->u1money_lastpay = "?";
         }
         $posledniAktivace = $u1->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
-        if ($posledniAktivace->count() > 0) {
-            $posledniAktivaceData = $posledniAktivace->fetch();
+        $posledniAktivaceData = $posledniAktivace->fetch();
+        if ($posledniAktivaceData !== null) {
             $this->template->u1money_lastact = ($posledniAktivaceData->datum === null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
         } else {
             $this->template->u1money_lastact = "?";
@@ -99,6 +102,9 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         }
 
         $u2 = $this->uzivatel->getUzivatel($u2id);
+        if ($u2 === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $this->template->u2 = $u2;
         $this->template->u2hasCC = $this->cestneClenstviUzivatele->getHasCC($u2id);
         $ipAdresyu2 = $u2->related('IPAdresa.Uzivatel_id');
@@ -111,15 +117,15 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         $this->template->u2money_act = ((int) $u2->money_aktivni === 1) ? "ANO" : "NE";
         $this->template->u2money_dis = ((int) $u2->money_deaktivace === 1) ? "ANO" : "NE";
         $posledniPlatba2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
-        if ($posledniPlatba2->count() > 0) {
-            $posledniPlatbaData2 = $posledniPlatba2->fetch();
+        $posledniPlatbaData2 = $posledniPlatba2->fetch();
+        if ($posledniPlatbaData2 !== null) {
             $this->template->u2money_lastpay = ($posledniPlatbaData2->datum === null) ? "NIKDY" : ($posledniPlatbaData2->datum->format('d.m.Y') . " (" . $posledniPlatbaData2->castka . ")");
         } else {
             $this->template->u2money_lastpay = "?";
         }
         $posledniAktivace2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
-        if ($posledniAktivace2->count() > 0) {
-            $posledniAktivaceData2 = $posledniAktivace2->fetch();
+        $posledniAktivaceData2 = $posledniAktivace2->fetch();
+        if ($posledniAktivaceData2 !== null) {
             $this->template->u2money_lastact = ($posledniAktivaceData2->datum === null) ? "NIKDY" : ($posledniAktivaceData2->datum->format('d.m.Y') . " (" . $posledniAktivaceData2->castka . ")");
         } else {
             $this->template->u2money_lastact = "?";
@@ -173,6 +179,9 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
 
         if ($form->isSubmitted() === $form['slouceni']) {
             $u2 = $this->uzivatel->getUzivatel($values->slouceny_uzivatel);
+            if ($u2 === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
 
             if ($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id, $values->slouceny_uzivatel)) {
                 $this->flashMessage('Takové sloučení již existuje.');
@@ -185,6 +194,10 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
             if ($this->sloucenyUzivatel->getIsAlreadySlave($values->Uzivatel_id)) {
                 $this->flashMessage('Uživatel který má zůstat aktivní již figuruje jako sloučený uživatel v jiném sloučení.');
                 return;
+            }
+
+            if ($this->uzivatel->getUzivatel($values->Uzivatel_id) === null) {
+                $this->error('Uživatel nebyl nalezen.');
             }
 
             $idSlouceni = $values->id;
