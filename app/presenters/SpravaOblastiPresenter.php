@@ -55,7 +55,7 @@ class SpravaOblastiPresenter extends SpravaPresenter
 
         $idOblasti = $values->id;
 
-        if (empty($values->id)) {
+        if (in_array($values->id, [null, '', 0, '0'], true)) {
             $values->datum_zalozeni = new Nette\Utils\DateTime();
             $this->oblast->insert($values);
             $this->flashMessage('Oblast byla vytvořena.');
@@ -102,7 +102,7 @@ class SpravaOblastiPresenter extends SpravaPresenter
 
         $idAp = $values->id;
 
-        if (empty($values->id)) {
+        if (in_array($values->id, [null, '', 0, '0'], true)) {
             $this->ap->insert($values);
             $this->flashMessage('AP bylo vytvořeno.');
         } else {

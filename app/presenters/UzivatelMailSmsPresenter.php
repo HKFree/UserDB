@@ -247,7 +247,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
-        if (!empty($user->telefon) && $user->telefon != 'missing') {
+        if (!in_array($user->telefon ?? null, [null, '', '0'], true) && $user->telefon != 'missing') {
             $form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
             $form->onSuccess[] = array($this, 'smsFormSucceded');
         }
@@ -297,7 +297,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
             $validni = [];
             foreach ($telefony as $tl) {
-                if (!empty($tl) && $tl != 'missing') {
+                if (!in_array($tl, [null, '', '0'], true) && $tl != 'missing') {
                     $validni[] = $tl;
                 }
             }
@@ -323,7 +323,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $validni = [];
         foreach ($telefony as $uid => $tl) {
-            if (!empty($tl) && $tl != 'missing') {
+            if (!in_array($tl, [null, '', '0'], true) && $tl != 'missing') {
                 $validni[] = $uid;
             }
         }

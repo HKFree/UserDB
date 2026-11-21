@@ -11,6 +11,13 @@ require_once __DIR__ . '/bootstrap.php';
 
 final class MigrationsDatabaseTest extends TestCase
 {
+    public function testTemporaryDirectoryBelongsToWorktree(): void {
+        $connection = TestEnvironment::database()->getConnection();
+        $expectedDirectory = realpath(TestEnvironment::ROOT . '/.flox/cache') . '/mariadb/tmp';
+        Assert::same($expectedDirectory, realpath($connection->fetchField('SELECT @@tmpdir')), 'Restart this worktree\'s Flox MariaDB service to apply its private temporary directory.');
+        Assert::true(is_writable($expectedDirectory));
+    }
+
     public function testSchemaAndConnection(): void {
         $connection = TestEnvironment::database()->getConnection();
         $expected = [];

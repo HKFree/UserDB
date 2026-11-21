@@ -131,18 +131,11 @@ class SpravaCcPresenter extends SpravaPresenter
         foreach ($prava as $pravo) {
             $pravoId = $pravo->id;
 
-            //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if (empty($pravo->plati_od)) {
-                $pravo->plati_od = null;
-            }
-            if (empty($pravo->plati_do)) {
-                $pravo->plati_do = null;
-            }
-            if (empty($pravo->schvaleno)) {
+            if (in_array($pravo->schvaleno ?? null, [null, 0, '0'], true)) {
                 $pravo->schvaleno = 0;
             }
 
-            if (!empty($pravo->id)) {
+            if (!in_array($pravo->id, [null, '', 0, '0'], true)) {
                 $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
 

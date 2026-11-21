@@ -52,6 +52,52 @@ final class MessageFormPresenterTest extends DatabaseTestCase
         Assert::same($expected, $this->fieldText($result->html, $field));
     }
 
+    /** @return list<array{string, bool}> */
+    public function phoneCases(): array {
+        return [['', false], ['0', false], ['missing', false], ['777111222', true]];
+    }
+
+    /** @dataProvider phoneCases */
+    public function testSmsContactControlsAndRecipients(string $phone, bool $usable): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE + ['telefon' => $phone]);
+        $single = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => 'sms', 'id' => $member->id]);
+        Assert::same($usable ? 1 : 0, preg_match('~name="send"~', $single->html));
+        $all = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => 'smsall', 'id' => $ap->id]);
+        Assert::same($usable ? $phone : '', $this->fieldText($all->html, 'komu'));
+
+        $result = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => 'smsall', 'id' => $ap->id], 'POST', [
+            '_do' => 'smsallForm-submit', 'message' => 'Test', 'send' => 'Odeslat',
+        ]);
+        PermissionScenario::assertRedirect($result, 'uzivatel-list/list/' . $ap->id);
+        Assert::same($usable ? [[[$phone], 'Test']] : [], $this->container->getByType(RecordingMexSmsSender::class)->calls);
+    }
+
+    public function testManagerSmsSkipsEmptyAndZeroPhones(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($ap->id);
+        $this->fixtures->role($actor->id, 'TECH');
+        foreach (['SO', 'ZSO'] as $role) {
+            foreach (['', '0', 'missing', '777111222'] as $phone) {
+                $member = $this->fixtures->member($ap->id, ['telefon' => $phone]);
+                $this->fixtures->role($member->id, $role, $area->id);
+            }
+        }
+        foreach (['0', '1'] as $group) {
+            $sender = $this->container->getByType(RecordingMexSmsSender::class);
+            $sender->calls = [];
+            $result = $this->presenters->ui($actor->id, 'SpravaSms', ['action' => 'sms'], 'POST', [
+                '_do' => 'smsForm-submit', 'komu' => $group, 'message' => 'Test', 'send' => 'Odeslat',
+            ]);
+            PermissionScenario::assertRedirect($result, 'sprava/nastroje');
+            Assert::same([[['777111222'], 'Test']], $sender->calls);
+        }
+    }
+
     private function fieldText(string $html, string $field): string {
         $found = preg_match('~<textarea name="' . preg_quote($field, '~') . '"[^>]*>(.*?)</textarea>~s', $html, $matches);
         Assert::same(1, $found, "The form has no $field field.");

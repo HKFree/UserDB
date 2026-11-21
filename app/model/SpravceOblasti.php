@@ -31,7 +31,7 @@ class SpravceOblasti extends Table
 
     /** @param int|string|null $idOblasti */
     public function getTypPravaPopisek(string $typPrava, $idOblasti): string {
-        if ($idOblasti == null || empty($idOblasti)) {
+        if (in_array($idOblasti, [null, '', 0, '0'], true)) {
             return ($typPrava);
         } else {
             return ($typPrava."-".$idOblasti);

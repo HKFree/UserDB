@@ -94,7 +94,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
             $novaPoznamka = sprintf(
                 "%s%sSmlouva zrušena před podepsáním a nahrazena smlouvou č. %u (ze dne %s)",
                 $zrusitSmlouvu->poznamka,
-                empty($zrusitSmlouvu->poznamka) ? '' : "\n",
+                in_array($zrusitSmlouvu->poznamka, [null, '', '0'], true) ? '' : "\n",
                 $smlouva_id,
                 (new \DateTime())->format('d.m.Y H:i'),
             );

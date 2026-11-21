@@ -20,19 +20,23 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
-    /** @return array<string, array{string, string, bool}> */
+    /** @return array<string, array{string, string, bool, ?string}> */
     public function toolCases(): array {
         $cases = [];
         foreach (['sms', 'encryption', 'areaCreate', 'areaEdit', 'apCreate', 'payment', 'merge', 'honorary'] as $tool) {
             foreach (['cooperative', 'ownSo', 'support', 'tech', 'vv'] as $actor) {
-                $cases["$tool/$actor"] = [$tool, $actor, $actor === 'vv' || ($actor === 'tech' && !in_array($tool, ['merge', 'honorary'], true))];
+                $allowed = $actor === 'vv' || ($actor === 'tech' && !in_array($tool, ['merge', 'honorary'], true));
+                $cases["$tool/$actor"] = [$tool, $actor, $allowed, null];
+                if (in_array($tool, ['areaCreate', 'apCreate', 'merge'], true)) {
+                    $cases["$tool/$actor/zero-id"] = [$tool, $actor, $allowed, '0'];
+                }
             }
         }
         return $cases;
     }
 
     /** @dataProvider toolCases */
-    public function testToolSubmission(string $tool, string $actor, bool $allowed): void {
+    public function testToolSubmission(string $tool, string $actor, bool $allowed, ?string $id): void {
         $s = $this->scenario;
         $name = $this->fixtures->name('Changed');
         $ip = $this->fixtures->ipAddress($s->member->id, '10.107.252.250', ['heslo' => 'plain-password', 'heslo_sifrovane' => 0]);
@@ -58,6 +62,9 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
             default => throw new \LogicException($tool),
         };
         $parameters = ['action' => $action];
+        if ($id !== null) {
+            $post['id'] = $id;
+        }
         if ($tool === 'payment') {
             $parameters['id'] = $payment->id;
         }

@@ -147,7 +147,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $values = $form->getUntrustedValues();
 
         foreach ($values->rights as $pravo) {
-            if (!empty($pravo->id) && !$pravo->override) {
+            if (!in_array($pravo->id, [null, '', 0, '0'], true) && !$pravo->override) {
                 $starePravo = null;
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
                 if (($starePravo->od != null && $starePravo->od != $pravo->od) || ($starePravo->do != null && $starePravo->do != $pravo->do)
@@ -175,15 +175,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             $pravo->Uzivatel_id = $idUzivatele;
             $pravoId = $pravo->id;
 
-            //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if (empty($pravo->od)) {
-                $pravo->od = null;
-            }
-            if (empty($pravo->do)) {
-                $pravo->do = null;
-            }
-
-            if (empty($pravo->id)) {
+            if (in_array($pravo->id, [null, '', 0, '0'], true)) {
                 $pravoId = $this->spravceOblasti->insert($pravo)->id;
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
                 $this->log->logujInsert($novePravo, 'SpravceOblasti['.$pravoId.']', $log);
@@ -295,19 +287,12 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             $pravo->zadost_podana = new Nette\Utils\DateTime();
             $pravoId = $pravo->id;
 
-            //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if (empty($pravo->plati_od)) {
-                $pravo->plati_od = null;
-            }
-            if (empty($pravo->plati_do)) {
-                $pravo->plati_do = null;
-            }
-            if (empty($pravo->schvaleno) || !$this->smiSchvalitCc()) {
+            if (in_array($pravo->schvaleno ?? null, [null, 0, '0'], true) || !$this->smiSchvalitCc()) {
                 // ostatním šablona pole stavu nezobrazí, takže ho formulář ani neposílá
                 $pravo->schvaleno = 0;
             }
 
-            if (empty($pravo->id)) {
+            if (in_array($pravo->id, [null, '', 0, '0'], true)) {
                 $pravoId = $this->cestneClenstviUzivatele->insert($pravo)->id;
 
                 $mail = new Message();

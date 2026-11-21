@@ -81,6 +81,40 @@ final class NetworkModelTypesDatabaseTest extends DatabaseTestCase
         Assert::contains('<td>192.0.2.7</td>', (string) $table);
         Assert::same(10, substr_count((string) $row, '<td>'));
     }
+
+    public function testApLookupRequiresAnExactAddress(): void {
+        $ap = $this->fixtures->ap($this->fixtures->area()->id);
+        $this->fixtures->insert('IPAdresa', ['Ap_id' => $ap->id, 'ip_adresa' => '192.0.2.1']);
+        $model = $this->container->getByType(AP::class);
+        foreach (['', '0', '192.0.2.', '192.0.2.2'] as $input) {
+            Assert::same([], $model->findAPByIP($input)->fetchPairs('id', 'id'));
+        }
+        Assert::same([$ap->id => $ap->id], $model->findAPByIP('192.0.2.1')->fetchPairs('id', 'id'));
+    }
+
+    public function testGatewayZeroIsStillReportedAsMissing(): void {
+        $ap = $this->fixtures->ap($this->fixtures->area()->id);
+        $subnet = $this->fixtures->subnet($ap->id, '192.0.2.0/24', '');
+        $model = $this->container->getByType(Subnet::class);
+        foreach (['', '0', '0.0.0.0', '192.0.2.1'] as $input) {
+            $subnet->update(['gateway' => $input]);
+            $expected = [
+                'subnet' => '192.0.2.0/24', 'network' => '192.0.2.0', 'cidr' => '24', 'mask' => '255.255.255.0',
+            ];
+            $expected += $input === '' || $input === '0' ? ['error' => Subnet::ERR_NO_GW] : ['gateway' => $input];
+            Assert::same($expected, $model->getSubnetOfIP('192.0.2.7'));
+        }
+    }
+
+    public function testRoleLabelKeepsMissingAndZeroAreaGlobal(): void {
+        $model = $this->container->getByType(\App\Model\SpravceOblasti::class);
+        foreach ([null, '', 0, '0'] as $input) {
+            Assert::same('SO', $model->getTypPravaPopisek('SO', $input));
+        }
+        foreach ([1, '1', '00'] as $input) {
+            Assert::same('SO-' . $input, $model->getTypPravaPopisek('SO', $input));
+        }
+    }
 }
 
 (new NetworkModelTypesDatabaseTest())->run();

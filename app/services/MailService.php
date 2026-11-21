@@ -44,7 +44,7 @@ class MailService
                 'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. ' .
                 'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org z.s.');
-        if (!empty($uzivatel->email2)) {
+        if (!in_array($uzivatel->email2, [null, '', '0'], true)) {
             $mail->addTo($uzivatel->email2);
         }
         $this->mailer->send($mail);
@@ -67,7 +67,7 @@ class MailService
                 'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. ' .
                 'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org z.s.');
-        if (!empty($so->email2)) {
+        if (!in_array($so->email2, [null, '', '0'], true)) {
             $mailso->addTo($so->email2);
         }
 
@@ -94,7 +94,7 @@ class MailService
                 'následující odkaz:<br><br><a href="' . $link . '">' . $link . '</a><br><br>' .
                 'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org internetové družstvo');
-        if (!empty($uzivatel->email2)) {
+        if (!in_array($uzivatel->email2, [null, '', '0'], true)) {
             $mail->addTo($uzivatel->email2);
         }
         $this->mailer->send($mail);
@@ -115,7 +115,7 @@ class MailService
                 'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel UID ' . $uzivatel->id . '<br><br>' .
                 'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org internetové družstvo');
-        if (!empty($so->email2)) {
+        if (!in_array($so->email2, [null, '', '0'], true)) {
             $mailso->addTo($so->email2);
         }
 
@@ -142,7 +142,7 @@ class MailService
             ->addReplyTo('podpora@hkfree.org')
             ->setSubject($subject)
             ->setHtmlBody($htmlContent);
-        if (!empty($uzivatel->email2)) {
+        if (!in_array($uzivatel->email2, [null, '', '0'], true)) {
             $mail->addTo($uzivatel->email2);
         }
         $this->mailer->send($mail);
@@ -198,7 +198,7 @@ class MailService
                 'Bude pravděpodobně následovat připojení od techniků<br><br>' .
                 'Prosím zkontrolujte si adresu přípojného místa a pokud máte pro techniky nějaké informace tak je kontaktujte.<br><br>' .
                 'S pozdravem UserDB');
-        if (!empty($so->email2)) {
+        if (!in_array($so->email2, [null, '', '0'], true)) {
             $mailso->addTo($so->email2);
         }
 

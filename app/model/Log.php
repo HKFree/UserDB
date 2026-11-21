@@ -150,7 +150,8 @@ class Log extends Table
      */
     public function logujInsert(iterable $data, string $sloupecPrefix, array &$log): void {
         foreach ($data as $key => $value) {
-            if (!empty($value)) {
+            // Audit při vložení dosud vynechával i nuly, nejen chybějící hodnoty.
+            if (!in_array($value, [null, false, 0, 0.0, '', '0', []], true)) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
                     'puvodni_hodnota' => null,
@@ -186,7 +187,8 @@ class Log extends Table
      */
     public function logujDelete(iterable $staraData, string $sloupecPrefix, array &$log): void {
         foreach ($staraData as $key => $value) {
-            if (!empty($value)) {
+            // Stejná pravidla pro vynechání hodnot jako při vložení.
+            if (!in_array($value, [null, false, 0, 0.0, '', '0', []], true)) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
                     'puvodni_hodnota' => $value,
@@ -214,17 +216,17 @@ class Log extends Table
         $ted = new Nette\Utils\DateTime();
 
         // Zmenu udelal prihlaseny uzivatel
-        if (empty($uzivatel_id)) {
+        if (in_array($uzivatel_id, [null, '', 0, '0'], true)) {
             $uzivatel_id = $this->userService->getId();
         }
 
         // Pokud neni zadny uzivatel prihlaseny (napr verejny callback) a logujeme neco u uzivatele, vem jeho
-        if (empty($uzivatel_id) && $tabulka == 'Uzivatel') {
+        if (in_array($uzivatel_id, [null, '', 0, '0'], true) && $tabulka === 'Uzivatel') {
             $uzivatel_id = $tabulka_id;
         }
 
         // A pokud ani to nevyjde, zaloguj to pod systemovym uzivatelem
-        if (empty($uzivatel_id)) {
+        if (in_array($uzivatel_id, [null, '', 0, '0'], true)) {
             $uzivatel_id = 1;
         }
 
