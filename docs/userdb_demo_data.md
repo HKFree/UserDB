@@ -202,7 +202,7 @@ a novým `userdb_dev_setup.php`.
 
 ## Objem a rozsahy ID
 
-Objem přidává 100 oblastí, 450 AP, 1323 subnetů, 4500 aktivních a 9000 zrušených členů, 18000 IP adres,
+Objem přidává 100 oblastí, 450 AP, 1473 subnetů, 4500 aktivních a 9000 zrušených členů, 18000 IP adres,
 324550 pohybů, 54000 příchozích plateb a 100000 změn. Jména začínají `Objem`.
 Pohyby pokrývají 36 měsíců včetně aktuálního; bankovní protějšky existují za posledních 12 měsíců.
 Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého člena.
@@ -212,7 +212,7 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 | Více než 500 aktivních členů na AP | AP 10030 Objem AP 30, 600 aktivních, `/uzivatel-list/list/10030` |
 | Více než 500 pohybů v základním filtru družstva | Člen 100000 Objem člen 00000, 622 pohybů |
 | Dlouhá historie | Člen 100000, přesně 3000 záznamů logu |
-| Pomalá kontrola cizího člena | Persona 20003, oblast 10000 Objem velký správce, 30 AP a 60 subnetů; detail cizího člena, například 100700 nebo 20063 |
+| Pomalá kontrola cizího člena | Persona 20003, oblast 10000 Objem velký správce, 30 AP a 210 subnetů; detail cizího člena, například 100700 nebo 20063 |
 | Vlastní člen velkého správce | Persona 20003, člen 100600 na AP 10000 | Detail s tlačítkem Editovat, bez čekání |
 
 | Tabulka / objekt | Scénáře | Objem |
