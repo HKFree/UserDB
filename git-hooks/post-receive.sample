@@ -1,35 +1,135 @@
 #!/bin/bash
 
-ENV="-e USERDB_SALT=xxxsalt -e USERDB_GOOGLE_MAPS_KEY=xxxmapskey -e USERDB_DB_HOST=db.hkfree.org -e USERDB_DB_NAME=xxxdb -e USERDB_DB_USERNAME=xxxuser -e USERDB_DB_PASSWORD=xxxpwd -e USERDB_ENCRYPTION_PASSPHRASE=def000b87ec03 -e USERDB_IDS_IPS_WHITELIST=10.107.99.188 -e PDF_GENERATOR_URL=http://userdb-pdf-generator-testing/ FILE_STORAGE_PATH=/opt/userdb/smlouvy DIGISIGN_ACCESS_KEY=PSy...abc DIGISIGN_SECRET_KEY=dko...MM"
+echo "$0 START"
+
+# Environment pro "userdb-web" kontejner
+ENV1="--env USERDB_SALT=a \
+--env USERDB_DB_HOST=db.hkfree.org \
+--env USERDB_DB_NAME=a \
+--env USERDB_DB_USERNAME=a \
+--env USERDB_DB_PASSWORD=a \
+--env USERDB_ENCRYPTION_PASSPHRASE=a \
+--env USERDB_IDS_USERNAME=a \
+--env USERDB_IDS_PASSWORD=a \
+--env USERDB_IDS_IPS_WHITELIST=a \
+--env USERDB_GOOGLE_MAPS_KEY=a \
+--env INFLUX_URL=a \
+--env DIGISIGN_ACCESS_KEY=a \
+--env DIGISIGN_SECRET_KEY=a \
+--env PDF_GENERATOR_URL=http://userdb-pdf-generator/ \
+--env FILE_STORAGE_PATH=/opt/userdb/smlouvy \
+--env MATERNA_MEX_USER=a \
+--env MATERNA_MEX_PASS=a \
+--volume /var/userdb-smlouvy:/opt/userdb/smlouvy \
+--workdir /opt/userdb \
+"
+
+# Environment pro "userdb-stv-connector" kontejner
+ENV2=" \
+--env USERDB_DB_HOST=a \
+--env USERDB_DB_NAME=a \
+--env USERDB_DB_USERNAME=a \
+--env USERDB_DB_PASSWORD=a \
+--env STV_PARTNER=a \
+--env STV_PASSWORD=a \
+"
+
+# Environment pro "userdb-ucetni-reporty" kontejner
+ENV3=" \
+--env USERDB_DB_HOST=a \
+--env USERDB_DB_NAME=a \
+--env USERDB_DB_USERNAME=a \
+--env USERDB_DB_PASSWORD=a \
+--env REPORT_EMAIL_FROM=a \
+--env REPORT_EMAIL_TO=a \
+--env REPORT_EMAIL_CC=a \
+"
 
 DEPLOYDIR=/opt/UserDB
 
 # get the latest version in master branch
-GIT_WORK_TREE="$DEPLOYDIR" git checkout -f
+GIT_WORK_TREE="$DEPLOYDIR" git checkout -f master
 
 TAG=`git log -1 --format=%h`
 
 # go to web app dir
 cd "$DEPLOYDIR"
 
+#git clone https://github.com/HKFree/UserDB.git
+#cd UserDB
+#git fetch origin
+#git checkout -b feature/docker-production origin/feature/docker-production
+#git pull
+
 echo "Building Docker image..."
-docker build -t userdb:$TAG .
+docker build . --tag userdb-web:$TAG
+docker build ./pdfGenerator --tag userdb-pdf-generator:$TAG
+if [ -d stvConnector ]; then
+  docker build ./stvConnector --tag userdb-stv-connector:$TAG
+fi
+if [ -d ucetniReporty ]; then
+  docker build ./ucetniReporty --tag userdb-ucetni-reporty:$TAG
+fi
 
 set -e
 
 echo "Upgrading DB schema..." # mandatory
-docker run --rm $ENV userdb:$TAG php bin/console migrations:continue --production
+docker run --rm $ENV1 userdb-web:$TAG php bin/console migrations:continue
 
-echo "Stopping container..." # optional (may fail if container was not running)
-docker stop userdb || true
+echo "Stopping userdb containers..." # optional (may fail if container was not running)
+docker stop userdb-web || true
+docker stop userdb-pdf-generator || true
+docker stop userdb-stv-connector || true
+docker stop userdb-ucetni-reporty || true
+
+#echo "Stopping userdb-* (possible old) container(s), just for sure"
+#docker ps --filter name=userdb-* --filter status=running -aq | grep -v testing | xargs docker stop
+
+# remove older containers
+# added by Vena 2022/01
+# removed by VojtaLhota 2026/06 - (Error: No such container: CONTAINER)
+#if [[ $(docker ps -aq --filter 'name=userdb*' | wc -l) -gt 5 ]]
+#then
+#       #docker rm $(docker ps -qa --filter 'name=userdb*' | tail -n $(( $(docker ps -aq --filter 'name=userdb*' | wc -l) -5 )) )
+
+#       # safer variant with sorting
+#       docker rm $(docker ps -a --filter 'name=userdb*' --format "table {{.ID}}\t{{.Names}}\t{{.CreatedAt}}" | grep -v testing | (read -r; printf "%s\n" "$REPLY"; sort -k 3  -r ) | cut -d ' ' -f 1 | tail -n $(( $(docker ps -aq --filter 'name=userdb*' | wc -l) -5 )))
+#fi
 
 DATETIME=`date '+%Y%m%d-%H%M%S'`
-echo "Renaming old userdb container to userdb-$DATETIME" # optional (may fail if old container does not exist)
-docker rename userdb userdb-$DATETIME || true
+echo "Renaming old userdb container to userdb-*-$DATETIME" # optional (may fail if old container does not exist)
+docker rename userdb-web userdb-$DATETIME || true
+docker rename userdb-pdf-generator userdb-pdf-generator-$DATETIME || true
+docker rename userdb-stv-connector userdb-stv-connector-$DATETIME || true
+docker rename userdb-ucetni-reporty userdb-ucetni-reporty-$DATETIME || true
 
-echo "Starting a new userdb container..." # mandatory
-docker run -d --restart=always $ENV --name userdb -p 127.0.0.1:8080:80 userdb:$TAG
+echo "Starting a new userdb containers..."
+docker network create userdb-net | true
 
-#
-# TODO pořešit deployment "pdf-generator" kontejneru
-#
+docker run -d --restart=unless-stopped --network userdb-net $ENV1 --name userdb-web -p 127.0.0.1:8080:80 userdb-web:$TAG
+
+docker run -d --restart=unless-stopped --network userdb-net --name userdb-pdf-generator userdb-pdf-generator:$TAG
+
+if [ -d stvConnector ]; then
+  docker run \
+    --detach \
+    --restart=unless-stopped \
+    --name userdb-stv-connector \
+    --network userdb-net \
+    $ENV2 \
+    -v /etc/timezone:/etc/timezone:ro \
+    userdb-stv-connector:$TAG
+fi
+
+if [ -d ucetniReporty ]; then
+  docker run \
+    --detach \
+    --restart=unless-stopped \
+    --name userdb-ucetni-reporty \
+    --network userdb-net \
+    $ENV3 \
+    -v /etc/timezone:/etc/timezone:ro \
+    userdb-ucetni-reporty:$TAG \
+    crond -f -l 6 -L /dev/stdout
+fi
+echo "$0 DONE"
