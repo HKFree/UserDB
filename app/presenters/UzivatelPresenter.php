@@ -626,7 +626,7 @@ class UzivatelPresenter extends BasePresenter
             }
 
             // TODO: spolek / druzstvo
-            if (0 == $olduzivatel->TypClenstvi_id && 1 == $values->TypClenstvi_id) {
+            if (0 === $olduzivatel->TypClenstvi_id && 1 == $values->TypClenstvi_id) {
                 $this->povoleneSMTP->deleteIPs($smtpIPIDs);
                 $existinguserIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
@@ -635,7 +635,7 @@ class UzivatelPresenter extends BasePresenter
             }
 
             // TODO: spolek / druzstvo
-            if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id) {
+            if (0 === $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id) {
                 $values->zalozen = new \DateTime();
                 $values->money_aktivni = 1;
             }
@@ -644,7 +644,7 @@ class UzivatelPresenter extends BasePresenter
             $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
 
             // TODO: spolek / druzstvo
-            if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id && $values->spolek == 1) {
+            if (0 === $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id && $values->spolek == 1) {
                 $this->sendSpolekRegistrationEmail($idUzivatele);
             }
         }
