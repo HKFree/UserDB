@@ -17,7 +17,8 @@ use Nette\Security\Identity;
  */
 class HkfIdentity extends Identity
 {
-    public function __construct($id, array $roles, string $nick, string $passwordHash) {
+    /** @param array<array-key, string> $roles */
+    public function __construct(int|string $id, array $roles, string $nick, string $passwordHash) {
         $data = [
             'nick' => $nick,
             'passwordHash' => $passwordHash,

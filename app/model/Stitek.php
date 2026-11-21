@@ -22,27 +22,41 @@ class Stitek extends Table
         $this->database = $database;
     }
 
-    public function getSeznamStitku() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getSeznamStitku(): Nette\Database\Table\Selection {
         return $this->database->table($this->tableName);
     }
 
-    public function updateStitek($id, array $data) {
+    /**
+     * @param int|string $id
+     * @param array<string, mixed> $data
+     */
+    public function updateStitek($id, array $data): void {
         $this->database->table($this->tableName)->where('id', $id)->update($data);
     }
 
-    public function createStitek(array $data) {
+    /**
+     * @param array<string, mixed> $data
+     * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
+     */
+    public function createStitek(array $data): Nette\Database\Table\ActiveRow|array|int|bool {
         return $this->database->table($this->tableName)->insert($data);
     }
 
-    public function getStitekById($id) {
+    /** @param int|string $id */
+    public function getStitekById($id): ?Nette\Database\Table\ActiveRow {
         return $this->database->table($this->tableName)->get($id);
     }
 
-    public function getStitkyByOblast($id) {
+    /**
+     * @param int|string|null $id
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function getStitkyByOblast($id): Nette\Database\Table\Selection {
         return $this->getSeznamStitku()->where('Oblast_id', $id);
     }
 
-    public function getStitekByText($nazev) {
+    public function getStitekByText(string $nazev): ?Nette\Database\Table\ActiveRow {
         return $this->database->table($this->tableName)->where('text', $nazev)->fetch();
     }
 

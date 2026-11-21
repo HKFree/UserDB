@@ -12,12 +12,12 @@ use Latte\Engine;
  */
 class UzivatelListGrid
 {
-    private $uzivatel;
-    private $stitek;
-    private $stitekUzivatele;
-    private $ap;
-    private $cestneClenstviUzivatele;
-    private $parameters;
+    private Uzivatel $uzivatel;
+    private Stitek $stitek;
+    private StitekUzivatele $stitekUzivatele;
+    private AP $ap;
+    private CestneClenstviUzivatele $cestneClenstviUzivatele;
+    private Parameters $parameters;
 
     public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel, Stitek $stitky, StitekUzivatele $stitekUzivatele) {
         $this->stitek = $stitky;
@@ -28,7 +28,7 @@ class UzivatelListGrid
         $this->parameters = $parameters;
     }
 
-    private function addressNotice($el, $item) {
+    private function addressNotice(Html $el, Nette\Database\Table\ActiveRow $item): void {
         if ($item->location_status === 'approx') {
             $el->addHtml(' <i class="fa fa-exclamation-triangle" title="Nepřesná adresa, opravte!"></i>');
         } elseif ($item->location_status === 'unknown') {
@@ -36,7 +36,13 @@ class UzivatelListGrid
         }
     }
 
-    public function getListOfOtherUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
+    /**
+     * @param int|string|null $id
+     * @param bool|int|string|null $money
+     * @param bool|int|string|null $fullnotes
+     * @param string|false|null $search
+     */
+    public function getListOfOtherUsersGrid(Nette\Application\UI\Presenter $presenter, string $name, Nette\Security\User $loggedUser, $id, $money, $fullnotes, $search): \Grido\Grid {
         //\Tracy\Debugger::barDump($search);
 
         $canViewOrEdit = false;
@@ -272,7 +278,13 @@ class UzivatelListGrid
         return $grid;
     }
 
-    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
+    /**
+     * @param int|string|null $id
+     * @param bool|int|string|null $money
+     * @param bool|int|string|null $fullnotes
+     * @param string|false|null $search
+     */
+    public function getListOfUsersGrid(Nette\Application\UI\Presenter $presenter, string $name, Nette\Security\User $loggedUser, $id, $money, $fullnotes, $search): \Grido\Grid {
         $canViewOrEdit = false;
 
         $grid = new \Grido\Grid($presenter, $name);

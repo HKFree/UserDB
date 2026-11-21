@@ -16,8 +16,8 @@ class StitekUzivatele extends Table
      */
 
     private Explorer $database;
-    private $log;
-    private $stitek;
+    private Log $log;
+    private Stitek $stitek;
     protected $tableName = 'StitekUzivatele';
 
     public function __construct(Explorer $database, Log $log, Stitek $stitek) {
@@ -26,11 +26,16 @@ class StitekUzivatele extends Table
         $this->stitek = $stitek;
     }
 
-    public function updateStitekUzivatele($id, array $data) {
+    /**
+     * @param int|string $id
+     * @param array<string, mixed> $data
+     */
+    public function updateStitekUzivatele($id, array $data): void {
         $this->database->table($this->tableName)->where('id', $id)->update($data);
     }
 
-    public function createStitekUzivatele(array $data) {
+    /** @param array<string, mixed> $data */
+    public function createStitekUzivatele(array $data): void {
         $this->database->table($this->tableName)->insert($data);
         //print_r($data);
         $stitek = $this->stitek->getStitekById($data["Stitek_id"]);
@@ -43,13 +48,21 @@ class StitekUzivatele extends Table
 
     }
 
-    public function getStitekByUserId($user_id) {
+    /**
+     * @param int|string $user_id
+     * @return array<array-key, Nette\Database\Table\ActiveRow>
+     */
+    public function getStitekByUserId($user_id): array {
         return $this->database->table($this->tableName)->where("Uzivatel_id", $user_id)
             ->select('Stitek.id, Stitek.text, Stitek.barva_pozadi, Stitek.barva_popredi, Stitek.poznamka, StitekUzivatele.kdy_vytvoreno')
             ->order('Stitek.text ASC')->fetchAll();
     }
 
-    public function odstranStitek($stitekId, $userId) {
+    /**
+     * @param int|string $stitekId
+     * @param int|string $userId
+     */
+    public function odstranStitek($stitekId, $userId): int {
         $stitek = $this->stitek->getStitekById($stitekId);
         $stara_data = array(
             "stitek" => $stitek->text
@@ -61,7 +74,11 @@ class StitekUzivatele extends Table
             ->where("Uzivatel_id", $userId)->delete();
     }
 
-    public function uzivatelHasStitek($userId, $stitekId) {
+    /**
+     * @param int|string $userId
+     * @param int|string $stitekId
+     */
+    public function uzivatelHasStitek($userId, $stitekId): ?Nette\Database\Table\ActiveRow {
         return $this->database->table($this->tableName)->where("Uzivatel_id", $userId)
             ->where("Stitek_id", $stitekId)->fetch();
     }

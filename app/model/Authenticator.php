@@ -14,9 +14,11 @@ use Tracy\Debugger;
  */
 class Authenticator implements Security\IAuthenticator
 {
-    protected $context;
-    private $fakeUser;
+    protected Nette\Database\Explorer $context;
+    /** @var bool|array{userID: int|string, userName: string, passwordHash?: string} */
+    private bool|array $fakeUser;
 
+    /** @param bool|array{userID: int|string, userName: string, passwordHash?: string} $fakeUser */
     public function __construct($fakeUser, Nette\Database\Context $ctx) {
         $this->context = $ctx;
         $this->fakeUser = $fakeUser;
@@ -24,6 +26,7 @@ class Authenticator implements Security\IAuthenticator
 
     /**
      * Performs an authentication.
+     * @param array{int|string|null, string|null} $credentials
      * @return Nette\Security\Identity
      * @throws Nette\Security\AuthenticationException
      */

@@ -10,6 +10,7 @@ use App\Presenters\UzivatelMailSmsPresenter;
 use App\Services\MexSmsSender;
 use App\Services\SmsSenderException;
 use Nette\Application\AbortException;
+use Nette\Database\Table\ActiveRow;
 use Nette\Http;
 use Tester\Assert;
 use Tester\TestCase;
@@ -35,11 +36,17 @@ class RecordingSmsSender extends MexSmsSender
 
 class SmsUsers extends Model\Uzivatel
 {
+    /** @param array<array-key, string> $numbers */
     public function __construct(private array $numbers) {
     }
 
-    public function getUzivatel($id) {
-        return (object) ['id' => $id, 'telefon' => $this->numbers[$id], 'Ap_id' => 1];
+    public function getUzivatel($id): ActiveRow {
+        return new class ($id, $this->numbers[$id]) extends ActiveRow {
+            public int $Ap_id = 1;
+
+            public function __construct(public int|string $id, public string $telefon) {
+            }
+        };
     }
 }
 

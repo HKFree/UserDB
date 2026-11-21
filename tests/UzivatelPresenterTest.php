@@ -13,9 +13,9 @@ $users = new class () extends Model\Uzivatel {
     public function __construct() {
     }
 
-    public function getUzivatel($id) {
+    public function getUzivatel($id): ?\Nette\Database\Table\ActiveRow {
         Assert::same('', $id);
-        return false;
+        return null;
     }
 };
 

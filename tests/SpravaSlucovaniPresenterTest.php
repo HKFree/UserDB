@@ -8,13 +8,15 @@ use App\Model;
 use App\Presenters\SpravaSlucovaniPresenter;
 use Nette\Application\UI\Template;
 use Nette\Bridges\ApplicationLatte\DefaultTemplate;
+use Nette\Database\Table\ActiveRow;
+use Nette\Database\Table\GroupedSelection;
 use Nette\Http;
 use Tester\Assert;
 
 require __DIR__ . '/../vendor/autoload.php';
 \Tester\Environment::setup();
 
-class MergeUserRow
+class MergeUserRow extends ActiveRow
 {
     public int $money_aktivni = 1;
     public int $money_deaktivace = 0;
@@ -22,28 +24,29 @@ class MergeUserRow
     public function __construct(public int $kauce_mobil, private int $balance) {
     }
 
-    public function related($relation) {
-        return new class ($this->balance) {
+    public function related(string $key, ?string $throughColumn = null): GroupedSelection {
+        return new class ($this->balance) extends GroupedSelection {
             public function __construct(private int $balance) {
             }
 
-            public function where(...$arguments): self {
+            /** @param string|array<array-key, mixed> $condition */
+            public function where(string|array $condition, mixed ...$params): static {
                 return $this;
             }
 
-            public function order($order): self {
+            public function order(string $columns, mixed ...$params): static {
                 return $this;
             }
 
-            public function limit($limit): self {
+            public function limit(?int $limit, ?int $offset = null): static {
                 return $this;
             }
 
-            public function count(): int {
+            public function count(?string $column = null): int {
                 return 0;
             }
 
-            public function sum($column): int {
+            public function sum(string $column): int {
                 return $this->balance;
             }
         };
@@ -59,10 +62,11 @@ $cases = [
 
 foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
     $users = new class ([11 => new MergeUserRow($deposit1, 1000), 22 => new MergeUserRow($deposit2, 2000)]) extends Model\Uzivatel {
+        /** @param array<int, MergeUserRow> $rows */
         public function __construct(private array $rows) {
         }
 
-        public function getUzivatel($id) {
+        public function getUzivatel($id): ActiveRow {
             return $this->rows[$id];
         }
     };

@@ -7,10 +7,11 @@ use Nette\Utils\Html;
 
 /**
  * @author
+ * @phpstan-type LogEntry array{sloupec: string, puvodni_hodnota: mixed, nova_hodnota: mixed, akce: string}
  */
 class Log extends Table
 {
-    private $request;
+    private Nette\Http\Request $request;
 
     public function __construct(
         Nette\Database\Context $db,
@@ -26,17 +27,25 @@ class Log extends Table
     */
     protected $tableName = 'Log';
 
-    public function getLogyUzivatele($uid) {
+    /**
+     * @param int|string $uid
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function getLogyUzivatele($uid): Nette\Database\Table\Selection {
         $logy = $this->findAll()->where("tabulka = ?", "Uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
         return ($logy);
     }
 
-    public function getLogyAP($Apid) {
+    /**
+     * @param int|string $Apid
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function getLogyAP($Apid): Nette\Database\Table\Selection {
         $logy = $this->findAll()->where("tabulka = ?", "Ap")->where("tabulka_id = ?", $Apid)->order("datum DESC, sloupec DESC");
         return ($logy);
     }
 
-    public function translateJmeno($jmeno) {
+    public function translateJmeno(string $jmeno): string {
         $slovnikUzivatel = array(
             "Ap_id" => "AP",
             "jmeno" => "jméno",
@@ -92,11 +101,11 @@ class Log extends Table
      *
      * takhle blbě je to řešené, protože mysql neumí sort-before-groupby
      *
-     * @param int[] $ids ipId pro které chceme zjistit ipAdresy / subnety
+     * @param array<array-key, int|string> $ids ipId pro které chceme zjistit ipAdresy / subnety
      * @param string $type Typ objektu pro který zjišťujeme - ip / subnet
-     * @return array pole ipId=>ipAdresa
+     * @return array<int|string, string> pole ipId=>ipAdresa
      */
-    public function getAdvancedzLogu(array $ids, $type = "ip") {
+    public function getAdvancedzLogu(array $ids, string $type = "ip"): array {
         if ($type != "ip" && $type != "subnet") {
             throw new \InvalidArgumentException("Neznámý typ objektu: ".$type);
         }
@@ -135,7 +144,11 @@ class Log extends Table
         return ($out);
     }
 
-    public function logujInsert($data, $sloupecPrefix, &$log) {
+    /**
+     * @param iterable<array-key, mixed> $data
+     * @param list<LogEntry> $log
+     */
+    public function logujInsert(iterable $data, string $sloupecPrefix, array &$log): void {
         foreach ($data as $key => $value) {
             if (!empty($value)) {
                 $log[] = array(
@@ -148,7 +161,12 @@ class Log extends Table
         }
     }
 
-    public function logujUpdate($staraData, $novaData, $sloupecPrefix, &$log) {
+    /**
+     * @param array<array-key, mixed>|\ArrayAccess<array-key, mixed> $staraData
+     * @param iterable<array-key, mixed> $novaData
+     * @param list<LogEntry> $log
+     */
+    public function logujUpdate($staraData, iterable $novaData, string $sloupecPrefix, array &$log): void {
         foreach ($novaData as $key => $value) {
             $isSet = isset($staraData[$key]) || ($staraData[$key] == null);
             if (!($isSet && $value == $staraData[$key])) {
@@ -162,7 +180,11 @@ class Log extends Table
         }
     }
 
-    public function logujDelete($staraData, $sloupecPrefix, &$log) {
+    /**
+     * @param iterable<array-key, mixed> $staraData
+     * @param list<LogEntry> $log
+     */
+    public function logujDelete(iterable $staraData, string $sloupecPrefix, array &$log): void {
         foreach ($staraData as $key => $value) {
             if (!empty($value)) {
                 $log[] = array(
@@ -176,7 +198,13 @@ class Log extends Table
     }
 
     // Uzivatel_id je ten, kdo zmenu provedl
-    public function loguj($tabulka, $tabulka_id, $data, $uzivatel_id = null) {
+    /**
+     * @param int|string $tabulka_id
+     * @param mixed $data Log entries; non-array input is ignored.
+     * @param int|string|null $uzivatel_id
+     * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
+     */
+    public function loguj(string $tabulka, $tabulka_id, $data, $uzivatel_id = null): Nette\Database\Table\ActiveRow|array|int|bool {
         if (!is_array($data) || count($data) == 0) {
             return true;
         }
