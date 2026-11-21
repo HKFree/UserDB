@@ -208,6 +208,54 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         }
     }
 
+    public function testCooperativeMemberWithCancelledMembershipIsNotDeleted(): void {
+        Assert::null($this->member->TypClenstvi_id);
+        $ip = $this->fixtures->ipAddress($this->member->id, '10.107.243.2');
+        $result = $this->submit($this->post(['spolek' => '1', 'TypClenstvi_id' => '1']));
+
+        $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::notNull($stored);
+        Assert::same(1, $stored->druzstvo);
+        Assert::same(1, $stored->spolek);
+        Assert::same(1, $stored->TypClenstvi_id);
+        Assert::same('2000-01-01 00:00:00', $stored->zalozen->format('Y-m-d H:i:s'));
+        Assert::same([$ip->id => $ip->ip_adresa], $this->database->table('IPAdresa')->where('Uzivatel_id', $stored->id)->fetchPairs('id', 'ip_adresa'));
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $stored->id);
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    /** @return array<string, array{int, int}> */
+    public function cooperativeMembershipCases(): array {
+        return [
+            'regular, inactive account' => [3, 0],
+            'regular, active account' => [3, 1],
+            'primary, inactive account' => [2, 0],
+            'primary, active account' => [2, 1],
+            'planned, inactive account' => [0, 0],
+            'planned, active account' => [0, 1],
+        ];
+    }
+
+    /** @dataProvider cooperativeMembershipCases */
+    public function testCooperativeMembershipKeepsCreationDate(int $membership, int $moneyActive): void {
+        Assert::null($this->member->TypClenstvi_id);
+        $this->member->update(['money_aktivni' => $moneyActive]);
+        $ip = $this->fixtures->ipAddress($this->member->id, '10.107.243.3');
+        $result = $this->submit($this->post(['spolek' => '1', 'TypClenstvi_id' => (string) $membership]));
+
+        $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::notNull($stored);
+        Assert::same(1, $stored->druzstvo);
+        Assert::same(1, $stored->spolek);
+        Assert::same($membership, $stored->TypClenstvi_id);
+        Assert::same('2000-01-01 00:00:00', $stored->zalozen->format('Y-m-d H:i:s'));
+        Assert::same([$ip->id => $ip->ip_adresa], $this->database->table('IPAdresa')->where('Uzivatel_id', $stored->id)->fetchPairs('id', 'ip_adresa'));
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $stored->id);
+        // These are consequences of skipping the planned-member branch, not a new registration policy.
+        Assert::same($moneyActive, $stored->money_aktivni);
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
     private function post(array $changes = []): array {
         $m = $this->member;
         $ips = [];
