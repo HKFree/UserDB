@@ -19,10 +19,11 @@ parameters:
     scanDirectories:
         - lib/phpqrcode
     strictRules:
-        # Vypnuté skupiny mají v současném kódu nálezy, viz issue #204.
+        # Vypnuto, dokud stávající kód obsahuje nálezy, viz issue #204.
         disallowedLooseComparison: false
         booleansInConditions: false
         requireParentConstructorCall: false
         disallowedEmpty: false
-        disallowedShortTernary: false
         strictFunctionCalls: false
+        # Vypnuto trvale: krátký ternár pro výchozí hodnotu (getenv('X') ?: 'výchozí') zůstává povolený.
+        disallowedShortTernary: false
