@@ -103,6 +103,7 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         Assert::contains('*X-VS:' . $this->member->id . '*DT:', $template->spayd);
         Assert::same('data:image/png;base64,', substr($template->qrImagePngBase64, 0, 22));
         $png = base64_decode(substr($template->qrImagePngBase64, 22), true);
+        Assert::true(is_string($png));
         Assert::same("\x89PNG\r\n\x1a\n", substr($png, 0, 8));
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }

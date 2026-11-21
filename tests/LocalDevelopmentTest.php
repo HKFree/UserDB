@@ -27,8 +27,11 @@ try {
         ->setBody('Local development mail');
     $mailer->send($message);
     $files = glob($directory . '/mail/*.eml');
+    Assert::true(is_array($files));
     Assert::count(1, $files);
-    Assert::contains('Local development mail', file_get_contents($files[0]));
+    $mail = file_get_contents($files[0]);
+    Assert::true(is_string($mail));
+    Assert::contains('Local development mail', $mail);
 
     $crypto = $container->getByType(\App\Services\CryptoSluzba::class);
     Assert::same('local test', $crypto->decrypt($crypto->encrypt('local test')));

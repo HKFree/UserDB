@@ -29,12 +29,15 @@ final class TelevizeActionsPresenterTest extends DatabaseTestCase
         $entries = $this->database->table('UzivatelskeKonto')->where('Uzivatel_id', $member->id)->fetchAll();
         Assert::count(1, $entries);
         $entry = reset($entries);
+        Assert::true($entry instanceof \Nette\Database\Table\ActiveRow);
         Assert::same('[UID' . $actor->id . ' ' . $actor->nick . '] Aktivace služby Televize na 1 kalendářní měsíc', $entry->poznamka);
         Assert::equal(-(float) $price, (float) $entry->castka);
         Assert::same($actor->id, $entry->zmenu_provedl);
         $active = $this->database->table('UzivatelTelevizeAktivni')->where('Uzivatel_id', $member->id)->fetchAll();
         Assert::count(1, $active);
-        Assert::same('Placená aktivace na 1 kalendářní měsíc', reset($active)->poznamka);
+        $activation = reset($active);
+        Assert::true($activation instanceof \Nette\Database\Table\ActiveRow);
+        Assert::same('Placená aktivace na 1 kalendářní měsíc', $activation->poznamka);
     }
 }
 

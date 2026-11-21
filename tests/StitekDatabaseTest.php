@@ -25,13 +25,18 @@ Assert::exception(fn () => $connection->query('USE userdb_dev'), DriverException
 $database->beginTransaction();
 try {
     $area1 = $database->table('Oblast')->insert(['jmeno' => 'Testovací oblast A', 'datum_zalozeni' => '2026-01-01 00:00:00']);
+    Assert::true($area1 instanceof \Nette\Database\Table\ActiveRow);
     $area2 = $database->table('Oblast')->insert(['jmeno' => 'Testovací oblast B', 'datum_zalozeni' => '2026-01-01 00:00:00']);
+    Assert::true($area2 instanceof \Nette\Database\Table\ActiveRow);
     $stitky = new Stitek($database);
     Assert::count(0, $stitky->getStitkyByOblast($area1->id)->fetchAll());
 
     $tag = $stitky->createStitek(['Oblast_id' => $area1->id, 'text' => 'Příliš žluťoučký štítek', 'poznamka' => null]);
+    Assert::true($tag instanceof \Nette\Database\Table\ActiveRow);
     $other = $stitky->createStitek(['Oblast_id' => $area2->id, 'text' => 'Příliš žluťoučký štítek']);
+    Assert::true($other instanceof \Nette\Database\Table\ActiveRow);
     $global = $stitky->createStitek(['Oblast_id' => null, 'text' => 'Globální štítek']);
+    Assert::true($global instanceof \Nette\Database\Table\ActiveRow);
     Assert::same('Příliš žluťoučký štítek', $stitky->getStitekById($tag->id)->text);
     Assert::same([$tag->id], array_keys($stitky->getStitkyByOblast($area1->id)->fetchAll()));
     Assert::same([$other->id], array_keys($stitky->getStitkyByOblast($area2->id)->fetchAll()));

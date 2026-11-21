@@ -166,6 +166,7 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
     public function testPaymentEmailRequiresCooperativeMembership(bool $convert): void {
         $this->conversion($convert);
         $directory = getcwd();
+        Assert::true(is_string($directory));
         chdir(__DIR__ . '/../www');
         try {
             $result = $this->presenters->ui($this->actor->id, 'PaymentSchedule', ['action' => 'sendPaymentScheduleEmail', 'id' => $this->member->id]);

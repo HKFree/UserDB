@@ -36,7 +36,7 @@ final class AdminerAccessTest extends TestCase
             . '$body = ob_get_clean(); echo json_encode([http_response_code(), $body], JSON_THROW_ON_ERROR); });'
             . 'require ' . var_export(__DIR__ . '/../www/adminer/index.php', true) . ';';
         $process = proc_open([PHP_BINARY, '-r', $code], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
-        Assert::type('resource', $process);
+        Assert::true(is_resource($process));
         fclose($pipes[0]);
         $output = stream_get_contents($pipes[1]);
         $errors = stream_get_contents($pipes[2]);

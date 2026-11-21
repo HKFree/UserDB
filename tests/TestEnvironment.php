@@ -155,10 +155,10 @@ final class TestEnvironment
         $expectedCache = realpath(self::ROOT . '/.flox/cache');
         $expectedData = realpath(self::ROOT . '/.flox/cache/mariadb/data');
         $cache = getenv('FLOX_ENV_CACHE');
-        if (!$expectedData) {
+        if ($expectedData === false) {
             throw new \RuntimeException('MariaDB has not been initialised for this checkout; start it with flox activate -s.');
         }
-        if (!$expectedCache || ($cache !== false && realpath($cache) !== $expectedCache)) {
+        if ($expectedCache === false || ($cache !== false && realpath($cache) !== $expectedCache)) {
             throw new \RuntimeException('FLOX_ENV_CACHE must belong to this checkout.');
         }
         if (realpath($connection->fetchField('SELECT @@datadir')) !== $expectedData

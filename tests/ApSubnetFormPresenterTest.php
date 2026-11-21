@@ -56,6 +56,7 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
         PermissionScenario::assertRedirect($result, 'ap/show/' . $this->ap->id);
         Assert::count(1, $stored);
         $saved = reset($stored);
+        Assert::true($saved instanceof \Nette\Database\Table\ActiveRow);
         Assert::same($subnet, $saved->subnet);
         Assert::same($gateway, $saved->gateway);
         Assert::same($arpProxy ? 1 : 0, $saved->arp_proxy);

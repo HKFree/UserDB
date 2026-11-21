@@ -22,8 +22,12 @@ final class MigrationsDatabaseTest extends TestCase
         $connection = TestEnvironment::database()->getConnection();
         $expected = [];
         foreach (['structures', 'basic-data'] as $group) {
-            foreach (glob(__DIR__ . '/../db/' . $group . '/*.sql') as $file) {
-                $expected[$group . '/' . basename($file)] = md5(str_replace(["\r\n", "\r"], "\n", file_get_contents($file)));
+            $files = glob(__DIR__ . '/../db/' . $group . '/*.sql');
+            Assert::true(is_array($files));
+            foreach ($files as $file) {
+                $sql = file_get_contents($file);
+                Assert::true(is_string($sql));
+                $expected[$group . '/' . basename($file)] = md5(str_replace(["\r\n", "\r"], "\n", $sql));
             }
         }
         $actual = [];
@@ -41,7 +45,8 @@ final class MigrationsDatabaseTest extends TestCase
             Assert::same('InnoDB', $engine, $table);
         }
         $initialization = file_get_contents(__DIR__ . '/../scripts/userdb_mariadb_init.sql');
-        Assert::same(1, preg_match('/CREATE DATABASE IF NOT EXISTS userdb_test CHARACTER SET \w+ COLLATE (\w+);/', $initialization, $matches));
+        Assert::true(is_string($initialization));
+        Assert::true(preg_match('/CREATE DATABASE IF NOT EXISTS userdb_test CHARACTER SET \w+ COLLATE (\w+);/', $initialization, $matches) === 1);
         // MariaDB 10.11 reports the utf8 alias as utf8mb3.
         Assert::same(str_replace('utf8_', 'utf8mb3_', $matches[1]), $connection->fetchField('SELECT @@collation_database'));
         Assert::same(1, $connection->fetchField('SELECT @@SESSION.foreign_key_checks'));

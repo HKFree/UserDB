@@ -6,6 +6,7 @@ parameters:
     level: 6
     stubFiles:
         - phpstan/replicator.stub
+        - phpstan/tester.stub
     phpVersion: 80200
     tmpDir: temp/phpstan
     paths:
