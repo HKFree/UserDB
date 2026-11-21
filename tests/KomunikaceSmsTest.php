@@ -11,6 +11,7 @@ use App\Services\MexSmsSender;
 use App\Services\SmsSenderException;
 use Nette\Application\AbortException;
 use Nette\Database\Table\ActiveRow;
+use Nette\Database\Table\GroupedSelection;
 use Nette\Http;
 use Tester\Assert;
 use Tester\TestCase;
@@ -213,29 +214,37 @@ class KomunikaceSmsTest extends TestCase
     private function createPresenter(array $numbers, RecordingSmsSender $sender): SmsPresenter {
         $users = new SmsUsers($numbers);
         $ap = new class ($numbers) extends Model\AP {
+            /** @param array<array-key, string> $numbers */
             public function __construct(private array $numbers) {
             }
 
-            public function getAP($id) {
-                return new class ($this->numbers) {
+            public function getAP($id): ActiveRow {
+                return new class ($this->numbers) extends ActiveRow {
+                    /** @param array<array-key, string> $numbers */
                     public function __construct(private array $numbers) {
                     }
 
-                    public function related($relation): self {
-                        return $this;
-                    }
+                    public function related(string $key, ?string $throughColumn = null): GroupedSelection {
+                        return new class ($this->numbers) extends GroupedSelection {
+                            /** @param array<array-key, string> $numbers */
+                            public function __construct(private array $numbers) {
+                            }
 
-                    public function where($condition): self {
-                        return $this;
-                    }
+                            /** @param string|array<array-key, mixed> $condition */
+                            public function where(string|array $condition, mixed ...$params): static {
+                                return $this;
+                            }
 
-                    public function fetchPairs($key, $value): array {
-                        return $this->numbers;
+                            /** @return array<array-key, string> */
+                            public function fetchPairs(string|int|\Closure|null $keyOrCallback = null, string|int|null $value = null): array {
+                                return $this->numbers;
+                            }
+                        };
                     }
                 };
             }
 
-            public function canViewOrEditAP($ApID, $Uzivatel) {
+            public function canViewOrEditAP($ApID, $Uzivatel): bool {
                 return true;
             }
         };

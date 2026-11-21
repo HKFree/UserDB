@@ -28,32 +28,43 @@ class IPAdresa extends Table
      */
     protected $igw2IpCheckerUrl;
 
-    private $cryptoService;
+    private CryptoSluzba $cryptoService;
 
-    public function __construct($igw1IpCheckerUrl, $igw2IpCheckerUrl, CryptoSluzba $cryptoService, Nette\Database\Context $db, Nette\Security\User $user) {
+    public function __construct(string $igw1IpCheckerUrl, string $igw2IpCheckerUrl, CryptoSluzba $cryptoService, Nette\Database\Context $db, Nette\Security\User $user) {
         parent::__construct($db, $user);
         $this->igw1IpCheckerUrl = $igw1IpCheckerUrl;
         $this->igw2IpCheckerUrl = $igw2IpCheckerUrl;
         $this->cryptoService = $cryptoService;
     }
 
-    public function getSeznamIPAdres() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getSeznamIPAdres(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 
-    public function findIp(array $by) {
+    /** @param array<array-key, mixed> $by */
+    public function findIp(array $by): ?Nette\Database\Table\ActiveRow {
         return ($this->findOneBy($by));
     }
 
-    public function getSeznamIPAdresZacinajicich($prefix) {
+    /**
+     * @param string $prefix
+     * @return array<string, Nette\Database\Table\ActiveRow>
+     */
+    public function getSeznamIPAdresZacinajicich($prefix): array {
         return $this->findAll()->where("ip_adresa LIKE ?", $prefix.'%')->fetchPairs('ip_adresa');
     }
 
-    public function getIPAdresa($id) {
+    /** @param int|string|null $id */
+    public function getIPAdresa($id): ?Nette\Database\Table\ActiveRow {
         return ($this->find($id));
     }
 
-    public function getDuplicateIP($ip, $id) {
+    /**
+     * @param string $ip
+     * @param int|string|null $id
+     */
+    public function getDuplicateIP($ip, $id): ?string {
         $existujici = $this->findAll()->where('ip_adresa = ?', $ip)->where('id != ?', $id)->fetch();
         if ($existujici) {
             return $existujici->ip_adresa;//$existujici->ref('Uzivatel', 'Uzivatel_id')->id;
@@ -64,14 +75,15 @@ class IPAdresa extends Table
     /**
      * Párová metoda k \App\Model\Log::getAdvancedzLogu(), Vrati seznam idIp -> ipAdresa
      *
-     * @param array $ids ipId pro které chceme zjistit ipAdresy
-     * @return array pole ipId=>ipAdresa
+     * @param array<array-key, int|string> $ids ipId pro které chceme zjistit ipAdresy
+     * @return array<int, string|null> pole ipId=>ipAdresa
      */
     public function getIPzDB(array $ids) {
         return ($this->getTable()->where("id", $ids)->fetchPairs("id", "ip_adresa"));
     }
 
-    public function deleteIPAdresy(array $ips) {
+    /** @param array<array-key, int|string> $ips */
+    public function deleteIPAdresy(array $ips): int|true {
         if (count($ips) > 0) {
             return ($this->delete(array('id' => $ips)));
         } else {
@@ -79,11 +91,13 @@ class IPAdresa extends Table
         }
     }
 
-    public function validateIP($ip) {
+    /** @param string|null $ip */
+    public function validateIP($ip): string|false {
         return (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
     }
 
-    public function getIPForm(&$ip, $typyZarizeni, $apMode = false) {
+    /** @param array<int, string> $typyZarizeni */
+    public function getIPForm(Nette\Forms\Container &$ip, array $typyZarizeni, bool $apMode = false): void {
         $ip->addHidden('id')->setAttribute('class', 'id ip');
         $ip->addText('ip_adresa', 'IP Adresa', 11)->setAttribute('class', 'ip_adresa ip')->setAttribute('placeholder', 'IP Adresa');
         $ip->addText('hostname', 'Hostname', 11)->setAttribute('class', 'hostname ip')->setAttribute('placeholder', 'Hostname');
@@ -103,15 +117,16 @@ class IPAdresa extends Table
     }
 
     /**
-     * @param $ips zaznamy z tabulky IpAdresa
-     * @param $canViewCredentialsOrEdit zda vygenerovat tabulku, kde budou zobrazena hesla a odkazy primo
+     * @param iterable<Nette\Database\Table\ActiveRow> $ips zaznamy z tabulky IpAdresa
+     * @param bool $canViewCredentialsOrEdit zda vygenerovat tabulku, kde budou zobrazena hesla a odkazy primo
      * 							na editaci dane IP (at uz do AP nebo Uzivatele, podle toho, kde je pouzita)
-     * @param $subnetLinks asoc. pole ip -> odkaz do subnet zobrazeni (do tabulky s IP adresami v danem C subnetu)
-         * @param $wewimoLinks asoc. pole ip -> odkaz do wewimo zobrazeni
-     * @param null $editLink link na editaci AP nebo Uzivatele, pokud zobrazujeme tabulku v detailu APcka nebo Uzivatele, jinak null
-     * @return mixed
+     * @param array<string, string> $subnetLinks asoc. pole ip -> odkaz do subnet zobrazeni (do tabulky s IP adresami v danem C subnetu)
+     * @param array<string, string|null> $wewimoLinks asoc. pole ip -> odkaz do wewimo zobrazeni
+     * @param string|null $editLink link na editaci AP nebo Uzivatele, pokud zobrazujeme tabulku v detailu APcka nebo Uzivatele, jinak null
+     * @param bool|int|string|null $igwCheck
+     * @param (callable(string, array<string, mixed>): string)|null $linker
      */
-    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink = null, $igwCheck = false, $linker = null) {
+    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink = null, $igwCheck = false, $linker = null): Html {
         $adresyTab = Html::el('table')->setClass('table table-striped');
 
         $this->addIPTableHeader($adresyTab, $canViewCredentialsOrEdit, false, $igwCheck);
@@ -125,7 +140,8 @@ class IPAdresa extends Table
         return $adresyTab;
     }
 
-    public function addIPTableHeader($adresyTab, $canViewCredentialsOrEdit = false, $subnetMode = false, $igwCheck = false) {
+    /** @param bool|int|string|null $igwCheck */
+    public function addIPTableHeader(Html $adresyTab, bool $canViewCredentialsOrEdit = false, bool $subnetMode = false, $igwCheck = false): void {
         $tr = $adresyTab->create('tr');
 
         $tr->create('th')->setText('IP');
@@ -156,14 +172,14 @@ class IPAdresa extends Table
      * @param Nette\Utils\Html $tr
      * @param  Nette\Utils\Html[] $buttons
      */
-    private function addActionButtonsTd($tr, $buttons) {
+    private function addActionButtonsTd($tr, $buttons): void {
         $td = $tr->create('td');
         foreach ($buttons as $b) {
             $td->addHtml($b);
         }
     }
 
-    public function file_get_contents_curl($url) {
+    public function file_get_contents_curl(string $url): string|bool {
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_AUTOREFERER, true);
@@ -178,7 +194,12 @@ class IPAdresa extends Table
         return $data;
     }
 
-    public function addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, $subnetModeInfo = null, $subnetLink = null, $wewimoLink = null, $editLink = null, $igwCheck = false, $linker = null) {
+    /**
+     * @param array{ipTitle: string, ipAdresa?: string, rowClass?: string, type?: string, id?: int, nick?: string|null, jmeno?: string, canViewOrEdit?: bool, link?: string, editLink?: string}|null $subnetModeInfo
+     * @param bool|int|string|null $igwCheck
+     * @param (callable(string, array<string, mixed>): string)|null $linker
+     */
+    public function addIPTableRow(?Nette\Database\Table\ActiveRow $ip, bool $canViewCredentialsOrEdit, Html $adresyTab, ?array $subnetModeInfo = null, ?string $subnetLink = null, ?string $wewimoLink = null, ?string $editLink = null, $igwCheck = false, $linker = null): Html {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $ipTitle = $subnetModeInfo ? $subnetModeInfo['ipTitle'] : $ip->ip_adresa;
@@ -530,8 +551,8 @@ class IPAdresa extends Table
 
     /**
      *
-     * @param string $ipsubnet ip address subnet
-     * @return array of ips
+     * @param string|null $ipsubnet ip address subnet
+     * @return list<string> IP addresses
      */
     public function getListOfIPFromSubnet($ipsubnet) {
         $genaddresses = array();
@@ -551,8 +572,8 @@ class IPAdresa extends Table
 
     /**
      *
-     * @param string $iprange ip address range
-     * @return array of ips
+     * @param string|null $iprange ip address range
+     * @return list<string> IP addresses
      */
     public function getListOfIPFromRange($iprange) {
         $genaddresses = array();
@@ -572,13 +593,14 @@ class IPAdresa extends Table
 
     /**
      * @param string[] $macs
-     * @return object[] asic. pole mac => zaznam pro danou mac adresu
+     * @return array<string, Nette\Database\Table\ActiveRow> asic. pole mac => zaznam pro danou mac adresu
      */
     public function getIpsByMacsMap(array $macs) {
         return $this->getTable()->where('mac_adresa', $macs)->fetchPairs('mac_adresa');
     }
 
-    public function getAPOfIP($id) {
+    /** @param int|string $id */
+    public function getAPOfIP($id): ?int {
         $ip = $this->getIPAdresa($id);
         if ($ip->Ap_id) {
             return ($ip->Ap_id);
@@ -587,11 +609,19 @@ class IPAdresa extends Table
         }
     }
 
-    public function getIpsMap(array $ips) {
+    /**
+     * @param array<array-key, string> $ips
+     * @return array<string, Nette\Database\Table\ActiveRow>
+     */
+    public function getIpsMap(array $ips): array {
         return $this->getTable()->where('ip_adresa', $ips)->fetchPairs('ip_adresa');
     }
 
-    public function getLastIpsForMacs(array $macs) {
+    /**
+     * @param array<array-key, string> $macs
+     * @return array<string, list<Nette\Database\Table\ActiveRow>>
+     */
+    public function getLastIpsForMacs(array $macs): array {
         $arrayByMac = []; // asoc. array (key=mac) of arrays (records)
         foreach ($this->getTable()->where('w_client_mac', $macs)->fetchAll() as $row) {
             $key = $row['w_client_mac'];
@@ -603,7 +633,8 @@ class IPAdresa extends Table
         return $arrayByMac;
     }
 
-    public function updateWewimoStatsHook($wewimoDevices) {
+    /** @param iterable<array<string, mixed>> $wewimoDevices */
+    public function updateWewimoStatsHook($wewimoDevices): void {
         foreach ($wewimoDevices as $wewimoData) {
             foreach ($wewimoData['interfaces'] as $interface) {
                 $updateFields = [

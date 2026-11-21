@@ -24,18 +24,25 @@ class Subnet extends Table
     */
     protected $tableName = 'Subnet';
 
-    public function getSeznamSubnetu() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getSeznamSubnetu(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 
-    public function getSeznamSubnetuZacinajicich($prefix) {
+    /**
+     * @param string $prefix
+     * @return array<int, Nette\Database\Table\ActiveRow>
+     */
+    public function getSeznamSubnetuZacinajicich($prefix): array {
         return $this->findAll()->where("subnet LIKE ?", $prefix.'%')->fetchAll();
     }
 
-    public function getSubnet($id) {
+    /** @param int|string|null $id */
+    public function getSubnet($id): ?Nette\Database\Table\ActiveRow {
         return ($this->find($id));
     }
-    public function deleteSubnet(array $subnets) {
+    /** @param array<array-key, int|string> $subnets */
+    public function deleteSubnet(array $subnets): int|true {
         if (count($subnets) > 0) {
             return ($this->delete(array('id' => $subnets)));
         } else {
@@ -43,7 +50,7 @@ class Subnet extends Table
         }
     }
 
-    public function getSubnetForm(&$subnet) {
+    public function getSubnetForm(Nette\Forms\Container &$subnet): void {
         $subnet->addHidden('id')->setAttribute('class', 'id subnet');
         $subnet->addText('subnet', 'Subnet', 11)->setAttribute('class', 'subnet_text subnet')->setAttribute('placeholder', 'Subnet');
         $subnet->addText('gateway', 'Gateway', 11)->setAttribute('class', 'gateway_text subnet')->setAttribute('placeholder', 'Gateway');
@@ -55,7 +62,7 @@ class Subnet extends Table
      * Párová metoda k \App\Model\Log::getAdvancedzLogu(), Vrati seznam idSubnet -> subnet
      *
      * @param int[] $ids idSubnet pro které chceme zjistit subnet
-     * @return array pole idSubnet=>subnet
+     * @return array<int, string> pole idSubnet=>subnet
      */
     public function getSubnetzDB(array $ids) {
         return ($this->getTable()->where("id", $ids)->fetchPairs("id", "subnet"));
@@ -84,7 +91,8 @@ class Subnet extends Table
         return (array_unique($results));
     }
 
-    public function getSubnetTable($subnets) {
+    /** @param iterable<Nette\Database\Table\ActiveRow> $subnets */
+    public function getSubnetTable($subnets): Html {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $subnetyTab = Html::el('table')->setClass('table table-striped');
@@ -202,7 +210,7 @@ class Subnet extends Table
      * Najde kolidující/překrývající-se subnety v DB
      *
      * @param string $s Subnet
-     * @param integer $apId ID testovaného subnetu - určené k vyhnutí se
+     * @param int|string|null $apId ID testovaného subnetu - určené k vyhnutí se
      * @return boolean|string[] false pokud zadaný subnet nekoliduje,
      *               pole kolidujících subnetů pokud koliduje
      */
@@ -234,7 +242,7 @@ class Subnet extends Table
      * Používá se, protože DB neumí se subnety přímo pracovat.
      *
      * @param string $s Subnet
-     * @return Nette\Database\Table\Selection Možné kolidující subnety
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> Možné kolidující subnety
      */
     private function getPossiblyColiding($s) {
         list($network, $cidr) = explode("/", $s);

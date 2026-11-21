@@ -15,13 +15,15 @@ class VnejsiScanner
     */
     protected $outerScannerURL;
 
-    private $scanData;
-    private $scanDate;
+    /** @var array<array-key, list<string>>|null */
+    private ?array $scanData = null;
+    private \DateTime|false|null $scanDate = null;
 
-    public function __construct($outerScannerURL) {
+    public function __construct(string $outerScannerURL) {
         $this->outerScannerURL = $outerScannerURL;
     }
 
+    /** @return array{}|void */
     public function downloadScan() {
         $client = new Client(['verify' => false]);
 
@@ -59,7 +61,8 @@ class VnejsiScanner
         $this->scanData = $out;
     }
 
-    public function getScan() {
+    /** @return array<array-key, list<string>>|null */
+    public function getScan(): ?array {
         if (!$this->scanData) {
             $this->downloadScan();
         }
@@ -67,7 +70,7 @@ class VnejsiScanner
         return ($this->scanData);
     }
 
-    public function getScanDate() {
+    public function getScanDate(): \DateTime|false|null {
         if (!$this->scanDate) {
             $this->downloadScan();
         }
@@ -75,7 +78,11 @@ class VnejsiScanner
         return ($this->scanDate);
     }
 
-    public function getScanNaPortech($filtr) {
+    /**
+     * @param array<array-key, int|string> $filtr
+     * @return array<array-key, list<string>>
+     */
+    public function getScanNaPortech($filtr): array {
         $scan = $this->getScan();
         // Porty ze scanu jsou text. Zachovat číselnou shodu i pro úvodní nuly či mezery,
         // ale nepřevádět nečíselné položky (např. prázdný text) na port 0.

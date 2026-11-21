@@ -16,7 +16,7 @@ class Sojka
     */
     protected $sojkaPingerURL;
 
-    public function __construct($sojkaPingerURL) {
+    public function __construct(string $sojkaPingerURL) {
         $this->sojkaPingerURL = $sojkaPingerURL;
     }
 
@@ -24,7 +24,7 @@ class Sojka
      * Get latest pinger results from Sojka Pinger
      *
      * @param string[] $ips
-     * @return array|string|int|float|bool|null Decoded JSON, an empty array or error details
+     * @return array<array-key, mixed>|string|int|float|bool|null Decoded JSON, an empty array or error details
      */
     public function pingIPS($ips) {
         if (empty($ips)) {

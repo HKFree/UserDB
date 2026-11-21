@@ -14,7 +14,8 @@ class ZpusobPripojeni extends Table
     */
     protected $tableName = 'ZpusobPripojeni';
 
-    public function getZpusobyPripojeni() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getZpusobyPripojeni(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 }

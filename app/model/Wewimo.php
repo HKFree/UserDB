@@ -17,9 +17,9 @@ use Nette;
 
 class Wewimo
 {
-    private $ipadresa;
-    private $ap;
-    private $cryptoService;
+    private IPAdresa $ipadresa;
+    private AP $ap;
+    private CryptoSluzba $cryptoService;
 
     public function __construct(CryptoSluzba $cryptoService, IPAdresa $ipadresa, AP $ap) {
         $this->ipadresa = $ipadresa;
@@ -27,7 +27,14 @@ class Wewimo
         $this->cryptoService = $cryptoService;
     }
 
-    public function getWewimoData($ip, $username, $password, $invoker) {
+    /**
+     * @param string $ip
+     * @param string|null $username
+     * @param string|null $password
+     * @param string $invoker
+     * @return array{interfaces: array<string, array<string, mixed>>, resources: array<string, mixed>, neighborsByIp: array<string, array<string, mixed>>}
+     */
+    public function getWewimoData($ip, $username, $password, $invoker): array {
         // default values (when not present in $responses) of optional attributes
         $defaultRegistrationRow = array(
             'radio-name' => '',
@@ -165,7 +172,8 @@ class Wewimo
         return $data;
     }
 
-    private function parseAddCurrentTxPower(&$monitorRow) {
+    /** @param array<string, mixed> $monitorRow */
+    private function parseAddCurrentTxPower(array &$monitorRow): void {
         $monitorRow['x-current-tx-powers'] = [];
         if (array_key_exists('current-tx-powers', $monitorRow)) {
             // comma is usually used as a separator of different modulation rates but in some versions semicolon is used instead
@@ -177,7 +185,8 @@ class Wewimo
         }
     }
 
-    private function dbm2pct($dBm, $min = -100, $max = -20) {
+    /** @param int|float|numeric-string $dBm */
+    private function dbm2pct($dBm, int $min = -100, int $max = -20): float {
         // linear approx.
         $a = 100 / ($max - $min);
         $b = -$a * $min;
@@ -192,7 +201,8 @@ class Wewimo
         return round($val);
     }
 
-    public function sanitizeAttribute(&$assocArray, $attributeName) {
+    /** @param array<string, mixed> $assocArray */
+    public function sanitizeAttribute(array &$assocArray, string $attributeName): void {
         if (array_key_exists($attributeName, $assocArray)) {
             if (!mb_detect_encoding($assocArray[$attributeName], 'UTF-8', true)) {
                 // if not valid UTF-8 string, convert from latin-1 to UTF-8
@@ -202,7 +212,11 @@ class Wewimo
         }
     }
 
-    public function getWewimoFullData($apId, $invokerStr, $ip = null) {
+    /**
+     * @param int|string|null $apId
+     * @return array{devices: list<array<string, mixed>>, error?: string}
+     */
+    public function getWewimoFullData($apId, string $invokerStr, ?string $ip = null): array {
         // AP podle ID
         $apt = $this->ap->getAP($apId * 1);
         $wewimoMultiData = [];
@@ -343,10 +357,9 @@ class Wewimo
     }
 
     /**
-     * @param $ipRec
-     * @param $station
+     * @param array<string, mixed> $station
      */
-    public function prepareIpInfoAndLink($ipRec, &$station) {
+    public function prepareIpInfoAndLink(Nette\Database\Table\ActiveRow $ipRec, array &$station): void {
         if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {
             $station['xx-last-ip-host'] = $ipRec->hostname;
         } else {
