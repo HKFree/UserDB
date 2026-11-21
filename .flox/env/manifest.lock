@@ -35,6 +35,13 @@
         "pkg-path": "poppler-utils",
         "pkg-group": "pdf"
       },
+      "procps": {
+        "pkg-path": "procps",
+        "pkg-group": "procps",
+        "systems": [
+          "x86_64-linux"
+        ]
+      },
       "unzip": {
         "pkg-path": "unzip",
         "pkg-group": "pdf"
@@ -538,6 +545,41 @@
       },
       "system": "x86_64-linux",
       "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "procps",
+      "broken": false,
+      "derivation": "/nix/store/550nvkpdqc2nzjsdwl6g4h44jv4q58hv-procps-4.0.7.drv",
+      "description": "Utilities that give information about processes using the /proc filesystem",
+      "install_id": "procps",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "name": "procps-4.0.7",
+      "pname": "procps",
+      "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "rev_count": 1124497,
+      "rev_date": "2026-11-19T10:51:41Z",
+      "scrape_date": "2026-11-21T06:43:09.481064Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.0.7",
+      "outputs_to_install": [
+        "man",
+        "out",
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/5i2w8kmhkaspcyv8nv3yr4wxxy82k8qq-procps-4.0.7-dev",
+        "doc": "/nix/store/ydkhk7v2g2frlfij1bdpv9bp07551hf1-procps-4.0.7-doc",
+        "man": "/nix/store/dy76ig2sl49xi2ih58lqhrshk2bkkpm3-procps-4.0.7-man",
+        "out": "/nix/store/aj08b694apkc1jay2akywym9ghlailf5-procps-4.0.7"
+      },
+      "system": "x86_64-linux",
+      "group": "procps",
       "priority": 5
     }
   ]

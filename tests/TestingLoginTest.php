@@ -40,11 +40,7 @@ final class TestingLoginTest extends TestCase
     }
 
     protected function tearDown(): void {
-        foreach ($this->services as $service) {
-            proc_terminate($service);
-            proc_close($service);
-        }
-        $this->services = [];
+        $this->stopServices();
         FileSystem::delete($this->directory);
     }
 
@@ -326,6 +322,28 @@ final class TestingLoginTest extends TestCase
         );
     }
 
+    /**
+     * Terminated, PHP's server leaves its workers running. Every run of the tests would leave them behind.
+     */
+    public function testStoppedServiceLeavesNoProcessBehind(): void {
+        $this->startService($this->unitOptions(), ['PHP_CLI_SERVER_WORKERS' => '4']);
+        $server = proc_get_status($this->services[0])['pid'];
+        $workers = [];
+        for ($attempt = 0; $attempt < 100 && count($workers) < 4; $attempt++) {
+            usleep(50_000);
+            $workers = $this->childProcesses($server);
+        }
+        Assert::count(4, $workers);
+
+        $this->stopServices();
+        $left = [$server, ...$workers];
+        for ($attempt = 0; $attempt < 100 && $left !== []; $attempt++) {
+            usleep(50_000);
+            $left = array_values(array_intersect($left, array_keys($this->processParents())));
+        }
+        Assert::same([], $left);
+    }
+
     private function verify(string $method, string $uri, string $cookie, int $now = self::NOW): UserdbTestingLoginResponse {
         return $this->send('GET', '/verify', ['X-Forwarded-Method' => $method, 'X-Forwarded-Uri' => $uri], cookie: $cookie, now: $now);
     }
@@ -395,6 +413,41 @@ final class TestingLoginTest extends TestCase
             usleep(50_000);
         }
         throw new \RuntimeException("The service did not start on port $port.");
+    }
+
+    /** PHP's server does not stop its workers when it is terminated, so each of them is terminated too. */
+    private function stopServices(): void {
+        foreach ($this->services as $service) {
+            $workers = $this->childProcesses(proc_get_status($service)['pid']);
+            proc_terminate($service);
+            proc_close($service);
+            foreach ($workers as $worker) {
+                posix_kill($worker, SIGTERM);
+            }
+        }
+        $this->services = [];
+    }
+
+    /** @return list<int> */
+    private function childProcesses(int $parent): array {
+        return array_keys($this->processParents(), $parent, true);
+    }
+
+    /**
+     * @return array<int, int> parent by process, for every process of the machine. Left out are processes that
+     * have ended and only wait to be collected by their parent, which in a container may never happen.
+     */
+    private function processParents(): array {
+        exec('ps -axo pid=,ppid=,stat=', $lines, $exitCode);
+        Assert::same(0, $exitCode);
+        $parents = [];
+        foreach ($lines as $line) {
+            [$process, $parent, $state] = sscanf($line, '%d %d %s');
+            if (!str_starts_with((string) $state, 'Z')) {
+                $parents[(int) $process] = (int) $parent;
+            }
+        }
+        return $parents;
     }
 
     /**

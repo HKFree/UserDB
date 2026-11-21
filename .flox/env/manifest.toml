@@ -19,6 +19,10 @@ unzip.pkg-group = "pdf"
 poppler.pkg-path = "poppler-utils"
 poppler.pkg-group = "pdf"
 pcov.pkg-path = "php82Extensions.pcov"
+# ps for the tests of the sign-in form; macOS has its own.
+procps.pkg-path = "procps"
+procps.pkg-group = "procps"
+procps.systems = ["x86_64-linux"]
 
 [options]
 systems = ["aarch64-darwin", "x86_64-linux"]
