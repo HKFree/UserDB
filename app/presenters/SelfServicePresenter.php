@@ -31,17 +31,21 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
             if ($decodedKey === false) {
                 return;
             }
-            list($uid, $hash) = explode('-', $decodedKey);
+            $parts = explode('-', $decodedKey, 2);
+            if (count($parts) !== 2) {
+                return;
+            }
+            [$uid, $hash] = $parts;
 
             $uzivatel = $this->uzivatelModel->getUzivatel($uid);
             if ($uzivatel !== null) {
                 $this->template->uzivatel = $uzivatel;
 
-                if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
-                    die('Incorrect request (invalid hash)');
+                if (!hash_equals(md5($this->parameters->salt . $uzivatel->zalozen), $hash)) {
+                    return;
                 }
 
-                if ($uzivatel->regform_downloaded_password_sent == 0) {
+                if ($uzivatel->regform_downloaded_password_sent === 0) {
                     $uzivatel->update(['regform_downloaded_password_sent' => 1]);
 
                     if (!in_array($uzivatel->spolek, [0, false], true)) {

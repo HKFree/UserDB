@@ -33,7 +33,7 @@ class PdfGenerator
         $template->ico = $uzivatel->firma_ico;
         $template->nick = $uzivatel->nick;
         $template->uid = $uzivatel->id;
-        $template->heslo = $uzivatel->regform_downloaded_password_sent == 0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
+        $template->heslo = $uzivatel->regform_downloaded_password_sent === 0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
         $template->email = $uzivatel->email;
         $template->telefon = $uzivatel->telefon;
         $template->ulice = $uzivatel->ulice_cp;

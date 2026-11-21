@@ -53,6 +53,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 
 ## Presentery
 
+- `PresenterRunner` volá presenter přímo, ne celý `Application::run()`, a neověřuje předání výjimky
+  chybovému presenteru. Pro test celého požadavku použít vlastní `Http\Request` a `Application::run()`.
+  Testovací kontejner v debug módu nenastaví `errorPresenter` ani `error4xxPresenter`; pro ověření
+  produkčního směrování chyb je nastavit na hodnotu z aplikační konfigurace. Ověřeno 21. 11. 2026
+  s Nette Application 3.2.6 při testování anonymního potvrzení e-mailu.
 - `BasePresenter::startup()` přihlašuje při každém požadavku z `$_SERVER['HTTP_UID']`; role bere
   `Authenticator` z tabulky `SpravceOblasti`. Předem přihlášený uživatel se přepíše.
 - `IPresenterFactory::createPresenter()` nastaví závislosti, ale jméno presenteru nastavuje až `Presenter::run()`.
@@ -71,8 +76,8 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - Po jakémkoliv výstupu selže nastavení stavového kódu i session na „headers already sent“. `bootstrap.php`
   proto hned zapíná output buffering.
 - `flashMessage()` startuje skutečnou PHP session. V testech je session i úložiště přihlášení v paměti.
-- `die()` v aplikaci (`SpravaPresenter::actionLogout()`, `SelfServicePresenter::renderConfirmEmail()`,
-  `LogTable`) ukončí test kódem 0. `Test\PresenterRunner` takový konec hlásí jako chybu; testy přes tato místa
+- `die()` v aplikaci (`SpravaPresenter::actionLogout()`, `LogTable`) ukončí test kódem 0.
+  `Test\PresenterRunner` takový konec hlásí jako chybu; testy přes tato místa
   nevést.
 - `ApPresenter` čte `$_SERVER['HTTP_HOST']` a `IPAdresa` `$_SERVER['HTTP_USER_AGENT']`; runner je nastavuje.
 - `ActiveRow` nemá veřejná data pro `json_encode()`: přímé kódování vrací `{}`. Při porovnání stavu databáze
@@ -88,6 +93,9 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - Samotný typ odpovědi `Grido\Components\Export` neověří CSV. Data se čtou a CSV vzniká až při `send()`;
   obsah odpovědi lze zachytit output bufferingem nad naplněným gridem.
 - Formulářové `addDate()` vrací `DateTimeImmutable`, který PHP neumí implicitně převést na text.
+- Pro přímý test služby zapisující parametry šablony používat `DefaultTemplate`, kterou standardně vytváří
+  i `TemplateFactory`. Samotná třída `Template` nepovoluje dynamické vlastnosti a na PHP 8.2 hlásí deprecation;
+  v testu přípravy registračního PDF ověřeno 21. 11. 2026 s Nette Application 3.2.6.
 
 ## Pokrytí
 

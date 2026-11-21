@@ -90,7 +90,7 @@ class GeneratorSmlouvy
           'email_spravce_oblasti' => sprintf('oblast%u@hkfree.org', $uzivatel->Ap->Oblast->id),
           'cena' => $cenaString
         ];
-        if ($uzivatel->TypPravniFormyUzivatele->text == "PO") {
+        if ($uzivatel->TypPravniFormyUzivatele->text === "PO") {
             $parametrySmlouvy['upresneni'] = 'Firma';
             $parametrySmlouvy['datum_narozeni'] = '';
             $parametrySmlouvy['firma'] = sprintf("%s, IČO: %s", $uzivatel->firma_nazev, $uzivatel->firma_ico);

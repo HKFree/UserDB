@@ -173,7 +173,8 @@ class UpdateLocationsCommand extends Command
                 $res = $this->vugtkGeocode($adresa);
                 if ($res->getStatusCode() === 200) {
                     $data = json_decode($res->getBody(), true);
-                    if (isset($data['locations']) && (count($data['locations']) === 1) && ($data['locations'][0]['feature']['attributes']['Score'] == 100)) {
+                    $score = $data['locations'][0]['feature']['attributes']['Score'] ?? null;
+                    if (isset($data['locations']) && (count($data['locations']) === 1) && is_numeric($score) && (float) $score === 100.0) {
                         // adresa nalezena (presne 1 misto)
                         $jtsky = abs($data['locations'][0]['feature']['geometry']['x']); //souradnice x a y musi byt prohozene a s opacnym znamenkem, nebot jsou vracene jako s-jtsk
                         $jtskx = abs($data['locations'][0]['feature']['geometry']['y']);
