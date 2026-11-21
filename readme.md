@@ -87,6 +87,8 @@ php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
 
 The OS assigns a free web port and PHP prints the URL. Repeat these commands in another worktree to run both simultaneously. The setup command applies existing migrations and demo data to `userdb_dev`; it can be repeated without resetting data. The local migration adapter replaces the historical production definer with the local account, without changing the migration files. The web uses `config.flox.neon` and the existing demo identity, preserving `config.local.neon`.
 
+Switch the signed-in demo person at `/demo-osoba` or through the persona panel in the Tracy bar; without a selection it is member 1. The choice is stored in a cookie specific to this worktree, and the switching page works even if the application fails to start.
+
 The [demo data catalog](docs/userdb_demo_data.md) lists the members, APs, personas and pages for each scenario.
 Scenario migrations are also loaded by Docker development. Flox setup additionally generates 13,500 members
 (4,500 active), 18,000 IP addresses and three years of account movements. This volume is enabled by default
@@ -190,9 +192,11 @@ See [git-hooks/post-receive.sample](git-hooks/post-receive.sample) for more deta
 A shared testing server runs one instance for `master` and one for every open pull request from a branch of
 this repository, each under its own host name: `master.<domain>` and `pr-<number>.<domain>`. An instance runs
 the same way as the [local web with Flox](#local-web-database-and-pdf-with-flox): `config.flox.neon`, demo data,
-mail captured to files, and every visitor signed in as the demo user. All instances sit behind a reverse proxy
+mail captured to files, and visitors signed in as member 1 by default. All instances sit behind a reverse proxy
 that lets in the HKFree network without a password and sends everyone else to a sign-in form; the maintainers
 have the password. One sign-in is valid for all instances for 30 days.
+
+Within an instance, `/demo-osoba` and the persona panel in the Tracy bar let each visitor choose a [demo persona](docs/userdb_demo_data.md#persony). This choice is confined to that instance and does not change the shared testing sign-in.
 
 Instances include the scenarios and production-sized synthetic volume described in the
 [demo data catalog](docs/userdb_demo_data.md). The setup step enables volume by default; setting

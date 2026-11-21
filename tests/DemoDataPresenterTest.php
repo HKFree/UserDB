@@ -19,6 +19,7 @@ use Tester\TestCase;
 
 require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/../scripts/UserdbDemoVolume.php';
+require_once __DIR__ . '/../scripts/UserdbDemoPersonas.php';
 
 /** Builds a separate database; the shared userdb_test contract remains free of dummy data. */
 final class DemoDataPresenterTest extends TestCase
@@ -414,8 +415,24 @@ final class DemoDataPresenterTest extends TestCase
         $foreign = $this->presenters->ui(20003, 'Uzivatel', ['action' => 'show', 'id' => 100700]);
         Assert::same(200, $foreign->status);
         Assert::notContains('Editovat', $this->text($foreign->html));
+        $this->assertPersonaRoles();
         $this->page('UzivatelList', 'list', \UserdbDemoVolume::CROWDED_AP);
         $this->page('UzivatelAccount', 'account', 100000);
+    }
+
+    /** The switching page describes every persona by the roles the demo data really give it. */
+    private function assertPersonaRoles(): void {
+        foreach (\UserdbDemoPersonas::all() as $id => $persona) {
+            $roles = $this->database->query(<<<'SQL'
+                SELECT CONCAT(t.text, IF(s.Oblast_id IS NULL, '', CONCAT('-', s.Oblast_id))) AS role
+                FROM SpravceOblasti s JOIN TypSpravceOblasti t ON t.id = s.TypSpravceOblasti_id
+                WHERE s.Uzivatel_id = ? AND s.od < NOW() AND (s.`do` IS NULL OR s.`do` > NOW())
+                SQL, $id)->fetchPairs(null, 'role');
+            $expected = $persona['roles'];
+            sort($expected);
+            sort($roles);
+            Assert::same($expected, $roles, "Roles of persona $id");
+        }
     }
 
     /** @param array<string, mixed> $parameters */
