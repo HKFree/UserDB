@@ -6,13 +6,13 @@ use Nette\Application\Responses\JsonResponse;
 
 class AreasPresenter extends ApiPresenter
 {
-    private $oblast;
+    private \App\Model\Oblast $oblast;
 
     public function __construct(\App\Model\Oblast $oblast) {
         $this->oblast = $oblast;
     }
 
-    public function actionDefault() {
+    public function actionDefault(): void {
         $oblasti = [];
         $oblastiData = $this->oblast->getSeznamOblasti();
         foreach ($oblastiData as $idoblast => $o) {

@@ -7,9 +7,9 @@ use App\Model;
 
 class MonitoringPresenter extends ApiPresenter
 {
-    private $typZarizeni;
-    private $ipAdresa;
-    private $ap;
+    private Model\TypZarizeni $typZarizeni;
+    private Model\IPAdresa $ipAdresa;
+    private Model\AP $ap;
 
     public function __construct(Model\TypZarizeni $typZarizeni, Model\IPAdresa $iPAdresa, Model\AP $ap) {
         $this->typZarizeni = $typZarizeni;
@@ -17,7 +17,7 @@ class MonitoringPresenter extends ApiPresenter
         $this->ap = $ap;
     }
 
-    public function actionGetTypyZarizeni() {
+    public function actionGetTypyZarizeni(): void {
         $typyZarizení = $this->typZarizeni->getTypyZarizeni();
 
         $out = array();
@@ -29,7 +29,12 @@ class MonitoringPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'typyZarizeni' => $out]));
     }
 
-    public function actionGetZarizeni($typ = null, $uzivatele = 0, $ap = null) {
+    /**
+     * @param int|string|null $typ
+     * @param int|string $uzivatele
+     * @param int|string|null $ap
+     */
+    public function actionGetZarizeni($typ = null, $uzivatele = 0, $ap = null): void {
         $ap = parent::checkApID($ap);
 
         $adresy = $this->ipAdresa->findAll();

@@ -62,6 +62,10 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - `Nette\Http\Response` je `final` a `ApiPresenter` vyžaduje přímo tuto třídu, nejde ji nahradit. Hlavičky nejsou
   v CLI čitelné (`WWW-Authenticate` ověřit nelze) a stavový kód je globální pro proces: bez resetu zůstane po
   jedné odpovědi 401 i u dalších.
+- `PresenterRunner` nepředává vzdálenou IP, ale sloupec auditu mobilní aplikace `AplikaceLog.ip` nepřijímá `null`.
+  Pro testování těchto větví vytvořit kontejner přes `TestEnvironment::container()` s vlastním `Http\Request`
+  a testovací `remoteAddress`. Ověřeno 21. 11. 2026 v `ApiTypesPresenterTest` včetně chybějícího tokenu,
+  přihlášení a auditního zápisu; žádný HTTP požadavek se neposílá.
 - Po jakémkoliv výstupu selže nastavení stavového kódu i session na „headers already sent“. `bootstrap.php`
   proto hned zapíná output buffering.
 - `flashMessage()` startuje skutečnou PHP session. V testech je session i úložiště přihlášení v paměti.
