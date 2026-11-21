@@ -89,7 +89,7 @@ foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
         }
     };
     $unusedModel = fn (string $class) => (new \ReflectionClass($class))->newInstanceWithoutConstructor();
-    $presenter = new class ($unusedModel(Model\SloucenyUzivatel::class), $users, $unusedModel(Model\Log::class), $unusedModel(Model\IPAdresa::class), $memberships) extends SpravaSlucovaniPresenter {
+    $presenter = new class ($unusedModel(Model\SloucenyUzivatel::class), $users, $unusedModel(Model\Log::class), $unusedModel(Model\IPAdresa::class), $memberships, new Model\AP(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()))) extends SpravaSlucovaniPresenter {
         protected function createTemplate(?string $class = null): Template {
             return new DefaultTemplate(new \Latte\Engine());
         }

@@ -3,6 +3,7 @@
 namespace App\Presenters;
 
 use App\Model;
+use App\Services;
 use Nette\Application\UI\Form;
 use Nette\Mail\Message;
 use Nette\Utils\ArrayHash;
@@ -19,7 +20,56 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     private Model\AP $ap;
     private Model\Komunikace $komunikace;
 
-    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, Model\Komunikace $k) {
+    public function __construct(
+        Model\Uzivatel $uzivatel,
+        Model\AP $ap,
+        Model\Komunikace $k,
+        Services\MailService $mailsvc,
+        Services\CryptoSluzba $cryptosvc,
+        Model\PovoleneSMTP $alowedSMTP,
+        Model\DNat $dnat,
+        Model\Parameters $parameters,
+        Model\SloucenyUzivatel $slUzivatel,
+        Model\Smlouva $smlouva,
+        Services\SmlouvaStavSluzba $smlouvaStavSluzba,
+        Model\SpravceOblasti $prava,
+        Model\CestneClenstviUzivatele $cc,
+        Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
+        Model\TypClenstvi $typClenstvi,
+        Model\ZpusobPripojeni $zpusobPripojeni,
+        Model\TechnologiePripojeni $technologiePripojeni,
+        Model\IPAdresa $ipAdresa,
+        Model\TypZarizeni $typZarizeni,
+        Model\Log $log,
+        Model\IdsConnector $idsConnector,
+        Model\AplikaceToken $aplikaceToken,
+        Model\Stitek $stitek,
+        Model\StitekUzivatele $stitkyUzivatele,
+    ) {
+        parent::__construct(
+            mailsvc: $mailsvc,
+            cryptosvc: $cryptosvc,
+            alowedSMTP: $alowedSMTP,
+            dnat: $dnat,
+            parameters: $parameters,
+            slUzivatel: $slUzivatel,
+            smlouva: $smlouva,
+            smlouvaStavSluzba: $smlouvaStavSluzba,
+            prava: $prava,
+            cc: $cc,
+            typPravniFormyUzivatele: $typPravniFormyUzivatele,
+            typClenstvi: $typClenstvi,
+            zpusobPripojeni: $zpusobPripojeni,
+            technologiePripojeni: $technologiePripojeni,
+            uzivatel: $uzivatel,
+            ipAdresa: $ipAdresa,
+            typZarizeni: $typZarizeni,
+            log: $log,
+            idsConnector: $idsConnector,
+            aplikaceToken: $aplikaceToken,
+            stitek: $stitek,
+            stitkyUzivatele: $stitkyUzivatele,
+        );
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->komunikace = $k;

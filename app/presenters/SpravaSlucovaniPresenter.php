@@ -22,7 +22,8 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
     private Model\SloucenyUzivatel $sloucenyUzivatel;
     private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
 
-    public function __construct(Model\SloucenyUzivatel $slUzivatel, Model\Uzivatel $uzivatel, Model\Log $log, Model\IPAdresa $ipAdresa, Model\CestneClenstviUzivatele $cc) {
+    public function __construct(Model\SloucenyUzivatel $slUzivatel, Model\Uzivatel $uzivatel, Model\Log $log, Model\IPAdresa $ipAdresa, Model\CestneClenstviUzivatele $cc, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->uzivatel = $uzivatel;
         $this->log = $log;
         $this->ipAdresa = $ipAdresa;

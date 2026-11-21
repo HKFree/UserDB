@@ -17,7 +17,8 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
     private Model\IPAdresa $ipAdresa;
     private CryptoSluzba $cryptosvc;
 
-    public function __construct(CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa) {
+    public function __construct(CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->cryptosvc = $cryptosvc;
         $this->ipAdresa = $ipAdresa;
     }

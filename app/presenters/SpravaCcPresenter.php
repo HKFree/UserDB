@@ -20,6 +20,7 @@ class SpravaCcPresenter extends SpravaPresenter
     private Model\AP $ap;
 
     public function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->cestneClenstviUzivatele = $cc;
         $this->uzivatel = $uzivatel;
         $this->platneCC = $actualCC;

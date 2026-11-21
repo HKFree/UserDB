@@ -16,7 +16,8 @@ class SpravaSmsPresenter extends SpravaPresenter
 
     private Model\Komunikace $komunikace;
 
-    public function __construct(Model\SpravceOblasti $sob, Model\Komunikace $k) {
+    public function __construct(Model\SpravceOblasti $sob, Model\Komunikace $k, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->spravceOblasti = $sob;
         $this->komunikace = $k;
     }

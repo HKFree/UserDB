@@ -20,7 +20,8 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
     private Model\UzivatelskeKonto $uzivatelskeKonto;
     private Model\PrichoziPlatba $prichoziPlatba;
 
-    public function __construct(Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto) {
+    public function __construct(Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->uzivatelskeKonto = $konto;
         $this->prichoziPlatba = $platba;
     }

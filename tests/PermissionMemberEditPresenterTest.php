@@ -51,6 +51,36 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
     }
 
     /** @return list<array{string, string, bool}> */
+    public function inheritedFormCases(): array {
+        $cases = [];
+        foreach (['Mailing', 'UzivatelAccount', 'UzivatelActions', 'UzivatelMailSms', 'UzivatelRightsCc', 'UzivatelTelevizeActions'] as $presenter) {
+            $cases[] = [$presenter, 'cooperative', false];
+            $cases[] = [$presenter, 'otherSo', false];
+            $cases[] = [$presenter, 'ownSo', true];
+        }
+        return $cases;
+    }
+
+    /**
+     * Children of UzivatelPresenter inherit the member form; submitting it through them must enforce the same permission.
+     *
+     * @dataProvider inheritedFormCases
+     */
+    public function testInheritedMemberSubmission(string $presenter, string $actor, bool $allowed): void {
+        $s = $this->scenario;
+        $post = $this->post($s->member, ['poznamka' => "Edited by $actor through $presenter"]);
+        $request = fn () => $this->presenters->ui($s->actors[$actor]->id, $presenter, [
+            'action' => 'edit', 'id' => $s->member->id,
+        ], 'POST', $post);
+        if (!$allowed) {
+            $s->assertDenied($request);
+            return;
+        }
+        PermissionScenario::assertRedirect($request(), 'uzivatel/show/' . $s->member->id);
+        Assert::same($post['poznamka'], $this->database->table('Uzivatel')->get($s->member->id)->poznamka);
+    }
+
+    /** @return list<array{string, string, bool}> */
     public function scheduleCases(): array {
         return [['cooperative', 'sendPaymentScheduleEmail', false], ['otherSo', 'show', false], ['ownSo', 'show', true], ['ownSo', 'sendPaymentScheduleEmail', true]];
     }

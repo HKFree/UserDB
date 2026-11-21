@@ -4,6 +4,7 @@ namespace App\Presenters;
 
 use Nette;
 use App\Model;
+use App\Services;
 
 class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
 {
@@ -13,8 +14,52 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
         private Model\UzivatelTelevize $uzivatelTelevize,
         private Model\UzivatelTelevizeAktivni $uzivatelTelevizeAktivni,
         private Nette\Database\Connection $connection,
-        private Model\UzivatelskeKonto $uzivatelskeKonto
+        private Model\UzivatelskeKonto $uzivatelskeKonto,
+        Services\MailService $mailsvc,
+        Services\CryptoSluzba $cryptosvc,
+        Model\PovoleneSMTP $alowedSMTP,
+        Model\DNat $dnat,
+        Model\SloucenyUzivatel $slUzivatel,
+        Model\Smlouva $smlouva,
+        Services\SmlouvaStavSluzba $smlouvaStavSluzba,
+        Model\SpravceOblasti $prava,
+        Model\CestneClenstviUzivatele $cc,
+        Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
+        Model\TypClenstvi $typClenstvi,
+        Model\ZpusobPripojeni $zpusobPripojeni,
+        Model\TechnologiePripojeni $technologiePripojeni,
+        Model\IPAdresa $ipAdresa,
+        Model\TypZarizeni $typZarizeni,
+        Model\Log $log,
+        Model\IdsConnector $idsConnector,
+        Model\AplikaceToken $aplikaceToken,
+        Model\Stitek $stitek,
+        Model\StitekUzivatele $stitkyUzivatele,
     ) {
+        parent::__construct(
+            mailsvc: $mailsvc,
+            cryptosvc: $cryptosvc,
+            alowedSMTP: $alowedSMTP,
+            dnat: $dnat,
+            parameters: $parameters,
+            slUzivatel: $slUzivatel,
+            smlouva: $smlouva,
+            smlouvaStavSluzba: $smlouvaStavSluzba,
+            prava: $prava,
+            cc: $cc,
+            typPravniFormyUzivatele: $typPravniFormyUzivatele,
+            typClenstvi: $typClenstvi,
+            zpusobPripojeni: $zpusobPripojeni,
+            technologiePripojeni: $technologiePripojeni,
+            uzivatel: $uzivatel,
+            ipAdresa: $ipAdresa,
+            typZarizeni: $typZarizeni,
+            log: $log,
+            idsConnector: $idsConnector,
+            aplikaceToken: $aplikaceToken,
+            stitek: $stitek,
+            stitkyUzivatele: $stitkyUzivatele,
+        );
     }
 
     public function actionSubscribe(): void {

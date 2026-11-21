@@ -220,7 +220,12 @@ class KomunikaceSmsTest extends TestCase
     private function createManagersPresenter(RecordingSmsSender $sender): SmsManagersPresenter {
         $managers = (new \ReflectionClass(Model\SpravceOblasti::class))->newInstanceWithoutConstructor();
         $users = new SmsUsers([1 => 'neplatné', 2 => '777222555']);
-        return new SmsManagersPresenter($managers, new Model\Komunikace($sender, $users));
+        return new SmsManagersPresenter(
+            $managers,
+            new Model\Komunikace($sender, $users),
+            $users,
+            new Model\AP(new OfflineDatabase(), new User(new MemoryUserStorage())),
+        );
     }
 
     /** @param array<array-key, string> $numbers */
@@ -266,7 +271,11 @@ class KomunikaceSmsTest extends TestCase
                 return true;
             }
         };
-        $presenter = new SmsPresenter($users, $ap, new Model\Komunikace($sender, $users));
+        $presenter = \Test\TestEnvironment::container()->createInstance(SmsPresenter::class, [
+            'uzivatel' => $users,
+            'ap' => $ap,
+            'k' => new Model\Komunikace($sender, $users),
+        ]);
         $user = new User(new MemoryUserStorage());
         $presenter->injectPrimary(new Http\Request(new Http\UrlScript('http://localhost/')), new Http\Response(), user: $user);
         $presenter->loadState(['id' => 1]);

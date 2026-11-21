@@ -19,7 +19,8 @@ class SpravaStitkuPresenter extends SpravaPresenter
     private Model\Uzivatel $uzivatel;
     private Model\StitekUzivatele $stitekUzivatel;
 
-    public function __construct(Model\Oblast $ob, Model\Stitek $stitek, Model\Uzivatel $uzivatel, Model\StitekUzivatele $stitekUzivatel) {
+    public function __construct(Model\Oblast $ob, Model\Stitek $stitek, Model\Uzivatel $uzivatel, Model\StitekUzivatele $stitekUzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->oblast = $ob;
         $this->stitek = $stitek;
         $this->uzivatel = $uzivatel;
