@@ -83,6 +83,8 @@ php scripts/userdb_dev_setup.php
 php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
 ```
 
+`scripts/userdb_worktree.sh setup` does the Composer install and the setup command in one step, and `scripts/userdb_worktree.sh web` starts the web; see [Worktrees with Orca](#worktrees-with-orca) for running both automatically.
+
 The OS assigns a free web port and PHP prints the URL. Repeat these commands in another worktree to run both simultaneously. The setup command applies existing migrations and demo data to `userdb_dev`; it can be repeated without resetting data. The local migration adapter replaces the historical production definer with the local account, without changing the migration files. The web uses `config.flox.neon` and the existing demo identity, preserving `config.local.neon`.
 
 The `userdb_dev` / `dev-only` and `userdb_test` / `test-only` credentials are exclusively for these local databases. They cannot access each other's database. Local email is captured as `.eml` files under `.flox/cache/mail`; contract storage lives under `.flox/cache/storage`. Services stop when the last Flox activation exits; database data and keys remain. Inspect MariaDB with `flox services status` inside Flox and logs in `.flox/cache/logs/`.
@@ -90,6 +92,30 @@ The `userdb_dev` / `dev-only` and `userdb_test` / `test-only` credentials are ex
 Contract previews work directly in the local application. Flox provides LibreOffice, zip/unzip and Poppler for PDF checks. The local bootstrap enables direct conversion without a separate HTTP service or PDF port. Each conversion uses a private directory and LibreOffice profile under `.flox/cache/pdf`, cleaned up on success or failure. Templates come from this worktree, and previews are marked `LOCAL TEST`. Font substitution can differ from production; the test checks content, not pixel-identical rendering. Outside this local bootstrap, the application continues to use `PDF_GENERATOR_URL`.
 
 PHP extensions are included and frontend assets are already committed, so no Node build is required. IDS, InfluxDB, SMS and network-check endpoints are disconnected in the local configuration, so their external data/functions are unavailable. SledovaniTV, accounting reports and Fio imports have separate Python/Perl workers and external credentials; they are not started by this local web setup. External signing and other real integrations are not part of the local PDF preview.
+
+### Worktrees with Orca
+
+[Orca](https://orca.dev) runs coding agents such as Claude Code or Codex side by side, each in its own git worktree and branch. The committed `orca.yaml` makes every worktree created in Orca prepare itself, so the change can be tested and clicked through right away.
+
+Install once:
+
+1. Flox, see [Tests with Flox](#tests-with-flox).
+2. Orca from [orca.dev/download](https://orca.dev/download), or on macOS with `brew install --cask stablyai/orca/orca`.
+3. The agent you use, signed in. Orca starts the agents installed on your computer.
+4. The [GitHub CLI](https://cli.github.com/), signed in with `gh auth login`. Orca reads issues and pull requests through it.
+
+Then, for every task:
+
+1. The first time only: **Add project**, **Clone from URL**, enter `https://github.com/HKFree/UserDB.git`. If you already have a checkout, add its folder instead.
+2. Click **+** next to the project to create a workspace. Search for the GitHub issue you are going to work on, or just type a name, and choose the agent. Orca derives the branch and the directory from the name, so shorten an issue title to a few ASCII words: Czech diacritics do not survive in a branch name.
+3. Allow the setup and default tab commands when Orca asks whether to run them. They are the two commands in `orca.yaml`.
+4. Orca creates the worktree and opens its tabs:
+   - **Setup** installs the Composer dependencies and builds this worktree's database with demo data. It takes about half a minute.
+   - The agent starts when the setup has finished.
+   - **web** waits for the setup as well, then starts the local web and prints its address. The web opens signed in as the demo user, without a login.
+5. Describe the task to the agent, check the result on the local web and review the diff before a pull request is opened.
+
+Without Flox the **Setup** tab only prints how to install it, and the agent starts in a worktree that is not prepared. After installing Flox, run `scripts/userdb_worktree.sh setup` and then `scripts/userdb_worktree.sh web` in the worktree.
 
 ### Editor
 

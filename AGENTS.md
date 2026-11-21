@@ -89,6 +89,11 @@ flox activate -s -- php scripts/userdb_dev_setup.php
 flox activate -s -- php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
 ```
 
+Totéž dělají `scripts/userdb_worktree.sh setup` (včetně `composer install`)
+a `scripts/userdb_worktree.sh web`. Ve worktree založeném v Orce je pouští
+`orca.yaml`: příprava běží v záložce Setup, web v záložce `web`, kde je vidět
+i jeho adresa. Než spustíš další web, podívej se, jestli tam už neběží.
+
 Podrobnosti jsou v [README](readme.md#development). Docker Compose popsaný
 tamtéž má pevné porty a síť; pro práci ve více worktrees použij Flox.
 
@@ -126,7 +131,8 @@ codex plugin add nette@nette
 | `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
 | `tests/` | Nette Tester; `tests/bootstrap.php` načte společný základ: testovací kontejner, databázi z migrací ve Floxu a spouštění presenterů |
-| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, router PHP serveru), měření pokrytí testy a skript nasazení na testovací server |
+| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, router PHP serveru, příprava worktree), měření pokrytí testy a skript nasazení na testovací server |
+| `orca.yaml` | co Orca spustí v každém novém worktree; jen věci platné pro každého, kdo má Orcu a Flox |
 | `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení na testovací server |
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
 | `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |
