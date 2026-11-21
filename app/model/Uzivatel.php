@@ -86,31 +86,46 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
     }
 
     /**
-     * @param int|string $referentialApId
-     * @param iterable<Nette\Database\Table\ActiveRow> $subnety
-     * @return list<int>
+     * Má člen IP adresu v subnetu některého AP z daných oblastí? Subnety AP, pod které člen sám patří, se nepočítají.
+     *
+     * @param int[] $oblastIds
      */
-    public function findUsersIdsFromOtherAreasByAreaId($referentialApId, iterable $subnety): array {
-        $uids = array();
-        foreach ($subnety as $subnet) {
-            list($network, $cidr) = explode("/", $subnet->subnet);
-
-            $userids = $this->getConnection()->query("select DISTINCT U.*
-            from Uzivatel U
-            LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id
-            LEFT JOIN Ap A on A.id=U.Ap_id
-            where A.id != ?
-            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)
-            order by U.id", $referentialApId, (int) $cidr, $network)->fetchPairs('id', 'id');
-
-            if ($userids !== []) {
-                //\Tracy\Debugger::barDump($userids);
-                //\Tracy\Debugger::barDump(array_values($userids));
-                $uids = array_merge(array_values($userids), $uids);
-            }
+    public function maIpAdresuVSubnetuCizihoAp(int $uzivatelId, array $oblastIds): bool {
+        $podminky = [];
+        $parametry = [];
+        foreach ($this->subnetyCizichAp($uzivatelId, $oblastIds) as $subnet) {
+            // Masku převádí PHP přes (int), stejně jako seznam „Uživatelé mimo AP“. SQL by nestandardní zápis četlo jinak.
+            list($network, $cidr) = explode("/", $subnet);
+            $podminky[] = '(inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)';
+            array_push($parametry, (int) $cidr, $network);
+        }
+        if ($podminky === []) {
+            return false;
         }
 
-        return ($uids);
+        return $this->getConnection()->query(
+            'select 1 from IPAdresa where Uzivatel_id = ? and (' . implode(' or ', $podminky) . ') limit 1',
+            $uzivatelId,
+            ...$parametry,
+        )->fetch() !== null;
+    }
+
+    /**
+     * Subnety všech AP z daných oblastí kromě AP, pod které člen patří.
+     *
+     * @param int[] $oblastIds
+     * @return list<string>
+     */
+    private function subnetyCizichAp(int $uzivatelId, array $oblastIds): array {
+        if ($oblastIds === []) {
+            return [];
+        }
+
+        return array_values($this->getConnection()->query('select S.id, S.subnet
+            from Uzivatel U
+            JOIN Ap A on A.Oblast_id IN (?) and A.id != U.Ap_id
+            JOIN Subnet S on S.Ap_id = A.id
+            where U.id = ?', $oblastIds, $uzivatelId)->fetchPairs('id', 'subnet'));
     }
 
     /** @return list<Nette\Database\Row> */
