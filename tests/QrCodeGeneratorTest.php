@@ -17,7 +17,9 @@ try {
     Assert::true(is_callable(['QRcode', 'png']));
     $png = QrCodeGenerator::renderPngBase64('Local contract');
     Assert::true(str_starts_with($png, 'data:image/png;base64,'));
-    Assert::same("\x89PNG\r\n\x1a\n", substr(base64_decode(substr($png, 22)), 0, 8));
+    $decodedPng = base64_decode(substr($png, 22), true);
+    Assert::type('string', $decodedPng);
+    Assert::same("\x89PNG\r\n\x1a\n", substr($decodedPng, 0, 8));
 } finally {
     chdir($originalDirectory);
 }

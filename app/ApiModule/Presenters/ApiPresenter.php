@@ -70,7 +70,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
                 $requestedModule = $this->getName();
 
                 // Check if the call is to always allowed module (available to all)
-                if (in_array($requestedModule, $this->alwaysAllowedActions)) {
+                if (in_array($requestedModule, $this->alwaysAllowedActions, true)) {
                     parent::checkRequirements($element);
                     return;
                 }
@@ -83,7 +83,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
 
                 $presenters = explode(";", $keyRec->presenter);
                 // Key is restricted to module, check if requested module matches
-                if (in_array($requestedModule, $presenters)) {
+                if (in_array($requestedModule, $presenters, true)) {
                     parent::checkRequirements($element);
                     return;
                 }

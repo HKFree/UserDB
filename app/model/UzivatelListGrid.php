@@ -89,7 +89,7 @@ class UzivatelListGrid
                 if (($konto->sum('castka') - $item->kauce_mobil) > ($thisparams->getVyseClenskehoPrispevku() * 12)) {
                     $tr->class[] = 'preplatek';
                 }
-                if (in_array($item->id, $seznamUzivateluCC)) {
+                if (in_array($item->id, $seznamUzivateluCC, true)) {
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
@@ -105,7 +105,7 @@ class UzivatelListGrid
                 if ($item->email_invalid == 1) {
                     $tr->class[] = 'invalidemail';
                 }
-                if (in_array($item->id, $seznamUzivateluCC)) {
+                if (in_array($item->id, $seznamUzivateluCC, true)) {
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
@@ -378,7 +378,7 @@ class UzivatelListGrid
                 if (($konto->sum('castka') - $item->kauce_mobil) > ($thisparams->getVyseClenskehoPrispevku() * 12)) {
                     $tr->class[] = 'preplatek';
                 }
-                if (in_array($item->id, $seznamUzivateluCC)) {
+                if (in_array($item->id, $seznamUzivateluCC, true)) {
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
@@ -393,7 +393,7 @@ class UzivatelListGrid
                 if ($item->email_invalid == 1) {
                     $tr->class[] = 'invalidemail';
                 }
-                if (in_array($item->id, $seznamUzivateluCC)) {
+                if (in_array($item->id, $seznamUzivateluCC, true)) {
                     $tr->class[] = 'cestne';
                     return $tr;
                 }

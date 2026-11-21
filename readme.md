@@ -63,7 +63,7 @@ The suite covers:
 
 PHPStan runs at **level 5** with the Nette extension and without a baseline. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
-The [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules) extension is enabled as well. Five of its rule groups are switched off in `phpstan.neon` because the current code does not pass them yet: `disallowedLooseComparison`, `booleansInConditions`, `disallowedEmpty`, `strictFunctionCalls` and `requireParentConstructorCall`. `disallowedShortTernary` is switched off for good: the short ternary stays allowed for default values such as `getenv('X') ?: 'default'`. The remaining groups keep the extension's defaults and must pass.
+The [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules) extension is enabled as well. Four of its rule groups are switched off in `phpstan.neon` because the current code does not pass them yet: `disallowedLooseComparison`, `booleansInConditions`, `disallowedEmpty` and `requireParentConstructorCall`. `disallowedShortTernary` is switched off for good: the short ternary stays allowed for default values such as `getenv('X') ?: 'default'`. The remaining groups keep the extension's defaults and must pass.
 
 Methods that Kdyby Replicator adds at runtime are described in `phpstan/replicator.stub`. The only suppressed finding is one inline `@phpstan-ignore` in `pdfGenerator/www/ContractPdf.php`, where PHPStan's `proc_open` signature rejects a valid descriptor.
 
@@ -155,12 +155,15 @@ A shared testing server runs one instance for `master` and one for every open pu
 this repository, each under its own host name: `master.<domain>` and `pr-<number>.<domain>`. An instance runs
 the same way as the [local web with Flox](#local-web-database-and-pdf-with-flox): `config.flox.neon`, demo data,
 mail captured to files, and every visitor signed in as the demo user. All instances sit behind a reverse proxy
-with HTTP Basic; the maintainers have the password.
+that lets in the HKFree network without a password and asks everyone else for HTTP Basic; the maintainers
+have the password.
 
 1. [deploy-testing.yml](.github/workflows/deploy-testing.yml) runs on a push to `master` and when a pull
    request is opened, updated, reopened or closed. It connects to the server over SSH and sends one request:
    deploy a commit as an instance, or remove the instance of a closed pull request. Nothing is built on the
-   GitHub runner. The run summary links the instance.
+   GitHub runner. The run summary links the instance. In a pull request the workflow also keeps one comment
+   with the address of its instance and rewrites it after a deploy, a failed deploy and the removal of the
+   instance. The comment is not rewritten when another pull request takes the place of the instance.
 2. The connection uses `secrets.TESTING_SSH_KEY`, `vars.TESTING_SSH_HOST`, `vars.TESTING_SSH_USER` and the
    server's host key in `vars.TESTING_SSH_KNOWN_HOSTS`; `vars.TESTING_DOMAIN` is the domain of the instances.
    On the server the key can only run [scripts/userdb_testing_deploy.sh](scripts/userdb_testing_deploy.sh),
@@ -204,7 +207,9 @@ the Wewimo reader connects to whatever address is stored in the database. On the
 rule rejects connections of the deploy account to private networks.
 
 The reverse proxy maps `pr-<number>.<domain>` to the port above and obtains a certificate for a host name
-only after the script has created `/srv/userdb-testing/deployed/<instance>`.
+only after the script has created `/srv/userdb-testing/deployed/<instance>`. It recognises the HKFree network
+by the address of the connecting client (the internal addresses and the public prefixes of HKFree), never by
+a forwarded header.
 
 ### Jobs to be run
 

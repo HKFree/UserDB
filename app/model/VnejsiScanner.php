@@ -77,14 +77,19 @@ class VnejsiScanner
 
     public function getScanNaPortech($filtr) {
         $scan = $this->getScan();
+        // Porty ze scanu jsou text. Zachovat číselnou shodu i pro úvodní nuly či mezery,
+        // ale nepřevádět nečíselné položky (např. prázdný text) na port 0.
+        $normalizujPort = static fn (int|string $port): float|string => is_numeric($port) ? (float) $port : $port;
+        $filtr = array_map($normalizujPort, $filtr);
 
         $out = [];
 
         foreach ($scan as $ip => $ports) {
             $validni = false;
+            $porovnavanePorty = array_map($normalizujPort, $ports);
 
             foreach ($filtr as $port) {
-                if (in_array($port, $ports)) {
+                if (in_array($port, $porovnavanePorty, true)) {
                     $validni = true;
                 }
             }
