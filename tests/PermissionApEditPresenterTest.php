@@ -43,7 +43,7 @@ final class PermissionApEditPresenterTest extends DatabaseTestCase
         }
         $result = $request();
         $ap = $this->database->table('Ap')->where('jmeno', $name)->fetch();
-        Assert::notNull($ap);
+        Assert::true($ap !== null);
         Assert::same($target->Oblast_id, $ap->Oblast_id);
         Assert::same('50.209722,15.832778', $ap->gps);
         if ($mode !== 'new') {

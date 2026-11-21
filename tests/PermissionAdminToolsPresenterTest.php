@@ -77,6 +77,7 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
         if ($tool === 'payment') {
             // This redirect also carries the persistent payment id; only the target page is asserted.
             Assert::same(303, $result->status);
+            Assert::true($result->redirectUrl !== null);
             Assert::match('http://localhost/userdb/sprava/nastroje%A?%', $result->redirectUrl);
         } else {
             PermissionScenario::assertRedirect($result, match ($tool) {
@@ -91,6 +92,7 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
                 break;
             case 'encryption':
                 $stored = $this->database->table('IPAdresa')->get($ip->id);
+                Assert::true($stored !== null);
                 Assert::same(1, $stored->heslo_sifrovane);
                 Assert::notSame('plain-password', $stored->heslo);
                 Assert::same('plain-password', $this->container->getByType(CryptoSluzba::class)->decrypt($stored->heslo));
@@ -98,7 +100,7 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
             case 'areaCreate':
             case 'areaEdit':
                 $area = $this->database->table('Oblast')->where('jmeno', $name)->fetch();
-                Assert::notNull($area);
+                Assert::true($area !== null);
                 if ($tool === 'areaEdit') {
                     Assert::same($s->area->id, $area->id);
                 }
@@ -119,12 +121,13 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
                 break;
             case 'merge':
                 $merged = $this->database->table('SloucenyUzivatel')->where('slouceny_uzivatel', $s->otherMember->id)->fetch();
-                Assert::notNull($merged);
+                Assert::true($merged !== null);
                 Assert::same($s->member->id, $merged->Uzivatel_id);
                 Assert::same($s->actors[$actor]->id, $merged->sloucil);
                 break;
             case 'honorary':
                 $stored = $this->database->table('CestneClenstviUzivatele')->get($cc->id);
+                Assert::true($stored !== null);
                 Assert::same($name, $stored->poznamka);
                 Assert::same(0, $stored->schvaleno);
                 break;

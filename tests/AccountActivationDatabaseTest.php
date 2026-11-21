@@ -55,6 +55,7 @@ final class AccountActivationDatabaseTest extends DatabaseTestCase
         Assert::same($expected, $result);
 
         $member = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::true($member !== null);
         Assert::same($after, [$member->money_aktivni, $member->money_deaktivace]);
         $entries = array_values($this->database->table('UzivatelskeKonto')->fetchAll());
         Assert::count($movement === null ? 0 : 1, $entries);

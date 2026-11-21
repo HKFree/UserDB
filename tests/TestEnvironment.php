@@ -77,9 +77,10 @@ final class TestEnvironment
         }
 
         try {
-            if (self::$database !== null) {
-                self::guard(self::$database->getConnection());
-                return self::$database;
+            $cached = self::$database;
+            if ($cached !== null) {
+                self::guard($cached->getConnection());
+                return $cached;
             }
 
             self::lock();

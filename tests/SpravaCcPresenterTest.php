@@ -122,6 +122,7 @@ class SpravaCcPresenterTest extends Tester\TestCase
         Assert::same('SpravaCc:schvalovanicc', $presenter->redirectDestination);
 
         $saved = $database->table('CestneClenstviUzivatele')->get(1);
+        Assert::true($saved !== null);
         Assert::same($state ?? 0, $saved->schvaleno);
         Assert::same('Za pomoc spolku.', $saved->poznamka);
         Assert::same('2026-12-01', $saved->plati_od->format('Y-m-d'));

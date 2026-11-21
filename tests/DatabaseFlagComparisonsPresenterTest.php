@@ -66,6 +66,7 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
         ] as [$active, $deactivation, $messages, $movements, $expected, $expectedActive]) {
             $this->member->update(['money_aktivni' => $active, 'money_deaktivace' => $deactivation]);
             $stored = $this->database->table('Uzivatel')->get($this->member->id);
+            Assert::true($stored !== null);
             Assert::same($convert ? (bool) $active : $active, $stored->money_aktivni);
             Assert::same($convert ? (bool) $deactivation : $deactivation, $stored->money_deaktivace);
             $detail = $this->template($this->presenters->ui($this->actor->id, 'Uzivatel', ['action' => 'show', 'id' => $this->member->id]));
@@ -82,6 +83,7 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
             Assert::same($messages, $result->flashes);
             Assert::same($before + $movements, $this->database->table('UzivatelskeKonto')->count('*'));
             $stored = $this->database->table('Uzivatel')->get($this->member->id);
+            Assert::true($stored !== null);
             Assert::same($convert ? (bool) $expectedActive : $expectedActive, $stored->money_aktivni);
             Assert::same($convert ? false : 0, $stored->money_deaktivace);
         }

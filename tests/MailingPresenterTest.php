@@ -28,6 +28,7 @@ final class MailingPresenterTest extends DatabaseTestCase
         $first = $this->presenters->ui($this->actor->id, 'Mailing', $parameters);
         Assert::same(200, $first->status);
         $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::true($stored !== null);
         $encrypted = $stored->oneclick_auth;
         $code = $this->container->getByType(CryptoSluzba::class)->decrypt($encrypted);
         Assert::same(32, strlen($code));
@@ -37,6 +38,7 @@ final class MailingPresenterTest extends DatabaseTestCase
 
         $second = $this->presenters->ui($this->actor->id, 'Mailing', $parameters);
         $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::true($stored !== null);
         Assert::same($encrypted, $stored->oneclick_auth);
         Assert::null($stored->oneclick_auth_used_at);
         Assert::same($first->html, $second->html);

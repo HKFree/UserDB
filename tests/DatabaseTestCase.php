@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Test;
 
 use Nette\Database\Explorer;
+use Nette\Database\Table\ActiveRow;
 use Nette\DI\Container;
 use Tester\Assert;
 use Tester\TestCase;
@@ -20,6 +21,11 @@ abstract class DatabaseTestCase extends TestCase
     protected Container $container;
     protected Fixtures $fixtures;
     protected PresenterRunner $presenters;
+
+    protected function requireRow(?ActiveRow $row): ActiveRow {
+        Assert::true($row instanceof ActiveRow, 'The expected database row is missing.');
+        return $row;
+    }
 
     protected function setUp(): void {
         $this->database = TestEnvironment::database();

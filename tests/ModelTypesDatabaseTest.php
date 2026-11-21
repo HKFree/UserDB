@@ -45,7 +45,7 @@ final class ModelTypesDatabaseTest extends DatabaseTestCase
         Assert::false($model->verifyToken($other->id, $created->token));
         Assert::false($model->verifyToken($member->id, 'unknown-token'));
         Assert::true($model->verifyToken((string) $member->id, $created->token));
-        Assert::notSame('2001-01-01', $this->database->table('AplikaceToken')->get($created->id)->pouzit_naposledy->format('Y-m-d'));
+        Assert::notSame('2001-01-01', $this->requireRow($this->database->table('AplikaceToken')->get($created->id))->pouzit_naposledy->format('Y-m-d'));
 
         $model->deleteTokensForUID((string) $member->id);
         Assert::false($model->verifyToken($member->id, $created->token));
@@ -66,7 +66,7 @@ final class ModelTypesDatabaseTest extends DatabaseTestCase
         foreach ([null, ''] as $input) {
             Assert::false($model->verifyToken($member->id, $input));
         }
-        Assert::same('2001-01-01 00:00:00', $this->database->table('AplikaceToken')->get($token->id)->pouzit_naposledy->format('Y-m-d H:i:s'));
+        Assert::same('2001-01-01 00:00:00', $this->requireRow($this->database->table('AplikaceToken')->get($token->id))->pouzit_naposledy->format('Y-m-d H:i:s'));
     }
 
     public function testMissingPasswordKeepsLegacyHashInputHandling(): void {

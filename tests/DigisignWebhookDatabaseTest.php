@@ -132,7 +132,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
                 ob_end_clean();
             }
             Assert::same([], WebhookDigiSign::$envelopes->calls);
-            Assert::same(0, $this->database->table('Uzivatel')->get($member->id)->druzstvo);
+            Assert::same(0, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->druzstvo);
         }
     }
 
@@ -163,10 +163,11 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         }
 
         $updated = $this->database->table('Uzivatel')->get($member->id);
+        Assert::true($updated !== null);
         Assert::type('int', $updated->id);
         Assert::same($preserved ? $originalMembership : 1, $updated->TypClenstvi_id);
         Assert::same(1, $updated->druzstvo);
-        Assert::same('2026-01-01 12:00:00', $this->database->table('PodpisSmlouvy')->get($signature->id)->kdy_podepsano->format('Y-m-d H:i:s'));
+        Assert::same('2026-01-01 12:00:00', $this->requireRow($this->database->table('PodpisSmlouvy')->get($signature->id))->kdy_podepsano->format('Y-m-d H:i:s'));
         Assert::same(['get:' . $contract->externi_id, 'download:' . $contract->externi_id], WebhookDigiSign::$envelopes->calls);
         Assert::same(getenv('FILE_STORAGE_PATH') . '/ucastnickeSmlouvy/fixture.pdf', WebhookDigiSign::$envelopes->savedPath);
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
@@ -187,7 +188,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
             WebhookDigiSign::$envelopes->status = strtolower($event);
             WebhookDigiSign::$envelopes->declineReason = 'Test reason';
             $this->processHook($contract, 'envelope' . $event);
-            Assert::same($prefix . $expected, $this->database->table('Smlouva')->get($contract->id)->poznamka);
+            Assert::same($prefix . $expected, $this->requireRow($this->database->table('Smlouva')->get($contract->id))->poznamka);
         }
     }
 
@@ -202,8 +203,8 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         WebhookDigiSign::$envelopes->status = 'declined';
         WebhookDigiSign::$envelopes->declineReason = $reason;
         $this->processHook($contract, 'envelopeDeclined');
-        Assert::same('Old note', $this->database->table('Smlouva')->get($contract->id)->poznamka);
-        Assert::same('2026-01-01 12:00:00', $this->database->table('PodpisSmlouvy')->get($signature->id)->kdy_odmitnuto->format('Y-m-d H:i:s'));
+        Assert::same('Old note', $this->requireRow($this->database->table('Smlouva')->get($contract->id))->poznamka);
+        Assert::same('2026-01-01 12:00:00', $this->requireRow($this->database->table('PodpisSmlouvy')->get($signature->id))->kdy_odmitnuto->format('Y-m-d H:i:s'));
     }
 
     /** @dataProvider noteCases */
@@ -213,7 +214,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         $this->processHook($contract, 'envelopeCompleted');
         Assert::same(
             $memberPrefix . 'Nejasné datum narození [invalid-date] (z digisign smlouvy #' . $contract->id . ' ze dne 01.01.2026)',
-            $this->database->table('Uzivatel')->get($member->id)->poznamka
+            $this->requireRow($this->database->table('Uzivatel')->get($member->id))->poznamka
         );
     }
 
@@ -237,6 +238,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
             ob_end_clean();
         }
         $updated = $this->database->table('Smlouva')->get($old->id);
+        Assert::true($updated !== null);
         Assert::match($prefix . 'Smlouva zrušena před podepsáním a nahrazena smlouvou č. ' . $new->id . ' (ze dne %d%.%d%.%d% %d%:%d%)', $updated->poznamka);
         Assert::notNull($updated->kdy_ukonceno);
         Assert::same(['discard:' . $old->externi_id], WebhookDigiSign::$envelopes->calls);

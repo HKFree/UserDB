@@ -28,6 +28,7 @@ final class NetworkConnectorsTest extends TestCase
 
         Assert::same([['_id' => 'event-1']], $model->getEventsForIps(['192.0.2.42'], 3, 12));
         $request = $handler->getLastRequest();
+        Assert::true($request !== null);
         Assert::same('POST', $request->getMethod());
         $query = json_decode((string) $request->getBody(), true, flags: JSON_THROW_ON_ERROR);
         Assert::same(12, $query['size']);

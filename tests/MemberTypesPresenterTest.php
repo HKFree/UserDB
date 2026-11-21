@@ -38,6 +38,7 @@ final class MemberTypesPresenterTest extends DatabaseTestCase
             ]);
             PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
             $stored = $this->database->table('UzivatelTelevize')->get($this->member->id);
+            Assert::true($stored !== null);
             Assert::same((float) $price, $stored->cena);
             Assert::same(0, $stored->objednana);
             Assert::same(1, $this->database->table('UzivatelTelevize')->count('*'));
@@ -51,9 +52,10 @@ final class MemberTypesPresenterTest extends DatabaseTestCase
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id, 302);
         Assert::same(0, $this->database->table('UzivatelskeKonto')->count('*'));
         $active = $this->database->table('UzivatelTelevizeAktivni')->where('Uzivatel_id', $this->member->id)->fetch();
-        Assert::notNull($active);
+        Assert::true($active !== null);
         Assert::same('Bezplatná aktivace na 1 kalendářní měsíc', $active->poznamka);
         $today = $this->database->query('SELECT CURDATE() AS today, LAST_DAY(CURDATE()) AS month_end')->fetch();
+        Assert::true($today !== null);
         Assert::equal($today->today, $active->datum_od);
         Assert::equal($today->month_end, $active->datum_do);
         $show = $this->presenters->ui($this->actor->id, 'UzivatelTelevize', ['action' => 'show', 'id' => (string) $this->member->id]);
@@ -67,6 +69,7 @@ final class MemberTypesPresenterTest extends DatabaseTestCase
         $subscribe = $this->presenters->ui($this->actor->id, 'UzivatelTelevizeActions', ['action' => 'subscribe', 'id' => (string) $this->member->id]);
         PermissionScenario::assertRedirect($subscribe, 'uzivatel/show/' . $this->member->id, 302);
         $stored = $this->database->table('UzivatelTelevize')->get($this->member->id);
+        Assert::true($stored !== null);
         Assert::same((float) $defaultPrice, $stored->cena);
         Assert::same(1, $stored->objednana);
         $stored->update(['cena' => 99.5]);
@@ -75,6 +78,7 @@ final class MemberTypesPresenterTest extends DatabaseTestCase
             $result = $this->presenters->ui($this->actor->id, 'UzivatelTelevizeActions', ['action' => $action, 'id' => (string) $this->member->id]);
             PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id, 302);
             $stored = $this->database->table('UzivatelTelevize')->get($this->member->id);
+            Assert::true($stored !== null);
             Assert::same(99.5, $stored->cena);
             Assert::same($ordered, $stored->objednana);
         }
@@ -112,16 +116,17 @@ final class MemberTypesPresenterTest extends DatabaseTestCase
         ];
         $preview = $this->presenters->ui($this->actor->id, 'SpravaSlucovani', ['action' => 'slucovani'], 'POST', $post + ['nahled' => 'Náhled']);
         Assert::same(303, $preview->status);
+        Assert::true($preview->redirectUrl !== null);
         Assert::contains('u1=' . $this->member->id, $preview->redirectUrl);
         Assert::contains('u2=' . $other->id, $preview->redirectUrl);
         Assert::same(0, $this->database->table('SloucenyUzivatel')->count('*'));
-        Assert::same($other->id, $this->database->table('IPAdresa')->get($ip->id)->Uzivatel_id);
-        Assert::same($other->TypClenstvi_id, $this->database->table('Uzivatel')->get($other->id)->TypClenstvi_id);
+        Assert::same($other->id, $this->requireRow($this->database->table('IPAdresa')->get($ip->id))->Uzivatel_id);
+        Assert::same($other->TypClenstvi_id, $this->requireRow($this->database->table('Uzivatel')->get($other->id))->TypClenstvi_id);
 
         $merged = $this->presenters->ui($this->actor->id, 'SpravaSlucovani', ['action' => 'slucovani'], 'POST', $post + ['slouceni' => 'Sloučit']);
         PermissionScenario::assertRedirect($merged, 'uzivatel/edit/' . $this->member->id);
-        Assert::same($this->member->id, $this->database->table('IPAdresa')->get($ip->id)->Uzivatel_id);
-        Assert::same(1, $this->database->table('Uzivatel')->get($other->id)->TypClenstvi_id);
+        Assert::same($this->member->id, $this->requireRow($this->database->table('IPAdresa')->get($ip->id))->Uzivatel_id);
+        Assert::same(1, $this->requireRow($this->database->table('Uzivatel')->get($other->id))->TypClenstvi_id);
         Assert::same(1, $this->database->table('SloucenyUzivatel')->where([
             'Uzivatel_id' => $this->member->id, 'slouceny_uzivatel' => $other->id, 'sloucil' => $this->actor->id,
         ])->count('*'));

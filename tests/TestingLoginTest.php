@@ -447,7 +447,11 @@ final class TestingLoginTest extends TestCase
         Assert::same(0, $exitCode);
         $parents = [];
         foreach ($lines as $line) {
-            [$process, $parent, $state] = sscanf($line, '%d %d %s');
+            $fields = sscanf($line, '%d %d %s');
+            if ($fields === null) {
+                continue;
+            }
+            [$process, $parent, $state] = $fields;
             if (!str_starts_with((string) $state, 'Z')) {
                 $parents[(int) $process] = (int) $parent;
             }

@@ -49,7 +49,7 @@ final class PermissionGridExportsPresenterTest extends DatabaseTestCase
             'cislo_uctu' => '000123-0012345678/2010', 'vs' => '0012345678', 'ss' => '00005678',
             'nazev_uctu' => 'Žluťoučký účet', 'zprava_prijemci' => $marker . ', platba "člena"',
             'info_od_banky' => 'Příchozí úhrada & <poznámka>',
-            'TypPrichoziPlatby_id' => $this->database->table('TypPrichoziPlatby')->fetch()->id,
+            'TypPrichoziPlatby_id' => $this->requireRow($this->database->table('TypPrichoziPlatby')->fetch())->id,
         ]);
         foreach ([null, $s->member->id] as $memberId) {
             $this->fixtures->insert('UzivatelskeKonto', [

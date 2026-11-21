@@ -31,7 +31,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
             $result = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail', 'key' => $input]);
             Assert::same(200, $result->status);
             Assert::contains($spolek !== 0 ? 'Vaše registrace do hkfree.org z.s. byla úspěšně dokončena.' : 'Ověření proběhlo úspěšně', $result->html);
-            Assert::same(1, $this->database->table('Uzivatel')->get($member->id)->regform_downloaded_password_sent);
+            Assert::same(1, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->regform_downloaded_password_sent);
             Assert::same($druzstvo !== 0 ? [$member->id] : [], $this->container->getByType(RecordingContractRequest::class)->calls);
             Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
         }
@@ -44,7 +44,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
             $result = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail', 'key' => $key]);
             Assert::same(200, $result->status);
             Assert::contains('Ověření nebylo možné dokončit.', $result->html);
-            Assert::same(0, $this->database->table('Uzivatel')->get($member->id)->regform_downloaded_password_sent);
+            Assert::same(0, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->regform_downloaded_password_sent);
             Assert::same([], $this->container->getByType(RecordingContractRequest::class)->calls);
         }
     }
@@ -55,7 +55,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
         $result = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail']);
         Assert::same(200, $result->status);
         Assert::contains('Ověření nebylo možné dokončit.', $result->html);
-        Assert::same(0, $this->database->table('Uzivatel')->get($member->id)->regform_downloaded_password_sent);
+        Assert::same(0, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->regform_downloaded_password_sent);
         Assert::same([], $this->container->getByType(RecordingContractRequest::class)->calls);
     }
 
@@ -69,7 +69,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
                 'neplatný odkaz',
                 404,
             );
-            Assert::null($this->database->table('Uzivatel')->get($member->id)->oneclick_auth_used_at);
+            Assert::null($this->requireRow($this->database->table('Uzivatel')->get($member->id))->oneclick_auth_used_at);
         }
     }
 
@@ -79,7 +79,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
         $result = $this->presenters->ui($member->id, 'SelfService', ['action' => 'userEmailFeedback', 'uid' => (string) $member->id, 'hash' => 'fixture-code']);
         Assert::same(200, $result->status);
         Assert::contains('✅ Děkujeme', $result->html);
-        Assert::type(\DateTimeInterface::class, $this->database->table('Uzivatel')->get($member->id)->oneclick_auth_used_at);
+        Assert::type(\DateTimeInterface::class, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->oneclick_auth_used_at);
         Assert::same([], $this->container->getByType(RecordingContractRequest::class)->calls);
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
@@ -88,7 +88,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
         $member = $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id, ['druzstvo' => 1, 'regform_downloaded_password_sent' => 0]);
         $html = $this->anonymousConfirmation(base64_encode($member->id . '-invalid'));
         Assert::contains('Ověření nebylo možné dokončit.', $html);
-        Assert::same(0, $this->database->table('Uzivatel')->get($member->id)->regform_downloaded_password_sent);
+        Assert::same(0, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->regform_downloaded_password_sent);
         Assert::same([], $this->container->getByType(RecordingContractRequest::class)->calls);
     }
 
@@ -99,7 +99,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
         foreach ([(string) $member->id, $member->id . '-', $valid . '-suffix'] as $decoded) {
             $html = $this->anonymousConfirmation(base64_encode($decoded));
             Assert::contains('Ověření nebylo možné dokončit.', $html);
-            Assert::same(0, $this->database->table('Uzivatel')->get($member->id)->regform_downloaded_password_sent);
+            Assert::same(0, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->regform_downloaded_password_sent);
             Assert::same([], $this->container->getByType(RecordingContractRequest::class)->calls);
         }
     }
@@ -109,7 +109,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
         $salt = $this->container->getByType(Parameters::class)->salt;
         $html = $this->anonymousConfirmation(base64_encode($member->id . '-' . md5($salt . $member->zalozen)));
         Assert::contains('Ověření proběhlo úspěšně', $html);
-        Assert::same(1, $this->database->table('Uzivatel')->get($member->id)->regform_downloaded_password_sent);
+        Assert::same(1, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->regform_downloaded_password_sent);
         Assert::same([$member->id], $this->container->getByType(RecordingContractRequest::class)->calls);
     }
 
@@ -152,7 +152,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
             $result = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail', 'key' => $invalid]);
             Assert::same(200, $result->status);
             Assert::contains('Ověření nebylo možné dokončit.', $result->html);
-            Assert::same(0, $this->database->table('Uzivatel')->get($member->id)->regform_downloaded_password_sent);
+            Assert::same(0, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->regform_downloaded_password_sent);
             Assert::same([], $this->container->getByType(RecordingContractRequest::class)->calls);
             Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
         }
