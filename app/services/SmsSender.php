@@ -32,7 +32,7 @@ class SmsSender
      * Odesle SMS zpravu $message adresatum $recipientMsisdns. Odesilatelem bude uzivatel $senderIdentity.
      *
      * @param HkfIdentity $senderIdentity
-     * @param array $recipientMsisdns
+     * @param array<array-key, string> $recipientMsisdns
      * @param string $message
      * @return array{status: int, msg: string|false|null}
      */

@@ -18,11 +18,11 @@ use DigitalCz\DigiSign\DigiSign;
 )]
 class DigisignGenerovatUcastnickouSmlouvu extends Command
 {
-    private $templateId = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
-    private $FILE_STORAGE_PATH;
-    private $uzivatelModel;
-    private $smlouvaModel;
-    private $podpisSmlouvyModel;
+    private string $templateId = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
+    private string $FILE_STORAGE_PATH;
+    private Uzivatel $uzivatelModel;
+    private Smlouva $smlouvaModel;
+    private PodpisSmlouvy $podpisSmlouvyModel;
 
     public function __construct(
         Uzivatel $uzivatelModel,
@@ -200,7 +200,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         return 0;
     }
 
-    protected static function trace_to_file($what, $payload = null) {
+    protected static function trace_to_file(string $what, mixed $payload = null): void {
         global $debugCounter;
         file_put_contents(
             "trace" . (++$debugCounter) . "-" . $what . ".json",

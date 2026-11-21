@@ -44,6 +44,7 @@ final class PermissionScenario
         Assert::same($before, $this->snapshot(), 'A denied request changed data or recorded an external call.');
     }
 
+    /** @return array<string, string> */
     public function snapshot(): array {
         $state = [];
         foreach (['Oblast', 'Ap', 'Uzivatel', 'SpravceOblasti', 'IPAdresa', 'Subnet', 'CestneClenstviUzivatele', 'PrichoziPlatba', 'UzivatelskeKonto', 'SloucenyUzivatel', 'Log', 'ApiKlic', 'AplikaceToken'] as $table) {
