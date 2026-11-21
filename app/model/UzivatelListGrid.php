@@ -78,7 +78,7 @@ class UzivatelListGrid
                 return ($connection);
             });
 
-        if ($money && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
+        if (!in_array($money, [null, false, 0, '', '0'], true) && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $thisparams) {
 
@@ -147,7 +147,7 @@ class UzivatelListGrid
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
                 return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
             })->setSortable();
-            if ($fullnotes) {
+            if (!in_array($fullnotes, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {
                     $el = Html::el('span');
                     $el->setText($item->ulice_cp);
@@ -183,7 +183,7 @@ class UzivatelListGrid
         });
 
         if ($canViewOrEdit) {
-            if ($money) {
+            if (!in_array($money, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('money_aktivni', 'Aktivní')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
                 $grid->addColumnText('money_deaktivace', 'Deaktivace')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
 
@@ -245,7 +245,7 @@ class UzivatelListGrid
                         ->data("placement", "right");
             })->setSortable();
 
-            if ($fullnotes) {
+            if (!in_array($fullnotes, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable();
             } else {
                 $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function ($item) {
@@ -296,7 +296,7 @@ class UzivatelListGrid
             $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
             $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($id, $loggedUser);
         } else {
-            if ($search) {
+            if ($search !== null && $search !== false && $search !== '' && $search !== '0') {
                 $seznamUzivatelu = $this->uzivatel->findUserByFulltext($search, $loggedUser);
                 $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC(); //TODO
                 $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAll($loggedUser);
@@ -335,7 +335,7 @@ class UzivatelListGrid
                 return ($connection);
             });
 
-        if ($search) {
+        if ($search !== null && $search !== false && $search !== '' && $search !== '0') {
             $tz->setDefaultValue('all');
         } else {
             $tz->setDefaultValue('active');
@@ -367,7 +367,7 @@ class UzivatelListGrid
                 return ($connection);
             });
 
-        if ($money && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
+        if (!in_array($money, [null, false, 0, '', '0'], true) && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
             $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $thisparams) {
 
@@ -449,7 +449,7 @@ class UzivatelListGrid
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
                 return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
             })->setSortable();
-            if ($fullnotes) {
+            if (!in_array($fullnotes, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {
                     $el = Html::el('span');
                     $el->setText($item->ulice_cp);
@@ -485,7 +485,7 @@ class UzivatelListGrid
         });
 
         if ($canViewOrEdit) {
-            if ($money) {
+            if (!in_array($money, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('money_aktivni', 'Aktivní')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
                 $grid->addColumnText('money_deaktivace', 'Deaktivace')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
 
@@ -526,7 +526,7 @@ class UzivatelListGrid
                         ->data("placement", "right");
             })->setSortable();
 
-            if ($fullnotes) {
+            if (!in_array($fullnotes, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable()->setFilterText();
             } else {
                 $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function ($item) {

@@ -9,7 +9,7 @@ return (static function (): Nette\DI\Container {
     $root = dirname(__DIR__);
     $persona = new UserdbDemoPersonas($_COOKIE[UserdbDemoPersonas::cookieName($root)] ?? null);
     $cache = getenv('FLOX_ENV_CACHE');
-    if (!$cache || !getenv('USERDB_MARIADB_SOCKET')) {
+    if (in_array($cache, [false, '', '0'], true) || in_array(getenv('USERDB_MARIADB_SOCKET'), [false, '', '0'], true)) {
         throw new RuntimeException('Activate the project with flox activate -s first.');
     }
     $keyFile = $cache . '/encryption.key';
@@ -26,7 +26,7 @@ return (static function (): Nette\DI\Container {
 
     // A key from the environment wins, the rest is always local.
     $env = array_replace(['USERDB_GOOGLE_MAPS_KEY' => 'local-only'], getenv(), [
-        'USERDB_ENCRYPTION_PASSPHRASE' => trim(file_get_contents($keyFile)),
+        'USERDB_ENCRYPTION_PASSPHRASE' => trim(Nette\Utils\FileSystem::read($keyFile)),
         'USERDB_IDS_USERNAME' => 'local-only',
         'USERDB_IDS_PASSWORD' => 'local-only',
         'USERDB_IDS_IPS_WHITELIST' => '',

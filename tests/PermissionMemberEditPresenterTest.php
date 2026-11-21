@@ -91,6 +91,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         $request = function () use ($s, $actor, $action): PresenterResult {
             // PaymentSchedule reads its CSS relative to www, like the web entry point.
             $directory = getcwd();
+            Assert::true(is_string($directory));
             chdir(__DIR__ . '/../www');
             try {
                 return $this->presenters->ui($s->actors[$actor]->id, 'PaymentSchedule', ['action' => $action, 'id' => $s->member->id]);

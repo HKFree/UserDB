@@ -53,7 +53,7 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
     }
 
     public function testTelevisionDefaultPriceAcceptsNumericConfiguration(): void {
-        foreach ([0, 0.0, '0', '0.0', 100, 100.0, '100'] as $price) {
+        foreach ([0, 0.0, '0', '0.0', 100, 100.0, '100', 99.5, '99.5'] as $price) {
             $presenter = new UzivatelTelevizePresenter(
                 new Parameters(290, $price, 'test-only'),
                 $this->container->getByType(Uzivatel::class),
@@ -66,8 +66,51 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
             if (!$control instanceof \Nette\Forms\Controls\RadioList) {
                 throw new \LogicException('Expected the television price radio list.');
             }
-            Assert::same(in_array($price, [0, 0.0, '0', '0.0'], true) ? 0 : 100, $control->getValue());
+            $expected = (float) $price === 99.5 ? '99.5' : ((float) $price === 0.0 ? 0 : 100);
+            Assert::same($expected, $control->getValue());
         }
+    }
+
+    public function testTelevisionPriceSaveKeepsDecimals(): void {
+        $presenter = $this->container->getByType(\Nette\Application\IPresenterFactory::class)->createPresenter('UzivatelTelevize');
+        Assert::true($presenter instanceof UzivatelTelevizePresenter);
+        (new \ReflectionProperty($presenter, 'parameters'))->setValue($presenter, new Parameters(290, 99.5, 'test-only'));
+        $presenter->setParent(null, 'UzivatelTelevize');
+        $presenter->loadState(['id' => (string) $this->member->id]);
+        $form = $presenter['televizeCenaForm'];
+        $save = new \ReflectionMethod($presenter, 'formSucceeded');
+        $presenter->loadState(['id' => $this->member->id . '.7']);
+        foreach (['99.5', 0, '99.5'] as $price) {
+            $form->setValues(['cena' => $price]);
+            Assert::exception(fn () => $save->invoke($presenter, $form, $form->getValues()), \Nette\Application\AbortException::class);
+            Assert::same((float) $price, (float) $this->database->table('UzivatelTelevize')->get($this->member->id)->cena);
+        }
+    }
+
+    public function testTelevisionSubscriptionKeepsConfiguredDecimals(): void {
+        $presenter = $this->container->getByType(\Nette\Application\IPresenterFactory::class)->createPresenter('UzivatelTelevizeActions');
+        Assert::true($presenter instanceof \App\Presenters\UzivatelTelevizeActionsPresenter);
+        (new \ReflectionProperty($presenter, 'parameters'))->setValue($presenter, new Parameters(290, 99.5, 'test-only'));
+        $presenter->setParent(null, 'UzivatelTelevizeActions');
+        foreach ([(string) $this->member->id, $this->member->id . '.7'] as $id) {
+            $presenter->loadState(['id' => $id]);
+            Assert::exception($presenter->actionSubscribe(...), \Nette\Application\AbortException::class);
+            $subscription = $this->database->table('UzivatelTelevize')->get($this->member->id);
+            Assert::same(99.5, (float) $subscription->cena);
+            Assert::same(1, $subscription->objednana);
+            Assert::exception($presenter->actionUnsubscribe(...), \Nette\Application\AbortException::class);
+            Assert::same(0, $this->database->table('UzivatelTelevize')->get($this->member->id)->objednana);
+        }
+    }
+
+    public function testTelevisionPriceMustBeSelected(): void {
+        $this->fixtures->insert('UzivatelTelevize', ['id' => $this->member->id, 'cena' => 99.5, 'objednana' => 1]);
+        $result = $this->presenters->ui($this->actor->id, 'UzivatelTelevize', ['action' => 'edit', 'id' => $this->member->id], 'POST', [
+            '_do' => 'televizeCenaForm-submit', 'send' => 'uložit',
+        ]);
+        Assert::same(200, $result->status);
+        Assert::same(2, substr_count($result->html, 'Vyberte cenu služby.'));
+        Assert::same(99.5, (float) $this->database->table('UzivatelTelevize')->get($this->member->id)->cena);
     }
 
     /** @return list<array{bool, ?float}> */
@@ -103,6 +146,7 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         Assert::contains('*X-VS:' . $this->member->id . '*DT:', $template->spayd);
         Assert::same('data:image/png;base64,', substr($template->qrImagePngBase64, 0, 22));
         $png = base64_decode(substr($template->qrImagePngBase64, 22), true);
+        Assert::true(is_string($png));
         Assert::same("\x89PNG\r\n\x1a\n", substr($png, 0, 8));
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }

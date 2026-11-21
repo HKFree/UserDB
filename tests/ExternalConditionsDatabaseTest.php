@@ -94,6 +94,7 @@ final class ExternalConditionsDatabaseTest extends DatabaseTestCase
         } finally {
             ob_end_clean();
         }
+        Assert::true(is_string($body));
         return json_decode($body, true, flags: JSON_THROW_ON_ERROR);
     }
 }

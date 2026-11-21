@@ -22,8 +22,10 @@ try {
         Assert::same([], glob($directory . '/contract-*'));
         file_put_contents($directory . '/result.pdf', $pdf);
         $process = proc_open(['pdftotext', $directory . '/result.pdf', $directory . '/result.txt'], [], $pipes);
+        Assert::true(is_resource($process));
         Assert::same(0, proc_close($process));
         $text = file_get_contents($directory . '/result.txt');
+        Assert::true(is_string($text));
         Assert::contains($name, $text);
         Assert::contains('LOCAL-42', $text);
         Assert::notContains('{telefon}', $text);

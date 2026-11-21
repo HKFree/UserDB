@@ -118,6 +118,15 @@ abstract class Table
         return ($this->getTable()->insert($data));
     }
 
+    /** @param iterable<string, mixed> $data */
+    public function insertRow(iterable $data): Nette\Database\Table\ActiveRow {
+        $row = $this->insert($data);
+        if (!$row instanceof Nette\Database\Table\ActiveRow) {
+            throw new Nette\UnexpectedValueException('Vložení záznamu nevrátilo databázový řádek.');
+        }
+        return $row;
+    }
+
     /**
      * @param int|string $id
      * @param iterable<array-key, mixed> $data

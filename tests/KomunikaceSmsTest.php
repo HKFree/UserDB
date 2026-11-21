@@ -82,7 +82,7 @@ trait SmsFlashMessages
     public array $messages = [];
 
     public function flashMessage(string|\stdClass|\Stringable $message, string $type = 'info'): \stdClass {
-        $flash = (object) ['message' => (string) $message, 'type' => $type];
+        $flash = $message instanceof \stdClass ? $message : (object) ['message' => (string) $message, 'type' => $type];
         $this->messages[] = $flash;
         return $flash;
     }

@@ -22,7 +22,11 @@ class RequestDruzstvoContract
         $cmd = sprintf("%s/../bin/console app:digisign_generovat_ucastnickou_smlouvu %u", getenv('CONTEXT_DOCUMENT_ROOT'), $newId);
         $cmd2 = "$cmd | sed -u 's/^/digisign_generovat_ucastnickou_smlouvu /' &";
         error_log("RUN: [$cmd2]", );
-        proc_close(proc_open($cmd2, array(), $foo));
+        $process = proc_open($cmd2, array(), $foo);
+        if ($process === false) {
+            throw new Nette\InvalidStateException('Nelze spustit generování smlouvy.');
+        }
+        proc_close($process);
 
         // Nette returns the generated ID as a string; this service exposes an integer ID.
         return (int) $newId;

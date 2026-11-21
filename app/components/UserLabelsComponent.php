@@ -6,6 +6,7 @@ use Nette\Application\UI\Control;
 use Nette\Database\Explorer;
 use App\Model;
 
+/** @property-read \Nette\Bridges\ApplicationLatte\Template $template */
 class UserLabelsComponent extends Control
 {
     private int $userId;

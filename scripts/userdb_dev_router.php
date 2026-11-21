@@ -2,7 +2,12 @@
 
 // Router for PHP's development server. The application's production entry stays unchanged.
 $www = realpath(__DIR__ . '/../www');
-$path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+if (!is_string($requestPath)) {
+    http_response_code(400);
+    return;
+}
+$path = rawurldecode($requestPath);
 if ($path === '/demo-osoba') {
     require_once __DIR__ . '/UserdbDemoPersonas.php';
     require_once __DIR__ . '/UserdbDemoPersonaPage.php';
@@ -11,12 +16,12 @@ if ($path === '/demo-osoba') {
     $page->serve($cookieName, $_GET, $_SERVER, getallheaders());
     return;
 }
-if (preg_match('~(?:^|/)\.~', $path)) {
+if (preg_match('~(?:^|/)\.~', $path) === 1) {
     http_response_code(403);
     return;
 }
 $file = realpath($www . $path);
-if ($file && str_starts_with($file, $www . '/') && is_file($file) && pathinfo($file, PATHINFO_EXTENSION) !== 'php') {
+if ($file !== false && str_starts_with($file, $www . '/') && is_file($file) && pathinfo($file, PATHINFO_EXTENSION) !== 'php') {
     return false;
 }
 

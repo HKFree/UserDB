@@ -68,15 +68,13 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
         $cena = $this->parameters->getCenaSledovaniTV();
 
         $this->connection->query(
-            sprintf(
-                'INSERT INTO %s (id,objednana,cena) VALUES (%u,1,%u) ON DUPLICATE KEY UPDATE objednana=1',
-                $this->uzivatelTelevize->tableName,
-                $user_id,
-                $cena
-            )
+            'INSERT INTO ?name (id,objednana,cena) VALUES (?,1,?) ON DUPLICATE KEY UPDATE objednana=1',
+            $this->uzivatelTelevize->tableName,
+            sprintf('%u', $user_id),
+            $cena
         );
 
-        $this->flashMessage(sprintf('Objednána služba Televize za cenu %u Kč/měsíc.', $cena));
+        $this->flashMessage(sprintf('Objednána služba Televize za cenu %s Kč/měsíc.', $cena));
 
         $this->redirect('Uzivatel:show', ['id' => $user_id]);
     }
@@ -112,7 +110,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
             $poznamkaSluzba = "Bezplatná aktivace na 1 kalendářní měsíc";
         }
 
-        $this->connection->query('INSERT INTO ' . $this->uzivatelTelevizeAktivni->tableName . ' ?', [
+        $this->connection->query('INSERT INTO ?name ?', $this->uzivatelTelevizeAktivni->tableName, [
             'Uzivatel_id' => $user_id,
             'datum_od' => new \Nette\Database\SqlLiteral('curdate()'),
             'datum_do' => new \Nette\Database\SqlLiteral('last_day(curdate())'),
@@ -128,11 +126,9 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
         $user_id = $this->getParameter('id');
 
         $this->connection->query(
-            sprintf(
-                'INSERT INTO %s (id,objednana) VALUES (%u,0) ON DUPLICATE KEY UPDATE objednana=0',
-                $this->uzivatelTelevize->tableName,
-                $user_id
-            )
+            'INSERT INTO ?name (id,objednana) VALUES (?,0) ON DUPLICATE KEY UPDATE objednana=0',
+            $this->uzivatelTelevize->tableName,
+            sprintf('%u', $user_id)
         );
 
         $this->flashMessage('Služba Televize zrušena. Bude deaktivována 1. den v příštím měsíci.');

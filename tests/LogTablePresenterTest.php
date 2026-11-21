@@ -87,7 +87,7 @@ final class LogTablePresenterTest extends DatabaseTestCase
 
     /** @return list<list<string>> */
     private function logRows(string $html): array {
-        Assert::same(1, preg_match('~<table class="table table-striped logstable">.*?</table>~s', $html, $matches));
+        Assert::true(preg_match('~<table class="table table-striped logstable">.*?</table>~s', $html, $matches) === 1);
         $rows = [];
         foreach (DomQuery::fromHtml($matches[0])->find('tr') as $row) {
             $rows[] = array_map(static fn (DomQuery $cell): string => dom_import_simplexml($cell)->textContent, $row->find('th, td'));

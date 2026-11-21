@@ -60,8 +60,8 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
         $username = $_SERVER['PHP_AUTH_USER'];
         $password = $_SERVER['PHP_AUTH_PW'];
 
-        if (preg_match_all('/^apikey([0-9]+)$/', $username, $m)) {
-            $apiKeyId = $m[1][0] * 1;
+        if (preg_match_all('/^apikey([0-9]+)$/', $username, $m) === 1) {
+            $apiKeyId = $m[1][0];
             $keyRec = $this->apiKlicModel->getApiKlic($apiKeyId);
 
             // Check if the key is valid and not expired

@@ -191,7 +191,7 @@ final class ApiTypesPresenterTest extends DatabaseTestCase
             return $response->getPayload();
         } finally {
             $_SERVER = $savedServer;
-            http_response_code($savedStatus ?: 200);
+            http_response_code(is_int($savedStatus) ? $savedStatus : 200);
         }
     }
 }

@@ -95,7 +95,11 @@ class SpravaCcPresenterTest extends Tester\TestCase
 
         // Use the actual form so its date controls supply DateTimeImmutable values.
         $form = $presenter['spravaCCForm'];
-        $form['rights'][1]->setValues([
+        $rights = $form['rights'];
+        Assert::true($rights instanceof \Kdyby\Replicator\Container);
+        $right = $rights['1'];
+        Assert::true($right instanceof Nette\Forms\Container);
+        $right->setValues([
             'id' => 1,
             'Uzivatel_id' => 20,
             'zadost_podal' => 10,
@@ -106,6 +110,7 @@ class SpravaCcPresenterTest extends Tester\TestCase
             'poznamka' => 'Za pomoc spolku.',
         ]);
         $values = $form->getValues();
+        $this->assertRightsValues($values);
         $startValue = $values->rights[1]->plati_od;
         $endValue = $values->rights[1]->plati_do;
         Assert::type(\DateTimeImmutable::class, $startValue);
@@ -135,6 +140,16 @@ class SpravaCcPresenterTest extends Tester\TestCase
             Assert::same('Žádost o čestné členství', $mail->getSubject());
             Assert::same(['userdb@hkfree.org' => 'UserDB'], $mail->getFrom());
             Assert::same(['navrhovatel@example.test' => null, 'clen@example.test' => null], $mail->getHeader('To'));
+        }
+    }
+    /**
+     * @param Nette\Utils\ArrayHash<mixed> $values
+     * @phpstan-assert Nette\Utils\ArrayHash<mixed>&object{rights: Nette\Utils\ArrayHash<Nette\Utils\ArrayHash<mixed>>} $values
+     */
+    private function assertRightsValues(Nette\Utils\ArrayHash $values): void {
+        Assert::true($values->rights instanceof Nette\Utils\ArrayHash);
+        foreach ($values->rights as $right) {
+            Assert::true($right instanceof Nette\Utils\ArrayHash);
         }
     }
 }

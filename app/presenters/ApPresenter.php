@@ -209,7 +209,7 @@ class ApPresenter extends BasePresenter
         $form->onSuccess[] = array($this, 'apFormSucceded');
         $form->onValidate[] = array($this, 'validateApForm');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $values = $this->ap->getAP($this->getParameter('id'));
             if ($values !== null) {
@@ -219,16 +219,16 @@ class ApPresenter extends BasePresenter
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
                         $ipdata = $ip_data->toArray();
                         $ipdata['heslo'] = $decrypted;
-                        $form["ip"][$ip_id]->setValues($ipdata);
+                        $ips->createOne($ip_id)->setValues($ipdata);
                     } else {
-                        $form["ip"][$ip_id]->setValues($ip_data);
+                        $ips->createOne($ip_id)->setValues($ip_data);
                     }
                 }
                 foreach ($values->related('Subnet.Ap_id') as $subnet_id => $subnet_data) {
-                    $form["subnet"][$subnet_id]->setValues($subnet_data);
+                    $subnets->createOne($subnet_id)->setValues($subnet_data);
                 }
                 foreach ($values->related('ApiKlic.Ap_id') as $apiKlic_id => $apiKlic_data) {
-                    $form["apiKlic"][$apiKlic_id]->setValues($apiKlic_data);
+                    $apiKlice->createOne($apiKlic_id)->setValues($apiKlic_data);
                 }
                 $form->setValues($values);
             }
@@ -236,19 +236,21 @@ class ApPresenter extends BasePresenter
         return ($form);
     }
 
-    /** @return 0|void */
-    public function validateApForm(Nette\Forms\Form $form) {
+    public function validateApForm(Nette\Forms\Form $form): void {
         $data = $form->getHttpData();
+        if (!is_array($data)) {
+            throw new Nette\UnexpectedValueException('Data celého formuláře musí být pole.');
+        }
 
         // Validujeme jenom při uložení formuláře
         if (!isset($data["save"])) {
-            return (0);
+            return;
         }
 
         if (isset($data['ip'])) {
             $formIPs = array();
             foreach ($data['ip'] as $ip) {
-                if (!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
+                if ($this->ipAdresa->validateIP($ip['ip_adresa']) === false) {
                     $form->addError('IP adresa ' . $ip['ip_adresa'] . ' není validní IPv4 adresa!');
                 }
 
@@ -287,7 +289,7 @@ class ApPresenter extends BasePresenter
                     return;
                 }
 
-                if (!$this->ipAdresa->validateIP($subnet['gateway'])) {
+                if ($this->ipAdresa->validateIP($subnet['gateway']) === false) {
                     $form->addError('Gateway ' . $subnet['gateway'] . ' u subnetu ' . $subnet['subnet'] . ' není validní IPv4 adresa!');
                     return;
                 }
@@ -339,7 +341,7 @@ class ApPresenter extends BasePresenter
 
         // Zpracujeme nejdriv APcko
         if (in_array($values->id, [null, '', 0, '0'], true)) {
-            $idAP = $this->ap->insert($values)->id;
+            $idAP = $this->ap->insertRow($values)->id;
             $this->log->logujInsert($values, 'Ap', $log);
         } else {
             $oldap = $this->ap->getAP($idAP);
@@ -361,7 +363,7 @@ class ApPresenter extends BasePresenter
             }
 
             if (in_array($ip->id, [null, '', 0, '0'], true)) {
-                $idIp = $this->ipAdresa->insert($ip)->id;
+                $idIp = $this->ipAdresa->insertRow($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa[' . $idIp . ']', $log);
             } else {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
@@ -389,7 +391,7 @@ class ApPresenter extends BasePresenter
             $subnet->Ap_id = $idAP;
             $idSubnet = $subnet->id;
             if (in_array($subnet->id, [null, '', 0, '0'], true)) {
-                $idSubnet = $this->subnet->insert($subnet)->id;
+                $idSubnet = $this->subnet->insertRow($subnet)->id;
                 $this->log->logujInsert($subnet, 'Subnet[' . $idSubnet . ']', $log);
             } else {
                 $oldsubnet = $this->subnet->getSubnet($idSubnet);
@@ -421,7 +423,7 @@ class ApPresenter extends BasePresenter
                 $apiKey->plati_do = null;
             } // save NULL instead of '0000-00-00' when inserting empty string
             if (in_array($apiKey->id, [null, '', 0, '0'], true)) {
-                $idApiKey = $this->apiKlic->insert($apiKey)->id;
+                $idApiKey = $this->apiKlic->insertRow($apiKey)->id;
                 $this->log->logujInsert($apiKey, 'ApiKlic[' . $idApiKey . ']', $log);
             } else {
                 $oldApiKlic = $this->apiKlic->getApiKlic($idApiKey);
@@ -451,7 +453,7 @@ class ApPresenter extends BasePresenter
 
     /** @param int|string|null $id */
     public function actionIds($id): void {
-        $apt = $this->ap->getAP($id * 1);
+        $apt = $this->ap->getAP($id);
         if ($apt === null) {
             $this->error('AP not found');
         } else {

@@ -48,7 +48,7 @@ final class InfluxWriterTest extends TestCase
     }
 
     public function testRejectsInvalidConfigurationWithoutLeakingCredentials(): void {
-        foreach (['', 'http://user:private@localhost/db', 'udp+influxdb://localhost/db', 'influxdb://localhost', 'influxdb://localhost/', 'influxdb://localhost/db?secret=private', 'influxdb://localhost:99999/db'] as $dsn) {
+        foreach (['', 'http://user:private@localhost/db', 'udp+influxdb://localhost/db', 'influxdb://localhost', 'influxdb://localhost:8086', 'influxdb://localhost/', 'influxdb://localhost/db?secret=private', 'influxdb://localhost:99999/db'] as $dsn) {
             Assert::exception(fn () => new InfluxWriter($dsn), \InvalidArgumentException::class, 'Invalid INFLUX_URL; expected influxdb://user:password@host:port/database.');
         }
     }

@@ -40,7 +40,11 @@ final class ContainerTest extends TestCase
         $loader->addDirectory(__DIR__ . '/../app/presenters', __DIR__ . '/../app/ApiModule/Presenters');
         $loader->rebuild();
         foreach (array_keys($loader->getIndexedClasses()) as $class) {
-            if (str_starts_with($class, 'App\\') && str_ends_with($class, 'Presenter') && !(new \ReflectionClass($class))->isAbstract()) {
+            if (str_starts_with($class, 'App\\') && str_ends_with($class, 'Presenter')) {
+                Assert::true(class_exists($class));
+                if ((new \ReflectionClass($class))->isAbstract()) {
+                    continue;
+                }
                 Assert::contains($class, $classes);
             }
         }

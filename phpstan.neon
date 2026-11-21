@@ -3,9 +3,10 @@ includes:
     - vendor/phpstan/phpstan-strict-rules/rules.neon
 
 parameters:
-    level: 6
+    level: 7
     stubFiles:
         - phpstan/replicator.stub
+        - phpstan/tester.stub
     phpVersion: 80200
     tmpDir: temp/phpstan
     paths:

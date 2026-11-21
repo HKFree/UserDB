@@ -15,10 +15,10 @@ use Tracy\Debugger;
 class Authenticator implements Security\IAuthenticator
 {
     protected Nette\Database\Explorer $context;
-    /** @var bool|array{userID: int|string, userName: string, passwordHash?: string} */
+    /** @var false|array{userID: int|string, userName: string, passwordHash?: string} */
     private bool|array $fakeUser;
 
-    /** @param bool|array{userID: int|string, userName: string, passwordHash?: string} $fakeUser */
+    /** @param false|array{userID: int|string, userName: string, passwordHash?: string} $fakeUser */
     public function __construct(bool|array $fakeUser, Nette\Database\Explorer $ctx) {
         $this->context = $ctx;
         $this->fakeUser = $fakeUser;

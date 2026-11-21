@@ -51,6 +51,7 @@ namespace Test {
         public function testValidBase64PreservesCredentials(): void {
             $sender = new SmsSender('never-run.py', new SmsAwegAccount());
             $locale = setlocale(LC_ALL, '0');
+            Assert::true(is_string($locale));
             $environment = getenv('LC_ALL');
             try {
                 foreach ([['c2VjcmV0', 'secret'], ["c2Vj\r\ncmV0", 'secret'], ['cA==', 'p'], ['cA', 'p'], ['MA==', '0'], ['', '']] as [$encoded, $password]) {

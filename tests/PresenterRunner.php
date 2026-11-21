@@ -165,7 +165,7 @@ final class PresenterRunner
             } else {
                 $_SESSION = $savedSession;
             }
-            http_response_code($savedStatus ?: 200);
+            http_response_code(is_int($savedStatus) ? $savedStatus : 200);
         }
     }
 }

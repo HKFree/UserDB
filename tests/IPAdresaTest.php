@@ -68,3 +68,13 @@ Assert::same(['10.0.0.9'], $model->getListOfIPFromRange('10.0.0.9-10.0.0.9'));
 foreach (['', null, '0', '10.0.0.1', '10.0.0.1-10.0.0', '10.0.0.1 - 10.0.0.3'] as $invalid) {
     Assert::same([], $model->getListOfIPFromRange($invalid));
 }
+
+Assert::same(['255.255.255.254', '255.255.255.255'], $model->getListOfIPFromRange('255.255.255.254-255.255.255.255'));
+Assert::same(['0.0.0.1', '0.0.0.0'], $model->getListOfIPFromRange('0.0.0.1-0.0.0.0'));
+Assert::same(['255.255.255.254'], $model->getListOfIPFromSubnet('255.255.255.254/31'));
+Assert::same(false, $model->file_get_contents_curl(''));
+
+Assert::exception(fn () => $model->addIPTableRow(null, false, Html::el('table')), \Nette\InvalidArgumentException::class);
+Assert::exception(fn () => $model->addIPTableRow($ip, false, Html::el('table'), [
+    'ipAdresa' => '192.0.2.1', 'ipTitle' => '192.0.2.1',
+]), \Nette\InvalidArgumentException::class);

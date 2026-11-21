@@ -58,6 +58,7 @@ final class MailingPresenterTest extends DatabaseTestCase
         $labels = $this->database->table('StitekUzivatele')->where('Uzivatel_id', $this->member->id)->fetchAll();
         Assert::count(1, $labels);
         $label = reset($labels);
+        Assert::true($label instanceof \Nette\Database\Table\ActiveRow);
         Assert::same('Odesláno:ZpoplatneniTelevize2026', $label->Stitek->text);
         Assert::same([], $this->container->getByType(RecordingContractRequest::class)->calls);
     }

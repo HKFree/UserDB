@@ -88,8 +88,10 @@ foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
             return false;
         }
     };
-    $unusedModel = fn (string $class) => (new \ReflectionClass($class))->newInstanceWithoutConstructor();
-    $presenter = new class ($unusedModel(Model\SloucenyUzivatel::class), $users, $unusedModel(Model\Log::class), $unusedModel(Model\IPAdresa::class), $memberships, new Model\AP(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()))) extends SpravaSlucovaniPresenter {
+    $mergedUsers = (new \ReflectionClass(Model\SloucenyUzivatel::class))->newInstanceWithoutConstructor();
+    $log = (new \ReflectionClass(Model\Log::class))->newInstanceWithoutConstructor();
+    $addresses = (new \ReflectionClass(Model\IPAdresa::class))->newInstanceWithoutConstructor();
+    $presenter = new class ($mergedUsers, $users, $log, $addresses, $memberships, new Model\AP(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()))) extends SpravaSlucovaniPresenter {
         protected function createTemplate(?string $class = null): Template {
             return new DefaultTemplate(new \Latte\Engine());
         }

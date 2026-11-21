@@ -103,7 +103,7 @@ final class SharedTypesPresenterTest extends DatabaseTestCase
         $otherArea = $this->fixtures->area();
         $hidden = $this->fixtures->member($this->fixtures->ap($otherArea->id)->id, ['druzstvo' => 1, 'spolek' => 0, 'location_status' => 'valid', 'latitude' => 50.3, 'longitude' => 15.9]);
         $result = $this->presenters->ui($this->actor->id, 'Sprava', ['action' => 'mapa']);
-        Assert::same(1, preg_match('~var pointsData = (.*);~', $result->html, $matches));
+        Assert::true(preg_match('~var pointsData = (.*);~', $result->html, $matches) === 1);
         $points = json_decode($matches[1], true, 512, JSON_THROW_ON_ERROR);
         Assert::count(1, $points);
         Assert::same(1, $points[0]['ax']);

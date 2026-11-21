@@ -139,7 +139,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
                 ob_end_clean();
             }
             $_SERVER = $savedServer;
-            http_response_code($savedStatus ?: 200);
+            http_response_code(is_int($savedStatus) ? $savedStatus : 200);
         }
     }
 

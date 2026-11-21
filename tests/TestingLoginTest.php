@@ -160,9 +160,13 @@ final class TestingLoginTest extends TestCase
 
     public function testCountersOfVisitorsWhoNeverComeBackAreDeleted(): void {
         $this->signIn('špatné heslo', '/', self::NOW, '192.0.2.20');
-        Assert::count(1, glob($this->directory . '/*.attempts'));
+        $attemptFiles = glob($this->directory . '/*.attempts');
+        Assert::true(is_array($attemptFiles));
+        Assert::count(1, $attemptFiles);
         $this->signIn('špatné heslo', '/', self::NOW + UserdbTestingLogin::FAILURE_WINDOW_SECONDS, '192.0.2.21');
-        Assert::count(1, glob($this->directory . '/*.attempts'));
+        $attemptFiles = glob($this->directory . '/*.attempts');
+        Assert::true(is_array($attemptFiles));
+        Assert::count(1, $attemptFiles);
     }
 
     /** @return list<array{string}> */
@@ -254,6 +258,7 @@ final class TestingLoginTest extends TestCase
         Assert::same(303, $status);
         Assert::contains('Location: /sprava', $headers);
         $cookies = preg_grep('~^Set-Cookie: userdb_testing_login=.*; Domain=testing\.example;~', $headers);
+        Assert::true(is_array($cookies));
         Assert::count(1, $cookies);
         $cookie = explode(';', substr((string) reset($cookies), strlen('Set-Cookie: ')))[0];
 
@@ -310,7 +315,7 @@ final class TestingLoginTest extends TestCase
         $connections = [];
         for ($number = 0; $number < 4 * UserdbTestingLogin::MAX_FAILURES; $number++) {
             $connection = stream_socket_client("tcp://127.0.0.1:$port");
-            Assert::type('resource', $connection);
+            Assert::true(is_resource($connection));
             fwrite($connection, $request);
             $connections[] = $connection;
         }
@@ -383,7 +388,7 @@ final class TestingLoginTest extends TestCase
     /** @return list<string> options of PHP from ExecStart of the systemd unit */
     private function unitOptions(): array {
         $unit = (string) file_get_contents(__DIR__ . '/../scripts/userdb_testing_login.service');
-        Assert::same(1, preg_match('~^ExecStart=/usr/bin/php (-d .+) -S 127\.0\.0\.1:\d+ \S+/userdb_testing_login\.php$~m', $unit, $match));
+        Assert::true(preg_match('~^ExecStart=/usr/bin/php (-d .+) -S 127\.0\.0\.1:\d+ \S+/userdb_testing_login\.php$~m', $unit, $match) === 1);
         return explode(' ', $match[1]);
     }
 
@@ -394,7 +399,7 @@ final class TestingLoginTest extends TestCase
      */
     private function startService(array $phpOptions, array $environment = []): int {
         $socket = stream_socket_server('tcp://127.0.0.1:0');
-        Assert::type('resource', $socket);
+        Assert::true(is_resource($socket));
         $port = (int) substr(strrchr((string) stream_socket_get_name($socket, false), ':') ?: '', 1);
         fclose($socket);
 
@@ -402,7 +407,7 @@ final class TestingLoginTest extends TestCase
         $environment += ['USERDB_TESTING_LOGIN_PASSWORD_HASH' => $this->passwordHash, 'STATE_DIRECTORY' => $this->directory] + getenv();
         $null = ['file', '/dev/null', 'r+'];
         $service = proc_open($command, [$null, $null, $null], $pipes, null, $environment);
-        Assert::type('resource', $service);
+        Assert::true(is_resource($service));
         $this->services[] = $service;
         for ($attempt = 0; $attempt < 100; $attempt++) {
             $connection = @fsockopen('127.0.0.1', $port, $code, $message, 0.1);
@@ -463,11 +468,11 @@ final class TestingLoginTest extends TestCase
             'ignore_errors' => true,
         ]]);
         $responseBody = file_get_contents("http://127.0.0.1:$port$path", false, $context);
-        Assert::type('string', $responseBody);
+        Assert::true(is_string($responseBody));
         // Filled in by the HTTP wrapper of file_get_contents().
         $responseHeaders = $http_response_header;
-        Assert::match('~^HTTP/\S+ (\d{3})~', $responseHeaders[0] ?? '');
-        return [(int) substr($responseHeaders[0], strpos($responseHeaders[0], ' ') + 1, 3), $responseHeaders, $responseBody];
+        Assert::true(preg_match('~^HTTP/\S+ (\d{3})~', $responseHeaders[0], $status) === 1);
+        return [(int) $status[1], $responseHeaders, $responseBody];
     }
 }
 

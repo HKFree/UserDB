@@ -61,7 +61,7 @@ class Subnet extends Table
     /**
      * Párová metoda k \App\Model\Log::getAdvancedzLogu(), Vrati seznam idSubnet -> subnet
      *
-     * @param int[] $ids idSubnet pro které chceme zjistit subnet
+     * @param array<array-key, int|string> $ids idSubnet pro které chceme zjistit subnet
      * @return array<int, string> pole idSubnet=>subnet
      */
     public function getSubnetzDB(array $ids) {
@@ -128,7 +128,7 @@ class Subnet extends Table
      * a udělám WHERE subnet IN ...
      *
      * @param string $ip IP adresa
-     * @return array{subnet?: string, network?: string, cidr?: string, mask?: string, gateway?: string, error?: int, multiple_subnets?: array<int, string>} Subnet a informace o něm
+     * @return array{subnet: string, network: string, cidr: numeric-string, mask: string, gateway: string}|array{subnet: string, network: string, cidr: numeric-string, mask: string, error: 2}|array{error: 1}|array{error: 3, multiple_subnets: array<int, string>} Subnet a informace o něm
      */
     public function getSubnetOfIP($ip) {
         $possibleSubnets = $this->genSubnets($ip);
@@ -173,10 +173,13 @@ class Subnet extends Table
      *  - mask (c->mask)
      *
      * @param string $subnet Vstupní subnet
-     * @return string[] Pole s položkami
+     * @return array{subnet: string, network: string, cidr: numeric-string, mask: string} Pole s položkami
      */
     public function parseSubnet($subnet) {
         list($network, $cidr) = explode("/", $subnet);
+        if (!is_numeric($cidr)) {
+            throw new Nette\InvalidArgumentException("Maska subnetu musí být číslo.");
+        }
 
         return [
             "subnet" => $subnet,
@@ -197,6 +200,9 @@ class Subnet extends Table
      */
     private function genSubnets($ip) {
         $lip = ip2long($ip);
+        if ($lip === false) {
+            return [];
+        }
         $subnets = array();
         for ($mask = 32; $mask >= 16; $mask--) {
             $lmask = pow(2, 32 - $mask);
@@ -211,7 +217,7 @@ class Subnet extends Table
      *
      * @param string $s Subnet
      * @param int|string|null $apId ID testovaného subnetu - určené k vyhnutí se
-     * @return boolean|string[] false pokud zadaný subnet nekoliduje,
+     * @return false|list<string> false pokud zadaný subnet nekoliduje,
      *               pole kolidujících subnetů pokud koliduje
      */
     public function getOverlapingSubnet($s, $apId = null) {
@@ -250,6 +256,9 @@ class Subnet extends Table
 
         $bigNetwork = long2ip(ip2long($network) & ip2long($this->CIDRToMask($bigCidr * 8)));
 
+        if ($bigNetwork === false) {
+            throw new Nette\UnexpectedValueException("Nelze převést adresu sítě na IPv4.");
+        }
         $bigNetworkExploded = explode(".", $bigNetwork);
         for ($i = 0; $i <= 3; $i++) {
             if ($i >= $bigCidr) {
@@ -275,9 +284,12 @@ class Subnet extends Table
         list($n2, $c2) = explode("/", $s2);
 
         $first_1 = ip2long($n1);
+        $first_2 = ip2long($n2);
+        if ($first_1 === false || $first_2 === false) {
+            throw new Nette\InvalidArgumentException("Porovnání subnetů vyžaduje IPv4 adresy.");
+        }
         $last_1 = $first_1 + pow(2, 32 - (float) $c1) - 1;
 
-        $first_2 = ip2long($n2);
         $last_2 = $first_2 + pow(2, 32 - (float) $c2) - 1;
 
         if (($first_1 < $first_2) && ($last_1 < $first_2)) {
@@ -309,7 +321,7 @@ class Subnet extends Table
      * Pro zadané pole subnetů zjistí, jestli se nějaké nepřekrývají
      *
      * @param string[] $subnets Pole subnetů ke kontrole
-     * @return boolean|string[] false pokud se žádné dva subnety nepřekrývají
+     * @return false|list<string> false pokud se žádné dva subnety nepřekrývají
      *                          string[] pokud se překrývají
      */
     public function checkColisions($subnets) {
@@ -357,7 +369,7 @@ class Subnet extends Table
         list($network, $cidr) = $disected_subnet;
 
         // Zkontroluje validitu adresy sítě
-        if (!filter_var($network, FILTER_VALIDATE_IP)) {
+        if (filter_var($network, FILTER_VALIDATE_IP) === false) {
             return (false);
         }
 
@@ -367,6 +379,9 @@ class Subnet extends Table
         }
 
         $lnet = ip2long($network);
+        if ($lnet === false) {
+            return false;
+        }
 
         // Zkontrolujeme síť 0.0.0.0/0 (cokoliv jiného/0 zahodíme)
         // (hlavně protože % nemá rádo 2^32, musíme to vyfiltrovat tady)
@@ -388,6 +403,10 @@ class Subnet extends Table
      * @return string Maska
      */
     public function CIDRToMask($cidr) {
-        return (long2ip((int) (pow(2, 32) - pow(2, 32 - $cidr))));
+        $mask = long2ip((int) (pow(2, 32) - pow(2, 32 - $cidr)));
+        if ($mask === false) {
+            throw new Nette\UnexpectedValueException("Nelze převést CIDR na masku IPv4.");
+        }
+        return $mask;
     }
 }

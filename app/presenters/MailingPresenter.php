@@ -106,8 +106,8 @@ class MailingPresenter extends UzivatelPresenter
     }
 
     /** @param string|null $variant */
-    private function loadTemplateAndSubject($variant): string|false {
-        $subject = file_get_contents(__DIR__ . "/../templates/email/{$variant}_subject.latte");
+    private function loadTemplateAndSubject($variant): string {
+        $subject = Nette\Utils\FileSystem::read(__DIR__ . "/../templates/email/{$variant}_subject.latte");
         $this->template->subject = $subject;
 
         $this->template->setFile(__DIR__ . "/../templates/email/{$variant}_body.latte");

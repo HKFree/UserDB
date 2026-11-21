@@ -10,6 +10,7 @@ use Defuse\Crypto\Crypto;
 
 /**
  * @author
+ * @phpstan-type SubnetOwner array{ipTitle: string, rowClass?: string, id: int, canViewOrEdit: bool, link: string, editLink: string, type: 'Uzivatel', nick: string|null}|array{ipTitle: string, rowClass?: string, id: int, canViewOrEdit: bool, link: string, editLink: string, type: 'Ap', jmeno: string}
  */
 class IPAdresa extends Table
 {
@@ -145,7 +146,7 @@ class IPAdresa extends Table
         $tr = $adresyTab->create('tr');
 
         $tr->create('th')->setText('IP');
-        if ($igwCheck) {
+        if (!in_array($igwCheck, [null, false, 0, '', '0'], true)) {
             $tr->create('th')->setText('IGW');
         }
         $tr->create('th')->setText(''); // action buttons
@@ -179,7 +180,10 @@ class IPAdresa extends Table
         }
     }
 
-    public function file_get_contents_curl(string $url): string|bool {
+    public function file_get_contents_curl(string $url): string|false {
+        if ($url === '') {
+            return false;
+        }
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_AUTOREFERER, true);
@@ -191,11 +195,11 @@ class IPAdresa extends Table
         $data = curl_exec($ch);
         curl_close($ch);
 
-        return $data;
+        return is_string($data) ? $data : false;
     }
 
     /**
-     * @param array{ipTitle: string, ipAdresa?: string, rowClass?: string, type?: string, id?: int, nick?: string|null, jmeno?: string, canViewOrEdit?: bool, link?: string, editLink?: string}|array{}|null $subnetModeInfo
+     * @param SubnetOwner|array{ipTitle: string, ipAdresa: string, rowClass?: string}|array{}|null $subnetModeInfo
      * @param bool|int|string|null $igwCheck
      * @param (callable(string, array<string, mixed>): string)|null $linker
      */
@@ -203,10 +207,11 @@ class IPAdresa extends Table
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $isSubnetMode = $subnetModeInfo !== null && $subnetModeInfo !== [];
-        $ipTitle = $isSubnetMode ? $subnetModeInfo['ipTitle'] : $ip->ip_adresa;
+        $ipAddress = $ip !== null ? $ip->ip_adresa : ($subnetModeInfo['ipAdresa'] ?? throw new Nette\InvalidArgumentException('Chybí IP adresa řádku.'));
+        $ipTitle = $isSubnetMode ? $subnetModeInfo['ipTitle'] : $ipAddress;
 
         $tr = $adresyTab->create('tr');
-        $tr->setId('highlightable-ip'.($ip !== null ? $ip->ip_adresa : $subnetModeInfo['ipAdresa']));
+        $tr->setId('highlightable-ip'.$ipAddress);
         if ($isSubnetMode && array_key_exists('rowClass', $subnetModeInfo)) {
             $tr->setClass($subnetModeInfo['rowClass']);
         }
@@ -219,9 +224,9 @@ class IPAdresa extends Table
             $tr->create('td')->setText($ipTitle);
         }
 
-        if ($igwCheck && $ip !== null) {
+        if (!in_array($igwCheck, [null, false, 0, '', '0'], true) && $ip !== null) {
             $igw1resp = $this->file_get_contents_curl($this->igw1IpCheckerUrl.$ip->ip_adresa);
-            if (strpos($igw1resp, $ip->ip_adresa.' 1') !== false) {
+            if ($igw1resp !== false && strpos($igw1resp, $ip->ip_adresa.' 1') !== false) {
                 $attr = $tr->create('td');
                 $attr->create('span')
                     ->setClass('glyphicon glyphicon-ok')
@@ -253,6 +258,10 @@ class IPAdresa extends Table
         }
 
         if ($ip !== null) {
+            $subnetOwnerInfo = isset($subnetModeInfo['type']) ? $subnetModeInfo : null;
+            if ($isSubnetMode && $subnetOwnerInfo === null) {
+                throw new Nette\InvalidArgumentException('U obsazené IP adresy chybí vlastník.');
+            }
             $ip_password = '';
             if ($canViewCredentialsOrEdit) {
                 if ($ip->heslo_sifrovane === 1) {
@@ -270,7 +279,7 @@ class IPAdresa extends Table
             $isWindows = (stripos($userAgent, 'windows') !== false);
 
             // web button
-            if (isset($ip->TypZarizeni->text) && $ip->TypZarizeni->id !== 1) {
+            if (isset($ip->TypZarizeni->text) && $ip->ref('TypZarizeni')->id !== 1) {
                 $webButton = Html::el('a')
                     ->setHref('http://' . $ip->ip_adresa)
                     ->setTarget('_blank')
@@ -279,8 +288,8 @@ class IPAdresa extends Table
                     ->addAttributes($tooltips)
                     ->addHtml(Html::el('span')
                         ->setClass('glyphicon glyphicon-globe')); // web button
-                if (($canViewCredentialsOrEdit || ($isSubnetMode && $subnetModeInfo['canViewOrEdit']))
-                        && isset($ip->TypZarizeni->text) && isset($ip_password) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+                if (($canViewCredentialsOrEdit || ($subnetOwnerInfo !== null && $subnetOwnerInfo['canViewOrEdit']))
+                        && isset($ip->TypZarizeni->text) && isset($ip_password) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
                     // routerboard, smim videt heslo a heslo je vyplneno
                     // -> otevrit primo zalogovany webfig
                     $webButton->setOnclick('return openMikrotikWebfig('.json_encode($ip->ip_adresa).','.json_encode($ip->login).','.json_encode($ip_password).')');
@@ -313,7 +322,7 @@ class IPAdresa extends Table
                 $buttons[] = $signalGrafanaButton;
             }
             // winbox button (windows)
-            if ($isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+            if ($isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
                 $link = 'winbox:'.$ip->ip_adresa;
                 if ($canViewCredentialsOrEdit) {
                     $link .= ';'.$ip->login.';'.$ip_password;
@@ -334,7 +343,7 @@ class IPAdresa extends Table
                                 ->setHref('http://wiki.hkfree.org/Winbox_URI');
             }
             // winbox cmd button
-            if ($isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+            if ($isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
                 $winboxButton = Html::el('span')
                     ->setAttribute('href', $linker("File:downloadWinboxCmd", ['id' => $ip->id]))
                     ->setTitle('Otevřít Mikrotik Winbox z CMD')
@@ -354,7 +363,7 @@ class IPAdresa extends Table
                                 ->setHref('http://wiki.hkfree.org/Winbox_CMD');
             }
             // winbox button (android)
-            if ($isAndroid && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+            if ($isAndroid && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
                 $link = 'winbox://'.$ip->ip_adresa;
                 if ($canViewCredentialsOrEdit) {
                     $link .= '/'.$ip->login.'/'.$ip_password;
@@ -380,7 +389,7 @@ class IPAdresa extends Table
             }
 
             // ssh button
-            if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
+            if (isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
                 $winboxButton = Html::el('span')
                     ->setTitle('Příkaz pro SSH spojení do schránky')
                     ->addAttributes($tooltips)
@@ -393,13 +402,13 @@ class IPAdresa extends Table
                 $buttons[] = $winboxButton;
             }
             // edit button, etc.
-            if ($isSubnetMode) {
-                if ($subnetModeInfo['type'] === 'Uzivatel') {
-                    if ($subnetModeInfo['canViewOrEdit']) {
+            if ($subnetOwnerInfo !== null) {
+                if ($subnetOwnerInfo['type'] === 'Uzivatel') {
+                    if ($subnetOwnerInfo['canViewOrEdit']) {
                         array_unshift(
                             $buttons,
                             Html::el('a')
-                                ->setHref($subnetModeInfo['editLink'])
+                                ->setHref($subnetOwnerInfo['editLink'])
                                 ->setClass('btn btn-default btn-xs btn-in-table')
                                 ->setTitle('Editovat')
                                 ->addAttributes($tooltips)
@@ -408,14 +417,14 @@ class IPAdresa extends Table
                         ); // edit button
                     } // jinak nema edit button
                     $this->addActionButtonsTd($tr, $buttons);
-                    $tr->create('td')->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['id']); // UID
-                    $tr->create('td')->setText($subnetModeInfo['nick']); // nick
-                } elseif ($subnetModeInfo['type'] === 'Ap') {
-                    if ($subnetModeInfo['canViewOrEdit']) {
+                    $tr->create('td')->create('a')->setHref($subnetOwnerInfo['link'])->setText($subnetOwnerInfo['id']); // UID
+                    $tr->create('td')->setText($subnetOwnerInfo['nick']); // nick
+                } elseif ($subnetOwnerInfo['type'] === 'Ap') {
+                    if ($subnetOwnerInfo['canViewOrEdit']) {
                         array_unshift(
                             $buttons,
                             Html::el('a')
-                            ->setHref($subnetModeInfo['editLink'])
+                            ->setHref($subnetOwnerInfo['editLink'])
                             ->setClass('btn btn-default btn-xs btn-in-table')
                             ->setTitle('Editovat')
                             ->addAttributes($tooltips)
@@ -425,7 +434,7 @@ class IPAdresa extends Table
                     } // jinak nema edit button
                     $this->addActionButtonsTd($tr, $buttons);
                     // nazev AP + cislo (pres 2 bunky, aby se to nepletlo s UID+nick)
-                    $tr->create('td')->setColspan(2)->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['jmeno'] . ' (' . $subnetModeInfo['id'] . ')');
+                    $tr->create('td')->setColspan(2)->create('a')->setHref($subnetOwnerInfo['link'])->setText($subnetOwnerInfo['jmeno'] . ' (' . $subnetOwnerInfo['id'] . ')');
                 }
             } else {
                 if ($canViewCredentialsOrEdit && !in_array($editLink, [null, '', '0'], true)) {
@@ -442,7 +451,7 @@ class IPAdresa extends Table
                 }
                 $this->addActionButtonsTd($tr, $buttons);
             }
-            if (!$isSubnetMode || $subnetModeInfo['canViewOrEdit']) {
+            if ($subnetOwnerInfo === null || $subnetOwnerInfo['canViewOrEdit']) {
                 $tr->create('td')->setText($ip->hostname); // hostname
                 $tr->create('td')->setText($ip->mac_adresa); // MAC
                 $tr->create('td')->setText((isset($ip->TypZarizeni->text)) ? $ip->TypZarizeni->text : ""); // typ zarizeni
@@ -558,12 +567,12 @@ class IPAdresa extends Table
     public function getListOfIPFromSubnet($ipsubnet) {
         $genaddresses = array();
         if ($ipsubnet !== null) {
-            if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $ipsubnet)) {
+            if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $ipsubnet) === 1) {
                 @list($sip, $slen) = explode('/', $ipsubnet);
                 if (($smin = ip2long($sip)) !== false) {
                     $smax = ($smin | (1 << (32 - (int) $slen)) - 1);
                     for ($i = $smin; $i < $smax; $i++) {
-                        $genaddresses[] = long2ip($i);
+                        $genaddresses[] = $this->formatIPv4($i);
                     }
                 }
             }
@@ -579,17 +588,28 @@ class IPAdresa extends Table
     public function getListOfIPFromRange($iprange) {
         $genaddresses = array();
         if ($iprange !== null) {
-            if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $iprange)) {
-                $temp = preg_split("/-/", $iprange, -1, PREG_SPLIT_NO_EMPTY);
+            if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $iprange) === 1) {
+                $temp = explode("-", $iprange);
                 $QRange1 = $temp[0];
                 $QRange2 = $temp[1];
                 $start = ip2long($QRange1);
                 $end = ip2long($QRange2);
+                if ($start === false || $end === false) {
+                    return [];
+                }
                 $range = range($start, $end);
-                $genaddresses = array_map('long2ip', $range);
+                $genaddresses = array_map($this->formatIPv4(...), $range);
             }
         }
         return $genaddresses;
+    }
+
+    private function formatIPv4(int $address): string {
+        $ip = long2ip($address);
+        if ($ip === false) {
+            throw new Nette\UnexpectedValueException('Nelze převést číselnou adresu na IPv4.');
+        }
+        return $ip;
     }
 
     /**
@@ -648,11 +668,11 @@ class IPAdresa extends Table
                 // protoze na paternich spojich se mohou objevovat LAST_IP, ktere jsou nekde mnohem dal v siti.
                 $isSector = (count($interface['stations']) > 1); // Autodetekce podle poctu stanic, pokud nejsou pouzita klicova slova nize.
                 // Pokud je nekde bezny sektor jen s jednim klientem, je mozne pomoci komentare #WEWIMO_SEKTOR u interfacu prepsat toto vychozi chovani.
-                if (array_key_exists('comment', $interface) && preg_match('/#WEWIMO_SEKTOR/', $interface['comment'])) {
+                if (array_key_exists('comment', $interface) && preg_match('/#WEWIMO_SEKTOR/', $interface['comment']) === 1) {
                     $isSector = true;
                 }
                 // Pokud je nekde paterni spoj se dvema stanicemi, je mozne pomoci komentare #WEWIMO_PTP u interfacu prepsat vychozi chovani.
-                if (array_key_exists('comment', $interface) && preg_match('/#WEWIMO_PTP/', $interface['comment'])) {
+                if (array_key_exists('comment', $interface) && preg_match('/#WEWIMO_PTP/', $interface['comment']) === 1) {
                     $isSector = false;
                 }
                 if ($isSector) {

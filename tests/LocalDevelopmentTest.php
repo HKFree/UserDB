@@ -27,8 +27,11 @@ try {
         ->setBody('Local development mail');
     $mailer->send($message);
     $files = glob($directory . '/mail/*.eml');
+    Assert::true(is_array($files));
     Assert::count(1, $files);
-    Assert::contains('Local development mail', file_get_contents($files[0]));
+    $mail = file_get_contents($files[0]);
+    Assert::true(is_string($mail));
+    Assert::contains('Local development mail', $mail);
 
     $crypto = $container->getByType(\App\Services\CryptoSluzba::class);
     Assert::same('local test', $crypto->decrypt($crypto->encrypt('local test')));
@@ -41,7 +44,7 @@ try {
 
     // The production image raises the limit for forms with many IP addresses. With a lower limit here PHP
     // would drop the rest of such a form without an error.
-    Assert::same(1, preg_match('~max_input_vars = (\d+)~', FileSystem::read(__DIR__ . '/../Dockerfile'), $productionLimit));
+    Assert::true(preg_match('~max_input_vars = (\d+)~', FileSystem::read(__DIR__ . '/../Dockerfile'), $productionLimit) === 1);
     Assert::same($productionLimit[1], ini_get('max_input_vars'));
 
     $cookieName = 'userdb_demo_persona_' . substr(hash('sha256', dirname(__DIR__)), 0, 20);

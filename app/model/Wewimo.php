@@ -70,7 +70,7 @@ class Wewimo
         $systemResourcesResponses = $client->sendSync(new RouterOS\Request('/system/resource/print'));
         // actually, there is only one row in the response, but we have to iterate
         foreach ($systemResourcesResponses as $response) {
-            if ($response->getType() === Response::TYPE_DATA) {
+            if ($response !== false && $response->getType() === Response::TYPE_DATA) {
                 $row = $response->getIterator()->getArrayCopy(); // ArrayObject => array
                 $data['resources'] = $row;
             }
@@ -79,7 +79,7 @@ class Wewimo
         // get wireless table
         $wirelessTableResponses = $client->sendSync(new RouterOS\Request('/interface/wireless/print'));
         foreach ($wirelessTableResponses as $response) {
-            if ($response->getType() === Response::TYPE_DATA) {
+            if ($response !== false && $response->getType() === Response::TYPE_DATA) {
                 $row = $response->getIterator()->getArrayCopy(); // ArrayObject => array
                 // merge default values and real values (override defaults with real, leave default when real value missing)
                 $row = array_merge($defaultInterfaceRow, $row);
@@ -90,7 +90,7 @@ class Wewimo
                 // get monitored values (e.g. current tx power)
                 $wirelessInterfaceMonitorResponses = $client->sendSync(new RouterOS\Request('/interface wireless monitor numbers='.$row['.id'].' once'));
                 foreach ($wirelessInterfaceMonitorResponses as $response2) {
-                    if ($response2->getType() === Response::TYPE_DATA) {
+                    if ($response2 !== false && $response2->getType() === Response::TYPE_DATA) {
                         $row2 = $response2->getIterator()->getArrayCopy();
                         $this->parseAddCurrentTxPower($row2);
                         $data['interfaces'][$row['name']]['monitor'] = $row2;
@@ -104,7 +104,7 @@ class Wewimo
         $neighborsByMac = array();
         $neighborsByIp = array();
         foreach ($neighborsTableResponses as $neighResponse) {
-            if ($neighResponse->getType() === Response::TYPE_DATA) {
+            if ($neighResponse !== false && $neighResponse->getType() === Response::TYPE_DATA) {
                 $row = $neighResponse->getIterator()->getArrayCopy(); // ArrayObject => array
                 // merge default values and real values (override defaults with real, leave default when real value missing)
                 $row = array_merge($defaultNeighborRow, $row);
@@ -127,7 +127,7 @@ class Wewimo
         // see  /interface wireless registration-table print stats
         // command in terminal for available attributes
         foreach ($regTableResponses as $response) {
-            if ($response->getType() === Response::TYPE_DATA) {
+            if ($response !== false && $response->getType() === Response::TYPE_DATA) {
                 $row = $response->getIterator()->getArrayCopy(); // ArrayObject => array
                 // merge default values and real values (override defaults with real, leave default when real value missing)
                 $row = array_merge($defaultRegistrationRow, $row);
@@ -177,16 +177,21 @@ class Wewimo
         $monitorRow['x-current-tx-powers'] = [];
         if (array_key_exists('current-tx-powers', $monitorRow)) {
             // comma is usually used as a separator of different modulation rates but in some versions semicolon is used instead
-            foreach (preg_split('/[;,]/', $monitorRow['current-tx-powers']) as $modulationRec) {
-                if (preg_match('/^(.+?):(\d+)/', $modulationRec, $match)) {
+            foreach (explode(',', str_replace(';', ',', $monitorRow['current-tx-powers'])) as $modulationRec) {
+                if (preg_match('/^(.+?):(\d+)/', $modulationRec, $match) === 1) {
                     $monitorRow['x-current-tx-powers'][$match[1]] = $match[2];
                 }
             }
         }
     }
 
-    /** @param int|float|numeric-string $dBm */
-    private function dbm2pct($dBm, int $min = -100, int $max = -20): float {
+    private function dbm2pct(mixed $dBm, int $min = -100, int $max = -20): float {
+        if (is_string($dBm) && preg_match('/^(-?\d+(?:\.\d+)?)dBm?(?:@.*)?$/D', $dBm, $matches) === 1) {
+            $dBm = $matches[1];
+        }
+        if (!is_numeric($dBm)) {
+            throw new Nette\UnexpectedValueException('Wewimo vrátilo nečíselnou hodnotu signálu.');
+        }
         // linear approx.
         $a = 100 / ($max - $min);
         $b = -$a * $min;
@@ -204,7 +209,7 @@ class Wewimo
     /** @param array<string, mixed> $assocArray */
     public function sanitizeAttribute(array &$assocArray, string $attributeName): void {
         if (array_key_exists($attributeName, $assocArray)) {
-            if (!mb_detect_encoding($assocArray[$attributeName], 'UTF-8', true)) {
+            if (mb_detect_encoding($assocArray[$attributeName], 'UTF-8', true) === false) {
                 // if not valid UTF-8 string, convert from latin-1 to UTF-8
                 $assocArray[$attributeName] =  mb_convert_encoding($assocArray[$attributeName], 'UTF-8', 'ISO-8859-1'); // TODO maybe detect which encoding is used in source string
                 //$assocArray[$attributeName] = urlencode($assocArray[$attributeName]); // for debugging purpose
@@ -218,7 +223,7 @@ class Wewimo
      */
     public function getWewimoFullData($apId, string $invokerStr, ?string $ip = null): array {
         // AP podle ID
-        $apt = $this->ap->getAP($apId * 1);
+        $apt = $this->ap->getAP($apId);
         $wewimoMultiData = [];
         $wewimoMultiData['devices'] = [];
         if ($apt === null) {

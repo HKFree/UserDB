@@ -36,6 +36,8 @@ final class SubnetTest extends TestCase
             ['0.0.0.0/0.0', true],
             ['::/0', false],
             ['2001:db8::/0', false],
+            ['::/24', false],
+            ['2001:db8::/32', false],
             ['10.107.0.0/0', false],
             ['0.0.0.1/0', false],
             ['255.255.255.255/0', false],
@@ -45,6 +47,12 @@ final class SubnetTest extends TestCase
     /** @dataProvider validationCases */
     public function testValidation(string $subnet, bool $expected): void {
         Assert::same($expected, $this->model->validateSubnet($subnet));
+    }
+
+    public function testInvalidSubnetDataIsRejected(): void {
+        Assert::exception(fn () => $this->model->parseSubnet('192.0.2.0/mask'), \Nette\InvalidArgumentException::class);
+        Assert::exception(fn () => $this->model->checkColision('invalid/24', '192.0.2.0/24'), \Nette\InvalidArgumentException::class);
+        Assert::exception(fn () => $this->model->checkColision('192.0.2.0/24', '::/24'), \Nette\InvalidArgumentException::class);
     }
 
     /** @return list<array{int, string}> */

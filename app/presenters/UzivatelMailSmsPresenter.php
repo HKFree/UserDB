@@ -107,7 +107,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $form->onSuccess[] = array($this, 'emailFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             if ($user !== null) {
                 $form->setValues($user);
@@ -175,7 +175,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $form->onSuccess[] = array($this, 'emailallFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
             $validni = [];
@@ -252,7 +252,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $form->onSuccess[] = array($this, 'smsFormSucceded');
         }
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             if ($user !== null) {
                 $form->setValues($user);
@@ -291,7 +291,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $form->onSuccess[] = array($this, 'smsallFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $ap = $this->ap->getAP($this->getParameter('id'));
             $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');

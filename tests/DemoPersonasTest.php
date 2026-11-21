@@ -134,7 +134,9 @@ final class DemoPersonasTest extends TestCase
         Assert::same(302, $status);
         Assert::contains('Location: /', $headers);
         Assert::contains('Cache-Control: no-store', $headers);
-        $cookies = array_values(preg_grep('~^Set-Cookie:~i', $headers));
+        $matches = preg_grep('~^Set-Cookie:~i', $headers);
+        Assert::true(is_array($matches));
+        $cookies = array_values($matches);
         Assert::count(1, $cookies);
         Assert::contains("Set-Cookie: $cookieName=$id;", $cookies[0]);
         Assert::contains('; path=/', strtolower($cookies[0]));
@@ -146,15 +148,16 @@ final class DemoPersonasTest extends TestCase
 
     private function startServer(): int {
         $socket = stream_socket_server('tcp://127.0.0.1:0');
-        Assert::type('resource', $socket);
+        Assert::true(is_resource($socket));
         $port = (int) substr(strrchr((string) stream_socket_get_name($socket, false), ':') ?: '', 1);
         fclose($socket);
         $command = [PHP_BINARY, '-d', 'display_errors=1', '-d', 'error_reporting=-1', '-S', "127.0.0.1:$port", '-t', __DIR__ . '/../www', __DIR__ . '/../scripts/userdb_dev_router.php'];
         // Missing Flox setup would make the application bootstrap throw. The router must never reach it.
         $environment = ['FLOX_ENV_CACHE' => '', 'USERDB_MARIADB_SOCKET' => '', 'PHP_CLI_SERVER_WORKERS' => ''] + getenv();
         $null = ['file', '/dev/null', 'r+'];
-        $this->server = proc_open($command, [$null, $null, $null], $pipes, null, $environment);
-        Assert::type('resource', $this->server);
+        $server = proc_open($command, [$null, $null, $null], $pipes, null, $environment);
+        Assert::true(is_resource($server));
+        $this->server = $server;
         for ($attempt = 0; $attempt < 100; $attempt++) {
             $connection = @fsockopen('127.0.0.1', $port, $code, $message, 0.1);
             if ($connection !== false) {
@@ -173,10 +176,10 @@ final class DemoPersonasTest extends TestCase
     private function request(int $port, string $path, array $headers = [], string $method = 'GET'): array {
         $context = stream_context_create(['http' => ['method' => $method, 'header' => $headers, 'follow_location' => 0, 'ignore_errors' => true]]);
         $body = file_get_contents("http://127.0.0.1:$port$path", false, $context);
-        Assert::type('string', $body);
+        Assert::true(is_string($body));
         $responseHeaders = $http_response_header;
-        Assert::match('~^HTTP/\S+ (\d{3})~', $responseHeaders[0]);
-        return [(int) substr($responseHeaders[0], strpos($responseHeaders[0], ' ') + 1, 3), $responseHeaders, $body];
+        Assert::true(preg_match('~^HTTP/\S+ (\d{3})~', $responseHeaders[0], $status) === 1);
+        return [(int) $status[1], $responseHeaders, $body];
     }
 }
 

@@ -26,7 +26,7 @@ class GeneratorSmlouvy
             );
         }
 
-        if (!getenv('PDF_GENERATOR_URL')) {
+        if (in_array(getenv('PDF_GENERATOR_URL'), [false, '', '0'], true)) {
             throw new \Exception("Missing PDF_GENERATOR_URL environment variable\n");
         }
 

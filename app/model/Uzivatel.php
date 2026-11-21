@@ -21,14 +21,14 @@ class Uzivatel extends Table
      * @return list<Nette\Database\Row>
      */
     public function getSeznamSpravcuUzivatele($id_uzivatel): array {
-        return $this->getConnection()->query('SELECT SO . *
+        return array_values($this->getConnection()->query('SELECT SO . *
 FROM  `Uzivatel` U
 LEFT JOIN Ap A ON U.Ap_id = A.id
 LEFT JOIN Oblast O ON A.Oblast_id = O.id
 LEFT JOIN SpravceOblasti S ON S.Oblast_id = O.id
 LEFT JOIN Uzivatel SO ON SO.id = S.Uzivatel_id
 WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.id = ?', $id_uzivatel)
-                        ->fetchAll();
+                        ->fetchAll());
     }
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
@@ -139,7 +139,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             OR TypPohybuNaUctu_id = 7
             ) GROUP BY YEAR(datum) ASC, MONTH(datum) ASC")->fetchAll();
 
-        return $activationsCount;
+        return array_values($activationsCount);
     }
 
     /**
@@ -262,7 +262,8 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         $all = '';
         $password = '';
         foreach ($sets as $set) {
-            $password .= $set[array_rand(str_split($set))];
+            $characters = str_split($set);
+            $password .= $characters[array_rand($characters)];
             $all .= $set;
         }
 

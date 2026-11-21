@@ -140,14 +140,20 @@ final class DemoDataPresenterTest extends TestCase
         foreach ($constraints as $name => $columns) {
             $join = [];
             $notNull = [];
+            $joinParameters = [];
+            $notNullParameters = [];
             foreach ($columns as $column) {
-                $join[] = 'child.`' . $column->COLUMN_NAME . '` = parent.`' . $column->REFERENCED_COLUMN_NAME . '`';
-                $notNull[] = 'child.`' . $column->COLUMN_NAME . '` IS NOT NULL';
+                $join[] = '?name = ?name';
+                $joinParameters[] = 'child.' . $column->COLUMN_NAME;
+                $joinParameters[] = 'parent.' . $column->REFERENCED_COLUMN_NAME;
+                $notNull[] = '?name IS NOT NULL';
+                $notNullParameters[] = 'child.' . $column->COLUMN_NAME;
             }
             $first = $columns[0];
-            $sql = 'SELECT COUNT(*) FROM `' . $first->TABLE_NAME . '` child LEFT JOIN `' . $first->REFERENCED_TABLE_NAME . '` parent ON '
-                . implode(' AND ', $join) . ' WHERE ' . implode(' AND ', $notNull) . ' AND parent.`' . $first->REFERENCED_COLUMN_NAME . '` IS NULL';
-            Assert::same(0, $this->database->fetchField($sql), $name);
+            $sql = 'SELECT COUNT(*) FROM ?name child LEFT JOIN ?name parent ON '
+                . implode(' AND ', $join) . ' WHERE ' . implode(' AND ', $notNull) . ' AND ?name IS NULL';
+            $parameters = [$first->TABLE_NAME, $first->REFERENCED_TABLE_NAME, ...$joinParameters, ...$notNullParameters, 'parent.' . $first->REFERENCED_COLUMN_NAME];
+            Assert::same(0, $this->database->fetchField($sql, ...$parameters), $name);
         }
         Assert::same([20102 => 29999], $this->database->query(<<<'SQL'
             SELECT child.id, child.w_ap_IPAdresa_id FROM IPAdresa child
@@ -454,6 +460,7 @@ final class DemoDataPresenterTest extends TestCase
         }
         $out = [];
         foreach ($nodes as $node) {
+            Assert::true($node instanceof \DOMNode);
             $out[] = trim((string) preg_replace('/\s+/u', ' ', $node->textContent));
         }
         return $out;

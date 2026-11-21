@@ -28,7 +28,7 @@ class WewimoPresenter extends BasePresenter
      */
     public function fetchWewimo($apId, $ip = null): void {
         // AP podle ID
-        $apt = $this->ap->getAP($apId * 1);
+        $apt = $this->ap->getAP($apId);
         if ($apt === null) {
             $this->error('AP not found');
         } else {

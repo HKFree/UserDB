@@ -45,7 +45,7 @@ class VnejsiScanner
         $date = "";
 
         while ($line !== false) {
-            if (preg_match('/^#/', $line)) {
+            if (preg_match('/^#/', $line) === 1) {
                 $this->scanDate = \DateTime::createFromFormat('\#Y.m.d\_H.i', $line);
                 $line = strtok($separator);
                 continue;
@@ -71,7 +71,7 @@ class VnejsiScanner
     }
 
     public function getScanDate(): \DateTime|false|null {
-        if (!$this->scanDate) {
+        if ($this->scanDate === null || $this->scanDate === false) {
             $this->downloadScan();
         }
 

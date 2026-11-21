@@ -121,11 +121,11 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $form->onValidate[] = array($this, 'validateRightsForm');
 
         // pokud editujeme, nacteme existujici opravneni
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
             foreach ($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
-                $form["rights"][$rights_id]->setValues($rights_data);
+                $rights->createOne($rights_id)->setValues($rights_data);
             }
             if ($user !== null) {
                 $form->setValues($user);
@@ -135,13 +135,15 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return $form;
     }
 
-    /** @return 0|void */
-    public function validateRightsForm(Form $form) {
+    public function validateRightsForm(Form $form): void {
         $data = $form->getHttpData();
+        if (!is_array($data)) {
+            throw new Nette\UnexpectedValueException('Data celého formuláře musí být pole.');
+        }
 
         // Validujeme jenom při uložení formuláře
         if (!isset($data["save"])) {
-            return (0);
+            return;
         }
 
         $values = $form->getUntrustedValues();
@@ -176,7 +178,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             $pravoId = $pravo->id;
 
             if (in_array($pravo->id, [null, '', 0, '0'], true)) {
-                $pravoId = $this->spravceOblasti->insert($pravo)->id;
+                $pravoId = $this->spravceOblasti->insertRow($pravo)->id;
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
                 $this->log->logujInsert($novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             } else {
@@ -257,11 +259,11 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'uzivatelCCFormSucceded');
 
         // pokud editujeme, nacteme existujici opravneni
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
             foreach ($user->related("CestneClenstviUzivatele.Uzivatel_id") as $rights_id => $rights_data) {
-                $form["rights"][$rights_id]->setValues($rights_data);
+                $rights->createOne($rights_id)->setValues($rights_data);
             }
             if ($user !== null) {
                 $form->setValues($user);
@@ -293,7 +295,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             }
 
             if (in_array($pravo->id, [null, '', 0, '0'], true)) {
-                $pravoId = $this->cestneClenstviUzivatele->insert($pravo)->id;
+                $pravoId = $this->cestneClenstviUzivatele->insertRow($pravo)->id;
 
                 $mail = new Message();
                 $mail->setFrom('UserDB <userdb@hkfree.org>')
