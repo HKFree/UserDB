@@ -80,6 +80,8 @@ final class IpTransferPresenterTest extends DatabaseTestCase
         $page = $this->presenters->ui($this->scenario->actors['ownSo']->id, 'Uzivatel', $this->parameters());
         Assert::same(200, $page->status);
         Assert::count(1, DomQuery::fromHtml($page->html)->find('form#frm-presunIpForm'));
+        Assert::count(1, DomQuery::fromHtml($page->html)->find('select[name="cil"]'));
+        Assert::count(1, DomQuery::fromHtml($page->html)->find('input[type="submit"][name="potvrdit"]'));
         Assert::contains($this->ip->ip_adresa, $page->html);
         Assert::notContains('device-only', $page->html);
         Assert::same($before, $this->scenario->snapshot());
@@ -177,6 +179,10 @@ final class IpTransferPresenterTest extends DatabaseTestCase
         $this->database->table('Uzivatel')->where('id != ?', $s->member->id)->update(['systemovy' => 1]);
         $page = $this->presenters->ui($s->actors['ownSo']->id, 'Uzivatel', $this->parameters());
         Assert::contains('Na tomto AP není jiný vhodný člen, kterého smíte upravovat.', $page->html);
+        $dom = DomQuery::fromHtml($page->html);
+        Assert::count(0, $dom->find('select[name="cil"]'));
+        Assert::count(0, $dom->find('input[type="submit"][name="potvrdit"]'));
+        Assert::count(1, $dom->find('a[href$="/uzivatel/edit/' . $s->member->id . '"]'));
         Assert::same($s->member->id, $this->requireRow($this->database->table('IPAdresa')->get($this->ip->id))->Uzivatel_id);
     }
 
