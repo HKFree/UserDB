@@ -102,7 +102,7 @@ class MailingPresenter extends UzivatelPresenter
         $this->template->nazevUzivatele = $this->uzivatel->nazevUzivatele($uzivatel->id);
         $this->template->oneclick_auth_code = $this->oneclickAuthCode($uzivatel);
         $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uid);
-        $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+        $this->template->televize_cena = $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
     /** @param string|null $variant */

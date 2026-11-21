@@ -32,7 +32,7 @@ class UzivatelListPresenter extends BasePresenter
 
     public function renderList(): void {
         // otestujeme, jestli máme id APčka a ono existuje
-        if ($this->getParameter('id') && $apt = $this->ap->getAP($this->getParameter('id'))) {
+        if ($this->getParameter('id') && ($apt = $this->ap->getAP($this->getParameter('id'))) !== null) {
             $id = $this->getParameter('id');
             $cestnych = count($this->cestneClenstviUzivatele->getListCCOfAP($id));
             $this->template->u_celkem = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?", 1)->count("*");

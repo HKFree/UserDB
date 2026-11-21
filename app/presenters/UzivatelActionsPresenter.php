@@ -118,7 +118,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionExportPdf(): void {
         if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
                 $this->sendResponse($pdf);
@@ -127,7 +127,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
     public function actionSendRegActivation(): void {
         if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 $hash = base64_encode($uzivatel->id . '-' . md5($this->parameters->salt . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
@@ -155,7 +155,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionExportAndSendRegForm(): void {
         if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 if ($uzivatel->spolek == 0) {
                     $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
 
@@ -197,7 +197,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $user_id = $this->getParameter('id');
         $current_user = $this->uzivatel->find($user_id);
 
-        if (!$current_user) {
+        if ($current_user === null) {
             $this->flashMessage('Žádný uživatel s tímto id.');
             $this->redirect('UzivatelList:listall');
         }

@@ -36,7 +36,7 @@ class AplikaceToken extends Table
      */
     public function verifyToken($uid, $token): bool {
         $token = $this->findAll()->where('Uzivatel_id', $uid)->where('token', $token)->fetch();
-        if ($token) {
+        if ($token !== null) {
             $token->update(array('pouzit_naposledy' => new Nette\Utils\DateTime()));
             return (true);
         } else {

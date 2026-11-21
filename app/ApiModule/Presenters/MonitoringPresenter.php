@@ -43,7 +43,7 @@ class MonitoringPresenter extends ApiPresenter
         if ($typ) {
             $typZarizeni = $this->typZarizeni->find($typ);
 
-            if (!$typZarizeni) {
+            if ($typZarizeni === null) {
                 $this->sendResponse(new JsonResponse(['result' => 'ERROR, typZarizeni ' . $typ . ' not valid']));
             }
             $adresy = $adresy->where('TypZarizeni_id', $typZarizeni->id);
@@ -51,7 +51,7 @@ class MonitoringPresenter extends ApiPresenter
 
         if ($ap) {
             $apRec = $this->ap->find($ap);
-            if (!$apRec) {
+            if ($apRec === null) {
                 $this->sendResponse(new JsonResponse(['result' => 'ERROR, AP ID ' . $ap . ' does not exist']));
             }
             if ($uzivatele) {

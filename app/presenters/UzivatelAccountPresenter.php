@@ -89,7 +89,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $id = $this->getParameter('id');
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
         //\Tracy\Debugger::barDump($pohyb->Uzivatel);
-        if ($pohyb) {
+        if ($pohyb !== null) {
             if ($pohyb->Uzivatel_id) {
                 $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
             } else {
@@ -109,7 +109,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
     /** Platby člena vidí správce jeho AP */
     private function smiVidetPlatby(): bool {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
-        return $uzivatel && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+        return $uzivatel !== null && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
     }
 
     public function renderAccount(): void {

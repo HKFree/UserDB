@@ -130,13 +130,13 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         if ($ip->w_ssid) {
             // najit IPAdresu zarizeni (AP), na ktere je tato ip (podle Wewima) pripojena
             $apAdresa = $ip->ref('IPAdresa', 'w_ap_IPAdresa_id');
-            if ($apAdresa) {
+            if ($apAdresa !== null) {
                 // ok, mame adresu APcka, muze byt navazano na uzivatele (hodne nepravdepodobne),
                 // nebo muze byt navazano na (entitu) AP
-                if ($apAdresa->ref('Uzivatel')) {
+                if ($apAdresa->ref('Uzivatel') !== null) {
                     $apId = $apAdresa->ref('Uzivatel')->ref('Ap')->id;
                     return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
-                } elseif ($apAdresa->ref('Ap')) {
+                } elseif ($apAdresa->ref('Ap') !== null) {
                     $apId = $apAdresa->ref('Ap')->id;
                     return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
                 }

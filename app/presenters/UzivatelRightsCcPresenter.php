@@ -127,7 +127,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             foreach ($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
             }
-            if ($user) {
+            if ($user !== null) {
                 $form->setValues($user);
             }
         }
@@ -206,7 +206,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
      */
     private function smiUpravitCc($idUzivatele): bool {
         $uzivatel = $this->uzivatel->getUzivatel($idUzivatele);
-        return $uzivatel && ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()));
+        return $uzivatel !== null && ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()));
     }
 
     /** Žádost o ČČ schvaluje nebo zamítá jen VV */
@@ -271,7 +271,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             foreach ($user->related("CestneClenstviUzivatele.Uzivatel_id") as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
             }
-            if ($user) {
+            if ($user !== null) {
                 $form->setValues($user);
             }
         }

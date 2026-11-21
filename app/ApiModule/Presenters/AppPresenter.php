@@ -33,7 +33,7 @@ class AppPresenter extends ApiPresenter
         $heslo = $this->request->getPost('heslo');
 
         $u = $this->uzivatel->getUzivatel($uid);
-        if (!$u) {
+        if ($u === null) {
             $this->sendLoginFailed($uid);
         }
 
@@ -73,7 +73,7 @@ class AppPresenter extends ApiPresenter
         $this->verifyToken($uid, $token);
 
         $u = $this->uzivatel->getUzivatel($uid);
-        if (!$u) {
+        if ($u === null) {
             $this->sendResponse(new JsonResponse(['result' => 'App error, userid not found']));
         }
 

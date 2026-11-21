@@ -26,7 +26,7 @@ class FilePresenter extends BasePresenter
     public function actionDownloadWinboxCmd($id): void {
         if ($id) {
             $ip = $this->ipAdresa->getIPAdresa($id);
-            if ($ip) {
+            if ($ip !== null) {
                 $apOfIp = $this->ipAdresa->getAPOfIP($ip);
                 if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($apOfIp, $this->getUser())) {
                     $cmd = "winbox.exe " . $ip->ip_adresa . " " . $ip->login . "\n";

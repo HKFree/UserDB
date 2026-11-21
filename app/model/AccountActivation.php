@@ -22,7 +22,7 @@ class AccountActivation
     /** @param int|string $id */
     public function activateAccount(Nette\Security\User $loggedUser, $id): bool {
         $uzivatel = $this->uzivatel->getUzivatel($id);
-        if ($uzivatel) {
+        if ($uzivatel !== null) {
             $this->uzivatel->update($uzivatel->id, array('money_aktivni' => 1));
             $this->uzivatelskeKonto->insert(array('Uzivatel_id' => $uzivatel->id,
                                                     'TypPohybuNaUctu_id' => 8,
@@ -39,7 +39,7 @@ class AccountActivation
     /** @param int|string $id */
     public function reactivateAccount(Nette\Security\User $loggedUser, $id): string|true {
         $uzivatel = $this->uzivatel->getUzivatel($id);
-        if ($uzivatel) {
+        if ($uzivatel !== null) {
             if ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1) {
                 $this->uzivatel->update($uzivatel->id, array('money_aktivni' => 1,'money_deaktivace' => 0));
 
@@ -72,7 +72,7 @@ class AccountActivation
     /** @param int|string $id */
     public function deactivateAccount(Nette\Security\User $loggedUser, $id): bool {
         $uzivatel = $this->uzivatel->getUzivatel($id);
-        if ($uzivatel) {
+        if ($uzivatel !== null) {
             $this->uzivatel->update($uzivatel->id, array('money_aktivni' => 1,'money_deaktivace' => 1));
 
             $this->uzivatelskeKonto->insert(array('Uzivatel_id' => $uzivatel->id,

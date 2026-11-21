@@ -41,7 +41,7 @@ class SpravaOblastiPresenter extends SpravaPresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if ($this->getParameter('id') && !$submitujeSe) {
             $existujiciOblast = $this->oblast->getOblast($this->getParameter('id'));
-            if ($existujiciOblast) {
+            if ($existujiciOblast !== null) {
                 $form->setValues($existujiciOblast);
             }
         }
@@ -88,7 +88,7 @@ class SpravaOblastiPresenter extends SpravaPresenter
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if ($this->getParameter('id') && !$submitujeSe) {
             $existujiciAp = $this->ap->getAP($this->getParameter('id'));
-            if ($existujiciAp) {
+            if ($existujiciAp !== null) {
                 $form->setValues($existujiciAp);
             }
         }

@@ -20,7 +20,7 @@ class UzivatelPresenter extends ApiPresenter
         parent::forceMethod('GET');
 
         $uzivatel = $this->uzivatel->getUzivatel($id);
-        if (!$uzivatel) {
+        if ($uzivatel === null) {
             $this->httpResponse->setCode(Response::S404_NOT_FOUND);
             $this->sendResponse(new JsonResponse(['result' => 'User ID not found']));
         }
@@ -60,7 +60,7 @@ class UzivatelPresenter extends ApiPresenter
         parent::forceMethod('GET');
 
         $ip = $this->ipAdresa->findIp(['ip_adresa' => $id, 'Ap_id' => null]);
-        $uzivatel = $ip ? $ip->Uzivatel : null;
+        $uzivatel = $ip !== null ? $ip->Uzivatel : null;
         if (!$uzivatel) {
             $this->httpResponse->setCode(Response::S404_NOT_FOUND);
             $this->sendResponse(new JsonResponse(['result' => 'User for IP address not found']));

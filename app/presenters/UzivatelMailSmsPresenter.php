@@ -78,12 +78,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     /** E-mail a SMS členovi posílá správce jeho AP */
     private function smiPsatClenovi(): bool {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
-        return $uzivatel && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+        return $uzivatel !== null && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
     }
 
     /** E-mail a SMS všem členům AP posílá správce AP */
     private function smiPsatCelemuAp(): bool {
-        return $this->ap->getAP($this->getParameter('id')) && $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+        return $this->ap->getAP($this->getParameter('id')) !== null && $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
     }
 
     public function renderEmail(): void {
@@ -109,7 +109,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if ($this->getParameter('id') && !$submitujeSe) {
-            if ($user) {
+            if ($user !== null) {
                 $form->setValues($user);
                 $form->setDefaults(array(
                         'from' => 0,
@@ -186,7 +186,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             }
             $tolist = join(";", $validni);
 
-            if ($ap) {
+            if ($ap !== null) {
                 $form->setValues($ap);
                 $form->setDefaults(array(
                         'from' => 0,
@@ -254,7 +254,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
         if ($this->getParameter('id') && !$submitujeSe) {
-            if ($user) {
+            if ($user !== null) {
                 $form->setValues($user);
                 $form->setDefaults(array(
                         'komu' => $user->telefon
@@ -303,7 +303,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             }
             $tls = join(",", $validni);
 
-            if ($ap) {
+            if ($ap !== null) {
                 $form->setValues($ap);
                 $form->setDefaults(array(
                         'komu' => $tls

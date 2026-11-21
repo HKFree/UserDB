@@ -221,7 +221,7 @@ class Wewimo
         $apt = $this->ap->getAP($apId * 1);
         $wewimoMultiData = [];
         $wewimoMultiData['devices'] = [];
-        if (!$apt) {
+        if ($apt === null) {
             $wewimoMultiData['error'] = 'Uknown AP ' . $apId;
             return $wewimoMultiData;
         }

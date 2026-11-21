@@ -24,7 +24,7 @@ class DevicePresenter extends ApiPresenter
     /** @param string|null $id */
     public function actionGetCredentials($id): void {
         $ip = $this->ipadresa->findIp(array('ip_adresa' => $id));
-        if (!$ip) {
+        if ($ip === null) {
             $this->sendResponse(new JsonResponse(['result' => 'IP address not found', 'serverTime' => date("c")]));
         }
 
@@ -39,7 +39,7 @@ class DevicePresenter extends ApiPresenter
         parent::forceMethod("POST");
 
         $ip = $this->ipadresa->findIp(array('ip_adresa' => $id));
-        if (!$ip) {
+        if ($ip === null) {
             $this->sendResponse(new JsonResponse(['result' => 'IP address not found', 'serverTime' => date("c")]));
         }
 

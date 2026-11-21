@@ -66,7 +66,7 @@ class IPAdresa extends Table
      */
     public function getDuplicateIP($ip, $id): ?string {
         $existujici = $this->findAll()->where('ip_adresa = ?', $ip)->where('id != ?', $id)->fetch();
-        if ($existujici) {
+        if ($existujici !== null) {
             return $existujici->ip_adresa;//$existujici->ref('Uzivatel', 'Uzivatel_id')->id;
         }
         return null;
@@ -205,7 +205,7 @@ class IPAdresa extends Table
         $ipTitle = $subnetModeInfo ? $subnetModeInfo['ipTitle'] : $ip->ip_adresa;
 
         $tr = $adresyTab->create('tr');
-        $tr->setId('highlightable-ip'.($ip ? $ip->ip_adresa : $subnetModeInfo['ipAdresa']));
+        $tr->setId('highlightable-ip'.($ip !== null ? $ip->ip_adresa : $subnetModeInfo['ipAdresa']));
         if ($subnetModeInfo && array_key_exists('rowClass', $subnetModeInfo)) {
             $tr->setClass($subnetModeInfo['rowClass']);
         }
@@ -218,7 +218,7 @@ class IPAdresa extends Table
             $tr->create('td')->setText($ipTitle);
         }
 
-        if ($igwCheck && $ip) {
+        if ($igwCheck && $ip !== null) {
             $igw1resp = $this->file_get_contents_curl($this->igw1IpCheckerUrl.$ip->ip_adresa);
             if (strpos($igw1resp, $ip->ip_adresa.' 1') !== false) {
                 $attr = $tr->create('td');
@@ -251,7 +251,7 @@ class IPAdresa extends Table
             }*/
         }
 
-        if ($ip) {
+        if ($ip !== null) {
             $ip_password = '';
             if ($canViewCredentialsOrEdit) {
                 if ($ip->heslo_sifrovane == 1) {

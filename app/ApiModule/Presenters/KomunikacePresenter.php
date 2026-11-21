@@ -27,7 +27,7 @@ class KomunikacePresenter extends ApiPresenter
         $text = $this->getHttpRequest()->getPost("text");
 
         $u = $this->uzivatel->getUzivatel($uid);
-        if (!$u) {
+        if ($u === null) {
             $this->sendResponse(new JsonResponse(['result' => 'User ID not found', 'resultNumeric' => -2, 'serverTime' => date("c")]));
         }
 

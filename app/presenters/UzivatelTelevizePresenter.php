@@ -43,7 +43,7 @@ class UzivatelTelevizePresenter extends BasePresenter
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
         $this->template->televize_objednana = $televizeRow?->objednana == 1;
-        $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+        $this->template->televize_cena = $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
 
         $this->template->televizeAktivniDnesRow = $uzivatel->related('UzivatelTelevizeAktivni')
             ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
@@ -63,7 +63,7 @@ class UzivatelTelevizePresenter extends BasePresenter
     private function cena($uid) {
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-        return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+        return $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
     protected function createComponentTelevizeCenaForm(): Form {

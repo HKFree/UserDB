@@ -23,7 +23,7 @@ class SpravaSmluvPresenter extends BasePresenter
     /** @param int|string|null $contract_id */
     private function idAndContractExists($contract_id): void {
         if (
-            !(isset($contract_id) && $this->smlouva->find($contract_id))
+            !(isset($contract_id) && $this->smlouva->find($contract_id) !== null)
         ) {
             $this->flashMessage('Nezname ID smlouvy.');
             $this->redirect('Homepage:default');

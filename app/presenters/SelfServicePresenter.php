@@ -34,7 +34,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
             list($uid, $hash) = explode('-', $decodedKey);
 
             $uzivatel = $this->uzivatelModel->getUzivatel($uid);
-            if ($uzivatel) {
+            if ($uzivatel !== null) {
                 $this->template->uzivatel = $uzivatel;
 
                 if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
@@ -74,7 +74,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
         $this->template->error = null;
 
         $uzivatel = $this->uzivatelModel->getUzivatel($uid);
-        if (!$uzivatel) {
+        if ($uzivatel === null) {
             $this->error('neplatný odkaz');
         }
         $oneclick_auth_code = $this->cryptosvc->decrypt($uzivatel->oneclick_auth);

@@ -146,7 +146,7 @@ class StatusPresenter extends ApiPresenter
         $ip_tazatele = $this->getHttpRequest()->getRemoteAddress();
 
         $ip = $this->ipadresa->findIp(array("ip_adresa" => $ip_tazatele));
-        if (!$ip) {
+        if ($ip === null) {
             $this->sendResponse(new JsonResponse(false));
         }
 
