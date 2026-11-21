@@ -19,7 +19,7 @@ class Authenticator implements Security\IAuthenticator
     private bool|array $fakeUser;
 
     /** @param bool|array{userID: int|string, userName: string, passwordHash?: string} $fakeUser */
-    public function __construct($fakeUser, Nette\Database\Context $ctx) {
+    public function __construct(bool|array $fakeUser, Nette\Database\Explorer $ctx) {
         $this->context = $ctx;
         $this->fakeUser = $fakeUser;
     }
@@ -27,15 +27,14 @@ class Authenticator implements Security\IAuthenticator
     /**
      * Performs an authentication.
      * @param array{int|string|null, string|null} $credentials
-     * @return Nette\Security\Identity
      * @throws Nette\Security\AuthenticationException
      */
-    public function authenticate(array $credentials) {
+    public function authenticate(array $credentials): HkfIdentity {
         list($userID, $password) = $credentials;
         if (in_array($userID, [null, 0, '', '0'], true)) {
             throw new Nette\Security\AuthenticationException('User not found.');
         }
-        if ($this->fakeUser != false) {            /// debuging identity
+        if ((bool) $this->fakeUser) {            /// debuging identity
             $userID = $this->fakeUser["userID"];
             $nick = $this->fakeUser["userName"];
             $passwordHash = $this->fakeUser["passwordHash"] ?? 'dummy';  // optional

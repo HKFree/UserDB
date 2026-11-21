@@ -90,7 +90,7 @@ class GeneratorSmlouvy
           'email_spravce_oblasti' => sprintf('oblast%u@hkfree.org', $uzivatel->Ap->Oblast->id),
           'cena' => $cenaString
         ];
-        if ($uzivatel->TypPravniFormyUzivatele->text == "PO") {
+        if ($uzivatel->TypPravniFormyUzivatele->text === "PO") {
             $parametrySmlouvy['upresneni'] = 'Firma';
             $parametrySmlouvy['datum_narozeni'] = '';
             $parametrySmlouvy['firma'] = sprintf("%s, IČO: %s", $uzivatel->firma_nazev, $uzivatel->firma_ico);
@@ -98,7 +98,7 @@ class GeneratorSmlouvy
         for ($i = 1; $i <= count($ip4Adresy); ++$i) {
             $parametrySmlouvy["IPv4-$i"] = $ip4Adresy[$i - 1][0];
             $parametrySmlouvy["GW-$i"] = $ip4Adresy[$i - 1][1];
-            if ($i == 4) {
+            if ($i === 4) {
                 $parametrySmlouvy["IPv4-more"] = sprintf('... a další (%u)', count($ip4Adresy) - 4);
                 break;
             }

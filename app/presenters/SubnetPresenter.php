@@ -30,7 +30,7 @@ class SubnetPresenter extends BasePresenter
     public function renderOverview(): void {
         if ($this->maVyplnenyParametr('id')) {
             $targetSubnet = $this->getParameter('id');
-            if (substr($targetSubnet, -1) != ".") {
+            if (substr($targetSubnet, -1) !== ".") {
                 $targetSubnet .= ".";
             }
 
@@ -59,7 +59,7 @@ class SubnetPresenter extends BasePresenter
     public function renderDetail(): void {
         if ($this->maVyplnenyParametr('id')) {
             $targetSubnet = $this->getParameter('id');
-            if (substr($targetSubnet, -1) != ".") {
+            if (substr($targetSubnet, -1) !== ".") {
                 $targetSubnet .= ".";
             }
 
@@ -99,7 +99,7 @@ class SubnetPresenter extends BasePresenter
                 $networkBroadcastAddrClass = '';
                 if (array_key_exists($i, $networks)) {
                     $networkBroadcastAddrClass = 'danger subnet-ip-network-row';
-                } elseif ($i == ($lastindex + $lastlenght - 1)) {
+                } elseif ($i === ($lastindex + $lastlenght - 1)) {
                     $networkBroadcastAddrClass = 'danger subnet-ip-broadcast-row';
                 }
 

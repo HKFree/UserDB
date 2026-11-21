@@ -41,6 +41,8 @@ class SpravaCcPresenterTest extends Tester\TestCase
             'still undecided' => [0, 0, null, null],
             'unchanged approval' => [1, 1, '2027-12-31', null],
             'unchanged rejection' => [2, 2, null, null],
+            'approval changed to rejection' => [1, 2, null, 'zamítnuta'],
+            'rejection changed to approval' => [2, 1, null, 'schválena'],
             'reset to undecided' => [1, 0, null, null],
             'missing decision' => [1, null, null, null],
         ];
@@ -100,7 +102,7 @@ class SpravaCcPresenterTest extends Tester\TestCase
             'zadost_podana' => '2026-11-19',
             'plati_od' => '2026-12-01',
             'plati_do' => $endDate,
-            'schvaleno' => $state,
+            'schvaleno' => $state === null ? null : (string) $state,
             'poznamka' => 'Za pomoc spolku.',
         ]);
         $values = $form->getValues();

@@ -141,7 +141,7 @@ class Subnet extends Table
             ];
         }
 
-        if (count($subnets) == 1) {
+        if (count($subnets) === 1) {
             $subnet = $subnets->fetch();
 
             if (!in_array($subnet->arp_proxy, [0, false], true)) {
@@ -299,7 +299,7 @@ class Subnet extends Table
      * @return boolean
      */
     public function inSubnet($ip, $subnet) {
-        if ($subnet == "0.0.0.0/0") {
+        if ($subnet === "0.0.0.0/0") {
             return (true);
         }
         return ($this->checkColision($ip."/32", $subnet));
@@ -328,7 +328,7 @@ class Subnet extends Table
             }
         }
 
-        if (count($collisions) == 0) {
+        if (count($collisions) === 0) {
             return (false);
         } else {
             return ($collisions);
@@ -350,7 +350,7 @@ class Subnet extends Table
         $disected_subnet = explode("/", $subnet);
 
         // Zkontrolujeme jestli máme přesně jedno lomítko
-        if (count($disected_subnet) != 2) {
+        if (count($disected_subnet) !== 2) {
             return (false);
         }
 
@@ -370,13 +370,13 @@ class Subnet extends Table
 
         // Zkontrolujeme síť 0.0.0.0/0 (cokoliv jiného/0 zahodíme)
         // (hlavně protože % nemá rádo 2^32, musíme to vyfiltrovat tady)
-        if ($cidr == 0) {
-            return ($lnet == 0);
+        if ((float) $cidr === 0.0) {
+            return ($lnet === 0);
         }
 
         // Zkontroluje jestli opravdu jde o subnet a ne IP/maska
         $lmask = pow(2, 32 - $cidr);
-        return (($lnet % $lmask) == 0);
+        return (($lnet % $lmask) === 0);
     }
 
     /**

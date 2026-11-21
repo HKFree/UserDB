@@ -148,10 +148,10 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
         foreach ($values->rights as $pravo) {
             if (!in_array($pravo->id, [null, '', 0, '0'], true) && !$pravo->override) {
-                $starePravo = null;
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
-                if (($starePravo->od != null && $starePravo->od != $pravo->od) || ($starePravo->do != null && $starePravo->do != $pravo->do)
-                || $starePravo->Oblast_id != $pravo->Oblast_id || $starePravo->TypSpravceOblasti_id != $pravo->TypSpravceOblasti_id) {
+                if (($starePravo->od !== null && $starePravo->od->format('Y-m-d') !== $pravo->od?->format('Y-m-d'))
+                    || ($starePravo->do !== null && $starePravo->do->format('Y-m-d') !== $pravo->do?->format('Y-m-d'))
+                    || $starePravo->Oblast_id !== $pravo->Oblast_id || $starePravo->TypSpravceOblasti_id !== $pravo->TypSpravceOblasti_id) {
                     $form->addError('NERECYKLUJTE. Upravili jste starší právo a nezaškrtli jste tlačítko OPRAVA. Mysleli jste to vážně?');
                 }
             }

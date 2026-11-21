@@ -45,7 +45,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
      */
     public function checkRequirements(mixed $element): void {
         // due to CORS preflight test, we have to respond 200 OK (not 401) to OPTIONS request
-        if ($this->httpRequest->getMethod() == 'OPTIONS') {
+        if ($this->httpRequest->getMethod() === 'OPTIONS') {
             $this->handleOptionsMethod();
             return;
         }
@@ -106,7 +106,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     protected function checkApID($requestedApId = null) {
         if ($requestedApId !== null) {
             // Check if key is restricted to an AP and does not match to requested AP
-            if ($this->keyApID !== null && $this->keyApID !== 0 && $requestedApId != $this->keyApID) {
+            if ($this->keyApID !== null && $this->keyApID !== 0 && ltrim((string) $requestedApId, '0') !== (string) $this->keyApID) {
                 $this->sendForbidden('not allowed to view AP ' . $requestedApId);
             }
             return $requestedApId;
@@ -115,7 +115,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     }
 
     protected function forceMethod(string $method): void {
-        if ($this->httpRequest->getMethod() != $method) {
+        if ($this->httpRequest->getMethod() !== $method) {
             $this->httpResponse->setCode(Response::S405_METHOD_NOT_ALLOWED);
             $this->sendResponse(new JsonResponse(['result' => 'METHOD_NOT_ALLOWED: Use http method ' . $method, 'resultNumeric' => -1]));
         }

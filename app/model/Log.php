@@ -106,22 +106,22 @@ class Log extends Table
      * @return array<int|string, string> pole ipId=>ipAdresa
      */
     public function getAdvancedzLogu(array $ids, string $type = "ip"): array {
-        if ($type != "ip" && $type != "subnet") {
+        if ($type !== "ip" && $type !== "subnet") {
             throw new \InvalidArgumentException("Neznámý typ objektu: ".$type);
         }
 
         $names = array();
         foreach ($ids as $id) {
-            if ($type == "ip") {
+            if ($type === "ip") {
                 $names[] = "IPAdresa[".$id."].ip_adresa";
-            } elseif ($type == "subnet") {
+            } elseif ($type === "subnet") {
                 $names[] = "Subnet[".$id."].subnet";
             }
         }
 
         $logy = $this->findAll()->where("sloupec", $names)->order("datum ASC");
 
-        $vzor = $type == "ip" ? "/^ipadresa\[(\d+)\]\.ip_adresa/i" : "/^subnet\[(\d+)\]\.subnet/i";
+        $vzor = $type === "ip" ? "/^ipadresa\[(\d+)\]\.ip_adresa/i" : "/^subnet\[(\d+)\]\.subnet/i";
 
         $out = array();
         foreach ($logy as $log) {
@@ -167,18 +167,44 @@ class Log extends Table
      * @param iterable<array-key, mixed> $novaData
      * @param list<LogEntry> $log
      */
-    public function logujUpdate($staraData, iterable $novaData, string $sloupecPrefix, array &$log): void {
+    public function logujUpdate(array|\ArrayAccess $staraData, iterable $novaData, string $sloupecPrefix, array &$log): void {
         foreach ($novaData as $key => $value) {
-            $isSet = isset($staraData[$key]) || ($staraData[$key] == null);
-            if (!($isSet && $value == $staraData[$key])) {
+            $puvodniHodnota = $staraData[$key] ?? null;
+            if (!$this->shodneHodnoty($puvodniHodnota, $value)) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
-                    'puvodni_hodnota' => isset($staraData[$key]) ? $staraData[$key] : null,
+                    'puvodni_hodnota' => $puvodniHodnota,
                     'nova_hodnota' => $value,
                     'akce' => 'U'
                 );
             }
         }
+    }
+
+    private function shodneHodnoty(mixed $puvodni, mixed $nova): bool {
+        if ($puvodni instanceof \DateTimeInterface && $nova instanceof \DateTimeInterface) {
+            return $puvodni->format('U.u') === $nova->format('U.u');
+        }
+
+        // Prázdné textové pole formuláře odpovídá nevyplněné hodnotě v databázi.
+        if ($puvodni === null || $nova === null) {
+            return ($puvodni ?? '') === ($nova ?? '');
+        }
+
+        // Checkboxy vracejí bool, zatímco příznaky v databázi jsou celá čísla.
+        $puvodni = is_bool($puvodni) ? (int) $puvodni : $puvodni;
+        $nova = is_bool($nova) ? (int) $nova : $nova;
+        if (is_int($puvodni) || is_float($puvodni)) {
+            if (is_string($nova) && is_numeric($nova)) {
+                $nova += 0;
+            }
+            if ((is_int($nova) || is_float($nova)) && (is_float($puvodni) || is_float($nova))) {
+                return (float) $puvodni === (float) $nova;
+            }
+        }
+
+        // Texty zůstávají texty, i když vypadají jako čísla (telefon, přezdívka).
+        return $puvodni === $nova;
     }
 
     /**
@@ -207,7 +233,7 @@ class Log extends Table
      * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
      */
     public function loguj(string $tabulka, $tabulka_id, $data, $uzivatel_id = null): Nette\Database\Table\ActiveRow|array|int|bool {
-        if (!is_array($data) || count($data) == 0) {
+        if (!is_array($data) || count($data) === 0) {
             return true;
         }
 

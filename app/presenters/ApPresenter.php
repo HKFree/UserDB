@@ -53,7 +53,7 @@ class ApPresenter extends BasePresenter
     public function renderList() {
         if ($this->maVyplnenyParametr('id')) {
             $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParameter('id'))));
-            if ($apcka->count() == 0) {
+            if ($apcka->count() === 0) {
                 $this->template->table = 'Chyba, zadaná oblast neexistuje nebo nemá žádná AP.';
                 return true;
             }
@@ -214,7 +214,7 @@ class ApPresenter extends BasePresenter
             $values = $this->ap->getAP($this->getParameter('id'));
             if ($values !== null) {
                 foreach ($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
-                    if ($ip_data->heslo_sifrovane == 1) {
+                    if ($ip_data->heslo_sifrovane === 1) {
                         //\Tracy\Debugger::barDump($ip_data->heslo);
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
                         $ipdata = $ip_data->toArray();
@@ -269,7 +269,7 @@ class ApPresenter extends BasePresenter
                 }
             }
 
-            if (count($formDuplicates) != 0) {
+            if (count($formDuplicates) !== 0) {
                 $formDuplicatesReadible = implode(", ", $formDuplicates);
                 $form->addError('IP adresa ' . $formDuplicatesReadible . ' je v tomto formuláři vícekrát!');
             }

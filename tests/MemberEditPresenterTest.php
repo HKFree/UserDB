@@ -25,6 +25,48 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $this->member = $this->fixtures->member($ap->id, ['druzstvo' => 1, 'spolek' => 0, 'smazano' => 0, 'TypClenstvi_id' => null]);
     }
 
+    public function testBooleanMembershipStillCannotBeRemoved(): void {
+        $driver = $this->database->getConnection()->getDriver();
+        $conversion = new \ReflectionProperty($driver, 'convertBoolean');
+        $previous = $conversion->getValue($driver);
+        $conversion->setValue($driver, true);
+        try {
+            foreach ([
+                [['druzstvo' => '0'], [], 'Právní vztah k družstvu již nelze nikdy změnit na Ne.'],
+                [['spolek' => '0', 'TypClenstvi_id' => '-1'], ['spolek' => 1, 'TypClenstvi_id' => 3], 'Právní vztah ke spolku již nelze nikdy změnit na Ne.'],
+            ] as [$changes, $initial, $message]) {
+                if ($initial !== []) {
+                    $this->member->update($initial);
+                }
+                $post = $this->post($changes);
+                $before = $this->snapshot();
+                $this->assertValidation($this->submit($post), $message);
+                Assert::same($before, $this->snapshot());
+            }
+        } finally {
+            $conversion->setValue($driver, $previous);
+        }
+    }
+
+    public function testClearingUnusedPlannedMembershipKeepsAccountAndCreationDate(): void {
+        $this->member->update(['TypClenstvi_id' => 0, 'money_aktivni' => 0]);
+        $result = $this->submit($this->post(['TypClenstvi_id' => '-1']));
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
+        $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::null($stored->TypClenstvi_id);
+        Assert::same(0, $stored->money_aktivni);
+        Assert::same('2000-01-01 00:00:00', $stored->zalozen->format('Y-m-d H:i:s'));
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testEmptySecondaryEmailKeepsInvalidEmailFlag(): void {
+        $this->member->update(['email2' => '', 'email_invalid' => 1]);
+        PermissionScenario::assertRedirect($this->submit($this->post()), 'uzivatel/show/' . $this->member->id);
+        $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        Assert::null($stored->email2);
+        Assert::same(1, $stored->email_invalid);
+    }
+
     /** @return array<string, array{bool, bool}> */
     public function emailChangeCases(): array {
         return ['changed' => [true, false], 'unchanged' => [false, false], 'cleared secondary' => [false, true]];

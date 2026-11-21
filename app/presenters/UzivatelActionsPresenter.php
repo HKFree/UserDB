@@ -97,7 +97,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $id = $this->getParameter('id');
         if ($this->maVyplnenyParametr('id')) {
             $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
-            if ($result != '') {
+            if (is_string($result) && $result !== '') {
                 $this->flashMessage($result);
             }
 
@@ -134,13 +134,13 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
                 $link = $this->link('//SelfService:confirmEmail', $hash);
 
-                if ($uzivatel->druzstvo == 1) {
+                if ((int) $uzivatel->druzstvo === 1) {
 
                     $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);
                     $this->mailService->sendDruzstvoConfirmationRequestCopy($uzivatel, $so);
 
                     $this->flashMessage('E-mail s žádostí o ověření emailu pro registraci do družstva byl odeslán.');
-                } elseif ($uzivatel->spolek == 1) {
+                } elseif ((int) $uzivatel->spolek === 1) {
 
                     $this->mailService->sendSpolekConfirmationRequest($uzivatel, $so, $link);
                     $this->mailService->sendSpolekConfirmationRequestCopy($uzivatel, $so);
@@ -156,7 +156,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionExportAndSendRegForm(): void {
         if ($this->maVyplnenyParametr('id')) {
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
-                if ($uzivatel->spolek == 0) {
+                if ((int) $uzivatel->spolek === 0) {
                     $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
 
                     $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));

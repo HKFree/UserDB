@@ -38,17 +38,17 @@ class SpravaPlatebPresenter extends SpravaPresenter
         $grid->addFilterSelect('ucet', 'Účet', array('vsechny' => 'Všechny', 'spolek' => 'Spolek', 'druzstvo' => 'Družstvo'))
         ->setDefaultValue('vsechny')
         ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
-            if ($value == 'spolek') {
+            if ($value === 'spolek') {
                 return ($connection->where('spolek', 1));
             }
-            if ($value == 'druzstvo') {
+            if ($value === 'druzstvo') {
                 return ($connection->where('druzstvo', 1));
             }
             return ($connection);
         });
 
         $grid->setRowCallback(function ($item, $tr) {
-            if ($item->datum_platby == null) {
+            if ($item->datum_platby === null) {
                 $tr->class[] = 'primarni';
             }
 

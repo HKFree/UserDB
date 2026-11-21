@@ -49,7 +49,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         parent::startup();
 
         //$uri = $this->getHttpRequest()->getUrl();
-        if ($this->settings->fakeUser == false) {
+        if (!(bool) $this->settings->fakeUser) {
             $this->getUser()->login($_SERVER['HTTP_UID'], null);
         } else {
             $this->getUser()->login("DBG", null);

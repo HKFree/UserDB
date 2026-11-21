@@ -130,7 +130,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $mail = new Message();
 
-        if ($values->from == 0) {
+        if ($values->from === 0) {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
              ->addTo($user->email)
@@ -208,7 +208,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
 
         $mail = new Message();
-        if ($values->from == 0) {
+        if ($values->from === 0) {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
              ->setSubject($values->subject)
@@ -247,7 +247,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
-        if (!in_array($user->telefon ?? null, [null, '', '0'], true) && $user->telefon != 'missing') {
+        if (!in_array($user->telefon ?? null, [null, '', '0'], true) && $user->telefon !== 'missing') {
             $form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
             $form->onSuccess[] = array($this, 'smsFormSucceded');
         }
@@ -297,7 +297,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
             $validni = [];
             foreach ($telefony as $tl) {
-                if (!in_array($tl, [null, '', '0'], true) && $tl != 'missing') {
+                if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
                     $validni[] = $tl;
                 }
             }
@@ -323,7 +323,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $validni = [];
         foreach ($telefony as $uid => $tl) {
-            if (!in_array($tl, [null, '', '0'], true) && $tl != 'missing') {
+            if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
                 $validni[] = $uid;
             }
         }

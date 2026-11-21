@@ -121,6 +121,21 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         $GLOBALS['container'] = $this->container;
     }
 
+    public function testOtherEntityNamesDoNotProcessEnvelope(): void {
+        $member = $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id, ['druzstvo' => 0]);
+        $contract = $this->fixtures->insert('Smlouva', ['uzivatel_id' => $member->id, 'externi_id' => 'fixture-envelope', 'typ' => 'ucastnicka']);
+        foreach ([true, false, 0, null, '', 'recipient'] as $entityName) {
+            ob_start();
+            try {
+                \process_digisign_webhook((object) ['entityName' => $entityName, 'entityId' => $contract->externi_id, 'event' => 'recipientSent']);
+            } finally {
+                ob_end_clean();
+            }
+            Assert::same([], WebhookDigiSign::$envelopes->calls);
+            Assert::same(0, $this->database->table('Uzivatel')->get($member->id)->druzstvo);
+        }
+    }
+
     /** @return list<array{string|null, bool}> */
     public function membershipCases(): array {
         return [[null, false], ['SO', true], ['ZSO', true], ['expired', false]];

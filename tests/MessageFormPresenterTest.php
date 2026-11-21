@@ -98,6 +98,32 @@ final class MessageFormPresenterTest extends DatabaseTestCase
         }
     }
 
+    public function testBothMailSenderChoicesSurviveHttpInput(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $mailer = $this->container->getByType(RecordingMailer::class);
+        $sent = 0;
+
+        foreach (['email', 'emailall'] as $action) {
+            foreach (['0', '1'] as $from) {
+                $id = $action === 'email' ? $member->id : $ap->id;
+                $result = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => $action, 'id' => $id], 'POST', [
+                    '_do' => $action . 'Form-submit', 'id' => (string) $id, 'from' => $from,
+                    'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+                ]);
+                PermissionScenario::assertRedirect($result, ($action === 'email' ? 'uzivatel/show/' : 'uzivatel-list/list/') . $id);
+                Assert::count(++$sent, $mailer->messages);
+                $message = $mailer->messages[$sent - 1];
+                Assert::same($from === '0' ? [$actor->email => $actor->jmeno . ' ' . $actor->prijmeni] : ['oblast' . $area->id . '@hkfree.org' => null], $message->getHeader('From'));
+                Assert::same([$member->email => null], $message->getHeader($action === 'email' ? 'To' : 'Bcc'));
+                Assert::same('Testovací text', $message->getBody());
+            }
+        }
+    }
+
     private function fieldText(string $html, string $field): string {
         $found = preg_match('~<textarea name="' . preg_quote($field, '~') . '"[^>]*>(.*?)</textarea>~s', $html, $matches);
         Assert::same(1, $found, "The form has no $field field.");

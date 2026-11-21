@@ -42,7 +42,7 @@ class PaymentSchedulePresenter extends BasePresenter
                 $this->cestneClenstviUzivatele->getHasCC($uid) ? 0 : $this->parameters->getVyseClenskehoPrispevku()
             ]
         ];
-        if ($televizeRow?->objednana == 1) {
+        if ((int) $televizeRow?->objednana === 1) {
             array_push($pravidelne_mesicni_platby, [
                 'Televize - START balíček SledovaniTV',
                 $televizeRow->cena
@@ -99,7 +99,7 @@ class PaymentSchedulePresenter extends BasePresenter
         $uid = $this->getParameter('id');
 
         $uzivatel = $this->uzivatel->getUzivatel($uid);
-        if ($uzivatel->druzstvo != 1) {
+        if ((int) $uzivatel->druzstvo !== 1) {
             $this->error('Jen pro družstvo');
         }
         $this->computeTemplateParams();

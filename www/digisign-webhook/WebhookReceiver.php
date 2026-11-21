@@ -29,7 +29,7 @@ function process_digisign_webhook(mixed $hook): void {
     ]);
     $ENVELOPES = $dgs->envelopes();
 
-    if ($hook->entityName != "envelope") {
+    if ($hook->entityName !== "envelope") {
         return;
     }
 
@@ -39,7 +39,7 @@ function process_digisign_webhook(mixed $hook): void {
         return;
     }
 
-    if ($smlouva->typ != 'ucastnicka') {
+    if ($smlouva->typ !== 'ucastnicka') {
         print_and_log(sprintf("Smlouva #%u typ %s tady neumime zpracovat", $smlouva->id, $smlouva->typ));
         return;
     }
@@ -96,7 +96,7 @@ function process_digisign_webhook(mixed $hook): void {
                 $recipient1 = $ENVELOPES->recipients($envelope)->get($envelope->recipients[0]->id);
                 $tags = $recipient1->tags->toArray();
                 foreach ($tags as $tag) {
-                    if ($tag['recipientClaim'] == 'birthdate') {
+                    if ($tag['recipientClaim'] === 'birthdate') {
                         $birthdate_dirty = $tag['value'];
                         try {
                             $d = new DateTime(preg_replace('/\s+/', '', $birthdate_dirty) . " 00:00:00");

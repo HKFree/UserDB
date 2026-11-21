@@ -162,11 +162,11 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->stitky = $this->stitek->getSeznamStitku();
                 $this->template->stitkyUzivatele = $this->stitkyUzivatele->getStitekByUserId($uid);
 
-                $this->template->money_act = (1 == $uzivatel->money_aktivni) ? 'ANO' : 'NE';
-                $this->template->money_dis = (1 == $uzivatel->money_deaktivace) ? 'ANO' : 'NE';
+                $this->template->money_act = (1 === (int) $uzivatel->money_aktivni) ? 'ANO' : 'NE';
+                $this->template->money_dis = (1 === (int) $uzivatel->money_deaktivace) ? 'ANO' : 'NE';
 
                 $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-                $this->template->televize_objednana = $televizeRow?->objednana == 1;
+                $this->template->televize_objednana = (int) $televizeRow?->objednana === 1;
                 $this->template->televize_cena = $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
                 $televizeAktivniRow = $uzivatel->related('UzivatelTelevizeAktivni')
                     ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
@@ -181,20 +181,20 @@ class UzivatelPresenter extends BasePresenter
                 $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);
                 if ($posledniPlatbaSpolek->count() > 0) {
                     $posledniPlatbaData = $posledniPlatbaSpolek->fetch();
-                    $this->template->money_lastpay_spolek = (null == $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
+                    $this->template->money_lastpay_spolek = (null === $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
                 } else {
                     $this->template->money_lastpay_spolek = '?';
                 }
                 if ($posledniPlatbaDruzstvo->count() > 0) {
                     $posledniPlatbaData = $posledniPlatbaDruzstvo->fetch();
-                    $this->template->money_lastpay_druzstvo = (null == $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
+                    $this->template->money_lastpay_druzstvo = (null === $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
                 } else {
                     $this->template->money_lastpay_druzstvo = '?';
                 }
                 $posledniAktivace = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', [4, 5])->order('id DESC')->limit(1);
                 if ($posledniAktivace->count() > 0) {
                     $posledniAktivaceData = $posledniAktivace->fetch();
-                    $this->template->money_lastact = (null == $posledniAktivaceData->datum) ? 'NIKDY' : ($posledniAktivaceData->datum->format('d.m.Y').' ('.$posledniAktivaceData->castka.')');
+                    $this->template->money_lastact = (null === $posledniAktivaceData->datum) ? 'NIKDY' : ($posledniAktivaceData->datum->format('d.m.Y').' ('.$posledniAktivaceData->castka.')');
                 } else {
                     $this->template->money_lastact = '?';
                 }
@@ -247,22 +247,22 @@ class UzivatelPresenter extends BasePresenter
 
                 $this->template->activaceVisible = false;
                 $this->template->reactivaceVisible = false;
-                if ($uzivatel->money_aktivni == 0
+                if ((int) $uzivatel->money_aktivni === 0
                     && (
                         ($stavUctuSpolek - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku()
                         || ($stavUctuDruzstvo - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku()
                     )
                 ) {
-                    if ($uzivatel->money_deaktivace == 0) {
+                    if ((int) $uzivatel->money_deaktivace === 0) {
                         $this->template->activaceVisible = true;
                     }
-                    if ($uzivatel->money_deaktivace == 1) {
+                    if ((int) $uzivatel->money_deaktivace === 1) {
                         $this->template->reactivaceVisible = true;
                     }
                 }
                 $this->template->deactivaceVisible =
-                    1 == $uzivatel->money_aktivni
-                    && 0 == $uzivatel->money_deaktivace;
+                    1 === (int) $uzivatel->money_aktivni
+                    && 0 === (int) $uzivatel->money_deaktivace;
 
                 $this->template->igw = $this->getParameter('igw', false);
                 $this->template->smlouvaStavSluzba = $this->smlouvaStavSluzba;
@@ -283,7 +283,7 @@ class UzivatelPresenter extends BasePresenter
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
         $pravidelne_mesicni_platby = [['Pevný přístup k internetu', $this->parameters->getVyseClenskehoPrispevku()]];
-        if ($televizeRow?->objednana == 1) {
+        if ((int) $televizeRow?->objednana === 1) {
             array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow->cena]);
         }
 
@@ -410,7 +410,7 @@ class UzivatelPresenter extends BasePresenter
             $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($values !== null) {
                 foreach ($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
-                    if ($ip_data->heslo_sifrovane == 1) {
+                    if ($ip_data->heslo_sifrovane === 1) {
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
                         $ipdata = $ip_data->toArray();
                         $ipdata['heslo'] = $decrypted;
@@ -438,36 +438,36 @@ class UzivatelPresenter extends BasePresenter
         $uzivatelBeforeSave = $this->uzivatel->getUzivatel($data['id']);
 
         if ($uzivatelBeforeSave !== null) {
-            if ($uzivatelBeforeSave->druzstvo == 1 && $data['druzstvo'] != 1) {
+            if ((int) $uzivatelBeforeSave->druzstvo === 1 && $data['druzstvo'] !== '1') {
                 $form->addError('Právní vztah k družstvu již nelze nikdy změnit na Ne.');
             }
 
-            if ($uzivatelBeforeSave->spolek == 1 && $data['spolek'] != 1) {
+            if ((int) $uzivatelBeforeSave->spolek === 1 && $data['spolek'] !== '1') {
                 $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
             }
         } else {
-            if ($data['druzstvo'] == 1 && $data['TypPravniFormyUzivatele_id'] == Model\TypPravniFormyUzivatele::FYZICKA_OSOBA) {
-                if (($data['datum_narozeni'] ?? "") == "") {
+            if ($data['druzstvo'] === '1' && $data['TypPravniFormyUzivatele_id'] === (string) Model\TypPravniFormyUzivatele::FYZICKA_OSOBA) {
+                if (($data['datum_narozeni'] ?? "") === "") {
                     $form->addError('Právní vztah k družstvu vyžaduje zadání data narození.');
                 }
             }
 
-            if ($data['smazano'] != 0) {
+            if ($data['smazano'] !== '0') {
                 $form->addError('Nelze založit uživatele s atributem Smazáno.');
             }
 
-            if ($data['spolek'] == 1 && $data['druzstvo'] == 1) {
+            if ($data['spolek'] === '1' && $data['druzstvo'] === '1') {
                 $form->addError('Založení nového uživatele NEPODPORUJE právní vztahy k družstvu a ke spolku najednou, založte uživatele jen s jedním právním vztahem.');
             }
         }
 
-        if ($data['spolek'] == 1) {
-            if (($data['TypClenstvi_id'] ?? -1) == -1) {
+        if ($data['spolek'] === '1') {
+            if (($data['TypClenstvi_id'] ?? '-1') === '-1') {
                 $form->addError('Právní vztah ke spolku vyžaduje vyplnění Typu členství.');
             }
         }
 
-        if ($data['spolek'] == 0) {
+        if ($data['spolek'] === '0') {
             if (($data['TypClenstvi_id'] ?? -1) >= 0) {
                 $form->addError('Právní vztah ke spolku Ne vyžaduje nevyplnění Typu členství.');
             }
@@ -508,7 +508,7 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
 
-            if (0 != count($formDuplicates)) {
+            if (0 !== count($formDuplicates)) {
                 $formDuplicatesReadible = implode(', ', $formDuplicates);
                 $form->addError('IP adresa '.$formDuplicatesReadible.' je v tomto formuláři vícekrát!');
             }
@@ -584,7 +584,7 @@ class UzivatelPresenter extends BasePresenter
         // Zpracujeme nejdriv uzivatele
         if (in_array($values->id, [null, '', 0, '0'], true)) {
             $values->regform_downloaded_password_sent = 0;
-            if (($values->spolek == 1 && $values->TypClenstvi_id > 0) || ($values->druzstvo == 1 && $values->smazano == 0)) {
+            if (($values->spolek === 1 && $values->TypClenstvi_id > 0) || ($values->druzstvo === 1 && $values->smazano === 0)) {
                 $values->money_aktivni = 1;
             } else {
                 $values->money_aktivni = 0;
@@ -600,7 +600,7 @@ class UzivatelPresenter extends BasePresenter
             $idUzivatele = $uzivatel->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
 
-            if ($values->spolek == 1) {
+            if ($values->spolek === 1) {
                 if ($values->TypClenstvi_id > 0) {
                     $this->sendSpolekRegistrationEmail($idUzivatele);
                 } else {
@@ -608,23 +608,23 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
 
-            if ($values->druzstvo == 1) {
+            if ($values->druzstvo === 1) {
                 $this->sendDruzstvoRegistrationEmail($idUzivatele);
             }
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
 
-            if ($olduzivatel->email != $values->email || $olduzivatel->email2 != $values->email2) {
+            if (($olduzivatel->email ?? '') !== ($values->email ?? '') || ($olduzivatel->email2 ?? '') !== ($values->email2 ?? '')) {
                 $values->email_invalid = 0;
             }
 
             // pokud neni aktivni ani ve spolku ani v druzstvu
-            if (!(($values->spolek == 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo == 1 && $values->smazano == 0))) {
+            if (!(($values->spolek === 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo === 1 && $values->smazano === 0))) {
                 $this->aplikaceToken->deleteTokensForUID($idUzivatele);
             }
 
             // TODO: spolek / druzstvo
-            if (0 === $olduzivatel->TypClenstvi_id && 1 == $values->TypClenstvi_id) {
+            if (0 === $olduzivatel->TypClenstvi_id && 1 === $values->TypClenstvi_id) {
                 $this->povoleneSMTP->deleteIPs($smtpIPIDs);
                 $existinguserIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
@@ -633,7 +633,7 @@ class UzivatelPresenter extends BasePresenter
             }
 
             // TODO: spolek / druzstvo
-            if (0 === $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id) {
+            if (0 === $olduzivatel->TypClenstvi_id && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id) {
                 $values->zalozen = new \DateTime();
                 $values->money_aktivni = 1;
             }
@@ -642,7 +642,7 @@ class UzivatelPresenter extends BasePresenter
             $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
 
             // TODO: spolek / druzstvo
-            if (0 === $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id && $values->spolek == 1) {
+            if (0 === $olduzivatel->TypClenstvi_id && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id && $values->spolek === 1) {
                 $this->sendSpolekRegistrationEmail($idUzivatele);
             }
         }

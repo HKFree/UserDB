@@ -255,7 +255,7 @@ class IPAdresa extends Table
         if ($ip !== null) {
             $ip_password = '';
             if ($canViewCredentialsOrEdit) {
-                if ($ip->heslo_sifrovane == 1) {
+                if ($ip->heslo_sifrovane === 1) {
                     $ip_password = $this->cryptoService->decrypt($ip->heslo);
                 } else {
                     $ip_password = $ip->heslo;
@@ -270,7 +270,7 @@ class IPAdresa extends Table
             $isWindows = (stripos($userAgent, 'windows') !== false);
 
             // web button
-            if (isset($ip->TypZarizeni->text) && $ip->TypZarizeni->id != 1) {
+            if (isset($ip->TypZarizeni->text) && $ip->TypZarizeni->id !== 1) {
                 $webButton = Html::el('a')
                     ->setHref('http://' . $ip->ip_adresa)
                     ->setTarget('_blank')
@@ -394,7 +394,7 @@ class IPAdresa extends Table
             }
             // edit button, etc.
             if ($isSubnetMode) {
-                if ($subnetModeInfo['type'] == 'Uzivatel') {
+                if ($subnetModeInfo['type'] === 'Uzivatel') {
                     if ($subnetModeInfo['canViewOrEdit']) {
                         array_unshift(
                             $buttons,
@@ -410,7 +410,7 @@ class IPAdresa extends Table
                     $this->addActionButtonsTd($tr, $buttons);
                     $tr->create('td')->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['id']); // UID
                     $tr->create('td')->setText($subnetModeInfo['nick']); // nick
-                } elseif ($subnetModeInfo['type'] == 'Ap') {
+                } elseif ($subnetModeInfo['type'] === 'Ap') {
                     if ($subnetModeInfo['canViewOrEdit']) {
                         array_unshift(
                             $buttons,

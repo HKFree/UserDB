@@ -22,24 +22,24 @@ class SmlouvaStavSluzba
 
         $datum = null;
 
-        if ($konec != null) {
+        if ($konec !== null) {
             return "❌ ukončená dne ".$konec->format('d.m.Y');
         }
 
         foreach ($podpisy as $podpis) {
             $pocetPodpisu++;
-            if ($podpis->kdy_podepsano != null) {
+            if ($podpis->kdy_podepsano !== null) {
                 $pocetPodepsano++;
-                if ($datum == null || $datum < $podpis->kdy_podepsano) {
+                if ($datum === null || $datum < $podpis->kdy_podepsano) {
                     $datum = $podpis->kdy_podepsano;
                 }
             }
-            if ($podpis->kdy_odmitnuto != null) {
+            if ($podpis->kdy_odmitnuto !== null) {
                 return "🚫 odmítnutá dne ".$podpis->kdy_odmitnuto->format('d.m.Y');
             }
         }
 
-        if ($pocetPodpisu == $pocetPodepsano) {
+        if ($pocetPodpisu === $pocetPodepsano) {
             return isset($datum) ? "✅ platná od ".$datum->format('d.m.Y') : '---';
         } else {
             return "⏳ čeká na podpis";

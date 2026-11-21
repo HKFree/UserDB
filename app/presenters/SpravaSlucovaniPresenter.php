@@ -75,19 +75,19 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
             $this->template->u1adresyline = null;
         }
 
-        $this->template->u1money_act = ($u1->money_aktivni == 1) ? "ANO" : "NE";
-        $this->template->u1money_dis = ($u1->money_deaktivace == 1) ? "ANO" : "NE";
+        $this->template->u1money_act = ((int) $u1->money_aktivni === 1) ? "ANO" : "NE";
+        $this->template->u1money_dis = ((int) $u1->money_deaktivace === 1) ? "ANO" : "NE";
         $posledniPlatba = $u1->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
         if ($posledniPlatba->count() > 0) {
             $posledniPlatbaData = $posledniPlatba->fetch();
-            $this->template->u1money_lastpay = ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+            $this->template->u1money_lastpay = ($posledniPlatbaData->datum === null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
         } else {
             $this->template->u1money_lastpay = "?";
         }
         $posledniAktivace = $u1->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
         if ($posledniAktivace->count() > 0) {
             $posledniAktivaceData = $posledniAktivace->fetch();
-            $this->template->u1money_lastact = ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
+            $this->template->u1money_lastact = ($posledniAktivaceData->datum === null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
         } else {
             $this->template->u1money_lastact = "?";
         }
@@ -108,19 +108,19 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
             $this->template->u2adresyline = null;
         }
 
-        $this->template->u2money_act = ($u2->money_aktivni == 1) ? "ANO" : "NE";
-        $this->template->u2money_dis = ($u2->money_deaktivace == 1) ? "ANO" : "NE";
+        $this->template->u2money_act = ((int) $u2->money_aktivni === 1) ? "ANO" : "NE";
+        $this->template->u2money_dis = ((int) $u2->money_deaktivace === 1) ? "ANO" : "NE";
         $posledniPlatba2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
         if ($posledniPlatba2->count() > 0) {
             $posledniPlatbaData2 = $posledniPlatba2->fetch();
-            $this->template->u2money_lastpay = ($posledniPlatbaData2->datum == null) ? "NIKDY" : ($posledniPlatbaData2->datum->format('d.m.Y') . " (" . $posledniPlatbaData2->castka . ")");
+            $this->template->u2money_lastpay = ($posledniPlatbaData2->datum === null) ? "NIKDY" : ($posledniPlatbaData2->datum->format('d.m.Y') . " (" . $posledniPlatbaData2->castka . ")");
         } else {
             $this->template->u2money_lastpay = "?";
         }
         $posledniAktivace2 = $u2->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
         if ($posledniAktivace2->count() > 0) {
             $posledniAktivaceData2 = $posledniAktivace2->fetch();
-            $this->template->u2money_lastact = ($posledniAktivaceData2->datum == null) ? "NIKDY" : ($posledniAktivaceData2->datum->format('d.m.Y') . " (" . $posledniAktivaceData2->castka . ")");
+            $this->template->u2money_lastact = ($posledniAktivaceData2->datum === null) ? "NIKDY" : ($posledniAktivaceData2->datum->format('d.m.Y') . " (" . $posledniAktivaceData2->castka . ")");
         } else {
             $this->template->u2money_lastact = "?";
         }

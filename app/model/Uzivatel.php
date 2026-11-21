@@ -312,7 +312,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
     public function nazevUzivatele($id): ?string {
         $uzivatel = $this->find($id);
 
-        return $uzivatel->TypPravniFormyUzivatele->text == 'PO'
+        return $uzivatel->TypPravniFormyUzivatele->text === 'PO'
             ? $uzivatel->firma_nazev
             : "{$uzivatel->jmeno} {$uzivatel->prijmeni}";
     }

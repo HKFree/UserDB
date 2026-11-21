@@ -78,7 +78,7 @@ class LogTable extends UI\Control
     private function getIPMapping(iterable $logy): array {
         $ipsKProhlednuti = array();
         foreach ($logy as $line) {
-            if (($sloupec = $this->parseSloupec($line->sloupec)) !== [] && ($sloupec["typ"] == self::IPADRESA)) {
+            if (($sloupec = $this->parseSloupec($line->sloupec)) !== [] && ($sloupec["typ"] === self::IPADRESA)) {
                 $ipsKProhlednuti[$sloupec["ipId"]] = "Nenalezeno";
             }
         }
@@ -98,7 +98,7 @@ class LogTable extends UI\Control
     private function getSubnetMapping(iterable $logy): array {
         $subnetsKProhlednuti = array();
         foreach ($logy as $line) {
-            if (($sloupec = $this->parseSloupec($line->sloupec)) !== [] && ($sloupec["typ"] == self::SUBNET)) {
+            if (($sloupec = $this->parseSloupec($line->sloupec)) !== [] && ($sloupec["typ"] === self::SUBNET)) {
                 $subnetsKProhlednuti[$sloupec["subnetId"]] = "Nenalezeno";
             }
         }
@@ -146,16 +146,16 @@ class LogTable extends UI\Control
         $sloupec = $this->log->translateJmeno($rozparsovano["sloupec"]);
         $tr->create('td')->setText($sloupec);
 
-        if ($sloupec == 'heslo') {
+        if ($sloupec === 'heslo') {
             $tr->create('td')->setText('N/A');
         } else {
-            if ($line->puvodni_hodnota == null) {
+            if (($line->puvodni_hodnota ?? '') === '') {
                 $tr->create('td')->setText('----');
             } else {
                 $tr->create('td')->setText($line->puvodni_hodnota);
             }
 
-            if ($line->nova_hodnota == null) {
+            if (($line->nova_hodnota ?? '') === '') {
                 $tr->create('td')->setText('----');
             } else {
                 $tr->create('td')->setText($line->nova_hodnota);
@@ -182,13 +182,13 @@ class LogTable extends UI\Control
                 continue;
             }
 
-            if ($rozparsovano["typ"] == self::UZIVATEL) {
+            if ($rozparsovano["typ"] === self::UZIVATEL) {
                 $tr = $this->tableGetLineBegin($table, $line);
                 $this->tableGetLineEndSimple($tr, $line, $rozparsovano);
-            } elseif ($rozparsovano["typ"] == self::AP) {
+            } elseif ($rozparsovano["typ"] === self::AP) {
                 $tr = $this->tableGetLineBegin($table, $line);
                 $this->tableGetLineEndSimple($tr, $line, $rozparsovano);
-            } elseif ($rozparsovano["typ"] == self::IPADRESA) {
+            } elseif ($rozparsovano["typ"] === self::IPADRESA) {
                 $id = $rozparsovano["ipId"];
                 $sloupec = $rozparsovano["sloupec"];
                 if (preg_match("/(".$toSkipString.")/i", $sloupec)) {
@@ -196,14 +196,14 @@ class LogTable extends UI\Control
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);
 
-                $datum = $line->datum;
+                $datum = (string) $line->datum;
                 $titulek = "IP ".$ipVsechny[$id];
 
-                if ($last !== false && $last[0]->getText() == $datum && $last[2]->getText() == $titulek) {
+                if ($last !== false && $last[0]->getText() === $datum && $last[2]->getText() === $titulek) {
                     $text = "";
                     if ($line->akce === self::INSERT) {
                         $text = $sloupec." = ".$line->nova_hodnota.", ";
-                    } elseif ($line->akce === self::DELETE && $line->puvodni_hodnota != null) {
+                    } elseif ($line->akce === self::DELETE && ($line->puvodni_hodnota ?? '') !== '') {
                         $text = $sloupec." = ".$line->puvodni_hodnota.", ";
                     } elseif ($line->akce === self::UPDATE) {
                         $text = $sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
@@ -225,7 +225,7 @@ class LogTable extends UI\Control
 
                     $tr->create('td')->setText($text)->setColspan(2);
                 }
-            } elseif ($rozparsovano["typ"] == self::SUBNET) {
+            } elseif ($rozparsovano["typ"] === self::SUBNET) {
                 $id = $rozparsovano["subnetId"];
                 $sloupec = $rozparsovano["sloupec"];
                 if (preg_match("/(".$toSkipString.")/i", $sloupec)) {
@@ -233,14 +233,14 @@ class LogTable extends UI\Control
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);
 
-                $datum = $line->datum;
+                $datum = (string) $line->datum;
                 $titulek = "Subnet ".$subnetyVsechny[$id];
 
-                if ($last !== false && $last[0]->getText() == $datum && $last[2]->getText() == $titulek) {
+                if ($last !== false && $last[0]->getText() === $datum && $last[2]->getText() === $titulek) {
                     $text = "";
                     if ($line->akce === self::INSERT) {
                         $text = $sloupec." = ".$line->nova_hodnota.", ";
-                    } elseif ($line->akce === self::DELETE && $line->puvodni_hodnota != null) {
+                    } elseif ($line->akce === self::DELETE && ($line->puvodni_hodnota ?? '') !== '') {
                         $text = $sloupec." = ".$line->puvodni_hodnota.", ";
                     } elseif ($line->akce === self::UPDATE) {
                         $text = $sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
@@ -272,9 +272,9 @@ class LogTable extends UI\Control
         $template->setFile(__DIR__ . '/LogTable.latte');
 
         $tabulka = $this->tableGetHeader();
-        if ($type == "user") {
+        if ($type === "user") {
             $logy = $this->log->getLogyUzivatele($id);
-        } elseif ($type == "ap") {
+        } elseif ($type === "ap") {
             $logy = $this->log->getLogyAP($id);
         } else {
             die('Spatne pouziti komponenty LogTable.');
