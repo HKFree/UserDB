@@ -19,8 +19,12 @@
 {block content}
 
 <h1>Vnější scanner veřejných IP</h1>
+{if $scan === null}
+<p class="alert alert-warning">Data vnějšího scanneru nejsou dostupná. Zkuste stránku načíst později.</p>
+{else}
 Scanuje se z UHK, scanner spravuje Locutus. Scan se obnovuje jednou za 24 hodin. Aktuální data jsou z {$scanDate|date:'G:i j. n. Y'}
 <br><br>
 {include scan, scan => $scan}
+{/if}
 
 {/block}

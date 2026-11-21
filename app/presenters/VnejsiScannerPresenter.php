@@ -21,10 +21,10 @@ class VnejsiScannerPresenter extends BasePresenter
     }
 
     /**
-     * @param array<array-key, list<string>>|null $scan
+     * @param array<array-key, list<string>> $scan
      * @return array<array-key, array{porty: list<string>, oblast: string, uzivatel: \Nette\Database\Table\ActiveRow|false}>
      */
-    private function getDetaily($scan): array {
+    private function getDetaily(array $scan): array {
         $scan_detaily = [];
         foreach ($scan as $ip => $porty) {
             $scan_detaily[$ip]["porty"] = $porty;
@@ -53,7 +53,13 @@ class VnejsiScannerPresenter extends BasePresenter
     }
 
     public function renderDefault(): void {
-        $this->template->scan = $this->getDetaily($this->vnejsiScanner->getScan());
+        $scan = $this->vnejsiScanner->getScan();
+        if ($scan === null) {
+            $this->getHttpResponse()->setCode(503);
+            $this->template->scan = null;
+            return;
+        }
+        $this->template->scan = $this->getDetaily($scan);
         $this->template->scanDate = $this->vnejsiScanner->getScanDate();
     }
 }

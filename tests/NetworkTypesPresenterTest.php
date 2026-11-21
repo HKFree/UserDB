@@ -108,7 +108,52 @@ final class NetworkTypesPresenterTest extends DatabaseTestCase
         Assert::same([], $empty);
     }
 
-    public function testScanDetailsUseLocalRowsAndPreserveMissingScan(): void {
+    public function testWewimoOrphanAddressesPassThroughLinksAndAnonymization(): void {
+        $this->fixtures->insert('IPAdresa', [
+            'Ap_id' => $this->ap->id, 'ip_adresa' => '192.0.2.1', 'wewimo' => 1,
+            'login' => 'fixture', 'heslo' => 'fixture-password', 'heslo_sifrovane' => 0,
+        ]);
+        foreach (['192.0.2.42', '192.0.2.43'] as $ip) {
+            $this->fixtures->insert('IPAdresa', [
+                'ip_adresa' => $ip, 'hostname' => 'orphan-host', 'w_client_mac' => '00:00:00:00:00:42',
+                'mac_adresa' => $ip === '192.0.2.42' ? '00:00:00:00:00:42' : null,
+            ]);
+        }
+        $model = new class ($this->container->getByType(\App\Services\CryptoSluzba::class), $this->container->getByType(\App\Model\IPAdresa::class), $this->container->getByType(\App\Model\AP::class)) extends \App\Model\Wewimo {
+            /** @return array{interfaces: array<string, array<string, mixed>>, resources: array<string, mixed>, neighborsByIp: array<string, array<string, mixed>>} */
+            public function getWewimoData(mixed $ip, mixed $username, mixed $password, mixed $invoker): array {
+                return [
+                    'interfaces' => ['wlan1' => ['ssid' => 'fixture', 'stations' => [[
+                        'mac-address' => '00:00:00:00:00:42', 'last-ip' => '192.0.2.42', 'x-in-neighbors' => 1,
+                        'x-identity' => 'private-identity', 'radio-name' => 'private-radio',
+                        'x-anonymous-mac-address' => 'xx:xx:xx:00:00:42',
+                    ]]]],
+                    'resources' => [], 'neighborsByIp' => [],
+                ];
+            }
+        };
+        $devices = $model->getWewimoFullData($this->ap->id, 'Test')['devices'];
+        Assert::same('', $devices[0]['error']);
+        $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('Wewimo');
+        if (!$presenter instanceof WewimoPresenter) {
+            throw new \LogicException('Expected the Wewimo presenter.');
+        }
+        $presenter->setParent(null, 'Wewimo');
+        $presenter->addWewimoLinks($devices);
+        $presenter->anonymizeWewimoData($devices);
+        $station = $devices[0]['interfaces']['wlan1']['stations'][0];
+        Assert::same('', $station['xx-mac-link']);
+        Assert::same('', $station['xx-last-ip-link']);
+        Assert::count(1, $station['xx-last-ips']);
+        foreach ($station['xx-last-ips'] as $lastIp) {
+            Assert::same('', $lastIp['xx-last-ip-link']);
+        }
+        Assert::same('***', $station['xx-mac-host']);
+        Assert::same('***', $station['xx-last-ip-host']);
+        Assert::same('xx:xx:xx:00:00:42', $station['mac-address']);
+    }
+
+    public function testScanDetailsUseLocalRowsAndPreserveEmptyScan(): void {
         $this->fixtures->insert('IPAdresa', ['Ap_id' => $this->ap->id, 'ip_adresa' => '192.0.2.1']);
         $this->fixtures->ipAddress($this->actor->id, '192.0.2.2');
         $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('VnejsiScanner');
@@ -121,11 +166,60 @@ final class NetworkTypesPresenterTest extends DatabaseTestCase
         Assert::same($this->actor->id, $details['192.0.2.2']['uzivatel']->id);
         Assert::same(['porty' => [], 'oblast' => 'Není v UserDB', 'uzivatel' => false], $details['192.0.2.3']);
         Assert::same([], $method->invoke($presenter, []));
-        $missing = null;
-        Assert::error(function () use ($method, $presenter, &$missing): void {
-            $missing = $method->invoke($presenter, null);
-        }, E_WARNING, 'foreach() argument must be of type array|object, null given');
-        Assert::same([], $missing);
+    }
+
+    public function testScannerRendersUnavailableEmptyAndPopulatedStates(): void {
+        $scanner = new class ('http://127.0.0.1:0/') extends \App\Model\VnejsiScanner {
+            /** @var array<array-key, list<string>>|null */
+            public ?array $scan = null;
+
+            public function getScan(): ?array {
+                return $this->scan;
+            }
+
+            public function getScanDate(): \DateTime {
+                return new \DateTime('2026-01-01 12:00:00');
+            }
+        };
+        foreach ($this->container->findByType(\App\Model\VnejsiScanner::class) as $name) {
+            $this->container->removeService($name);
+            $this->container->addService($name, $scanner);
+        }
+        foreach ([null, [], ['192.0.2.99' => ['443']]] as $scan) {
+            $scanner->scan = $scan;
+            $httpResponse = $this->container->getByType(\Nette\Http\Response::class);
+            $httpResponse->setCode(200);
+            $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('VnejsiScanner');
+            if (!$presenter instanceof VnejsiScannerPresenter) {
+                throw new \LogicException('Expected the scanner presenter.');
+            }
+            $presenter->setParent(null, 'VnejsiScanner');
+            $presenter->setLayout(false);
+            $presenter->renderDefault();
+            $template = $presenter->getTemplate();
+            if (!$template instanceof Template) {
+                throw new \LogicException('Expected the scanner template.');
+            }
+            $html = $template->getLatte()->renderToString(
+                __DIR__ . '/../app/templates/VnejsiScanner/default.latte',
+                $template->getParameters(),
+                'content',
+            );
+            Assert::same($scan === null ? 503 : 200, $httpResponse->getCode());
+            if ($scan === null) {
+                Assert::contains('Data vnějšího scanneru nejsou dostupná.', $html);
+                Assert::notContains('Aktuální data jsou z', $html);
+                Assert::notContains('<table', $html);
+            } else {
+                Assert::contains('Aktuální data jsou z 12:00 1. 1. 2026', $html);
+                Assert::contains('<table', $html);
+                Assert::notContains('Data vnějšího scanneru nejsou dostupná.', $html);
+                if ($scan !== []) {
+                    Assert::contains('192.0.2.99', $html);
+                    Assert::contains('443', $html);
+                }
+            }
+        }
     }
 
     public function testStatusIntervalBoundaries(): void {

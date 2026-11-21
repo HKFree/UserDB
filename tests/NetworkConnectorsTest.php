@@ -79,6 +79,7 @@ final class NetworkConnectorsTest extends TestCase
         };
         Assert::null($scanner->getScan());
         Assert::null($scanner->getScanDate());
+        Assert::same([], $scanner->getScanNaPortech([443]));
         Assert::same([], (new Sojka('http://127.0.0.1:0/'))->pingIPS([]));
     }
 

@@ -73,6 +73,15 @@ final class NetworkModelTypesDatabaseTest extends DatabaseTestCase
         Assert::same(['comment' => 'café', 'other' => 'beze změny'], $attributes);
     }
 
+    public function testWewimoDoesNotLinkAnAddressWithoutOwner(): void {
+        $ip = $this->fixtures->insert('IPAdresa', ['ip_adresa' => '192.0.2.42']);
+        $station = ['last-ip' => '192.0.2.42'];
+        $this->container->getByType(Wewimo::class)->prepareIpInfoAndLink($ip, $station);
+        Assert::true(array_key_exists('xx-last-ip-link', $station));
+        Assert::null($station['xx-last-ip-link']);
+        Assert::null($station['xx-last-ip-user-nick']);
+    }
+
     public function testWewimoDecryptsCredentialsAndOmitsCurrentAddressFromHistory(): void {
         $ap = $this->fixtures->ap($this->fixtures->area()->id);
         $member = $this->fixtures->member($ap->id);

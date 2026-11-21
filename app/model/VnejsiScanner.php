@@ -83,7 +83,7 @@ class VnejsiScanner
      * @return array<array-key, list<string>>
      */
     public function getScanNaPortech($filtr): array {
-        $scan = $this->getScan();
+        $scan = $this->getScan() ?? [];
         // Porty ze scanu jsou text. Zachovat číselnou shodu i pro úvodní nuly či mezery,
         // ale nepřevádět nečíselné položky (např. prázdný text) na port 0.
         $normalizujPort = static fn (int|string $port): float|string => is_numeric($port) ? (float) $port : $port;

@@ -153,6 +153,10 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   DigiSign klienta. Pro test beze změny produkční inicializace lze oba nahradit přes `class_alias` ještě
   před jejich autoloadem; ověřit, že původní třídy nejsou načtené. Testovací HTTP request musí mít
   `remoteAddress`, protože `AplikaceLog.ip` nepřipouští `NULL`. Ověřeno 21. 11. 2026 v databázovém testu webhooku.
+- MySQL driver Nette Database při zápisu `DateTimeInterface` používá `format('Y-m-d H:i:s')`, sám časovou
+  zónu nepřevádí. Čas z externí události je proto před zápisem nutné převést do časové zóny aplikace;
+  samotný správný Unix timestamp nestačí. Ověřeno 21. 11. 2026 v `DigisignWebhookDatabaseTest`: událost
+  `11:00Z` se před převodem ukládala jako místních 11:00 místo 12:00 v Europe/Prague.
 - Kontrolu přístupu v `www/adminer/index.php` lze testovat v PHP podprocesu požadavkem na
   `?file=adminer.css`: povolená větev načte skutečný soubor z balíčku bez přihlášení nebo spojení s DB,
   zamítnutá větev skončí 403. Ověřeno 21. 11. 2026 s `dg/adminer-custom` 1.15.0.
