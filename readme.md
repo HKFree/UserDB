@@ -149,8 +149,62 @@ When something goes wrong, try to run `(cd /opt/UserDB.git; hooks/post-receive)`
 
 See [git-hooks/post-receive.sample](git-hooks/post-receive.sample) for more details what happens during deployment on server side.
 
-There is no shared testing environment. To try a change before it is deployed, run the application locally:
-see [Local web, database and PDF with Flox](#local-web-database-and-pdf-with-flox).
+### Testing server
+
+A shared testing server runs one instance for `master` and one for every open pull request from a branch of
+this repository, each under its own host name: `master.<domain>` and `pr-<number>.<domain>`. An instance runs
+the same way as the [local web with Flox](#local-web-database-and-pdf-with-flox): `config.flox.neon`, demo data,
+mail captured to files, and every visitor signed in as the demo user. All instances sit behind a reverse proxy
+with HTTP Basic; the maintainers have the password.
+
+1. [deploy-testing.yml](.github/workflows/deploy-testing.yml) runs on a push to `master` and when a pull
+   request is opened, updated, reopened or closed. It connects to the server over SSH and sends one request:
+   deploy a commit as an instance, or remove the instance of a closed pull request. Nothing is built on the
+   GitHub runner. The run summary links the instance.
+2. The connection uses `secrets.TESTING_SSH_KEY`, `vars.TESTING_SSH_HOST`, `vars.TESTING_SSH_USER` and the
+   server's host key in `vars.TESTING_SSH_KNOWN_HOSTS`; `vars.TESTING_DOMAIN` is the domain of the instances.
+   On the server the key can only run [scripts/userdb_testing_deploy.sh](scripts/userdb_testing_deploy.sh),
+   installed as `/usr/local/bin/userdb-testing-deploy`.
+3. The script accepts only a commit that is on a branch of this repository. It checks the commit out as a git
+   worktree in `/srv/userdb-testing/instances/<instance>`, installs the Composer dependencies, **deletes the
+   database of that instance and rebuilds it** from the migrations and demo data of the commit, and runs
+   MariaDB and the web as systemd user services of the deploy account. The web of `pr-<number>` listens on
+   `127.0.0.1:<10000 + number>`, the web of `master` on `127.0.0.1:10000`.
+
+Things to know:
+
+- Data entered in an instance lasts until its next deployment. Captured mail, sessions and logs of the
+  instance stay.
+- The server keeps at most six pull request instances. A seventh replaces the one deployed longest ago;
+  re-run the last workflow run of a pull request to get its instance back.
+- An instance runs the head commit of the pull request, not its merge with `master`. A branch from before
+  the Flox setup of the local web (`scripts/userdb_dev_setup.php`) is refused until it is updated from
+  `master`.
+- GitHub does not run the workflow for a pull request that conflicts with `master`. Its instance stays as it
+  was, also after the pull request is closed, until the conflict is resolved or a newer instance replaces it.
+- A failed deployment stops the services of its instance; the run log shows the reason.
+- The domain of the instances has to resolve every `pr-<number>` name to the server. The current server
+  uses a wildcard DNS service for that, so a new instance needs no DNS change.
+- A pull request from a fork is never deployed, because its code would run on the server unreviewed. To test
+  it, a maintainer pushes its commits to a branch of this repository and opens a pull request from there.
+- A change of the script takes effect only after the new version is installed on the server by hand.
+
+The server needs Flox, git, curl, the reverse proxy and an unprivileged deploy account with lingering enabled
+(`loginctl enable-linger <account>`) that owns `/srv/userdb-testing`. The script is installed owned by root,
+and the deploy key is kept in a root-owned file that sshd reads for that account
+(`AuthorizedKeysFile /etc/ssh/authorized_keys/%u`), so that deployed code cannot change either:
+
+```
+command="/usr/local/bin/userdb-testing-deploy",restrict ssh-ed25519 <public key>
+```
+
+Deployed code runs as the deploy account, so the server must not let that account reach anything that is
+not meant for testing: `config.flox.neon` disconnects the external services it knows about, but for example
+the Wewimo reader connects to whatever address is stored in the database. On the current server a firewall
+rule rejects connections of the deploy account to private networks.
+
+The reverse proxy maps `pr-<number>.<domain>` to the port above and obtains a certificate for a host name
+only after the script has created `/srv/userdb-testing/deployed/<instance>`.
 
 ### Jobs to be run
 

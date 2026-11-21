@@ -40,8 +40,12 @@ Nette Database, MariaDB), REST API a několik samostatných služeb.
   issue, komentář a spuštění vzdáleného CI.
 - Nasazení dělá člověk ručně; sloučení PR do `master` nic nenasazuje. Nespouštěj
   `git push production`. Schválení publikování není svolení nasadit.
-- Sdílené testovací prostředí není. Změnu zkoušej lokálně přes Flox, viz
-  Příkazy.
+- Změnu zkoušej lokálně přes Flox, viz Příkazy. Sdílený testovací server má
+  instanci pro `master` a pro každý otevřený PR z větve tohoto repa. Nasazuje
+  ji workflow `deploy-testing.yml` při otevření PR a při každém pushi do něj,
+  takže publikováním PR se jeho kód na serveru spustí. Každé nasazení smaže
+  databázi instance a postaví ji znovu z demo dat, viz
+  [README](readme.md#testing-server).
 - Do commitů, PR, issue ani paměti nepiš tajné údaje, osobní údaje členů ani
   postup zneužití neopravené chyby. CI workflow `Gitleaks` prochází celou
   historii; do `.gitleaksignore` bez pokynu nic nepřidávej.
@@ -122,8 +126,8 @@ codex plugin add nette@nette
 | `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
 | `tests/` | Nette Tester; `tests/bootstrap.php` načte společný základ: testovací kontejner, databázi z migrací ve Floxu a spouštění presenterů |
-| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, router PHP serveru) a měření pokrytí testy |
-| `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image |
+| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, router PHP serveru), měření pokrytí testy a skript nasazení na testovací server |
+| `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení na testovací server |
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
 | `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |
 | `lib/phpqrcode/` | cizí knihovna, neupravuj ji |

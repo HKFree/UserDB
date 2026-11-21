@@ -1,0 +1,56 @@
+name: Deploy to the testing server
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions: {}
+
+concurrency:
+  group: deploy-testing-${{ github.event.pull_request.number || 'master' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy or remove the instance over SSH
+    # A pull request from a fork has no key, and its code must not run on the server unreviewed.
+    # Dependabot runs get no secrets either.
+    if: >-
+      github.repository == 'HKFree/UserDB'
+      && github.actor != 'dependabot[bot]'
+      && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TESTING_SSH_HOST: ${{ vars.TESTING_SSH_HOST }}
+      TESTING_SSH_USER: ${{ vars.TESTING_SSH_USER }}
+      TESTING_SSH_KNOWN_HOSTS: ${{ vars.TESTING_SSH_KNOWN_HOSTS }}
+      TESTING_SSH_KEY: ${{ secrets.TESTING_SSH_KEY }}
+      TESTING_DOMAIN: ${{ vars.TESTING_DOMAIN }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_ACTION: ${{ github.event.action }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      # The key is bound on the server to scripts/userdb_testing_deploy.sh, which accepts only these requests.
+      - name: Run the request on the server
+        run: |
+          if [ -z "$PR_NUMBER" ]; then
+            instance=master
+            request="deploy master $GITHUB_SHA"
+          elif [ "$PR_ACTION" = closed ]; then
+            instance="pr-$PR_NUMBER"
+            request="remove $instance"
+          else
+            instance="pr-$PR_NUMBER"
+            request="deploy $instance $PR_HEAD_SHA"
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$TESTING_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          (umask 077 && printf '%s\n' "$TESTING_SSH_KEY" > ~/.ssh/deploy_key)
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o IdentitiesOnly=yes -o ServerAliveInterval=30 \
+            "$TESTING_SSH_USER@$TESTING_SSH_HOST" "$request"
+          if [ "$PR_ACTION" != closed ]; then
+            echo "Deployed to https://$instance.$TESTING_DOMAIN/" >> "$GITHUB_STEP_SUMMARY"
+          fi
