@@ -1,0 +1,12 @@
+# Orca (https://orca.dev) settings for every worktree created from this repository.
+# They assume only Orca and Flox. Personal preferences belong to the repository settings in Orca.
+
+# Tests and static analysis need vendor/, so the agent starts after the setup.
+setupAgentStartupPolicy: wait-for-setup
+
+scripts:
+  setup: bash scripts/userdb_worktree.sh setup
+
+defaultTabs:
+  - title: web
+    command: bash scripts/userdb_worktree.sh web
