@@ -5,12 +5,12 @@ db_dir="${FLOX_ENV_CACHE:?Activate the project Flox environment first}/mariadb"
 project_dir="${FLOX_ENV_PROJECT:?}"
 socket_path="${USERDB_MARIADB_SOCKET:?Activate the project Flox environment first}"
 umask 077
-mkdir -p "$db_dir" "$FLOX_ENV_CACHE/logs"
+mkdir -p "$db_dir/tmp" "$FLOX_ENV_CACHE/logs"
 
 mkdir -p "$(dirname "$socket_path")"
 
 if [ ! -d "$db_dir/data/mysql" ]; then
-    mariadb-install-db --no-defaults --datadir="$db_dir/data" \
+    TMPDIR="$db_dir/tmp" mariadb-install-db --no-defaults --datadir="$db_dir/data" \
         --auth-root-authentication-method=socket --skip-test-db \
         > "$FLOX_ENV_CACHE/logs/mariadb-init.log" 2>&1 || {
         cat "$FLOX_ENV_CACHE/logs/mariadb-init.log" >&2
@@ -20,6 +20,7 @@ fi
 
 exec mariadbd --no-defaults \
     --datadir="$db_dir/data" \
+    --tmpdir="$db_dir/tmp" \
     --socket="$socket_path" \
     --pid-file="$db_dir/mariadb.pid" \
     --log-error="$FLOX_ENV_CACHE/logs/mariadb.log" \
