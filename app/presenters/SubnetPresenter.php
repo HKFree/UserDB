@@ -28,7 +28,7 @@ class SubnetPresenter extends BasePresenter
     }
 
     public function renderOverview(): void {
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             $targetSubnet = $this->getParameter('id');
             if (substr($targetSubnet, -1) != ".") {
                 $targetSubnet .= ".";
@@ -57,7 +57,7 @@ class SubnetPresenter extends BasePresenter
     }
 
     public function renderDetail(): void {
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             $targetSubnet = $this->getParameter('id');
             if (substr($targetSubnet, -1) != ".") {
                 $targetSubnet .= ".";

@@ -40,7 +40,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
     public function testUnknownMemberAndEmptyKeyDoNotConfirm(): void {
         $ap = $this->fixtures->ap($this->fixtures->area()->id);
         $member = $this->fixtures->member($ap->id, ['regform_downloaded_password_sent' => 0]);
-        foreach (['', base64_encode('0-' . str_repeat('a', 32))] as $key) {
+        foreach (['', '0', base64_encode('0-' . str_repeat('a', 32))] as $key) {
             $result = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail', 'key' => $key]);
             Assert::same(200, $result->status);
             Assert::contains('Ověření nebylo možné dokončit.', $result->html);

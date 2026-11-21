@@ -155,7 +155,7 @@ class UzivatelPresenter extends BasePresenter
     }
 
     public function renderShow(): void {
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             $uid = $this->getParameter('id');
             if (($uzivatel = $this->uzivatel->getUzivatel($uid)) !== null) {
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
@@ -415,7 +415,7 @@ class UzivatelPresenter extends BasePresenter
 
         // pokud editujeme, nacteme existujici ipadresy
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($values !== null) {
                 foreach ($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
@@ -501,7 +501,7 @@ class UzivatelPresenter extends BasePresenter
                 }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
-                if ($duplIp) {
+                if (!in_array($duplIp, [null, '', '0'], true)) {
                     $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
                 }
 
@@ -700,7 +700,7 @@ class UzivatelPresenter extends BasePresenter
         // rozsahy ip adres
         foreach ($genaddresses as $gi) {
             $duplIp = $this->ipAdresa->getDuplicateIP($gi, 0);
-            if (!$duplIp) {
+            if (in_array($duplIp, [null, '', '0'], true)) {
                 $rngip = [
                     'ip_adresa' => $gi,
                     'internet' => true,
@@ -745,7 +745,7 @@ class UzivatelPresenter extends BasePresenter
 
     /** @param int|string|null $id */
     public function actionIds($id): void {
-        if ($id) {
+        if (!in_array($id, [null, 0, '', '0'], true)) {
             if (($uzivatel = $this->uzivatel->getUzivatel($id)) !== null) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
                 $ips = array_values($ipAdresy->fetchPairs('id', 'ip_adresa'));

@@ -54,7 +54,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         } else {
             $form->addSubmit('send', 'Upravit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
         }
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $stitek = $this->stitek->getStitekById($id);
             if ($stitek !== null) {
                 $form->setDefaults([
@@ -77,7 +77,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $id = $this->getParameter('id');
         // $values->Oblast_id = $values->Oblast_id === '' ? null : $values->Oblast_id;
 
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $this->stitek->updateStitek($id, [
                 'text' => $values->text,
                 // 'Oblast_id' => $values->Oblast_id,

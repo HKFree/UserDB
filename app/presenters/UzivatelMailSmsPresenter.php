@@ -108,7 +108,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'emailFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             if ($user !== null) {
                 $form->setValues($user);
                 $form->setDefaults(array(
@@ -160,7 +160,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->addHidden('id');
 
         $oblastMail = null;
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             $ap = $this->ap->getAP($this->getParameter('id'));
             $oblastMail = 'oblast'.$ap->Oblast_id.'@hkfree.org';
         }
@@ -176,7 +176,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'emailallFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
             $validni = [];
             foreach ($emaily as $email) {
@@ -253,7 +253,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         }
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             if ($user !== null) {
                 $form->setValues($user);
                 $form->setDefaults(array(
@@ -292,7 +292,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'smsallFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $ap = $this->ap->getAP($this->getParameter('id'));
             $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
             $validni = [];

@@ -122,7 +122,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
         // pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
             foreach ($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);
@@ -266,7 +266,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
         // pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
             foreach ($user->related("CestneClenstviUzivatele.Uzivatel_id") as $rights_id => $rights_data) {
                 $form["rights"][$rights_id]->setValues($rights_data);

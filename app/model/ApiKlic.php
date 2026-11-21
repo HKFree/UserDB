@@ -66,7 +66,7 @@ class ApiKlic extends Table
     }
 
     public function isNotExpired(?\DateTimeInterface $validTo): bool {
-        if ($validTo) {
+        if ($validTo !== null) {
             // valid to is not NULL, check validity
             if ($validTo >= (\Nette\Utils\DateTime::from(date('d.m.Y').' 00:00:00'))) {
                 // OK

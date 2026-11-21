@@ -24,7 +24,7 @@ class FilePresenter extends BasePresenter
 
     /** @param int|string|null $id */
     public function actionDownloadWinboxCmd($id): void {
-        if ($id) {
+        if (!in_array($id, [null, 0, '', '0'], true)) {
             $ip = $this->ipAdresa->getIPAdresa($id);
             if ($ip !== null) {
                 $apOfIp = $this->ipAdresa->getAPOfIP($ip);

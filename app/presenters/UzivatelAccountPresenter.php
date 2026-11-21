@@ -136,7 +136,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $grid->setExport('account_export');
 
         $seznamTransakci = null;
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $seznamTransakci = $this->uzivatelskeKonto->getUzivatelskeKontoUzivatele($id);
         }
 

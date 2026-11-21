@@ -25,7 +25,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
     public function renderConfirmEmail($key): void {
         $this->setLayout('pub');
         $this->template->stav = false;
-        if ($key) {
+        if (!in_array($key, [null, '', '0'], true)) {
 
             $decodedKey = base64_decode($key, true);
             if ($decodedKey === false) {

@@ -11,10 +11,10 @@ use Tester\Assert;
 require __DIR__ . '/../vendor/autoload.php';
 \Tester\Environment::setup();
 
-foreach ([null, 'text/plain'] as $contentType) {
+foreach ([[null, 'application/octet-stream'], ['', 'application/octet-stream'], ['0', 'application/octet-stream'], ['text/plain', 'text/plain']] as [$contentType, $expectedType]) {
     $download = new ContentDownloadResponse("download\0content", 'example.txt', $contentType);
     Assert::same('example.txt', $download->getName());
-    Assert::same($contentType ?? 'application/octet-stream', $download->getContentType());
+    Assert::same($expectedType, $download->getContentType());
 
     ob_start();
     try {

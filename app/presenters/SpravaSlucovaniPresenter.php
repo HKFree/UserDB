@@ -58,10 +58,10 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
 
         $u1id = 1;
         $u2id = 1;
-        if ($this->getParameter('u1')) {
+        if ($this->maVyplnenyParametr('u1')) {
             $u1id = $this->getParameter('u1');
         }
-        if ($this->getParameter('u2')) {
+        if ($this->maVyplnenyParametr('u2')) {
             $u2id = $this->getParameter('u2');
         }
 

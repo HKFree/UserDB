@@ -57,6 +57,14 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     /**
+     * Zachovává význam prázdných parametrů: i 0 a "0" znamenají nezadanou hodnotu.
+     * Neověřuje formát ani oprávnění; např. "00" je vyplněný parametr.
+     */
+    protected function maVyplnenyParametr(string $name): bool {
+        return !in_array($this->getParameter($name), [null, false, 0, 0.0, '', '0', []], true);
+    }
+
+    /**
      * Obsluha formuláře nebo akce pokračuje jen s oprávněním, jinak 403.
      * Podmínka má být stejná, jakou dostává šablona: šablona formulář jen skryje, odeslat ho jde i bez ní.
      */

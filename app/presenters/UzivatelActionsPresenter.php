@@ -84,7 +84,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionMoneyActivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             if ($this->accountActivation->activateAccount($this->getUser(), $id)) {
                 $this->flashMessage('Účet byl aktivován.');
             }
@@ -95,7 +95,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionMoneyReactivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
             if ($result != '') {
                 $this->flashMessage($result);
@@ -107,7 +107,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionMoneyDeactivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             if ($this->accountActivation->deactivateAccount($this->getUser(), $id)) {
                 $this->flashMessage('Účet byl deaktivován.');
             }
@@ -117,7 +117,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionExportPdf(): void {
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
@@ -126,7 +126,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
     public function actionSendRegActivation(): void {
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 $hash = base64_encode($uzivatel->id . '-' . md5($this->parameters->salt . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
@@ -154,7 +154,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionExportAndSendRegForm(): void {
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 if ($uzivatel->spolek == 0) {
                     $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
@@ -189,7 +189,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionHandleSubscriberContract(): void {
         // TODO: Logování změn
 
-        if (!$this->getParameter('id')) {
+        if (!$this->maVyplnenyParametr('id')) {
             $this->flashMessage('Žádné id.');
             $this->redirect('UzivatelList:listall');
         }

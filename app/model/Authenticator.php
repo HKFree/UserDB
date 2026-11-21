@@ -32,7 +32,7 @@ class Authenticator implements Security\IAuthenticator
      */
     public function authenticate(array $credentials) {
         list($userID, $password) = $credentials;
-        if (!$userID) {
+        if (in_array($userID, [null, 0, '', '0'], true)) {
             throw new Nette\Security\AuthenticationException('User not found.');
         }
         if ($this->fakeUser != false) {            /// debuging identity

@@ -227,7 +227,7 @@ class Wewimo
         }
         // k AP dohledat IP adresy, ktere maji nastaven priznak Wewimo
         $apIps = $apt->related('IPAdresa.Ap_id')->where('wewimo', 1);
-        if ($ip) {
+        if (!in_array($ip, [null, '', '0'], true)) {
             // omezit jen na jednu IP - vyuziva se v AJAXovem prekreslovani zmen,
             // misto jednoho pozadavku-odpovedi na vsechny IP (RB) se AJAXem posila
             // nekolik pozadavku (jeden na jednu IP) cimz je aktualizace rychlejsi (paralelizace)

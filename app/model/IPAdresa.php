@@ -210,7 +210,7 @@ class IPAdresa extends Table
             $tr->setClass($subnetModeInfo['rowClass']);
         }
 
-        if ($subnetLink) {
+        if (!in_array($subnetLink, [null, '', '0'], true)) {
             // IP jako link do subnets z beznych agend (uzivatel, AP)
             $tr->create('td')->create('a')->setHref($subnetLink)->setTarget('_blank')->setText($ipTitle);
         } else {
@@ -427,7 +427,7 @@ class IPAdresa extends Table
                     $tr->create('td')->setColspan(2)->create('a')->setHref($subnetModeInfo['link'])->setText($subnetModeInfo['jmeno'] . ' (' . $subnetModeInfo['id'] . ')');
                 }
             } else {
-                if ($canViewCredentialsOrEdit && $editLink) {
+                if ($canViewCredentialsOrEdit && !in_array($editLink, [null, '', '0'], true)) {
                     array_unshift(
                         $buttons,
                         Html::el('a')
@@ -486,7 +486,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
                 // ssid
-                if ($wewimoLink) {
+                if (!in_array($wewimoLink, [null, '', '0'], true)) {
                     // SSID jako link do wewimo
                     $wewimoTag = $tr->create('td')->create('a')
                         ->setHref($wewimoLink)
