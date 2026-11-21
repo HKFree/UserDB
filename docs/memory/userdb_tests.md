@@ -107,3 +107,10 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - `Tester\Environment::setup()` čte anotace ze vstupního souboru. Načtení testu přes `php -r 'require ...'`
   selže na `Unable to read file 'Command line code'`. Pro ověření testu s přednačteným modelem použít
   skutečný soubor testu a `php -d auto_prepend_file=...` (ověřeno 20. 11. 2026, Tester 2.6.2).
+- Samostatný `WebhookReceiver.php` při načtení spouští aplikační bootstrap a uvnitř obsluhy vytváří
+  DigiSign klienta. Pro test beze změny produkční inicializace lze oba nahradit přes `class_alias` ještě
+  před jejich autoloadem; ověřit, že původní třídy nejsou načtené. Testovací HTTP request musí mít
+  `remoteAddress`, protože `AplikaceLog.ip` nepřipouští `NULL`. Ověřeno 21. 11. 2026 v databázovém testu webhooku.
+- Kontrolu přístupu v `www/adminer/index.php` lze testovat v PHP podprocesu požadavkem na
+  `?file=adminer.css`: povolená větev načte skutečný soubor z balíčku bez přihlášení nebo spojení s DB,
+  zamítnutá větev skončí 403. Ověřeno 21. 11. 2026 s `dg/adminer-custom` 1.15.0.

@@ -15,6 +15,7 @@ class SmsSender
 {
     public const STATUS_OK = 0;
     public const STATUS_NO_ACCOUNT = 1;
+    public const STATUS_INVALID_CREDENTIALS = 2;
 
     /** @var string */
     private $pythonScript;
@@ -42,12 +43,17 @@ class SmsSender
             return (["status" => SmsSender::STATUS_NO_ACCOUNT, "msg" => "Nemáte účet v AWEG SMS systému!"]);
         }
 
+        $password = base64_decode($senderIdentity->getPasswordHash(), true);
+        if ($password === false) {
+            return (["status" => SmsSender::STATUS_INVALID_CREDENTIALS, "msg" => "Neplatné přihlašovací údaje pro AWEG SMS systém."]);
+        }
+
         $locale = 'cs_CZ.UTF-8';
         setlocale(LC_ALL, $locale);
         putenv('LC_ALL='.$locale);
         $command = escapeshellcmd('python '.$this->pythonScript.
             ' -a https://aweg3.maternacz.com -l '.$awegUser->aweg_name.
-            ':'.base64_decode($senderIdentity->getPasswordHash()).'
+            ':'.$password.'
              -d '.implode(',', $recipientMsisdns).
             ' "'.$message.'"');
         return (["status" => SmsSender::STATUS_OK, "msg" => shell_exec($command)]);

@@ -126,7 +126,7 @@ function process_digisign_webhook($hook) {
                 $AplikaceLog->log("digisign-webhook", "Overime ze UID {$uzivatel->id} neni SO nebo ZSO, zde je jejich seznam (" . implode(', ', $soAndZso). ")");
 
                 // 4.1. rozhodnutim SO rusime clenstvi ve spolku clenum, kteri nejsou SO ci ZSO
-                if (in_array($uzivatel->id, $soAndZso) === false) {
+                if (in_array($uzivatel->id, $soAndZso, true) === false) {
                     $AplikaceLog->log("digisign-webhook", "Uzivatel UID {$uzivatel->id} neni SO ani ZSO, nastavujeme mu TypClenstvi_id = 1 (zrusene)");
                     $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
                 }
