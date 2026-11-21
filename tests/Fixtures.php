@@ -92,7 +92,7 @@ final class Fixtures
 
     public function lookup(string $table, string $text): int {
         $row = $this->database->table($table)->where('text', $text)->fetch();
-        return $row ? (int) $row->id : throw new \RuntimeException("Missing lookup $table: $text");
+        return $row !== null ? (int) $row->id : throw new \RuntimeException("Missing lookup $table: $text");
     }
 
     /**

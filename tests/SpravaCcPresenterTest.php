@@ -124,7 +124,7 @@ class SpravaCcPresenterTest extends Tester\TestCase
         Assert::count($decision === null ? 0 : 1, $mailer->messages);
         if ($decision !== null) {
             $mail = $mailer->messages[0];
-            $end = $endDate ? '31.12.2027' : 'neomezeně';
+            $end = !in_array($endDate, [null, '', '0'], true) ? '31.12.2027' : 'neomezeně';
             Assert::same(
                 "Dobrý den,\nbyla $decision žádost o čestné členství na dobu 01.12.2026 - $end.\nID:20\nPoznámka: Za pomoc spolku.\n\n",
                 $mail->getBody(),
