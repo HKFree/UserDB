@@ -168,10 +168,13 @@ class MailService
             ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem hkfree.org z.s.');
 
         $temp_file = tempnam(sys_get_temp_dir(), 'registrace');
+        if ($temp_file === false) {
+            throw new Nette\IOException('Nelze vytvořit dočasný soubor pro registrační formulář.');
+        }
         $pdf->outputName = $temp_file;
         $pdf->outputDestination = PdfResponse::OUTPUT_FILE;
         $pdf->send($request, $response);
-        $mail->addAttachment('hkfree-registrace-' . $uzivatel->id . '.pdf', file_get_contents($temp_file));
+        $mail->addAttachment('hkfree-registrace-' . $uzivatel->id . '.pdf', Nette\Utils\FileSystem::read($temp_file));
 
         $this->mailer->send($mail);
     }

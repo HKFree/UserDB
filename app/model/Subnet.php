@@ -61,7 +61,7 @@ class Subnet extends Table
     /**
      * Párová metoda k \App\Model\Log::getAdvancedzLogu(), Vrati seznam idSubnet -> subnet
      *
-     * @param int[] $ids idSubnet pro které chceme zjistit subnet
+     * @param array<array-key, int|string> $ids idSubnet pro které chceme zjistit subnet
      * @return array<int, string> pole idSubnet=>subnet
      */
     public function getSubnetzDB(array $ids) {

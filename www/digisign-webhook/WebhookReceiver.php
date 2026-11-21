@@ -23,9 +23,14 @@ function process_digisign_webhook(mixed $hook): void {
     $FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
     $FILE_STORAGE_PATH .= '/ucastnickeSmlouvy';
 
+    $accessKey = getenv('DIGISIGN_ACCESS_KEY');
+    $secretKey = getenv('DIGISIGN_SECRET_KEY');
+    if (in_array($accessKey, [false, '', '0'], true) || in_array($secretKey, [false, '', '0'], true)) {
+        throw new RuntimeException('Missing DIGISIGN_ACCESS_KEY or DIGISIGN_SECRET_KEY environment variables');
+    }
     $dgs = new DigiSign([
-        'access_key' => getenv('DIGISIGN_ACCESS_KEY'),
-        'secret_key' => getenv('DIGISIGN_SECRET_KEY')
+        'access_key' => $accessKey,
+        'secret_key' => $secretKey
     ]);
     $ENVELOPES = $dgs->envelopes();
 

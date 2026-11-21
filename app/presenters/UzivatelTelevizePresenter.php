@@ -72,8 +72,8 @@ class UzivatelTelevizePresenter extends BasePresenter
 
         $form->addRadioList('cena', 'Nová cena', [
           "0" => " 0 Kč/měsíc",
-          $this->parameters->getCenaSledovaniTV()  => sprintf(" %s Kč/měsíc", $this->parameters->getCenaSledovaniTV())
-        ])->setDefaultValue(
+          (string) $this->parameters->getCenaSledovaniTV() => sprintf(" %s Kč/měsíc", $this->parameters->getCenaSledovaniTV())
+        ])->setRequired('Vyberte cenu služby.')->setDefaultValue(
             (float) $this->cena($uid) === 0.0 ? 0 : $this->parameters->getCenaSledovaniTV()
         );
 
@@ -95,15 +95,13 @@ class UzivatelTelevizePresenter extends BasePresenter
         $uid = $this->getParameter('id');
 
         $this->connection->query(
-            sprintf(
-                'INSERT INTO %s (id,cena) VALUES (%u,%u) ON DUPLICATE KEY UPDATE cena=values(cena)',
-                $this->uzivatelTelevize->tableName,
-                $uid,
-                $data->cena
-            )
+            'INSERT INTO ?name (id,cena) VALUES (?,?) ON DUPLICATE KEY UPDATE cena=values(cena)',
+            $this->uzivatelTelevize->tableName,
+            sprintf('%u', $uid),
+            $data->cena
         );
 
-        $this->flashMessage(sprintf('Cena služby Televize změněna na %u Kč/měsíc.', $data->cena));
+        $this->flashMessage(sprintf('Cena služby Televize změněna na %s Kč/měsíc.', $data->cena));
 
         $this->redirect('Uzivatel:show', ['id' => $uid]);
     }

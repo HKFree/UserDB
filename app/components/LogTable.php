@@ -8,7 +8,8 @@ use App\Model;
 use Nette\Database\Table\ActiveRow;
 
 /**
- * @phpstan-type ParsedColumn array{typ: int, sloupec: string, ipId?: numeric-string, pravoId?: numeric-string, subnetId?: numeric-string}
+ * @property-read \Nette\Bridges\ApplicationLatte\Template $template
+ * @phpstan-type ParsedColumn array{typ: 1|4, sloupec: string}|array{typ: 2, sloupec: string, ipId: numeric-string}|array{typ: 3, sloupec: string, pravoId: numeric-string}|array{typ: 5, sloupec: string, subnetId: numeric-string}
  */
 class LogTable extends UI\Control
 {
@@ -46,22 +47,21 @@ class LogTable extends UI\Control
      */
     private function parseSloupec($sloupec): array {
         $out = [];
-        if (preg_match("/^uzivatel\.(.+)/i", $sloupec, $matches)) {
+        if (preg_match("/^uzivatel\.(.+)/i", $sloupec, $matches) === 1) {
             $out["typ"] = self::UZIVATEL;
             $out["sloupec"] = $matches[1];
-        } elseif (preg_match("/^ipadresa\[(\d+)\]\.(.+)/i", $sloupec, $matches)) {
+        } elseif (preg_match("/^ipadresa\[(\d+)\]\.(.+)/i", $sloupec, $matches) === 1) {
             $out["typ"] = self::IPADRESA;
             $out["ipId"] = $matches[1];
             $out["sloupec"] = $matches[2];
-        } elseif (preg_match("/^pravo\[(\d+)\]\.(.+)/i", $sloupec, $matches)) {
+        } elseif (preg_match("/^pravo\[(\d+)\]\.(.+)/i", $sloupec, $matches) === 1) {
             $out["typ"] = self::PRAVO;
             $out["pravoId"] = $matches[1];
             $out["sloupec"] = $matches[2];
-        }
-        if (preg_match("/^ap\.(.+)/i", $sloupec, $matches)) {
+        } elseif (preg_match("/^ap\.(.+)/i", $sloupec, $matches) === 1) {
             $out["typ"] = self::AP;
             $out["sloupec"] = $matches[1];
-        } elseif (preg_match("/^subnet\[(\d+)\]\.(.+)/i", $sloupec, $matches)) {
+        } elseif (preg_match("/^subnet\[(\d+)\]\.(.+)/i", $sloupec, $matches) === 1) {
             $out["typ"] = self::SUBNET;
             $out["subnetId"] = $matches[1];
             $out["sloupec"] = $matches[2];
@@ -168,7 +168,7 @@ class LogTable extends UI\Control
         $ipVsechny = $this->getIPMapping($logy);
         $subnetyVsechny = $this->getSubnetMapping($logy);
 
-        $last = false;
+        $last = null;
 
         $toSkip = array("uzivatel_id", "ap_id");
         $toSkipString = implode("|", $toSkip);
@@ -178,7 +178,7 @@ class LogTable extends UI\Control
                 continue;
             }
 
-            if (preg_match("/^heslo/i", $rozparsovano["sloupec"])) {
+            if (preg_match("/^heslo/i", $rozparsovano["sloupec"]) === 1) {
                 continue;
             }
 
@@ -191,7 +191,7 @@ class LogTable extends UI\Control
             } elseif ($rozparsovano["typ"] === self::IPADRESA) {
                 $id = $rozparsovano["ipId"];
                 $sloupec = $rozparsovano["sloupec"];
-                if (preg_match("/(".$toSkipString.")/i", $sloupec)) {
+                if (preg_match("/(".$toSkipString.")/i", $sloupec) === 1) {
                     continue;
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);
@@ -199,7 +199,7 @@ class LogTable extends UI\Control
                 $datum = (string) $line->datum;
                 $titulek = "IP ".$ipVsechny[$id];
 
-                if ($last !== false && $last[0]->getText() === $datum && $last[2]->getText() === $titulek) {
+                if ($last !== null && $last['datum'] === $datum && $last['titulek'] === $titulek) {
                     $text = "";
                     if ($line->akce === self::INSERT) {
                         $text = $sloupec." = ".$line->nova_hodnota.", ";
@@ -208,9 +208,9 @@ class LogTable extends UI\Control
                     } elseif ($line->akce === self::UPDATE) {
                         $text = $sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
                     }
-                    $last[3]->setText($last[3]->getText().$text);
+                    $last['bunka']->setText($last['bunka']->getText().$text);
                 } else {
-                    $last = $tr = $this->tableGetLineBegin($table, $line);
+                    $tr = $this->tableGetLineBegin($table, $line);
 
                     $tr->create('td')->setText($titulek);
 
@@ -223,12 +223,12 @@ class LogTable extends UI\Control
                         $text = "Změna ".$sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
                     }
 
-                    $tr->create('td')->setText($text)->setColspan(2);
+                    $last = ['datum' => $datum, 'titulek' => $titulek, 'bunka' => $tr->create('td')->setText($text)->setColspan(2)];
                 }
             } elseif ($rozparsovano["typ"] === self::SUBNET) {
                 $id = $rozparsovano["subnetId"];
                 $sloupec = $rozparsovano["sloupec"];
-                if (preg_match("/(".$toSkipString.")/i", $sloupec)) {
+                if (preg_match("/(".$toSkipString.")/i", $sloupec) === 1) {
                     continue;
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);
@@ -236,7 +236,7 @@ class LogTable extends UI\Control
                 $datum = (string) $line->datum;
                 $titulek = "Subnet ".$subnetyVsechny[$id];
 
-                if ($last !== false && $last[0]->getText() === $datum && $last[2]->getText() === $titulek) {
+                if ($last !== null && $last['datum'] === $datum && $last['titulek'] === $titulek) {
                     $text = "";
                     if ($line->akce === self::INSERT) {
                         $text = $sloupec." = ".$line->nova_hodnota.", ";
@@ -245,9 +245,9 @@ class LogTable extends UI\Control
                     } elseif ($line->akce === self::UPDATE) {
                         $text = $sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
                     }
-                    $last[3]->setText($last[3]->getText().$text);
+                    $last['bunka']->setText($last['bunka']->getText().$text);
                 } else {
-                    $last = $tr = $this->tableGetLineBegin($table, $line);
+                    $tr = $this->tableGetLineBegin($table, $line);
 
                     $tr->create('td')->setText($titulek);
 
@@ -260,7 +260,7 @@ class LogTable extends UI\Control
                         $text = "Změna ".$sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
                     }
 
-                    $tr->create('td')->setText($text)->setColspan(2);
+                    $last = ['datum' => $datum, 'titulek' => $titulek, 'bunka' => $tr->create('td')->setText($text)->setColspan(2)];
                 }
             }
         }

@@ -11,10 +11,15 @@ final class ContractPdf
         if (!mkdir($directory, 0700, true)) {
             throw new RuntimeException('Cannot create the contract working directory.');
         }
-        $directory = realpath($directory);
+        $absoluteDirectory = realpath($directory);
+        if ($absoluteDirectory === false) {
+            rmdir($directory);
+            throw new RuntimeException('Cannot resolve the contract working directory.');
+        }
+        $directory = $absoluteDirectory;
         try {
             self::run(['unzip', '-q', $template, '-d', $directory . '/document'], $directory);
-            $content = file_get_contents($directory . '/document/content.xml');
+            $content = self::readFile($directory . '/document/content.xml');
             $replacements = [];
             foreach ($parameters as $key => $value) {
                 if (!is_scalar($value) && $value !== null) {
@@ -33,8 +38,8 @@ final class ContractPdf
             self::run([$binary, '-env:UserInstallation=' . $profile, '--headless', '--norestore',
                 '--convert-to', 'pdf:writer_pdf_Export', '--outdir', $directory, $directory . '/document.odt'], $directory);
             $file = $directory . '/document.pdf';
-            if (!is_file($file) || !str_starts_with($pdf = file_get_contents($file), '%PDF-')) {
-                throw new RuntimeException('LibreOffice did not produce a PDF: ' . trim(file_get_contents($directory . '/command.log')));
+            if (!is_file($file) || !str_starts_with($pdf = self::readFile($file), '%PDF-')) {
+                throw new RuntimeException('LibreOffice did not produce a PDF: ' . trim(self::readFile($directory . '/command.log')));
             }
             return $pdf;
         } finally {
@@ -44,6 +49,14 @@ final class ContractPdf
             }
             rmdir($directory);
         }
+    }
+
+    private static function readFile(string $file): string {
+        $content = file_get_contents($file);
+        if ($content === false) {
+            throw new RuntimeException('Cannot read PDF conversion file: ' . basename($file));
+        }
+        return $content;
     }
 
     /** @param non-empty-list<string> $command */

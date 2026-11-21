@@ -33,6 +33,10 @@ class MexSmsSender
         $this->cache = $cache;
     }
 
+    protected function createHttpClient(): Client {
+        return new Client();
+    }
+
     public function checkCzechNumber(string $number): bool {
         return (strlen($this->formatCzechNumber($number, false)) > 0);
     }
@@ -41,17 +45,17 @@ class MexSmsSender
         $number_cleared = preg_replace('/\s/', '', $number);
 
         // match 777222555
-        if (preg_match('/^\d{9}$/', $number_cleared)) {
+        if (preg_match('/^\d{9}$/', $number_cleared) === 1) {
             return ("00420" . $number_cleared);
         }
 
         // match +420777222555
-        if (preg_match('/^\+420(\d{9})$/', $number_cleared, $matches)) {
+        if (preg_match('/^\+420(\d{9})$/', $number_cleared, $matches) === 1) {
             return ("00420" . $matches[1]);
         }
 
         // match 420777222555 (not really valid)
-        if (preg_match('/^420(\d{9})$/', $number_cleared, $matches)) {
+        if (preg_match('/^420(\d{9})$/', $number_cleared, $matches) === 1) {
             return ("00420" . $matches[1]);
         }
 
@@ -67,7 +71,7 @@ class MexSmsSender
      * @return array<array-key, mixed>|bool|float|int|string|null Raw decoded JSON, without response validation.
      */
     private function apiCall(string $endpoint, array $data, string $method = "POST", bool $initial = false) {
-        $client = new Client();
+        $client = $this->createHttpClient();
 
         try {
             $reqdata = [
@@ -96,8 +100,7 @@ class MexSmsSender
         return (json_decode($rBody, true));
     }
 
-    /** @return mixed The token field is taken from the API response without validation. */
-    private function login() {
+    private function login(): string {
         $data = [
             "username" => $this->mexUser,
             "password" => $this->mexPass
@@ -105,10 +108,13 @@ class MexSmsSender
 
         $res = $this->apiCall("/login", $data, "POST", true);
 
-        return ($res["token"]);
+        if (!is_array($res) || !isset($res['token']) || !is_string($res['token']) || $res['token'] === '') {
+            throw new SmsSenderException('MEX API nevrátilo platný přihlašovací token.');
+        }
+        return $res['token'];
     }
 
-    /** @return mixed Cached, unvalidated token returned by login(). */
+    /** @return mixed Cache result; freshly loaded tokens are validated by login(). */
     private function getToken() {
         return ($this->cache->load("authToken", function (&$dependencies) {
             $dependencies[Cache::EXPIRE] = '50 minutes';

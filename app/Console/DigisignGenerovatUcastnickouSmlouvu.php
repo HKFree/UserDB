@@ -20,6 +20,8 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
 {
     private string $templateId = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
     private string $FILE_STORAGE_PATH;
+    private string $accessKey;
+    private string $secretKey;
     private Uzivatel $uzivatelModel;
     private Smlouva $smlouvaModel;
     private PodpisSmlouvy $podpisSmlouvyModel;
@@ -41,9 +43,13 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
     protected function configure() {
         $this->addArgument('smlouva_id', InputArgument::REQUIRED, 'ID smlouvy (index do tabulky Smlouva)');
 
-        if (!getenv('DIGISIGN_ACCESS_KEY') || !getenv('DIGISIGN_SECRET_KEY')) {
+        $accessKey = getenv('DIGISIGN_ACCESS_KEY');
+        $secretKey = getenv('DIGISIGN_SECRET_KEY');
+        if (in_array($accessKey, [false, '', '0'], true) || in_array($secretKey, [false, '', '0'], true)) {
             throw new \Exception("Missing DIGISIGN_ACCESS_KEY or DIGISIGN_SECRET_KEY environment variables\n");
         }
+        $this->accessKey = $accessKey;
+        $this->secretKey = $secretKey;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
@@ -62,8 +68,8 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
 
         $dgs = new DigiSign([
-          'access_key' => getenv('DIGISIGN_ACCESS_KEY'),
-          'secret_key' => getenv('DIGISIGN_SECRET_KEY')
+          'access_key' => $this->accessKey,
+          'secret_key' => $this->secretKey
         ]);
 
         $ENVELOPES = $dgs->envelopes();
@@ -160,7 +166,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
               'address' => $parametry['adresa'],
               'emailBody' => str_replace(
                   ['{UID}',        '{cena}',   '{adresa}'],
-                  [$uzivatel->id, $parametry['cena_celkem'], $parametry['adresa']],
+                  [(string) $uzivatel->id, (string) $parametry['cena_celkem'], (string) $parametry['adresa']],
                   $envelope->emailBody
               ),
             ]

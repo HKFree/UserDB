@@ -6,7 +6,7 @@ require_once __DIR__ . '/UserdbDemoVolume.php';
 
 $cache = getenv('FLOX_ENV_CACHE');
 $socket = getenv('USERDB_MARIADB_SOCKET');
-if (!$cache || !$socket) {
+if (in_array($cache, [false, '', '0'], true) || in_array($socket, [false, '', '0'], true)) {
     throw new RuntimeException('Run: flox activate -s -- php scripts/userdb_dev_setup.php');
 }
 $connection = new Nette\Database\Connection("mysql:unix_socket=$socket;dbname=userdb_dev", 'userdb_dev', 'dev-only', ['lazy' => true]);
@@ -23,7 +23,7 @@ while (true) {
     }
 }
 $dataDir = realpath($cache . '/mariadb/data');
-if (!$dataDir || realpath($connection->fetchField('SELECT @@datadir')) !== $dataDir) {
+if ($dataDir === false || realpath($connection->fetchField('SELECT @@datadir')) !== $dataDir) {
     throw new RuntimeException('Refusing to initialize a database outside this Flox worktree.');
 }
 

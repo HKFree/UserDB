@@ -59,7 +59,7 @@ class SpravaCcPresenter extends SpravaPresenter
 
     public function renderSchvalovanicc(): void {
         /*** clear old registration files ***/
-        foreach (glob(sys_get_temp_dir()."/registrace*") as $file) {
+        foreach (glob(sys_get_temp_dir()."/registrace*") ?: [] as $file) {
             /*** if file is 7 days old then delete it ***/
             if (filemtime($file) < time() - 604800) {
                 unlink($file);
