@@ -162,8 +162,8 @@ have the password.
    request is opened, updated, reopened or closed. It connects to the server over SSH and sends one request:
    deploy a commit as an instance, or remove the instance of a closed pull request. Nothing is built on the
    GitHub runner. The run summary links the instance. In a pull request the workflow also keeps one comment
-   with the address of its instance, rewritten on every run: the deployed commit, a failed deploy, or the
-   removal of the instance.
+   with the address of its instance and rewrites it after a deploy, a failed deploy and the removal of the
+   instance. The comment is not rewritten when another pull request takes the place of the instance.
 2. The connection uses `secrets.TESTING_SSH_KEY`, `vars.TESTING_SSH_HOST`, `vars.TESTING_SSH_USER` and the
    server's host key in `vars.TESTING_SSH_KNOWN_HOSTS`; `vars.TESTING_DOMAIN` is the domain of the instances.
    On the server the key can only run [scripts/userdb_testing_deploy.sh](scripts/userdb_testing_deploy.sh),

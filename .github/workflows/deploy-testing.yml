@@ -58,11 +58,12 @@ jobs:
   comment:
     name: Link the instance in the pull request
     needs: deploy
-    # Runs after a failed deploy too, so that the comment never points to an instance that is not running.
+    # Runs after a failed or timed out deploy too, so that the comment does not keep announcing the previous
+    # commit. A deploy that hits its timeout ends as cancelled while cancelled() stays false here.
     if: >-
       !cancelled()
       && github.event_name == 'pull_request'
-      && (needs.deploy.result == 'success' || needs.deploy.result == 'failure')
+      && needs.deploy.result != 'skipped'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # A job of its own: it may write to pull requests and holds no SSH key.
@@ -80,18 +81,28 @@ jobs:
       # One comment per pull request, found again by its first line and rewritten on every run.
       - name: Create or update the comment
         run: |
+          # A re-run of an older run must not bring back the link of a pull request closed since.
+          if [ "$PR_ACTION" != closed ]; then
+            state=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .state)
+            if [ "$state" != open ]; then
+              echo "The pull request is $state now, this run is outdated; the comment stays as it is."
+              exit 0
+            fi
+          fi
           marker='<!-- userdb-testing-instance -->'
           commit="${PR_HEAD_SHA:0:7}"
           if [ "$DEPLOY_RESULT" != success ] && [ "$PR_ACTION" = closed ]; then
             text="Zrušení testovací instance tohoto PR selhalo, instance mohla na serveru zůstat. [Log běhu]($RUN_URL)"
           elif [ "$DEPLOY_RESULT" != success ]; then
-            text="Nasazení commitu \`$commit\` na testovací server selhalo, instance tohoto PR neběží. [Log běhu]($RUN_URL)"
+            text="Nasazení commitu \`$commit\` na testovací server selhalo. Instance tohoto PR buď neběží, nebo na ní zůstal dřívější commit. [Log běhu]($RUN_URL)"
           elif [ "$PR_ACTION" = closed ]; then
             text="Testovací instance tohoto PR je zrušená."
           else
             text="Testovací instance tohoto PR: https://pr-$PR_NUMBER.$TESTING_DOMAIN/
 
-          Běží na ní commit \`$commit\`. Každý push do PR ji nasadí znovu a její databázi postaví znovu z demo dat. Ze sítě HKFree se otevře bez hesla, odjinud chce heslo, které mají správci."
+          Běží na ní commit \`$commit\`. Každý push do PR ji nasadí znovu a její databázi postaví znovu z demo dat. Ze sítě HKFree se otevře bez hesla, odjinud chce heslo, které mají správci.
+
+          Na serveru běží jen několik instancí PR najednou. Když tuhle vytlačí novější, vrátí ji další push nebo opakované spuštění posledního běhu workflow."
           fi
           body="$marker
           $text"
