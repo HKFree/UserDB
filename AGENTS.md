@@ -33,6 +33,61 @@ Nette Database, MariaDB), REST API a několik samostatných služeb.
 - Zapisuje víc agentů a lidí: soubor před úpravou znovu přečti, měň jen dotčené
   řádky, zastaralý záznam oprav nebo smaž.
 
+## Postup práce
+
+Platí stejně pro každého agenta a každý model. Pravidla říkají, co má být
+výsledkem. Skill nebo plugin je jen pomůcka: když ho nemáš, splň pravidlo ručně.
+
+1. **Zadání.** Přečti paměť projektu. Když ze zadání neplyne, co má být
+   výsledkem, zeptej se dřív, než začneš psát kód. Pracuj ve vlastní větvi,
+   ne v `master`.
+2. **Test napřed.** U chyby napiš nejdřív test, který ji předvede, a ověř, že
+   padá. Nové nebo změněné chování dostane test ve stejné změně; i ten musí
+   bez změny padat. Bez testu smí zůstat jen změna, která chování nemění:
+   dokumentace, komentáře, formátování, přejmenování, čistě vzhledová úprava
+   (viz UI a UX). Když test napsat nejde,
+   neobcházej to: řekni zadavateli proč a nech rozhodnout jeho.
+3. **Kontroly.** Pusť všechny čtyři kontroly z oddílu Příkazy; projít musí
+   všechny. Výsledek dokládej výstupem příkazu, ne tvrzením.
+4. **Review druhým modelem.** Každou změnu zkontroluje jiný model, než který
+   ji psal, viz níže.
+5. **Hlášení.** Odevzdávej vždy ve stejném tvaru, v chatu i v popisu PR:
+   - **Co a proč.**
+   - **Ověření:** příkazy, které jsi pustil, a jejich výsledek.
+   - **Review druhým modelem:** autor, reviewer, stupeň, nálezy a jak dopadly.
+   - **Neověřeno:** co jsi neověřil nebo nechal otevřené; když nic, napiš to.
+6. **Publikování** až po výslovném schválení zadavatele, viz další oddíl.
+
+Předáš-li práci jinému agentovi, ručíš za ni dál: přečti celý diff a kontroly
+pusť sám. Autorem je model, který změnu napsal, i když ji psal na tvé zadání.
+
+### Review druhým modelem
+
+Review proběhne před odevzdáním zadavateli, i u malé změny a u dokumentace.
+
+- Reviewera vyber podle toho, co má vývojář k dispozici. Nižší stupeň použij,
+  jen když vyšší dostupný není:
+  1. model jiného dodavatele (píše Claude, kontroluje Codex, a naopak),
+  2. jiný model téhož dodavatele,
+  3. tentýž model v nové session bez kontextu autora.
+
+  Stav k listopadu 2026: GPT-6 Astra v Codexu; Mythos 5.2, Fable 5.2
+  a Opus 5.5 v Claude Code.
+- Reviewer dostane zadání a diff, ne tvoje závěry. Soubory nemění a nic
+  nepublikuje.
+- Každý nález ověř proti kódu. Platný oprav podle bodu Test napřed, neplatný
+  zamítni s důvodem. Po opravách pusť kontroly znovu.
+- Název svého modelu i modelu reviewera zjisti z nástroje, neodhaduj ho.
+- Review vyžádáš v Orce přes skill `orchestration`, z Claude Code přes
+  `sous-chef:taste`, jinak neinteraktivním během druhého nástroje:
+
+  ```sh
+  codex exec --sandbox read-only "<zadání review>" < /dev/null
+  claude -p --permission-mode plan "<zadání review>"
+  ```
+
+  Bez `< /dev/null` čeká `codex exec` spuštěný mimo terminál na vstup.
+
 ## Publikování a provoz
 
 - Změny připravuj pouze lokálně. Před jakýmkoliv publikováním musí projít
@@ -98,7 +153,11 @@ vypíše `orca ports`; druhý vedle něj nespouštěj.
 Podrobnosti jsou v [README](readme.md#development). Docker Compose popsaný
 tamtéž má pevné porty a síť; pro práci ve více worktrees použij Flox.
 
-## Skills pro Nette
+## Skills
+
+Kde se skill rozchází s tímto souborem nebo s okolním kódem, platí repo.
+
+### Nette (povinný)
 
 Oficiální plugin `nette` z [nette/agent-plugins](https://github.com/nette/agent-plugins)
 dává agentovi skills s konvencemi Nette, Latte, NEON a Nette Testeru. Obsahuje
@@ -115,10 +174,50 @@ codex plugin marketplace add nette/agent-plugins
 codex plugin add nette@nette
 ```
 
-- Kde se skill rozchází s tímto souborem nebo s okolním kódem, platí repo:
-  aplikace běží na Latte 2 a má vlastní styl kódu.
+- Aplikace běží na Latte 2 a má vlastní styl kódu; v tom se od skills liší.
+- Skill `frontend-development` počítá s Vite, TypeScriptem a SCSS. Tady nic
+  z toho není, neřiď se jím; platí oddíl UI a UX.
 - Plugin `php-fixer` ze stejného zdroje neinstaluj. Bez `dresscode.neon`
   formátuje podle standardu Nette, tento projekt hlídá `.php-cs-fixer.dist.php`.
+
+### Doporučené
+
+| Skill nebo plugin | Pro | K čemu |
+|---|---|---|
+| `flox` z [flox/flox-skills](https://github.com/flox/flox-skills) | Claude Code, Codex | prostředí Flox, jeho služby a ladění aktivace |
+| `orca-cli`, `orchestration` z [stablyai/orca](https://github.com/stablyai/orca) | oba, při práci v Orce | worktrees, vyžádání review od druhého agenta, prohlídka stránky ve vestavěném prohlížeči (screenshot, emulace telefonu) |
+| `superpowers` z [obra/superpowers](https://github.com/obra/superpowers) | Claude Code, Codex | test napřed, systematické ladění, ověření před odevzdáním, příjem review |
+| `sous-chef` z [tomascupr/sous-chef](https://github.com/tomascupr/sous-chef) | Claude Code s Codex CLI | review Codexem (`taste`), předání implementace Codexu (`serve`, `fire`) |
+| `/code-review`, `/security-review` | Claude Code, vestavěné | review na nižším stupni; bezpečnostní průchod změn oprávnění a osobních údajů |
+| `playwright` z oficiálního marketplace | Claude Code | prohlídka stránky v prohlížeči mimo Orcu |
+| `frontend-design` z oficiálního marketplace | Claude Code | návrh variant větší změny UI; vzhled aplikace má přednost před radami skillu |
+
+```sh
+# Claude Code
+claude plugin marketplace add flox/flox-skills
+claude plugin install flox@flox-skills
+claude plugin install superpowers@claude-plugins-official
+claude plugin marketplace add tomascupr/sous-chef
+claude plugin install sous-chef@sous-chef
+claude plugin install playwright@claude-plugins-official
+claude plugin install frontend-design@claude-plugins-official
+# Codex
+codex plugin marketplace add flox/flox-skills
+codex plugin add flox@flox-skills
+codex plugin add superpowers@openai-curated-remote
+# skills Orcy pro oba nástroje
+npx skills add stablyai/orca
+```
+
+- Hlásí-li Codex `plugin ... was not found in marketplace ...`, ověř přes
+  `codex plugin list` marketplace a název pluginu. Chybí-li marketplace,
+  pusť nejdřív řádek `codex plugin marketplace add`.
+- Neinstaluj nic, co samo commituje, publikuje nebo nasazuje (autonomní
+  smyčky, hooky s `git push`). Odporuje to oddílu Publikování a provoz.
+- `superpowers`: skills `brainstorming` a `writing-plans` ukládají návrhy
+  a plány do repa a commitují je. Tady je necommituj.
+- `sous-chef`: `/sous-chef:mise` nabídne založit v repu `CLAUDE.md`. Odmítni,
+  Claude Code čte `AGENTS.md` přímo.
 
 ## Kde co je
 
@@ -135,6 +234,7 @@ codex plugin add nette@nette
 | `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, objemová demo data v `UserdbDemoVolume.php`, demo osoby v `UserdbDemoPersonas.php`, jejich stránka v `UserdbDemoPersonaPage.php` a Tracy panel v `UserdbDemoPersonaPanel.php`, router PHP serveru, nastavení PHP v `userdb_php/php.ini`, příprava worktree), měření pokrytí testy, skript nasazení na testovací server a jeho přihlašovací formulář |
 | `orca.yaml` | co Orca spustí v každém novém worktree; jen věci platné pro každého, kdo má Orcu a Flox |
 | `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení na testovací server |
+| `.github/pull_request_template.md` | šablona popisu PR: co a proč, ověření, review druhým modelem, neověřeno |
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
 | `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |
 | `lib/phpqrcode/` | cizí knihovna, neupravuj ji |
@@ -169,10 +269,50 @@ codex plugin add nette@nette
 - V pojmenování se drž okolního kódu: česká jména podle tabulek (`Uzivatel`,
   `Oblast`), obsluhy formulářů `*FormSucceded` (zavedený název, nepřejmenovávej).
   Úpravy stylu a přejmenování nemíchej do věcné změny.
-- K opravě chyby přidej regresní test do `tests/`, pokud jde napsat bez nové
-  infrastruktury.
+- Každá změna chování má test v `tests/`, viz Postup práce.
+
+## UI a UX
+
+Frontend je Bootstrap 3.2, jQuery 3.7, jQuery UI 1.14, Grido a Font Awesome
+4.7, vše commitnuté ve `www/`, bez npm a bez buildu. Stránky načítají soubory
+`*.min.*`; `www/js/jquery.js` je starší nepoužívaná verze. Cílem je lepší
+použitelnost ve stávajícím vzhledu, ne nový design.
+
+- **Drž se aplikace.** Nová stránka vypadá jako ostatní: komponenty
+  Bootstrapu 3, ikony Font Awesome, tabulky přes Grido. Styl piš do
+  `www/css/screen.css`, ne do atributu `style` ani do `<style>` v šabloně.
+  Výjimky: hodnota z dat (barva štítku) a stránka, která má fungovat i bez
+  aplikace (`/demo-osoba`) a styl si nese sama. Nepřidávej knihovny, build ani zdroje z cizích serverů (CDN, fonty).
+  Přibalené knihovny neaktualizuj jako součást jiné změny.
+- **Větší změnu nejdřív navrhni.** Mění-li se rozvržení obrazovky nebo postup
+  uživatele, předlož zadavateli dvě až tři varianty s rozdíly a počkej na
+  výběr. Drobnou opravu dělej rovnou.
+- **Všechny stavy.** Obrazovka musí dávat smysl prázdná, s chybou ve
+  formuláři, s dlouhým textem, s mnoha řádky a pro každou roli, která ji
+  vidí. Role přepínej přes demo osoby na `/demo-osoba`; co v datech je, říká
+  [katalog demo dat](docs/userdb_demo_data.md). Chybí-li pro některý stav
+  data, doplň je do `db/dummy-data`, ať je má i testovací instance PR.
+- **Počítač i telefon.** Každou změnu si prohlédni v prohlížeči na šířce
+  1280 px a v emulaci telefonu (šířka 375 px a mobilní user agent, podle
+  kterého se `main.js` rozhoduje). V obou musí jít přečíst a ovládat; stránka se nesmí
+  posouvat do strany, široká tabulka se posouvá ve vlastním rámu. Zkontroluj
+  i konzoli prohlížeče a že stránka neskončila chybou Tracy.
+- **Přístupnost.** Každé pole formuláře má popisek, ovládací prvky jdou
+  použít klávesnicí a informace nestojí jen na barvě.
+- **Texty** česky s diakritikou a stejnými slovy jako jinde v aplikaci.
+  Chybová hláška říká, co se stalo a co má uživatel udělat.
+- **Test.** Co se komu zobrazí (podmínka v šabloně, oprávnění), je chování
+  a má presenter test. Čistě vzhledová úprava test nemá; nahrazuje ho
+  prohlídka v prohlížeči, kterou uvedeš v Ověření.
+- **Cache.** Po změně `screen.css` nebo `main.js` zvyš číslo za `?v`
+  všude, kde se soubor načítá (dnes `@layout.latte`
+  a `SelfService/confirmEmail.latte`), jinak prohlížeče drží starou verzi.
+- **Odevzdání.** V hlášení uveď adresu lokálního webu, demo osobu a stavy,
+  které si má zadavatel proklikat. Screenshoty dělej jen nad demo daty; do PR
+  ani issue nepatří obrázek s údaji skutečných členů.
 
 ## Commity a PR
 
 - Česky, věcně, co a proč. Jeden PR řeší jednu věc.
-- V popisu PR uveď, jak jsi změnu ověřil. Neověřené tvrzení označ jako neověřené.
+- Popis PR vyplň podle šablony `.github/pull_request_template.md`; má stejné
+  oddíly jako hlášení v Postupu práce. Neověřené tvrzení označ jako neověřené.
