@@ -183,8 +183,8 @@ A shared testing server runs one instance for `master` and one for every open pu
 this repository, each under its own host name: `master.<domain>` and `pr-<number>.<domain>`. An instance runs
 the same way as the [local web with Flox](#local-web-database-and-pdf-with-flox): `config.flox.neon`, demo data,
 mail captured to files, and every visitor signed in as the demo user. All instances sit behind a reverse proxy
-that lets in the HKFree network without a password and asks everyone else for HTTP Basic; the maintainers
-have the password.
+that lets in the HKFree network without a password and sends everyone else to a sign-in form; the maintainers
+have the password. One sign-in is valid for all instances for 30 days.
 
 1. [deploy-testing.yml](.github/workflows/deploy-testing.yml) runs on a push to `master` and when a pull
    request is opened, updated, reopened or closed. It connects to the server over SSH and sends one request:
@@ -220,8 +220,9 @@ Things to know:
   it, a maintainer pushes its commits to a branch of this repository and opens a pull request from there.
 - A change of the script takes effect only after the new version is installed on the server by hand.
 
-The server needs Flox, git, curl, the reverse proxy and an unprivileged deploy account with lingering enabled
-(`loginctl enable-linger <account>`) that owns `/srv/userdb-testing`. The script is installed owned by root,
+The server needs Flox, git, curl, the reverse proxy with the [sign-in form](#sign-in-form) and an unprivileged
+deploy account with lingering enabled (`loginctl enable-linger <account>`) that owns `/srv/userdb-testing`.
+The script is installed owned by root,
 and the deploy key is kept in a root-owned file that sshd reads for that account
 (`AuthorizedKeysFile /etc/ssh/authorized_keys/%u`), so that deployed code cannot change either:
 
@@ -238,6 +239,61 @@ The reverse proxy maps `pr-<number>.<domain>` to the port above and obtains a ce
 only after the script has created `/srv/userdb-testing/deployed/<instance>`. It recognises the HKFree network
 by the address of the connecting client (the internal addresses and the public prefixes of HKFree), never by
 a forwarded header.
+
+#### Sign-in form
+
+The form is a service of its own, [scripts/userdb_testing_login.php](scripts/userdb_testing_login.php) with
+[scripts/UserdbTestingLogin.php](scripts/UserdbTestingLogin.php), so that the code of a deployed pull request
+cannot switch it off. The reverse proxy serves `/testing-login` of every instance from the service and asks it
+about every other request from outside the HKFree network:
+
+- A visitor without the cookie of the form is redirected to the form and after signing in back to the page
+  asked for. A request other than GET or HEAD is refused with 403.
+- A request with the cookie reaches the instance unchanged, including its `Authorization` header; only the
+  cookie of the form is blanked on the way, so the code of a pull request never sees it. A client of the API
+  of an instance signs in first and sends the cookie along:
+  `curl --cookie-jar jar --data-urlencode "password=$PASSWORD" https://master.<domain>/testing-login`, then
+  `curl --cookie jar --user apikey<id>:<key> https://master.<domain>/api/...`.
+- `/testing-login` shows a signed-in visitor a button to sign out.
+- Five wrong passwords from one address block that address for up to 15 minutes.
+- The cookie is signed with the hash of the password, so a new password signs everyone out.
+
+The service needs PHP 8.2 or newer installed on the server itself, outside Flox, and nothing from Composer:
+
+```sh
+install -D -m 644 -t /usr/local/lib/userdb-testing-login scripts/userdb_testing_login.php scripts/UserdbTestingLogin.php
+install -m 644 scripts/userdb_testing_login.service /etc/systemd/system/userdb-testing-login.service
+php -r 'echo password_hash(rtrim(fgets(STDIN), "\n"), PASSWORD_BCRYPT), "\n";'    # reads the password, prints its hash
+install -m 600 /dev/null /etc/userdb-testing-login.env                              # then fill in the two lines below
+systemctl enable --now userdb-testing-login
+```
+
+```
+USERDB_TESTING_LOGIN_PASSWORD_HASH=<hash>
+USERDB_TESTING_LOGIN_COOKIE_DOMAIN=<domain>
+```
+
+[The unit](scripts/userdb_testing_login.service) runs the service under an account of its own, so the deploy
+account cannot read the hash, and on a port below 1024, which the deploy account cannot take over while the
+service is down. In the Caddyfile of the reverse proxy the instances get:
+
+```
+@outside not remote_ip <networks of HKFree>
+handle /testing-login* {
+	reverse_proxy 127.0.0.1:981
+}
+handle {
+	forward_auth @outside 127.0.0.1:981 {
+		uri /verify
+	}
+	reverse_proxy <port of the instance> {
+		header_up Cookie "userdb_testing_login=[^;]*" "userdb_testing_login=-"
+	}
+}
+```
+
+A change of the service, like a change of the deploy script, takes effect only after the new version is
+installed on the server by hand and the service restarted.
 
 ### Jobs to be run
 
