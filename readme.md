@@ -185,7 +185,7 @@ Run `git push production master` in order to fully deploy the app.
 
 When something goes wrong, try to run `(cd /opt/UserDB.git; hooks/post-receive)` manually on the server.
 
-See [git-hooks/post-receive.sample](git-hooks/post-receive.sample) for more details what happens during deployment on server side.
+[git-hooks/post-receive.sample](git-hooks/post-receive.sample) is a copy of the hook on the production server as of 2026-11-21, with every secret value replaced by `a`. It builds the images of the web application, the PDF generator, the STV connector and the accounting reports, applies the database migrations and replaces the running containers.
 
 ### Testing server
 
