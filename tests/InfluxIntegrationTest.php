@@ -9,6 +9,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 use Tester\Assert;
 use Tester\Environment;
+use Tester\Helpers;
 use Tester\TestCase;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -16,7 +17,9 @@ require_once __DIR__ . '/bootstrap.php';
 final class InfluxIntegrationTest extends TestCase
 {
     private Client $client;
+    private Client $probe;
     private string $address;
+    private string $cache;
     private string $token;
 
     protected function setUp(): void {
@@ -25,8 +28,16 @@ final class InfluxIntegrationTest extends TestCase
         if ($cache === false || realpath((string) getenv('FLOX_ENV_CACHE')) !== $cache) {
             throw new \RuntimeException('Run InfluxDB integration tests in this checkout with flox activate -s.');
         }
+        $this->cache = $cache;
         $this->token = hash('sha256', 'userdb-influx-test-only:' . $cache);
-        $this->waitForServer($cache . '/logs/influxdb.log');
+        $this->probe = new Client(['timeout' => 2, 'connect_timeout' => 1, 'allow_redirects' => false, 'http_errors' => false]);
+        $this->provision($cache . '/logs/influxdb.log', 30);
+    }
+
+    /** Sets up the server announced in the log, but only once it is proved to be this worktree's running service. */
+    private function provision(string $logFile, float $timeout): void {
+        $cache = $this->cache;
+        $this->connect($this->waitForServer($logFile, $cache . '/influxdb', $timeout));
         $setup = $this->json('GET', '/api/v2/setup');
         if ($setup['allowed'] === true) {
             $this->json('POST', '/api/v2/setup', ['json' => [
@@ -34,7 +45,7 @@ final class InfluxIntegrationTest extends TestCase
                 'org' => 'userdb_test', 'bucket' => 'userdb_test', 'token' => $this->token,
             ]]);
         }
-        // Refuse any server that is not storing data inside this worktree.
+        // Second check of the storage paths, this time from the authenticated configuration.
         $config = $this->json('GET', '/api/v2/config')['config'];
         Assert::same($cache . '/influxdb/engine', $config['engine-path']);
         Assert::same($cache . '/influxdb/influxd.bolt', $config['bolt-path']);
@@ -111,32 +122,101 @@ final class InfluxIntegrationTest extends TestCase
         Assert::same(['field key' => '', 'id' => $id, 'tag key' => 'a b,c=d\\e'], $row);
     }
 
-    private function waitForServer(string $logFile): void {
-        $deadline = microtime(true) + 30;
+    public function testHealthyForeignServerFromStaleLogIsNeverSetUp(): void {
+        $directory = TestEnvironment::TEMP_DIR . '/influxdb-foreign';
+        Helpers::purge($directory);
+        $directory = (string) realpath($directory);
+        $process = proc_open([
+            'influxd', '--http-bind-address=127.0.0.1:0', '--reporting-disabled', "--bolt-path=$directory/influxd.bolt",
+            "--sqlite-path=$directory/influxd.sqlite", "--engine-path=$directory/engine",
+        ], [['file', '/dev/null', 'r'], ['file', "$directory/influxd.log", 'a'], ['file', "$directory/influxd.log", 'a']], $pipes);
+        if ($process === false) {
+            throw new \RuntimeException('Cannot start a second InfluxDB.');
+        }
+        try {
+            $port = $this->waitForServer("$directory/influxd.log", $directory, 30);
+            // This is what the worktree's log looks like once its service stops and another worktree gets the port.
+            Assert::exception(
+                fn () => $this->provision("$directory/influxd.log", 1),
+                \RuntimeException::class,
+                'InfluxDB of this worktree is not running; use flox activate -s and inspect .flox/cache/logs/influxdb.log.',
+            );
+            $setup = $this->probe->get("http://127.0.0.1:$port/api/v2/setup");
+            Assert::same(['allowed' => true], json_decode((string) $setup->getBody(), true, flags: JSON_THROW_ON_ERROR));
+        } finally {
+            proc_terminate($process);
+            proc_close($process);
+        }
+    }
+
+    /**
+     * Waits for a healthy server that is announced in the log and stores its data in the given directory.
+     * The log outlives the service, so a healthy server on its port may belong to another worktree.
+     */
+    private function waitForServer(string $logFile, string $dataDirectory, float $timeout): int {
+        $deadline = microtime(true) + $timeout;
         do {
-            $log = is_file($logFile) ? (string) file_get_contents($logFile) : '';
-            if (preg_match('~msg=Listening[^\n]*transport=http addr=127\.0\.0\.1:0 port=(\d+)~', $log, $match) === 1) {
-                $port = (int) $match[1];
-                if ($port < 4500 || $port > 65535) {
-                    throw new \RuntimeException('Invalid local InfluxDB port.');
-                }
-                $this->address = '127.0.0.1:' . $port;
-                $this->client = new Client([
-                    'base_uri' => 'http://' . $this->address,
-                    'headers' => ['Authorization' => 'Token ' . $this->token],
-                    'timeout' => 2, 'connect_timeout' => 1, 'allow_redirects' => false,
-                ]);
-                try {
-                    if ($this->json('GET', '/health')['status'] === 'pass') {
-                        return;
-                    }
-                } catch (TransferException) {
-                    // Flox starts services asynchronously; reread the port after a restart.
-                }
+            // Flox starts services asynchronously, so the port is reread every time.
+            $port = $this->announcedPort($logFile);
+            if ($port !== null && $this->isHealthy($port) && $this->storesDataIn($port, $dataDirectory)) {
+                return $port;
             }
             usleep(100000);
         } while (microtime(true) < $deadline);
-        throw new \RuntimeException('Local InfluxDB did not start; use flox activate -s and inspect .flox/cache/logs/influxdb.log.');
+        throw new \RuntimeException('InfluxDB of this worktree is not running; use flox activate -s and inspect .flox/cache/logs/influxdb.log.');
+    }
+
+    private function announcedPort(string $logFile): ?int {
+        $log = is_file($logFile) ? (string) file_get_contents($logFile) : '';
+        if (preg_match('~msg=Listening[^\n]*transport=http addr=127\.0\.0\.1:0 port=(\d+)~', $log, $match) !== 1) {
+            return null;
+        }
+        $port = (int) $match[1];
+        if ($port < 4500 || $port > 65535) {
+            throw new \RuntimeException('Invalid local InfluxDB port.');
+        }
+        return $port;
+    }
+
+    private function isHealthy(int $port): bool {
+        try {
+            $health = json_decode((string) $this->probe->get("http://127.0.0.1:$port/health")->getBody(), true);
+        } catch (TransferException) {
+            return false;
+        }
+        return is_array($health) && ($health['status'] ?? null) === 'pass';
+    }
+
+    /** Asks the server itself, without authentication, which bolt and engine paths it was started with. */
+    private function storesDataIn(int $port, string $dataDirectory): bool {
+        try {
+            $response = $this->probe->get("http://127.0.0.1:$port/debug/pprof/cmdline");
+        } catch (TransferException) {
+            return false;
+        }
+        $arguments = $response->getStatusCode() === 200 ? explode("\0", (string) $response->getBody()) : [];
+        return $this->pathArgument($arguments, '--bolt-path=') === $dataDirectory . '/influxd.bolt'
+            && $this->pathArgument($arguments, '--engine-path=') === $dataDirectory . '/engine';
+    }
+
+    /** @param list<string> $arguments */
+    private function pathArgument(array $arguments, string $option): ?string {
+        foreach ($arguments as $argument) {
+            if (str_starts_with($argument, $option)) {
+                $path = realpath(substr($argument, strlen($option)));
+                return $path === false ? null : $path;
+            }
+        }
+        return null;
+    }
+
+    private function connect(int $port): void {
+        $this->address = '127.0.0.1:' . $port;
+        $this->client = new Client([
+            'base_uri' => 'http://' . $this->address,
+            'headers' => ['Authorization' => 'Token ' . $this->token],
+            'timeout' => 2, 'connect_timeout' => 1, 'allow_redirects' => false,
+        ]);
     }
 
     /**

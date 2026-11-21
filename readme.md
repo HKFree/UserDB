@@ -48,9 +48,17 @@ The test container loads `app/config/config.neon` and `tests/config.test.neon` w
 
 `-s` starts MariaDB and InfluxDB. Database tests use the restricted `userdb_test` account and database on the Flox Unix socket. The schema is built from migrations in `db/structures` and `db/basic-data`, without dummy data, and rebuilt automatically when migrations change. Database tests run serially and roll back their data after each case. A guard checks the database name and MariaDB data directory and refuses a database outside the checkout. Docker is not needed.
 
-`InfluxIntegrationTest` provisions a local organization, bucket and v1 database mapping, writes through the same Guzzle writer as `app:wewimo2influx`, then reads the values and field types back. Each worktree stores InfluxDB data in `.flox/cache/influxdb`; the server listens only on `127.0.0.1` on a free OS-assigned port recorded in `.flox/cache/logs/influxdb.log`. Tests check the server's storage paths, use synthetic credentials and leave the sample points in place. Telemetry is disabled. Run just these tests with `flox activate -s -- vendor/bin/tester -C tests/InfluxIntegrationTest.php`. The ordinary local web remains disconnected from InfluxDB and real Wewimo devices.
+`InfluxIntegrationTest` provisions a local organization, bucket and v1 database mapping, writes through the same Guzzle writer as `app:wewimo2influx`, then reads the values and field types back. Each worktree stores InfluxDB data in `.flox/cache/influxdb`; the server listens only on `127.0.0.1` on a free OS-assigned port recorded in `.flox/cache/logs/influxdb.log`. The log outlives the service, so before any setup request the test asks the server on that port for its command line (`/debug/pprof/cmdline`, no authentication) and continues only when the bolt and engine paths belong to this worktree; a healthy InfluxDB of another worktree on a stale port is left untouched, and `InfluxIntegrationTest` starts a second server to prove it. Tests use synthetic credentials and leave the sample points in place. Telemetry is disabled. Run just these tests with `flox activate -s -- vendor/bin/tester -C tests/InfluxIntegrationTest.php`. The ordinary local web remains disconnected from InfluxDB and real Wewimo devices.
 
-The writer retains the existing `INFLUX_URL` format (`influxdb://user:password@host:port/database`), Basic authentication and the v1 `/write` endpoint. HTTPS uses `https+influxdb://` and verifies certificates. The `station` measurement, tag/field names, floating-point values and server-assigned timestamps remain compatible with the existing Grafana data.
+The writer retains the existing `INFLUX_URL` format (`influxdb://user:password@host:port/database`), Basic authentication and the v1 `/write` endpoint. The `station` measurement, tag/field names, floating-point values and server-assigned timestamps remain compatible with the existing Grafana data.
+
+Behaviour that differs from the former `influxdb/influxdb-php` client:
+
+- `https+influxdb://` verifies the server certificate; the former client did not. `influxdb://` and `http+influxdb://` use plain HTTP.
+- A write waits at most 5 seconds for the connection and 15 seconds in total; the former client had no limit. Redirects are not followed.
+- The port defaults to 8086. Percent-encode special characters in the user name and password. A URL with a query string or fragment, `udp+influxdb://` or any other scheme is rejected when the command is created.
+- A user name is sent with Basic authentication even when the password is empty.
+- A station whose MAC address or interface MAC address is missing or is not a string is not written. `app:wewimo2influx` prints the error for that AP, skips its remaining stations and continues with the next AP.
 
 The suite covers:
 

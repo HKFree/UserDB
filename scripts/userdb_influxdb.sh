@@ -7,6 +7,8 @@ mkdir -p "$influx_dir" "$FLOX_ENV_CACHE/logs"
 
 # Port 0 asks the OS for a free port. The integration test reads the listening
 # address from this worktree's log and provisions its own database via the API.
+# The log outlives the service, so the test first asks the server for its command
+# line and compares --bolt-path= and --engine-path=; keep them in this form.
 exec influxd \
     --http-bind-address=127.0.0.1:0 \
     --bolt-path="$influx_dir/influxd.bolt" \

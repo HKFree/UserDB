@@ -30,17 +30,19 @@ final class InfluxWriter
     }
 
     /**
-     * @param array<string, string> $tags
-     * @param array<string, string|float> $fields
+     * Values come from devices, so a wrong type is rejected with \InvalidArgumentException instead of a TypeError.
+     *
+     * @param array<string, mixed> $tags non-empty strings
+     * @param array<string, mixed> $fields strings or floats
      */
     public function writePoint(string $measurement, array $tags, array $fields): void {
         $line = $this->escapeKey($measurement, false);
         foreach ($tags as $key => $value) {
-            $line .= ',' . $this->escapeKey($key) . '=' . $this->escapeKey($value);
+            $line .= ',' . $this->escapeKey($key) . '=' . $this->escapeKey($this->tagValue($key, $value));
         }
         $values = [];
         foreach ($fields as $key => $value) {
-            $values[] = $this->escapeKey($key) . '=' . $this->encodeValue($value);
+            $values[] = $this->escapeKey($key) . '=' . $this->encodeValue($key, $value);
         }
         if ($values === []) {
             throw new \InvalidArgumentException('InfluxDB point needs at least one field.');
@@ -78,10 +80,21 @@ final class InfluxWriter
         return strtr($value, $escapes);
     }
 
-    private function encodeValue(string|float $value): string {
+    private function tagValue(string $key, mixed $value): string {
+        if (!is_string($value) || $value === '') {
+            $given = $value === '' ? 'empty string' : get_debug_type($value);
+            throw new \InvalidArgumentException(sprintf('InfluxDB tag "%s" must be a non-empty string, %s given.', $key, $given));
+        }
+        return $value;
+    }
+
+    private function encodeValue(string $key, mixed $value): string {
         if (is_string($value)) {
             $this->rejectLineBreaks($value);
             return '"' . strtr($value, ['\\' => '\\\\', '"' => '\\"']) . '"';
+        }
+        if (!is_float($value)) {
+            throw new \InvalidArgumentException(sprintf('InfluxDB field "%s" must be a string or float, %s given.', $key, get_debug_type($value)));
         }
         if (!is_finite($value)) {
             throw new \InvalidArgumentException('InfluxDB numeric fields must be finite.');

@@ -33,8 +33,10 @@ class Wewimo2InfluxCommand extends Command
                     foreach ($device['interfaces'] as $ifaceName => $interface) {
                         foreach ($interface['stations'] as $station) {
                             // kazdeho klienta podle MAC zapsat do InfluxDB
+                            // chybejici MAC odmitne InfluxWriter vyjimkou, ktera ukonci jen toto AP
+                            $stationMac = $station['mac-address'] ?? null;
                             $fields = [
-                                'macField' => $station['mac-address'],
+                                'macField' => $stationMac,
                             ];
                             $this->addFloatField($fields, 'rx_signal_strength', $station, 'x-signal-strength');
                             $this->addFloatField($fields, 'rx_signal_strength_ch0', $station, 'signal-strength-ch0');
@@ -50,8 +52,8 @@ class Wewimo2InfluxCommand extends Command
                             $this->influx->writePoint(
                                 'station', // name of the measurement
                                 [   // tags:
-                                    'macStationTag' => $station['mac-address'],
-                                    'interfaceMacTag' => $interface['mac-address'],
+                                    'macStationTag' => $stationMac,
+                                    'interfaceMacTag' => $interface['mac-address'] ?? null,
                                     'deviceIPTag' => $device['ip'],
                                 ],
                                 $fields   // additional fields

@@ -67,6 +67,26 @@ final class InfluxWriterTest extends TestCase
         Assert::null($handler->getLastRequest());
     }
 
+    public function testRejectsTagsAndFieldsOfUnsupportedTypesByName(): void {
+        $handler = new MockHandler([]);
+        $writer = new InfluxWriter('influxdb://localhost/wewimo', new Client(['handler' => HandlerStack::create($handler)]));
+        foreach ([[null, 'null'], [20000000001, 'int'], [1.5, 'float'], [false, 'bool'], ['', 'empty string']] as [$value, $given]) {
+            Assert::exception(
+                fn () => $writer->writePoint('station', ['macStationTag' => '02:00:00:00:00:01', 'interfaceMacTag' => $value], ['value' => 1.0]),
+                \InvalidArgumentException::class,
+                "InfluxDB tag \"interfaceMacTag\" must be a non-empty string, $given given.",
+            );
+        }
+        foreach ([[null, 'null'], [1, 'int'], [true, 'bool'], [['a'], 'array']] as [$value, $given]) {
+            Assert::exception(
+                fn () => $writer->writePoint('station', [], ['value' => 1.0, 'macField' => $value]),
+                \InvalidArgumentException::class,
+                "InfluxDB field \"macField\" must be a string or float, $given given.",
+            );
+        }
+        Assert::null($handler->getLastRequest());
+    }
+
     public function testReportsServerAndConnectionFailuresWithoutResponseSecrets(): void {
         foreach ([301, 400, 401, 404, 422, 500, 503] as $status) {
             $handler = new MockHandler([new Response($status, ['Location' => 'https://elsewhere.invalid'], 'private details')]);

@@ -18,6 +18,14 @@ kompatibilita zápisu a typů polí také proti čistému kontejneru InfluxDB 2.
   bod vložený do jedné instance nebyl čitelný z druhé.
 - `/api/v2/config` vrací nastavení uvnitř klíče `config`. Před testovacími zápisy
   lze přes `engine-path` a `bolt-path` ověřit, že jde o instanci daného worktree.
+  Vyžaduje ale token, takže až po `POST /api/v2/setup`.
+- Log služby po jejím zastavení zůstává na disku se starým portem a ten může
+  mezitím dostat InfluxDB jiného worktree. Zdravé `/health` na portu z logu proto
+  nedokládá vlastní instanci. Před `setup` to jde ověřit bez přihlášení přes
+  `/debug/pprof/cmdline`: vrací argumenty procesu oddělené znakem NUL, včetně
+  `--bolt-path=` a `--engine-path=`. Na 2.7.12 odpovídá 200 na nenastavené
+  i nastavené instanci. Test, který to hlídá, si spouští druhou `influxd`
+  v `temp/tests/influxdb-foreign` a sám ji ukončí.
 - Na 2.7.12 fungoval v2 token na místě hesla v Basic autentizaci, na 2.7.4
   stejná zkouška vrátila 401. Legacy účet vytvořený `influx v1 auth create`
   na 2.7.4 prošel. Testovat legacy jméno a heslo stejně jako stávající klient;
