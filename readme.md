@@ -323,6 +323,104 @@ handle {
 A change of the service, like a change of the deploy script, takes effect only after the new version is
 installed on the server by hand and the service restarted.
 
+### Screenshots in pull requests
+
+[pr-screenshots.yml](.github/workflows/pr-screenshots.yml) captures seven pages at desktop (1440×900)
+and mobile (390×844, touch enabled) sizes when a pull request is opened, updated or reopened. It compares
+the PR commit with its merge-base with the target branch. Both versions run on the GitHub runner with
+separate Flox databases and basic demo data (`USERDB_DEMO_VOLUME=0`), signed in as member 1. The testing
+server is not involved. Fork and Dependabot pull requests are skipped. Branches that predate the screenshot
+tools are also skipped until they include those tools.
+
+The workflow updates one Czech comment marked `<!-- userdb-screenshots -->`, with previews of every page
+and before/after/diff images for changes. A failed capture or publication replaces the previous comment with
+a failure message. Closed pull requests and outdated commits do not update the comment. Artifacts expire
+after 14 days; published images are retained in a separate public repository, including after the PR closes.
+Image URLs use the screenshot repository's commit SHA so each URL identifies an immutable version.
+
+The `capture` job runs the application and npm dependencies with no repository secrets and a read-only token.
+The `publish` job validates the artifact, uses dependency-free Node tools and holds the image repository
+deploy key. Only same-repository PRs are trusted to run this workflow: their authors can also edit the
+workflow. The image checkout uses a partial clone and a sparse checkout of the current PR commit.
+
+#### One-time setup
+
+1. Create the public repository `HKFree/UserDB-screenshots` with a README and a `main` branch.
+2. Generate a dedicated key outside the application repository:
+   `ssh-keygen -t ed25519 -N '' -C userdb-pr-screenshots -f userdb-pr-screenshots`.
+3. Add `userdb-pr-screenshots.pub` as a deploy key with write access in the image repository.
+4. In UserDB, set the Actions secret `SCREENSHOTS_DEPLOY_KEY` to the private key and the Actions variable
+   `SCREENSHOTS_REPOSITORY` to `HKFree/UserDB-screenshots`.
+5. Delete the local private and public key files after storing them in GitHub.
+
+#### Local capture
+
+Install Flox and Node 26 (also recorded in `tests/screenshots/.nvmrc`). Node is separate from the Flox
+environment. From the repository root:
+
+```sh
+cd tests/screenshots
+nvm install
+nvm use
+npm ci
+npx playwright install chromium          # Linux: add --with-deps
+npm test
+cd ../..
+scripts/userdb_screenshots.sh local HEAD  # compare the current commit with itself
+scripts/userdb_screenshots.sh local       # compare HEAD with its merge-base with origin/master
+scripts/userdb_screenshots.sh local <base-commit> --head <head-commit>
+```
+
+Both application versions are detached worktrees of **commits**. Uncommitted application changes are not
+captured. The tools and installed Node dependencies always come from the worktree containing the entry
+script. Each run uses `temp/screenshots/run.XXXXXX/`, independent databases and available loopback ports.
+Existing development databases and web servers are not used. On completion, failure, SIGINT or SIGTERM,
+the script stops its services and removes its temporary worktrees. It keeps `output/`, including PNGs,
+capture metadata, `manifest.json` and logs. The last lines report changed, new and error counts, the output
+directory and each changed snapshot. No local command publishes images or comments.
+
+CI uses the same entry point with disposable, pre-existing checkouts:
+`scripts/userdb_screenshots.sh run --head <directory> --base <directory> --out <directory>`.
+Omitting `--base` produces previews without a comparison. A base version without the Flox setup, a failed
+base setup or a base web timeout also produces head-only previews with an enumerated reason.
+
+#### Pages, results and limitations
+
+Add one `{ "id": "short-ascii-id", "path": "/page/path" }` line to
+[tests/screenshots/pages.json](tests/screenshots/pages.json). Both viewports are captured automatically.
+Keep the list at **10 pages or fewer**: if every snapshot changes, each page needs six PNGs (base, head and
+diff for both viewports). Ten pages plus the three JSON files fit within the validator's 64-file limit;
+eleven pages would exceed it. The 50 MB artifact limit also applies.
+An optional `mask` array contains Playwright CSS selectors for unstable regions. `maxDiffPixels` defaults
+to zero; use a nonzero allowance only with a documented reason. The comparison uses pixelmatch with
+`threshold: 0.1` and `includeAA: false`; different dimensions always count as a change.
+The account page masks only `.grido tbody .grid-cell-datum_cas`: demo transactions use `NOW()`, so their
+seconds differ between independently seeded databases. All pages use zero pixel allowance.
+
+The manifest distinguishes `unchanged`, `changed`, `new` (base HTTP 404), `error` (head HTTP status, failed
+navigation or a Tracy error page), and `base-error`. Console errors are only counted. An unavailable base
+is recorded separately. Errors on individual pages do not stop other captures. The comment uses validated
+paths and numeric diagnostics, never console messages or other free text from the artifact. The validator
+rejects nonregular files, unexpected image paths, invalid PNG headers, dimensions above 1440×8000, more
+than 64 files and artifacts above 50 MB.
+The `logs/` directory of a local run is outside these limits and is never published.
+
+Capture uses Chromium, Czech locale, Prague time, light mode, reduced motion, disabled animations, hidden
+carets and a hidden Tracy toolbar. Playwright aborts directly routed requests outside the app's origin.
+Chromium disables hostname resolution except for `127.0.0.1`, including redirect hops that bypass
+Playwright routing. Redirects to other IP-based origins can still be reached; if navigation ends outside
+the app's origin, the capture is marked as failed and a fallback image replaces the foreign page.
+External maps and other remote assets addressed by hostname are unavailable.
+Full-page screenshots are cropped at 8000 pixels high and 1440 pixels wide, with cropping recorded in the
+manifest and comment. Mobile page content can exceed the 390-pixel viewport when the application's layout
+overflows. Rendering can differ between operating systems; compare both commits on the same machine. Demo
+data and date-dependent content are seeded before either capture; a run crossing midnight can still observe
+a date boundary.
+
+The Node tests include browser fixtures, artifact validation, golden Markdown files and publisher tests
+against local bare Git repositories. After an intentional comment change, regenerate and review the golden
+files with `UPDATE_SNAPSHOTS=1 npm test` from `tests/screenshots/`. These tests never publish to GitHub.
+
 ### Jobs to be run
 
 Run `php www/index.php app:update_locations` regularly in order to update users' locations based on their addresses.

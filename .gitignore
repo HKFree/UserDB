@@ -35,3 +35,6 @@ trace*json
 
 # Nette Tester
 tests/**/output/
+
+# Pull request screenshots (local captures live under the ignored temp/ directory)
+tests/screenshots/node_modules/

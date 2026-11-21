@@ -1,0 +1,12 @@
+{
+    "name": "userdb-screenshots",
+    "private": true,
+    "type": "module",
+    "engines": { "node": "26.x" },
+    "scripts": { "test": "node --test test/*.test.mjs" },
+    "dependencies": {
+        "playwright": "1.65.1",
+        "pixelmatch": "8.0.0",
+        "pngjs": "7.0.0"
+    }
+}
