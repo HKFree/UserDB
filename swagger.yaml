@@ -67,6 +67,18 @@ paths:
         200:
           description: Konfigurační soubor
 
+  /smokeping/check:
+    get:
+      produces:
+        - text/plain
+      summary: Kontrolní otisk sledovaných IP adres pro obnovu konfigurace SmokePingu
+      description: Otisk zohledňuje adresu i přiřazení ke členovi nebo AP. Klient porovnává hodnotu s předchozí odpovědí.
+      responses:
+        200:
+          description: MD5 otisk, který se změní také při přesunu sledované IP k jinému členovi
+          schema:
+            type: string
+
   /areas:
     get:
       summary: Seznam oblastí, AP a jejich správců ("strom")

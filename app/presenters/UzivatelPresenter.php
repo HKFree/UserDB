@@ -24,6 +24,7 @@ use App\Components;
  */
 class UzivatelPresenter extends BasePresenter
 {
+    private Services\PresunIpSluzba $presunIpSluzba;
     private Model\SpravceOblasti $spravceOblasti;
     private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
     private Model\TypClenstvi $typClenstvi;
@@ -106,6 +107,10 @@ class UzivatelPresenter extends BasePresenter
         $ulc = new UserLabelsComponent($this->stitek, $this->stitkyUzivatele);
         $ulc->setUserId($userId);
         return $ulc;
+    }
+
+    public function injectPresunIpSluzba(Services\PresunIpSluzba $presunIpSluzba): void {
+        $this->presunIpSluzba = $presunIpSluzba;
     }
 
     /** @param int|string $idUzivatele */
@@ -357,6 +362,10 @@ class UzivatelPresenter extends BasePresenter
 
         $form = new Form($this, 'uzivatelForm');
         $form->addHidden('id');
+        $ipOtisk = $form->addHidden('ipOtisk');
+        if (!$this->getHttpRequest()->isMethod('POST')) {
+            $ipOtisk->setDefaultValue($this->presunIpSluzba->otiskIp((int) $this->getParameter('id')));
+        }
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
         $pravniForma = $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::Filled, 'Vyberte typ právní formy');
         $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($pravniForma, Form::Equal, Model\TypPravniFormyUzivatele::PRAVNICKA_OSOBA)->setRequired('Zadejte název firmy');
@@ -553,12 +562,46 @@ class UzivatelPresenter extends BasePresenter
     /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values */
     public function uzivatelFormSucceded(Form $form, ArrayHash $values): void {
         // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
-        $uzivatel = null;
         if (!in_array($values->id, [null, '', 0, '0'], true)) {
             $uzivatel = $this->uzivatel->getUzivatel($values->id);
             $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
         }
 
+        $odeslanaId = [];
+        foreach ($values->ip as $ip) {
+            if (!in_array($ip->id, [null, '', 0, '0'], true)) {
+                $odeslanaId[] = (int) $ip->id;
+            }
+        }
+        try {
+            if (!in_array($values->id, [null, '', 0, '0'], true)) {
+                $cil = $this->presunIpSluzba->priEditaci((int) $values->id, (string) $values->ipOtisk, $odeslanaId, function () use ($values): array {
+                    $uzivatel = $this->uzivatel->getUzivatel($values->id);
+                    $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
+                    return $this->ulozUzivatele($values, $uzivatel);
+                });
+            } else {
+                if ($odeslanaId !== []) {
+                    throw new \DomainException('Nový člen nemůže převzít existující IP přes běžnou editaci.');
+                }
+                $cil = $this->ulozUzivatele($values, null);
+            }
+        } catch (\DomainException $e) {
+            $form->addError($e->getMessage());
+            return;
+        }
+        if ($cil['poslatRegistraciSpolku']) {
+            $this->sendSpolekRegistrationEmail($cil['id']);
+        }
+        $this->redirect($cil['stranka'], ['id' => $cil['id']]);
+    }
+
+    /**
+     * @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values
+     * @return array{stranka: string, id: int, poslatRegistraciSpolku: bool}
+     */
+    private function ulozUzivatele(Nette\Utils\ArrayHash $values, ?Nette\Database\Table\ActiveRow $uzivatel): array {
+        $poslatRegistraciSpolku = false;
         $log = array();
         $idUzivatele = $values->id;
         $ips = $values->ip;
@@ -576,7 +619,7 @@ class UzivatelPresenter extends BasePresenter
         $ipsubnet = $values->ipsubnet;
         $iprange = $values->iprange;
         // \Tracy\Debugger::barDump($ips);exit;
-        unset($values['ip'], $values['ipsubnet'], $values['iprange']);
+        unset($values['ip'], $values['ipsubnet'], $values['iprange'], $values['ipOtisk']);
 
         $genaddresses = [];
         $newUserIPIDs = [];
@@ -664,7 +707,7 @@ class UzivatelPresenter extends BasePresenter
                 $existinguserIPIDs = array_keys($olduzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
                 $this->uzivatel->delete(['id' => [$idUzivatele]]);
-                $this->redirect('UzivatelList:list', ['id' => $puvodniUzivatel['Ap_id']]);
+                return ['stranka' => 'UzivatelList:list', 'id' => (int) $puvodniUzivatel['Ap_id'], 'poslatRegistraciSpolku' => false];
             }
 
             // TODO: spolek / druzstvo
@@ -679,7 +722,7 @@ class UzivatelPresenter extends BasePresenter
 
             // TODO: spolek / druzstvo
             if ($bylPlanovany && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id && $values->spolek === 1) {
-                $this->sendSpolekRegistrationEmail($idUzivatele);
+                $poslatRegistraciSpolku = true;
             }
         }
 
@@ -770,7 +813,66 @@ class UzivatelPresenter extends BasePresenter
 
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
 
-        $this->redirect('Uzivatel:show', ['id' => $idUzivatele]);
+        return ['stranka' => 'Uzivatel:show', 'id' => (int) $idUzivatele, 'poslatRegistraciSpolku' => $poslatRegistraciSpolku];
+    }
+
+    public function actionPresunIp(int $id, int $ipId): void {
+        $zdroj = $this->zdrojPresunu();
+        $ip = $this->ipAdresa->findOneBy(['id' => $ipId, 'Uzivatel_id' => $id, 'Ap_id' => null]);
+        $this->template->presunZdroj = $zdroj;
+        $this->template->presunIp = $ip;
+        $this->template->pocetDnat = $ip !== null ? $this->dnat->findBy(['ip' => $ipId])->count('*') : 0;
+        $this->template->pocetSmtp = $ip !== null ? $this->povoleneSMTP->findBy(['IPAdresa_id' => $ipId])->count('*') : 0;
+        if ($ip === null) {
+            $this['presunIpForm']->addError(Services\PresunIpSluzba::ZMENENY_VLASTNIK);
+        }
+    }
+
+    private function zdrojPresunu(): Nette\Database\Table\ActiveRow {
+        if ($this->getAction() !== 'presunIp') {
+            $this->error('Stránka neexistuje.');
+        }
+        $zdroj = $this->uzivatel->getUzivatel((int) $this->getParameter('id'));
+        $this->vyzadujOpravneni($zdroj !== null && $this->smiUpravitUzivatele($zdroj));
+        return $zdroj;
+    }
+
+    protected function createComponentPresunIpForm(): Form {
+        $zdroj = $this->zdrojPresunu();
+        $moznosti = [];
+        $cile = $this->presunIpSluzba->cileNaAp((int) $zdroj->Ap_id, (int) $zdroj->id);
+        foreach ($this->omezNaUpravitelneUzivateleNaAp($cile, (int) $zdroj->Ap_id) as $clen) {
+            $moznosti[$clen->id] = $clen->id . ' - ' . $clen->nick . ' - ' . $clen->jmeno . ' ' . $clen->prijmeni
+                . ((bool) $clen->money_aktivni ? '' : ' (účet není aktivní)');
+        }
+        $form = new Form();
+        $form->addSelect('cil', 'Nový člen', $moznosti)->setPrompt('Vyberte člena stejného AP')->setRequired('Vyberte nového člena.');
+        $form->addSubmit('potvrdit', 'Přesunout IP')->setHtmlAttribute('class', 'btn btn-primary');
+        $form->onSuccess[] = [$this, 'presunIpFormSucceded'];
+        if ($moznosti === []) {
+            $form->addError('Na tomto AP není jiný vhodný člen, kterého smíte upravovat.');
+        }
+        return $form;
+    }
+
+    public function presunIpFormSucceded(Form $form, Nette\Utils\ArrayHash $values): void {
+        $zdroj = $this->zdrojPresunu();
+        try {
+            $this->presunIpSluzba->presun(
+                (int) $this->getParameter('ipId'),
+                (int) $zdroj->id,
+                (int) $values->cil,
+                $this->getIdentity()->getUid(),
+                function (Nette\Database\Row $clen): void {
+                    $this->vyzadujOpravneni($this->smiUpravitUzivatele($clen));
+                },
+            );
+        } catch (\DomainException $e) {
+            $form->addError($e->getMessage());
+            return;
+        }
+        $this->flashMessage('IP adresa byla přesunuta. Členství a účty obou členů zůstaly beze změny.');
+        $this->redirect('Uzivatel:show', ['id' => (int) $values->cil]);
     }
 
     /** @param int|string|null $id */

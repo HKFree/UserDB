@@ -1,0 +1,21 @@
+{block content}
+<h1>Přesun IP k jinému členovi</h1>
+<p>Původní člen: <a n:href="Uzivatel:show id => $presunZdroj->id">{$presunZdroj->id} - {$presunZdroj->nick}</a></p>
+{if $presunIp}
+    <p>IP adresa: <strong>{$presunIp->ip_adresa}</strong>. Zařízení: {$presunIp->hostname}, {$presunIp->mac_adresa}.</p>
+    <p>Převede se celá konfigurace zařízení včetně přihlašovacích údajů, nastavení internetu, DHCP, MAC filtru a monitoringu.
+        Navázaná pravidla DNAT: {$pocetDnat}, výjimky SMTP: {$pocetSmtp}.</p>
+    <p>Vyberte člena, který zařízení přebírá. Přesun je možný pouze v rámci stejného AP.
+        Členství, smlouvy, kredit a dluhy obou členů se nemění. Původního člena případně zrušte samostatně.</p>
+{/if}
+{form presunIpForm}
+    <ul class="error" n:if="$form->hasErrors()">
+        <li n:foreach="$form->errors as $error">{$error}</li>
+    </ul>
+    {if $presunIp}
+        <p>{label cil /} {input cil}</p>
+        {input potvrdit}
+    {/if}
+{/form}
+<p><a n:href="Uzivatel:edit id => $presunZdroj->id">Zpět na editaci člena</a></p>
+{/block}

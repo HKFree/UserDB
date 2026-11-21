@@ -192,7 +192,8 @@ class LogTable extends UI\Control
             } elseif ($rozparsovano["typ"] === self::IPADRESA) {
                 $id = $rozparsovano["ipId"];
                 $sloupec = $rozparsovano["sloupec"];
-                if (preg_match("/(".$toSkipString.")/i", $sloupec) === 1) {
+                $presun = $sloupec === 'Uzivatel_id' && $line->akce === self::UPDATE;
+                if (!$presun && preg_match("/(".$toSkipString.")/i", $sloupec) === 1) {
                     continue;
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);

@@ -91,23 +91,50 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
      * @param int[] $oblastIds
      */
     public function maIpAdresuVSubnetuCizihoAp(int $uzivatelId, array $oblastIds): bool {
+        $podminka = $this->podminkaIpVSubnetech($this->subnetyCizichAp($uzivatelId, $oblastIds));
+        if ($podminka === null) {
+            return false;
+        }
+
+        return $this->getConnection()->query(
+            'select 1 from IPAdresa where Uzivatel_id = ? and ? limit 1',
+            $uzivatelId,
+            $podminka,
+        )->fetch() !== null;
+    }
+
+    /**
+     * Dávková varianta pro nabídku členů jednoho AP. Neuchovává oprávnění pro následný zápis.
+     * @param int[] $oblastIds
+     * @return list<int>
+     */
+    public function najdiUzivateleNaApVSubnetechCizichAp(int $apId, array $oblastIds): array {
+        if ($oblastIds === []) {
+            return [];
+        }
+        $subnety = $this->getConnection()->query('SELECT S.id, S.subnet
+            FROM Subnet S JOIN Ap A ON A.id = S.Ap_id
+            WHERE A.Oblast_id IN (?) AND A.id != ?', $oblastIds, $apId)->fetchPairs('id', 'subnet');
+        $podminka = $this->podminkaIpVSubnetech(array_values($subnety));
+        if ($podminka === null) {
+            return [];
+        }
+        return array_values($this->getConnection()->query('SELECT DISTINCT U.id
+            FROM Uzivatel U JOIN IPAdresa I ON I.Uzivatel_id = U.id
+            WHERE U.Ap_id = ? AND ? ORDER BY U.id', $apId, $podminka)->fetchPairs('id', 'id'));
+    }
+
+    /** @param list<string> $subnety */
+    private function podminkaIpVSubnetech(array $subnety): ?Nette\Database\SqlLiteral {
         $podminky = [];
         $parametry = [];
-        foreach ($this->subnetyCizichAp($uzivatelId, $oblastIds) as $subnet) {
+        foreach ($subnety as $subnet) {
             // Masku převádí PHP přes (int), stejně jako seznam „Uživatelé mimo AP“. SQL by nestandardní zápis četlo jinak.
             list($network, $cidr) = explode("/", $subnet);
             $podminky[] = '(inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)';
             array_push($parametry, (int) $cidr, $network);
         }
-        if ($podminky === []) {
-            return false;
-        }
-
-        return $this->getConnection()->query(
-            'select 1 from IPAdresa where Uzivatel_id = ? and (' . implode(' or ', $podminky) . ') limit 1',
-            $uzivatelId,
-            ...$parametry,
-        )->fetch() !== null;
+        return $podminky === [] ? null : new Nette\Database\SqlLiteral('(' . implode(' OR ', $podminky) . ')', $parametry);
     }
 
     /**

@@ -207,6 +207,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
     private function post(ActiveRow $member, array $changes = []): array {
         return $changes + [
             '_do' => 'uzivatelForm-submit', 'id' => (string) $member->id, 'Ap_id' => (string) $member->Ap_id,
+            'ipOtisk' => $this->container->getByType(\App\Services\PresunIpSluzba::class)->otiskIp($member->id),
             'TypPravniFormyUzivatele_id' => (string) $member->TypPravniFormyUzivatele_id,
             'jmeno' => $member->jmeno, 'prijmeni' => $member->prijmeni, 'nick' => $member->nick,
             'email' => $member->email, 'telefon' => $member->telefon, 'ulice_cp' => $member->ulice_cp,

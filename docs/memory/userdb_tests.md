@@ -27,8 +27,15 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   selže i při shodném obsahu. Pro přesný snímek nezměněných hodnot včetně jejich typů porovnat
   `serialize($row->toArray())`; samotný `ActiveRow` neserializovat. Ověřeno 21. 11. 2026 podle
   rozdílu `.expected`/`.actual` a testů odmítnutých změn v `NullableModelsDatabaseTest`.
-- Izolace je transakce a rollback. Funguje jen proto, že test i testovaný kód sdílejí jedno spojení a `app/`
-  transakce samo neotevírá. `AUTO_INCREMENT` se rollbackem nevrací a DDL transakci potvrdí.
+- Izolace je transakce a rollback na společném spojení testu a aplikace. `AUTO_INCREMENT` se rollbackem
+  nevrací a DDL transakci potvrdí. Nette Database 3.2.4 neumí otevřít `transaction()` uvnitř ručně zahájené
+  transakce (`DatabaseTestCase::setUp()`); ani vnořené callbacky nevytvářejí savepoint. Služba, která má
+  podporovat obě situace a při chybě vrátit jen vlastní změny, potřebuje uvnitř existující transakce savepoint.
+  Ověřeno 21. 11. 2026 v kódu `Connection` a testem selhání druhého zápisu auditu v `IpTransferDatabaseTest`.
+- Test skutečného commitu (`IpTransferTransactionDatabaseTest`) má dvě spojení a vlastní úklid. Před
+  potvrzením fixtures označuje schéma jako neplatné a příznak vrací až po úklidu; při zabití procesu tak
+  následující běh obnoví izolovanou testovací DB. Samotný `tearDown` po přerušení procesu ani po chybě
+  v `setUp` nestačí. Ověřeno 21. 11. 2026 nad Nette Tester 2.6.2 a testem příznaku schématu.
 - Runner z nextras/migrations chybu migrace nevyhodí, předá ji printeru; `DevNull` ji zahodí. Po běhu navíc nechá
   spojení s vypnutou kontrolou cizích klíčů a jiným `sql_mode` a časovou zónou. Schéma se proto staví na vlastním
   spojení, které se pak zahodí.

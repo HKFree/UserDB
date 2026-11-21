@@ -25,6 +25,10 @@
                 {$recordContainer['wewimo']->control}
             {/if}
             {$recordContainer['remove']->control}
+            {if $presenter->name === 'Uzivatel' && $presenter->getParameter('id') && $recordContainer['id']->value}
+                <a n:href="Uzivatel:presunIp id => $presenter->getParameter('id'), ipId => $recordContainer['id']->value"
+                   class="btn btn-default btn-xs" title="Před přesunem uložte rozpracované změny člena.">Přesunout IP k jinému členovi</a>
+            {/if}
         </td>
     </tr>
     <tr>
