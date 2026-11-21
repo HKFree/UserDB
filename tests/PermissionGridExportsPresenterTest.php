@@ -7,11 +7,14 @@ namespace Test;
 use Grido\Components\Export;
 use Nette\Http;
 use Tester\Assert;
+use Tester\DomQuery;
 
 require_once __DIR__ . '/bootstrap.php';
 
 final class PermissionGridExportsPresenterTest extends DatabaseTestCase
 {
+    private const UNMATCHED_EXPORT_HEADER = "\xEF\xBB\xBFAkce,Částka,Datum,Typ,Poznámka,Číslo účtu,VS,SS,Název účtu,Zpráva,Info banky\n";
+
     private PermissionScenario $scenario;
 
     protected function setUp(): void {
@@ -42,7 +45,9 @@ final class PermissionGridExportsPresenterTest extends DatabaseTestCase
         $marker = $this->fixtures->name('Export');
         $payment = $this->fixtures->insert('PrichoziPlatba', [
             'datum' => date('Y-m-d'), 'castka' => 1234, 'kod_cilove_banky' => 2010, 'druzstvo' => 1, 'spolek' => 0,
-            'zprava_prijemci' => $marker, 'nazev_uctu' => $marker,
+            'cislo_uctu' => '000123-0012345678/2010', 'vs' => '0012345678', 'ss' => '00005678',
+            'nazev_uctu' => 'Žluťoučký účet', 'zprava_prijemci' => $marker . ', platba "člena"',
+            'info_od_banky' => 'Příchozí úhrada & <poznámka>',
             'TypPrichoziPlatby_id' => $this->database->table('TypPrichoziPlatby')->fetch()->id,
         ]);
         foreach ([null, $s->member->id] as $memberId) {
@@ -59,20 +64,68 @@ final class PermissionGridExportsPresenterTest extends DatabaseTestCase
             return;
         }
         $result = $request();
-        Assert::type(Export::class, $result->response);
         if ($presenter === 'SpravaNesparovanych') {
-            // Sending this populated export fails on the undeclared column cu, so only the access is checked.
-            return;
+            $html = $this->presenters->ui($s->actors[$actor]->id, $presenter, ['action' => $action])->html;
+            $document = DomQuery::fromHtml($html);
+            foreach ([
+                'cu' => '000123-0012345678/2010', 'vs' => '0012345678', 'ss' => '00005678',
+                'nazev_uctu' => 'Žluťoučký účet', 'zprava_prijemci' => $marker . ', platba "člena"',
+                'info_od_banky' => 'Příchozí úhrada & <poznámka>',
+            ] as $column => $value) {
+                $cells = $document->find('td.grid-cell-' . $column . ' span');
+                Assert::count(1, $cells);
+                Assert::same($value, trim((string) $cells[0]));
+            }
         }
+        $csv = $this->exportCsv($result);
+        Assert::contains($presenter === 'SpravaMailu' ? $s->member->email : $marker, $csv);
+        Assert::true(count(explode("\n", trim($csv))) > 1);
+        if ($presenter === 'SpravaNesparovanych') {
+            $movementType = $this->fixtures->lookup('TypPohybuNaUctu', 'Prichozi platba');
+            Assert::same(
+                self::UNMATCHED_EXPORT_HEADER
+                . $payment->id . ',1234,' . date('d.m.Y') . ',' . $movementType . ',' . $marker
+                . ',000123-0012345678/2010,0012345678,00005678,Žluťoučký účet,"' . $marker
+                . ', platba ""člena""",Příchozí úhrada & <poznámka>' . "\n",
+                $csv,
+            );
+        }
+    }
+
+    public function testEmptyUnmatchedExport(): void {
+        $result = $this->presenters->ui($this->scenario->actors['vv']->id, 'SpravaNesparovanych', [
+            'action' => 'nesparovane', 'do' => 'accountgrid-export-export',
+        ]);
+        Assert::same(self::UNMATCHED_EXPORT_HEADER, $this->exportCsv($result));
+    }
+
+    public function testUnmatchedExportWithNullPaymentDetails(): void {
+        $payment = $this->fixtures->insert('PrichoziPlatba', [
+            'datum' => '2026-11-20', 'castka' => 1234, 'kod_cilove_banky' => 2010,
+        ]);
+        $movementType = $this->fixtures->lookup('TypPohybuNaUctu', 'Prichozi platba');
+        $this->fixtures->insert('UzivatelskeKonto', [
+            'Uzivatel_id' => null, 'PrichoziPlatba_id' => $payment->id, 'TypPohybuNaUctu_id' => $movementType,
+            'castka' => 1234, 'datum' => '2026-11-20', 'druzstvo' => 1, 'spolek' => 0, 'poznamka' => 'Bez údajů',
+        ]);
+        $result = $this->presenters->ui($this->scenario->actors['vv']->id, 'SpravaNesparovanych', [
+            'action' => 'nesparovane', 'do' => 'accountgrid-export-export',
+        ]);
+        Assert::same(
+            self::UNMATCHED_EXPORT_HEADER . $payment->id . ',1234,20.11.2026,' . $movementType . ",Bez údajů,,,,,,\n",
+            $this->exportCsv($result),
+        );
+    }
+
+    private function exportCsv(PresenterResult $result): string {
+        Assert::type(Export::class, $result->response);
         ob_start();
         try {
             $result->response->send(new Http\Request(new Http\UrlScript('http://localhost/')), new Http\Response());
-            $csv = (string) ob_get_contents();
+            return (string) ob_get_contents();
         } finally {
             ob_end_clean();
         }
-        Assert::contains($presenter === 'SpravaMailu' ? $s->member->email : $marker, $csv);
-        Assert::true(count(explode("\n", trim($csv))) > 1);
     }
 
     public function moneyCases(): array {
