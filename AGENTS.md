@@ -92,8 +92,8 @@ flox activate -s -- php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
 Totéž dělají `scripts/userdb_worktree.sh setup` (včetně `composer install`)
 a `scripts/userdb_worktree.sh web`. Ve worktree založeném v Orce je pouští
 `orca.yaml`: příprava běží v záložce Setup, web v záložce `web`, kde je vidět
-i jeho adresa, a otevře se v záložce prohlížeče. Než spustíš další web,
-podívej se, jestli tam už neběží.
+i jeho adresa, a otevře se v záložce prohlížeče. Běžící web a jeho adresu
+vypíše `orca ports`; druhý vedle něj nespouštěj.
 
 Podrobnosti jsou v [README](readme.md#development). Docker Compose popsaný
 tamtéž má pevné porty a síť; pro práci ve více worktrees použij Flox.

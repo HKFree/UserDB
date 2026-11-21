@@ -18,8 +18,9 @@ a čtením zdrojového kódu Orcy.
   a `.flox/cache/encryption.key`, který příprava databáze zapisuje jako poslední.
 - `defaultTabs` umí jen terminálové záložky. Záložku prohlížeče otevírá skript
   sám přes `orca tab create --url`, jakmile PHP vypíše adresu. CLI bere
-  z `ORCA_CLI_BIN_DIR`, který Orca nastavuje ve svých terminálech; na Linuxu se
-  CLI jmenuje `orca-ide` a tam to ověřené není.
+  z `ORCA_CLI_BIN_DIR`, který Orca nastavuje ve svých terminálech. Na Linuxu se
+  CLI podle dokumentace Orcy jmenuje `orca-ide`; skript zkouší obě jména, ale na
+  Linuxu to vyzkoušené není.
 - S `setupAgentStartupPolicy: wait-for-setup` Orca po neúspěšném setupu agenta
   vůbec nespustí. Chybějící Flox proto setup jen ohlásí a skončí úspěšně.
 - Vlastní setup skript vyplněný v nastavení repozitáře v Orce přepne zdroj

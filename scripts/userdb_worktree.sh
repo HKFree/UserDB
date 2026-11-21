@@ -5,7 +5,7 @@
 # Both are safe to repeat. Orca runs them for every new worktree, see orca.yaml.
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
+CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
 require_flox() {
     if command -v flox >/dev/null 2>&1; then
@@ -29,14 +29,27 @@ is_set_up() {
     [ -f vendor/autoload.php ] && [ -f .flox/cache/encryption.key ]
 }
 
+# Orca sets ORCA_CLI_BIN_DIR in its terminals. Its CLI is called orca-ide on Linux.
+orca_cli() {
+    local name
+    for name in orca orca-ide; do
+        if [ -x "${ORCA_CLI_BIN_DIR:-}/$name" ]; then
+            echo "$ORCA_CLI_BIN_DIR/$name"
+            return
+        fi
+    done
+    return 1
+}
+
 # Passes the server output on. In an Orca terminal it also opens the address PHP announces
 # in a browser tab of this worktree.
 open_browser_tab() {
-    local line started='\((http://[^)]+)\) started$'
+    local line cli started='Development Server \((http://127\.0\.0\.1:[0-9]+)\) started$'
     while IFS= read -r line; do
         printf '%s\n' "$line"
-        if [[ $line =~ $started ]] && [ -x "${ORCA_CLI_BIN_DIR:-}/orca" ]; then
-            "$ORCA_CLI_BIN_DIR/orca" tab create --url "${BASH_REMATCH[1]}" >/dev/null || true
+        if [[ $line =~ $started ]] && cli=$(orca_cli); then
+            # In the background and off the pipe, so that a slow Orca does not hold the server's output back.
+            "$cli" tab create --url "${BASH_REMATCH[1]}" </dev/null >/dev/null &
         fi
     done
 }

@@ -108,14 +108,16 @@ Then, for every task:
 
 1. The first time only: **Add project**, **Clone from URL**, enter `https://github.com/HKFree/UserDB.git`. If you already have a checkout, add its folder instead.
 2. Click **+** next to the project to create a workspace. Search for the GitHub issue you are going to work on, or just type a name, and choose the agent. Orca derives the branch and the directory from the name, so shorten an issue title to a few ASCII words: Czech diacritics do not survive in a branch name.
-3. Allow the setup and default tab commands when Orca asks whether to run them. They are the two commands in `orca.yaml`.
+3. Allow the setup and default tab commands when Orca asks whether to run them. They are the two commands in `orca.yaml`. They run the code of the branch the worktree starts from, so for somebody else's branch read its diff first.
 4. Orca creates the worktree and opens its tabs:
-   - **Setup** installs the Composer dependencies and builds this worktree's database with demo data. It takes about half a minute.
+   - **Setup** installs the Composer dependencies and builds this worktree's database with demo data. It takes about half a minute, longer the first time, when Flox downloads its packages.
    - The agent starts when the setup has finished.
    - **web** waits for the setup as well, then starts the local web and opens it in a browser tab of the worktree. The web is signed in as the demo user, without a login.
 5. Describe the task to the agent, check the result on the local web and review the diff before a pull request is opened.
 
 Without Flox the **Setup** tab only prints how to install it, and the agent starts in a worktree that is not prepared. After installing Flox, run `scripts/userdb_worktree.sh setup` and then `scripts/userdb_worktree.sh web` in the worktree.
+
+If the setup fails, Orca does not start the agent and the **web** tab keeps waiting. Fix the cause shown in the **Setup** tab and run `scripts/userdb_worktree.sh setup` again: the web then starts by itself, the agent has to be started by hand.
 
 ### Editor
 
