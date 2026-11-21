@@ -51,10 +51,12 @@ foreach ($cases as $name => [$legalForm, $cooperative, $birthDate, $expectedErro
     }
 
     $form = new class ($data) extends Form {
+        /** @param array<string, string> $data */
         public function __construct(private array $data) {
             parent::__construct();
         }
 
+        /** @return array<string, string> */
         protected function receiveHttpData(): array {
             return $this->data;
         }

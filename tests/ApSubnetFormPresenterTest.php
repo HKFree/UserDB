@@ -25,6 +25,7 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
         $this->fixtures->role($this->actor->id, 'VV');
     }
 
+    /** @return array<string, array{string, string, bool, string|null}> */
     public function subnetCases(): array {
         return [
             'private subnet' => ['10.107.70.0/24', '10.107.70.1', false, null],

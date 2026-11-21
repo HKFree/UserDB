@@ -30,6 +30,7 @@ class SpravaCcTestPresenter extends SpravaCcPresenter
 
 class SpravaCcPresenterTest extends Tester\TestCase
 {
+    /** @return array<string, array{int, int, string|null, string|null}> */
     public function decisionCases(): array {
         return [
             'approved, finite' => [0, 1, '2027-12-31', 'schválena'],
@@ -80,6 +81,7 @@ class SpravaCcPresenterTest extends Tester\TestCase
         );
         $presenter->injectPrimary($httpRequest, $httpResponse, session: $session, user: $user);
         $mailer = new class () implements Nette\Mail\IMailer {
+            /** @var list<Nette\Mail\Message> */
             public array $messages = [];
 
             public function send(Nette\Mail\Message $mail): void {

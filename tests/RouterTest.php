@@ -14,6 +14,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 final class RouterTest extends TestCase
 {
+    /** @return list<array{string, array<string, string|null>|null}> */
     public function matchingCases(): array {
         return [
             ['/userdb/', ['presenter' => 'Homepage', 'action' => 'default', 'id' => null]],
@@ -30,7 +31,10 @@ final class RouterTest extends TestCase
         ];
     }
 
-    /** @dataProvider matchingCases */
+    /**
+     * @dataProvider matchingCases
+     * @param array<string, string|null>|null $expected
+     */
     public function testMatching(string $path, ?array $expected): void {
         $router = (new RouterFactory())->createRouter('/userdb');
         $actual = $router->match(new Request(new UrlScript('http://localhost' . $path)));
@@ -43,6 +47,7 @@ final class RouterTest extends TestCase
         Assert::same($expected, $actual);
     }
 
+    /** @return list<array{array<string, int|string>, string}> */
     public function constructionCases(): array {
         return [
             [['presenter' => 'Uzivatel', 'action' => 'show', 'id' => 17], '/userdb/uzivatel/show/17'],
@@ -51,7 +56,10 @@ final class RouterTest extends TestCase
         ];
     }
 
-    /** @dataProvider constructionCases */
+    /**
+     * @dataProvider constructionCases
+     * @param array<string, int|string> $parameters
+     */
     public function testConstruction(array $parameters, string $path): void {
         $router = (new RouterFactory())->createRouter('/userdb');
         Assert::same('http://localhost' . $path, $router->constructUrl($parameters, new UrlScript('http://localhost/')));

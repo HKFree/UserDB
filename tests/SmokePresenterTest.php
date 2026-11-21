@@ -49,6 +49,7 @@ final class SmokePresenterTest extends DatabaseTestCase
         Assert::contains($member->email, $detail->html);
     }
 
+    /** @return list<array{string, string}> */
     public function pageCases(): array {
         return [
             ['Ap', 'show'],

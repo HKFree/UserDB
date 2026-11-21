@@ -17,6 +17,7 @@ final class MessageFormPresenterTest extends DatabaseTestCase
 {
     private const COOPERATIVE = ['druzstvo' => 1, 'spolek' => 0, 'smazano' => 0, 'TypClenstvi_id' => null];
 
+    /** @return array<string, array{string, string, string}> */
     public function formCases(): array {
         $cases = [];
         foreach (['emailall' => 'email', 'smsall' => 'komu'] as $action => $field) {

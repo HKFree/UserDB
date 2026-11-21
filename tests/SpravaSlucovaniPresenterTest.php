@@ -88,6 +88,7 @@ foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
         public function __construct() {
         }
 
+        /** @return list<string> */
         public function getRoles(): array {
             return ['VV'];
         }

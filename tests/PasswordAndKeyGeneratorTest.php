@@ -19,6 +19,7 @@ final class PasswordAndKeyGeneratorTest extends TestCase
     private const PASSWORD_CHAR = '[a-hjkmnp-zA-HJKMNP-Z2-9]';
     private const KEY_CHAR = '[2-9a-km-np-zA-NP-Z]';
 
+    /** @return array<string, array{int, bool, string}> */
     public function passwordCases(): array {
         return [
             'default' => [9, false, '{9}'],
@@ -44,6 +45,7 @@ final class PasswordAndKeyGeneratorTest extends TestCase
         Assert::true(count(array_unique($passwords)) > 1, 'The generator returned the same password 20 times.');
     }
 
+    /** @return list<array{int}> */
     public function keyCases(): array {
         return [[30], [5], [100]];
     }

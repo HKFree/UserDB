@@ -61,7 +61,7 @@ The suite covers:
 
 **Adding a test:** Name the file `*Test.php`, `*DatabaseTest.php` for database tests or `*PresenterTest.php` for presenter tests, and require `tests/bootstrap.php`. Nette Tester runs only `*Test.php` files; `TestNamingTest` fails for a file it would skip. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
 
-PHPStan runs at **level 5** with the Nette extension and without a baseline. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
+PHPStan runs at **level 6** with the Nette extension and without a baseline. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
 The [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules) extension is enabled as well. Four of its rule groups are switched off in `phpstan.neon` because the current code does not pass them yet: `disallowedLooseComparison`, `booleansInConditions`, `disallowedEmpty` and `requireParentConstructorCall`. `disallowedShortTernary` is switched off for good: the short ternary stays allowed for default values such as `getenv('X') ?: 'default'`. The remaining groups keep the extension's defaults and must pass.
 

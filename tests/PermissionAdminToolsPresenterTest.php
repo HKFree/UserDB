@@ -20,6 +20,7 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
+    /** @return array<string, array{string, string, bool}> */
     public function toolCases(): array {
         $cases = [];
         foreach (['sms', 'encryption', 'areaCreate', 'areaEdit', 'apCreate', 'payment', 'merge', 'honorary'] as $tool) {
@@ -123,6 +124,7 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
         }
     }
 
+    /** @return list<array{string, bool}> */
     public function mergedListCases(): array {
         $cases = [];
         foreach (['cooperative', 'ownSo', 'support', 'tech', 'vv'] as $actor) {

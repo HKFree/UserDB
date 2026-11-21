@@ -25,6 +25,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $this->member = $this->fixtures->member($ap->id, ['druzstvo' => 1, 'spolek' => 0, 'smazano' => 0, 'TypClenstvi_id' => null]);
     }
 
+    /** @return array<string, array{bool, bool}> */
     public function emailChangeCases(): array {
         return ['changed' => [true, false], 'unchanged' => [false, false], 'cleared secondary' => [false, true]];
     }
@@ -55,6 +56,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
 
+    /** @return array<string, array{array<string, string>, array<string, int>, string, string}> */
     public function validationCases(): array {
         return [
             'name' => [['jmeno' => ''], [], '', 'Zadejte jméno'],
@@ -73,7 +75,11 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         ];
     }
 
-    /** @dataProvider validationCases */
+    /**
+     * @dataProvider validationCases
+     * @param array<string, string> $changes
+     * @param array<string, int> $initial
+     */
     public function testValidation(array $changes, array $initial, string $ipCase, string $message): void {
         if ($initial !== []) {
             $this->member->update($initial);
@@ -164,6 +170,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $this->assertRegistrationEmails($created, 'Ověření adresy, potvrďte prosím, UID ');
     }
 
+    /** @return list<array{array<string, string>, string}> */
     public function newValidationCases(): array {
         return [
             [['datum_narozeni' => ''], 'Právní vztah k družstvu vyžaduje zadání data narození.'],
@@ -172,7 +179,10 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         ];
     }
 
-    /** @dataProvider newValidationCases */
+    /**
+     * @dataProvider newValidationCases
+     * @param array<string, string> $changes
+     */
     public function testNewMemberValidation(array $changes, string $message): void {
         $post = $this->post($changes + ['id' => '', 'nick' => $this->fixtures->name('New'), 'datum_narozeni' => '1985-06-15']);
         $before = $this->snapshot();
@@ -180,6 +190,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same($before, $this->snapshot());
     }
 
+    /** @return array<string, array{int}> */
     public function transitionCases(): array {
         return ['cancelled' => [1], 'regular' => [3]];
     }
@@ -256,6 +267,10 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
 
+    /**
+     * @param array<string, mixed> $changes
+     * @return array<string, mixed>
+     */
     private function post(array $changes = []): array {
         $m = $this->member;
         $ips = [];
@@ -279,11 +294,16 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array<string, string>
+     */
     private function ipPost(array $values): array {
         $defaults = ['id' => '', 'ip_adresa' => '', 'hostname' => '', 'TypZarizeni_id' => '', 'internet' => '1', 'smokeping' => '', 'login' => '', 'heslo' => '', 'mac_adresa' => '', 'mac_filter' => '', 'dhcp' => '', 'popis' => ''];
         return array_map(static fn ($value) => (string) $value, array_intersect_key($values, $defaults) + $defaults);
     }
 
+    /** @param array<string, mixed> $post */
     private function submit(array $post): PresenterResult {
         return $this->presenters->ui($this->actor->id, 'Uzivatel', ['action' => 'edit', 'id' => $post['id'] !== '' ? $post['id'] : null], 'POST', $post);
     }
@@ -299,6 +319,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
 
+    /** @return array<string, string> */
     private function snapshot(): array {
         $state = [];
         foreach (['Uzivatel', 'IPAdresa', 'Log'] as $table) {

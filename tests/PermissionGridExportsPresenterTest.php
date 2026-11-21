@@ -22,6 +22,7 @@ final class PermissionGridExportsPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
+    /** @return array<string, array{string, string, string, string, bool}> */
     public function gridCases(): array {
         $cases = [];
         foreach ([
@@ -128,6 +129,7 @@ final class PermissionGridExportsPresenterTest extends DatabaseTestCase
         }
     }
 
+    /** @return list<array{string, string, bool, bool}> */
     public function moneyCases(): array {
         return [
             ['otherSo', 'list', false, false], ['cooperative', 'listall', false, false],

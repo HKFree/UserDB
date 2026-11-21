@@ -24,6 +24,7 @@ final class AdminPagesPresenterTest extends DatabaseTestCase
         $this->fixtures->role($this->actor->id, 'VV');
     }
 
+    /** @return list<array{string, string, string}> */
     public function gridCases(): array {
         return [
             ['SpravaCc', 'prehledcc', 'grid'],

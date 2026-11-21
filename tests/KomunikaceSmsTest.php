@@ -23,6 +23,7 @@ require_once __DIR__ . '/bootstrap.php';
 // Keep the real number validator, but never construct or call the HTTP client.
 class RecordingSmsSender extends MexSmsSender
 {
+    /** @var list<array{array<array-key, string>, string}> */
     public array $calls = [];
     public ?SmsSenderException $error = null;
 
@@ -69,6 +70,7 @@ class SmsManagersPresenter extends SpravaSmsPresenter
 
 trait SmsFlashMessages
 {
+    /** @var list<\stdClass> */
     public array $messages = [];
 
     public function flashMessage(string|\stdClass|\Stringable $message, string $type = 'info'): \stdClass {
@@ -213,6 +215,7 @@ class KomunikaceSmsTest extends TestCase
         return new SmsManagersPresenter($managers, new Model\Komunikace($sender, $users));
     }
 
+    /** @param array<array-key, string> $numbers */
     private function createPresenter(array $numbers, RecordingSmsSender $sender): SmsPresenter {
         $users = new SmsUsers($numbers);
         $ap = new class ($numbers) extends Model\AP {
@@ -246,6 +249,7 @@ class KomunikaceSmsTest extends TestCase
                 };
             }
 
+            /** @param \Nette\Security\User $Uzivatel */
             public function canViewOrEditAP($ApID, $Uzivatel): bool {
                 return true;
             }

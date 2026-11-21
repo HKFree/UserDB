@@ -13,6 +13,7 @@ require __DIR__ . '/../vendor/autoload.php';
 \Tester\Environment::setup();
 
 $selection = new class () extends Selection {
+    /** @var list<array{string|array<array-key, mixed>, array<array-key, mixed>}> */
     public array $conditions = [];
 
     public function __construct() {
@@ -25,11 +26,14 @@ $selection = new class () extends Selection {
 };
 
 $database = new class ($selection) extends Explorer {
+    /** @var list<string> */
     public array $tables = [];
 
+    /** @param Selection<\Nette\Database\Table\ActiveRow> $selection */
     public function __construct(private Selection $selection) {
     }
 
+    /** @return Selection<\Nette\Database\Table\ActiveRow> */
     public function table(string $table): Selection {
         $this->tables[] = $table;
         return $this->selection;
