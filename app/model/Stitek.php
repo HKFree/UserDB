@@ -8,7 +8,7 @@ use Nette\Database\Explorer;
 /**
  * @author
  */
-class Stitek extends Table
+class Stitek
 {
     /**
      * @var Explorer
@@ -16,6 +16,7 @@ class Stitek extends Table
 
     private Explorer $database;
 
+    /** @var string */
     protected $tableName = 'Stitek';
 
     public function __construct(Explorer $database) {

@@ -10,6 +10,7 @@ use Nette\Database\Table\Selection;
 use Tester\Assert;
 
 require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/TestDoubles.php';
 \Tester\Environment::setup();
 
 $selection = new class () extends Selection {
@@ -17,6 +18,8 @@ $selection = new class () extends Selection {
     public array $conditions = [];
 
     public function __construct() {
+        $database = new OfflineDatabase();
+        parent::__construct($database, $database->getConventions(), 'Stitek');
     }
 
     public function where(string|array $condition, ...$params): static {
@@ -31,6 +34,8 @@ $database = new class ($selection) extends Explorer {
 
     /** @param Selection<\Nette\Database\Table\ActiveRow> $selection */
     public function __construct(private Selection $selection) {
+        $database = new OfflineDatabase();
+        parent::__construct($database->getConnection(), $database->getStructure());
     }
 
     /** @return Selection<\Nette\Database\Table\ActiveRow> */

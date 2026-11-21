@@ -10,15 +10,10 @@ use App\Model\Uzivatel;
 /**
  * @author bkralik
  */
-class Komunikace extends Table
+class Komunikace
 {
     public MexSmsSender $smsSender;
     public Uzivatel $uzivatel;
-
-    /**
-     * @var string
-     */
-    protected $tableName = 'Komunikace';
 
     public function __construct(MexSmsSender $m, Uzivatel $u) {
         $this->smsSender = $m;

@@ -15,6 +15,7 @@ class SmokepingPresenter extends ApiPresenter
     private Model\AP $ap;
 
     public function __construct(Model\Oblast $oblast, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
+        parent::__construct();
         $this->oblast = $oblast;
         $this->uzivatel = $uzivatel;
         $this->ipAdresa = $ipAdresa;

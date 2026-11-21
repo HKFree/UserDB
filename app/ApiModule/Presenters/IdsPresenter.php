@@ -9,6 +9,7 @@ class IdsPresenter extends ApiPresenter
     private \App\Model\IdsConnector $idsConnector;
 
     public function __construct(\App\Model\IdsConnector $idsConnector) {
+        parent::__construct();
         $this->idsConnector = $idsConnector;
     }
 

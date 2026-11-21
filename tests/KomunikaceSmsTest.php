@@ -11,10 +11,15 @@ use App\Services\MexSmsSender;
 use App\Services\SmsSenderException;
 use Nette\Application\AbortException;
 use Nette\Application\UI\Form;
+use Nette\Caching\Cache;
+use Nette\Caching\Storages\MemoryStorage;
 use Nette\Database\Table\ActiveRow;
 use Nette\Database\Table\GroupedSelection;
 use Nette\Http;
+use Nette\Security\User;
 use Nette\Utils\ArrayHash;
+use Test\MemoryUserStorage;
+use Test\OfflineDatabase;
 use Tester\Assert;
 use Tester\TestCase;
 
@@ -28,6 +33,7 @@ class RecordingSmsSender extends MexSmsSender
     public ?SmsSenderException $error = null;
 
     public function __construct() {
+        parent::__construct('http://127.0.0.1:0/', 'test-only', 'test-only', new Cache(new MemoryStorage()));
     }
 
     public function sendSMS(array $bnumbers, string $text): void {
@@ -42,6 +48,7 @@ class SmsUsers extends Model\Uzivatel
 {
     /** @param array<array-key, string> $numbers */
     public function __construct(private array $numbers) {
+        parent::__construct(new OfflineDatabase(), new User(new MemoryUserStorage()));
     }
 
     public function getUzivatel($id): ActiveRow {
@@ -49,6 +56,7 @@ class SmsUsers extends Model\Uzivatel
             public int $Ap_id = 1;
 
             public function __construct(public int|string $id, public string $telefon) {
+                parent::__construct(['id' => $id, 'telefon' => $telefon, 'Ap_id' => $this->Ap_id], (new OfflineDatabase())->table('Uzivatel'));
             }
         };
     }
@@ -221,18 +229,22 @@ class KomunikaceSmsTest extends TestCase
         $ap = new class ($numbers) extends Model\AP {
             /** @param array<array-key, string> $numbers */
             public function __construct(private array $numbers) {
+                parent::__construct(new OfflineDatabase(), new User(new MemoryUserStorage()));
             }
 
             public function getAP($id): ActiveRow {
                 return new class ($this->numbers) extends ActiveRow {
                     /** @param array<array-key, string> $numbers */
                     public function __construct(private array $numbers) {
+                        parent::__construct([], (new OfflineDatabase())->table('Ap'));
                     }
 
                     public function related(string $key, ?string $throughColumn = null): GroupedSelection {
                         return new class ($this->numbers) extends GroupedSelection {
                             /** @param array<array-key, string> $numbers */
                             public function __construct(private array $numbers) {
+                                $database = new OfflineDatabase();
+                                parent::__construct($database, $database->getConventions(), 'Uzivatel', 'Ap_id', $database->table('Ap'));
                             }
 
                             /** @param string|array<array-key, mixed> $condition */
@@ -255,10 +267,7 @@ class KomunikaceSmsTest extends TestCase
             }
         };
         $presenter = new SmsPresenter($users, $ap, new Model\Komunikace($sender, $users));
-        $user = new class () extends \Nette\Security\User {
-            public function __construct() {
-            }
-        };
+        $user = new User(new MemoryUserStorage());
         $presenter->injectPrimary(new Http\Request(new Http\UrlScript('http://localhost/')), new Http\Response(), user: $user);
         $presenter->loadState(['id' => 1]);
         return $presenter;

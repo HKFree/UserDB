@@ -15,6 +15,7 @@ class VnejsiScannerPresenter extends BasePresenter
     private Model\IPAdresa $iPAdresa;
 
     public function __construct(Model\VnejsiScanner $vnejsiScanner, Model\IPAdresa $iPAdresa) {
+        parent::__construct();
         $this->vnejsiScanner = $vnejsiScanner;
         $this->iPAdresa = $iPAdresa;
     }

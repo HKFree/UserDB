@@ -17,6 +17,7 @@ class FilePresenter extends BasePresenter
     private $ap;
 
     public function __construct(Model\IPAdresa $ipAdresa, Model\AP $ap) {
+        parent::__construct();
         $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
     }

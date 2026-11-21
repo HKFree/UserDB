@@ -18,6 +18,7 @@ class PaymentSchedulePresenter extends BasePresenter
         Model\Uzivatel $uzivatel,
         Model\CestneClenstviUzivatele $cc,
     ) {
+        parent::__construct();
         $this->uzivatel = $uzivatel;
         $this->parameters = $parameters;
         $this->mailService = $mailsvc;

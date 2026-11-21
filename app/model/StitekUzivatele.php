@@ -9,7 +9,7 @@ use Nette\Database\Explorer;
 /**
  * @author
  */
-class StitekUzivatele extends Table
+class StitekUzivatele
 {
     /**
      * @var Explorer
@@ -18,6 +18,7 @@ class StitekUzivatele extends Table
     private Explorer $database;
     private Log $log;
     private Stitek $stitek;
+    /** @var string */
     protected $tableName = 'StitekUzivatele';
 
     public function __construct(Explorer $database, Log $log, Stitek $stitek) {

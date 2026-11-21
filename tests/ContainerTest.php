@@ -45,6 +45,9 @@ final class ContainerTest extends TestCase
             }
         }
         foreach ([
+            'stitek' => \App\Model\Stitek::class,
+            'stitekUzivatele' => \App\Model\StitekUzivatele::class,
+            'komunikace' => \App\Model\Komunikace::class,
             'mail.mailer' => RecordingMailer::class,
             'smsSender' => RecordingSmsSender::class,
             'mexSmsSender' => RecordingMexSmsSender::class,
@@ -54,6 +57,7 @@ final class ContainerTest extends TestCase
             'cache.storage' => MemoryStorage::class,
         ] as $name => $class) {
             Assert::same($class, $container->getService($name)::class);
+            Assert::same($container->getService($name), $container->getByType($class));
         }
         Assert::same(
             'mysql:unix_socket=' . getenv('USERDB_MARIADB_SOCKET') . ';dbname=userdb_test',

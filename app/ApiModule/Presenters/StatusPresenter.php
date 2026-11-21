@@ -15,6 +15,7 @@ class StatusPresenter extends ApiPresenter
     private int $lookback = 7 * 24 * 60 * 60;
 
     public function __construct(\App\Model\Oblast $oblast, \App\Model\Sojka $sojka, \App\Model\IPAdresa $ipadresa, \App\Model\Status $status) {
+        parent::__construct();
         $this->oblast = $oblast;
         $this->sojka = $sojka;
         $this->ipadresa = $ipadresa;

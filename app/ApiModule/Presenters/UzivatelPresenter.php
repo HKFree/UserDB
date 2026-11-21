@@ -11,6 +11,7 @@ class UzivatelPresenter extends ApiPresenter
     private \App\Model\IPAdresa $ipAdresa;
 
     public function __construct(\App\Model\Uzivatel $uzivatel, \App\Model\IPAdresa $ipAdresa) {
+        parent::__construct();
         $this->uzivatel = $uzivatel;
         $this->ipAdresa = $ipAdresa;
     }

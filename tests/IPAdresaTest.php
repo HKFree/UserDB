@@ -10,6 +10,7 @@ use Nette\Utils\Html;
 use Tester\Assert;
 
 require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/TestDoubles.php';
 \Tester\Environment::setup();
 
 $_SERVER['HTTP_USER_AGENT'] = 'UserDB regression test';
@@ -31,6 +32,7 @@ $ip = new class ([
 ]) extends ActiveRow {
     /** @param array<string, mixed> $values */
     public function __construct(private array $values) {
+        parent::__construct($values, (new OfflineDatabase())->table('IPAdresa'));
     }
 
     public function &__get(string $key): mixed {

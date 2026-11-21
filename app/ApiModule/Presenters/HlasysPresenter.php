@@ -13,6 +13,7 @@ class HlasysPresenter extends ApiPresenter
     private Model\Uzivatel $uzivatel;
 
     public function __construct(\App\Model\SpravceOblasti $spravceOblasti, TypSpravceOblasti $typSpravceOblasti, \App\Model\Uzivatel $uzivatel) {
+        parent::__construct();
         $this->spravceOblasti = $spravceOblasti;
         $this->typSpravceOblasti = $typSpravceOblasti;
         $this->uzivatel = $uzivatel;
