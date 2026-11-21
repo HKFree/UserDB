@@ -51,7 +51,7 @@ class IdsConnector
         $jar = new \GuzzleHttp\Cookie\CookieJar();
 
         $loginFormResponse = $client->request('GET', $this->idsUrl, ['cookies' => $jar, 'connect_timeout' => 3, 'timeout' => 5]);
-        if (preg_match('/csrfmiddlewaretoken.*value=\'(.+)\'/', $loginFormResponse->getBody(), $matches)) {
+        if (preg_match('/csrfmiddlewaretoken.*value=\'(.+)\'/', $loginFormResponse->getBody(), $matches) === 1) {
             $csrfToken = $matches[1];
             $headers = ['Referer' => $this->idsUrl.'/accounts/login/'];
             $client->request(

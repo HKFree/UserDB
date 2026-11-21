@@ -121,6 +121,22 @@ final class NetworkModelTypesDatabaseTest extends DatabaseTestCase
         Assert::same(['fixture-password', 'fixture-password'], $model->passwords);
     }
 
+    public function testExistingRecordWithNullAddressStillRenders(): void {
+        $ap = $this->fixtures->ap($this->fixtures->area()->id);
+        $ip = $this->fixtures->insert('IPAdresa', ['Ap_id' => $ap->id, 'ip_adresa' => null, 'hostname' => 'Bez adresy']);
+        $table = Html::el('table');
+        $server = $_SERVER;
+        $_SERVER['HTTP_USER_AGENT'] = 'UserDB regression test';
+        try {
+            $row = $this->container->getByType(IPAdresa::class)->addIPTableRow($ip, false, $table);
+        } finally {
+            $_SERVER = $server;
+        }
+        Assert::same('highlightable-ip', $row->getAttribute('id'));
+        Assert::contains('<td></td>', (string) $row);
+        Assert::contains('Bez adresy', (string) $row);
+    }
+
     public function testEmptySubnetAddressRendersWithoutARecord(): void {
         $table = Html::el('table');
         $row = $this->container->getByType(IPAdresa::class)->addIPTableRow(null, false, $table, [
@@ -153,6 +169,39 @@ final class NetworkModelTypesDatabaseTest extends DatabaseTestCase
             $expected += $input === '' || $input === '0' ? ['error' => Subnet::ERR_NO_GW] : ['gateway' => $input];
             Assert::same($expected, $model->getSubnetOfIP('192.0.2.7'));
         }
+    }
+
+    public function testWewimoSignalScaleAndMalformedValues(): void {
+        $model = $this->container->getByType(Wewimo::class);
+        $convert = new \ReflectionMethod(Wewimo::class, 'dbm2pct');
+        foreach ([[-120, 0.0], ['-100', 0.0], [-60.0, 50.0], ['-20', 100.0], [0, 100.0]] as [$signal, $percent]) {
+            Assert::same($percent, $convert->invoke($model, $signal));
+        }
+        Assert::same(50.0, $convert->invoke($model, '45', 0, 90));
+        Assert::same(42.0, $convert->invoke($model, '38dB', 0, 90));
+        Assert::same(100.0, $convert->invoke($model, '0dBm@6Mbps'));
+        foreach ([null, '', 'unknown', []] as $invalid) {
+            Assert::exception(fn () => $convert->invoke($model, $invalid), \Nette\UnexpectedValueException::class);
+        }
+    }
+
+    public function testWewimoTxPowerSeparatorsAndEmptyRecords(): void {
+        foreach ([',', ';'] as $separator) {
+            $row = $this->parseMonitorRow(['current-tx-powers' => "6Mbps:18{$separator}54Mbps:15{$separator}invalid{$separator}"]);
+            Assert::same(['6Mbps' => '18', '54Mbps' => '15'], $row['x-current-tx-powers']);
+        }
+        Assert::same(['x-current-tx-powers' => []], $this->parseMonitorRow([]));
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private function parseMonitorRow(array $row): array {
+        $model = $this->container->getByType(Wewimo::class);
+        $parse = new \ReflectionMethod(Wewimo::class, 'parseAddCurrentTxPower');
+        $parse->invokeArgs($model, [&$row]);
+        return $row;
     }
 
     public function testRoleLabelKeepsMissingAndZeroAreaGlobal(): void {

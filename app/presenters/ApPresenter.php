@@ -250,7 +250,7 @@ class ApPresenter extends BasePresenter
         if (isset($data['ip'])) {
             $formIPs = array();
             foreach ($data['ip'] as $ip) {
-                if (!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
+                if ($this->ipAdresa->validateIP($ip['ip_adresa']) === false) {
                     $form->addError('IP adresa ' . $ip['ip_adresa'] . ' není validní IPv4 adresa!');
                 }
 
@@ -289,7 +289,7 @@ class ApPresenter extends BasePresenter
                     return;
                 }
 
-                if (!$this->ipAdresa->validateIP($subnet['gateway'])) {
+                if ($this->ipAdresa->validateIP($subnet['gateway']) === false) {
                     $form->addError('Gateway ' . $subnet['gateway'] . ' u subnetu ' . $subnet['subnet'] . ' není validní IPv4 adresa!');
                     return;
                 }
@@ -453,7 +453,7 @@ class ApPresenter extends BasePresenter
 
     /** @param int|string|null $id */
     public function actionIds($id): void {
-        $apt = $this->ap->getAP($id * 1);
+        $apt = $this->ap->getAP($id);
         if ($apt === null) {
             $this->error('AP not found');
         } else {

@@ -43,6 +43,13 @@ final class SubnetLookupDatabaseTest extends DatabaseTestCase
         Assert::same(['error' => Subnet::ERR_NOT_FOUND], $this->subnets->getSubnetOfIP('10.107.54.1'));
     }
 
+    public function testInvalidIpDoesNotMatchZeroNetwork(): void {
+        $this->fixtures->subnet($this->ap->id, '0.0.0.0/16', '0.0.0.1');
+        foreach (['', 'invalid', '::1', '2001:db8::1'] as $ip) {
+            Assert::same(['error' => Subnet::ERR_NOT_FOUND], $this->subnets->getSubnetOfIP($ip));
+        }
+    }
+
     public function testSubnetOfIpWithArpProxy(): void {
         $this->fixtures->subnet($this->ap->id, '89.248.241.0/24', '89.248.241.1')->update(['arp_proxy' => 1]);
 

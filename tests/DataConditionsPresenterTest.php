@@ -68,7 +68,9 @@ final class DataConditionsPresenterTest extends DatabaseTestCase
                 Assert::same($enabled, $storedSubnet->arp_proxy);
                 $subnetModel = $this->container->getByType(Subnet::class);
                 Assert::contains($enabled ? '>zapnuto<' : '>vypnuto<', (string) $subnetModel->getSubnetTable([$storedSubnet]));
-                Assert::same($enabled ? Subnet::ARP_PROXY_GW : '192.0.2.1', $subnetModel->getSubnetOfIP('192.0.2.42')['gateway']);
+                $subnetInfo = $subnetModel->getSubnetOfIP('192.0.2.42');
+                Assert::true(isset($subnetInfo['gateway']));
+                Assert::same($enabled ? Subnet::ARP_PROXY_GW : '192.0.2.1', $subnetInfo['gateway']);
 
                 Assert::same($enabled, $this->database->table('Ap')->get($ap->id)->aktivni);
                 $list = $this->presenters->ui($member->id, 'Ap', ['action' => 'list', 'id' => $area->id]);

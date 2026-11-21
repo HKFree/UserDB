@@ -476,12 +476,12 @@ class UzivatelPresenter extends BasePresenter
         }
 
         if (isset($data['ipsubnet']) && !in_array($data['ipsubnet'], ['', '0', 0, 0.0, false, []], true)) {
-            if (!preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $data['ipsubnet'])) {
+            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $data['ipsubnet']) !== 1) {
                 $form->addError('IP subnet není validní!');
             }
         }
         if (isset($data['iprange']) && !in_array($data['iprange'], ['', '0', 0, 0.0, false, []], true)) {
-            if (!preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $data['iprange'])) {
+            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $data['iprange']) !== 1) {
                 $form->addError('IP rozsah není validní!');
             }
         }
@@ -489,7 +489,7 @@ class UzivatelPresenter extends BasePresenter
         if (isset($data['ip'])) {
             $formIPs = [];
             foreach ($data['ip'] as $ip) {
-                if (!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
+                if ($this->ipAdresa->validateIP($ip['ip_adresa']) === false) {
                     $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
                 }
 
