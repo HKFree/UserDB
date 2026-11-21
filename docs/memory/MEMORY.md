@@ -8,3 +8,4 @@
 - [Testy](userdb_tests.md) - nástrahy testovacího kontejneru, testovací DB z migrací, spouštění presenterů a měření pokrytí.
 - [Regresní testy SMS](userdb_sms_tests.md) - bezpečné testování bez externí brány a nástrahy starého SMS senderu.
 - [Přihlašovací formulář testovacího serveru](userdb_testing_login.md) - nástrahy brány před testovacími instancemi a její lokální zkouška s Caddy.
+- [Demo data](userdb_demo_data.md) - nástrahy při psaní scénářových migrací a objemového kroku pro testovací instance.
