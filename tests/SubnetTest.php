@@ -18,6 +18,7 @@ final class SubnetTest extends TestCase
         $this->model = (new \ReflectionClass(Subnet::class))->newInstanceWithoutConstructor();
     }
 
+    /** @return list<array{string, bool}> */
     public function validationCases(): array {
         return [
             ['10.107.0.0/16', true],
@@ -42,6 +43,7 @@ final class SubnetTest extends TestCase
         Assert::same($expected, $this->model->validateSubnet($subnet));
     }
 
+    /** @return list<array{int, string}> */
     public function maskCases(): array {
         return [
             [0, '0.0.0.0'],
@@ -57,6 +59,7 @@ final class SubnetTest extends TestCase
         Assert::same($expected, $this->model->CIDRToMask($cidr));
     }
 
+    /** @return list<array{string, string, string, string}> */
     public function parsingCases(): array {
         return [
             ['10.107.0.64/26', '10.107.0.64', '26', '255.255.255.192'],
@@ -75,6 +78,7 @@ final class SubnetTest extends TestCase
         ], $this->model->parseSubnet($subnet));
     }
 
+    /** @return list<array{string, string, bool}> */
     public function collisionCases(): array {
         return [
             ['192.0.2.0/24', '192.0.2.0/24', true],
@@ -91,6 +95,7 @@ final class SubnetTest extends TestCase
         Assert::same($expected, $this->model->checkColision($first, $second));
     }
 
+    /** @return list<array{string, string, bool}> */
     public function membershipCases(): array {
         return [
             ['192.0.2.65', '192.0.2.64/26', true],
@@ -109,6 +114,7 @@ final class SubnetTest extends TestCase
         Assert::same($expected, $this->model->inSubnet($ip, $subnet));
     }
 
+    /** @return list<array{list<string>, list<string>|false}> */
     public function collisionsCases(): array {
         return [
             [[], false],
@@ -121,7 +127,11 @@ final class SubnetTest extends TestCase
         ];
     }
 
-    /** @dataProvider collisionsCases */
+    /**
+     * @dataProvider collisionsCases
+     * @param list<string> $subnets
+     * @param list<string>|false $expected
+     */
     public function testCollisions(array $subnets, array|bool $expected): void {
         Assert::same($expected, $this->model->checkColisions($subnets));
     }

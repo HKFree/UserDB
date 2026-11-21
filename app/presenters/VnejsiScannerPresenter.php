@@ -11,15 +11,19 @@ use Tracy\Debugger;
  */
 class VnejsiScannerPresenter extends BasePresenter
 {
-    private $vnejsiScanner;
-    private $iPAdresa;
+    private Model\VnejsiScanner $vnejsiScanner;
+    private Model\IPAdresa $iPAdresa;
 
     public function __construct(Model\VnejsiScanner $vnejsiScanner, Model\IPAdresa $iPAdresa) {
         $this->vnejsiScanner = $vnejsiScanner;
         $this->iPAdresa = $iPAdresa;
     }
 
-    private function getDetaily($scan) {
+    /**
+     * @param array<array-key, list<string>>|null $scan
+     * @return array<array-key, array{porty: list<string>, oblast: string, uzivatel: \Nette\Database\Table\ActiveRow|false}>
+     */
+    private function getDetaily($scan): array {
         $scan_detaily = [];
         foreach ($scan as $ip => $porty) {
             $scan_detaily[$ip]["porty"] = $porty;
@@ -47,7 +51,7 @@ class VnejsiScannerPresenter extends BasePresenter
         return ($scan_detaily);
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $this->template->scan = $this->getDetaily($this->vnejsiScanner->getScan());
         $this->template->scanDate = $this->vnejsiScanner->getScanDate();
     }

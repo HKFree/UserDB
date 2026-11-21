@@ -2,6 +2,7 @@
 
 final class ContractPdf
 {
+    /** @param array<array-key, mixed> $parameters Values are validated before template substitution. */
     public static function generate(array $parameters, string $template, string $binary, string $cache): string {
         if (!is_file($template)) {
             throw new RuntimeException('Contract template does not exist.');
@@ -45,6 +46,7 @@ final class ContractPdf
         }
     }
 
+    /** @param non-empty-list<string> $command */
     private static function run(array $command, string $directory): void {
         // @phpstan-ignore argument.type (PHP requires an int redirect target; PHPStan only allows strings in descriptor lists.)
         $process = proc_open($command, [0 => ['file', '/dev/null', 'r'], 1 => ['file', $directory . '/command.log', 'a'], 2 => ['redirect', 1]], $pipes, $directory);

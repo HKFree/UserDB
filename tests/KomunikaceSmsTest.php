@@ -10,7 +10,11 @@ use App\Presenters\UzivatelMailSmsPresenter;
 use App\Services\MexSmsSender;
 use App\Services\SmsSenderException;
 use Nette\Application\AbortException;
+use Nette\Application\UI\Form;
+use Nette\Database\Table\ActiveRow;
+use Nette\Database\Table\GroupedSelection;
 use Nette\Http;
+use Nette\Utils\ArrayHash;
 use Tester\Assert;
 use Tester\TestCase;
 
@@ -19,13 +23,14 @@ require_once __DIR__ . '/bootstrap.php';
 // Keep the real number validator, but never construct or call the HTTP client.
 class RecordingSmsSender extends MexSmsSender
 {
+    /** @var list<array{array<array-key, string>, string}> */
     public array $calls = [];
     public ?SmsSenderException $error = null;
 
     public function __construct() {
     }
 
-    public function sendSMS(array $bnumbers, string $text) {
+    public function sendSMS(array $bnumbers, string $text): void {
         $this->calls[] = [$bnumbers, $text];
         if ($this->error !== null) {
             throw $this->error;
@@ -35,11 +40,17 @@ class RecordingSmsSender extends MexSmsSender
 
 class SmsUsers extends Model\Uzivatel
 {
+    /** @param array<array-key, string> $numbers */
     public function __construct(private array $numbers) {
     }
 
-    public function getUzivatel($id) {
-        return (object) ['id' => $id, 'telefon' => $this->numbers[$id], 'Ap_id' => 1];
+    public function getUzivatel($id): ActiveRow {
+        return new class ($id, $this->numbers[$id]) extends ActiveRow {
+            public int $Ap_id = 1;
+
+            public function __construct(public int|string $id, public string $telefon) {
+            }
+        };
     }
 }
 
@@ -59,6 +70,7 @@ class SmsManagersPresenter extends SpravaSmsPresenter
 
 trait SmsFlashMessages
 {
+    /** @var list<\stdClass> */
     public array $messages = [];
 
     public function flashMessage(string|\stdClass|\Stringable $message, string $type = 'info'): \stdClass {
@@ -118,7 +130,7 @@ class KomunikaceSmsTest extends TestCase
         $sender = new RecordingSmsSender();
         $presenter = $this->createPresenter([1 => 'neplatné'], $sender);
 
-        Assert::exception(fn () => $presenter->smsFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+        Assert::exception(fn () => $presenter->smsFormSucceded(new Form(), ArrayHash::from(['message' => 'Test'])), AbortException::class);
 
         $this->assertFlash($presenter, 'SMS nebyla odeslána. ' . self::NO_NUMBER, 'danger');
         Assert::same([], $sender->calls);
@@ -128,7 +140,7 @@ class KomunikaceSmsTest extends TestCase
         $sender = new RecordingSmsSender();
         $presenter = $this->createPresenter([1 => '777222555'], $sender);
 
-        Assert::exception(fn () => $presenter->smsFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+        Assert::exception(fn () => $presenter->smsFormSucceded(new Form(), ArrayHash::from(['message' => 'Test'])), AbortException::class);
 
         $this->assertFlash($presenter, 'SMS byla odeslána na 1 čísel.', 'info');
         Assert::same([[['777222555'], 'Test']], $sender->calls);
@@ -140,7 +152,7 @@ class KomunikaceSmsTest extends TestCase
             1 => 'neplatné', 2 => '777222555', 3 => 'missing', 4 => '+420 777 222 556', 5 => '',
         ], $sender);
 
-        Assert::exception(fn () => $presenter->smsallFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+        Assert::exception(fn () => $presenter->smsallFormSucceded(new Form(), ArrayHash::from(['message' => 'Test'])), AbortException::class);
 
         $this->assertFlash($presenter, 'SMS byla odeslána na 2 čísel.', 'info');
         Assert::same([[['777222555', '+420 777 222 556'], 'Test']], $sender->calls);
@@ -151,7 +163,7 @@ class KomunikaceSmsTest extends TestCase
             $sender = new RecordingSmsSender();
             $presenter = $this->createPresenter($numbers, $sender);
 
-            Assert::exception(fn () => $presenter->smsallFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+            Assert::exception(fn () => $presenter->smsallFormSucceded(new Form(), ArrayHash::from(['message' => 'Test'])), AbortException::class);
 
             $this->assertFlash($presenter, 'SMS nebyla odeslána. ' . self::NO_NUMBER, 'danger');
             Assert::same([], $sender->calls);
@@ -159,10 +171,10 @@ class KomunikaceSmsTest extends TestCase
     }
 
     public function testGatewayErrorHasNoStackTrace(): void {
-        $values = (object) ['message' => 'Test'];
+        $values = ArrayHash::from(['message' => 'Test']);
         $handlers = [
-            fn (SmsPresenter $presenter) => $presenter->smsFormSucceded(null, $values),
-            fn (SmsPresenter $presenter) => $presenter->smsallFormSucceded(null, $values),
+            fn (SmsPresenter $presenter) => $presenter->smsFormSucceded(new Form(), $values),
+            fn (SmsPresenter $presenter) => $presenter->smsallFormSucceded(new Form(), $values),
         ];
         foreach ($handlers as $callHandler) {
             $sender = new RecordingSmsSender();
@@ -203,32 +215,42 @@ class KomunikaceSmsTest extends TestCase
         return new SmsManagersPresenter($managers, new Model\Komunikace($sender, $users));
     }
 
+    /** @param array<array-key, string> $numbers */
     private function createPresenter(array $numbers, RecordingSmsSender $sender): SmsPresenter {
         $users = new SmsUsers($numbers);
         $ap = new class ($numbers) extends Model\AP {
+            /** @param array<array-key, string> $numbers */
             public function __construct(private array $numbers) {
             }
 
-            public function getAP($id) {
-                return new class ($this->numbers) {
+            public function getAP($id): ActiveRow {
+                return new class ($this->numbers) extends ActiveRow {
+                    /** @param array<array-key, string> $numbers */
                     public function __construct(private array $numbers) {
                     }
 
-                    public function related($relation): self {
-                        return $this;
-                    }
+                    public function related(string $key, ?string $throughColumn = null): GroupedSelection {
+                        return new class ($this->numbers) extends GroupedSelection {
+                            /** @param array<array-key, string> $numbers */
+                            public function __construct(private array $numbers) {
+                            }
 
-                    public function where($condition): self {
-                        return $this;
-                    }
+                            /** @param string|array<array-key, mixed> $condition */
+                            public function where(string|array $condition, mixed ...$params): static {
+                                return $this;
+                            }
 
-                    public function fetchPairs($key, $value): array {
-                        return $this->numbers;
+                            /** @return array<array-key, string> */
+                            public function fetchPairs(string|int|\Closure|null $keyOrCallback = null, string|int|null $value = null): array {
+                                return $this->numbers;
+                            }
+                        };
                     }
                 };
             }
 
-            public function canViewOrEditAP($ApID, $Uzivatel) {
+            /** @param \Nette\Security\User $Uzivatel */
+            public function canViewOrEditAP($ApID, $Uzivatel): bool {
                 return true;
             }
         };

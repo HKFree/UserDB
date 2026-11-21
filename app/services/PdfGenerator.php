@@ -12,12 +12,16 @@ use DateInterval;
  */
 class PdfGenerator
 {
-    private $subnet;
+    private Model\Subnet $subnet;
 
     public function __construct(Model\Subnet $subnet) {
         $this->subnet = $subnet;
     }
 
+    /**
+     * @param \Nette\Database\Table\ActiveRow $uzivatel
+     * @param \Nette\Bridges\ApplicationLatte\Template $template
+     */
     public function generatePdf($uzivatel, $template): PdfResponse {
         $template->oblast = $uzivatel->Ap->Oblast->jmeno;
         $oblastid = $uzivatel->Ap->Oblast->id;
@@ -67,7 +71,8 @@ class PdfGenerator
         return $pdf;
     }
 
-    public function mesicName($indate, $addmonth) {
+    /** @param string|Nette\Utils\DateTime $indate */
+    public function mesicName($indate, int $addmonth): string {
         $date = new Nette\Utils\DateTime($indate);
         $date->add(new \DateInterval('P'.$addmonth.'M'));
         $datestr = $date->format('F');
@@ -78,7 +83,8 @@ class PdfGenerator
         return $datum;
     }
 
-    public function mesicDate($indate, $addmonth) {
+    /** @param string|Nette\Utils\DateTime $indate */
+    public function mesicDate($indate, int $addmonth): string {
         $date = new Nette\Utils\DateTime($indate);
         $date->add(new \DateInterval('P'.$addmonth.'M'));
         return $date->format('17.m.Y');

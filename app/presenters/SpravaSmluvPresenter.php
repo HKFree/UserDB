@@ -10,8 +10,8 @@ class SpravaSmluvPresenter extends BasePresenter
 {
     public string $smlouva_id;
 
-    protected $smlouva;
-    protected $podpis;
+    protected Model\Smlouva $smlouva;
+    protected Model\PodpisSmlouvy $podpis;
 
     public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis) {
         $this->smlouva = $smlouva;
@@ -19,7 +19,8 @@ class SpravaSmluvPresenter extends BasePresenter
     }
 
     // Zkontroluje ze jsme dostali ID a existuje smlouva s timto ID
-    private function idAndContractExists($contract_id) {
+    /** @param int|string|null $contract_id */
+    private function idAndContractExists($contract_id): void {
         if (
             !(isset($contract_id) && $this->smlouva->find($contract_id))
         ) {
@@ -36,7 +37,7 @@ class SpravaSmluvPresenter extends BasePresenter
         // TODO: Dodelat tuto logiku
     }
 
-    public function renderShow() {
+    public function renderShow(): void {
         $contract_id = $this->getParameter('id');
         $this->idAndContractExists($contract_id);
         $this->userCanView($contract_id);
@@ -50,7 +51,7 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->template->podpisy = $podpisy;
     }
 
-    public function actionhandleDownload() {
+    public function actionhandleDownload(): void {
         $contract_id = $this->getParameter('id');
         $this->idAndContractExists($contract_id);
         $this->userCanView($contract_id);
@@ -76,7 +77,7 @@ class SpravaSmluvPresenter extends BasePresenter
         return \Nette\Utils\DateTime::from($timestamp);
     }
 
-    public function actionCancelContract() {
+    public function actionCancelContract(): void {
         // TODO: Logování změn
 
         $contract_id = $this->getParameter('id');
@@ -101,7 +102,7 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->redirect('SpravaSmluv:show');
     }
 
-    public function actionUpdateNote() {
+    public function actionUpdateNote(): void {
         // TODO: Logování změn
 
         $request = $this->getHttpRequest();

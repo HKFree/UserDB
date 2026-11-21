@@ -6,7 +6,7 @@ use Nette;
 
 class RequestDruzstvoContract
 {
-    private $connection;
+    private Nette\Database\Connection $connection;
     public function __construct(Nette\Database\Connection $connection) {
         $this->connection = $connection;
     }
@@ -24,7 +24,8 @@ class RequestDruzstvoContract
         error_log("RUN: [$cmd2]", );
         proc_close(proc_open($cmd2, array(), $foo));
 
-        return $newId;
+        // Nette returns the generated ID as a string; this service exposes an integer ID.
+        return (int) $newId;
     }
 
 }

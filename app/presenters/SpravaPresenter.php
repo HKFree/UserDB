@@ -9,27 +9,27 @@ use App\Model;
  */
 class SpravaPresenter extends BasePresenter
 {
-    private $uzivatel;
-    private $ap;
+    private Model\Uzivatel $uzivatel;
+    private Model\AP $ap;
 
-    private $googleMapsApiKey;
+    private ?string $googleMapsApiKey = null;
 
     public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap) {
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
     }
 
-    public function setGoogleMapsApiKey($googleMapsApiKey) {
+    public function setGoogleMapsApiKey(?string $googleMapsApiKey): void {
         $this->googleMapsApiKey = $googleMapsApiKey;
     }
 
-    public function actionLogout() {
+    public function actionLogout(): void {
         $this->getUser()->logout();
         header("Location: https://userdb.hkfree.org/Shibboleth.sso/Logout?return=https://idp.hkfree.org/idp/logout?return=http://www.hkfree.org");
         die();
     }
 
-    public function renderNastroje() {
+    public function renderNastroje(): void {
         $this->template->canApproveCC = $this->jeVV();
         $this->template->canSeeMailList = $this->jeVV();
         $this->template->canCreateArea = $this->jeVVneboTECH();
@@ -46,11 +46,12 @@ class SpravaPresenter extends BasePresenter
         return $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
     }
 
-    public function actionShow($id) {
+    /** @param int|string|null $id */
+    public function actionShow($id): void {
         $this->redirect('Uzivatel:show', array('id' => $id));
     }
 
-    public function renderMapa() {
+    public function renderMapa(): void {
         $aps = $this->ap->findAll();
         $povoleneAp = [];
         foreach ($aps as $ap) {

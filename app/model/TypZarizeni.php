@@ -14,7 +14,8 @@ class TypZarizeni extends Table
     */
     protected $tableName = 'TypZarizeni';
 
-    public function getTypyZarizeni() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getTypyZarizeni(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 }

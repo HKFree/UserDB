@@ -23,6 +23,7 @@ final class WebhookDigiSign
 {
     public static WebhookEnvelopes $envelopes;
 
+    /** @param array{access_key: string, secret_key: string} $options */
     public function __construct(array $options) {
         Assert::same(['access_key' => 'test-only', 'secret_key' => 'test-only'], $options);
     }
@@ -69,6 +70,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
         $GLOBALS['container'] = $this->container;
     }
 
+    /** @return list<array{string|null, bool}> */
     public function membershipCases(): array {
         return [[null, false], ['SO', true], ['ZSO', true], ['expired', false]];
     }

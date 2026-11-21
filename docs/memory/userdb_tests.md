@@ -53,11 +53,19 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 
 - `BasePresenter::startup()` přihlašuje při každém požadavku z `$_SERVER['HTTP_UID']`; role bere
   `Authenticator` z tabulky `SpravceOblasti`. Předem přihlášený uživatel se přepíše.
+- `IPresenterFactory::createPresenter()` nastaví závislosti, ale jméno presenteru nastavuje až `Presenter::run()`.
+  Při přímém testování metody, která vytváří odkazy, nejprve použít `setParent(null, 'JménoPresenteru')`, jinak
+  `LinkGenerator` selže na `Helpers::splitName(null)`. Ověřeno 21. 11. 2026 v Nette Application 3.2.6 a testu
+  místního sestavení odkazů Wewimo bez síťového požadavku.
 - Formulář nebo signál bez cookie `_nss` se neprovede a presenter jen přesměruje na sebe. Test, který ověří pouze
   typ odpovědi, by prošel falešně; vždy ověřovat cíl přesměrování nebo vedlejší účinek.
 - `Nette\Http\Response` je `final` a `ApiPresenter` vyžaduje přímo tuto třídu, nejde ji nahradit. Hlavičky nejsou
   v CLI čitelné (`WWW-Authenticate` ověřit nelze) a stavový kód je globální pro proces: bez resetu zůstane po
   jedné odpovědi 401 i u dalších.
+- `PresenterRunner` nepředává vzdálenou IP, ale sloupec auditu mobilní aplikace `AplikaceLog.ip` nepřijímá `null`.
+  Pro testování těchto větví vytvořit kontejner přes `TestEnvironment::container()` s vlastním `Http\Request`
+  a testovací `remoteAddress`. Ověřeno 21. 11. 2026 v `ApiTypesPresenterTest` včetně chybějícího tokenu,
+  přihlášení a auditního zápisu; žádný HTTP požadavek se neposílá.
 - Po jakémkoliv výstupu selže nastavení stavového kódu i session na „headers already sent“. `bootstrap.php`
   proto hned zapíná output buffering.
 - `flashMessage()` startuje skutečnou PHP session. V testech je session i úložiště přihlášení v paměti.

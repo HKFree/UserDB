@@ -17,6 +17,7 @@ final class PermissionMemberMessagesPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
+    /** @return array<string, array{string, string}> */
     public function messageCases(): array {
         $cases = [];
         foreach (['email', 'emailall', 'sms', 'smsall'] as $action) {

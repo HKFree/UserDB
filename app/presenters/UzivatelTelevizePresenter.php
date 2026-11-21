@@ -5,6 +5,7 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Utils\ArrayHash;
 use App\Components;
 
 /**
@@ -12,11 +13,12 @@ use App\Components;
  */
 class UzivatelTelevizePresenter extends BasePresenter
 {
-    private $uzivatel;
-    private $uzivatelTelevize;
-    private $parameters;
+    private Model\Uzivatel $uzivatel;
+    private Model\UzivatelTelevize $uzivatelTelevize;
+    private Model\Parameters $parameters;
+    /** @var \App\Services\CryptoSluzba|null */
     protected $cryptosvc;
-    private $connection;
+    private Nette\Database\Connection $connection;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
@@ -33,7 +35,7 @@ class UzivatelTelevizePresenter extends BasePresenter
         $this->connection = $connection;
     }
 
-    public function renderShow() {
+    public function renderShow(): void {
         $uid = $this->getParameter('id');
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $this->template->u = $uzivatel;
@@ -53,6 +55,10 @@ class UzivatelTelevizePresenter extends BasePresenter
         $this->template->televizeReportRows = $uzivatel->related('UzivatelTelevizeReport')->order('rok, mesic');
     }
 
+    /**
+     * @param int|string|null $uid
+     * @return int|float|numeric-string
+     */
     private function cena($uid) {
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
@@ -76,14 +82,15 @@ class UzivatelTelevizePresenter extends BasePresenter
         return $form;
     }
 
-    public function renderEdit() {
+    public function renderEdit(): void {
         $uid = $this->getParameter('id');
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $this->template->u = $uzivatel;
         $this->template->televize_cena = $this->cena($uid);
     }
 
-    private function formSucceeded(Form $form, $data): void {
+    /** @param ArrayHash<mixed> $data */
+    private function formSucceeded(Form $form, ArrayHash $data): void {
         $uid = $this->getParameter('id');
 
         $this->connection->query(

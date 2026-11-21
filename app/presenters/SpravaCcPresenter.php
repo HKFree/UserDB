@@ -7,16 +7,17 @@ use Nette\Application\UI\Form;
 use Nette\Forms\Container;
 use Nette\Mail\Message;
 use Nette\Forms\Controls\SubmitButton;
+use Nette\Utils\ArrayHash;
 
 /**
  * Sprava presenter.
  */
 class SpravaCcPresenter extends SpravaPresenter
 {
-    private $cestneClenstviUzivatele;
-    private $uzivatel;
-    private $platneCC;
-    private $ap;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
+    private Model\Uzivatel $uzivatel;
+    private Model\cc $platneCC;
+    private Model\AP $ap;
 
     public function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\AP $ap) {
         $this->cestneClenstviUzivatele = $cc;
@@ -25,10 +26,10 @@ class SpravaCcPresenter extends SpravaPresenter
         $this->ap = $ap;
     }
 
-    public function renderPrehledcc() {
+    public function renderPrehledcc(): void {
     }
 
-    protected function createComponentGrid($name) {
+    protected function createComponentGrid(string $name): void {
         $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
 
         $grid = new \Grido\Grid($this, $name);
@@ -55,7 +56,7 @@ class SpravaCcPresenter extends SpravaPresenter
                 ->setIcon('eye-open');
     }
 
-    public function renderSchvalovanicc() {
+    public function renderSchvalovanicc(): void {
         /*** clear old registration files ***/
         foreach (glob(sys_get_temp_dir()."/registrace*") as $file) {
             /*** if file is 7 days old then delete it ***/
@@ -74,7 +75,7 @@ class SpravaCcPresenter extends SpravaPresenter
         $this->template->uzivatele = $this->uzivatel->findBy(array("id" => $uzivatele));
     }
 
-    protected function createComponentSpravaCCForm() {
+    protected function createComponentSpravaCCForm(): Form {
         $form = new Form($this, "spravaCCForm");
 
         $rights = $form->addDynamic('rights', function (Container $right) {
@@ -117,8 +118,9 @@ class SpravaCcPresenter extends SpravaPresenter
 
     /**
     * Schválení čestného členství
+    * @param ArrayHash<mixed>&object{rights: ArrayHash<ArrayHash<mixed>>} $values
     */
-    public function spravaCCFormSucceded($form, $values) {
+    public function spravaCCFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->jeVV());
 
         $log = array();

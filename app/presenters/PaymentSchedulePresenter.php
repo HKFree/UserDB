@@ -5,12 +5,13 @@ namespace App\Presenters;
 use App\Model;
 use App\Services;
 
+/** @property-read \Nette\Bridges\ApplicationLatte\Template $template */
 class PaymentSchedulePresenter extends BasePresenter
 {
-    private $uzivatel;
-    private $parameters;
-    private $mailService;
-    private $cestneClenstviUzivatele;
+    private Model\Uzivatel $uzivatel;
+    private Model\Parameters $parameters;
+    private Services\MailService $mailService;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
     public function __construct(
         Services\MailService $mailsvc,
         Model\Parameters $parameters,
@@ -23,7 +24,7 @@ class PaymentSchedulePresenter extends BasePresenter
         $this->cestneClenstviUzivatele = $cc;
     }
 
-    private function computeTemplateParams() {
+    private function computeTemplateParams(): void {
         $uid = $this->getParameter('id');
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
@@ -43,7 +44,7 @@ class PaymentSchedulePresenter extends BasePresenter
         if ($televizeRow?->objednana == 1) {
             array_push($pravidelne_mesicni_platby, [
                 'Televize - START balíček SledovaniTV',
-                $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV()
+                $televizeRow->cena
             ]);
         }
 
@@ -82,17 +83,17 @@ class PaymentSchedulePresenter extends BasePresenter
     }
 
     /** Rozpis plateb ukazuje detail člena jen tomu, kdo smí člena upravovat */
-    private function vyzadujOpravneniKClenovi() {
+    private function vyzadujOpravneniKClenovi(): void {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
         $this->vyzadujOpravneni($uzivatel && $this->smiUpravitUzivatele($uzivatel));
     }
 
-    public function renderShow() {
+    public function renderShow(): void {
         $this->vyzadujOpravneniKClenovi();
         $this->computeTemplateParams();
     }
 
-    public function actionSendPaymentScheduleEmail() {
+    public function actionSendPaymentScheduleEmail(): void {
         $this->vyzadujOpravneniKClenovi();
         $uid = $this->getParameter('id');
 

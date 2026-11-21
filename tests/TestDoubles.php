@@ -25,13 +25,16 @@ final class RecordingMailer implements Mailer
 
 final class RecordingSmsSender extends Services\SmsSender
 {
+    /** @var list<array{HkfIdentity, array<array-key, string>, string}> */
     public array $calls = [];
-    public $result = ['status' => Services\SmsSender::STATUS_OK, 'msg' => 'Recorded'];
+    /** @var array{status: int, msg: string|false|null} */
+    public array $result = ['status' => Services\SmsSender::STATUS_OK, 'msg' => 'Recorded'];
 
     public function __construct() {
     }
 
-    public function sendSms(HkfIdentity $senderIdentity, array $recipientMsisdns, string $message) {
+    /** @param array<array-key, string> $recipientMsisdns */
+    public function sendSms(HkfIdentity $senderIdentity, array $recipientMsisdns, string $message): array {
         $this->calls[] = [$senderIdentity, $recipientMsisdns, $message];
         return $this->result;
     }
@@ -39,11 +42,13 @@ final class RecordingSmsSender extends Services\SmsSender
 
 final class RecordingMexSmsSender extends Services\MexSmsSender
 {
+    /** @var list<array{array<array-key, string>, string}> */
     public array $calls = [];
 
     public function __construct() {
     }
 
+    /** @param array<array-key, string> $bnumbers */
     public function sendSMS(array $bnumbers, string $text): void {
         $this->calls[] = [$bnumbers, $text];
     }

@@ -16,7 +16,11 @@ class Uzivatel extends Table
     */
     protected $tableName = 'Uzivatel';
 
-    public function getSeznamSpravcuUzivatele($id_uzivatel) {
+    /**
+     * @param int|string $id_uzivatel
+     * @return list<Nette\Database\Row>
+     */
+    public function getSeznamSpravcuUzivatele($id_uzivatel): array {
         return $this->getConnection()->query('SELECT SO . *
 FROM  `Uzivatel` U
 LEFT JOIN Ap A ON U.Ap_id = A.id
@@ -27,11 +31,13 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                         ->fetchAll();
     }
 
-    public function getSeznamUzivatelu() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getSeznamUzivatelu(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 
-    public function getFormatovanySeznamNezrusenychUzivatelu() {
+    /** @return array<int, string> */
+    public function getFormatovanySeznamNezrusenychUzivatelu(): array {
         $vsichni = $this->findAll()->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->where('systemovy=0')->fetchAll();
         $uss = array();
         foreach ($vsichni as $uzivatel) {
@@ -40,12 +46,18 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return ($uss);
     }
 
-    public function getUsersForMailingList() {
+    /** @return array<array-key, Nette\Database\Table\ActiveRow> */
+    public function getUsersForMailingList(): array {
         $vsichni = $this->findAll()->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->where('email_invalid=0')->where('systemovy=0')->fetchAll();
         return ($vsichni);
     }
 
-    public function findUsersFromOtherAreasByAreaId($referentialApId, $subnety) {
+    /**
+     * @param int|string $referentialApId
+     * @param iterable<Nette\Database\Table\ActiveRow> $subnety
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function findUsersFromOtherAreasByAreaId($referentialApId, iterable $subnety): Nette\Database\Table\Selection {
         $uids = array();
         foreach ($subnety as $subnet) {
             list($network, $cidr) = explode("/", $subnet->subnet);
@@ -73,7 +85,12 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return ($this->findBy(array('id' => 0)));
     }
 
-    public function findUsersIdsFromOtherAreasByAreaId($referentialApId, $subnety) {
+    /**
+     * @param int|string $referentialApId
+     * @param iterable<Nette\Database\Table\ActiveRow> $subnety
+     * @return list<int>
+     */
+    public function findUsersIdsFromOtherAreasByAreaId($referentialApId, iterable $subnety): array {
         $uids = array();
         foreach ($subnety as $subnet) {
             list($network, $cidr) = explode("/", $subnet->subnet);
@@ -96,7 +113,8 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return ($uids);
     }
 
-    public function getNumberOfActivations() {
+    /** @return list<Nette\Database\Row> */
+    public function getNumberOfActivations(): array {
         $activationsCount = $this->getConnection()->query("SELECT COUNT(id) as users
         , MONTH(datum) as month
         , YEAR(datum) as year
@@ -109,7 +127,11 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return $activationsCount;
     }
 
-    public function findUserByFulltext($search, $Uzivatel) {
+    /**
+     * @param int|string $search
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>|array<array-key, Nette\Database\Table\ActiveRow>
+     */
+    public function findUserByFulltext($search, Nette\Security\User $Uzivatel): Nette\Database\Table\Selection|array {
         //mobil a email pouze pro ty co maji prava
         // Do not let MariaDB convert text such as "7name@example.org" to a numeric ID.
         $searchId = ctype_digit((string) $search) ? $search : null;
@@ -182,11 +204,16 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return ($this->findBy(array('id' => 0)));
     }
 
-    public function getSeznamUzivateluZAP($idAP) {
+    /**
+     * @param int|string $idAP
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function getSeznamUzivateluZAP($idAP): Nette\Database\Table\Selection {
         return ($this->findBy(array('Ap_id' => $idAP)));
     }
 
-    public function getUzivatel($id) {
+    /** @param int|string $id */
+    public function getUzivatel($id): ?Nette\Database\Table\ActiveRow {
         return ($this->find($id));
     }
 
@@ -202,7 +229,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
     * Note: the $add_dashes option will increase the length of the password by
     * floor(sqrt(N)) characters.
     */
-    public function generateStrongPassword($length = 9, $add_dashes = false, $available_sets = 'lud') {
+    public function generateStrongPassword(int $length = 9, bool $add_dashes = false, string $available_sets = 'lud'): string {
         $sets = array();
         if (strpos($available_sets, 'l') !== false) {
             $sets[] = 'abcdefghjkmnpqrstuvwxyz';
@@ -245,14 +272,16 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         return $dash_str;
     }
 
-    public function generateStrongHash($password) {
+    /** @param string|null $password */
+    public function generateStrongHash($password): string {
         return (hash('sha256', $password));
     }
 
-    public function generateWeakHash($password) {
+    public function generateWeakHash(string $password): string {
         return (crypt($password, 'hk'));
     }
 
+    /** @return int|null */
     public function getNewID() {
         return $this->getConnection()->query('SELECT t1.id+1 AS Free
 FROM Uzivatel AS t1
@@ -261,7 +290,8 @@ WHERE t2.id IS NULL AND t1.id>7370
 ORDER BY t1.id LIMIT 1')->fetchField();
     }
 
-    public function getDuplicateEmailArea($email, $id) {
+    /** @param int|string $id */
+    public function getDuplicateEmailArea(string $email, $id): ?string {
         $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetch();
         if ($existujici) {
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
@@ -269,7 +299,8 @@ ORDER BY t1.id LIMIT 1')->fetchField();
         return null;
     }
 
-    public function getDuplicatePhoneArea($telefon, $id) {
+    /** @param int|string $id */
+    public function getDuplicatePhoneArea(string $telefon, $id): ?string {
         $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetch();
         if ($existujici) {
             return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
@@ -277,7 +308,8 @@ ORDER BY t1.id LIMIT 1')->fetchField();
         return null;
     }
 
-    public function nazevUzivatele($id) {
+    /** @param int|string $id */
+    public function nazevUzivatele($id): ?string {
         $uzivatel = $this->find($id);
 
         return $uzivatel->TypPravniFormyUzivatele->text == 'PO'

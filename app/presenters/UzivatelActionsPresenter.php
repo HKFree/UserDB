@@ -9,14 +9,16 @@ use Tracy\Debugger;
 
 /**
  * Uzivatel actions presenter.
+ * @property-read Nette\Bridges\ApplicationLatte\Template $template
+ * @method Nette\Bridges\ApplicationLatte\Template createTemplate(?string $class = null)
  */
 class UzivatelActionsPresenter extends UzivatelPresenter
 {
-    private $parameters;
-    private $accountActivation;
-    private $uzivatel;
-    private $pdfGenerator;
-    private $mailService;
+    private Model\Parameters $parameters;
+    private Model\AccountActivation $accountActivation;
+    private Model\Uzivatel $uzivatel;
+    private Services\PdfGenerator $pdfGenerator;
+    private Services\MailService $mailService;
 
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
 
@@ -38,7 +40,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->cryptosvc = $cryptosvc;
     }
 
-    public function actionMoneyActivate() {
+    public function actionMoneyActivate(): void {
         $id = $this->getParameter('id');
         if ($id) {
             if ($this->accountActivation->activateAccount($this->getUser(), $id)) {
@@ -49,7 +51,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionMoneyReactivate() {
+    public function actionMoneyReactivate(): void {
         $id = $this->getParameter('id');
         if ($id) {
             $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
@@ -61,7 +63,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionMoneyDeactivate() {
+    public function actionMoneyDeactivate(): void {
         $id = $this->getParameter('id');
         if ($id) {
             if ($this->accountActivation->deactivateAccount($this->getUser(), $id)) {
@@ -72,7 +74,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionExportPdf() {
+    public function actionExportPdf(): void {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
@@ -81,7 +83,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             }
         }
     }
-    public function actionSendRegActivation() {
+    public function actionSendRegActivation(): void {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 $hash = base64_encode($uzivatel->id . '-' . md5($this->parameters->salt . $uzivatel->zalozen));
@@ -109,7 +111,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionExportAndSendRegForm() {
+    public function actionExportAndSendRegForm(): void {
         if ($this->getParameter('id')) {
             if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
                 if ($uzivatel->spolek == 0) {
@@ -130,19 +132,19 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionHandleSubscriberContractPreview() {
+    public function actionHandleSubscriberContractPreview(): void {
         $user_id = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($user_id);
 
         $pdfData = \App\Services\GeneratorSmlouvy::nahledUcastnickeSmlouvy($uzivatel);
-        $this->sendResponse(new Nette\Application\Responses\CallbackResponse(function ($request, $response) use ($pdfData): void {
+        $this->sendResponse(new Nette\Application\Responses\CallbackResponse(function (Nette\Http\IRequest $request, Nette\Http\IResponse $response) use ($pdfData): void {
             $response->setContentType('application/pdf');
             $response->setHeader('Content-Disposition', 'inline; filename="contract-preview.pdf"');
             echo $pdfData;
         }));
     }
 
-    public function actionHandleSubscriberContract() {
+    public function actionHandleSubscriberContract(): void {
         // TODO: Logování změn
 
         if (!$this->getParameter('id')) {
@@ -165,7 +167,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 
-    public function actionSendUserEmail() {
+    public function actionSendUserEmail(): void {
         $uid = $this->getParameter('id');
         $variant = $this->getParameter('variant');
         $uzivatel =  $this->uzivatel->find($uid);

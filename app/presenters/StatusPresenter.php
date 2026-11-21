@@ -12,13 +12,14 @@ use Tracy\Debugger;
  */
 class StatusPresenter extends BasePresenter
 {
-    private $status;
+    private Model\Status $status;
 
     public function __construct(Model\Status $status) {
         $this->status = $status;
     }
 
-    public function formatujInterval($i) {
+    /** @param int|float|numeric-string $i */
+    public function formatujInterval($i): string {
         if ($i < 60) {
             return ($i . " sekund");
         } elseif ($i < (60 * 60)) {
@@ -30,7 +31,7 @@ class StatusPresenter extends BasePresenter
         }
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $this->template->problemoveOblasti = $this->status->getProblemoveAP();
         $this->template->addFilter('interval', [$this, "formatujInterval"]);
     }

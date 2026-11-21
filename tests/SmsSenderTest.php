@@ -14,6 +14,7 @@ namespace Test {
     use App\Model\AwegUser;
     use App\Model\HkfIdentity;
     use App\Services\SmsSender;
+    use Nette\Database\Table\ActiveRow;
     use Tester\Assert;
     use Tester\TestCase;
 
@@ -30,8 +31,16 @@ namespace Test {
         public function __construct(private bool $exists = true) {
         }
 
-        public function getAwegUser($uid): \stdClass|false {
-            return $this->exists ? (object) ['aweg_name' => 'test-user'] : false;
+        public function getAwegUser($uid): ActiveRow|false {
+            if (!$this->exists) {
+                return false;
+            }
+            return new class () extends ActiveRow {
+                public string $aweg_name = 'test-user';
+
+                public function __construct() {
+                }
+            };
         }
     }
 

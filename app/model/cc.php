@@ -15,17 +15,23 @@ class cc extends Table
     */
     protected $tableName = 'cc';
 
-    public function getCC() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getCC(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 
-    public function getCCWithNamesVV() {
+    /** @return list<Nette\Database\Row> */
+    public function getCCWithNamesVV(): array {
         return $this->getConnection()
             ->query("SELECT cc_nahled.*, CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni) as name, Ap.jmeno as ap FROM cc_nahled LEFT JOIN Uzivatel ON Uzivatel.id = cc_nahled.id LEFT JOIN Ap ON Uzivatel.Ap_id = Ap.id")
             ->fetchAll();
     }
 
-    public function getCCWithNames($userId) {
+    /**
+     * @param int|string $userId
+     * @return list<Nette\Database\Row>
+     */
+    public function getCCWithNames($userId): array {
         return $this->getConnection()->query("SELECT cc_nahled.*,Ap.jmeno as ap, "
                 . "CASE WHEN cc_nahled.id IN "
                 . "         (SELECT Uzivatel.id FROM Uzivatel WHERE Ap_id IN "

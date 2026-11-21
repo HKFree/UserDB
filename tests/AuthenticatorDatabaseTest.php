@@ -14,6 +14,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 final class AuthenticatorDatabaseTest extends DatabaseTestCase
 {
+    /** @var array<string, mixed> */
     private array $savedServer;
     private ActiveRow $area;
     private ActiveRow $member;
@@ -60,6 +61,7 @@ final class AuthenticatorDatabaseTest extends DatabaseTestCase
         Assert::same(['SO-' . $this->area->id], $identity->getRoles());
     }
 
+    /** @return list<array{bool, bool}> */
     public function inactiveRoleCases(): array {
         return [
             [true, false],
@@ -83,6 +85,7 @@ final class AuthenticatorDatabaseTest extends DatabaseTestCase
         );
     }
 
+    /** @return array<string, array{list<string>}> */
     public function missingHeaderCases(): array {
         return [
             'name' => [['HTTP_GIVENNAME']],

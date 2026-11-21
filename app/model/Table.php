@@ -26,7 +26,7 @@ abstract class Table
      */
     protected $tableName;
 
-    protected $loginUID = 797;
+    protected int $loginUID = 797;
 
     /**
      * @param Nette\Database\Context $db
@@ -44,9 +44,9 @@ abstract class Table
 
     /**
      * Vrací celou tabulku z databáze
-     * @return \Nette\Database\Table\Selection
+     * @return \Nette\Database\Table\Selection<\Nette\Database\Table\ActiveRow>
      */
-    protected function getTable() {
+    protected function getTable(): Nette\Database\Table\Selection {
         return $this->connection->table($this->tableName);
     }
 
@@ -54,15 +54,15 @@ abstract class Table
      * Vrací spojení do databáze (context)
      * @return \Nette\Database\Context
      */
-    protected function getConnection() {
+    protected function getConnection(): Context {
         return $this->connection;
     }
 
     /**
      * Vrací všechny záznamy z databáze
-     * @return \Nette\Database\Table\Selection
+     * @return \Nette\Database\Table\Selection<\Nette\Database\Table\ActiveRow>
      */
-    public function findAll() {
+    public function findAll(): Nette\Database\Table\Selection {
         return $this->getTable();
     }
 
@@ -70,51 +70,59 @@ abstract class Table
      * Vrací vyfiltrované záznamy na základě vstupního pole
      * (pole array('name' => 'David') se převede na část SQL dotazu WHERE name = 'David')
      *
-     * @param array $by
+     * @param array<array-key, mixed> $by
      *
-     * @return \Nette\Database\Table\Selection
+     * @return \Nette\Database\Table\Selection<\Nette\Database\Table\ActiveRow>
      */
-    public function findBy(array $by) {
+    public function findBy(array $by): Nette\Database\Table\Selection {
         return $this->getTable()->where($by);
     }
 
     /**
      * To samé jako findBy akorát vrací vždy jen jeden záznam
      *
-     * @param array $by
+     * @param array<array-key, mixed> $by
      *
-     * @return \Nette\Database\Table\ActiveRow|FALSE
+     * @return \Nette\Database\Table\ActiveRow|null
      */
-    public function findOneBy(array $by) {
+    public function findOneBy(array $by): ?Nette\Database\Table\ActiveRow {
         return $this->findBy($by)->limit(1)->fetch();
     }
 
     /**
      * Vrací záznam s daným primárním klíčem
      *
-     * @param int $id
+     * @param int|string $id
      *
-     * @return \Nette\Database\Table\ActiveRow|FALSE
+     * @return \Nette\Database\Table\ActiveRow|null
      */
-    public function find($id) {
+    public function find($id): ?Nette\Database\Table\ActiveRow {
         return $this->getTable()->get($id);
     }
     /**
      * Smaže záznam/y
      *
-     * @param array $by
+     * @param array<array-key, mixed> $by
      *
      * @return int Počet smazaných řádků
      */
-    public function delete(array $by) {
+    public function delete(array $by): int {
         return $this->getTable()->where($by)->delete();
     }
 
-    public function insert($data) {
+    /**
+     * @param iterable<array-key, mixed> $data
+     * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
+     */
+    public function insert(iterable $data): Nette\Database\Table\ActiveRow|array|int|bool {
         return ($this->getTable()->insert($data));
     }
 
-    public function update($id, $data) {
+    /**
+     * @param int|string $id
+     * @param iterable<array-key, mixed> $data
+     */
+    public function update($id, iterable $data): Nette\Database\Table\ActiveRow {
         $post = $this->find($id);
         $post->update($data);
         return ($post);

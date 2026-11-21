@@ -70,6 +70,16 @@ final class ContainerTest extends TestCase
         Assert::false(getenv('USERDB_LOCAL_PDF'));
     }
 
+    public function testAdministrationPresenterAcceptsMissingMapsKey(): void {
+        $container = TestEnvironment::container();
+        unset($container->parameters['env']['USERDB_GOOGLE_MAPS_KEY']);
+
+        // Preserve the existing warning; the missing key must not also cause a TypeError.
+        Assert::error(function () use ($container): void {
+            Assert::type(\App\Presenters\SpravaPresenter::class, $container->getService('SpravaPresenter'));
+        }, E_WARNING, 'Undefined array key "USERDB_GOOGLE_MAPS_KEY"');
+    }
+
     public function testContainersDoNotRetainTracyPanels(): void {
         $bar = Debugger::getBar();
         $panels = new \ReflectionProperty($bar, 'panels');

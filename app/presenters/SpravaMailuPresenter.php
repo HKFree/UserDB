@@ -12,17 +12,17 @@ use Tracy\Debugger;
  */
 class SpravaMailuPresenter extends SpravaPresenter
 {
-    private $uzivatel;
+    private Model\Uzivatel $uzivatel;
 
     public function __construct(Model\Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
     }
 
-    public function renderMailinglist() {
+    public function renderMailinglist(): void {
         $this->template->canViewOrEdit = $this->jeVV();
     }
 
-    protected function createComponentMailinglistGrid($name) {
+    protected function createComponentMailinglistGrid(string $name): void {
         $this->vyzadujOpravneni($this->jeVV()); // i export a stránkování gridu
 
         $grid = new \Grido\Grid($this, $name);

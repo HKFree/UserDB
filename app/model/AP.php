@@ -14,15 +14,21 @@ class AP extends Table
     */
     protected $tableName = 'Ap';
 
-    public function getAP($id) {
+    /** @param int|string|null $id */
+    public function getAP($id): ?Nette\Database\Table\ActiveRow {
         return ($this->find($id));
     }
 
-    public function findAP(array $by) {
+    /**
+     * @param array<array-key, mixed> $by
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function findAP(array $by): Nette\Database\Table\Selection {
         return ($this->findBy($by));
     }
 
-    public function canViewOrEditAP($ApID, $Uzivatel) {
+    /** @param int|string|null $ApID */
+    public function canViewOrEditAP($ApID, Nette\Security\User $Uzivatel): bool {
         //\Tracy\Debugger::barDump($ApID);
         //\Tracy\Debugger::barDump($Uzivatel);
         return $Uzivatel->isInRole('TECH')
@@ -32,11 +38,15 @@ class AP extends Table
            || $Uzivatel->isInRole('ZSO-'.$this->find($ApID)->Oblast_id);
     }
 
-    public function canViewOrEditAll($Uzivatel) {
+    public function canViewOrEditAll(Nette\Security\User $Uzivatel): bool {
         return $Uzivatel->isInRole('TECH') || $Uzivatel->isInRole('VV') || $Uzivatel->isInRole('KONTROLA');
     }
 
-    public function findAPByIP($search) {
+    /**
+     * @param string $search
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function findAPByIP($search): Nette\Database\Table\Selection {
         $completeMatchId = $this->getConnection()->query("SELECT Ap.id FROM Ap
                                             LEFT JOIN  IPAdresa ON Ap.id = IPAdresa.Ap_id
                                             WHERE (

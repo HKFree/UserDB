@@ -7,6 +7,7 @@ use App\Model;
 use Nette\Application\UI\Form;
 use Nette\Forms\Container;
 use Nette\Mail\Message;
+use Nette\Utils\ArrayHash;
 use App\Components;
 
 /**
@@ -14,13 +15,13 @@ use App\Components;
  */
 class UzivatelRightsCcPresenter extends UzivatelPresenter
 {
-    private $uzivatel;
-    private $ap;
-    private $spravceOblasti;
-    private $typSpravceOblasti;
-    private $cestneClenstviUzivatele;
-    private $typCestnehoClenstvi;
-    private $log;
+    private Model\Uzivatel $uzivatel;
+    private Model\AP $ap;
+    private Model\SpravceOblasti $spravceOblasti;
+    private Model\TypSpravceOblasti $typSpravceOblasti;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
+    private Model\TypCestnehoClenstvi $typCestnehoClenstvi;
+    private Model\Log $log;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
@@ -39,12 +40,12 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return $this->getUser()->isInRole('VV');
     }
 
-    public function renderEditrights() {
+    public function renderEditrights(): void {
         $this->template->canViewOrEdit = $this->smiMenitPrava();
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentUzivatelRightsForm() {
+    protected function createComponentUzivatelRightsForm(): Form {
         $typRole = $this->typSpravceOblasti->getTypySpravcuOblasti()->fetchPairs('id', 'text');
         $obl = $this->oblast->getSeznamOblasti()->fetchPairs('id', 'jmeno');
 
@@ -83,7 +84,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function validateRightsForm($form) {
+    /** @return 0|void */
+    public function validateRightsForm(Form $form) {
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
@@ -105,7 +107,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         }
     }
 
-    public function uzivatelRightsFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed>&object{rights: ArrayHash<ArrayHash<mixed>>} $values */
+    public function uzivatelRightsFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiMenitPrava());
 
         $log = array();
@@ -146,7 +149,10 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
     }
 
-    /** Čestné členství člena upravuje EXTSUPPORT nebo správce jeho AP */
+    /**
+     * Čestné členství člena upravuje EXTSUPPORT nebo správce jeho AP
+     * @param int|string|null $idUzivatele
+     */
     private function smiUpravitCc($idUzivatele): bool {
         $uzivatel = $this->uzivatel->getUzivatel($idUzivatele);
         return $uzivatel && ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()));
@@ -157,13 +163,13 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return $this->getUser()->isInRole('VV');
     }
 
-    public function renderEditcc() {
+    public function renderEditcc(): void {
         $this->template->canViewOrEdit = $this->smiUpravitCc($this->getParameter('id'));
         $this->template->canApprove = $this->smiSchvalitCc();
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentUzivatelCCForm() {
+    protected function createComponentUzivatelCCForm(): Form {
         $form = new Form($this, "uzivatelCCForm");
         $form->addHidden('id');
 
@@ -222,7 +228,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function uzivatelCCFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed>&object{rights: ArrayHash<ArrayHash<mixed>>} $values */
+    public function uzivatelCCFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiUpravitCc($values->id));
 
         $log = array();

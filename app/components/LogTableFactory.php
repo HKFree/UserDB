@@ -12,9 +12,9 @@ use App\Model;
  */
 class LogTableFactory
 {
-    private $ipAdresa;
-    private $subnet;
-    private $log;
+    private Model\IPAdresa $ipAdresa;
+    private Model\Subnet $subnet;
+    private Model\Log $log;
 
     public function __construct(Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\Log $log) {
         $this->ipAdresa = $ipAdresa;
@@ -22,7 +22,7 @@ class LogTableFactory
         $this->log = $log;
     }
 
-    public function create($presenter) {
+    public function create(\Nette\Application\UI\Presenter $presenter): LogTable {
         return new LogTable($presenter, $this->ipAdresa, $this->subnet, $this->log);
     }
 }

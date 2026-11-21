@@ -9,8 +9,8 @@ use App\Model;
 class UserLabelsComponent extends Control
 {
     private int $userId;
-    private $stitkyUzivatele;
-    private $stitky;
+    private Model\StitekUzivatele $stitkyUzivatele;
+    private Model\Stitek $stitky;
 
     public function __construct(Model\Stitek $stitky, Model\StitekUzivatele $stitkyUzivatele) {
         $this->stitky = $stitky;

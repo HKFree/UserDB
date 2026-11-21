@@ -17,6 +17,7 @@ final class PermissionApEditPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
+    /** @return list<array{string, string, bool}> */
     public function editCases(): array {
         return [
             ['cooperative', 'edit', false], ['support', 'edit', false], ['otherSo', 'edit', false],

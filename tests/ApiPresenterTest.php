@@ -19,6 +19,7 @@ final class ApiPresenterTest extends DatabaseTestCase
         Assert::same(['result' => 'UNAUTHORIZED: Missing HTTP basic username', 'resultNumeric' => -1], $result->json);
     }
 
+    /** @return list<array{string, string}> */
     public function invalidCredentialCases(): array {
         return [
             ['unknown key', '2099-12-31'],

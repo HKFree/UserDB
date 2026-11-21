@@ -31,6 +31,7 @@ class Status
         $this->oblast = $oblast;
     }
 
+    /** @return array<array-key, mixed>|string|int|float|bool|null */
     public function getPingNaIPAP() {
         $ip_k_pingnuti = array();
 
@@ -47,7 +48,8 @@ class Status
         return ($vysledek_pingu);
     }
 
-    public function getProblemoveAP() {
+    /** @return list<array{Nette\Database\Table\ActiveRow, list<array{Nette\Database\Table\ActiveRow, list<array{Nette\Database\Table\ActiveRow, int, mixed}>}>}> */
+    public function getProblemoveAP(): array {
         $vysledek_pingu = $this->getPingNaIPAP();
 
         $tmp_lookback_date = time() - 7 * 24 * 60 * 60;

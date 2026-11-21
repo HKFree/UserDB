@@ -11,6 +11,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 final class AdminerAccessTest extends TestCase
 {
+    /** @return list<array{array<string, string>, bool}> */
     public function addressCases(): array {
         return [
             [['REMOTE_ADDR' => '127.0.0.1'], true],
@@ -23,7 +24,10 @@ final class AdminerAccessTest extends TestCase
         ];
     }
 
-    /** @dataProvider addressCases */
+    /**
+     * @dataProvider addressCases
+     * @param array<string, string> $server
+     */
     public function testAccess(array $server, bool $allowed): void {
         // Isolate exit() and headers; a static asset reaches Adminer without login or database access.
         $code = '$_SERVER = ' . var_export($server + ['REQUEST_URI' => '/', 'REQUEST_METHOD' => 'GET', 'HTTP_HOST' => 'localhost'], true) . ';'

@@ -9,10 +9,10 @@ use App\Model;
  */
 class SmokepingPresenter extends ApiPresenter
 {
-    public $oblast;
-    private $uzivatel;
-    private $ipAdresa;
-    private $ap;
+    public Model\Oblast $oblast;
+    private Model\Uzivatel $uzivatel;
+    private Model\IPAdresa $ipAdresa;
+    private Model\AP $ap;
 
     public function __construct(Model\Oblast $oblast, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
         $this->oblast = $oblast;
@@ -21,7 +21,7 @@ class SmokepingPresenter extends ApiPresenter
         $this->ap = $ap;
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');
@@ -55,7 +55,7 @@ class SmokepingPresenter extends ApiPresenter
         $this->template->users_ips = $users_ips;
     }
 
-    public function renderCheck() {
+    public function renderCheck(): void {
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');

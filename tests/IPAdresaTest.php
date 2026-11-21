@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Test;
 
 use App\Model\IPAdresa;
+use Nette\Database\Table\ActiveRow;
 use Nette\Utils\Html;
 use Tester\Assert;
 
@@ -13,7 +14,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $_SERVER['HTTP_USER_AGENT'] = 'UserDB regression test';
 $model = (new \ReflectionClass(IPAdresa::class))->newInstanceWithoutConstructor();
-$ip = (object) [
+$ip = new class ([
     'ip_adresa' => '192.0.2.1',
     'hostname' => 'test',
     'mac_adresa' => '00:00:00:00:00:01',
@@ -27,7 +28,19 @@ $ip = (object) [
     'w_shoda' => 'test',
     'w_client_mac' => null,
     'popis' => 'Test IP',
-];
+]) extends ActiveRow {
+    /** @param array<string, mixed> $values */
+    public function __construct(private array $values) {
+    }
+
+    public function &__get(string $key): mixed {
+        return $this->values[$key];
+    }
+
+    public function __isset(string $key): bool {
+        return isset($this->values[$key]);
+    }
+};
 
 foreach ([null, '/wewimo'] as $link) {
     $table = Html::el('table');

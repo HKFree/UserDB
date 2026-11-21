@@ -15,8 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class UpdateLocationsCommand extends Command
 {
-    private $googleMapsApiKey;
-    private $uzivatelModel;
+    private string $googleMapsApiKey;
+    private Uzivatel $uzivatelModel;
 
     public function __construct(string $googleMapsApiKey, Uzivatel $uzivatelModel) {
         parent::__construct();
@@ -28,20 +28,21 @@ class UpdateLocationsCommand extends Command
         $this->addArgument('mode', InputArgument::OPTIONAL, 'normal nebo retry, retry zkusi krome pending adres znovu geokodovat adresy ve stavu approx nebo uknown', 'normal');
     }
 
-    protected function googleMapsGeocode($adresa) {
+    protected function googleMapsGeocode(string $adresa): \Psr\Http\Message\ResponseInterface {
         $client = new \GuzzleHttp\Client(['verify' => false]);
         return $client->request('GET', 'https://maps.googleapis.com/maps/api/geocode/json?key='.
             urlencode($this->googleMapsApiKey).
             '&address='.urlencode($adresa));
     }
 
-    protected function vugtkGeocode($adresa) {
+    protected function vugtkGeocode(string $adresa): \Psr\Http\Message\ResponseInterface {
         $client = new \GuzzleHttp\Client(['verify' => false]);
         return $client->request('GET', 'http://ags.cuzk.cz/arcgis/rest/services/RUIAN/Vyhledavaci_sluzba_nad_daty_RUIAN/MapServer/exts/GeocodeSOE/tables/1/find?f=json&text='.
             urlencode($adresa));
     }
 
-    private function krowToWgs($X, $Y, $H) {
+    /** @return array{lat: float, lon: float, h: float} */
+    private function krowToWgs(int|float $X, int|float $Y, int|float $H): array {
         $H = $H + 45;
 
         ///*Vypocet zemepisnych souradnic z rovinnych souradnic*/

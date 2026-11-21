@@ -7,15 +7,15 @@ use Nette\Http\Response;
 
 class UzivatelPresenter extends ApiPresenter
 {
-    private $uzivatel;
-    private $ipAdresa;
+    private \App\Model\Uzivatel $uzivatel;
+    private \App\Model\IPAdresa $ipAdresa;
 
     public function __construct(\App\Model\Uzivatel $uzivatel, \App\Model\IPAdresa $ipAdresa) {
         $this->uzivatel = $uzivatel;
         $this->ipAdresa = $ipAdresa;
     }
 
-    public function actionGetUzivatel(int $id) {
+    public function actionGetUzivatel(int $id): void {
         parent::forceMethod('GET');
 
         $uzivatel = $this->uzivatel->getUzivatel($id);
@@ -55,7 +55,7 @@ class UzivatelPresenter extends ApiPresenter
         ]));
     }
 
-    public function actionGetUzivatelbyIP(string $id) {
+    public function actionGetUzivatelbyIP(string $id): void {
         parent::forceMethod('GET');
 
         $ip = $this->ipAdresa->findIp(['ip_adresa' => $id, 'Ap_id' => null]);

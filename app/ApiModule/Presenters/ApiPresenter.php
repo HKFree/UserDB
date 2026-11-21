@@ -19,29 +19,31 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     /** @var \Nette\Http\Request */
     protected $httpRequest;
 
-    /** @var integer */
+    /** @var int|null */
     protected $keyApID;
 
     // to access these actions, only valid key is required;
     // no checks against AP-id and/or module restrictions is done regarding the API key
+    /** @var list<string> */
     protected $alwaysAllowedActions = ['Api:HealthCheck'];
 
-    public function injectHttpResponse(\Nette\Http\Response $httpResponse) {
+    public function injectHttpResponse(\Nette\Http\Response $httpResponse): void {
         $this->httpResponse = $httpResponse;
     }
 
-    public function injectHttpRequest(\Nette\Http\Request $httpRequest) {
+    public function injectHttpRequest(\Nette\Http\Request $httpRequest): void {
         $this->httpRequest = $httpRequest;
     }
 
-    public function injectApiKlicModel(\App\Model\ApiKlic $apiKlicModel) {
+    public function injectApiKlicModel(\App\Model\ApiKlic $apiKlicModel): void {
         $this->apiKlicModel = $apiKlicModel;
     }
 
-    /*
+    /**
      * Called by \Nette\Application\UI\Presenter!
+     * This hook only forwards the reflection to Nette; keep its existing unrestricted input.
      */
-    public function checkRequirements($element): void {
+    public function checkRequirements(mixed $element): void {
         // due to CORS preflight test, we have to respond 200 OK (not 401) to OPTIONS request
         if ($this->httpRequest->getMethod() == 'OPTIONS') {
             $this->handleOptionsMethod();
@@ -97,6 +99,10 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
 
     // If function returns sensitive data, check whether API key has access!
     // Call before doing any action! parent::checkApID($apID);
+    /**
+     * @param int|string|null $requestedApId
+     * @return int|string|null
+     */
     protected function checkApID($requestedApId = null) {
         if ($requestedApId !== null) {
             // Check if key is restricted to an AP and does not match to requested AP
@@ -108,24 +114,24 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
         return $this->keyApID;
     }
 
-    protected function forceMethod($method) {
+    protected function forceMethod(string $method): void {
         if ($this->httpRequest->getMethod() != $method) {
             $this->httpResponse->setCode(Response::S405_METHOD_NOT_ALLOWED);
             $this->sendResponse(new JsonResponse(['result' => 'METHOD_NOT_ALLOWED: Use http method ' . $method, 'resultNumeric' => -1]));
         }
     }
 
-    public function handleOptionsMethod() {
+    public function handleOptionsMethod(): void {
         $this->sendResponse(new TextResponse(""));
     }
 
-    protected function sendForbidden($reason) {
+    protected function sendForbidden(string $reason): void {
         //throw new \Nette\Application\ForbiddenRequestException;
         $this->httpResponse->setCode(Response::S403_FORBIDDEN);
         $this->sendResponse(new JsonResponse(['result' => 'FORBIDDEN: '.$reason, 'resultNumeric' => -1]));
     }
 
-    protected function sendAuthRequired($reason) {
+    protected function sendAuthRequired(string $reason): void {
         $this->httpResponse->setCode(Response::S401_UNAUTHORIZED);
         $this->httpResponse->addHeader('WWW-Authenticate', 'Basic realm="UserDB API"');
         $this->sendResponse(new JsonResponse(['result' => 'UNAUTHORIZED: '.$reason, 'resultNumeric' => -1]));

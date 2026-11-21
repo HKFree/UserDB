@@ -9,10 +9,11 @@ use Tracy\Debugger;
 
 class IdsConnector
 {
-    private $idsUsername;
-    private $idsPassword;
-    private $idsUrl;
-    private $idsIpsWhitelist;
+    private string $idsUsername;
+    private string $idsPassword;
+    private string $idsUrl;
+    /** @var list<string> */
+    private array $idsIpsWhitelist;
 
     /**
      * Nedulezite a nevyladene (caste false-positive) typy udalosti:
@@ -79,11 +80,13 @@ class IdsConnector
         throw new \RuntimeException('Error getting IDS CSRF token');
     }
 
-    protected function getRange($daysBack): array {
+    /** @return array{range: array{'@timestamp': array{gte: string, lte: string}}} */
+    protected function getRange(int $daysBack): array {
         return ['range' => ['@timestamp' => ['gte' => 'now-' . $daysBack . 'd', 'lte' => 'now']]];
     }
 
-    private function getRelevantIndexes($prefix, $daysBack) {
+    /** @return list<string> */
+    private function getRelevantIndexes(string $prefix, int $daysBack): array {
         //
         $indexes = [];
         $date = new \DateTime();
@@ -97,7 +100,8 @@ class IdsConnector
         return $indexes;
     }
 
-    public function getEventsForIps(array $ips, $daysBack = 7, $limit = 1000) {
+    /** @param array<array-key, string> $ips */
+    public function getEventsForIps(array $ips, int $daysBack = 7, int $limit = 1000): mixed {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
 
@@ -135,7 +139,8 @@ class IdsConnector
         }
     }
 
-    public function getUniqueIpsFromPrivateSubnets($daysBack = 7, $limit = 2000) {
+    /** @return array<array-key, mixed> */
+    public function getUniqueIpsFromPrivateSubnets(int $daysBack = 7, int $limit = 2000): array {
         $client = $this->getElasticHttpClient();
         $indexes = implode(',', $this->getRelevantIndexes('logstash-alert-', $daysBack));
         $elasticResponse = $client->request(

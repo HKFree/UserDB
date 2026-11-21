@@ -6,9 +6,9 @@ use Nette\Application\Responses\JsonResponse;
 
 class DevicePresenter extends ApiPresenter
 {
-    private $ipadresa;
-    private $cryptosvc;
-    private $log;
+    private \App\Model\IPAdresa $ipadresa;
+    private \App\Services\CryptoSluzba $cryptosvc;
+    private \App\Model\Log $log;
 
     public function __construct(\App\Model\IPAdresa $ipadresa, \App\Services\CryptoSluzba $cryptosvc, \App\Model\Log $log) {
         $this->ipadresa = $ipadresa;
@@ -16,11 +16,12 @@ class DevicePresenter extends ApiPresenter
         $this->log = $log;
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $this->sendResponse(new JsonResponse(['result' => 'Method not implemented']));
     }
 
-    public function actionGetCredentials($id) {
+    /** @param string|null $id */
+    public function actionGetCredentials($id): void {
         $ip = $this->ipadresa->findIp(array('ip_adresa' => $id));
         if (!$ip) {
             $this->sendResponse(new JsonResponse(['result' => 'IP address not found', 'serverTime' => date("c")]));
@@ -32,7 +33,8 @@ class DevicePresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['ip' => $ip->ip_adresa, 'login' => $ip->login, 'heslo' => $this->getHeslo($ip)]));
     }
 
-    public function actionSetCredentials($id) {
+    /** @param string|null $id */
+    public function actionSetCredentials($id): void {
         parent::forceMethod("POST");
 
         $ip = $this->ipadresa->findIp(array('ip_adresa' => $id));
@@ -74,7 +76,7 @@ class DevicePresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'serverTime' => date("c")]));
     }
 
-    private function getHeslo($ip) {
+    private function getHeslo(\Nette\Database\Table\ActiveRow $ip): ?string {
         if ($ip->heslo_sifrovane == 1) {
             $decrypted = $this->cryptosvc->decrypt($ip->heslo);
             return ($decrypted);

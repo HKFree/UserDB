@@ -11,13 +11,16 @@ use Tracy\Debugger;
  */
 class UzivatelListPresenter extends BasePresenter
 {
-    /** @persistent */
+    /**
+     * @persistent
+     * @var int
+     */
     public $money = 0;
 
-    private $cestneClenstviUzivatele;
-    private $uzivatel;
-    private $ap;
-    private $tabulkaUzivatelu;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
+    private Model\Uzivatel $uzivatel;
+    private Model\AP $ap;
+    private Model\UzivatelListGrid $tabulkaUzivatelu;
 
     public function __construct(Model\UzivatelListGrid $ULGrid, Model\CestneClenstviUzivatele $cc, Model\Uzivatel $uzivatel, Model\AP $ap) {
         $this->cestneClenstviUzivatele = $cc;
@@ -26,7 +29,7 @@ class UzivatelListPresenter extends BasePresenter
         $this->tabulkaUzivatelu = $ULGrid;
     }
 
-    public function renderList() {
+    public function renderList(): void {
         // otestujeme, jestli máme id APčka a ono existuje
         if ($this->getParameter('id') && $apt = $this->ap->getAP($this->getParameter('id'))) {
             $id = $this->getParameter('id');
@@ -50,7 +53,7 @@ class UzivatelListPresenter extends BasePresenter
         $this->template->fullnotes = $this->getParameter("fullnotes", false);
     }
 
-    public function renderListall() {
+    public function renderListall(): void {
         $search = $this->getParameter('search', false);
         if (!$search) {
             $cestnych = count($this->cestneClenstviUzivatele->getListCC());
@@ -69,7 +72,7 @@ class UzivatelListPresenter extends BasePresenter
         $this->template->search = $this->getParameter('search', false);
     }
 
-    protected function createComponentGrid($name) {
+    protected function createComponentGrid(string $name): void {
         $this->tabulkaUzivatelu->getListOfUsersGrid(
             $this,
             $name,
@@ -81,7 +84,7 @@ class UzivatelListPresenter extends BasePresenter
         );
     }
 
-    protected function createComponentOthersGrid($name) {
+    protected function createComponentOthersGrid(string $name): void {
         $this->tabulkaUzivatelu->getListOfOtherUsersGrid(
             $this,
             $name,

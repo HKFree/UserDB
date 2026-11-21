@@ -18,6 +18,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
+    /** @return list<array{string}> */
     public function rightsCases(): array {
         return [['cooperative'], ['ownSo'], ['otherSo'], ['support'], ['tech'], ['vv']];
     }
@@ -39,6 +40,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         Assert::same(1, $this->database->table('SpravceOblasti')->where(['Uzivatel_id' => $target->id, 'TypSpravceOblasti_id' => $roleId])->count('*'));
     }
 
+    /** @return list<array{string, bool, bool}> */
     public function honoraryCases(): array {
         return [
             ['cooperative', false, false], ['otherSo', false, false], ['ownSo', true, false],

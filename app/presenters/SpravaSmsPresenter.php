@@ -4,6 +4,7 @@ namespace App\Presenters;
 
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Utils\ArrayHash;
 use App\Services\SmsSenderException;
 
 /**
@@ -11,20 +12,20 @@ use App\Services\SmsSenderException;
  */
 class SpravaSmsPresenter extends SpravaPresenter
 {
-    private $spravceOblasti;
+    private Model\SpravceOblasti $spravceOblasti;
 
-    private $komunikace;
+    private Model\Komunikace $komunikace;
 
     public function __construct(Model\SpravceOblasti $sob, Model\Komunikace $k) {
         $this->spravceOblasti = $sob;
         $this->komunikace = $k;
     }
 
-    public function renderSms() {
+    public function renderSms(): void {
         $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentSmsForm() {
+    protected function createComponentSmsForm(): Form {
         $form = new Form($this, "smsForm");
         $form->addHidden('id');
 
@@ -38,7 +39,8 @@ class SpravaSmsPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function smsFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function smsFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->jeVVneboTECH());
 
         if ($values->komu == 0) {
@@ -60,7 +62,8 @@ class SpravaSmsPresenter extends SpravaPresenter
         $this->redirect('Sprava:nastroje', array('id' => null));
     }
 
-    private function sendSMSAndValidate($uzivateleID, $message) {
+    /** @param array<array-key, int|string> $uzivateleID */
+    private function sendSMSAndValidate(array $uzivateleID, string $message): void {
         try {
             $pocetCisel = $this->komunikace->posliSMS($uzivateleID, $message);
             $this->flashMessage('SMS byla odeslána na ' . $pocetCisel . ' čísel.');

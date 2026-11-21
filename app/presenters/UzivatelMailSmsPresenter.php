@@ -5,6 +5,7 @@ namespace App\Presenters;
 use App\Model;
 use Nette\Application\UI\Form;
 use Nette\Mail\Message;
+use Nette\Utils\ArrayHash;
 use Nette\Utils\Validators;
 use App\Components;
 use App\Services\SmsSenderException;
@@ -14,9 +15,9 @@ use App\Services\SmsSenderException;
  */
 class UzivatelMailSmsPresenter extends UzivatelPresenter
 {
-    private $uzivatel;
-    private $ap;
-    private $komunikace;
+    private Model\Uzivatel $uzivatel;
+    private Model\AP $ap;
+    private Model\Komunikace $komunikace;
 
     public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, Model\Komunikace $k) {
         $this->uzivatel = $uzivatel;
@@ -35,12 +36,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $this->ap->getAP($this->getParameter('id')) && $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
     }
 
-    public function renderEmail() {
+    public function renderEmail(): void {
         $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentEmailForm() {
+    protected function createComponentEmailForm(): Form {
         $form = new Form($this, "emailForm");
         $form->addHidden('id');
 
@@ -70,7 +71,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function emailFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function emailFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiPsatClenovi());
         $idUzivatele = $values->id;
 
@@ -98,12 +100,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
     }
 
-    public function renderEmailall() {
+    public function renderEmailall(): void {
         $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
     }
 
-    protected function createComponentEmailallForm() {
+    protected function createComponentEmailallForm(): Form {
         $form = new Form($this, "emailallForm");
         $form->addHidden('id');
 
@@ -147,7 +149,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function emailallFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function emailallFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiPsatCelemuAp());
         $idUzivatele = $values->id;
 
@@ -180,12 +183,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->redirect('UzivatelList:list', array('id' => $this->getParameter('id')));
     }
 
-    public function renderSms() {
+    public function renderSms(): void {
         $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->uziv = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentSmsForm() {
+    protected function createComponentSmsForm(): Form {
         $form = new Form($this, "smsForm");
         $form->addHidden('id');
 
@@ -212,7 +215,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function smsFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function smsFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiPsatClenovi());
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
@@ -221,12 +225,12 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', array('id' => $this->getParameter('id')));
     }
 
-    public function renderSmsall() {
+    public function renderSmsall(): void {
         $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
     }
 
-    protected function createComponentSmsallForm() {
+    protected function createComponentSmsallForm(): Form {
         $form = new Form($this, "smsallForm");
         $form->addHidden('id');
 
@@ -260,7 +264,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    public function smsallFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function smsallFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiPsatCelemuAp());
         $ap = $this->ap->getAP($this->getParameter('id'));
 
@@ -278,7 +283,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->redirect('UzivatelList:list', array('id' => $this->getParameter('id')));
     }
 
-    private function sendSMSAndValidate($uzivateleID, $message) {
+    /** @param array<array-key, int|string> $uzivateleID */
+    private function sendSMSAndValidate(array $uzivateleID, string $message): void {
         try {
             $pocetCisel = $this->komunikace->posliSMS($uzivateleID, $message);
             $this->flashMessage('SMS byla odeslána na ' . $pocetCisel . ' čísel.');

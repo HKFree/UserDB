@@ -20,10 +20,10 @@ use Nette\Forms\Controls\SubmitButton;
  */
 class UzivatelAccountPresenter extends UzivatelPresenter
 {
-    private $uzivatel;
-    private $ap;
-    private $uzivatelskeKonto;
-    private $prichoziPlatba;
+    private Model\Uzivatel $uzivatel;
+    private Model\AP $ap;
+    private Model\UzivatelskeKonto $uzivatelskeKonto;
+    private Model\PrichoziPlatba $prichoziPlatba;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
@@ -34,7 +34,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $this->prichoziPlatba = $platba;
     }
 
-    public function renderPlatba() {
+    public function renderPlatba(): void {
         $id = $this->getParameter('id');
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
         //\Tracy\Debugger::barDump($pohyb->Uzivatel);
@@ -61,7 +61,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         return $uzivatel && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
     }
 
-    public function renderAccount() {
+    public function renderAccount(): void {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
 
         $this->template->canViewOrEdit = $this->smiVidetPlatby();
@@ -73,7 +73,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $this->template->sum_output_druzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->where('castka<0')->sum('castka');
     }
 
-    protected function createComponentAccountgrid($name) {
+    protected function createComponentAccountgrid(string $name): void {
         $this->vyzadujOpravneni($this->smiVidetPlatby()); // i export a stránkování gridu
 
         $id = $this->getParameter('id');

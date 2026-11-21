@@ -16,6 +16,7 @@ use Nette\Utils\Html;
 use Tracy\Debugger;
 use Nette\Utils\Validators;
 use Nette\Utils\Strings;
+use Nette\Utils\ArrayHash;
 use App\Components;
 
 /**
@@ -23,29 +24,29 @@ use App\Components;
  */
 class UzivatelPresenter extends BasePresenter
 {
-    private $spravceOblasti;
-    private $cestneClenstviUzivatele;
-    private $typClenstvi;
-    private $typPravniFormyUzivatele;
-    private $zpusobPripojeni;
-    private $technologiePripojeni;
-    private $uzivatel;
-    private $ipAdresa;
-    private $typZarizeni;
-    private $log;
-    private $sloucenyUzivatel;
-    private $smlouva;
-    private $smlouvaStavSluzba;
-    private $parameters;
-    private $povoleneSMTP;
-    private $dnat;
-    protected $cryptosvc;
-    private $mailService;
-    private $idsConnector;
-    private $aplikaceToken;
-    private $stitek;
+    private Model\SpravceOblasti $spravceOblasti;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
+    private Model\TypClenstvi $typClenstvi;
+    private Model\TypPravniFormyUzivatele $typPravniFormyUzivatele;
+    private Model\ZpusobPripojeni $zpusobPripojeni;
+    private Model\TechnologiePripojeni $technologiePripojeni;
+    private Model\Uzivatel $uzivatel;
+    private Model\IPAdresa $ipAdresa;
+    private Model\TypZarizeni $typZarizeni;
+    private Model\Log $log;
+    private Model\SloucenyUzivatel $sloucenyUzivatel;
+    private Model\Smlouva $smlouva;
+    private SmlouvaStavSluzba $smlouvaStavSluzba;
+    private Model\Parameters $parameters;
+    private Model\PovoleneSMTP $povoleneSMTP;
+    private Model\DNat $dnat;
+    protected CryptoSluzba $cryptosvc;
+    private Services\MailService $mailService;
+    private Model\IdsConnector $idsConnector;
+    private Model\AplikaceToken $aplikaceToken;
+    private Model\Stitek $stitek;
 
-    private $stitkyUzivatele;
+    private Model\StitekUzivatele $stitkyUzivatele;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
@@ -106,7 +107,8 @@ class UzivatelPresenter extends BasePresenter
         return $ulc;
     }
 
-    public function sendSpolekNotificationEmail($idUzivatele) {
+    /** @param int|string $idUzivatele */
+    public function sendSpolekNotificationEmail($idUzivatele): void {
         try {
             $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
             $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
@@ -115,7 +117,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function sendSpolekRegistrationEmail($idUzivatele) {
+    /** @param int|string $idUzivatele */
+    public function sendSpolekRegistrationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
@@ -132,7 +135,8 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function sendDruzstvoRegistrationEmail($idUzivatele) {
+    /** @param int|string $idUzivatele */
+    public function sendDruzstvoRegistrationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = $this->link('//SelfService:confirmEmail', $hash);
@@ -149,7 +153,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderShow() {
+    public function renderShow(): void {
         if ($this->getParameter('id')) {
             $uid = $this->getParameter('id');
             if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
@@ -275,7 +279,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderPaymentSummary() {
+    public function renderPaymentSummary(): void {
         $uid = $this->getParameter('id');
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
@@ -288,7 +292,7 @@ class UzivatelPresenter extends BasePresenter
 
         $pravidelne_mesicni_platby = [['Pevný přístup k internetu', $this->parameters->getVyseClenskehoPrispevku()]];
         if ($televizeRow?->objednana == 1) {
-            array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV()]);
+            array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow->cena]);
         }
 
         $this->template->pravidelne_mesicni_platby = $pravidelne_mesicni_platby;
@@ -317,11 +321,11 @@ class UzivatelPresenter extends BasePresenter
         $this->template->spayd = $spayd;
     }
 
-    public function createComponentLogTable() {
+    public function createComponentLogTable(): Components\LogTable {
         return $this->logTableFactory->create($this);
     }
 
-    public function renderEdit() {
+    public function renderEdit(): void {
         if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
             $this->template->canViewOrEdit = $this->smiUpravitUzivatele($uzivatel);
         } else {
@@ -329,7 +333,7 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    protected function createComponentUzivatelForm() {
+    protected function createComponentUzivatelForm(): Form {
         $typClenstvi = [-1 => '-'] + $this->typClenstvi->getTypyClenstvi()->fetchPairs('id', 'text');
         $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id', 'text');
         $zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id', 'text');
@@ -430,7 +434,8 @@ class UzivatelPresenter extends BasePresenter
         return $form;
     }
 
-    public function validateUzivatelForm($form) {
+    /** @return 0|void */
+    public function validateUzivatelForm(Nette\Forms\Form $form) {
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
@@ -536,7 +541,8 @@ class UzivatelPresenter extends BasePresenter
         // }
     }
 
-    public function uzivatelFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values */
+    public function uzivatelFormSucceded(Form $form, ArrayHash $values): void {
         // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
         if (!empty($values->id)) {
             $uzivatel = $this->uzivatel->getUzivatel($values->id);
@@ -736,7 +742,8 @@ class UzivatelPresenter extends BasePresenter
         $this->redirect('Uzivatel:show', ['id' => $idUzivatele]);
     }
 
-    public function actionIds($id) {
+    /** @param int|string|null $id */
+    public function actionIds($id): void {
         if ($id) {
             if ($uzivatel = $this->uzivatel->getUzivatel($id)) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');

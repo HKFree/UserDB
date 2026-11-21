@@ -18,6 +18,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
+    /** @return list<array{string, string, bool}> */
     public function editCases(): array {
         return [
             ['cooperative', 'own', false], ['otherSo', 'own', false], ['ownSo', 'forged', false],
@@ -49,6 +50,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         Assert::same($post['poznamka'], $this->database->table('Uzivatel')->get($target->id)->poznamka);
     }
 
+    /** @return list<array{string, string, bool}> */
     public function scheduleCases(): array {
         return [['cooperative', 'sendPaymentScheduleEmail', false], ['otherSo', 'show', false], ['ownSo', 'show', true], ['ownSo', 'sendPaymentScheduleEmail', true]];
     }
@@ -84,6 +86,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         }
     }
 
+    /** @return list<array{string, string}> */
     public function visibilityCases(): array {
         return [['cooperative', 'show'], ['cooperative', 'edit'], ['ownSo', 'show'], ['ownSo', 'edit']];
     }
@@ -112,6 +115,10 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $created->id);
     }
 
+    /**
+     * @param array<string, string> $changes
+     * @return array<string, string>
+     */
     private function post(ActiveRow $member, array $changes = []): array {
         return $changes + [
             '_do' => 'uzivatelForm-submit', 'id' => (string) $member->id, 'Ap_id' => (string) $member->Ap_id,

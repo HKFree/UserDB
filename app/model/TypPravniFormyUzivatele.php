@@ -17,7 +17,8 @@ class TypPravniFormyUzivatele extends Table
     */
     protected $tableName = 'TypPravniFormyUzivatele';
 
-    public function getTypyPravniFormyUzivatele() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getTypyPravniFormyUzivatele(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 }

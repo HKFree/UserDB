@@ -31,25 +31,28 @@ final class AccountActivationDatabaseTest extends DatabaseTestCase
         $this->activation = $this->container->getByType(AccountActivation::class);
     }
 
+    /** @return list<array{string, array{int, int}, array{int, int}, bool|string, int|null, string|null}> */
     public function transitionCases(): array {
         return [
             ['activateAccount', [0, 0], [1, 0], true, 8, 'Aktivace'],
             ['reactivateAccount', [0, 1], [1, 0], 'Účet byl reaktivován.', 8, 'Reaktivace'],
             ['reactivateAccount', [1, 1], [1, 0], 'Deaktivace byla zrušena.', 9, 'Zruseni Deaktivace'],
-            ['reactivateAccount', [1, 0], [1, 0], null, null, null],
-            ['reactivateAccount', [0, 0], [0, 0], null, null, null],
+            ['reactivateAccount', [1, 0], [1, 0], true, null, null],
+            ['reactivateAccount', [0, 0], [0, 0], true, null, null],
             ['deactivateAccount', [1, 0], [1, 1], true, 6, 'Deaktivace'],
         ];
     }
 
-    /** @dataProvider transitionCases */
-    public function testTransition(string $method, array $before, array $after, bool|string|null $expected, ?int $movement, ?string $note): void {
+    /**
+     * @dataProvider transitionCases
+     * @param array{int, int} $before
+     * @param array{int, int} $after
+     */
+    public function testTransition(string $method, array $before, array $after, bool|string $expected, ?int $movement, ?string $note): void {
         $this->member->update(['money_aktivni' => $before[0], 'money_deaktivace' => $before[1]]);
         Assert::same(0, $this->database->table('UzivatelskeKonto')->count('*'));
-        $result = $this->callActivation($method, $this->member->id);
-        if ($expected !== null) {
-            Assert::same($expected, $result);
-        }
+        $result = $this->callActivation($method, (string) $this->member->id);
+        Assert::same($expected, $result);
 
         $member = $this->database->table('Uzivatel')->get($this->member->id);
         Assert::same($after, [$member->money_aktivni, $member->money_deaktivace]);
@@ -67,6 +70,7 @@ final class AccountActivationDatabaseTest extends DatabaseTestCase
         }
     }
 
+    /** @return list<array{string, bool|string}> */
     public function unknownMemberCases(): array {
         return [
             ['activateAccount', false],
@@ -84,7 +88,7 @@ final class AccountActivationDatabaseTest extends DatabaseTestCase
         Assert::same(0, $this->database->table('UzivatelskeKonto')->count('*'));
     }
 
-    private function callActivation(string $method, int $memberId): bool|string {
+    private function callActivation(string $method, int|string $memberId): bool|string {
         return match ($method) {
             'activateAccount' => $this->activation->activateAccount($this->user, $memberId),
             'reactivateAccount' => $this->activation->reactivateAccount($this->user, $memberId),

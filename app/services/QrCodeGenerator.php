@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../lib/phpqrcode/qrlib.php';
 
 class QrCodeGenerator
 {
-    public static function renderPngBase64($text) {
+    public static function renderPngBase64(string $text): string {
         $tmpname = tempnam(sys_get_temp_dir(), 'userdb-qr-');
         try {
             \QRcode::png($text, $tmpname, QR_ECLEVEL_L, 6);

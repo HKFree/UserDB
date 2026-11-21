@@ -13,13 +13,13 @@ use Tracy\Debugger;
  */
 class SpravaGrafuPresenter extends SpravaPresenter
 {
-    private $uzivatel;
+    private Model\Uzivatel $uzivatel;
 
     public function __construct(Model\Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
     }
 
-    public function renderUsersgraph() {
+    public function renderUsersgraph(): void {
         $activationsData = $this->uzivatel->getNumberOfActivations();
         //\Tracy\Debugger::barDump($activationsData);
 

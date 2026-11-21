@@ -20,7 +20,8 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
     ) {
     }
 
-    public function renderConfirmEmail($key) {
+    /** @param string|null $key */
+    public function renderConfirmEmail($key): void {
         $this->setLayout('pub');
         $this->template->stav = false;
         if ($key) {
@@ -61,7 +62,13 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
         }
     }
 
-    public function renderUserEmailFeedback($uid, $hash, $variant, $nextStep) {
+    /**
+     * @param int|string|null $uid
+     * @param string|null $hash
+     * @param string|null $variant
+     * @param string|null $nextStep
+     */
+    public function renderUserEmailFeedback($uid, $hash, $variant, $nextStep): void {
         $this->setLayout('pub');
         $this->template->error = null;
 

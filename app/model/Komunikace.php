@@ -12,8 +12,8 @@ use App\Model\Uzivatel;
  */
 class Komunikace extends Table
 {
-    public $smsSender;
-    public $uzivatel;
+    public MexSmsSender $smsSender;
+    public Uzivatel $uzivatel;
 
     /**
      * @var string
@@ -25,6 +25,7 @@ class Komunikace extends Table
         $this->uzivatel = $u;
     }
 
+    /** @param array<array-key, int|string> $uzivateleID */
     public function posliSMS(array $uzivateleID, string $zprava): int {
         $cisla = [];
         foreach ($uzivateleID as $uid) {
@@ -42,7 +43,8 @@ class Komunikace extends Table
         return count($cisla);
     }
 
-    public function maValidniCislo($uid) {
+    /** @param int|string $uid */
+    public function maValidniCislo($uid): bool {
         $u = $this->uzivatel->getUzivatel($uid);
         return ($this->smsSender->checkCzechNumber($u->telefon));
     }

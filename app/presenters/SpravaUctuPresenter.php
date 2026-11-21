@@ -12,16 +12,16 @@ use Tracy\Debugger;
  */
 class SpravaUctuPresenter extends SpravaPresenter
 {
-    private $stavBankovnihoUctu;
+    private Model\StavBankovnihoUctu $stavBankovnihoUctu;
 
     public function __construct(Model\StavBankovnihoUctu $stavuctu) {
         $this->stavBankovnihoUctu = $stavuctu;
     }
 
-    public function renderUcty() {
+    public function renderUcty(): void {
     }
 
-    protected function createComponentStavyuctu($name) {
+    protected function createComponentStavyuctu(string $name): void {
         $grid = new \Grido\Grid($this, $name);
         $grid->getTranslator()->setLang('cs');
 

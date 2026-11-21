@@ -7,19 +7,19 @@ use Nette\Application\Responses\JsonResponse;
 
 class KomunikacePresenter extends ApiPresenter
 {
-    private $komunikace;
-    private $uzivatel;
+    private \App\Model\Komunikace $komunikace;
+    private \App\Model\Uzivatel $uzivatel;
 
     public function __construct(\App\Model\Komunikace $komunikace, \App\Model\Uzivatel $uzivatel) {
         $this->komunikace = $komunikace;
         $this->uzivatel = $uzivatel;
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $this->sendResponse(new JsonResponse(['result' => 'Method not implemented', 'resultNumeric' => -1]));
     }
 
-    public function actionSendSMS() {
+    public function actionSendSMS(): void {
         parent::forceMethod("POST");
 
         $uid = $this->getHttpRequest()->getPost("uid");
