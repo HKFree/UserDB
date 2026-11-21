@@ -508,7 +508,7 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
 
-            if (0 != count($formDuplicates)) {
+            if (0 !== count($formDuplicates)) {
                 $formDuplicatesReadible = implode(', ', $formDuplicates);
                 $form->addError('IP adresa '.$formDuplicatesReadible.' je v tomto formuláři vícekrát!');
             }

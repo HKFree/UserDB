@@ -53,7 +53,7 @@ class ApPresenter extends BasePresenter
     public function renderList() {
         if ($this->maVyplnenyParametr('id')) {
             $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParameter('id'))));
-            if ($apcka->count() == 0) {
+            if ($apcka->count() === 0) {
                 $this->template->table = 'Chyba, zadaná oblast neexistuje nebo nemá žádná AP.';
                 return true;
             }
@@ -269,7 +269,7 @@ class ApPresenter extends BasePresenter
                 }
             }
 
-            if (count($formDuplicates) != 0) {
+            if (count($formDuplicates) !== 0) {
                 $formDuplicatesReadible = implode(", ", $formDuplicates);
                 $form->addError('IP adresa ' . $formDuplicatesReadible . ' je v tomto formuláři vícekrát!');
             }

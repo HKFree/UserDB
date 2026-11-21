@@ -84,11 +84,11 @@ class MexSmsSender
             throw new SmsSenderException("Chyba přístupu k MEX API. Kontaktujte správce UserDB.\n" . $e->getMessage());
         }
 
-        if ($r->getStatusCode() == 401) {
+        if ($r->getStatusCode() === 401) {
             throw new SmsSenderException("Chyba přihlášení k MEX API (chybný token). Kontaktujte správce UserDB.");
         }
 
-        if ($r->getStatusCode() != 200) {
+        if ($r->getStatusCode() !== 200) {
             throw new SmsSenderException("Chyba vstupu MEX API. Kontaktujte správce UserDB.");
         }
 

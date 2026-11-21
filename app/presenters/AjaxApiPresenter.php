@@ -45,7 +45,7 @@ class AjaxApiPresenter extends BasePresenter
             if (isset($subnet["error"])) {
                 $out["error"] = $errorTable[$subnet["error"]];
 
-                if ($subnet["error"] == Model\Subnet::ERR_MULTIPLE_GW) {
+                if ($subnet["error"] === Model\Subnet::ERR_MULTIPLE_GW) {
                     $out["error"] .= implode(", ", $subnet["multiple_subnets"]);
                 }
             } else {

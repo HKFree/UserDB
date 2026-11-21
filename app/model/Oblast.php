@@ -51,7 +51,7 @@ class Oblast extends Table
             }
 
             foreach ($apcka_oblasti->order("jmeno") as $ap) {
-                if (count($apcka_oblasti) == 1) {
+                if (count($apcka_oblasti) === 1) {
                     $aps[$ap->id] = $ap->jmeno . ' (' . $ap->id . ')';
                 } else {
                     $aps[$ap->id] = $oblast->jmeno . ' - ' . $ap->jmeno . ' (' . $ap->id . ')';

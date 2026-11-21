@@ -46,7 +46,7 @@ class Sojka
             ]);
         }
 
-        if ($r->getStatusCode() != 200) {
+        if ($r->getStatusCode() !== 200) {
             return ([]);
         }
 

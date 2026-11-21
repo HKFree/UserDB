@@ -98,7 +98,7 @@ class GeneratorSmlouvy
         for ($i = 1; $i <= count($ip4Adresy); ++$i) {
             $parametrySmlouvy["IPv4-$i"] = $ip4Adresy[$i - 1][0];
             $parametrySmlouvy["GW-$i"] = $ip4Adresy[$i - 1][1];
-            if ($i == 4) {
+            if ($i === 4) {
                 $parametrySmlouvy["IPv4-more"] = sprintf('... a další (%u)', count($ip4Adresy) - 4);
                 break;
             }

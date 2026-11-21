@@ -39,7 +39,7 @@ class SmlouvaStavSluzba
             }
         }
 
-        if ($pocetPodpisu == $pocetPodepsano) {
+        if ($pocetPodpisu === $pocetPodepsano) {
             return isset($datum) ? "✅ platná od ".$datum->format('d.m.Y') : '---';
         } else {
             return "⏳ čeká na podpis";

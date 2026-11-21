@@ -106,22 +106,22 @@ class Log extends Table
      * @return array<int|string, string> pole ipId=>ipAdresa
      */
     public function getAdvancedzLogu(array $ids, string $type = "ip"): array {
-        if ($type != "ip" && $type != "subnet") {
+        if ($type !== "ip" && $type !== "subnet") {
             throw new \InvalidArgumentException("Neznámý typ objektu: ".$type);
         }
 
         $names = array();
         foreach ($ids as $id) {
-            if ($type == "ip") {
+            if ($type === "ip") {
                 $names[] = "IPAdresa[".$id."].ip_adresa";
-            } elseif ($type == "subnet") {
+            } elseif ($type === "subnet") {
                 $names[] = "Subnet[".$id."].subnet";
             }
         }
 
         $logy = $this->findAll()->where("sloupec", $names)->order("datum ASC");
 
-        $vzor = $type == "ip" ? "/^ipadresa\[(\d+)\]\.ip_adresa/i" : "/^subnet\[(\d+)\]\.subnet/i";
+        $vzor = $type === "ip" ? "/^ipadresa\[(\d+)\]\.ip_adresa/i" : "/^subnet\[(\d+)\]\.subnet/i";
 
         $out = array();
         foreach ($logy as $log) {
@@ -207,7 +207,7 @@ class Log extends Table
      * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
      */
     public function loguj(string $tabulka, $tabulka_id, $data, $uzivatel_id = null): Nette\Database\Table\ActiveRow|array|int|bool {
-        if (!is_array($data) || count($data) == 0) {
+        if (!is_array($data) || count($data) === 0) {
             return true;
         }
 

@@ -56,7 +56,7 @@ class PdfGenerator
             }
         }
 
-        if (count($ipadrs) == 0) {
+        if (count($ipadrs) === 0) {
             $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');
         }
         $template->ips = $out;
