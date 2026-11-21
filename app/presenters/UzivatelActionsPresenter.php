@@ -119,6 +119,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionExportPdf(): void {
         if ($this->maVyplnenyParametr('id')) {
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
+                $this->vyzadujOpravneni($this->smiUpravitUzivatele($uzivatel));
                 $pdf = $this->vytvorRegistracniPdf($uzivatel);
                 $this->sendResponse($pdf);
             }
@@ -158,6 +159,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionExportAndSendRegForm(): void {
         if ($this->maVyplnenyParametr('id')) {
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
+                $this->vyzadujOpravneni($this->smiUpravitUzivatele($uzivatel));
                 if ((int) $uzivatel->spolek === 0) {
                     $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
 
