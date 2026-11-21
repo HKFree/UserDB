@@ -16,9 +16,9 @@ use Nette\Utils\Strings;
  */
 class SubnetPresenter extends BasePresenter
 {
-    private $ipAdresa;
-    private $ap;
-    private $subnet;
+    private Model\IPAdresa $ipAdresa;
+    private Model\AP $ap;
+    private Model\Subnet $subnet;
 
     public function __construct(Model\Subnet $subnet, Model\IPAdresa $ipAdresa, Model\AP $ap) {
         $this->ipAdresa = $ipAdresa;
@@ -26,7 +26,7 @@ class SubnetPresenter extends BasePresenter
         $this->subnet = $subnet;
     }
 
-    public function renderOverview() {
+    public function renderOverview(): void {
         if ($this->getParameter('id')) {
             $targetSubnet = $this->getParameter('id');
             if (substr($targetSubnet, -1) != ".") {
@@ -41,7 +41,7 @@ class SubnetPresenter extends BasePresenter
             foreach ($existujici as $snet) {
                 $out = $this->subnet->parseSubnet($snet->subnet);
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
-                $networks[$d] = 1 << (32 - $out["cidr"]); //calculates number of ips in cidr
+                $networks[$d] = 1 << (32 - (float) $out["cidr"]); //calculates number of ips in cidr
                 $captions[$d] = $snet->popis;
             }
 
@@ -55,7 +55,7 @@ class SubnetPresenter extends BasePresenter
         }
     }
 
-    public function renderDetail() {
+    public function renderDetail(): void {
         if ($this->getParameter('id')) {
             $targetSubnet = $this->getParameter('id');
             if (substr($targetSubnet, -1) != ".") {
@@ -70,7 +70,7 @@ class SubnetPresenter extends BasePresenter
                 $out = $this->subnet->parseSubnet($snet->subnet);
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
                 $networks[$d] = array(
-                    'ips' => 1 << (32 - $out["cidr"]), //calculates number of ips in cidr
+                    'ips' => 1 << (32 - (float) $out["cidr"]), //calculates number of ips in cidr
                     'cidr' => $out['cidr'],
                     'popis' => $snet->popis,
                     'subnet' => $snet->subnet,

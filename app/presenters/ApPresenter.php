@@ -8,6 +8,7 @@ use App\Model;
 use Nette\Application\UI\Form;
 use Nette\Forms\Container;
 use Nette\Utils\Html;
+use Nette\Utils\ArrayHash;
 use Nette\Forms\Controls\SubmitButton;
 use App\Components;
 
@@ -16,16 +17,16 @@ use App\Components;
  */
 class ApPresenter extends BasePresenter
 {
-    private $spravceOblasti;
-    private $uzivatel;
-    private $ap;
-    private $ipAdresa;
-    private $subnet;
-    private $typZarizeni;
-    private $log;
-    private $apiKlic;
-    private $cryptosvc;
-    private $idsConnector;
+    private Model\SpravceOblasti $spravceOblasti;
+    private Model\Uzivatel $uzivatel;
+    private Model\AP $ap;
+    private Model\IPAdresa $ipAdresa;
+    private Model\Subnet $subnet;
+    private Model\TypZarizeni $typZarizeni;
+    private Model\Log $log;
+    private Model\ApiKlic $apiKlic;
+    private CryptoSluzba $cryptosvc;
+    private Model\IdsConnector $idsConnector;
 
     /** @var Components\LogTableFactory @inject */
     public $logTableFactory;
@@ -43,10 +44,11 @@ class ApPresenter extends BasePresenter
         $this->idsConnector = $idsConnector;
     }
 
-    public function createComponentLogTable() {
+    public function createComponentLogTable(): Components\LogTable {
         return $this->logTableFactory->create($this);
     }
 
+    /** @return true|void */
     public function renderList() {
         if ($this->getParameter('id')) {
             $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParameter('id'))));
@@ -103,7 +105,7 @@ class ApPresenter extends BasePresenter
         }
     }
 
-    public function renderShow() {
+    public function renderShow(): void {
         if ($this->getParameter('id') && $ap = $this->ap->getAP($this->getParameter('id'))) {
             $this->template->ap = $ap;
             $canViewCredentialsOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
@@ -121,7 +123,10 @@ class ApPresenter extends BasePresenter
         }
     }
 
-    /** TECH, VV a KONTROLA vždy (i nové AP), SO/ZSO jen existující AP své oblasti (AP::canViewOrEditAP) */
+    /**
+     * TECH, VV a KONTROLA vždy (i nové AP), SO/ZSO jen existující AP své oblasti (AP::canViewOrEditAP)
+     * @param int|string|null $idAp
+     */
     private function smiUpravitAp($idAp): bool {
         if ($this->ap->canViewOrEditAll($this->getUser())) {
             return true;
@@ -129,11 +134,11 @@ class ApPresenter extends BasePresenter
         return !empty($idAp) && $this->ap->getAP($idAp) && $this->ap->canViewOrEditAP($idAp, $this->getUser());
     }
 
-    public function renderEdit() {
+    public function renderEdit(): void {
         $this->template->canViewOrEdit = $this->smiUpravitAp($this->getParameter('id'));
     }
 
-    protected function createComponentApForm() {
+    protected function createComponentApForm(): Form {
         $form = new Form($this, 'apForm');
         $form->addHidden('id');
         $form->addCheckbox('aktivni', 'Je AP aktivní?')->setDefaultValue(true);
@@ -230,7 +235,8 @@ class ApPresenter extends BasePresenter
         return ($form);
     }
 
-    public function validateApForm($form) {
+    /** @return 0|void */
+    public function validateApForm(Nette\Forms\Form $form) {
         $data = $form->getHttpData();
 
         // Validujeme jenom při uložení formuláře
@@ -317,7 +323,8 @@ class ApPresenter extends BasePresenter
         }
     }
 
-    public function apFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>, subnet: ArrayHash<ArrayHash<mixed>>, apiKlic: ArrayHash<ArrayHash<mixed>>} $values */
+    public function apFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiUpravitAp($values->id)); // AP ze skrytého pole id
 
         $log = array();
@@ -441,7 +448,8 @@ class ApPresenter extends BasePresenter
         $this->redirect('Ap:show', array('id' => $idAP));
     }
 
-    public function actionIds($id) {
+    /** @param int|string|null $id */
+    public function actionIds($id): void {
         $apt = $this->ap->getAP($id * 1);
         if (!$apt) {
             $this->error('AP not found');

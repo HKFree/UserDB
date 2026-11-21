@@ -13,18 +13,18 @@ use Tracy\Debugger;
  */
 class SpravaPlatebPresenter extends SpravaPresenter
 {
-    private $odchoziPlatba;
-    private $prichoziPlatba;
+    private Model\OdchoziPlatba $odchoziPlatba;
+    private Model\PrichoziPlatba $prichoziPlatba;
 
     public function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba) {
         $this->odchoziPlatba = $odchplatba;
         $this->prichoziPlatba = $platba;
     }
 
-    public function renderOdchoziplatby() {
+    public function renderOdchoziplatby(): void {
     }
 
-    protected function createComponentOdchplatby($name) {
+    protected function createComponentOdchplatby(string $name): void {
         $grid = new \Grido\Grid($this, $name);
         $grid->getTranslator()->setLang('cs');
         $grid->setExport('op_export');
@@ -78,12 +78,12 @@ class SpravaPlatebPresenter extends SpravaPresenter
         $grid->getColumn('datum_platby')->headerPrototype->style['width'] = '10%';
     }
 
-    public function renderPlatbycu() {
+    public function renderPlatbycu(): void {
         $this->template->canViewOrEdit = $this->jeVVneboTECH();
         $this->template->cu = "";
     }
 
-    protected function createComponentPaymentgrid($name) {
+    protected function createComponentPaymentgrid(string $name): void {
         $this->vyzadujOpravneni($this->jeVVneboTECH()); // i export a stránkování gridu
 
         $id = $this->getParameter('type');

@@ -1,0 +1,101 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Test;
+
+use App\Model\Parameters;
+use Nette\Application\Responses\TextResponse;
+use Nette\Bridges\ApplicationLatte\Template;
+use Nette\Database\Table\ActiveRow;
+use Tester\Assert;
+
+require_once __DIR__ . '/bootstrap.php';
+
+final class FinancialTypesPresenterTest extends DatabaseTestCase
+{
+    private ActiveRow $actor;
+    private ActiveRow $member;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $ap = $this->fixtures->ap($this->fixtures->area()->id);
+        $this->actor = $this->fixtures->member($ap->id);
+        $this->fixtures->role($this->actor->id, 'VV');
+        $this->member = $this->fixtures->member($ap->id, ['druzstvo' => 1, 'spolek' => 0]);
+    }
+
+    /** @return list<array{bool, ?float}> */
+    public function scheduleCases(): array {
+        return [[false, null], [false, 99.5], [true, null], [true, 99.5], [true, 0.0]];
+    }
+
+    /** @dataProvider scheduleCases */
+    public function testPaymentScheduleKeepsTvAndHonoraryAmounts(bool $honorary, ?float $tvPrice): void {
+        if ($honorary) {
+            $this->fixtures->insert('CestneClenstviUzivatele', [
+                'Uzivatel_id' => $this->member->id, 'TypCestnehoClenstvi_id' => $this->fixtures->lookup('TypCestnehoClenstvi', 'HKFree do škol'),
+                'plati_od' => '2000-01-01', 'plati_do' => null, 'schvaleno' => 1,
+                'zadost_podal' => $this->actor->id, 'zadost_podana' => '2000-01-01',
+            ]);
+        }
+        if ($tvPrice !== null) {
+            $this->fixtures->insert('UzivatelTelevize', ['id' => $this->member->id, 'cena' => $tvPrice, 'objednana' => 1]);
+        }
+        $result = $this->presenters->ui($this->actor->id, 'PaymentSchedule', ['action' => 'show', 'id' => (string) $this->member->id]);
+        Assert::same(200, $result->status);
+        if (!$result->response instanceof TextResponse || !($template = $result->response->getSource()) instanceof Template) {
+            throw new \LogicException('Expected the payment schedule template.');
+        }
+        $internet = $honorary ? 0 : $this->container->getByType(Parameters::class)->getVyseClenskehoPrispevku();
+        $expected = [['Pevný přístup k internetu', $internet]];
+        if ($tvPrice !== null) {
+            $expected[] = ['Televize - START balíček SledovaniTV', $tvPrice];
+        }
+        Assert::same($expected, $template->pravidelne_mesicni_platby);
+        Assert::same($internet + ($tvPrice ?? 0), $template->platby_celkem);
+        Assert::contains('*AM:' . number_format((float) $internet + ($tvPrice ?? 0), 2, '.', '') . '*CC:CZK*', $template->spayd);
+        Assert::contains('*X-VS:' . $this->member->id . '*DT:', $template->spayd);
+        Assert::same('data:image/png;base64,', substr($template->qrImagePngBase64, 0, 22));
+        $png = base64_decode(substr($template->qrImagePngBase64, 22), true);
+        Assert::same("\x89PNG\r\n\x1a\n", substr($png, 0, 8));
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testTransferKeepsDecimalsAndDebitsPreviousOwner(): void {
+        $previous = $this->fixtures->member($this->member->Ap_id);
+        $payment = $this->fixtures->insert('PrichoziPlatba', ['datum' => date('Y-m-d'), 'castka' => 1234.56, 'kod_cilove_banky' => 2010, 'druzstvo' => 1, 'spolek' => 0]);
+        $this->fixtures->insert('UzivatelskeKonto', [
+            'Uzivatel_id' => $previous->id, 'PrichoziPlatba_id' => $payment->id, 'TypPohybuNaUctu_id' => 1,
+            'castka' => 1234.56, 'druzstvo' => 1, 'spolek' => 0, 'datum' => date('Y-m-d'),
+        ]);
+        $result = $this->presenters->ui($this->actor->id, 'SpravaNesparovanych', ['action' => 'prevod', 'id' => (string) $payment->id], 'POST', [
+            '_do' => 'prevodForm-submit', 'Uzivatel_id' => (string) $this->member->id, 'poznamka' => 'Převod desetinné částky', 'send' => 'Převést',
+        ]);
+        PermissionScenario::assertRedirect($result, 'sprava/nastroje/' . $payment->id);
+        $entries = array_values($this->database->table('UzivatelskeKonto')->where('PrichoziPlatba_id', $payment->id)->order('id')->fetchAll());
+        Assert::count(3, $entries);
+        Assert::same([$previous->id, $previous->id, $this->member->id], array_map(static fn (ActiveRow $row): int => $row->Uzivatel_id, $entries));
+        Assert::same([1234.56, -1234.56, 1234.56], array_map(static fn (ActiveRow $row): float => $row->castka, $entries));
+        Assert::same([1, 11, 1], array_map(static fn (ActiveRow $row): int => $row->TypPohybuNaUctu_id, $entries));
+        foreach (array_slice($entries, 1) as $entry) {
+            Assert::same($this->actor->id, $entry->zmenu_provedl);
+            Assert::same(1, $entry->druzstvo);
+            Assert::same(0, $entry->spolek);
+            Assert::contains('Převod na UID:[' . $this->member->id . ']', $entry->poznamka);
+        }
+    }
+
+    public function testMissingPaymentDoesNotCreateMovement(): void {
+        foreach ([[], ['id' => '-1']] as $parameters) {
+            $result = $this->presenters->ui($this->actor->id, 'SpravaNesparovanych', ['action' => 'prevod'] + $parameters, 'POST', [
+                '_do' => 'prevodForm-submit', 'Uzivatel_id' => (string) $this->member->id, 'poznamka' => '', 'send' => 'Převést',
+            ]);
+            Assert::same(200, $result->status);
+            Assert::same(['Nelze převést neexistující platbu!'], $result->flashes);
+        }
+        Assert::same(0, $this->database->table('UzivatelskeKonto')->count('*'));
+    }
+}
+
+(new FinancialTypesPresenterTest())->run();

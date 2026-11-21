@@ -9,6 +9,7 @@ use Nette\Database\Table\ActiveRow;
 use Grido\Grid;
 use Nette\Utils\Strings;
 use Nette\Utils\Html;
+use Nette\Utils\ArrayHash;
 use Tracy\Debugger;
 
 /**
@@ -16,19 +17,19 @@ use Tracy\Debugger;
  */
 class SpravaNesparovanychPresenter extends SpravaPresenter
 {
-    private $uzivatelskeKonto;
-    private $prichoziPlatba;
+    private Model\UzivatelskeKonto $uzivatelskeKonto;
+    private Model\PrichoziPlatba $prichoziPlatba;
 
     public function __construct(Model\PrichoziPlatba $platba, Model\UzivatelskeKonto $konto) {
         $this->uzivatelskeKonto = $konto;
         $this->prichoziPlatba = $platba;
     }
 
-    public function renderNesparovane() {
+    public function renderNesparovane(): void {
         $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentAccountgrid($name) {
+    protected function createComponentAccountgrid(string $name): void {
         $this->vyzadujOpravneni($this->jeVVneboTECH()); // i export a stránkování gridu
 
         //\Tracy\Debugger::barDump($search);
@@ -144,11 +145,11 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->info_od_banky)->setSortable();
     }
 
-    public function renderPrevod() {
+    public function renderPrevod(): void {
         $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentPrevodForm() {
+    protected function createComponentPrevodForm(): Form {
         // Tohle je nutne abychom mohli zjistit isSubmited
         $form = new Form($this, "prevodForm");
         $form->addHidden('id');
@@ -202,7 +203,8 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function prevodFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function prevodFormSucceded(Form $form, ArrayHash $values): bool {
         $this->vyzadujOpravneni($this->jeVVneboTECH());
 
         $id = $this->getParameter('id');
