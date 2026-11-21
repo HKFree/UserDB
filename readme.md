@@ -87,6 +87,14 @@ php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
 
 The OS assigns a free web port and PHP prints the URL. Repeat these commands in another worktree to run both simultaneously. The setup command applies existing migrations and demo data to `userdb_dev`; it can be repeated without resetting data. The local migration adapter replaces the historical production definer with the local account, without changing the migration files. The web uses `config.flox.neon` and the existing demo identity, preserving `config.local.neon`.
 
+The [demo data catalog](docs/userdb_demo_data.md) lists the members, APs, personas and pages for each scenario.
+Scenario migrations are also loaded by Docker development. Flox setup additionally generates 13,500 members
+(4,500 active), 18,000 IP addresses and three years of account movements. This volume is enabled by default
+and added only once. Use `USERDB_DEMO_VOLUME=0 php scripts/userdb_dev_setup.php` inside Flox to skip it when
+building a fresh database; this does not remove existing volume data. Run setup without the variable to add it later.
+The demo guard test builds `userdb_demo_test` with its own `userdb_demo_test` / `demo-test-only` account;
+the ordinary `userdb_test` database still contains no dummy data.
+
 The `userdb_dev` / `dev-only` and `userdb_test` / `test-only` credentials are exclusively for these local databases. They cannot access each other's database. Local email is captured as `.eml` files under `.flox/cache/mail`; contract storage lives under `.flox/cache/storage`. Services stop when the last Flox activation exits; database data and keys remain. Inspect MariaDB with `flox services status` inside Flox and logs in `.flox/cache/logs/`.
 
 Contract previews work directly in the local application. Flox provides LibreOffice, zip/unzip and Poppler for PDF checks. The local bootstrap enables direct conversion without a separate HTTP service or PDF port. Each conversion uses a private directory and LibreOffice profile under `.flox/cache/pdf`, cleaned up on success or failure. Templates come from this worktree, and previews are marked `LOCAL TEST`. Font substitution can differ from production; the test checks content, not pixel-identical rendering. Outside this local bootstrap, the application continues to use `PDF_GENERATOR_URL`.
@@ -185,6 +193,10 @@ the same way as the [local web with Flox](#local-web-database-and-pdf-with-flox)
 mail captured to files, and every visitor signed in as the demo user. All instances sit behind a reverse proxy
 that lets in the HKFree network without a password and sends everyone else to a sign-in form; the maintainers
 have the password. One sign-in is valid for all instances for 30 days.
+
+Instances include the scenarios and production-sized synthetic volume described in the
+[demo data catalog](docs/userdb_demo_data.md). The setup step enables volume by default; setting
+`USERDB_DEMO_VOLUME=0` in its environment skips the generated volume while retaining the scenario migrations.
 
 1. [deploy-testing.yml](.github/workflows/deploy-testing.yml) runs on a push to `master` and when a pull
    request is opened, updated, reopened or closed. It connects to the server over SSH and sends one request:

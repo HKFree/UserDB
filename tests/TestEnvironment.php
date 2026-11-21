@@ -60,7 +60,7 @@ final class TestEnvironment
             ]);
         }
         if ($database !== null) {
-            self::guard($database->getConnection());
+            self::guard($database->getConnection(), allowDemo: true);
             $configurator->addServices(['database.default.explorer' => $database]);
         }
         $configurator->addServices([
@@ -151,7 +151,7 @@ final class TestEnvironment
         return $connection;
     }
 
-    private static function guard(Connection $connection): void {
+    private static function guard(Connection $connection, bool $allowDemo = false): void {
         $expectedCache = realpath(self::ROOT . '/.flox/cache');
         $expectedData = realpath(self::ROOT . '/.flox/cache/mariadb/data');
         $cache = getenv('FLOX_ENV_CACHE');
@@ -162,9 +162,9 @@ final class TestEnvironment
             throw new \RuntimeException('FLOX_ENV_CACHE must belong to this checkout.');
         }
         if (realpath($connection->fetchField('SELECT @@datadir')) !== $expectedData
-            || $connection->fetchField('SELECT DATABASE()') !== 'userdb_test'
+            || !in_array($connection->fetchField('SELECT DATABASE()'), $allowDemo ? ['userdb_test', 'userdb_demo_test'] : ['userdb_test'], true)
         ) {
-            throw new \RuntimeException('Refusing to write outside this checkout\'s userdb_test database.');
+            throw new \RuntimeException('Refusing to write outside this checkout\'s test databases.');
         }
     }
 

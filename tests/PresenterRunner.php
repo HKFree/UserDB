@@ -108,6 +108,7 @@ final class PresenterRunner
                 cookies: $sameSite ? ['_nss' => '1'] : [],
                 headers: ['Host' => 'localhost', 'User-Agent' => 'UserDB tests'] + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : []),
                 method: $method,
+                remoteAddress: '127.0.0.1',
             );
             // A new container also replaces the user, session and request-bound Latte factory.
             $container = TestEnvironment::container($this->database, $request, $this->container);

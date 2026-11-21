@@ -1,0 +1,251 @@
+# UserDB: katalog demo dat
+
+Scénářová data se načítají migracemi `db/dummy-data/` v Dockeru, lokálním Floxu i na testovacích instancích.
+Obsahují 8 oblastí, 20 AP a 77 členů včetně původních 7. Nových 70 členů má v poznámce první řádek `DEMO: `.
+Jména, kontakty, adresy, přihlašovací údaje a platby jsou smyšlené. Datum scénářů se odvozuje od dne načtení.
+
+Flox a testovací instance navíc standardně přidávají objemová data. Při přípravě nové databáze je lze vynechat:
+
+```sh
+USERDB_DEMO_VOLUME=0 flox activate -s -- php scripts/userdb_dev_setup.php
+```
+
+Příští spuštění bez této proměnné objem doplní. Opakované spuštění už data nepřidává ani nemění.
+Vypínač již vytvořený objem nemaže. Docker načítá pouze scénářové migrace.
+
+Všichni návštěvníci webu jsou stále člen 1 (Tester Testovací), s rolemi SO oblasti 1 a VV.
+Persony níže jsou připravené pro přepínání identity v navazující změně. Samotná data přihlášenou osobu nemění.
+Odkazy v tabulkách jsou cesty od kořene aplikace; pokud aplikace běží pod `/userdb`, přidej tento prefix.
+
+## Členové a jejich detail
+
+Detail člena: `/uzivatel/show/ID`, editace: `/uzivatel/edit/ID`, konto: `/uzivatel-account/account/ID`.
+V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušené a smazané členy zobrazí filtr
+„spolek i družstvo včetně zrušených a smazaných“.
+
+| Co chceš vidět | Člen: ID a příjmení | Kde / co očekávat |
+|---|---|---|
+| Plánované členství | 20016 Plánovaný | AP 202, modrý řádek; nemá závislosti blokující smazání |
+| Primární členství | 20017 Primární | AP 202, řádek `primarni` |
+| Řádný člen spolku | 20018 Řádný | AP 201 |
+| Zrušený spolek | 20019 Zrušený | AP 202, filtr včetně zrušených, šedý řádek |
+| Spolek bez typu | 20020 Beztypu | Detail uvádí `n/a` |
+| Pouze družstvo | 20021 Jendružstvo | Bez typu členství spolku |
+| Obě členství | 20022 Oběčlenství | Oba štítky právních vztahů |
+| Ani jedno členství | 20023 Bezčlenství | Bez štítků, filtr včetně zrušených |
+| Smazané družstvo | 20024 Smazaný | AP 202, šedý řádek a štítek |
+| Neplatný e-mail | 20025 Neplatnýemail | AP 202, červená buňka, není v mailing listu |
+| Chybná syntaxe e-mailu a prázdný telefon | 20026 Chybnýemail | `chyba@@example.invalid`: editace a hromadný e-mail adresu odmítnou, odeslání e-mailu jen tomuto členovi skončí chybou aplikace; formulář SMS je bez tlačítka Odeslat |
+| Druhý e-mail, karta, GPG, narození, více řádků poznámky | 20027 Kontaktní | Detail, editace, globální i oblastní štítky, historie |
+| Přesná poloha | 20028 Přesnápoloha | `valid`, souřadnice a odkaz na mapu |
+| Přibližná poloha | 20029 Přibližnápoloha | `approx`, ikona v seznamu |
+| Neznámá poloha | 20030 Neznámápoloha | `unknown`, varování u adresy |
+| Čekající poloha a právnická osoba | 20031 Čekajícípoloha | `pending`, Demo Smyšlená společnost s.r.o. |
+| Nový člen tento měsíc | 20032 Novýtentoměsíc | Založen první den měsíce, přehled ČČ |
+| Vlastní zařízení v bezplatném období | 20033 Vlastnízařízení | Založen 5. den minulého měsíce, způsob připojení 2 |
+| Aktivace a přesná hranice 290 Kč | 20034 Aktivace | Neaktivní internet, tlačítko Aktivace |
+| Reaktivace | 20035 Reaktivace | Zůstatek 580 Kč, tlačítko Reaktivace |
+| Deaktivace | 20036 Deaktivace | Aktivní internet, tlačítko Deaktivace |
+| Aktivní s plánovaným koncem | 20037 Naplánovanýkonec | Deaktivace ANO, bez akčního tlačítka |
+| Neaktivní bez peněz | 20038 Bezpeněz | Bez tlačítka Aktivace |
+| Nulové konto | 20039 Nulovékonto | Platba a odpis se vyrovnají na nulu |
+| Záporné konto | 20040 Zápornékonto | -290 Kč |
+| Přeplatek | 20041 Přeplatek | 4000 Kč, řádek `preplatek` ve finančním režimu |
+| Kauce | 20042 Kauce | 500 Kč kauce, 790 Kč platba spolku |
+| Poslední platba NIKDY | 20043 Nikdyneplatil | Platba bez data |
+| Všech 17 pohybů a dlouhá poznámka | 20044 Všechnypohyby | Konto; pohyb s oběma příznaky, další bez obou příznaků |
+| Sloučený master | 20058 Sloučenímaster | Dva odkazy na sloučené členy |
+| První sloučený člen | 20059 Sloučeníprvní | Zrušený spolek, aktivní družstvo, odkaz na 20058 |
+| Druhý sloučený člen | 20060 Sloučenídruhý | Odkaz na 20058 |
+| Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, typy zařízení 1 až 12 |
+| Cizí subnet | 20062 Cizísubnet | Patří na AP 200, IP `203.0.113.20` leží v subnetu AP 213 |
+| Bez IP i bez televize | 20063 Bezadres | AP 200, prázdná tabulka adres |
+
+Pohyb 2000120 člena 20044 má oba příznaky spolek/družstvo a je vidět v obou filtrech.
+Pohyb 2000121 nemá žádný příznak a není vidět ani v jednom filtru konta.
+Technologie připojení 0 až 9 jsou rozdělené mezi členy 20028 až 20037.
+Ostatní scénářoví členové mají telefon ve tvaru `0000` + ID a objemoví členové `0001` + pořadí: formát projde
+validací, předčíslí nepoužívá žádný operátor.
+
+## Čestné členství, televize a smlouvy
+
+ČČ: `/uzivatel-rights-cc/editcc/ID`, televize: `/uzivatel-televize/show/ID`,
+rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
+
+| Co chceš vidět | Člen: ID a příjmení | Záznam / stránka |
+|---|---|---|
+| Čekající návrh, navrhovatel 1 | 20045 Čestnéčekající | ČČ 20045, typ 0 |
+| Čekající návrh, navrhovatel 20002 | 20046 Čestnédruhýnávrh | ČČ 20046, typ 1 |
+| Schválené bez konce | 20047 Čestnébezkonce | ČČ 20047, typ 2; rozpis internetu za 0 Kč |
+| Schválené s koncem za rok | 20048 Čestnéomezené | ČČ 20048, typ 3 |
+| Prošlé před týdnem | 20049 Čestnéprošlé | ČČ 20049, typ 4 |
+| Začátek za rok | 20050 Čestnébudoucí | ČČ 20050, typ 0 |
+| Zamítnuté | 20051 Čestnézamítnuté | ČČ 20051, typ 1 |
+| Dočasná aktivace SMS | 20052 ČestnéSMS | ČČ 20052, typ 5; zelený řádek bez textu „platné čestné členství“ |
+| TV objednaná, neaktivní, s penězi | 20053 Televizeaktivace | Tlačítka Aktivovat a Odhlásit, cena 160 Kč |
+| TV objednaná, neaktivní, bez peněz | 20054 Televizebezpeněz | Jen Odhlásit |
+| TV aktivní dnes | 20055 Televizeaktivní | Platnost od -7 dní do +1 roku, minulé období a dva měsíční reporty |
+| TV odhlášená a ještě aktivní | 20056 Televizeodhlášená | Objednaná NE, aktivní ANO |
+| TV zdarma | 20057 Televizezdarma | Objednaná, cena 0 Kč, dosud neaktivní |
+| Původní TV záměrně prošlá | 1010 Rosomák | Obě období skončila před 7 dny, cena 149 Kč |
+| Smlouva bez podpisů | 20064 Smlouvabezpodpisů | Smlouva 200000, stav `---` |
+| Smlouva čeká na podpis | 20065 Smlouvačekající | Smlouva 200001 |
+| Odmítnutá smlouva | 20066 Smlouvaodmítnutá | Smlouva 200002 |
+| Platná smlouva, chybějící soubor | 20067 Smlouvaplatná | Smlouva 200003, šablona a parametry; Stáhnout ohlásí chybějící soubor |
+| Ukončená a nahrazená smlouva | 20068 Smlouvaukončená | 200004 ukončená před týdnem, poznámka odkazuje na 200006 |
+| Správcovská smlouva | 20069 Smlouvasprávce | Smlouva 200005, podepsaná |
+
+## Síť
+
+| Co chceš vidět | Oblast / AP / adresa | Stránka |
+|---|---|---|
+| Oblast s jediným AP | Oblast 200 Demo malá oblast, AP 200 Demo malé AP | `/ap/list/200` |
+| Oblast s více AP | Oblast 201 Demo rozvětvená oblast, AP 201 až 210 | `/ap/list/201` |
+| Shodný název oblasti a AP | Oblast 202 a AP 211 Demo shodný název | `/ap/show/211` |
+| Technická oblast | Oblast -20 Demo technická oblast, AP 217 | `/ap/show/217`; některá API oblast vynechávají |
+| Bez správců | Oblast 203 Demo bez správců, AP 212 a 214 | `/ap/list/203` |
+| Pouze ZSO | Oblast 204 Demo pouze zástupce, AP 213, 215 a 216 | `/ap/list/204` |
+| Neaktivní AP, bez GPS a adresy, oba zákazy automatizace | AP 202 Demo vypnuté AP | `/ap/show/202`, `/ap/edit/202` |
+| Bez automatického DNS / upgradu | AP 203 Demo bez DNS / 204 Demo bez upgradu | Editace příslušného AP |
+| Plné údaje, víceřádková poznámka | AP 201 Demo hlavní AP | `/ap/show/201` |
+| Subnet /24 | AP 200, `192.0.2.0/24` | `/subnet/overview/192.0.2`, `/subnet/detail/192.0.2` |
+| /25 až /30, gateway, network, broadcast a FREE | AP 201, `198.51.100.*` | `/subnet/overview/198.51.100`, `/subnet/detail/198.51.100` |
+| Více subnetů pro IP | AP 205 Demo vnořené subnety, `10.220.0.70` | `/ajax-api/get-ip-details?ip=10.220.0.70` |
+| Překryv dvou AP | AP 206 Demo překryv první a 212 Demo překryv druhý | `10.220.1.0/24` a `10.220.1.128/25`, validace při uložení AP |
+| Veřejné ARP proxy | AP 207 Demo veřejné ARP | `/ajax-api/get-ip-details?ip=89.248.240.20` |
+| Soukromé ARP proxy, validační chyba | AP 208 Demo soukromé ARP | `/ap/edit/208`, subnet `10.220.2.0/24` |
+| Prázdná gateway | AP 209 Demo bez brány | `/ajax-api/get-ip-details?ip=10.220.3.20` |
+| AP bez členů | AP 214 Demo bez členů | `/uzivatel-list/list/214` |
+| Uživatelé mimo AP | AP 213 Demo cizí členové, člen 20062 | `/uzivatel-list/list/213`; ZSO 20004 smí člena 20062 upravit, i když patří do cizí oblasti |
+| AP IP, RouterBoard, všechna běžná nastavení | IP 20000, `192.0.2.1`, AP 200 | `/ap/show/200`, login/heslo `demo` / `demo-only` |
+| Koncové zařízení a Ubiquiti | IP 20001 a 20002, AP 201 | `/ap/show/201` |
+| Wewimo odmítnuté připojení | AP 210 Demo Wewimo loopback, IP 20003 `127.0.0.1` | `/wewimo/show/210`, červené hlášení o nedostupném zařízení |
+| Čerstvé SSID, shoda MAC, odkaz na AP IP | Člen 20027, IP 20100 | `/uzivatel/show/20027` |
+| Staré SSID, LAST_IP, odkaz na členskou IP | Člen 20028, IP 20101 | `/uzivatel/show/20028`, ZASTARALÉ |
+| SSID s chybějícím odkazem | Člen 20029, IP 20102 | Odkaz 29999 úmyslně neexistuje; jediná povolená výjimka bez FK |
+| Změny I/U/D a smazané síťové objekty | AP 201 a člen 20027 | Historie na detailech; log zmiňuje smazané IP 29997/29998 a subnet 29998 |
+
+Wewimo je zapnuté pouze na `127.0.0.1`. Ostatní adresy se při vykreslení přes RouterOS nekontaktují.
+WebFig, SSH, Winbox a Grafana jsou odkazy nebo tlačítka pro klienta; Winbox závisí také na operačním systému prohlížeče.
+Hesla IP jsou v otevřeném textu. Formulář Přešifrování je umí zašifrovat klíčem konkrétní instance.
+Příznak Smokeping nemá žádná IP adresa: `/api/smokeping` s ním skončí chybou `Filter 'toAscii' is not defined`.
+
+## Persony
+
+Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní přihlašovací roli s výjimkou
+20003 před načtením objemu. Prošlá a budoucí role SO nemají být použitelné, aktivní DRUŽSTEVNÍK dovolí přihlášení.
+
+| ID | Příjmení | Role |
+|---|---|---|
+| 1 | Testovací | Původní SO-1 a VV |
+| 20000 | Technik | TECH |
+| 20001 | Kontrolor | KONTROLA |
+| 20002 | Malosprávce | SO-200, platný český formát telefonu |
+| 20003 | Velkosprávce | SO-10000, vzniká pouze s objemem |
+| 20004 | Zástupce | ZSO-204, platný český formát telefonu; smí upravit cizího člena 20062 |
+| 20005 | Podpora | EXTSUPPORT |
+| 20006 | Družstevník | DRUŽSTEVNÍK |
+| 20007 | Týmový | PMVTEAM |
+| 20008 | Skladník | SKLADNIK |
+| 20009 | Představenstvo | PŘEDSTAVENSTVO |
+| 20010 | Prošlárole | SO-201 skončil před týdnem, aktivní DRUŽSTEVNÍK |
+| 20011 | Budoucírole | SO-201 začne za rok, aktivní DRUŽSTEVNÍK |
+| 20012 | Chybějícítelefon | SO-201, telefon `missing` |
+| 20013 | Zahraničnítelefon | SO-201, nečeský telefon |
+| 20014 | Dnešníkonec | SO-201 s koncem v den načtení: role už neplatí; aktivní DRUŽSTEVNÍK |
+| 20015 | Systémový | Systémový ZSO-201, některé exporty ho vynechávají |
+
+## Finance, správa a API
+
+| Co chceš vidět | Kde / ID |
+|---|---|
+| Všech 12 typů příchozích plateb, banky 2010/800/9999 | `/sprava-plateb/platbycu`, platby 40000001 až 40000012, konto člena 20044 |
+| Nespárovaná bez VS / s chybným VS | `/sprava-nesparovanych/nesparovane`, platby 40000100 / 40000101 |
+| Převedená platba, mimo nespárovaný seznam | 40000102, dva pohyby bez člena se vyrovnají a platba skončí na 20044 |
+| Platba bez pohybu | 40000103, vidět pouze v příchozích platbách |
+| Převod bez původního pohybu | 40000104, pohyb typu 10 a příjem typu 1 na 20044 |
+| Zaplacené / nezaplacené výdaje, oba subjekty, stránkování | `/sprava-plateb/odchoziplatby`, 120 řádků 20000 až 20119 |
+| Dvanáct účtů, stránkování | `/sprava-uctu/ucty`; každý má tři historické stavy, obrazovka ukazuje nejnovější |
+| Aktivace za posledních 36 měsíců | `/sprava-grafu/usersgraph`, členové 20036 až 20038 (každý měsíc platba a aktivace), dostupné i bez objemu |
+| Přehled a schvalování ČČ | `/sprava-cc/prehledcc`, `/sprava-cc/schvalovanicc` |
+| Štítky bez barev, více řádků a stejný text ve dvou oblastech | `/sprava-stitku/`, štítky 21000 až 21004, členové 20002 a 20027 |
+| Sloučení se dvěma členy | `/sprava-slucovani/slouceni`, master 20058 |
+| Vyloučení z mailing listu | `/sprava-mailu/mailinglist`, členové 20015, 20016, 20019, 20024, 20025 |
+| Nástroje a formuláře | `/sprava/nastroje` |
+| Globální API | HTTP Basic `apikey200` / `demo-global-only` |
+| Dva API presentery, platnost rok | `apikey201` / `demo-multiple-only`, `Api:Areas;Api:Monitoring` |
+| API klíč platný ještě dnes | `apikey202` / `demo-today-only`, pouze AP 200 |
+| Druhé AP se členy | `apikey203` / `demo-second-ap-only`, AP 201 |
+| Prošlý API klíč | `apikey204` / `demo-expired-only` |
+| Členství aplikace | `/api/app/get-membership?uid=20018&token=demo-token-20018`, globální API klíč |
+| Mapa aplikace | `/api/app/get-map?uid=20002&token=demo-token-20002` |
+| Limit chybných přihlášení | Šest `app.getToken.failed` pro `127.0.0.1`; limit platí 15 minut od načtení |
+
+Člen 20018 má známý SHA-256 hash hesla `demo-only`.
+
+## Platnost scénářů v čase
+
+Data se počítají ke dni načtení. Testovací instance je načítá při každém nasazení, lokální databáze jen při prvním
+`userdb_dev_setup.php`. Scénáře, které po čase přestanou platit:
+
+| Scénář | Platí |
+|---|---|
+| Limit chybných přihlášení (člen 20018) | 15 minut od načtení |
+| API klíč platný ještě dnes (202) | do půlnoci dne načtení |
+| Nový člen tento měsíc (20032) | do konce měsíce |
+| Vlastní zařízení v bezplatném období (20033) | do konce příštího měsíce |
+| Čerstvé SSID (IP 20100) | 58 dní, pak je také ZASTARALÉ |
+| Aktivní televize, budoucí role a ČČ, ČČ s koncem | rok |
+
+Ostatní scénáře na čase nezávisejí. Lokální data obnovíš smazáním `.flox/cache/mariadb` při zastaveném Floxu
+a novým `userdb_dev_setup.php`.
+
+## Objem a rozsahy ID
+
+Objem přidává 100 oblastí, 450 AP, 1323 subnetů, 4500 aktivních a 9000 zrušených členů, 18000 IP adres,
+324550 pohybů, 54000 příchozích plateb a 100000 změn. Jména začínají `Objem`.
+Pohyby pokrývají 36 měsíců včetně aktuálního; bankovní protějšky existují za posledních 12 měsíců.
+Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého člena.
+
+| Co chceš vidět | Kde |
+|---|---|
+| Více než 500 aktivních členů na AP | AP 10030 Objem AP 30, 600 aktivních, `/uzivatel-list/list/10030` |
+| Více než 500 pohybů v základním filtru družstva | Člen 100000 Objem člen 00000, 622 pohybů |
+| Dlouhá historie | Člen 100000, přesně 3000 záznamů logu |
+| Pomalá kontrola cizího člena | Persona 20003, oblast 10000 Objem velký správce, 30 AP a 60 subnetů; detail cizího člena, například 100700 nebo 20063 |
+| Vlastní člen velkého správce | Persona 20003, člen 100600 na AP 10000 | Detail s tlačítkem Editovat, bez čekání |
+
+| Tabulka / objekt | Scénáře | Objem |
+|---|---|---|
+| Oblast | -20, 200 až 204 | 10000 až 10099 |
+| Ap | 200 až 217 | 10000 až 10449 |
+| Uzivatel | 20000 až 20069 | 100000 až 113499 |
+| Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
+| IPAdresa | 20000 až 20006, 20100 až 20105, 20200 až 20259 | 100000 až 126999 s mezerami |
+| SpravceOblasti | 20000 až 20024 s mezerami | 100000 |
+| ApiKlic | 200 až 204 | žádné |
+| Čestné členství | 20045 až 20052 | žádné |
+| Stitek | 21000 až 21004 | žádné |
+| SloucenyUzivatel | 20000 až 20001 | žádné |
+| Smlouva / PodpisSmlouvy | 200000 až 200006 / 200000 až 200007 | žádné |
+| UzivatelskeKonto | 2000000 až 2001107 s mezerami | 10000000 až 10323999, 11000000 až 11000549 |
+| PrichoziPlatba | 40000001 až 40000012, 40000100 až 40000104 | 50000000 až 50053999 |
+| OdchoziPlatba | 20000 až 20119 | žádné |
+| BankovniUcet | 200 až 209 a původní 1, 2 | žádné |
+| StavBankovnihoUctu | 20003 až 20629 s mezerami | žádné |
+| Log | 20000 až 20014 | přidělená databází, hodnoty začínají `Objem` |
+| TV období / reporty | 20000 až 20002 / 20000 až 20003 | žádné |
+| AplikaceToken / AplikaceLog | 20000 až 20001 / 20000 až 20005 | žádné |
+
+Původní ID zůstávají zachována. Členové nad 7370 zároveň dovolují aplikaci hledat další volné členské ID.
+
+## Co lokálně není k dispozici
+
+Živá data IDS, pingeru Sojka, vnějšího scanneru, RouterOS, InfluxDB a úspěšné odeslání SMS potřebují externí služby.
+Digisign ani jeho klíče se lokálně nepoužívají. Ukázková podepsaná PDF nejsou součástí dat;
+smlouva 200003 má záměrně chybějící soubor. Šifrovaná hesla a `oneclick_auth` závisejí na klíči instance a SQL je neobsahuje.
+
+Oblast bez AP, IP bez vlastníka, SSID bez času, subnet bez masky, smlouva bez data vygenerování a token člena bez typu
+členství nejsou platné testovací scénáře pro současné vykreslování. Data je neobsahují.
+Tabulky bez obrazovek (`Nat11`, `SNat`, `SNatBalancerRules`, `Zarizeni`, `IPAdresaZarizeni`, `SmsMaternaIn`,
+`SmsMaternaOut`, `AwegUsers`, `DNat`, `PovoleneSMTP`) se neplní.
