@@ -6,6 +6,11 @@
       "composer": {
         "pkg-path": "php82Packages.composer"
       },
+      "influxdb": {
+        "pkg-path": "influxdb2-server",
+        "pkg-group": "influxdb",
+        "version": "2.7.12"
+      },
       "libreoffice-linux": {
         "pkg-path": "libreoffice",
         "pkg-group": "pdf",
@@ -61,12 +66,73 @@
       ]
     },
     "services": {
+      "influxdb": {
+        "command": "exec bash \"$FLOX_ENV_PROJECT/scripts/userdb_influxdb.sh\""
+      },
       "mariadb": {
         "command": "exec bash \"$FLOX_ENV_PROJECT/scripts/userdb_mariadb.sh\""
       }
     }
   },
   "packages": [
+    {
+      "attr_path": "influxdb2-server",
+      "broken": false,
+      "derivation": "/nix/store/j2jldwaaxgvw7p55whm1rrx9h5dkwlcz-influxdb-2.7.12.drv",
+      "description": "Open-source distributed time series database",
+      "install_id": "influxdb",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "name": "influxdb-2.7.12",
+      "pname": "influxdb2-server",
+      "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "rev_count": 1124497,
+      "rev_date": "2026-11-19T10:51:41Z",
+      "scrape_date": "2026-11-21T05:47:34.310199Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.7.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/f2p8mj594d9pd6423hqdd9vsvv06ygf9-influxdb-2.7.12"
+      },
+      "system": "aarch64-darwin",
+      "group": "influxdb",
+      "priority": 5
+    },
+    {
+      "attr_path": "influxdb2-server",
+      "broken": false,
+      "derivation": "/nix/store/6dg8cdyns0jz051hdlhx9fr6g9705l5n-influxdb-2.7.12.drv",
+      "description": "Open-source distributed time series database",
+      "install_id": "influxdb",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "name": "influxdb-2.7.12",
+      "pname": "influxdb2-server",
+      "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "rev_count": 1124497,
+      "rev_date": "2026-11-19T10:51:41Z",
+      "scrape_date": "2026-11-21T06:43:09.398912Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.7.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/s57cvh7k670inl69la1sgamsy81d6d0n-influxdb-2.7.12"
+      },
+      "system": "x86_64-linux",
+      "group": "influxdb",
+      "priority": 5
+    },
     {
       "attr_path": "mariadb_1011",
       "broken": false,

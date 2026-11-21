@@ -65,13 +65,13 @@ Nette Database, MariaDB), REST API a několik samostatných služeb.
 ## Příkazy
 
 Vývoj i testy běží v projektovém Flox prostředí (PHP 8.2, Composer, MariaDB,
-LibreOffice). Před testováním ověř dostupnost Floxu pomocí `flox --version`.
+InfluxDB, LibreOffice). Před testováním ověř dostupnost Floxu pomocí `flox --version`.
 Pokud není dostupný, nabídni uživateli návod k instalaci a tutoriál použití z
 [README](readme.md#tests-with-flox); v testování pokračuj po jeho zprovoznění.
 
 ```sh
 flox activate -- composer install --no-interaction --prefer-dist --no-progress
-flox activate -s -- vendor/bin/tester -C tests   # testy; -s spustí MariaDB
+flox activate -s -- vendor/bin/tester -C tests   # testy; -s spustí MariaDB a InfluxDB
 flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
 flox activate -- vendor/bin/php-cs-fixer check --diff
 flox activate -- vendor/bin/latte-lint app
