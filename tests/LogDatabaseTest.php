@@ -108,6 +108,56 @@ final class LogDatabaseTest extends DatabaseTestCase
         Assert::same($system->id, $this->database->table('Log')->order('id DESC')->fetch()->Uzivatel_id);
     }
 
+    /** @return array<string, array{mixed, mixed, bool}> */
+    public function updateCases(): array {
+        return [
+            'unchanged text' => ['router', 'router', false],
+            'changed text' => ['router', 'router2', true],
+            'numeric text keeps leading zeros' => ['00123', '123', true],
+            'numeric text keeps exponent spelling' => ['0e123', '0e456', true],
+            'integer from form' => [42, '42', false],
+            'integer with leading zeros from form' => [42, '0042', false],
+            'integer with decimal spelling from form' => [42, '42.0', false],
+            'different integer' => [42, '43', true],
+            'integer is not truncated' => [42, '42.5', true],
+            'maximum integer from form' => [PHP_INT_MAX, (string) PHP_INT_MAX, false],
+            'adjacent large integer' => [PHP_INT_MAX, (string) (PHP_INT_MAX - 1), true],
+            'float from form' => [50.25, '50.25', false],
+            'whole float from form' => [50.0, '50', false],
+            'nearby floats' => [50.000000000001, '50.000000000002', true],
+            'checked checkbox' => [1, true, false],
+            'unchecked checkbox' => [0, false, false],
+            'changed checkbox' => [1, false, true],
+            'unchanged null' => [null, null, false],
+            'empty form against null' => [null, '', false],
+            'cleared empty text' => ['', null, false],
+            'zero against null' => [null, 0, true],
+            'cleared zero' => [0, null, true],
+            'same instant in different objects' => [new \DateTime('2026-11-21 12:00:00+01:00'), new \DateTimeImmutable('2026-11-21 11:00:00+00:00'), false],
+            'changed date' => [new \DateTime('2026-11-21'), new \DateTimeImmutable('2026-11-22'), true],
+            'cleared date' => [new \DateTime('2026-11-21'), null, true],
+        ];
+    }
+
+    /** @dataProvider updateCases */
+    public function testUpdateComparesStoredValuesAndFormRepresentations(mixed $old, mixed $new, bool $changed): void {
+        foreach ([['value' => $old], new \ArrayObject(['value' => $old])] as $original) {
+            $entries = [];
+            $this->log->logujUpdate($original, ['value' => $new], 'Uzivatel', $entries);
+            Assert::same($changed ? [[
+                'sloupec' => 'Uzivatel.value', 'puvodni_hodnota' => $old, 'nova_hodnota' => $new, 'akce' => 'U',
+            ]] : [], $entries);
+        }
+    }
+
+    public function testUpdateRecordsNewColumnWithoutReadingMissingKey(): void {
+        $entries = [];
+        $this->log->logujUpdate([], ['nick' => 'new'], 'Uzivatel', $entries);
+        Assert::same([[
+            'sloupec' => 'Uzivatel.nick', 'puvodni_hodnota' => null, 'nova_hodnota' => 'new', 'akce' => 'U',
+        ]], $entries);
+    }
+
     private function entry(string $column, string $date, ?string $old, ?string $new): void {
         $this->fixtures->insert('Log', [
             'Uzivatel_id' => $this->memberId,

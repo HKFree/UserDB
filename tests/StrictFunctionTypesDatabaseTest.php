@@ -13,6 +13,15 @@ require_once __DIR__ . '/bootstrap.php';
 
 final class StrictFunctionTypesDatabaseTest extends DatabaseTestCase
 {
+    public function testRoleLabelsKeepEmptyAndSpecifiedArea(): void {
+        $model = $this->container->getByType(SpravceOblasti::class);
+        foreach ([null, 0, '0', ''] as $area) {
+            Assert::same('VV', $model->getTypPravaPopisek('VV', $area));
+        }
+        Assert::same('SO-42', $model->getTypPravaPopisek('SO', 42));
+        Assert::same('SO-0042', $model->getTypPravaPopisek('SO', '0042'));
+    }
+
     public function testDatabaseIdsHaveTheSameTypeInSelectionsPairsAndArrayKeys(): void {
         $area = $this->fixtures->area();
         $ap = $this->fixtures->ap($area->id);

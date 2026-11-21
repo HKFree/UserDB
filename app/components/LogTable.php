@@ -149,13 +149,13 @@ class LogTable extends UI\Control
         if ($sloupec === 'heslo') {
             $tr->create('td')->setText('N/A');
         } else {
-            if ($line->puvodni_hodnota == null) {
+            if (($line->puvodni_hodnota ?? '') === '') {
                 $tr->create('td')->setText('----');
             } else {
                 $tr->create('td')->setText($line->puvodni_hodnota);
             }
 
-            if ($line->nova_hodnota == null) {
+            if (($line->nova_hodnota ?? '') === '') {
                 $tr->create('td')->setText('----');
             } else {
                 $tr->create('td')->setText($line->nova_hodnota);
@@ -196,14 +196,14 @@ class LogTable extends UI\Control
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);
 
-                $datum = $line->datum;
+                $datum = (string) $line->datum;
                 $titulek = "IP ".$ipVsechny[$id];
 
-                if ($last !== false && $last[0]->getText() == $datum && $last[2]->getText() === $titulek) {
+                if ($last !== false && $last[0]->getText() === $datum && $last[2]->getText() === $titulek) {
                     $text = "";
                     if ($line->akce === self::INSERT) {
                         $text = $sloupec." = ".$line->nova_hodnota.", ";
-                    } elseif ($line->akce === self::DELETE && $line->puvodni_hodnota != null) {
+                    } elseif ($line->akce === self::DELETE && ($line->puvodni_hodnota ?? '') !== '') {
                         $text = $sloupec." = ".$line->puvodni_hodnota.", ";
                     } elseif ($line->akce === self::UPDATE) {
                         $text = $sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";
@@ -233,14 +233,14 @@ class LogTable extends UI\Control
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);
 
-                $datum = $line->datum;
+                $datum = (string) $line->datum;
                 $titulek = "Subnet ".$subnetyVsechny[$id];
 
-                if ($last !== false && $last[0]->getText() == $datum && $last[2]->getText() === $titulek) {
+                if ($last !== false && $last[0]->getText() === $datum && $last[2]->getText() === $titulek) {
                     $text = "";
                     if ($line->akce === self::INSERT) {
                         $text = $sloupec." = ".$line->nova_hodnota.", ";
-                    } elseif ($line->akce === self::DELETE && $line->puvodni_hodnota != null) {
+                    } elseif ($line->akce === self::DELETE && ($line->puvodni_hodnota ?? '') !== '') {
                         $text = $sloupec." = ".$line->puvodni_hodnota.", ";
                     } elseif ($line->akce === self::UPDATE) {
                         $text = $sloupec." z ".$line->puvodni_hodnota." na ".$line->nova_hodnota.", ";

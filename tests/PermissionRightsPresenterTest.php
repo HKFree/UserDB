@@ -41,6 +41,68 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
     }
 
     /** @return list<array{string, bool, bool}> */
+    public function existingRightsCases(): array {
+        return [
+            ['unchanged', false, true], ['unlimited', false, true], ['global', false, true], ['setEnd', false, true],
+            ['od', false, false], ['do', false, false], ['clearEnd', false, false],
+            ['area', false, false], ['role', false, false], ['do', true, true],
+        ];
+    }
+
+    /** @dataProvider existingRightsCases */
+    public function testExistingRightKeepsHistoricalEditGuard(string $change, bool $override, bool $allowed): void {
+        $s = $this->scenario;
+        $areaId = $change === 'global' ? null : $s->area->id;
+        $oldEnd = in_array($change, ['unlimited', 'setEnd'], true) ? null : '2099-12-31';
+        $right = $this->fixtures->role($s->member->id, $change === 'global' ? 'VV' : 'SO', $areaId, '2000-01-01', $oldEnd);
+        $values = [
+            'id' => (string) $right->id, 'Uzivatel_id' => (string) $s->member->id,
+            'TypSpravceOblasti_id' => (string) $right->TypSpravceOblasti_id, 'Oblast_id' => (string) $areaId,
+            'od' => '2000-01-01', 'do' => $change === 'unlimited' ? '' : '2099-12-31',
+        ];
+        match ($change) {
+            'od' => $values['od'] = '2001-01-01',
+            'do' => $values['do'] = '2098-12-31',
+            'setEnd' => $values['do'] = '2098-12-31',
+            'clearEnd' => $values['do'] = '',
+            'area' => $values['Oblast_id'] = (string) $s->otherArea->id,
+            'role' => $values['TypSpravceOblasti_id'] = (string) $this->fixtures->lookup('TypSpravceOblasti', 'ZSO'),
+            default => null,
+        };
+        if ($override) {
+            $values['override'] = '1';
+        }
+        $before = $s->snapshot();
+        $result = $this->presenters->ui($s->actors['vv']->id, 'UzivatelRightsCc', [
+            'action' => 'editrights', 'id' => $s->member->id,
+        ], 'POST', [
+            '_do' => 'uzivatelRightsForm-submit', 'id' => (string) $s->member->id,
+            'rights' => [$right->id => $values], 'save' => 'Uložit',
+        ]);
+        if (!$allowed) {
+            Assert::same(200, $result->status);
+            Assert::contains('<li>NERECYKLUJTE. Upravili jste starší právo a nezaškrtli jste tlačítko OPRAVA. Mysleli jste to vážně?</li>', $result->html);
+            Assert::same($before, $s->snapshot());
+            return;
+        }
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $s->member->id);
+        $saved = $this->database->table('SpravceOblasti')->get($right->id);
+        Assert::same('2000-01-01', $saved->od->format('Y-m-d'));
+        Assert::same($values['do'] === '' ? null : $values['do'], $saved->do?->format('Y-m-d'));
+        Assert::same($areaId, $saved->Oblast_id);
+        Assert::same($right->TypSpravceOblasti_id, $saved->TypSpravceOblasti_id);
+        $logs = $this->database->table('Log')->where('tabulka_id', $s->member->id);
+        $changed = $override || $change === 'setEnd';
+        Assert::same($changed ? 1 : 0, $logs->count('*'));
+        if ($changed) {
+            $entry = $logs->fetch();
+            Assert::same('SpravceOblasti[' . $right->id . '].do', $entry->sloupec);
+            Assert::same($oldEnd === null ? null : '2099-12-31 00:00:00', $entry->puvodni_hodnota);
+            Assert::same('2098-12-31 00:00:00', $entry->nova_hodnota);
+        }
+    }
+
+    /** @return list<array{string, bool, bool}> */
     public function honoraryCases(): array {
         return [
             ['cooperative', false, false], ['otherSo', false, false], ['ownSo', true, false],

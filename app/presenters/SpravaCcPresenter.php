@@ -139,11 +139,11 @@ class SpravaCcPresenter extends SpravaPresenter
                 $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
 
-                if ($starePravo->schvaleno != $pravo->schvaleno && ($pravo->schvaleno == 1 || $pravo->schvaleno == 2)) {
+                if ($starePravo->schvaleno !== $pravo->schvaleno && ($pravo->schvaleno === 1 || $pravo->schvaleno === 2)) {
                     $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
                     $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
 
-                    $stav = $pravo->schvaleno == 1 ? "schválena" : "zamítnuta";
+                    $stav = $pravo->schvaleno === 1 ? "schválena" : "zamítnuta";
                     $platiOd = $pravo->plati_od->format('d.m.Y');
                     $platiDo = $pravo->plati_do?->format('d.m.Y') ?? 'neomezeně';
 
