@@ -14,11 +14,13 @@ class OdchoziPlatba extends Table
     */
     protected $tableName = 'OdchoziPlatba';
 
-    public function getOdchoziPlatby() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getOdchoziPlatby(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 
-    public function getOdchoziPlatba($id) {
+    /** @param int|string $id */
+    public function getOdchoziPlatba($id): ?Nette\Database\Table\ActiveRow {
         return ($this->find($id));
     }
 }

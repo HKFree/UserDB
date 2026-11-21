@@ -74,7 +74,7 @@ foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
         public function __construct() {
         }
 
-        public function getHasCC($userID) {
+        public function getHasCC($userID): bool {
             return false;
         }
     };

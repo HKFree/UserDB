@@ -9,9 +9,9 @@ use Nette;
  */
 class AccountActivation
 {
-    private $uzivatel;
-    private $uzivatelskeKonto;
-    private $parameters;
+    private Uzivatel $uzivatel;
+    private UzivatelskeKonto $uzivatelskeKonto;
+    private Parameters $parameters;
 
     public function __construct(Parameters $parameters, UzivatelskeKonto $konto, Uzivatel $uzivatel) {
         $this->uzivatel = $uzivatel;
@@ -19,7 +19,8 @@ class AccountActivation
         $this->parameters = $parameters;
     }
 
-    public function activateAccount($loggedUser, $id) {
+    /** @param int|string $id */
+    public function activateAccount(Nette\Security\User $loggedUser, $id): bool {
         $uzivatel = $this->uzivatel->getUzivatel($id);
         if ($uzivatel) {
             $this->uzivatel->update($uzivatel->id, array('money_aktivni' => 1));
@@ -35,7 +36,8 @@ class AccountActivation
         return false;
     }
 
-    public function reactivateAccount($loggedUser, $id) {
+    /** @param int|string $id */
+    public function reactivateAccount(Nette\Security\User $loggedUser, $id): string|true {
         $uzivatel = $this->uzivatel->getUzivatel($id);
         if ($uzivatel) {
             if ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1) {
@@ -67,7 +69,8 @@ class AccountActivation
         return '';
     }
 
-    public function deactivateAccount($loggedUser, $id) {
+    /** @param int|string $id */
+    public function deactivateAccount(Nette\Security\User $loggedUser, $id): bool {
         $uzivatel = $this->uzivatel->getUzivatel($id);
         if ($uzivatel) {
             $this->uzivatel->update($uzivatel->id, array('money_aktivni' => 1,'money_deaktivace' => 1));

@@ -14,7 +14,8 @@ class TypPohybuNaUctu extends Table
     */
     protected $tableName = 'TypPohybuNaUctu';
 
-    public function getTypPohybuNaUctu() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getTypPohybuNaUctu(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 }
