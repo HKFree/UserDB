@@ -107,7 +107,7 @@ class SubnetPresenter extends BasePresenter
                     $ip = $existujiciIP[$ipAdresa];
                     list($a, $b, $c, $d) = explode(".", $ip->ip_adresa);
                     $subnetInfo = null;
-                    if (!empty($ip->Uzivatel_id)) {
+                    if ($ip->Uzivatel_id !== null && $ip->Uzivatel_id !== 0) {
                         $subnetInfo = array(
                             'type' => 'Uzivatel',
                             'id' => $ip->ref('Uzivatel')->id,

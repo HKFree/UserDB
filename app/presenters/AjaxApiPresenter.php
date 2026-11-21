@@ -71,7 +71,7 @@ class AjaxApiPresenter extends BasePresenter
     public function renderGetIpsPing() {
         $ips = $this->getParameter("ips");
 
-        if (empty($ips)) {
+        if (in_array($ips, [null, '', '0', 0, 0.0, false, []], true)) {
             $this->sendResponse(new JsonResponse(array()));
         }
 

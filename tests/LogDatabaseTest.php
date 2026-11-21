@@ -57,6 +57,57 @@ final class LogDatabaseTest extends DatabaseTestCase
         );
     }
 
+    public function testInsertAndDeleteKeepLegacyZeroOmission(): void {
+        $omitted = [null, false, 0, 0.0, '', '0', []];
+        $recorded = [true, 1, -1, 1.5, '00', '0.0', ' ', ['value'], new \stdClass()];
+        foreach (['I', 'D'] as $action) {
+            $entries = [];
+            $values = array_merge($omitted, $recorded);
+            if ($action === 'I') {
+                $this->log->logujInsert($values, 'Test', $entries);
+            } else {
+                $this->log->logujDelete($values, 'Test', $entries);
+            }
+            $expected = [];
+            foreach ($recorded as $index => $value) {
+                $expected[] = [
+                    'sloupec' => 'Test.' . ($index + count($omitted)),
+                    'puvodni_hodnota' => $action === 'D' ? $value : null,
+                    'nova_hodnota' => $action === 'I' ? $value : null,
+                    'akce' => $action,
+                ];
+            }
+            Assert::same($expected, $entries);
+        }
+    }
+
+    public function testAuditAuthorUsesExplicitThenSignedInThenSubjectThenSystemUser(): void {
+        $apId = $this->database->table('Uzivatel')->get($this->memberId)->Ap_id;
+        $system = $this->fixtures->member($apId, ['id' => 1]);
+        $actor = $this->fixtures->member($apId);
+        $explicit = $this->fixtures->member($apId);
+        $user = $this->container->getByType(\Nette\Security\User::class);
+        $entries = [['sloupec' => 'nick', 'puvodni_hodnota' => 'Old', 'nova_hodnota' => 'New', 'akce' => 'U']];
+        foreach ([false, true] as $signedIn) {
+            if ($signedIn) {
+                $user->login(new \Nette\Security\SimpleIdentity($actor->id));
+            }
+            foreach ([null, '', 0, '0', $explicit->id, (string) $explicit->id] as $input) {
+                $this->log->loguj('Uzivatel', $this->memberId, $entries, $input);
+                $last = $this->database->table('Log')->order('id DESC')->fetch();
+                $expected = $input === $explicit->id || $input === (string) $explicit->id
+                    ? $explicit->id : ($signedIn ? $actor->id : $this->memberId);
+                Assert::same($expected, $last->Uzivatel_id);
+                Assert::same($this->memberId, $last->tabulka_id);
+            }
+        }
+        $user->logout(true);
+        $this->log->loguj('Ap', $apId, $entries);
+        Assert::same($system->id, $this->database->table('Log')->order('id DESC')->fetch()->Uzivatel_id);
+        $this->log->loguj('Uzivatel', '0', $entries);
+        Assert::same($system->id, $this->database->table('Log')->order('id DESC')->fetch()->Uzivatel_id);
+    }
+
     private function entry(string $column, string $date, ?string $old, ?string $new): void {
         $this->fixtures->insert('Log', [
             'Uzivatel_id' => $this->memberId,

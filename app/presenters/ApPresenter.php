@@ -132,7 +132,7 @@ class ApPresenter extends BasePresenter
         if ($this->ap->canViewOrEditAll($this->getUser())) {
             return true;
         }
-        return !empty($idAp) && $this->ap->getAP($idAp) !== null && $this->ap->canViewOrEditAP($idAp, $this->getUser());
+        return !in_array($idAp, [null, '', 0, '0'], true) && $this->ap->getAP($idAp) !== null && $this->ap->canViewOrEditAP($idAp, $this->getUser());
     }
 
     public function renderEdit(): void {

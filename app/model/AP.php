@@ -52,7 +52,7 @@ class AP extends Table
                                             WHERE (
                                             IPAdresa.ip_adresa = ?
                                             ) LIMIT 1", $search)->fetchField();
-        if (!empty($completeMatchId)) {
+        if ($completeMatchId !== null) {
             return ($this->findBy(array('id' => $completeMatchId)));
         }
         return ($this->findBy(array('id' => 0)));

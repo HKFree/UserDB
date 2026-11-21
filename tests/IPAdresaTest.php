@@ -60,11 +60,11 @@ Assert::same(['10.0.0.0', '10.0.0.1', '10.0.0.2'], $model->getListOfIPFromSubnet
 Assert::count(255, $model->getListOfIPFromSubnet('10.107.5.0/24'));
 Assert::same('10.107.5.254', $model->getListOfIPFromSubnet('10.107.5.0/24')[254]);
 Assert::same([], $model->getListOfIPFromSubnet('10.0.0.7/32'));
-foreach (['', null, '10.0.0.0', '10.0.0.0/33', 'abc/24'] as $invalid) {
+foreach (['', null, '0', '10.0.0.0', '10.0.0.0/33', 'abc/24'] as $invalid) {
     Assert::same([], $model->getListOfIPFromSubnet($invalid));
 }
 Assert::same(['10.0.0.1', '10.0.0.2', '10.0.0.3'], $model->getListOfIPFromRange('10.0.0.1-10.0.0.3'));
 Assert::same(['10.0.0.9'], $model->getListOfIPFromRange('10.0.0.9-10.0.0.9'));
-foreach (['', null, '10.0.0.1', '10.0.0.1-10.0.0', '10.0.0.1 - 10.0.0.3'] as $invalid) {
+foreach (['', null, '0', '10.0.0.1', '10.0.0.1-10.0.0', '10.0.0.1 - 10.0.0.3'] as $invalid) {
     Assert::same([], $model->getListOfIPFromRange($invalid));
 }

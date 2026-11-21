@@ -557,7 +557,7 @@ class IPAdresa extends Table
      */
     public function getListOfIPFromSubnet($ipsubnet) {
         $genaddresses = array();
-        if (!empty($ipsubnet)) {
+        if ($ipsubnet !== null) {
             if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i", $ipsubnet)) {
                 @list($sip, $slen) = explode('/', $ipsubnet);
                 if (($smin = ip2long($sip)) !== false) {
@@ -578,7 +578,7 @@ class IPAdresa extends Table
      */
     public function getListOfIPFromRange($iprange) {
         $genaddresses = array();
-        if (!empty($iprange)) {
+        if ($iprange !== null) {
             if (preg_match("/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/", $iprange)) {
                 $temp = preg_split("/-/", $iprange, -1, PREG_SPLIT_NO_EMPTY);
                 $QRange1 = $temp[0];

@@ -49,7 +49,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
             ->setHtmlType('color')
             ->setRequired('Barva popředí');
         $form->addTextArea('poznamka', 'Poznámka', 100, 15);
-        if (empty($id)) {
+        if (in_array($id, [null, '', '0', 0, 0.0, false, []], true)) {
             $form->addSubmit('send', 'Vytvořit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
         } else {
             $form->addSubmit('send', 'Upravit')->setAttribute('class', 'btn btn-success btn-xs btn-white');

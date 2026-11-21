@@ -150,7 +150,7 @@ class Subnet extends Table
             } else {
                 $out = $this->parseSubnet($subnet->subnet);
 
-                if (empty($subnet->gateway)) {
+                if ($subnet->gateway === '' || $subnet->gateway === '0') {
                     $out["error"] = Subnet::ERR_NO_GW;
                 } else {
                     $out["gateway"] = $subnet->gateway;
