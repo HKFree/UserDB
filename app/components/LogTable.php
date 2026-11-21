@@ -78,7 +78,7 @@ class LogTable extends UI\Control
     private function getIPMapping(iterable $logy): array {
         $ipsKProhlednuti = array();
         foreach ($logy as $line) {
-            if (($sloupec = $this->parseSloupec($line->sloupec)) && ($sloupec["typ"] == self::IPADRESA)) {
+            if (($sloupec = $this->parseSloupec($line->sloupec)) !== [] && ($sloupec["typ"] == self::IPADRESA)) {
                 $ipsKProhlednuti[$sloupec["ipId"]] = "Nenalezeno";
             }
         }
@@ -98,7 +98,7 @@ class LogTable extends UI\Control
     private function getSubnetMapping(iterable $logy): array {
         $subnetsKProhlednuti = array();
         foreach ($logy as $line) {
-            if (($sloupec = $this->parseSloupec($line->sloupec)) && ($sloupec["typ"] == self::SUBNET)) {
+            if (($sloupec = $this->parseSloupec($line->sloupec)) !== [] && ($sloupec["typ"] == self::SUBNET)) {
                 $subnetsKProhlednuti[$sloupec["subnetId"]] = "Nenalezeno";
             }
         }
@@ -174,7 +174,7 @@ class LogTable extends UI\Control
         $toSkipString = implode("|", $toSkip);
 
         foreach ($logy as $key => $line) {
-            if (!($rozparsovano = $this->parseSloupec($line->sloupec))) {
+            if (($rozparsovano = $this->parseSloupec($line->sloupec)) === []) {
                 continue;
             }
 

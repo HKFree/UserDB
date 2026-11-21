@@ -36,7 +36,7 @@ class VnejsiScannerPresenter extends BasePresenter
                 continue;
             }
 
-            if ($ip_adresa->Ap) {
+            if ($ip_adresa->Ap !== null) {
                 $scan_detaily[$ip]["oblast"] = $ip_adresa->Ap->Oblast->jmeno;
                 $scan_detaily[$ip]["uzivatel"] = false;
             } else {

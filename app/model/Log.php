@@ -219,7 +219,7 @@ class Log extends Table
         }
 
         // Pokud neni zadny uzivatel prihlaseny (napr verejny callback) a logujeme neco u uzivatele, vem jeho
-        if (empty($uzivatel_id) & $tabulka == 'Uzivatel') {
+        if (empty($uzivatel_id) && $tabulka == 'Uzivatel') {
             $uzivatel_id = $tabulka_id;
         }
 

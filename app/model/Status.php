@@ -79,7 +79,7 @@ class Status
                     }
 
                     // IP je mrtva
-                    if (!$ping_ip["alive"]) {
+                    if (in_array($ping_ip["alive"], [null, false, 0, 0.0, '', '0', []], true)) {
                         $problemy[] = array($ip, $this::PROBLEM_MRTVA, $ping_ip);
                         continue;
                     }

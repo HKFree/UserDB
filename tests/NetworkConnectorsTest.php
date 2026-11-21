@@ -40,6 +40,35 @@ final class NetworkConnectorsTest extends TestCase
         Assert::same(0, $handler->count());
     }
 
+    public function testIdsRejectsEmptyResponsesButAcceptsEmptyHits(): void {
+        foreach (['', 'not json', 'null', 'false', '0', '0.0', '""', '"0"', '[]', '{}'] as $body) {
+            $model = $this->connector(new MockHandler([new Response(200, [], $body)]));
+            Assert::exception(fn () => $model->getEventsForIps(['192.0.2.42']), \RuntimeException::class, 'Empty response from IDS, maybe wrong IDS username/password?');
+        }
+        $model = $this->connector(new MockHandler([
+            new Response(200, [], '{"hits":{"hits":[]}}'),
+            new Response(200, [], '{"aggregations":{"uniq_ip":{"buckets":[]}}}'),
+        ]));
+        Assert::same([], $model->getEventsForIps(['192.0.2.42']));
+        Assert::same([], $model->getUniqueIpsFromPrivateSubnets());
+    }
+
+    public function testEmptyScanIsRetriedAndNonemptyScanIsCached(): void {
+        $scanner = new class ('http://127.0.0.1:0/') extends VnejsiScanner {
+            public int $downloads = 0;
+
+            public function downloadScan(): void {
+                $this->downloads++;
+                $data = $this->downloads === 1 ? [] : ['192.0.2.42' => ['443']];
+                (new \ReflectionProperty(VnejsiScanner::class, 'scanData'))->setValue($this, $data);
+            }
+        };
+        Assert::same([], $scanner->getScan());
+        Assert::same(['192.0.2.42' => ['443']], $scanner->getScan());
+        Assert::same(['192.0.2.42' => ['443']], $scanner->getScan());
+        Assert::same(2, $scanner->downloads);
+    }
+
     public function testUnavailableScanKeepsNullResults(): void {
         $scanner = new class ('http://127.0.0.1:0/') extends VnejsiScanner {
             /** @return array{} */

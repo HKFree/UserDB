@@ -44,7 +44,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
                 if ($uzivatel->regform_downloaded_password_sent == 0) {
                     $uzivatel->update(['regform_downloaded_password_sent' => 1]);
 
-                    if ($uzivatel->spolek) {
+                    if (!in_array($uzivatel->spolek, [0, false], true)) {
                         /*
                          * TODO předělat registrační formulář spolku podle nových stanov od 1.2.2025
                          */
@@ -53,7 +53,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
                         // $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
                     }
 
-                    if ($uzivatel->druzstvo) {
+                    if (!in_array($uzivatel->druzstvo, [0, false], true)) {
                         $this->requestDruzstvoContract->execute($uzivatel->id);
                     }
                 }

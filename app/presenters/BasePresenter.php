@@ -135,7 +135,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     protected function getWewimoLinkFromIpAddress(ActiveRow $ip): ?string {
-        if ($ip->w_ssid) {
+        if (!in_array($ip->w_ssid, [null, '', '0'], true)) {
             // najit IPAdresu zarizeni (AP), na ktere je tato ip (podle Wewima) pripojena
             $apAdresa = $ip->ref('IPAdresa', 'w_ap_IPAdresa_id');
             if ($apAdresa !== null) {

@@ -90,7 +90,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
         //\Tracy\Debugger::barDump($pohyb->Uzivatel);
         if ($pohyb !== null) {
-            if ($pohyb->Uzivatel_id) {
+            if (!in_array($pohyb->Uzivatel_id, [null, 0], true)) {
                 $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
             } else {
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');

@@ -110,7 +110,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $data = json_decode($this->getHttpRequest()->getRawBody(), true);
         $stitek_id = $data['stitek_id'] ?? null;
         $user_id = $data['user_id'] ?? null;
-        if (!$stitek_id || !$user_id) {
+        if (in_array($stitek_id, [null, false, 0, 0.0, '', '0', []], true) || in_array($user_id, [null, false, 0, 0.0, '', '0', []], true)) {
             echo json_encode(['success' => false, 'message' => 'Neplatné parametry.']);
             $this->terminate();
         }

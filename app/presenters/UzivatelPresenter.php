@@ -198,14 +198,8 @@ class UzivatelPresenter extends BasePresenter
                 } else {
                     $this->template->money_lastact = '?';
                 }
-                $stavUctuSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->sum('castka');
-                if (!$stavUctuSpolek || '' == $stavUctuSpolek) {
-                    $stavUctuSpolek = 0;
-                }
-                $stavUctuDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
-                if (!$stavUctuDruzstvo || '' == $stavUctuDruzstvo) {
-                    $stavUctuDruzstvo = 0;
-                }
+                $stavUctuSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->sum('castka') ?: 0;
+                $stavUctuDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka') ?: 0;
 
                 $this->template->money_bal_druzstvo = $stavUctuDruzstvo;
                 if ($uzivatel->kauce_mobil > 0) {
@@ -215,10 +209,7 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->money_bal_spolek = $stavUctuSpolek;
                 }
 
-                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
-                if (!$stavUctuDph || '' == $stavUctuDph) {
-                    $stavUctuDph = 0;
-                }
+                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka') ?: 0;
                 $this->template->money_dph = $stavUctuDph;
 
                 if ($this->sloucenyUzivatel->getIsAlreadyMaster($uid)) {

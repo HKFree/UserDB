@@ -109,7 +109,7 @@ class Subnet extends Table
             $arpProxy = $tr->create('td')->create('span');
             $arpProxy->setTitle(Subnet::ARP_PROXY_DESCRIPTION)
                      ->addAttributes($tooltips);
-            if ($subnet->arp_proxy) {
+            if (!in_array($subnet->arp_proxy, [0, false], true)) {
                 $arpProxy->setClass('label label-success');
                 $arpProxy->setText("zapnuto");
             } else {
@@ -144,7 +144,7 @@ class Subnet extends Table
         if (count($subnets) == 1) {
             $subnet = $subnets->fetch();
 
-            if ($subnet->arp_proxy) {
+            if (!in_array($subnet->arp_proxy, [0, false], true)) {
                 $out = $this->parseSubnet(Subnet::ARP_PROXY_SUBNET);
                 $out["gateway"] = Subnet::ARP_PROXY_GW;
             } else {

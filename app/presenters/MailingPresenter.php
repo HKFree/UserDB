@@ -78,7 +78,7 @@ class MailingPresenter extends UzivatelPresenter
 
     // generate auth code and encrypt it to DB if not already generated
     private function oneclickAuthCode(Nette\Database\Table\ActiveRow $uzivatel): string {
-        if (!$uzivatel->oneclick_auth) {
+        if (in_array($uzivatel->oneclick_auth, [null, '', '0'], true)) {
             $code_length = 32;
             $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', (int) ceil($code_length / strlen($x)))), 1, $code_length);
             $oneclick_auth_code_encrypted = $this->cryptosvc->encrypt($oneclick_auth_code);

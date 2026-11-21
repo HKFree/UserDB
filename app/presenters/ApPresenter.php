@@ -70,7 +70,7 @@ class ApPresenter extends BasePresenter
                 $tr = $table->create('tr');
                 $tr->create('td')->setText($ap->id);
                 $tdNazev = $tr->create('td');
-                if (!$ap->aktivni) {
+                if (in_array($ap->aktivni, [0, false], true)) {
                     $tdNazev = $tdNazev->create('s');
                 }
                 $tdNazev->setText($ap->jmeno);

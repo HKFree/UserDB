@@ -167,7 +167,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         );
 
         // Nemame datum narozeni? -> vlozit editovatelny policko
-        if ($uzivatel->TypPravniFormyUzivatele->text == "FO" && !$uzivatel->datum_narozeni) {
+        if ($uzivatel->TypPravniFormyUzivatele->text == "FO" && $uzivatel->datum_narozeni === null) {
             printf("Krok %u: Nemame datum narozeni -> vlozit editovatelny policko\n", ++$krok);
             $parametry['datum_narozeni'] = '';
             $parametry['firma'] = '';

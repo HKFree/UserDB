@@ -61,7 +61,7 @@ class UzivatelPresenter extends ApiPresenter
 
         $ip = $this->ipAdresa->findIp(['ip_adresa' => $id, 'Ap_id' => null]);
         $uzivatel = $ip !== null ? $ip->Uzivatel : null;
-        if (!$uzivatel) {
+        if ($uzivatel === null) {
             $this->httpResponse->setCode(Response::S404_NOT_FOUND);
             $this->sendResponse(new JsonResponse(['result' => 'User for IP address not found']));
         }

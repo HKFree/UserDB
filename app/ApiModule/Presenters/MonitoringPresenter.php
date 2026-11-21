@@ -75,7 +75,7 @@ class MonitoringPresenter extends ApiPresenter
                 'popis' => $adresa->popis
             );
 
-            if ($adresa->Ap_id) {
+            if (!in_array($adresa->Ap_id, [null, 0], true)) {
                 $out[$adresa->ip_adresa]['Ap_id'] = $adresa->Ap_id;
             } else {
                 $out[$adresa->ip_adresa]['Uzivatel_id'] = $adresa->Uzivatel_id;

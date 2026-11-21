@@ -55,8 +55,8 @@ class Authenticator implements Security\IAuthenticator
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
         $roles = [];
         foreach ($spravcepro as $key => $value) {
-            if ($value->od->getTimestamp() < $date->getTimestamp() && (!$value->do || $value->do->getTimestamp() > $date->getTimestamp())) {
-                if ($value->Oblast) {
+            if ($value->od->getTimestamp() < $date->getTimestamp() && ($value->do === null || $value->do->getTimestamp() > $date->getTimestamp())) {
+                if ($value->Oblast !== null) {
                     $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text."-".$value->Oblast;
                 } else {
                     $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;

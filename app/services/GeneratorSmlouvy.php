@@ -83,7 +83,7 @@ class GeneratorSmlouvy
           'uid' => (string) $uzivatel->id,
           'jmeno_prijmeni' => $jmenoString,
           'upresneni' => 'Datum narození',
-          'datum_narozeni' => $uzivatel->datum_narozeni ? $uzivatel->datum_narozeni->format('d.m.Y') : '',
+          'datum_narozeni' => $uzivatel->datum_narozeni !== null ? $uzivatel->datum_narozeni->format('d.m.Y') : '',
           'email' => $uzivatel->email,
           'telefon' => $uzivatel->telefon,
           'adresa' => $adresaString,

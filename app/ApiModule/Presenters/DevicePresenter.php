@@ -55,7 +55,7 @@ class DevicePresenter extends ApiPresenter
         $toUpdate = array('login' => $this->getHttpRequest()->getPost("login"));
 
         $heslo = $this->getHttpRequest()->getPost("heslo");
-        if ($heslo && strlen($heslo) > 0) {
+        if (!in_array($heslo, [null, false, 0, 0.0, '', '0', []], true) && strlen($heslo) > 0) {
             $toUpdate["heslo"] = $this->cryptosvc->encrypt($heslo);
             $toUpdate["heslo_sifrovane"] = 1;
         } else {
@@ -66,7 +66,7 @@ class DevicePresenter extends ApiPresenter
         $log = array();
         $this->log->logujUpdate($beforeUpdate, $toUpdate, 'IPAdresa['.$ip->id.']', $log);
 
-        if ($ip->Ap_id) {
+        if (!in_array($ip->Ap_id, [null, 0], true)) {
             $this->log->loguj('Ap', $ip->Ap_id, $log, 1);
         } else {
             $this->log->loguj('Uzivatel', $ip->Uzivatel_id, $log, 1);

@@ -63,7 +63,7 @@ class VnejsiScanner
 
     /** @return array<array-key, list<string>>|null */
     public function getScan(): ?array {
-        if (!$this->scanData) {
+        if ($this->scanData === null || $this->scanData === []) {
             $this->downloadScan();
         }
 

@@ -195,18 +195,19 @@ class IPAdresa extends Table
     }
 
     /**
-     * @param array{ipTitle: string, ipAdresa?: string, rowClass?: string, type?: string, id?: int, nick?: string|null, jmeno?: string, canViewOrEdit?: bool, link?: string, editLink?: string}|null $subnetModeInfo
+     * @param array{ipTitle: string, ipAdresa?: string, rowClass?: string, type?: string, id?: int, nick?: string|null, jmeno?: string, canViewOrEdit?: bool, link?: string, editLink?: string}|array{}|null $subnetModeInfo
      * @param bool|int|string|null $igwCheck
      * @param (callable(string, array<string, mixed>): string)|null $linker
      */
     public function addIPTableRow(?Nette\Database\Table\ActiveRow $ip, bool $canViewCredentialsOrEdit, Html $adresyTab, ?array $subnetModeInfo = null, ?string $subnetLink = null, ?string $wewimoLink = null, ?string $editLink = null, $igwCheck = false, $linker = null): Html {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
-        $ipTitle = $subnetModeInfo ? $subnetModeInfo['ipTitle'] : $ip->ip_adresa;
+        $isSubnetMode = $subnetModeInfo !== null && $subnetModeInfo !== [];
+        $ipTitle = $isSubnetMode ? $subnetModeInfo['ipTitle'] : $ip->ip_adresa;
 
         $tr = $adresyTab->create('tr');
         $tr->setId('highlightable-ip'.($ip !== null ? $ip->ip_adresa : $subnetModeInfo['ipAdresa']));
-        if ($subnetModeInfo && array_key_exists('rowClass', $subnetModeInfo)) {
+        if ($isSubnetMode && array_key_exists('rowClass', $subnetModeInfo)) {
             $tr->setClass($subnetModeInfo['rowClass']);
         }
 
@@ -278,7 +279,7 @@ class IPAdresa extends Table
                     ->addAttributes($tooltips)
                     ->addHtml(Html::el('span')
                         ->setClass('glyphicon glyphicon-globe')); // web button
-                if (($canViewCredentialsOrEdit || ($subnetModeInfo && $subnetModeInfo['canViewOrEdit']))
+                if (($canViewCredentialsOrEdit || ($isSubnetMode && $subnetModeInfo['canViewOrEdit']))
                         && isset($ip->TypZarizeni->text) && isset($ip_password) && preg_match('/routerboard/i', $ip->TypZarizeni->text)) {
                     // routerboard, smim videt heslo a heslo je vyplneno
                     // -> otevrit primo zalogovany webfig
@@ -392,7 +393,7 @@ class IPAdresa extends Table
                 $buttons[] = $winboxButton;
             }
             // edit button, etc.
-            if ($subnetModeInfo) {
+            if ($isSubnetMode) {
                 if ($subnetModeInfo['type'] == 'Uzivatel') {
                     if ($subnetModeInfo['canViewOrEdit']) {
                         array_unshift(
@@ -441,12 +442,12 @@ class IPAdresa extends Table
                 }
                 $this->addActionButtonsTd($tr, $buttons);
             }
-            if (!$subnetModeInfo || $subnetModeInfo['canViewOrEdit']) {
+            if (!$isSubnetMode || $subnetModeInfo['canViewOrEdit']) {
                 $tr->create('td')->setText($ip->hostname); // hostname
                 $tr->create('td')->setText($ip->mac_adresa); // MAC
                 $tr->create('td')->setText((isset($ip->TypZarizeni->text)) ? $ip->TypZarizeni->text : ""); // typ zarizeni
                 $attr = $tr->create('td'); // atributy
-                if ($ip->internet) {
+                if (!in_array($ip->internet, [0, false], true)) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-transfer')
                         ->setTitle('IP je povolená do internetu')
@@ -454,7 +455,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
 
-                if ($ip->smokeping) {
+                if (!in_array($ip->smokeping, [0, false], true)) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-eye-open')
                         ->setTitle('IP je sledovaná ve smokepingu')
@@ -462,7 +463,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
 
-                if ($ip->dhcp) {
+                if (!in_array($ip->dhcp, [0, false], true)) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-open')
                         ->setTitle('IP se exportuje do DHCP')
@@ -470,7 +471,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
 
-                if ($ip->mac_filter) {
+                if (!in_array($ip->mac_filter, [0, false], true)) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-filter')
                         ->setTitle('IP exportuje do MAC filteru')
@@ -478,7 +479,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
 
-                if ($ip->wewimo) {
+                if (!in_array($ip->wewimo, [0, false], true)) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-signal')
                         ->setTitle('Zobrazovat signály klientů ve Wewimo')
@@ -497,7 +498,7 @@ class IPAdresa extends Table
                     // leda se napr. smaze definice AP zarizeni, ale SSID zustane v zaznamu ulozeno
                     $wewimoTag = $tr->create('td');
                 }
-                if ($ip->w_ssid) {
+                if (!in_array($ip->w_ssid, [null, '', '0'], true)) {
                     $tooOld =  (strtotime($ip->w_timestamp) < strtotime('-60 days'));
                     $addInfo = $tooOld ? ", ZASTARALÉ!" : "";
                     $wewimoTag->setText($ip->w_ssid)
@@ -529,7 +530,7 @@ class IPAdresa extends Table
                     $tr->create('td'); // heslo
                 }
             }
-        } elseif ($subnetModeInfo) {
+        } elseif ($isSubnetMode) {
             // empty row
             $tr->create('td');
             $tr->create('td');
@@ -602,7 +603,7 @@ class IPAdresa extends Table
     /** @param int|string $id */
     public function getAPOfIP($id): ?int {
         $ip = $this->getIPAdresa($id);
-        if ($ip->Ap_id) {
+        if (!in_array($ip->Ap_id, [null, 0], true)) {
             return ($ip->Ap_id);
         } else {
             return ($ip->uzivatel->Ap_id);

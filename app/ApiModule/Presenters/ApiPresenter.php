@@ -78,7 +78,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
                 }
 
                 // Check if the API key has restricted presenter, if no, allow
-                if (!$keyRec->presenter) {
+                if (in_array($keyRec->presenter, [null, '', '0'], true)) {
                     parent::checkRequirements($element);
                     return;
                 }
