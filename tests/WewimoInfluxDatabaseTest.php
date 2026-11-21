@@ -54,8 +54,8 @@ final class WewimoInfluxDatabaseTest extends DatabaseTestCase
         . 'macField="02:00:00:00:00:01",rx_signal_strength=-65.5,rx_signal_strength_ch0=-66,rx_signal_strength_ch1=-67,'
         . 'tx_signal_strength=-68,tx_signal_strength_ch0=-69,tx_signal_strength_ch1=-70,signal_to_noise=25,rx_CCQ=0,tx_CCQ=99,rx_rate=123.5,tx_rate=456';
 
-    /** @var list<array{request: \Psr\Http\Message\RequestInterface}> */
-    private array $history = [];
+    /** @var \ArrayObject<int, array{request: \Psr\Http\Message\RequestInterface}> */
+    private \ArrayObject $history;
 
     public function testCommandKeepsFieldMappingSkipsMissingValuesAndContinuesAfterWriteFailure(): void {
         $area = $this->fixtures->area();
@@ -120,9 +120,10 @@ final class WewimoInfluxDatabaseTest extends DatabaseTestCase
 
     /** Runs the command against InfluxDB answering with the given responses and returns what the command printed. */
     private function execute(Wewimo $wewimo, Response ...$responses): string {
-        $this->history = [];
-        $stack = HandlerStack::create(new MockHandler($responses));
-        $stack->push(Middleware::history($this->history));
+        $this->history = new \ArrayObject();
+        $history = $this->history;
+        $stack = HandlerStack::create(new MockHandler(array_values($responses)));
+        $stack->push(Middleware::history($history));
         $writer = new InfluxWriter('influxdb://localhost:8086/wewimo', new Client(['handler' => $stack]));
         $command = new Wewimo2InfluxCommand($writer, $this->container->getByType(AP::class), $wewimo);
         ob_start();
@@ -136,7 +137,11 @@ final class WewimoInfluxDatabaseTest extends DatabaseTestCase
 
     /** @return list<string> */
     private function writtenPoints(): array {
-        return array_map(static fn (array $transaction): string => (string) $transaction['request']->getBody(), $this->history);
+        $points = [];
+        foreach ($this->history as $transaction) {
+            $points[] = (string) $transaction['request']->getBody();
+        }
+        return $points;
     }
 }
 
