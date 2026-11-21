@@ -38,10 +38,13 @@ class Stitek
 
     /**
      * @param array<string, mixed> $data
-     * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
      */
-    public function createStitek(array $data): Nette\Database\Table\ActiveRow|array|int|bool {
-        return $this->database->table($this->tableName)->insert($data);
+    public function createStitek(array $data): Nette\Database\Table\ActiveRow {
+        $row = $this->database->table($this->tableName)->insert($data);
+        if (!$row instanceof Nette\Database\Table\ActiveRow) {
+            throw new Nette\UnexpectedValueException('Vložení štítku nevrátilo databázový řádek.');
+        }
+        return $row;
     }
 
     /** @param int|string $id */

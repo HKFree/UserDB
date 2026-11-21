@@ -19,10 +19,9 @@ class AplikaceToken extends Table
 
     /**
      * @param int|string $uid
-     * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
      */
-    public function createAplikaceToken($uid): Nette\Database\Table\ActiveRow|array|int|bool {
-        return ($this->insert(array(
+    public function createAplikaceToken($uid): Nette\Database\Table\ActiveRow {
+        return ($this->insertRow(array(
             'token' => Random::generate(64),
             'Uzivatel_id' => $uid,
             'pouzit_poprve' => new Nette\Utils\DateTime(),

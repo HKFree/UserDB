@@ -174,7 +174,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         $form->onSuccess[] = array($this, 'prevodFormSucceded');
 
         // pokud editujeme, nacteme existujici
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $id = $this->getParameter('id');
             $pPlatba = $this->prichoziPlatba->getPrichoziPlatba($id);
@@ -205,7 +205,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
     }
 
     /** @param ArrayHash<mixed> $values */
-    public function prevodFormSucceded(Form $form, ArrayHash $values): bool {
+    public function prevodFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->jeVVneboTECH());
 
         $id = $this->getParameter('id');
@@ -244,6 +244,5 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
             $this->flashMessage('Nelze převést neexistující platbu!');
         }
 
-        return true;
     }
 }

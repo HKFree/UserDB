@@ -39,9 +39,6 @@ final class ModelTypesDatabaseTest extends DatabaseTestCase
         $other = $this->fixtures->member($ap->id);
         $created = $model->createAplikaceToken((string) $member->id);
         Assert::type(ActiveRow::class, $created);
-        if (!$created instanceof ActiveRow) {
-            throw new \LogicException('A token insert must return its row.');
-        }
         Assert::same(64, strlen($created->token));
         $created->update(['pouzit_naposledy' => '2001-01-01 00:00:00']);
 

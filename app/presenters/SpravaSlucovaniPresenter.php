@@ -155,7 +155,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
     }
 
     /** @param ArrayHash<mixed> $values */
-    public function slucovaniFormSucceded(Form $form, ArrayHash $values): bool {
+    public function slucovaniFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->jeVV());
 
         if ($form->isSubmitted() === $form['nahled']) {
@@ -176,15 +176,15 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
 
             if ($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id, $values->slouceny_uzivatel)) {
                 $this->flashMessage('Takové sloučení již existuje.');
-                return true;
+                return;
             }
             if ($this->sloucenyUzivatel->getIsAlreadyMaster($values->slouceny_uzivatel)) {
                 $this->flashMessage('Uživatel ke zrušení již figuruje jako hlavní uživatel v jiném sloučení.');
-                return true;
+                return;
             }
             if ($this->sloucenyUzivatel->getIsAlreadySlave($values->Uzivatel_id)) {
                 $this->flashMessage('Uživatel který má zůstat aktivní již figuruje jako sloučený uživatel v jiném sloučení.');
-                return true;
+                return;
             }
 
             $idSlouceni = $values->id;
@@ -220,6 +220,5 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
             $this->redirect('Uzivatel:edit', array('id' => $values->Uzivatel_id));
         }
 
-        return true;
     }
 }

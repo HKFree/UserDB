@@ -32,11 +32,11 @@ try {
     Assert::count(0, $stitky->getStitkyByOblast($area1->id)->fetchAll());
 
     $tag = $stitky->createStitek(['Oblast_id' => $area1->id, 'text' => 'Příliš žluťoučký štítek', 'poznamka' => null]);
-    Assert::true($tag instanceof \Nette\Database\Table\ActiveRow);
+    Assert::type(\Nette\Database\Table\ActiveRow::class, $tag);
     $other = $stitky->createStitek(['Oblast_id' => $area2->id, 'text' => 'Příliš žluťoučký štítek']);
-    Assert::true($other instanceof \Nette\Database\Table\ActiveRow);
+    Assert::type(\Nette\Database\Table\ActiveRow::class, $other);
     $global = $stitky->createStitek(['Oblast_id' => null, 'text' => 'Globální štítek']);
-    Assert::true($global instanceof \Nette\Database\Table\ActiveRow);
+    Assert::type(\Nette\Database\Table\ActiveRow::class, $global);
     Assert::same('Příliš žluťoučký štítek', $stitky->getStitekById($tag->id)->text);
     Assert::same([$tag->id], array_keys($stitky->getStitkyByOblast($area1->id)->fetchAll()));
     Assert::same([$other->id], array_keys($stitky->getStitkyByOblast($area2->id)->fetchAll()));

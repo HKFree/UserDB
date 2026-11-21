@@ -405,7 +405,7 @@ class UzivatelPresenter extends BasePresenter
         ));
 
         // pokud editujeme, nacteme existujici ipadresy
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($values !== null) {
@@ -414,9 +414,9 @@ class UzivatelPresenter extends BasePresenter
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
                         $ipdata = $ip_data->toArray();
                         $ipdata['heslo'] = $decrypted;
-                        $form["ip"][$ip_id]->setValues($ipdata);
+                        $ips->createOne($ip_id)->setValues($ipdata);
                     } else {
-                        $form["ip"][$ip_id]->setValues($ip_data);
+                        $ips->createOne($ip_id)->setValues($ip_data);
                     }
                 }
                 $form->setValues($values);
@@ -426,13 +426,15 @@ class UzivatelPresenter extends BasePresenter
         return $form;
     }
 
-    /** @return 0|void */
-    public function validateUzivatelForm(Nette\Forms\Form $form) {
+    public function validateUzivatelForm(Nette\Forms\Form $form): void {
         $data = $form->getHttpData();
+        if (!is_array($data)) {
+            throw new Nette\UnexpectedValueException('Data celého formuláře musí být pole.');
+        }
 
         // Validujeme jenom při uložení formuláře
         if (!isset($data['save'])) {
-            return 0;
+            return;
         }
 
         $uzivatelBeforeSave = $this->uzivatel->getUzivatel($data['id']);
@@ -595,7 +597,7 @@ class UzivatelPresenter extends BasePresenter
             $values->heslo_strong_hash = $this->uzivatel->generateStrongHash($values->heslo);
             $values->id = $this->uzivatel->getNewID();
 
-            $uzivatel = $this->uzivatel->insert($values);
+            $uzivatel = $this->uzivatel->insertRow($values);
 
             $idUzivatele = $uzivatel->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
@@ -679,7 +681,7 @@ class UzivatelPresenter extends BasePresenter
             }
 
             if (in_array($ip->id, [null, '', 0, '0'], true)) {
-                $idIp = $this->ipAdresa->insert($ip)->id;
+                $idIp = $this->ipAdresa->insertRow($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);
             } else {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
@@ -700,7 +702,7 @@ class UzivatelPresenter extends BasePresenter
                     'dhcp' => false,
                     'Uzivatel_id' => $idUzivatele,
                 ];
-                $idrngip = $this->ipAdresa->insert($rngip)->id;
+                $idrngip = $this->ipAdresa->insertRow($rngip)->id;
                 $this->log->logujInsert($rngip, 'IPAdresa['.$idrngip.']', $log);
                 $newUserIPIDs[] = intval($idrngip);
             }

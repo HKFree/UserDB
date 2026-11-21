@@ -107,10 +107,10 @@ class SpravaCcPresenter extends SpravaPresenter
 
         $form->onSuccess[] = array($this, 'spravaCCFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if (!$submitujeSe) {
             foreach ($this->cestneClenstviUzivatele->getNeschvalene() as $rights_id => $rights_data) {
-                $form["rights"][$rights_id]->setValues($rights_data);
+                $rights->createOne($rights_id)->setValues($rights_data);
             }
         }
 

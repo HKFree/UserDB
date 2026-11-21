@@ -19,7 +19,7 @@ final class StitekUzivateleDatabaseTest extends DatabaseTestCase
         $tags = $this->container->getByType(Stitek::class);
         $assignments = $this->container->getByType(StitekUzivatele::class);
         $tag = $tags->createStitek(['Oblast_id' => $area->id, 'text' => 'Testovací štítek']);
-        Assert::true($tag instanceof \Nette\Database\Table\ActiveRow);
+        Assert::type(\Nette\Database\Table\ActiveRow::class, $tag);
 
         Assert::same([], $assignments->getStitekByUserId($member->id));
         Assert::null($assignments->uzivatelHasStitek($member->id, $tag->id));
