@@ -13,24 +13,25 @@ use Nette\Mail\Message;
  */
 class MailService
 {
-    private $uzivatel;
-    private $mailer;
-    private $linkGenerator;
-    private $templateFactory;
+    private Model\Uzivatel $uzivatel;
+    private Nette\Mail\Mailer $mailer;
+    private Nette\Application\LinkGenerator $linkGenerator;
 
     public function __construct(
         Nette\Mail\IMailer $mailer,
         Model\Uzivatel $uzivatel,
-        Nette\Application\LinkGenerator $linkGenerator,
-        Nette\Bridges\ApplicationLatte\TemplateFactory $templateFactory
+        Nette\Application\LinkGenerator $linkGenerator
     ) {
         $this->uzivatel = $uzivatel;
         $this->mailer = $mailer;
         $this->linkGenerator = $linkGenerator;
-        $this->templateFactory = $templateFactory;
     }
 
-    public function sendSpolekConfirmationRequest($uzivatel, $so, $link): void {
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Database\Table\ActiveRow|null $so
+     */
+    public function sendSpolekConfirmationRequest($uzivatel, $so, string $link): void {
         $fromAddress = 'spolek hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mail = new Message();
@@ -49,6 +50,10 @@ class MailService
         $this->mailer->send($mail);
     }
 
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Database\Table\ActiveRow $so
+     */
     public function sendSpolekConfirmationRequestCopy($uzivatel, $so): void {
         $fromAddress = 'spolek hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
@@ -74,7 +79,11 @@ class MailService
         $this->mailer->send($mailso);
     }
 
-    public function sendDruzstvoConfirmationRequest($uzivatel, $so, $link): void {
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Database\Table\ActiveRow|null $so
+     */
+    public function sendDruzstvoConfirmationRequest($uzivatel, $so, string $link): void {
         $fromAddress = 'hkfree.org internetové družstvo, oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mail = new Message();
@@ -91,6 +100,10 @@ class MailService
         $this->mailer->send($mail);
     }
 
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Database\Table\ActiveRow $so
+     */
     public function sendDruzstvoConfirmationRequestCopy($uzivatel, $so): void {
         $fromAddress = 'hkfree.org internetové družstvo, oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
@@ -114,7 +127,11 @@ class MailService
         $this->mailer->send($mailso);
     }
 
-    public function sendEmailFromTemplate($uzivatel, $subject, $renderovatTemplate): void {
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Bridges\ApplicationLatte\Template $renderovatTemplate
+     */
+    public function sendEmailFromTemplate($uzivatel, string $subject, $renderovatTemplate): void {
         $fromAddress = 'hkfree.org internetové družstvo <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $htmlContent = $renderovatTemplate->renderToString();
@@ -131,6 +148,12 @@ class MailService
         $this->mailer->send($mail);
     }
 
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Http\IRequest $request
+     * @param Nette\Http\IResponse $response
+     * @param int|string $userid
+     */
     public function mailPdf(PdfResponse $pdf, $uzivatel, $request, $response, $userid): void {
         $so = $this->uzivatel->getUzivatel($userid);
 
@@ -153,6 +176,10 @@ class MailService
         $this->mailer->send($mail);
     }
 
+    /**
+     * @param int|string $idUzivatele
+     * @param int|string $actuser
+     */
     public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $so = $this->uzivatel->getUzivatel($actuser);
@@ -182,14 +209,9 @@ class MailService
         $this->mailer->send($mailso);
     }
 
+    /** @param Nette\Bridges\ApplicationLatte\Template $t */
     public function addLinkGeneratorToTemplate($t): Nette\Application\UI\Template {
         $t->getLatte()->addProvider('uiControl', $this->linkGenerator);
         return $t;
-    }
-
-    private function createTemplate(): Nette\Application\UI\Template {
-        $template = $this->templateFactory->createTemplate();
-        $template->getLatte()->addProvider('uiControl', $this->linkGenerator);
-        return $template;
     }
 }

@@ -9,8 +9,10 @@ class GeneratorSmlouvy
 {
     /**
      * Náhled smlouvy - rovnou vrací PDFko
+     * @param \Nette\Database\Table\ActiveRow $uzivatel
+     * @param int|string|null $cislo_smlouvy
      */
-    public static function nahledUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
+    public static function nahledUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null): string|false {
 
         $parametry = self::parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy);
 
@@ -33,7 +35,12 @@ class GeneratorSmlouvy
         return file_get_contents("$url?$params");
     }
 
-    public static function parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
+    /**
+     * @param \Nette\Database\Table\ActiveRow $uzivatel
+     * @param int|string|null $cislo_smlouvy
+     * @return array<string, string|int|null>
+     */
+    public static function parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null): array {
         global $container;
 
         $cestneClenstviUzivateleModel = $container->getByType('App\Model\CestneClenstviUzivatele');

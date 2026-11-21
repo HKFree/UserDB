@@ -9,7 +9,8 @@ $container = $bootstrap->boot();
 
 \Tracy\Debugger::$showBar = false;
 
-function process_digisign_webhook($hook) {
+/** Decoded JSON payload. */
+function process_digisign_webhook(mixed $hook): void {
     global $container;
 
     $UzivatelModel = $container->getByType(\App\Model\Uzivatel::class);
@@ -196,7 +197,7 @@ function process_digisign_webhook($hook) {
 
 }
 
-function print_and_log($message) {
+function print_and_log(string $message): void {
     error_log("digisign_webhook: $message.");
     print("$message.\n");
 }

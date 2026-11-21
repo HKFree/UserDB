@@ -17,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class Wewimo2InfluxCommand extends Command
 {
-    private $influxUrl;
+    private string $influxUrl;
     /** @var AP */
     private $ap;
     /** @var Wewimo */
@@ -87,7 +87,11 @@ class Wewimo2InfluxCommand extends Command
         return 0;
     }
 
-    private function addFloatField(&$fields, $dstField, $station, $srcField) {
+    /**
+     * @param array<string, string|float> $fields
+     * @param array<string, mixed> $station
+     */
+    private function addFloatField(array &$fields, string $dstField, array $station, string $srcField): void {
         $val = $station[$srcField] ?? null;
         if (!is_null($val)) {
             $fields[$dstField] = floatval($val);

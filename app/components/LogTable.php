@@ -5,13 +5,17 @@ namespace App\Components;
 use Nette\Application\UI;
 use Nette\Utils\Html;
 use App\Model;
+use Nette\Database\Table\ActiveRow;
 
+/**
+ * @phpstan-type ParsedColumn array{typ: int, sloupec: string, ipId?: numeric-string, pravoId?: numeric-string, subnetId?: numeric-string}
+ */
 class LogTable extends UI\Control
 {
-    private $parentPresenter;
-    private $subnet;
-    private $ipAdresa;
-    private $log;
+    private UI\Presenter $parentPresenter;
+    private Model\Subnet $subnet;
+    private Model\IPAdresa $ipAdresa;
+    private Model\Log $log;
 
     public const UZIVATEL = 1;
     public const IPADRESA = 2;
@@ -23,7 +27,7 @@ class LogTable extends UI\Control
     public const UPDATE = "U";
     public const DELETE = "D";
 
-    public function __construct($parentPresenter, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\Log $log) {
+    public function __construct(UI\Presenter $parentPresenter, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\Log $log) {
         //parent::__construct();
         $this->parentPresenter = $parentPresenter;
         $this->ipAdresa = $ipAdresa;
@@ -38,9 +42,9 @@ class LogTable extends UI\Control
      * V případě IPAdresy vrací "typ"=>IPADRESA, "ipId" a "sloupec"
      *
      * @param string $sloupec IPAdresa.sloupec z DB
-     * @return array (typ, sloupec, ipId) or empty array (falsy value) when not matched
+     * @return ParsedColumn|array{} Empty array when not matched.
      */
-    private function parseSloupec($sloupec) {
+    private function parseSloupec($sloupec): array {
         $out = [];
         if (preg_match("/^uzivatel\.(.+)/i", $sloupec, $matches)) {
             $out["typ"] = self::UZIVATEL;
@@ -68,10 +72,10 @@ class LogTable extends UI\Control
     /**
      * Funkce která projde logy a pro všechny IPčka udělá seznam ipId - ipAdresa
      *
-     * @param array $logy pole ipId
-     * @return array pole ipId=>ipAdresa
+     * @param iterable<ActiveRow> $logy
+     * @return array<int|string, string> pole ipId=>ipAdresa
      */
-    private function getIPMapping($logy) {
+    private function getIPMapping(iterable $logy): array {
         $ipsKProhlednuti = array();
         foreach ($logy as $line) {
             if (($sloupec = $this->parseSloupec($line->sloupec)) && ($sloupec["typ"] == self::IPADRESA)) {
@@ -88,10 +92,10 @@ class LogTable extends UI\Control
     /**
      * Funkce která projde logy a pro všechny Subnety udělá seznam subnetId - subnet
      *
-     * @param array $logy pole subnetId
-     * @return array pole subnetId=>subnet
+     * @param iterable<ActiveRow> $logy
+     * @return array<int|string, string> pole subnetId=>subnet
      */
-    private function getSubnetMapping($logy) {
+    private function getSubnetMapping(iterable $logy): array {
         $subnetsKProhlednuti = array();
         foreach ($logy as $line) {
             if (($sloupec = $this->parseSloupec($line->sloupec)) && ($sloupec["typ"] == self::SUBNET)) {
@@ -105,7 +109,7 @@ class LogTable extends UI\Control
         return ($subnetZDB + $subnetZLogu + $subnetsKProhlednuti);
     }
 
-    private function tableGetHeader() {
+    private function tableGetHeader(): Html {
         $logyTab = Html::el('table')->setClass('table table-striped logstable');
         $tr = $logyTab->create('tr');
 
@@ -117,12 +121,12 @@ class LogTable extends UI\Control
         return ($logyTab);
     }
 
-    private function tableGetFooter(&$table) {
-        $table->create('script')->setHTML('$(\'a\').tooltip();');
+    private function tableGetFooter(Html &$table): Html {
+        $table->create('script')->setHtml('$(\'a\').tooltip();');
         return ($table);
     }
 
-    private function tableGetLineBegin(&$table, $line) {
+    private function tableGetLineBegin(Html &$table, ActiveRow $line): Html {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $tr = $table->create('tr');
@@ -137,7 +141,8 @@ class LogTable extends UI\Control
         return ($tr);
     }
 
-    private function tableGetLineEndSimple(&$tr, $line, $rozparsovano) {
+    /** @param ParsedColumn $rozparsovano */
+    private function tableGetLineEndSimple(Html &$tr, ActiveRow $line, array $rozparsovano): void {
         $sloupec = $this->log->translateJmeno($rozparsovano["sloupec"]);
         $tr->create('td')->setText($sloupec);
 
@@ -158,7 +163,8 @@ class LogTable extends UI\Control
         }
     }
 
-    private function tableProcessLines(&$table, $logy) {
+    /** @param iterable<ActiveRow> $logy */
+    private function tableProcessLines(Html &$table, iterable $logy): void {
         $ipVsechny = $this->getIPMapping($logy);
         $subnetyVsechny = $this->getSubnetMapping($logy);
 
@@ -260,7 +266,8 @@ class LogTable extends UI\Control
         }
     }
 
-    public function render($id, $type = "user") {
+    /** @param int|string $id */
+    public function render($id, string $type = "user"): void {
         $template = $this->template;
         $template->setFile(__DIR__ . '/LogTable.latte');
 

@@ -13,7 +13,7 @@ class Stitkovac
     ) {
     }
 
-    public function addStitek(\Nette\Database\Table\ActiveRow $uzivatel, string $string) {
+    public function addStitek(\Nette\Database\Table\ActiveRow $uzivatel, string $string): void {
         $stitek = $this->stitek->getStitekByText($string);
         if (!$stitek) {
             $stitek = $this->stitek->createStitek([
@@ -31,7 +31,7 @@ class Stitkovac
         }
     }
 
-    public function hasStitekByText(\Nette\Database\Table\ActiveRow $uzivatel, string $string) {
+    public function hasStitekByText(\Nette\Database\Table\ActiveRow $uzivatel, string $string): bool {
         $stitek = $this->stitek->getStitekByText($string);
         if (!$stitek) {
             return false;

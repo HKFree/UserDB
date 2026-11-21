@@ -62,6 +62,10 @@ class MexSmsSender
         }
     }
 
+    /**
+     * @param array<array-key, mixed> $data
+     * @return array<array-key, mixed>|bool|float|int|string|null Raw decoded JSON, without response validation.
+     */
     private function apiCall(string $endpoint, array $data, string $method = "POST", bool $initial = false) {
         $client = new Client();
 
@@ -92,6 +96,7 @@ class MexSmsSender
         return (json_decode($rBody, true));
     }
 
+    /** @return mixed The token field is taken from the API response without validation. */
     private function login() {
         $data = [
             "username" => $this->mexUser,
@@ -103,6 +108,7 @@ class MexSmsSender
         return ($res["token"]);
     }
 
+    /** @return mixed Cached, unvalidated token returned by login(). */
     private function getToken() {
         return ($this->cache->load("authToken", function (&$dependencies) {
             $dependencies[Cache::EXPIRE] = '50 minutes';
@@ -111,7 +117,7 @@ class MexSmsSender
     }
 
     /** @param array<array-key, string> $bnumbers */
-    public function sendSMS(array $bnumbers, string $text) {
+    public function sendSMS(array $bnumbers, string $text): void {
         $data = array();
         foreach ($bnumbers as $bnumber) {
             $data[] = [

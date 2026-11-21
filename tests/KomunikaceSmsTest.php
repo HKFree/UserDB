@@ -25,7 +25,7 @@ class RecordingSmsSender extends MexSmsSender
     public function __construct() {
     }
 
-    public function sendSMS(array $bnumbers, string $text) {
+    public function sendSMS(array $bnumbers, string $text): void {
         $this->calls[] = [$bnumbers, $text];
         if ($this->error !== null) {
             throw $this->error;
