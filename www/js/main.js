@@ -7,21 +7,25 @@ $(document).ready(function () {
 
     $(".datepicker").datepicker({ dateFormat: "dd.mm.yy" });
 
-    $("#navareas").click(function () {
-        $(".sidebar").toggle();
-        // Okraj pro zobrazený panel určuje screen.css podle šířky okna.
-        if ($(".sidebar").is(":visible")) $(".main").css({ marginLeft: "" });
-        else $(".main").css({ marginLeft: "0px" });
-        $(".navbar-toggle").click();
-    });
-    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-        // na mobilu
-        if (!window.location.href.endsWith('/userdb/') && !window.location.href.endsWith('/userdb')) {
-            // a neni to uvodni "landing page", tak skryt levou navigacni listu s oblastmi
-            $(".sidebar").hide();
-            $(".main").css({ marginLeft: "0px" });
-        }
+    // na uzkem displeji je seznam oblasti vysouvaci panel (viz .sidebar-open v screen.css)
+    var sidebarToggle = $("#navareas");
+    function setSidebarOpen(open) {
+        $("html").toggleClass("sidebar-open", open);
+        sidebarToggle.attr("aria-expanded", open ? "true" : "false");
+        if (open) $("#sidebar-filter-input").focus();
     }
+    sidebarToggle.click(function () {
+        setSidebarOpen(!$("html").hasClass("sidebar-open"));
+    });
+    $(".sidebar-backdrop").click(function () {
+        setSidebarOpen(false);
+    });
+    $(document).keydown(function (event) {
+        if (event.key === "Escape" && $("html").hasClass("sidebar-open")) {
+            setSidebarOpen(false);
+            sidebarToggle.focus();
+        }
+    });
 
     $('[data-toggle="tooltip"]').tooltip();
 
@@ -47,6 +51,86 @@ $(document).ready(function () {
 // INICIALIZATOR pro JSTREE
 $(document).ready(function () {
     $('#oblastitree').bonsai();
+});
+
+// Zvyrazneni prave otevrene oblasti nebo AP v levem panelu a rozbaleni jeji vetve
+$(document).ready(function () {
+    var tree = $('#oblastitree').data('bonsai');
+    $('.sidebar .nav-sidebar a').each(function () {
+        if (this.pathname !== window.location.pathname) return;
+        var item = $(this).parent().addClass('active');
+        var branch = item.parent().closest('li');
+        if (tree && branch.length > 0) tree.expand(branch);
+    });
+});
+
+// Filtr oblasti a AP v levem panelu, bez ohledu na diakritiku a velikost pismen
+$(document).ready(function () {
+    var input = $('#sidebar-filter-input');
+    var sidebar = $('.sidebar');
+    var areas = sidebar.find('ul.nav-sidebar > li');
+
+    function fold(text) {
+        return $.trim(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    input.on('input', function () {
+        var needle = fold(input.val());
+        var found = false;
+        areas.each(function () {
+            var area = $(this);
+            var areaMatches = fold(area.children('a').text()).indexOf(needle) !== -1;
+            var shown = areaMatches;
+            area.find('li').each(function () {
+                var matches = areaMatches || fold($(this).text()).indexOf(needle) !== -1;
+                $(this).toggleClass('sidebar-hidden', !matches);
+                shown = shown || matches;
+            });
+            area.toggleClass('sidebar-hidden', !shown);
+            found = found || shown;
+        });
+        sidebar.toggleClass('sidebar-filtering', needle !== '');
+        $('#sidebar-nomatch').prop('hidden', found);
+    });
+});
+
+// Siroka tabulka se posouva ve vlastnim ramu, aby se do strany neposouvala cela stranka.
+// Presun nativnim DOM, protoze jQuery by pri presunu znovu spustilo skripty uvnitr tabulky.
+$(document).ready(function () {
+    $('.main table.table').each(function () {
+        if ($(this).closest('.grido, table.form, .table-scroll').length > 0 || $(this).parent().closest('table').length > 0) return;
+        var frame = document.createElement('div');
+        frame.className = 'table-scroll';
+        this.parentNode.insertBefore(frame, this);
+        frame.appendChild(this);
+    });
+});
+
+// Grid sirsi nez stranka dostane vlastni posuvnik; grid, ktery se vejde, zustava bez nej
+$(document).ready(function () {
+    function markWideGrids() {
+        $('form.grido').each(function () {
+            var table = $(this).children('table')[0];
+            $(this).toggleClass('grid-wide', !!table && table.offsetWidth > this.clientWidth + 1);
+        });
+    }
+    markWideGrids();
+    $(window).on('resize', markWideGrids);
+    $(document).ajaxComplete(function () {
+        setTimeout(markWideGrids, 0);
+    });
+
+    // nabidka v gridu se kresli pres okraj ramu, jinak by ji posuvnik orizl
+    $(document).on('shown.bs.dropdown', '.grido .dropdown', function () {
+        var button = $(this).find('.dropdown-toggle')[0].getBoundingClientRect();
+        var menu = $(this).find('.dropdown-menu');
+        var left = Math.max(8, Math.min(button.left, window.innerWidth - menu.outerWidth() - 8));
+        var fitsBelow = button.bottom + menu.outerHeight() <= window.innerHeight;
+        menu.css({ position: 'fixed', left: left, right: 'auto', top: fitsBelow ? button.bottom : Math.max(8, button.top - menu.outerHeight()) });
+    });
+    $(window).on('scroll', function () {
+        $('.grido .dropdown.open .dropdown-toggle').dropdown('toggle');
+    });
 });
 
 // Scroll na objekt odkazovany ve fragmentu (napr. "#ip10.107.12.1")

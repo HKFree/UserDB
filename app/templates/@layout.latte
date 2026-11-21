@@ -27,42 +27,54 @@
         <script src="{$basePath}/js/markerclusterer.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v30">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v21">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v14"></script>
+        <script src="{$basePath}/js/main.js?v7"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
 
 <body data-stitky-save-url="{link SpravaStitku:saveLabel id=>null}" data-stitky-delete-url="{link SpravaStitku:deleteLabel id=>null}">
+    {var $toolsCurrent = $presenter->isLinkCurrent('Status:*') || $presenter->isLinkCurrent('SpravaGrafu:*')
+        || $presenter->isLinkCurrent('VnejsiScanner:*') || $presenter->isLinkCurrent('SpravaCc:*')
+        || $presenter->isLinkCurrent('SpravaStitku:*') || $presenter->isLinkCurrent('SpravaUctu:*')
+        || $presenter->isLinkCurrent('SpravaPlateb:*') || $presenter->isLinkCurrent('Sprava:nastroje')
+        || $presenter->isLinkCurrent('Novinky:*')}
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container-fluid">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse" aria-expanded="false">
+            <span class="sr-only">Zobrazit menu</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="{link Homepage:default id=>null}"><span style="color:#FFFFFF">userdb.</span><span style="color:#666666">hkfree</span><span style="color:#cc0000">.org</span></a>
+          <button n:if="$mojeOblasti || $oblasti" type="button" class="sidebar-toggle" id="navareas" aria-controls="sidebar" aria-expanded="false"><i class="fa fa-bars" aria-hidden="true"></i> Oblasti</button>
+          <a class="navbar-brand" href="{link Homepage:default id=>null}">userdb.<span class="brand-domain">hkfree</span><span class="brand-tld">.org</span></a>
         </div>
+        <form n:name="searchForm" role="search">
+          <i class="fa fa-search" aria-hidden="true"></i>
+          <label n:name="search" class="sr-only">Hledat</label>
+          <input n:name="search">
+        </form>
         <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="{link Uzivatel:show id=>$user->getIdentity()->getId()}">{$user->getIdentity()->getNick()} ({$user->getIdentity()->getId()})</a></li>
-            <li><a href="{link Sprava:mapa id=>null}">Mapa</a></li>
-            <li class="dropdown">
+          <ul class="nav navbar-nav navbar-menu">
+            <li n:class="$presenter->isLinkCurrent('Homepage:*') ? active"><a href="{link Homepage:default id=>null}">Přehled</a></li>
+            <li n:if="$oblasti" n:class="$presenter->isLinkCurrent('UzivatelList:listall') ? active"><a href="{link UzivatelList:listall id=>null}">Členové</a></li>
+            <li n:class="$presenter->isLinkCurrent('Sprava:mapa') ? active"><a href="{link Sprava:mapa id=>null}">Mapa</a></li>
+            <li n:class="dropdown, $toolsCurrent ? active">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Nástroje <span class="caret"></span></a>
                 <ul class="dropdown-menu">
-                    <li><a n:href="Status:default id=>null"><span class="glyphicon glyphicon-globe small" aria-hidden="true"></span> Status AP</a></li>
+                    <li><a n:href="Status:default id=>null">Status AP</a></li>
                     <li><a n:href="SpravaGrafu:usersgraph id=>null">Graf počtu účastníků</a></li>
                     <li><a n:href="VnejsiScanner:default id=>null">Vnější scan veřejných IP</a></li>
                     <li><a n:href="SpravaCc:prehledcc id=>null">Přehled platných čestných členství</a></li>
                     <li><a n:href="SpravaStitku:default id=>null">Štítky</a></li>
                     <li role="separator" class="divider"></li>
-                    <li><a n:href="SpravaUctu:ucty id=>null"><i class="glyphicon glyphicon-usd small"></i> Aktuální stavy účtů</a></li>
-                    <li><a n:href="SpravaPlateb:odchoziplatby id=>null"><i class="glyphicon glyphicon-usd small"></i> Přehled odchozích plateb</a></li>
+                    <li><a n:href="SpravaUctu:ucty id=>null">Aktuální stavy účtů</a></li>
+                    <li><a n:href="SpravaPlateb:odchoziplatby id=>null">Přehled odchozích plateb</a></li>
                     <li role="separator" class="divider"></li>
                     <li><a n:href="Sprava:nastroje id=>null">Pokročilé nástroje</a></li>
                     <li><a n:href="Winbox:default id=>null">Otevírání Winboxu z prohlížeče</a></li>
@@ -70,17 +82,18 @@
                     <li><a n:href="Novinky:default id=>null">Novinky</a></li>
                 </ul>
             </li>
-            <li n:if="$demoPersonaUrl"><a href="{$demoPersonaUrl}" title="Teď se díváš jako {$demoPersonaName}"><i class="glyphicon glyphicon-user small"></i> Změnit osobu</a></li>
-            <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
+            <li class="navbar-add"><a href="{link Uzivatel:edit id=>null}" title="Přidat uživatele"><i class="fa fa-plus" aria-hidden="true"></i> <span class="navbar-add-text">Přidat uživatele</span></a></li>
           </ul>
-          {form searchForm}
-                {$form['search']->control}
-          {/form}
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="{link Uzivatel:edit id=>null}">Přidat uživatele</a></li>
-          </ul>
-          <ul class="nav navbar-nav navbar-left">
-            <li><a id="navareas" href="#">Skrýt/zobrazit seznam oblastí</a></li>
+          <ul class="nav navbar-nav navbar-right navbar-account">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle-o" aria-hidden="true"></i> <span class="navbar-account-name">{$user->getIdentity()->getNick()} ({$user->getIdentity()->getId()})</span> <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li><a href="{link Uzivatel:show id=>$user->getIdentity()->getId()}">Můj profil</a></li>
+                    <li n:if="$demoPersonaUrl"><a href="{$demoPersonaUrl}" title="Teď se díváš jako {$demoPersonaName}">Změnit osobu</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
+                </ul>
+            </li>
           </ul>
         </div>
       </div>
@@ -88,7 +101,11 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
+        <div class="sidebar" id="sidebar">
+          <div n:if="$mojeOblasti || $oblasti" class="sidebar-filter">
+            <label class="sr-only" for="sidebar-filter-input">Filtrovat oblasti a AP</label>
+            <input type="search" id="sidebar-filter-input" class="form-control input-sm" placeholder="Filtrovat oblasti a AP…" autocomplete="off">
+          </div>
           {if $mojeOblasti}
             <h4>Moje oblasti</h4>
             <ul class="nav nav-sidebar">
@@ -117,8 +134,10 @@
               {/foreach}
             </ul>
           {/if}
+          <p class="sidebar-nomatch" id="sidebar-nomatch" hidden>Žádná oblast ani AP neodpovídá.</p>
         </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <div class="sidebar-backdrop"></div>
+        <div class="main" id="obsah">
 <!--          <h1 class="page-header">Dashboard</h1> -->
 	  <script> document.documentElement.className+=' js' </script>
 

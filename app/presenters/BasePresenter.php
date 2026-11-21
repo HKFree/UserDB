@@ -213,7 +213,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     protected function createComponentSearchForm(): Form {
         $form = new Form();
-        $form->getElementPrototype()->class('navbar-form navbar-right');
+        $form->getElementPrototype()->class('navbar-form navbar-search');
         $form->addText('search', 'Vyhledej:')->setAttribute('class', 'form-control')->setAttribute('placeholder', 'Hledat...');
         $form->addSubmit('send', 'Vyhledat');
 
