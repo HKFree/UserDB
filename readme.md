@@ -24,7 +24,7 @@ php bin/console migrations:continue
 
 ### Tests with Flox
 
-Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2 with the PCOV coverage driver, Composer, MariaDB 10.11.19 and LibreOffice for Apple Silicon macOS and x86_64 Linux, including CI.
+Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2 with the PCOV coverage driver, Composer, MariaDB 10.11.19 and LibreOffice for Apple Silicon macOS and x86_64 Linux, including CI. PHP in the environment reads `scripts/userdb_php/php.ini`, selected through `PHPRC` on activation; the file keeps `max_input_vars` at the value of the production image.
 
 Check availability with `flox --version`. If Flox is missing, install the current release:
 

@@ -27,6 +27,7 @@ systems = ["aarch64-darwin", "x86_64-linux"]
 on-activate = '''
 socket_id=$(php -r 'echo substr(hash("sha256", getenv("FLOX_ENV_CACHE")), 0, 20);')
 export USERDB_MARIADB_SOCKET="/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock"
+export PHPRC="$FLOX_ENV_PROJECT/scripts/userdb_php"
 if [ -z "${USERDB_LIBREOFFICE:-}" ]; then
   if [ -d "$FLOX_ENV/Applications/LibreOffice.app" ]; then
     export USERDB_LIBREOFFICE="$FLOX_ENV/Applications/LibreOffice.app/Contents/MacOS/soffice"

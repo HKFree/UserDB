@@ -24,7 +24,8 @@ return (static function (): Nette\DI\Container {
     putenv('USERDB_LOCAL_PDF=1');
     putenv('CONTEXT_DOCUMENT_ROOT=' . $root . '/www');
 
-    $env = array_replace(getenv(), [
+    // A key from the environment wins, the rest is always local.
+    $env = array_replace(['USERDB_GOOGLE_MAPS_KEY' => 'local-only'], getenv(), [
         'USERDB_ENCRYPTION_PASSPHRASE' => trim(file_get_contents($keyFile)),
         'USERDB_IDS_USERNAME' => 'local-only',
         'USERDB_IDS_PASSWORD' => 'local-only',
