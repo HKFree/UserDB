@@ -183,8 +183,8 @@ Things to know:
 - GitHub does not run the workflow for a pull request that conflicts with `master`. Its instance stays as it
   was, also after the pull request is closed, until the conflict is resolved or a newer instance replaces it.
 - A failed deployment stops the services of its instance; the run log shows the reason.
-- The DNS zone of the instances has no wildcard record, so a maintainer adds the record
-  `pr-<number>.<domain>` by hand before the address in the run summary works.
+- The domain of the instances has to resolve every `pr-<number>` name to the server. The current server
+  uses a wildcard DNS service for that, so a new instance needs no DNS change.
 - A pull request from a fork is never deployed, because its code would run on the server unreviewed. To test
   it, a maintainer pushes its commits to a branch of this repository and opens a pull request from there.
 - A change of the script takes effect only after the new version is installed on the server by hand.
