@@ -84,6 +84,7 @@ class LogTable extends UI\Control
         }
 
         $ipZDB = $this->ipAdresa->getIPzDB(array_keys($ipsKProhlednuti));
+        $ipZDB = array_filter($ipZDB, static fn (?string $ip): bool => $ip !== null);
         $ipZLogu = $this->log->getAdvancedzLogu(array_keys($ipsKProhlednuti));
         // Bacha na poradi!
         return ($ipZDB + $ipZLogu + $ipsKProhlednuti);

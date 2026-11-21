@@ -60,7 +60,7 @@ class AppPresenter extends ApiPresenter
     }
 
     /** @param int|string|null $uid */
-    private function sendLoginFailed($uid = ''): void {
+    private function sendLoginFailed($uid = ''): never {
         $this->aplikaceLog->log('app.getToken.failed', array($uid));
         $this->sendResponse(new JsonResponse(['result' => 'Login failed']));
     }
@@ -72,7 +72,7 @@ class AppPresenter extends ApiPresenter
     public function renderGetMembership($uid, $token): void {
         $this->verifyToken($uid, $token);
 
-        $u = $this->uzivatel->getUzivatel($uid);
+        $u = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
         if ($u === null) {
             $this->sendResponse(new JsonResponse(['result' => 'App error, userid not found']));
         }
@@ -120,7 +120,7 @@ class AppPresenter extends ApiPresenter
      * @param string|null $token
      */
     private function verifyToken($uid, $token): void {
-        if (!$this->aplikaceToken->verifyToken($uid, $token)) {
+        if ($uid === null || !$this->aplikaceToken->verifyToken($uid, $token)) {
             $this->aplikaceLog->log('app.verifyToken.failed', array($uid, $token));
             $this->sendResponse(new JsonResponse(['result' => 'Token invalid']));
         }

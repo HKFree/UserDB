@@ -10,6 +10,7 @@ use Nette\Forms\Container;
 use Nette\Utils\Html;
 use Nette\Utils\ArrayHash;
 use Nette\Forms\Controls\SubmitButton;
+use Nette\Database\Table\ActiveRow;
 use App\Components;
 
 /**
@@ -53,11 +54,12 @@ class ApPresenter extends BasePresenter
     public function renderList() {
         if ($this->maVyplnenyParametr('id')) {
             $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParameter('id'))));
-            if ($apcka->count() === 0) {
+            $oblast = $this->oblast->find($this->getParameter('id'));
+            if ($oblast === null || $apcka->count() === 0) {
                 $this->template->table = 'Chyba, zadaná oblast neexistuje nebo nemá žádná AP.';
                 return true;
             }
-            $this->template->oblast = $this->oblast->find($this->getParameter('id'))->jmeno;
+            $this->template->oblast = $oblast->jmeno;
 
             $table = Html::el('table')->setClass('table table-striped');
             $tr = $table->create('tr');
@@ -335,18 +337,29 @@ class ApPresenter extends BasePresenter
         $ips = $values->ip;
         $subnets = $values->subnet;
         $apiKlice = $values->apiKlic;
+        $oldap = null;
+        if (!in_array($idAP, [null, '', 0, '0'], true)) {
+            $oldap = $this->ap->getAP($idAP);
+            if ($oldap === null) {
+                $this->error('AP nebylo nalezeno.');
+            }
+        }
+        $puvodniAp = $oldap !== null ? $oldap->toArray() : [];
+        $existingIPs = $this->nactiPodrizeneZaznamy($ips, $this->ipAdresa, $oldap);
+        $existingSubnets = $this->nactiPodrizeneZaznamy($subnets, $this->subnet, $oldap);
+        $existingApiKeys = $this->nactiPodrizeneZaznamy($apiKlice, $this->apiKlic, $oldap);
         unset($values["ip"]);
         unset($values["subnet"]);
         unset($values["apiKlic"]);
 
         // Zpracujeme nejdriv APcko
-        if (in_array($values->id, [null, '', 0, '0'], true)) {
-            $idAP = $this->ap->insertRow($values)->id;
+        if ($oldap === null) {
+            $ap = $this->ap->insertRow($values);
+            $idAP = $ap->id;
             $this->log->logujInsert($values, 'Ap', $log);
         } else {
-            $oldap = $this->ap->getAP($idAP);
-            $this->ap->update($idAP, $values);
-            $this->log->logujUpdate($oldap, $values, 'Ap', $log);
+            $ap = $this->ap->update($idAP, $values);
+            $this->log->logujUpdate($puvodniAp, $values, 'Ap', $log);
         }
 
         // Potom zpracujeme IPcka
@@ -366,7 +379,7 @@ class ApPresenter extends BasePresenter
                 $idIp = $this->ipAdresa->insertRow($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa[' . $idIp . ']', $log);
             } else {
-                $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                $oldip = $existingIPs[$idIp];
                 $this->ipAdresa->update($idIp, $ip);
                 $this->log->logujUpdate($oldip, $ip, 'IPAdresa[' . $idIp . ']', $log);
             }
@@ -374,11 +387,14 @@ class ApPresenter extends BasePresenter
         }
 
         // A tady smazeme v DB ty ipcka co jsme smazali
-        $APIPIDs = array_keys($this->ap->getAP($idAP)->related('IPAdresa.Ap_id')->fetchPairs('id', 'ip_adresa'));
+        $APIPIDs = array_keys($ap->related('IPAdresa.Ap_id')->fetchPairs('id', 'ip_adresa'));
         $toDelete = array_values(array_diff($APIPIDs, $newAPIPIDs));
         if ($toDelete !== []) {
             foreach ($toDelete as $idIp) {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                if ($oldip === null) {
+                    continue;
+                }
                 $this->log->logujDelete($oldip, 'IPAdresa[' . $idIp . ']', $log);
             }
         }
@@ -394,7 +410,7 @@ class ApPresenter extends BasePresenter
                 $idSubnet = $this->subnet->insertRow($subnet)->id;
                 $this->log->logujInsert($subnet, 'Subnet[' . $idSubnet . ']', $log);
             } else {
-                $oldsubnet = $this->subnet->getSubnet($idSubnet);
+                $oldsubnet = $existingSubnets[$idSubnet];
                 $this->subnet->update($idSubnet, $subnet);
                 $this->log->logujUpdate($oldsubnet, $subnet, 'Subnet[' . $idSubnet . ']', $log);
             }
@@ -402,11 +418,14 @@ class ApPresenter extends BasePresenter
         }
 
         // A tady smazeme v DB ty ipcka co jsme smazali
-        $APSubnetIDs = array_keys($this->ap->getAP($idAP)->related('Subnet.Ap_id')->fetchPairs('id', 'subnet'));
+        $APSubnetIDs = array_keys($ap->related('Subnet.Ap_id')->fetchPairs('id', 'subnet'));
         $toDelete = array_values(array_diff($APSubnetIDs, $newAPSubnetIDs));
         if ($toDelete !== []) {
             foreach ($toDelete as $idSubnet) {
                 $oldsubnet = $this->subnet->getSubnet($idSubnet);
+                if ($oldsubnet === null) {
+                    continue;
+                }
                 $this->log->logujDelete($oldsubnet, 'Subnet[' . $idSubnet . ']', $log);
             }
         }
@@ -426,7 +445,7 @@ class ApPresenter extends BasePresenter
                 $idApiKey = $this->apiKlic->insertRow($apiKey)->id;
                 $this->log->logujInsert($apiKey, 'ApiKlic[' . $idApiKey . ']', $log);
             } else {
-                $oldApiKlic = $this->apiKlic->getApiKlic($idApiKey);
+                $oldApiKlic = $existingApiKeys[$idApiKey];
                 $this->apiKlic->update($idApiKey, $apiKey);
                 $this->log->logujUpdate($oldApiKlic, $apiKey, 'ApiKlic[' . $idApiKey . ']', $log);
             }
@@ -434,11 +453,14 @@ class ApPresenter extends BasePresenter
         }
 
         // A tady smazeme v DB ty API klice co jsme smazali
-        $APApiKeyIDs = array_keys($this->ap->getAP($idAP)->related('ApiKlic.Ap_id')->fetchPairs('id', 'klic'));
+        $APApiKeyIDs = array_keys($ap->related('ApiKlic.Ap_id')->fetchPairs('id', 'klic'));
         $toDelete = array_values(array_diff($APApiKeyIDs, $newApiKeysIDs));
         if ($toDelete !== []) {
             foreach ($toDelete as $idApiKlic) {
                 $oldApiKlic = $this->apiKlic->getApiKlic($idApiKlic);
+                if ($oldApiKlic === null) {
+                    continue;
+                }
                 $this->log->logujDelete($oldApiKlic, 'ApiKlic[' . $idApiKlic . ']', $log);
             }
         }
@@ -451,6 +473,26 @@ class ApPresenter extends BasePresenter
         $this->redirect('Ap:show', array('id' => $idAP));
     }
 
+    /**
+     * @param iterable<ArrayHash<mixed>> $values
+     * @return array<int|string, array<string, mixed>>
+     */
+    private function nactiPodrizeneZaznamy(iterable $values, Model\Table $model, ?ActiveRow $ap): array {
+        $zaznamy = [];
+        foreach ($values as $value) {
+            if (in_array($value->id, [null, '', 0, '0'], true)) {
+                continue;
+            }
+            $zaznam = $model->find($value->id);
+            if ($zaznam === null) {
+                $this->error('Podřízený záznam AP nebyl nalezen.');
+            }
+            $this->vyzadujOpravneni($ap !== null && $zaznam->Ap_id === $ap->id);
+            $zaznamy[$value->id] = $zaznam->toArray();
+        }
+        return $zaznamy;
+    }
+
     /** @param int|string|null $id */
     public function actionIds($id): void {
         $apt = $this->ap->getAP($id);
@@ -458,7 +500,7 @@ class ApPresenter extends BasePresenter
             $this->error('AP not found');
         } else {
             $this->template->ap = $apt;
-            $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
+            $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($apt->id);
             $ip2Entity = [];
             foreach ($seznamUzivatelu as $uzivatel) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id');

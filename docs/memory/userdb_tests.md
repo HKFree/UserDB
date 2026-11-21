@@ -40,7 +40,14 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   místě kódu četly, a ukládá to až při úklidu paměti (GC). Další případ ve stejném procesu pak načte jen část
   řádku a výsledek závisí na pořadí případů a načasování GC. Ověřeno 20. 11. 2026: s keší padal
   `MemberEditPresenterTest` po vynuceném `gc_collect_cycles()` mezi případy, bez ní prochází. Testy proto
-  vždy čtou celé řádky; chování aplikace s částečně načteným řádkem nepokrývají.
+  standardně čtou celé řádky. Pro ověření částečného načítání vytvořit vlastní `Explorer` se stejným
+  spojením, strukturou a konvencemi, ale s `MemoryStorage`, a předat ho `TestEnvironment::container()`
+  a `PresenterRunner`. Požadavky musí jít ve smyčce ze stejného místa: klíč keše obsahuje celý backtrace.
+  Mezi požadavky uvolnit výjimky a zavolat `gc_collect_cycles()`. Ověřeno 21. 11. 2026 v
+  `NullableAuditCachePresenterTest` nad Nette Database 3.2.4.
+  **Why:** Čtení dosud nenačteného sloupce z `ActiveRow` může řádek znovu načíst; po zápisu už nejde
+  o původní hodnoty. **How to apply:** Auditní snímek převést přes `toArray()` před změnou a ověřit
+  skutečné hodnoty v `Log`, ne pouze úspěšné uložení formuláře.
 
 ## Testovací kontejner
 

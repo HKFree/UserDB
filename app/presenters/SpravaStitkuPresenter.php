@@ -107,7 +107,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         if (!$this->getHttpRequest()->isMethod("DELETE")) {
             $this->error('Pouze DELETE požadavky jsou povoleny.', Nette\Http\IResponse::S405_METHOD_NOT_ALLOWED);
         }
-        $data = json_decode($this->getHttpRequest()->getRawBody(), true);
+        $data = json_decode($this->getHttpRequest()->getRawBody() ?? '', true);
         $stitek_id = $data['stitek_id'] ?? null;
         $user_id = $data['user_id'] ?? null;
         if (in_array($stitek_id, [null, false, 0, 0.0, '', '0', []], true) || in_array($user_id, [null, false, 0, 0.0, '', '0', []], true)) {
@@ -140,14 +140,14 @@ class SpravaStitkuPresenter extends SpravaPresenter
         }
 
         // Ověření, že štítek existuje
-        $stitek = $this->stitek->getStitekById($stitek_id);
+        $stitek = $stitek_id !== null ? $this->stitek->getStitekById($stitek_id) : null;
         if ($stitek === null) {
             echo json_encode(['success' => false, 'message' => 'Štítek nebyl nalezen.']);
             $this->terminate();
         }
 
         // Ověření, že uživatel existuje
-        $user = $this->uzivatel->getUzivatel($user_id);
+        $user = $user_id !== null ? $this->uzivatel->getUzivatel($user_id) : null;
         if ($user === null) {
             echo json_encode(['success' => false, 'message' => 'Uživatel nebyl nalezen.']);
             $this->terminate();
@@ -158,7 +158,6 @@ class SpravaStitkuPresenter extends SpravaPresenter
                 'Stitek_id' => $stitek_id,
                 'Uzivatel_id' => $user_id,
             ]);
-            $stitek = $this->stitek->getStitekById($stitek_id);
             echo json_encode(['success' => true, 'barva_popredi' => $stitek->barva_popredi, 'barva_pozadi' => $stitek->barva_pozadi, 'text' => $stitek->text]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Nepodarilo se ulozit stitek.', 'exception' => $e]);

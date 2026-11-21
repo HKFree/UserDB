@@ -6,6 +6,8 @@ info:
     U klíče omezeného na konkrétní AP musí požadované ID AP odpovídat jeho
     celočíselnému zápisu v desítkové soustavě; úvodní nuly jsou povolené.
     Jiný zápis nebo jiné ID vrací 403.
+    Čtení i změna přihlašovacích údajů zařízení klíčem omezeným na AP vyžadují
+    známé AP zařízení; chybějící přiřazení vrací 403.
   version: "1.0.2"
 # the domain of the service
 host: userdb.hkfree.org

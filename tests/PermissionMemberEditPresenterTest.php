@@ -18,6 +18,16 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         $this->scenario = new PermissionScenario($this->fixtures, $this->database, $this->container);
     }
 
+    public function testExistingDeviceMustBelongToEditedMember(): void {
+        $s = $this->scenario;
+        $ip = $this->fixtures->ipAddress($s->otherMember->id, '192.0.2.190');
+        $post = $this->post($s->member, ['poznamka' => 'Changed member']);
+        $post['ip'] = ['n1' => ['id' => (string) $ip->id, 'ip_adresa' => $ip->ip_adresa, 'hostname' => 'changed-device']];
+        $s->assertDenied(fn () => $this->presenters->ui($s->actors['ownSo']->id, 'Uzivatel', [
+            'action' => 'edit', 'id' => $s->member->id,
+        ], 'POST', $post));
+    }
+
     /** @return list<array{string, string, bool}> */
     public function editCases(): array {
         return [

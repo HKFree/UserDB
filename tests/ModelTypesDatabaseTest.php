@@ -71,9 +71,7 @@ final class ModelTypesDatabaseTest extends DatabaseTestCase
 
     public function testMissingPasswordKeepsLegacyHashInputHandling(): void {
         $model = $this->container->getByType(\App\Model\Uzivatel::class);
-        Assert::error(function () use ($model): void {
-            Assert::same('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', $model->generateStrongHash(null));
-        }, E_DEPRECATED, 'hash(): Passing null to parameter #2 ($data) of type string is deprecated');
+        Assert::same('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', $model->generateStrongHash(null));
     }
 }
 

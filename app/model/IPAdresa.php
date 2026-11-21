@@ -10,7 +10,7 @@ use Defuse\Crypto\Crypto;
 
 /**
  * @author
- * @phpstan-type SubnetOwner array{ipTitle: string, rowClass?: string, id: int, canViewOrEdit: bool, link: string, editLink: string, type: 'Uzivatel', nick: string|null}|array{ipTitle: string, rowClass?: string, id: int, canViewOrEdit: bool, link: string, editLink: string, type: 'Ap', jmeno: string}
+ * @phpstan-type SubnetOwner array{ipTitle: string, rowClass?: string, id: int, canViewOrEdit: bool, link: string, editLink: string, type: 'Uzivatel', nick: string|null}|array{ipTitle: string, rowClass?: string, id: int, canViewOrEdit: bool, link: string, editLink: string, type: 'Ap', jmeno: string}|array{ipTitle: string, rowClass?: string, canViewOrEdit: false, type: 'unknown'}
  */
 class IPAdresa extends Table
 {
@@ -262,6 +262,14 @@ class IPAdresa extends Table
             if ($isSubnetMode && $subnetOwnerInfo === null) {
                 throw new Nette\InvalidArgumentException('U obsazené IP adresy chybí vlastník.');
             }
+            if ($subnetOwnerInfo !== null && $subnetOwnerInfo['type'] === 'unknown') {
+                $tr->create('td'); // akce
+                $tr->create('td')->setColspan(2)->setText('Obsazeno, vlastník neznámý');
+                for ($column = 0; $column < ($canViewCredentialsOrEdit ? 8 : 6); $column++) {
+                    $tr->create('td');
+                }
+                return $tr;
+            }
             $ip_password = '';
             if ($canViewCredentialsOrEdit) {
                 if ($ip->heslo_sifrovane === 1) {
@@ -279,7 +287,8 @@ class IPAdresa extends Table
             $isWindows = (stripos($userAgent, 'windows') !== false);
 
             // web button
-            if (isset($ip->TypZarizeni->text) && $ip->ref('TypZarizeni')->id !== 1) {
+            $typZarizeni = isset($ip->TypZarizeni->text) ? $ip->ref('TypZarizeni') : null;
+            if ($typZarizeni !== null && $typZarizeni->id !== 1) {
                 $webButton = Html::el('a')
                     ->setHref('http://' . $ip->ip_adresa)
                     ->setTarget('_blank')
@@ -343,7 +352,7 @@ class IPAdresa extends Table
                                 ->setHref('http://wiki.hkfree.org/Winbox_URI');
             }
             // winbox cmd button
-            if ($isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
+            if ($linker !== null && $isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
                 $winboxButton = Html::el('span')
                     ->setAttribute('href', $linker("File:downloadWinboxCmd", ['id' => $ip->id]))
                     ->setTitle('Otevřít Mikrotik Winbox z CMD')

@@ -553,6 +553,7 @@ class UzivatelPresenter extends BasePresenter
     /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values */
     public function uzivatelFormSucceded(Form $form, ArrayHash $values): void {
         // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
+        $uzivatel = null;
         if (!in_array($values->id, [null, '', 0, '0'], true)) {
             $uzivatel = $this->uzivatel->getUzivatel($values->id);
             $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
@@ -568,7 +569,8 @@ class UzivatelPresenter extends BasePresenter
                 if ($oldip === null) {
                     $this->error('IP adresa nebyla nalezena.');
                 }
-                $existingIPs[$ip->id] = $oldip;
+                $this->vyzadujOpravneni($uzivatel !== null && $oldip->Uzivatel_id === $uzivatel->id);
+                $existingIPs[$ip->id] = $oldip->toArray();
             }
         }
         $ipsubnet = $values->ipsubnet;

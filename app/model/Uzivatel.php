@@ -173,7 +173,11 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         }
 
         if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV') && !$Uzivatel->isInRole('KONTROLA') && !$Uzivatel->isInRole('EXTSUPPORT')) {
-            $uid = $Uzivatel->getIdentity()->getId();
+            $identity = $Uzivatel->getIdentity();
+            if ($identity === null) {
+                return [];
+            }
+            $uid = $identity->getId();
             $like = '%' . $search . '%';
             $secureMatchId = $this->getConnection()->queryArgs("SELECT Uzivatel.id FROM Uzivatel
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id
@@ -290,7 +294,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
 
     /** @param string|null $password */
     public function generateStrongHash($password): string {
-        return (hash('sha256', $password));
+        return (hash('sha256', $password ?? ''));
     }
 
     public function generateWeakHash(string $password): string {
@@ -310,7 +314,11 @@ ORDER BY t1.id LIMIT 1')->fetchField();
     public function getDuplicateEmailArea(string $email, $id): ?string {
         $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetch();
         if ($existujici !== null) {
-            return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
+            $ap = $existujici->ref('Ap', 'Ap_id');
+            if ($ap === null) {
+                throw new \LogicException('AP uživatele nebylo nalezeno.');
+            }
+            return $ap->jmeno . " (" . $ap->id . ")";
         }
         return null;
     }
@@ -319,7 +327,11 @@ ORDER BY t1.id LIMIT 1')->fetchField();
     public function getDuplicatePhoneArea(string $telefon, $id): ?string {
         $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetch();
         if ($existujici !== null) {
-            return $existujici->ref('Ap', 'Ap_id')->jmeno . " (" . $existujici->ref('Ap', 'Ap_id')->id . ")";
+            $ap = $existujici->ref('Ap', 'Ap_id');
+            if ($ap === null) {
+                throw new \LogicException('AP uživatele nebylo nalezeno.');
+            }
+            return $ap->jmeno . " (" . $ap->id . ")";
         }
         return null;
     }

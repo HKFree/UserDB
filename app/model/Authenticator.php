@@ -55,11 +55,12 @@ class Authenticator implements Security\IAuthenticator
         $roles = [];
         foreach ($spravcepro as $key => $value) {
             if ($value->od->getTimestamp() < $date->getTimestamp() && ($value->do === null || $value->do->getTimestamp() > $date->getTimestamp())) {
-                if ($value->Oblast !== null) {
-                    $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text."-".$value->Oblast;
-                } else {
-                    $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
+                $typ = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id');
+                $oblast = $value->ref('Oblast', 'Oblast_id');
+                if ($typ === null || ($value->Oblast_id !== null && $oblast === null)) {
+                    continue;
                 }
+                $roles[] = $oblast !== null ? $typ->text."-".$oblast->id : $typ->text;
             }
         }
 
