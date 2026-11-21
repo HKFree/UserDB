@@ -5,6 +5,7 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Database\Table\ActiveRow;
 use Grido\Grid;
 use Nette\Utils\Strings;
 use Nette\Utils\Html;
@@ -95,7 +96,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->cislo_uctu)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->cislo_uctu)->setSortable();
 
         $grid->addColumnText('vs', 'VS')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -104,7 +105,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->vs)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->vs)->setSortable();
 
         $grid->addColumnText('ss', 'SS')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -113,7 +114,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->ss)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->ss)->setSortable();
 
         $grid->addColumnText('nazev_uctu', 'Název účtu')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -122,7 +123,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->nazev_uctu)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->nazev_uctu)->setSortable();
 
         $grid->addColumnText('zprava_prijemci', 'Zpráva')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -131,7 +132,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->zprava_prijemci)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->zprava_prijemci)->setSortable();
 
         $grid->addColumnText('info_od_banky', 'Info banky')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -140,7 +141,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->info_od_banky)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->info_od_banky)->setSortable();
     }
 
     public function renderPrevod() {
