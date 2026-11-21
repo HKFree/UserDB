@@ -87,6 +87,8 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     protected function beforeRender() {
         parent::beforeRender();
 
+        $this->template->demoPersonaUrl = $this->settings->demoPersonaUrl;
+        $this->template->demoPersonaName = $this->settings->demoPersonaName;
         $this->template->oblasti = $this->oblast->getSeznamOblasti();
 
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());

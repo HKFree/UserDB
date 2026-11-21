@@ -132,8 +132,8 @@ Příznak Smokeping nemá žádná IP adresa: `/api/smokeping` s ním skončí c
 
 ## Persony
 
-Na lokálním webu ve Floxu a na testovacích instancích otevři `/demo-osoba`, nebo v Tracy liště rozbal
-panel s aktivní osobou a klikni na „Přepnout demo osobu“. Výběr odkazu uloží osobu do cookie a vrátí tě na `/`.
+Na lokálním webu ve Floxu a na testovacích instancích klikni v horní liště na „Změnit osobu“ vedle
+Odhlášení, otevři `/demo-osoba`, nebo v Tracy liště rozbal panel s aktivní osobou a klikni na „Přepnout demo osobu“. Výběr odkazu uloží osobu do cookie a vrátí tě na `/`.
 Stránka `/demo-osoba` funguje i při chybě přihlášení v aplikaci, takže se lze vždy vrátit na člena 1.
 Odkaz na přepnutí vedoucí z cizí stránky osobu nezmění, jen zobrazí seznam.
 Cookie platí pro daný prohlížeč a instanci; lokální worktrees mají různá jména cookie i na stejném hostu.

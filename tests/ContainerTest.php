@@ -24,6 +24,8 @@ final class ContainerTest extends TestCase
         Assert::same(TestEnvironment::TEMP_DIR, $container->parameters['tempDir']);
         Assert::true($container->parameters['debugMode']);
         Assert::false($container->parameters['debug']['fakeUser']);
+        // Without the development bootstrap there is no demo person to switch.
+        Assert::null($container->getByType(\App\Settings::class)->demoPersonaUrl);
         Assert::same('/userdb', $container->parameters['urlPrefix']);
         Assert::notSame($container, TestEnvironment::container());
 

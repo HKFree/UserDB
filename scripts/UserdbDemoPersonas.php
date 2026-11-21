@@ -79,6 +79,10 @@ final class UserdbDemoPersonas
         return $this->id;
     }
 
+    public function name(): string {
+        return self::PERSONAS[$this->id]['name'];
+    }
+
     public function label(): string {
         $persona = self::PERSONAS[$this->id];
         return $this->id . ': ' . $persona['name'] . ' (' . implode(', ', $persona['roles']) . ')';

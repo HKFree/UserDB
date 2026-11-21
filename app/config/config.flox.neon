@@ -23,6 +23,6 @@ session:
 
 services:
     authenticator: App\Model\Authenticator(%demoFakeUser%)
-    settings: App\Settings(%demoFakeUser%)
+    settings: App\Settings(%demoFakeUser%, %demoPersonaUrl%, %demoPersonaName%)
     mail.mailer: UserdbLocalMailer(%env.FLOX_ENV_CACHE%/mail)
     idsConnector: App\Model\IdsConnector('http://127.0.0.1:0/', 'local-only', 'local-only', '')

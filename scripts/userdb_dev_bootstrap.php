@@ -38,7 +38,12 @@ return (static function (): Nette\DI\Container {
     // Registered before the container is built, so the panel is there even when its compilation fails.
     Tracy\Debugger::getBar()->addPanel(new UserdbDemoPersonaPanel($persona), 'userdb-demo-persona');
     $configurator->addStaticParameters(['appDir' => $root . '/app', 'wwwDir' => $root . '/www']);
-    $configurator->addDynamicParameters(['env' => $env, 'demoFakeUser' => $persona->fakeUser()]);
+    $configurator->addDynamicParameters([
+        'env' => $env,
+        'demoFakeUser' => $persona->fakeUser(),
+        'demoPersonaUrl' => UserdbDemoPersonas::PATH,
+        'demoPersonaName' => $persona->name(),
+    ]);
     $configurator->addConfig($root . '/app/config/config.neon');
     $configurator->addConfig($root . '/app/config/config.flox.neon');
     return $configurator->createContainer();

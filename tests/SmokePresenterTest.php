@@ -39,6 +39,8 @@ final class SmokePresenterTest extends DatabaseTestCase
         Assert::same(TextResponse::class, $home->response::class);
         Assert::same(200, $home->status);
         Assert::contains($this->ap->jmeno, $home->html);
+        Assert::contains('Odhlášení', $home->html);
+        Assert::notContains('demo-osoba', $home->html);
 
         $member = $this->fixtures->member($this->ap->id);
         $detail = $this->presenters->ui($this->actor->id, 'Uzivatel', ['action' => 'show', 'id' => $member->id]);

@@ -87,7 +87,7 @@ php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
 
 The OS assigns a free web port and PHP prints the URL. Repeat these commands in another worktree to run both simultaneously. The setup command applies existing migrations and demo data to `userdb_dev`; it can be repeated without resetting data. The local migration adapter replaces the historical production definer with the local account, without changing the migration files. The web uses `config.flox.neon` and the existing demo identity, preserving `config.local.neon`.
 
-Switch the signed-in demo person at `/demo-osoba` or through the persona panel in the Tracy bar; without a selection it is member 1. The choice is stored in a cookie specific to this worktree, and the switching page works even if the application fails to start.
+Switch the signed-in demo person through the "Změnit osobu" link next to the sign-out link in the top bar, at `/demo-osoba`, or through the persona panel in the Tracy bar; without a selection it is member 1. The choice is stored in a cookie specific to this worktree, and the switching page works even if the application fails to start.
 
 The [demo data catalog](docs/userdb_demo_data.md) lists the members, APs, personas and pages for each scenario.
 Scenario migrations are also loaded by Docker development. Flox setup additionally generates 13,500 members

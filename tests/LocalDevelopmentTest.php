@@ -43,6 +43,8 @@ try {
         $selected = require __DIR__ . '/../scripts/userdb_dev_bootstrap.php';
         Assert::same($containerClass, $selected::class, 'Personas must share the compiled DI container.');
         Assert::same($expected, $selected->getByType(\App\Settings::class)->fakeUser);
+        Assert::same('/demo-osoba', $selected->getByType(\App\Settings::class)->demoPersonaUrl);
+        Assert::same(\UserdbDemoPersonas::all()[$expectedId]['name'], $selected->getByType(\App\Settings::class)->demoPersonaName);
         Assert::same($expected, $fakeUser->getValue($selected->getByType(\App\Model\Authenticator::class)));
         $panel = \Tracy\Debugger::getBar()->getPanel('userdb-demo-persona');
         Assert::type(\UserdbDemoPersonaPanel::class, $panel);
