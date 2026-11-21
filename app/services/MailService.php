@@ -156,6 +156,9 @@ class MailService
      */
     public function mailPdf(PdfResponse $pdf, $uzivatel, $request, $response, $userid): void {
         $so = $this->uzivatel->getUzivatel($userid);
+        if ($so === null) {
+            throw new \InvalidArgumentException('Odesílající uživatel nebyl nalezen.');
+        }
 
         $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
         //\Tracy\Debugger::barDump($fromAddress);

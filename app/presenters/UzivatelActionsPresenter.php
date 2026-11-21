@@ -119,8 +119,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionExportPdf(): void {
         if ($this->maVyplnenyParametr('id')) {
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
-                $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                $pdf = $this->vytvorRegistracniPdf($uzivatel);
                 $this->sendResponse($pdf);
             }
         }
@@ -164,8 +163,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
                     $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
                 } else {
-                    $pdftemplate = $this->createTemplate()->setFile(__DIR__ . "/../templates/Uzivatel/pdf-form.latte");
-                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                    $pdf = $this->vytvorRegistracniPdf($uzivatel);
 
                     $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
 
@@ -174,6 +172,16 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                     $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
                 }
             }
+        }
+    }
+
+    private function vytvorRegistracniPdf(Nette\Database\Table\ActiveRow $uzivatel): \PdfResponse\PdfResponse {
+        $template = $this->createTemplate()->setFile(__DIR__ . '/../templates/Uzivatel/pdf-form.latte');
+        try {
+            return $this->pdfGenerator->generatePdf($uzivatel, $template);
+        } catch (\InvalidArgumentException $e) {
+            $this->flashMessage($e->getMessage(), 'danger');
+            $this->redirect('Uzivatel:show', ['id' => $uzivatel->id]);
         }
     }
 
