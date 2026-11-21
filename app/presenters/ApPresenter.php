@@ -214,7 +214,7 @@ class ApPresenter extends BasePresenter
             $values = $this->ap->getAP($this->getParameter('id'));
             if ($values !== null) {
                 foreach ($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
-                    if ($ip_data->heslo_sifrovane == 1) {
+                    if ($ip_data->heslo_sifrovane === 1) {
                         //\Tracy\Debugger::barDump($ip_data->heslo);
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
                         $ipdata = $ip_data->toArray();

@@ -370,8 +370,8 @@ class Subnet extends Table
 
         // Zkontrolujeme síť 0.0.0.0/0 (cokoliv jiného/0 zahodíme)
         // (hlavně protože % nemá rádo 2^32, musíme to vyfiltrovat tady)
-        if ($cidr == 0) {
-            return ($lnet == 0);
+        if ((float) $cidr === 0.0) {
+            return ($lnet === 0);
         }
 
         // Zkontroluje jestli opravdu jde o subnet a ne IP/maska

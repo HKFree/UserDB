@@ -21,7 +21,7 @@ class AppPresenter extends ApiPresenter
     }
 
     public function renderGetToken(): void {
-        if ($this->request->method != 'POST') {
+        if ($this->request->method !== 'POST') {
             $this->sendLoginFailed();
         }
 

@@ -9,6 +9,7 @@ use App\Model\IPAdresa;
 use App\Model\Oblast;
 use App\Model\Subnet;
 use App\Model\Wewimo;
+use App\Services\CryptoSluzba;
 use Nette\Utils\Html;
 use Tester\Assert;
 
@@ -70,6 +71,54 @@ final class NetworkModelTypesDatabaseTest extends DatabaseTestCase
         $model->sanitizeAttribute($attributes, 'comment');
         $model->sanitizeAttribute($attributes, 'missing');
         Assert::same(['comment' => 'café', 'other' => 'beze změny'], $attributes);
+    }
+
+    public function testWewimoDecryptsCredentialsAndOmitsCurrentAddressFromHistory(): void {
+        $ap = $this->fixtures->ap($this->fixtures->area()->id);
+        $member = $this->fixtures->member($ap->id);
+        $this->fixtures->ipAddress($member->id, '192.0.2.42', ['w_client_mac' => '00:00:00:00:00:42']);
+        $this->fixtures->ipAddress($member->id, '192.0.2.43', ['w_client_mac' => '00:00:00:00:00:42']);
+        $crypto = $this->container->getByType(CryptoSluzba::class);
+        $router = $this->fixtures->insert('IPAdresa', [
+            'Ap_id' => $ap->id, 'ip_adresa' => '192.0.2.1', 'wewimo' => 1,
+            'login' => 'fixture', 'heslo' => 'fixture-password', 'heslo_sifrovane' => 0,
+        ]);
+        $model = new class ($crypto, $this->container->getByType(IPAdresa::class), $this->container->getByType(AP::class)) extends Wewimo {
+            /** @var list<string|null> */
+            public array $passwords = [];
+
+            /**
+             * @param string $ip
+             * @param string|null $username
+             * @param string|null $password
+             * @param string $invoker
+             * @return array{interfaces: array<string, array<string, mixed>>, resources: array<string, mixed>, neighborsByIp: array<string, array<string, mixed>>}
+             */
+            public function getWewimoData(mixed $ip, mixed $username, mixed $password, mixed $invoker): array {
+                $this->passwords[] = $password;
+                return [
+                    'interfaces' => ['wlan1' => ['ssid' => 'fixture', 'stations' => [
+                        ['mac-address' => '00:00:00:00:00:42', 'last-ip' => '192.0.2.42'],
+                    ]]],
+                    'resources' => [],
+                    'neighborsByIp' => [],
+                ];
+            }
+        };
+
+        foreach ([0, 1] as $encrypted) {
+            $router->update([
+                'heslo_sifrovane' => $encrypted,
+                'heslo' => $encrypted === 1 ? $crypto->encrypt('fixture-password') : 'fixture-password',
+            ]);
+            $result = $model->getWewimoFullData((string) $ap->id, 'Test');
+            Assert::count(1, $result['devices']);
+            Assert::same('', $result['devices'][0]['error']);
+            $station = $result['devices'][0]['interfaces']['wlan1']['stations'][0];
+            Assert::same('192.0.2.42', $station['last-ip']);
+            Assert::same(['192.0.2.43'], array_column($station['xx-last-ips'], 'last-ip'));
+        }
+        Assert::same(['fixture-password', 'fixture-password'], $model->passwords);
     }
 
     public function testEmptySubnetAddressRendersWithoutARecord(): void {

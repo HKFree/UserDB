@@ -43,13 +43,28 @@ final class AuthenticatorDatabaseTest extends DatabaseTestCase
         $identity = $this->authenticator->authenticate([$this->member->id, null]);
         Assert::type(HkfIdentity::class, $identity);
         Assert::same($this->member->id, $identity->getId());
-        if ($identity instanceof HkfIdentity) {
-            Assert::same('Header-' . $this->member->nick, $identity->getNick());
-            Assert::same('test-password', $identity->getPasswordHash());
-        }
+        Assert::same('Header-' . $this->member->nick, $identity->getNick());
+        Assert::same('test-password', $identity->getPasswordHash());
         $roles = $identity->getRoles();
         sort($roles);
         Assert::same(['SO-' . $this->area->id, 'VV'], $roles);
+    }
+
+    public function testConfiguredIdentityKeepsItsIdAndOptionalPassword(): void {
+        $this->fixtures->role($this->member->id, 'VV');
+        unset($_SERVER['HTTP_GIVENNAME'], $_SERVER['HTTP_INITIALS']);
+        foreach ([[], ['passwordHash' => 'configured-hash']] as $optional) {
+            $authenticator = new Authenticator([
+                'userID' => (string) $this->member->id,
+                'userName' => 'Configured identity',
+            ] + $optional, $this->database);
+            $identity = $authenticator->authenticate(['DBG', null]);
+            Assert::type(HkfIdentity::class, $identity);
+            Assert::same($this->member->id, $identity->getId());
+            Assert::same(['VV'], $identity->getRoles());
+            Assert::same('Configured identity', $identity->getNick());
+            Assert::same($optional['passwordHash'] ?? 'dummy', $identity->getPasswordHash());
+        }
     }
 
     public function testInactiveRolesAreIgnored(): void {

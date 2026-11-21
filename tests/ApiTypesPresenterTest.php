@@ -49,6 +49,25 @@ final class ApiTypesPresenterTest extends DatabaseTestCase
         Assert::same(['result' => 'ERROR, typZarizeni -1 not valid'], $invalidType->json);
     }
 
+    public function testRestrictedApAcceptsDecimalIdsAndRejectsNumericAlternatives(): void {
+        $ap = $this->fixtures->ap($this->fixtures->area()->id);
+        $key = $this->fixtures->apiKey(apId: $ap->id);
+        $credentials = ['apikey' . $key->id, $key->klic];
+        $this->fixtures->insert('IPAdresa', ['Ap_id' => $ap->id, 'ip_adresa' => '192.0.2.25', 'hostname' => 'restricted']);
+
+        foreach ([$ap->id, (string) $ap->id, '00' . $ap->id] as $requestedId) {
+            $result = $this->presenters->api('Api:Monitoring', $credentials, ['action' => 'getZarizeni', 'ap' => $requestedId]);
+            Assert::same(200, $result->status);
+            Assert::same(['192.0.2.25' => ['hostname' => 'restricted', 'popis' => null, 'Ap_id' => $ap->id]], $result->json['zarizeni']);
+        }
+
+        foreach ([$ap->id . '.0', $ap->id . 'e0', '+' . $ap->id, ' ' . $ap->id, $ap->id . 'suffix', '0', ''] as $requestedId) {
+            $result = $this->presenters->api('Api:Monitoring', $credentials, ['action' => 'getZarizeni', 'ap' => $requestedId]);
+            Assert::same(403, $result->status);
+            Assert::same(['result' => 'FORBIDDEN: not allowed to view AP ' . $requestedId, 'resultNumeric' => -1], $result->json);
+        }
+    }
+
     public function testDeviceCredentialsKeepNullPlaintextAndEncryptedPasswords(): void {
         $area = $this->fixtures->area();
         $ap = $this->fixtures->ap($area->id);

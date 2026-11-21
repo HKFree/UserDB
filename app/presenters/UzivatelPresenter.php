@@ -410,7 +410,7 @@ class UzivatelPresenter extends BasePresenter
             $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($values !== null) {
                 foreach ($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
-                    if ($ip_data->heslo_sifrovane == 1) {
+                    if ($ip_data->heslo_sifrovane === 1) {
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
                         $ipdata = $ip_data->toArray();
                         $ipdata['heslo'] = $decrypted;

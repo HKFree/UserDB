@@ -106,7 +106,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     protected function checkApID($requestedApId = null) {
         if ($requestedApId !== null) {
             // Check if key is restricted to an AP and does not match to requested AP
-            if ($this->keyApID !== null && $this->keyApID !== 0 && $requestedApId != $this->keyApID) {
+            if ($this->keyApID !== null && $this->keyApID !== 0 && ltrim((string) $requestedApId, '0') !== (string) $this->keyApID) {
                 $this->sendForbidden('not allowed to view AP ' . $requestedApId);
             }
             return $requestedApId;

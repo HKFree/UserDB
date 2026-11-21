@@ -110,7 +110,7 @@ class Wewimo
                 $row = array_merge($defaultNeighborRow, $row);
                 // derive additional attributes (marked with x- prefix)
                 $row['x-device-type'] = str_replace('MikroTik', 'MT', $row['platform'].' '.$row['board']);
-                if ($row['platform'] != 'MikroTik') {
+                if ($row['platform'] !== 'MikroTik') {
                     $row['x-device-type'] .= ' '.$row['version'];
                 }
                 //Debugger::dump($row);
@@ -237,7 +237,7 @@ class Wewimo
         foreach ($apIps as $ip) {
             try {
                 $ip_password = $ip['heslo'];
-                if ($ip['heslo_sifrovane'] == 1) {
+                if ($ip['heslo_sifrovane'] === 1) {
                     $ip_password = $this->cryptoService->decrypt($ip['heslo']);
                 }
                 $wewimoData = $this->getWewimoData($ip['ip_adresa'], $ip['login'], $ip_password, $invokerStr);
@@ -321,7 +321,7 @@ class Wewimo
                             $relevantIpRecords = array_filter(
                                 $lastIpsByMac[$station['mac-address']],
                                 function ($row) use ($station) {
-                                    return ($row['ip_adresa'] != $station['last-ip']);
+                                    return ($row['ip_adresa'] !== $station['last-ip']);
                                 }
                             );
                             // k last-ips vygenerovat linky a nazvy (host/nick)
