@@ -27,7 +27,7 @@ class Sojka
      * @return array<array-key, mixed>|string|int|float|bool|null Decoded JSON, an empty array or error details
      */
     public function pingIPS($ips) {
-        if (empty($ips)) {
+        if ($ips === []) {
             return ([]);
         }
 

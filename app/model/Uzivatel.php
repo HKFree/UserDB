@@ -70,13 +70,13 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)
             order by U.id", $referentialApId, (int) $cidr, $network)->fetchPairs('id', 'id');
 
-            if (!empty($userids)) {
+            if ($userids !== []) {
                 //\Tracy\Debugger::barDump($userids);
                 //\Tracy\Debugger::barDump(array_values($userids));
                 $uids = array_merge(array_values($userids), $uids);
             }
         }
-        if (!empty($uids)) {
+        if ($uids !== []) {
             //\Tracy\Debugger::barDump($uids);
             //\Tracy\Debugger::barDump(array_values($userids));
             return ($this->findBy(array('id' => $uids)));
@@ -103,7 +103,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)
             order by U.id", $referentialApId, (int) $cidr, $network)->fetchPairs('id', 'id');
 
-            if (!empty($userids)) {
+            if ($userids !== []) {
                 //\Tracy\Debugger::barDump($userids);
                 //\Tracy\Debugger::barDump(array_values($userids));
                 $uids = array_merge(array_values($userids), $uids);
@@ -175,7 +175,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                                             OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE ?
                                             ) AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...array_fill(0, 9, $like), $uid])->fetchPairs('id', 'id');
 
-            if (!empty($secureMatchId)) {
+            if ($secureMatchId !== []) {
                 //\Tracy\Debugger::barDump($secureMatchId);
                 //\Tracy\Debugger::barDump(array_values($secureMatchId));
                 return ($this->findBy(array('id' => array_values($secureMatchId))));

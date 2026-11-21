@@ -374,7 +374,7 @@ class ApPresenter extends BasePresenter
         // A tady smazeme v DB ty ipcka co jsme smazali
         $APIPIDs = array_keys($this->ap->getAP($idAP)->related('IPAdresa.Ap_id')->fetchPairs('id', 'ip_adresa'));
         $toDelete = array_values(array_diff($APIPIDs, $newAPIPIDs));
-        if (!empty($toDelete)) {
+        if ($toDelete !== []) {
             foreach ($toDelete as $idIp) {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
                 $this->log->logujDelete($oldip, 'IPAdresa[' . $idIp . ']', $log);
@@ -402,7 +402,7 @@ class ApPresenter extends BasePresenter
         // A tady smazeme v DB ty ipcka co jsme smazali
         $APSubnetIDs = array_keys($this->ap->getAP($idAP)->related('Subnet.Ap_id')->fetchPairs('id', 'subnet'));
         $toDelete = array_values(array_diff($APSubnetIDs, $newAPSubnetIDs));
-        if (!empty($toDelete)) {
+        if ($toDelete !== []) {
             foreach ($toDelete as $idSubnet) {
                 $oldsubnet = $this->subnet->getSubnet($idSubnet);
                 $this->log->logujDelete($oldsubnet, 'Subnet[' . $idSubnet . ']', $log);
@@ -434,7 +434,7 @@ class ApPresenter extends BasePresenter
         // A tady smazeme v DB ty API klice co jsme smazali
         $APApiKeyIDs = array_keys($this->ap->getAP($idAP)->related('ApiKlic.Ap_id')->fetchPairs('id', 'klic'));
         $toDelete = array_values(array_diff($APApiKeyIDs, $newApiKeysIDs));
-        if (!empty($toDelete)) {
+        if ($toDelete !== []) {
             foreach ($toDelete as $idApiKlic) {
                 $oldApiKlic = $this->apiKlic->getApiKlic($idApiKlic);
                 $this->log->logujDelete($oldApiKlic, 'ApiKlic[' . $idApiKlic . ']', $log);

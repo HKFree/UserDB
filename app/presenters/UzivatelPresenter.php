@@ -709,7 +709,7 @@ class UzivatelPresenter extends BasePresenter
         // A tady smazeme v DB ty ipcka co jsme smazali
         $userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
         $toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
-        if (!empty($toDelete)) {
+        if ($toDelete !== []) {
             foreach ($toDelete as $idIp) {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
                 $this->log->logujDelete($oldip, 'IPAdresa['.$idIp.']', $log);
