@@ -1,0 +1,220 @@
+name: Page screenshots in pull requests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions: {}
+
+concurrency:
+  group: pr-screenshots-${{ github.event.pull_request.number }}
+  # A re-run waits for the running capture; a new push still cancels it.
+  cancel-in-progress: ${{ github.run_attempt == 1 }}
+
+jobs:
+  capture:
+    if: >-
+      github.repository == 'HKFree/UserDB'
+      && github.actor != 'dependabot[bot]'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
+      tools-available: ${{ steps.tools.outputs.available }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          path: head
+      - name: Check screenshot tools availability
+        id: tools
+        run: |
+          if [ -f head/scripts/userdb_screenshots.sh ] && [ -f head/tests/screenshots/.nvmrc ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::This branch predates the screenshot tools; screenshots are skipped.'
+          fi
+      - name: Check out the merge-base
+        if: steps.tools.outputs.available == 'true'
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          base_sha=$(git -C head merge-base HEAD "origin/$BASE_REF")
+          git -C head worktree add --detach ../base "$base_sha"
+      - uses: flox/install-flox-action@5bb9eaaffbeaa699a8251a1ae21ecf4c8e0e37d4 # v2.7.0
+        if: steps.tools.outputs.available == 'true'
+        with:
+          disable-metrics: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.tools.outputs.available == 'true'
+        with:
+          node-version-file: head/tests/screenshots/.nvmrc
+      - name: Install and test capture tools
+        if: steps.tools.outputs.available == 'true'
+        working-directory: head/tests/screenshots
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm test
+      - name: Capture and compare
+        if: steps.tools.outputs.available == 'true'
+        run: head/scripts/userdb_screenshots.sh run --head head --base base --out output
+      - name: Check cleanup
+        if: always() && steps.tools.outputs.available == 'true'
+        run: |
+          # pgrep -fl prints no command arguments with Linux procps.
+          # shellcheck disable=SC2009
+          if ps ax -o pid=,command= | grep -E 'mariadbd|php -S' | grep -F -- "$GITHUB_WORKSPACE/"; then
+            echo '::error::Screenshot services survived cleanup.'
+            exit 1
+          fi
+      - name: Upload screenshots
+        if: steps.tools.outputs.available == 'true'
+        id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pr-screenshots
+          path: |
+            output/
+            !output/logs/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Upload failure logs
+        if: failure() && steps.tools.outputs.available == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pr-screenshots-logs
+          path: |
+            output/logs/
+            head/.flox/cache/logs/
+            base/.flox/cache/logs/
+          retention-days: 14
+
+  publish:
+    needs: capture
+    # Timeouts can report cancelled while cancelled() remains false. Replace stale success text then too.
+    # A run cancelled by concurrency must not publish.
+    if: >-
+      !cancelled()
+      && needs.capture.result != 'skipped'
+      && needs.capture.outputs.tools-available != 'false'
+      && github.repository == 'HKFree/UserDB'
+      && github.actor != 'dependabot[bot]'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      BASE_REF: ${{ github.event.pull_request.base.ref }}
+      CAPTURE_RESULT: ${{ needs.capture.result }}
+      ARTIFACT_URL: ${{ needs.capture.outputs.artifact-url }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      SHOTS_REPOSITORY: ${{ vars.SCREENSHOTS_REPOSITORY }}
+    steps:
+      - name: Check pull request freshness
+        id: fresh
+        run: |
+          current=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+          if [ "$(jq -r .state <<< "$current")" = open ] \
+            && [ "$(jq -r .head.sha <<< "$current")" = "$PR_HEAD_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'Outdated run; images and comment stay unchanged.'
+          fi
+      - name: Check screenshot repository configuration
+        if: steps.fresh.outputs.current == 'true' && needs.capture.result == 'success'
+        env:
+          HAS_KEY: ${{ secrets.SCREENSHOTS_DEPLOY_KEY != '' }}
+        run: |
+          if [ -z "$SHOTS_REPOSITORY" ]; then
+            echo '::error::Set vars.SCREENSHOTS_REPOSITORY to the public screenshot repository.'
+            exit 1
+          fi
+          if [ "$HAS_KEY" != true ]; then
+            echo '::error::Set secrets.SCREENSHOTS_DEPLOY_KEY to its write-enabled deploy key.'
+            exit 1
+          fi
+      # No application or npm dependencies run in this job, which holds the deploy key.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.fresh.outputs.current == 'true'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: tests/screenshots
+          path: tools
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.fresh.outputs.current == 'true'
+        with:
+          node-version-file: tools/tests/screenshots/.nvmrc
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: steps.fresh.outputs.current == 'true' && needs.capture.result == 'success'
+        with:
+          name: pr-screenshots
+          path: artifact
+      - name: Validate artifact
+        if: steps.fresh.outputs.current == 'true' && needs.capture.result == 'success'
+        run: node tools/tests/screenshots/validate.mjs artifact "$PR_HEAD_SHA"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.fresh.outputs.current == 'true' && needs.capture.result == 'success'
+        with:
+          repository: ${{ vars.SCREENSHOTS_REPOSITORY }}
+          ssh-key: ${{ secrets.SCREENSHOTS_DEPLOY_KEY }}
+          ref: main
+          path: shots
+          filter: blob:none
+          sparse-checkout: pr-${{ github.event.pull_request.number }}/${{ github.event.pull_request.head.sha }}
+      - name: Publish referenced images
+        if: steps.fresh.outputs.current == 'true' && needs.capture.result == 'success'
+        id: images
+        run: |
+          commit=$(node tools/tests/screenshots/publish.mjs artifact shots "$PR_NUMBER" "$PR_HEAD_SHA")
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+      - name: Build comment
+        if: ${{ !cancelled() && steps.fresh.outputs.current == 'true' }}
+        env:
+          SHOTS_COMMIT: ${{ steps.images.outputs.commit }}
+          IMAGES_RESULT: ${{ steps.images.outcome }}
+        run: |
+          meta=$(jq -n --arg repository "$GITHUB_REPOSITORY" --arg runId "$GITHUB_RUN_ID" \
+            --arg baseBranch "$BASE_REF" --arg runUrl "$RUN_URL" --arg artifactUrl "$ARTIFACT_URL" \
+            '{repository: $repository, runId: $runId, baseBranch: $baseBranch,
+              runUrl: $runUrl, artifactUrl: $artifactUrl}')
+          # The failure text is written first, so it is what gets posted when an earlier step of this job
+          # failed or when the rendering below fails.
+          node tools/tests/screenshots/comment.mjs failure "$PR_HEAD_SHA" "$meta" > comment.md
+          if [ "$CAPTURE_RESULT" != success ] || [ "$IMAGES_RESULT" != success ]; then exit 0; fi
+          urls=$(jq -n --arg repository "$SHOTS_REPOSITORY" --arg commit "$SHOTS_COMMIT" --arg pr "$PR_NUMBER" \
+            '{repository: $repository, commit: $commit, pr: $pr}')
+          node tools/tests/screenshots/comment.mjs manifest artifact "$urls" "$meta" > success-comment.md
+          mv success-comment.md comment.md
+      - name: Create or update the comment if still current
+        if: ${{ !cancelled() && steps.fresh.outputs.current == 'true' }}
+        run: |
+          marker='<!-- userdb-screenshots -->'
+          comments="repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments"
+          ids=$(gh api --paginate "$comments" \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id")
+          id="${ids%%$'\n'*}"
+          current=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+          if [ "$(jq -r .state <<< "$current")" != open ] \
+            || [ "$(jq -r .head.sha <<< "$current")" != "$PR_HEAD_SHA" ]; then
+            echo 'Outdated run; the comment stays unchanged.'
+            exit 0
+          fi
+          jq -n --rawfile body comment.md '{body: $body}' > comment.json
+          if [ -n "$id" ]; then
+            gh api --silent --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" --input comment.json
+          else
+            gh api --silent --method POST "$comments" --input comment.json
+          fi
