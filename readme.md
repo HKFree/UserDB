@@ -63,7 +63,7 @@ The suite covers:
 
 PHPStan runs at **level 5** with the Nette extension and without a baseline. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
-The [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules) extension is enabled as well. Five of its rule groups are switched off in `phpstan.neon` because the current code does not pass them yet: `disallowedLooseComparison`, `booleansInConditions`, `disallowedEmpty`, `strictFunctionCalls` and `requireParentConstructorCall`. `disallowedShortTernary` is switched off for good: the short ternary stays allowed for default values such as `getenv('X') ?: 'default'`. The remaining groups keep the extension's defaults and must pass.
+The [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules) extension is enabled as well. Four of its rule groups are switched off in `phpstan.neon` because the current code does not pass them yet: `disallowedLooseComparison`, `booleansInConditions`, `disallowedEmpty` and `requireParentConstructorCall`. `disallowedShortTernary` is switched off for good: the short ternary stays allowed for default values such as `getenv('X') ?: 'default'`. The remaining groups keep the extension's defaults and must pass.
 
 Methods that Kdyby Replicator adds at runtime are described in `phpstan/replicator.stub`. The only suppressed finding is one inline `@phpstan-ignore` in `pdfGenerator/www/ContractPdf.php`, where PHPStan's `proc_open` signature rejects a valid descriptor.
 

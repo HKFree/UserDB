@@ -76,7 +76,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
                 $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatelModel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
             }
         }
-        return in_array($uzivatel->id, $seznamUzivatelu);
+        return in_array($uzivatel->id, $seznamUzivatelu, true);
     }
 
     protected function beforeRender() {

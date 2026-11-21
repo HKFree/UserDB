@@ -25,7 +25,11 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
         $this->template->stav = false;
         if ($key) {
 
-            list($uid, $hash) = explode('-', base64_decode($key));
+            $decodedKey = base64_decode($key, true);
+            if ($decodedKey === false) {
+                return;
+            }
+            list($uid, $hash) = explode('-', $decodedKey);
 
             $uzivatel = $this->uzivatelModel->getUzivatel($uid);
             if ($uzivatel) {

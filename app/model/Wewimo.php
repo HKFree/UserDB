@@ -109,7 +109,7 @@ class Wewimo
                 //Debugger::dump($row);
                 $neighborsByMac[$row['mac-address']] = $row;
 
-                if (in_array('address', $row)) {
+                if (in_array('address', $row, true)) {
                     $neighborsByIp[$row['address']] = $row;
                 }
             }
