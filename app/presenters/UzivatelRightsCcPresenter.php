@@ -175,7 +175,6 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             $pravo->Uzivatel_id = $idUzivatele;
             $pravoId = $pravo->id;
 
-            // Datumová pole formuláře již vracejí DateTimeImmutable nebo null.
             if (in_array($pravo->id, [null, '', 0, '0'], true)) {
                 $pravoId = $this->spravceOblasti->insert($pravo)->id;
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
@@ -288,7 +287,6 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             $pravo->zadost_podana = new Nette\Utils\DateTime();
             $pravoId = $pravo->id;
 
-            // Datumová pole formuláře již vracejí DateTimeImmutable nebo null.
             if (in_array($pravo->schvaleno ?? null, [null, 0, '0'], true) || !$this->smiSchvalitCc()) {
                 // ostatním šablona pole stavu nezobrazí, takže ho formulář ani neposílá
                 $pravo->schvaleno = 0;

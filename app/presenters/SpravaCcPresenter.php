@@ -131,7 +131,6 @@ class SpravaCcPresenter extends SpravaPresenter
         foreach ($prava as $pravo) {
             $pravoId = $pravo->id;
 
-            // Datumová pole formuláře již vracejí DateTimeImmutable nebo null.
             if (in_array($pravo->schvaleno ?? null, [null, 0, '0'], true)) {
                 $pravo->schvaleno = 0;
             }
