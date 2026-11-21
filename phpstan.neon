@@ -21,7 +21,6 @@ parameters:
     strictRules:
         # Vypnuto, dokud stávající kód obsahuje nálezy, viz issue #204.
         disallowedLooseComparison: false
-        booleansInConditions: false
         disallowedEmpty: false
         # Vypnuto trvale: krátký ternár pro výchozí hodnotu (getenv('X') ?: 'výchozí') zůstává povolený.
         disallowedShortTernary: false

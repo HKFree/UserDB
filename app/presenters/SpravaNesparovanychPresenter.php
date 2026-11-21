@@ -175,18 +175,18 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
 
         // pokud editujeme, nacteme existujici
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $id = $this->getParameter('id');
             $pPlatba = $this->prichoziPlatba->getPrichoziPlatba($id);
             $posledniPohyb = $this->uzivatelskeKonto->getUzivatelskeKontoByPrichoziPlatba($id);
 
-            if ($posledniPohyb) {
+            if ($posledniPohyb !== null) {
                 $form->setDefaults(array(
                         'Uzivatel_prev' => $posledniPohyb->Uzivatel_id
                     ));
             }
 
-            if ($pPlatba) {
+            if ($pPlatba !== null) {
                 //$form->setValues($user);
                 $form->setDefaults(array(
                         'PrichoziPlatba_id' => $pPlatba->id,
@@ -212,11 +212,11 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         $pPlatba = $this->prichoziPlatba->getPrichoziPlatba($id);
         $posledniPohyb = $this->uzivatelskeKonto->getUzivatelskeKontoByPrichoziPlatba($id);
 
-        if ($pPlatba) {
+        if ($pPlatba !== null) {
             $targetUID = $values->Uzivatel_id;
 
             $values->poznamka = $values->poznamka.' Převod na UID:['.$targetUID.']';
-            if ($posledniPohyb) {
+            if ($posledniPohyb !== null) {
                 $values->Uzivatel_id = $posledniPohyb->Uzivatel_id;
                 $values->TypPohybuNaUctu_id = 11;
             } else {

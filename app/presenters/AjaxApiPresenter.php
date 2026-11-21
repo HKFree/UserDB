@@ -55,8 +55,8 @@ class AjaxApiPresenter extends BasePresenter
         }
 
         // featura pro javascript
-        if ($reqid = $this->getParameter("reqid")) {
-            $out["reqid"] = $reqid;
+        if ($this->maVyplnenyParametr("reqid")) {
+            $out["reqid"] = $this->getParameter("reqid");
         }
 
         $this->sendResponse(new JsonResponse($out));

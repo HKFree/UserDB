@@ -32,7 +32,7 @@ class UzivatelListPresenter extends BasePresenter
 
     public function renderList(): void {
         // otestujeme, jestli máme id APčka a ono existuje
-        if ($this->getParameter('id') && $apt = $this->ap->getAP($this->getParameter('id'))) {
+        if ($this->maVyplnenyParametr('id') && ($apt = $this->ap->getAP($this->getParameter('id'))) !== null) {
             $id = $this->getParameter('id');
             $cestnych = count($this->cestneClenstviUzivatele->getListCCOfAP($id));
             $this->template->u_celkem = $this->uzivatel->getSeznamUzivateluZAP($id)->where("TypClenstvi_id>?", 1)->count("*");
@@ -50,13 +50,12 @@ class UzivatelListPresenter extends BasePresenter
             $this->redirect("Homepage:default", array("id" => null)); // a přesměrujeme
         }
 
-        $this->template->money = $this->getParameter("money", false) && $this->template->canViewOrEdit; // přepínač jen s oprávněním
+        $this->template->money = $this->maVyplnenyParametr("money") && $this->template->canViewOrEdit; // přepínač jen s oprávněním
         $this->template->fullnotes = $this->getParameter("fullnotes", false);
     }
 
     public function renderListall(): void {
-        $search = $this->getParameter('search', false);
-        if (!$search) {
+        if (!$this->maVyplnenyParametr('search')) {
             $cestnych = count($this->cestneClenstviUzivatele->getListCC());
             $this->template->u_celkem = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?", 1)->count("*");
             $this->template->u_celkemz = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?", 0)->count("*");
@@ -69,7 +68,7 @@ class UzivatelListPresenter extends BasePresenter
 
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
         // režim money se řídí stejnou podmínkou jako grid (UzivatelListGrid pouští i EXTSUPPORT)
-        $this->template->money = $this->getParameter("money", false) && ($this->getUser()->isInRole('EXTSUPPORT') || $this->template->canViewOrEdit);
+        $this->template->money = $this->maVyplnenyParametr("money") && ($this->getUser()->isInRole('EXTSUPPORT') || $this->template->canViewOrEdit);
         $this->template->search = $this->getParameter('search', false);
     }
 

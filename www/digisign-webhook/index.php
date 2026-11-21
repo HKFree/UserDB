@@ -13,7 +13,7 @@ if (strlen($body) < 10000) {
 
 $hook = json_decode($body);
 
-if (!$hook) {
+if (in_array($hook, [null, false, 0, 0.0, '', '0', []], true)) {
     print_and_log("Invalidni request body, asi neplatny JSON");
     http_response_code(400);
     return;

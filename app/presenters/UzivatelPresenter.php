@@ -155,9 +155,9 @@ class UzivatelPresenter extends BasePresenter
     }
 
     public function renderShow(): void {
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             $uid = $this->getParameter('id');
-            if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($uid)) !== null) {
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
                 $this->template->stitky = $this->stitek->getSeznamStitku();
                 $this->template->stitkyUzivatele = $this->stitkyUzivatele->getStitekByUserId($uid);
@@ -167,13 +167,13 @@ class UzivatelPresenter extends BasePresenter
 
                 $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
                 $this->template->televize_objednana = $televizeRow?->objednana == 1;
-                $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+                $this->template->televize_cena = $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
                 $televizeAktivniRow = $uzivatel->related('UzivatelTelevizeAktivni')
                     ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
                     ->order('datum_od DESC')
                     ->limit(1)
                     ->fetch();
-                $this->template->televize_aktivni = $televizeAktivniRow ? true : false;
+                $this->template->televize_aktivni = $televizeAktivniRow !== null;
                 $this->template->televize_aktivni_poznamka = $televizeAktivniRow?->poznamka;
                 $this->template->televize_aktivni_do = $televizeAktivniRow?->datum_do;
 
@@ -198,14 +198,8 @@ class UzivatelPresenter extends BasePresenter
                 } else {
                     $this->template->money_lastact = '?';
                 }
-                $stavUctuSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->sum('castka');
-                if (!$stavUctuSpolek || '' == $stavUctuSpolek) {
-                    $stavUctuSpolek = 0;
-                }
-                $stavUctuDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
-                if (!$stavUctuDruzstvo || '' == $stavUctuDruzstvo) {
-                    $stavUctuDruzstvo = 0;
-                }
+                $stavUctuSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->sum('castka') ?: 0;
+                $stavUctuDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka') ?: 0;
 
                 $this->template->money_bal_druzstvo = $stavUctuDruzstvo;
                 if ($uzivatel->kauce_mobil > 0) {
@@ -215,10 +209,7 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->money_bal_spolek = $stavUctuSpolek;
                 }
 
-                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
-                if (!$stavUctuDph || '' == $stavUctuDph) {
-                    $stavUctuDph = 0;
-                }
+                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka') ?: 0;
                 $this->template->money_dph = $stavUctuDph;
 
                 if ($this->sloucenyUzivatel->getIsAlreadyMaster($uid)) {
@@ -327,7 +318,7 @@ class UzivatelPresenter extends BasePresenter
     }
 
     public function renderEdit(): void {
-        if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
+        if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
             $this->template->canViewOrEdit = $this->smiUpravitUzivatele($uzivatel);
         } else {
             $this->template->canViewOrEdit = true;
@@ -415,9 +406,9 @@ class UzivatelPresenter extends BasePresenter
 
         // pokud editujeme, nacteme existujici ipadresy
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
-            if ($values) {
+            if ($values !== null) {
                 foreach ($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
                     if ($ip_data->heslo_sifrovane == 1) {
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
@@ -446,7 +437,7 @@ class UzivatelPresenter extends BasePresenter
 
         $uzivatelBeforeSave = $this->uzivatel->getUzivatel($data['id']);
 
-        if ($uzivatelBeforeSave) {
+        if ($uzivatelBeforeSave !== null) {
             if ($uzivatelBeforeSave->druzstvo == 1 && $data['druzstvo'] != 1) {
                 $form->addError('Právní vztah k družstvu již nelze nikdy změnit na Ne.');
             }
@@ -501,7 +492,7 @@ class UzivatelPresenter extends BasePresenter
                 }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
-                if ($duplIp) {
+                if (!in_array($duplIp, [null, '', '0'], true)) {
                     $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
                 }
 
@@ -547,7 +538,7 @@ class UzivatelPresenter extends BasePresenter
         // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
         if (!empty($values->id)) {
             $uzivatel = $this->uzivatel->getUzivatel($values->id);
-            $this->vyzadujOpravneni($uzivatel && $this->smiUpravitUzivatele($uzivatel));
+            $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
         }
 
         $log = array();
@@ -700,7 +691,7 @@ class UzivatelPresenter extends BasePresenter
         // rozsahy ip adres
         foreach ($genaddresses as $gi) {
             $duplIp = $this->ipAdresa->getDuplicateIP($gi, 0);
-            if (!$duplIp) {
+            if (in_array($duplIp, [null, '', '0'], true)) {
                 $rngip = [
                     'ip_adresa' => $gi,
                     'internet' => true,
@@ -723,11 +714,11 @@ class UzivatelPresenter extends BasePresenter
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
                 $this->log->logujDelete($oldip, 'IPAdresa['.$idIp.']', $log);
                 $isSMTP = $this->povoleneSMTP->getIP($oldip->id);
-                if ($isSMTP) {
+                if ($isSMTP !== null) {
                     $smtpIPIDs[] = intval($isSMTP->id);
                 }
                 $isDNAT = $this->dnat->getIP($oldip->id);
-                if ($isDNAT) {
+                if ($isDNAT !== null) {
                     $dnatIPIDs[] = intval($isDNAT->ip);
                 }
             }
@@ -745,8 +736,8 @@ class UzivatelPresenter extends BasePresenter
 
     /** @param int|string|null $id */
     public function actionIds($id): void {
-        if ($id) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($id)) {
+        if (!in_array($id, [null, 0, '', '0'], true)) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($id)) !== null) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
                 $ips = array_values($ipAdresy->fetchPairs('id', 'ip_adresa'));
 

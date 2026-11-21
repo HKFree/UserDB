@@ -84,7 +84,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionMoneyActivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             if ($this->accountActivation->activateAccount($this->getUser(), $id)) {
                 $this->flashMessage('Účet byl aktivován.');
             }
@@ -95,7 +95,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionMoneyReactivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
             if ($result != '') {
                 $this->flashMessage($result);
@@ -107,7 +107,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
     public function actionMoneyDeactivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             if ($this->accountActivation->deactivateAccount($this->getUser(), $id)) {
                 $this->flashMessage('Účet byl deaktivován.');
             }
@@ -117,8 +117,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionExportPdf(): void {
-        if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
+        if ($this->maVyplnenyParametr('id')) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
                 $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
                 $this->sendResponse($pdf);
@@ -126,8 +126,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
     public function actionSendRegActivation(): void {
-        if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
+        if ($this->maVyplnenyParametr('id')) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 $hash = base64_encode($uzivatel->id . '-' . md5($this->parameters->salt . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
@@ -154,8 +154,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionExportAndSendRegForm(): void {
-        if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
+        if ($this->maVyplnenyParametr('id')) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 if ($uzivatel->spolek == 0) {
                     $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
 
@@ -189,7 +189,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionHandleSubscriberContract(): void {
         // TODO: Logování změn
 
-        if (!$this->getParameter('id')) {
+        if (!$this->maVyplnenyParametr('id')) {
             $this->flashMessage('Žádné id.');
             $this->redirect('UzivatelList:listall');
         }
@@ -197,7 +197,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $user_id = $this->getParameter('id');
         $current_user = $this->uzivatel->find($user_id);
 
-        if (!$current_user) {
+        if ($current_user === null) {
             $this->flashMessage('Žádný uživatel s tímto id.');
             $this->redirect('UzivatelList:listall');
         }
@@ -215,7 +215,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $uzivatel =  $this->uzivatel->find($uid);
 
         // generate auth code and encrypt it to DB if not already generated
-        if (!$uzivatel->oneclick_auth) {
+        if (in_array($uzivatel->oneclick_auth, [null, '', '0'], true)) {
             $code_length = 32;
             $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', (int) ceil($code_length / strlen($x)))), 1, $code_length);
             $oneclick_auth_code_encrypted = $this->cryptosvc->encrypt($oneclick_auth_code);

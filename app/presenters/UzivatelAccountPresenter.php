@@ -89,8 +89,8 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $id = $this->getParameter('id');
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
         //\Tracy\Debugger::barDump($pohyb->Uzivatel);
-        if ($pohyb) {
-            if ($pohyb->Uzivatel_id) {
+        if ($pohyb !== null) {
+            if (!in_array($pohyb->Uzivatel_id, [null, 0], true)) {
                 $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($pohyb->Uzivatel_id)->Ap_id, $this->getUser());
             } else {
                 $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
@@ -109,7 +109,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
     /** Platby člena vidí správce jeho AP */
     private function smiVidetPlatby(): bool {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
-        return $uzivatel && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+        return $uzivatel !== null && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
     }
 
     public function renderAccount(): void {
@@ -136,7 +136,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $grid->setExport('account_export');
 
         $seznamTransakci = null;
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $seznamTransakci = $this->uzivatelskeKonto->getUzivatelskeKontoUzivatele($id);
         }
 

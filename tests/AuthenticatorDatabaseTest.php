@@ -112,11 +112,14 @@ final class AuthenticatorDatabaseTest extends DatabaseTestCase
     }
 
     public function testEmptyUserIdIsRejected(): void {
-        Assert::exception(
-            fn () => $this->authenticator->authenticate(['', null]),
-            AuthenticationException::class,
-            'User not found.',
-        );
+        foreach ([null, '', 0, '0'] as $id) {
+            Assert::exception(
+                fn () => $this->authenticator->authenticate([$id, null]),
+                AuthenticationException::class,
+                'User not found.',
+            );
+        }
+        Assert::exception(fn () => $this->authenticator->authenticate(['00', null]), AuthenticationException::class, 'User not allowed.');
     }
 }
 

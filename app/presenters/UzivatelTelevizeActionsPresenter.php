@@ -88,7 +88,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
     private function cena($uid) {
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-        return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+        return $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
     public function actionActivate(): void {

@@ -50,7 +50,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         $smlouva_id = $input->getArgument('smlouva_id');
 
         $smlouva = $this->smlouvaModel->find($smlouva_id);
-        if (!$smlouva) {
+        if ($smlouva === null) {
             throw new \Exception("Smlouva cislo [$smlouva_id] neni v DB\n");
         }
 
@@ -85,7 +85,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
           'Smlouva.kdy_ukonceno' => null,
         ]);
 
-        if ($chybejiciPodpis && $chybejiciPodpis->smlouva->externi_id) {
+        if ($chybejiciPodpis !== null && $chybejiciPodpis->smlouva->externi_id) {
             $zrusitSmlouvu = $chybejiciPodpis->smlouva;
 
             printf("Krok %u: zrušit předchozí nepodepsanou smlouvu %u (datum %s) externi_id=%s\n", ++$krok, $zrusitSmlouvu->id, $zrusitSmlouvu->kdy_vygenerovano, $zrusitSmlouvu->externi_id);
@@ -167,7 +167,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         );
 
         // Nemame datum narozeni? -> vlozit editovatelny policko
-        if ($uzivatel->TypPravniFormyUzivatele->text == "FO" && !$uzivatel->datum_narozeni) {
+        if ($uzivatel->TypPravniFormyUzivatele->text == "FO" && $uzivatel->datum_narozeni === null) {
             printf("Krok %u: Nemame datum narozeni -> vlozit editovatelny policko\n", ++$krok);
             $parametry['datum_narozeni'] = '';
             $parametry['firma'] = '';

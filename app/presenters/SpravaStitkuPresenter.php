@@ -54,9 +54,9 @@ class SpravaStitkuPresenter extends SpravaPresenter
         } else {
             $form->addSubmit('send', 'Upravit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
         }
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $stitek = $this->stitek->getStitekById($id);
-            if ($stitek) {
+            if ($stitek !== null) {
                 $form->setDefaults([
                     'text' => $stitek->text,
                     // 'Oblast_id' => $stitek->Oblast_id,
@@ -77,7 +77,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $id = $this->getParameter('id');
         // $values->Oblast_id = $values->Oblast_id === '' ? null : $values->Oblast_id;
 
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $this->stitek->updateStitek($id, [
                 'text' => $values->text,
                 // 'Oblast_id' => $values->Oblast_id,
@@ -110,7 +110,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $data = json_decode($this->getHttpRequest()->getRawBody(), true);
         $stitek_id = $data['stitek_id'] ?? null;
         $user_id = $data['user_id'] ?? null;
-        if (!$stitek_id || !$user_id) {
+        if (in_array($stitek_id, [null, false, 0, 0.0, '', '0', []], true) || in_array($user_id, [null, false, 0, 0.0, '', '0', []], true)) {
             echo json_encode(['success' => false, 'message' => 'Neplatné parametry.']);
             $this->terminate();
         }
@@ -141,14 +141,14 @@ class SpravaStitkuPresenter extends SpravaPresenter
 
         // Ověření, že štítek existuje
         $stitek = $this->stitek->getStitekById($stitek_id);
-        if (!$stitek) {
+        if ($stitek === null) {
             echo json_encode(['success' => false, 'message' => 'Štítek nebyl nalezen.']);
             $this->terminate();
         }
 
         // Ověření, že uživatel existuje
         $user = $this->uzivatel->getUzivatel($user_id);
-        if (!$user) {
+        if ($user === null) {
             echo json_encode(['success' => false, 'message' => 'Uživatel nebyl nalezen.']);
             $this->terminate();
         }

@@ -136,7 +136,7 @@ class Wewimo
                 $row['x-signal-to-noise-pct'] = $this->dbm2pct($row['x-signal-to-noise'], 0, 90);
                 $row['x-signal-strength'] = preg_replace('/^(\\-[0-9]+).*$/', '$1', $row['signal-strength']); // signal strength as a plain number -54 instead of -54dBm@HT20-6
                 $row['x-signal-strength-pct'] = $this->dbm2pct($row['x-signal-strength']);
-                if ($row['tx-signal-strength']) {
+                if (!in_array($row['tx-signal-strength'], [null, false, 0, 0.0, '', '0', []], true)) {
                     $row['x-tx-signal-strength'] = preg_replace('/^(\\-[0-9]+).*$/', '$1', $row['tx-signal-strength']); // signal strength as a plain number -54 instead of -54dBm@HT20-6
                     $row['x-tx-signal-strength-pct'] = $this->dbm2pct($row['x-tx-signal-strength']);
                 }
@@ -221,13 +221,13 @@ class Wewimo
         $apt = $this->ap->getAP($apId * 1);
         $wewimoMultiData = [];
         $wewimoMultiData['devices'] = [];
-        if (!$apt) {
+        if ($apt === null) {
             $wewimoMultiData['error'] = 'Uknown AP ' . $apId;
             return $wewimoMultiData;
         }
         // k AP dohledat IP adresy, ktere maji nastaven priznak Wewimo
         $apIps = $apt->related('IPAdresa.Ap_id')->where('wewimo', 1);
-        if ($ip) {
+        if (!in_array($ip, [null, '', '0'], true)) {
             // omezit jen na jednu IP - vyuziva se v AJAXovem prekreslovani zmen,
             // misto jednoho pozadavku-odpovedi na vsechny IP (RB) se AJAXem posila
             // nekolik pozadavku (jeden na jednu IP) cimz je aktualizace rychlejsi (paralelizace)
@@ -247,10 +247,10 @@ class Wewimo
                 foreach ($wewimoData['interfaces'] as $interfaceName => &$xinterface) {
                     $this->sanitizeAttribute($xinterface, 'comment');
                     foreach ($xinterface['stations'] as &$xstation) {
-                        if ($xstation['mac-address']) {
+                        if (!in_array($xstation['mac-address'], [null, false, 0, 0.0, '', '0', []], true)) {
                             $searchMacs[] = $xstation['mac-address'];
                         }
-                        if ($xstation['last-ip']) {
+                        if (!in_array($xstation['last-ip'], [null, false, 0, 0.0, '', '0', []], true)) {
                             $searchIps[] = $xstation['last-ip'];
                         }
                         $this->sanitizeAttribute($xstation, 'comment');
@@ -265,13 +265,13 @@ class Wewimo
                         $station['xx-grafana-link'] = 'http://sojka.hkfree.org/grafana/d/dKlgTs6mk/wewimo?orgId=1&from=now-20d&to=now&refresh=1h&var-Station_MAC=' . $station['mac-address'];
                         if (array_key_exists($station['mac-address'], $ips)) {
                             $ipRec = $ips[$station['mac-address']];
-                            if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {
+                            if (!in_array($ipRec->hostname, [null, '', '0'], true) || in_array($ipRec->Uzivatel_id, [null, 0], true)) {
                                 $station['xx-mac-host'] = $ipRec->hostname;
                             } else {
                                 $station['xx-mac-host'] = '('.$ipRec->ref('Uzivatel')->nick.')';
                             }
                             $station['xx-mac-ip-id'] = $ipRec->id;
-                            if ($ipRec->Uzivatel_id) {
+                            if (!in_array($ipRec->Uzivatel_id, [null, 0], true)) {
                                 $station['xx-mac-link'] = [
                                     'presenter' => 'Uzivatel:show',
                                     'id' => $ipRec->Uzivatel_id,
@@ -288,7 +288,7 @@ class Wewimo
                                 //$this->link('Ap:show', array('id' => $ipRec->Ap_id)) . "#ip" . $ipRec->ip_adresa;
                                 $station['xx-user-nick'] = 'AP';
                             }
-                            if (!$station['x-in-neighbors']) {
+                            if ($station['x-in-neighbors'] === 0) {
                                 // pokud uz zarizeni nebylo nalezeno v neighbors podle MAC (v ramci metody getWewimoData)
                                 // tak zkusit doparovat podle IP: MAC -> IP (z databaze) -> info o zarizeni (z neighbors podle IP)
                                 $stationIp = $ipRec->ip_adresa; // IP adresa z databaze dohledana podle MAC
@@ -360,13 +360,13 @@ class Wewimo
      * @param array<string, mixed> $station
      */
     public function prepareIpInfoAndLink(Nette\Database\Table\ActiveRow $ipRec, array &$station): void {
-        if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {
+        if (!in_array($ipRec->hostname, [null, '', '0'], true) || in_array($ipRec->Uzivatel_id, [null, 0], true)) {
             $station['xx-last-ip-host'] = $ipRec->hostname;
         } else {
             $station['xx-last-ip-host'] = '('.$ipRec->ref('Uzivatel')->nick.')';
         }
         $station['xx-last-ip-id'] = $ipRec->id;
-        if ($ipRec->Uzivatel_id) {
+        if (!in_array($ipRec->Uzivatel_id, [null, 0], true)) {
             $station['xx-last-ip-link'] = [
                 'presenter' => 'Uzivatel:show',
                 'id' => $ipRec->Uzivatel_id,

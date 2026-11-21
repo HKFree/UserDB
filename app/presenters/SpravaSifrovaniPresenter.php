@@ -46,7 +46,7 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
         $nesifrovane = $this->ipAdresa->findBy(array('heslo_sifrovane' => 0));
 
         foreach ($nesifrovane as $ip) {
-            if ($ip->heslo && strlen($ip->heslo) > 0) {
+            if (!in_array($ip->heslo, [null, '', '0'], true) && strlen($ip->heslo) > 0) {
                 $encrypted = $this->cryptosvc->encrypt($ip->heslo);
                 $this->ipAdresa->update($ip->id, array('heslo' => $encrypted, 'heslo_sifrovane' => 1));
             }

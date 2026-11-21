@@ -30,13 +30,13 @@ class VnejsiScannerPresenter extends BasePresenter
             $scan_detaily[$ip]["porty"] = $porty;
 
             $ip_adresa = $this->iPAdresa->findIp(["ip_adresa" => $ip]);
-            if (!$ip_adresa) {
+            if ($ip_adresa === null) {
                 $scan_detaily[$ip]["oblast"] = "Není v UserDB";
                 $scan_detaily[$ip]["uzivatel"] = false;
                 continue;
             }
 
-            if ($ip_adresa->Ap) {
+            if ($ip_adresa->Ap !== null) {
                 $scan_detaily[$ip]["oblast"] = $ip_adresa->Ap->Oblast->jmeno;
                 $scan_detaily[$ip]["uzivatel"] = false;
             } else {

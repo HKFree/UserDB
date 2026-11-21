@@ -291,7 +291,7 @@ class UzivatelListGrid
         $grid->getTranslator()->setLang('cs');
         $grid->setExport('user_export');
 
-        if ($id) {
+        if (!in_array($id, [null, 0, '', '0'], true)) {
             $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
             $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
             $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($id, $loggedUser);

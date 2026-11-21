@@ -21,7 +21,7 @@ class AwegUser extends Table
     public function getAwegUser($uid): Nette\Database\Table\ActiveRow|false {
         $r = $this->findOneBy(["hkfree_uid" => $uid]);
 
-        if ($r) {
+        if ($r !== null) {
             return ($r);
         } else {
             return (false);

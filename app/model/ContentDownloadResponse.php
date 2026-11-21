@@ -20,7 +20,7 @@ class ContentDownloadResponse implements Nette\Application\IResponse
     public function __construct($content, $name, $contentType = null) {
         $this->content = $content;
         $this->name = $name;
-        $this->contentType = $contentType ? $contentType : 'application/octet-stream';
+        $this->contentType = $contentType ?: 'application/octet-stream';
     }
     /**
      * Returns the content of downloaded file.

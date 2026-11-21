@@ -122,3 +122,8 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - Kontrolu přístupu v `www/adminer/index.php` lze testovat v PHP podprocesu požadavkem na
   `?file=adminer.css`: povolená větev načte skutečný soubor z balíčku bez přihlášení nebo spojení s DB,
   zamítnutá větev skončí 403. Ověřeno 21. 11. 2026 s `dg/adminer-custom` 1.15.0.
+- Nette normalizuje celočíselné persistentní parametry a parametry akcí s výchozí hodnotou `0`
+  ještě před jejich použitím: řetězec `"0"` přijme, `"00"` odmítne výjimkou `BadRequestException`
+  s kódem 404. Netypovaný parametr s výchozím `null` si `"00"` ponechá. Při charakterizačních
+  testech rozlišovat raw vstup od hodnoty dostupné v presenteru. Ověřeno 21. 11. 2026 přes
+  `PresenterRunner` na přepínači money, API monitoringu a AJAX request ID v Nette Application 3.2.6.

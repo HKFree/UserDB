@@ -51,7 +51,7 @@ class ApPresenter extends BasePresenter
 
     /** @return true|void */
     public function renderList() {
-        if ($this->getParameter('id')) {
+        if ($this->maVyplnenyParametr('id')) {
             $apcka = $this->ap->findAP(array('Oblast_id' => intval($this->getParameter('id'))));
             if ($apcka->count() == 0) {
                 $this->template->table = 'Chyba, zadaná oblast neexistuje nebo nemá žádná AP.';
@@ -70,7 +70,7 @@ class ApPresenter extends BasePresenter
                 $tr = $table->create('tr');
                 $tr->create('td')->setText($ap->id);
                 $tdNazev = $tr->create('td');
-                if (!$ap->aktivni) {
+                if (in_array($ap->aktivni, [0, false], true)) {
                     $tdNazev = $tdNazev->create('s');
                 }
                 $tdNazev->setText($ap->jmeno);
@@ -107,7 +107,7 @@ class ApPresenter extends BasePresenter
     }
 
     public function renderShow(): void {
-        if ($this->getParameter('id') && $ap = $this->ap->getAP($this->getParameter('id'))) {
+        if ($this->maVyplnenyParametr('id') && ($ap = $this->ap->getAP($this->getParameter('id'))) !== null) {
             $this->template->ap = $ap;
             $canViewCredentialsOrEdit = $this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
             $ips = $ap->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)');
@@ -132,7 +132,7 @@ class ApPresenter extends BasePresenter
         if ($this->ap->canViewOrEditAll($this->getUser())) {
             return true;
         }
-        return !empty($idAp) && $this->ap->getAP($idAp) && $this->ap->canViewOrEditAP($idAp, $this->getUser());
+        return !empty($idAp) && $this->ap->getAP($idAp) !== null && $this->ap->canViewOrEditAP($idAp, $this->getUser());
     }
 
     public function renderEdit(): void {
@@ -210,9 +210,9 @@ class ApPresenter extends BasePresenter
         $form->onValidate[] = array($this, 'validateApForm');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $values = $this->ap->getAP($this->getParameter('id'));
-            if ($values) {
+            if ($values !== null) {
                 foreach ($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
                     if ($ip_data->heslo_sifrovane == 1) {
                         //\Tracy\Debugger::barDump($ip_data->heslo);
@@ -253,7 +253,7 @@ class ApPresenter extends BasePresenter
                 }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
-                if ($duplIp) {
+                if (!in_array($duplIp, [null, '', '0'], true)) {
                     $form->addError('IP adresa ' . $duplIp . ' již  v databázi existuje!');
                 }
 
@@ -452,7 +452,7 @@ class ApPresenter extends BasePresenter
     /** @param int|string|null $id */
     public function actionIds($id): void {
         $apt = $this->ap->getAP($id * 1);
-        if (!$apt) {
+        if ($apt === null) {
             $this->error('AP not found');
         } else {
             $this->template->ap = $apt;

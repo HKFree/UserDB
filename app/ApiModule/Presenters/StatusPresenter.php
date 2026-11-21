@@ -95,7 +95,7 @@ class StatusPresenter extends ApiPresenter
                     $count_total++;
 
                     // IP je mrtva
-                    if (!$ping_ip["alive"]) {
+                    if (in_array($ping_ip["alive"], [null, false, 0, 0.0, '', '0', []], true)) {
                         $count_dead++;
                     }
 
@@ -146,11 +146,11 @@ class StatusPresenter extends ApiPresenter
         $ip_tazatele = $this->getHttpRequest()->getRemoteAddress();
 
         $ip = $this->ipadresa->findIp(array("ip_adresa" => $ip_tazatele));
-        if (!$ip) {
+        if ($ip === null) {
             $this->sendResponse(new JsonResponse(false));
         }
 
-        if (!$ip->Uzivatel_id) {
+        if (in_array($ip->Uzivatel_id, [null, 0], true)) {
             $this->sendResponse(new JsonResponse(false));
         }
 

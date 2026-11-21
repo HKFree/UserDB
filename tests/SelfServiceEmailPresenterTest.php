@@ -30,9 +30,9 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
         foreach ([$key, rtrim($key, '='), chunk_split($key, 8, "\r\n")] as $input) {
             $result = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail', 'key' => $input]);
             Assert::same(200, $result->status);
-            Assert::contains($spolek ? 'Vaše registrace do hkfree.org z.s. byla úspěšně dokončena.' : 'Ověření proběhlo úspěšně', $result->html);
+            Assert::contains($spolek !== 0 ? 'Vaše registrace do hkfree.org z.s. byla úspěšně dokončena.' : 'Ověření proběhlo úspěšně', $result->html);
             Assert::same(1, $this->database->table('Uzivatel')->get($member->id)->regform_downloaded_password_sent);
-            Assert::same($druzstvo ? [$member->id] : [], $this->container->getByType(RecordingContractRequest::class)->calls);
+            Assert::same($druzstvo !== 0 ? [$member->id] : [], $this->container->getByType(RecordingContractRequest::class)->calls);
             Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
         }
     }
@@ -40,7 +40,7 @@ final class SelfServiceEmailPresenterTest extends DatabaseTestCase
     public function testUnknownMemberAndEmptyKeyDoNotConfirm(): void {
         $ap = $this->fixtures->ap($this->fixtures->area()->id);
         $member = $this->fixtures->member($ap->id, ['regform_downloaded_password_sent' => 0]);
-        foreach (['', base64_encode('0-' . str_repeat('a', 32))] as $key) {
+        foreach (['', '0', base64_encode('0-' . str_repeat('a', 32))] as $key) {
             $result = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail', 'key' => $key]);
             Assert::same(200, $result->status);
             Assert::contains('Ověření nebylo možné dokončit.', $result->html);

@@ -57,6 +57,14 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     /**
+     * Zachovává význam prázdných parametrů: i 0 a "0" znamenají nezadanou hodnotu.
+     * Neověřuje formát ani oprávnění; např. "00" je vyplněný parametr.
+     */
+    protected function maVyplnenyParametr(string $name): bool {
+        return !in_array($this->getParameter($name), [null, false, 0, 0.0, '', '0', []], true);
+    }
+
+    /**
      * Obsluha formuláře nebo akce pokračuje jen s oprávněním, jinak 403.
      * Podmínka má být stejná, jakou dostává šablona: šablona formulář jen skryje, odeslat ho jde i bez ní.
      */
@@ -127,16 +135,16 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     protected function getWewimoLinkFromIpAddress(ActiveRow $ip): ?string {
-        if ($ip->w_ssid) {
+        if (!in_array($ip->w_ssid, [null, '', '0'], true)) {
             // najit IPAdresu zarizeni (AP), na ktere je tato ip (podle Wewima) pripojena
             $apAdresa = $ip->ref('IPAdresa', 'w_ap_IPAdresa_id');
-            if ($apAdresa) {
+            if ($apAdresa !== null) {
                 // ok, mame adresu APcka, muze byt navazano na uzivatele (hodne nepravdepodobne),
                 // nebo muze byt navazano na (entitu) AP
-                if ($apAdresa->ref('Uzivatel')) {
+                if ($apAdresa->ref('Uzivatel') !== null) {
                     $apId = $apAdresa->ref('Uzivatel')->ref('Ap')->id;
                     return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
-                } elseif ($apAdresa->ref('Ap')) {
+                } elseif ($apAdresa->ref('Ap') !== null) {
                     $apId = $apAdresa->ref('Ap')->id;
                     return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
                 }

@@ -65,7 +65,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
             $keyRec = $this->apiKlicModel->getApiKlic($apiKeyId);
 
             // Check if the key is valid and not expired
-            if ($keyRec && hash_equals((string) $keyRec->klic, $password) && $this->apiKlicModel->isNotExpired($keyRec->plati_do)) {
+            if ($keyRec !== null && hash_equals((string) $keyRec->klic, $password) && $this->apiKlicModel->isNotExpired($keyRec->plati_do)) {
                 // Save keyApID for later check
                 $this->keyApID = $keyRec->Ap_id;
 
@@ -78,7 +78,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
                 }
 
                 // Check if the API key has restricted presenter, if no, allow
-                if (!$keyRec->presenter) {
+                if (in_array($keyRec->presenter, [null, '', '0'], true)) {
                     parent::checkRequirements($element);
                     return;
                 }
@@ -106,7 +106,7 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
     protected function checkApID($requestedApId = null) {
         if ($requestedApId !== null) {
             // Check if key is restricted to an AP and does not match to requested AP
-            if ($this->keyApID && $requestedApId != $this->keyApID) {
+            if ($this->keyApID !== null && $this->keyApID !== 0 && $requestedApId != $this->keyApID) {
                 $this->sendForbidden('not allowed to view AP ' . $requestedApId);
             }
             return $requestedApId;

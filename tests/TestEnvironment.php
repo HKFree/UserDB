@@ -185,7 +185,7 @@ final class TestEnvironment
 
     /** @return array<string, string>|null */
     private static function completedMigrations(Connection $connection): ?array {
-        if (!$connection->fetchField("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'migrations'")) {
+        if ($connection->fetchField("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'migrations'") === 0) {
             return null;
         }
         $completed = [];

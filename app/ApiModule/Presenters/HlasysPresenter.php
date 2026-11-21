@@ -22,7 +22,7 @@ class HlasysPresenter extends ApiPresenter
     /** @param string|null $typSpravce */
     public function actionGetSpravce($typSpravce): void {
         $typSpravceRec = $this->typSpravceOblasti->findOneBy(['text' => $typSpravce]);
-        if (!$typSpravceRec) {
+        if ($typSpravceRec === null) {
             $this->sendResponse(new JsonResponse(['result' => 'ERROR, typ spravce '.$typSpravce.' not found']));
         }
 

@@ -86,7 +86,7 @@ class PaymentSchedulePresenter extends BasePresenter
     /** Rozpis plateb ukazuje detail člena jen tomu, kdo smí člena upravovat */
     private function vyzadujOpravneniKClenovi(): void {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
-        $this->vyzadujOpravneni($uzivatel && $this->smiUpravitUzivatele($uzivatel));
+        $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
     }
 
     public function renderShow(): void {
