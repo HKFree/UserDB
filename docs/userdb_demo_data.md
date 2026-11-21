@@ -177,6 +177,7 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | Aktivace za posledních 36 měsíců | `/sprava-grafu/usersgraph`, členové 20036 až 20038 (každý měsíc platba a aktivace), dostupné i bez objemu |
 | Přehled a schvalování ČČ | `/sprava-cc/prehledcc`, `/sprava-cc/schvalovanicc` |
 | Štítky bez barev, více řádků a stejný text ve dvou oblastech | `/sprava-stitku/`, štítky 21000 až 21004, členové 20002 a 20027 |
+| Filtr seznamu členů podle štítku | `/uzivatel-list/list/201`, filtr „Hledej štítek“: „Demo globální“ najde člena 20027, „NOT Demo globální“ všechny ostatní, „LAN123“ nikoho |
 | Sloučení se dvěma členy | `/sprava-slucovani/slouceni`, master 20058 |
 | Vyloučení z mailing listu | `/sprava-mailu/mailinglist`, členové 20015, 20016, 20019, 20024, 20025 |
 | Nástroje a formuláře | `/sprava/nastroje` |

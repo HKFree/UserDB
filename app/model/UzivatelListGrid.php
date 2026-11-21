@@ -12,6 +12,8 @@ use Latte\Engine;
  */
 class UzivatelListGrid
 {
+    private const TEMPLATE_FILE = __DIR__ . '/../templates/components/memberGrid.latte';
+
     private Uzivatel $uzivatel;
     private Stitek $stitek;
     private StitekUzivatele $stitekUzivatele;
@@ -49,6 +51,7 @@ class UzivatelListGrid
 
         $grid = new \Grido\Grid($presenter, $name);
         $grid->getTranslator()->setLang('cs');
+        $grid->setTemplateFile(self::TEMPLATE_FILE);
         $grid->setExport('user_export');
 
         $apcko = $this->ap->getAP($id);
@@ -292,6 +295,7 @@ class UzivatelListGrid
 
         $grid = new \Grido\Grid($presenter, $name);
         $grid->getTranslator()->setLang('cs');
+        $grid->setTemplateFile(self::TEMPLATE_FILE);
         $grid->setExport('user_export');
 
         if (!in_array($id, [null, 0, '', '0'], true)) {

@@ -152,7 +152,7 @@ $(document).ready(function () {
 
         // AJAX DELETE požadavek
         $.ajax({
-            url: '/userdb/stitky/deleteLabel', // Upravit podle skutečné URL komponenty
+            url: $('body').data('stitky-delete-url'),
             type: 'DELETE',
             contentType: 'application/json',
             data: JSON.stringify({
@@ -184,7 +184,7 @@ $(document).ready(function () {
 
         // Odeslání AJAX požadavku
         $.ajax({
-            url: '/userdb/stitky/saveLabel',
+            url: $('body').data('stitky-save-url'),
             type: 'POST',
             data: {
                 stitek_id: stitekId,
