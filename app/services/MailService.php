@@ -186,6 +186,9 @@ class MailService
     public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $so = $this->uzivatel->getUzivatel($actuser);
+        if ($newUser === null || $so === null) {
+            throw new \InvalidArgumentException('Uživatel pro odeslání e-mailu nebyl nalezen.');
+        }
 
         $fromAddress = 'hkfree.org oblast ' . $newUser->Ap->Oblast->jmeno . ' <oblast' . $newUser->Ap->Oblast->id . '@hkfree.org>';
 

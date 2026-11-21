@@ -101,6 +101,16 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
 
+    public function testMissingDeviceRejectsMemberChangesBeforeSaving(): void {
+        $before = $this->snapshot();
+        $post = $this->post(['jmeno' => 'Nové jméno', 'ip' => [
+            'n1' => $this->ipPost(['id' => '-1', 'ip_adresa' => '192.0.2.100']),
+        ]]);
+        Assert::exception(fn () => $this->submit($post), \Nette\Application\BadRequestException::class, 'IP adresa nebyla nalezena.', 404);
+        Assert::same($before, $this->snapshot());
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
     /** @return array<string, array{array<string, string>, array<string, int>, string, string}> */
     public function validationCases(): array {
         return [

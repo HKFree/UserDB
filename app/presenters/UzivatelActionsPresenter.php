@@ -131,6 +131,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 $hash = base64_encode($uzivatel->id . '-' . md5($this->parameters->salt . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+                if ($so === null) {
+                    $this->error('Uživatel nebyl nalezen.');
+                }
 
                 $link = $this->link('//SelfService:confirmEmail', $hash);
 
@@ -177,6 +180,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionHandleSubscriberContractPreview(): void {
         $user_id = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($user_id);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         $pdfData = \App\Services\GeneratorSmlouvy::nahledUcastnickeSmlouvy($uzivatel);
         $this->sendResponse(new Nette\Application\Responses\CallbackResponse(function (Nette\Http\IRequest $request, Nette\Http\IResponse $response) use ($pdfData): void {
@@ -213,6 +219,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $uid = $this->getParameter('id');
         $variant = $this->getParameter('variant');
         $uzivatel =  $this->uzivatel->find($uid);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         // generate auth code and encrypt it to DB if not already generated
         if (in_array($uzivatel->oneclick_auth, [null, '', '0'], true)) {

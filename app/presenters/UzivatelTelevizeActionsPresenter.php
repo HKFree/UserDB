@@ -84,7 +84,10 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
      * @return int|float|numeric-string
      */
     private function cena($uid) {
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $uzivatel = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
         return $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
@@ -96,7 +99,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
 
         if ($cena > 0) {
             $poznamkaSluzba = "Placená aktivace na 1 kalendářní měsíc";
-            $poznamkaKonto = "[UID" . $this->getUser()->getIdentity()->getId() ." ". $this->getIdentity()->getNick() . "] Aktivace služby Televize na 1 kalendářní měsíc";
+            $poznamkaKonto = "[UID" . $this->getIdentity()->getId() ." ". $this->getIdentity()->getNick() . "] Aktivace služby Televize na 1 kalendářní měsíc";
 
             $this->uzivatelskeKonto->insert(['Uzivatel_id' => $user_id,
                 'TypPohybuNaUctu_id' => 4,
@@ -104,7 +107,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
                 'castka' => -$cena,
                 'datum' => new Nette\Utils\DateTime(),
                 'poznamka' => $poznamkaKonto,
-                'zmenu_provedl' => $this->getUser()->getIdentity()->getId()
+                'zmenu_provedl' => $this->getIdentity()->getId()
             ]);
         } else {
             $poznamkaSluzba = "Bezplatná aktivace na 1 kalendářní měsíc";

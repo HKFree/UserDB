@@ -67,6 +67,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     /**
      * Obsluha formuláře nebo akce pokračuje jen s oprávněním, jinak 403.
      * Podmínka má být stejná, jakou dostává šablona: šablona formulář jen skryje, odeslat ho jde i bez ní.
+     * @phpstan-assert true $smi
      */
     protected function vyzadujOpravneni(bool $smi): void {
         if (!$smi) {
