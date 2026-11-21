@@ -46,8 +46,10 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   dostat Tester.
 - Část kódu čte prostředí přímo přes `getenv()` (`GeneratorSmlouvy`, `RequestDruzstvoContract`,
   `DigisignGenerovatUcastnickouSmlouvu`), ne přes `%env%`. Pevné hodnoty nastavuje `tests/bootstrap.php`.
-- Konzolové příkazy se v testech neinstancují: `DigisignGenerovatUcastnickouSmlouvu` v konstruktoru vytváří
-  adresář a bez klíčů DigiSign vyhodí výjimku.
+- Testovací DI kontejner konzolové příkazy automaticky nevytváří: `DigisignGenerovatUcastnickouSmlouvu`
+  v konstruktoru vytváří adresář a bez klíčů DigiSign vyhodí výjimku. Přímý test obsluhy musí předem nahradit
+  klienta DigiSign a použít jen syntetické klíče a lokální úložiště z testovacího bootstrapu. Ověřeno
+  21. 11. 2026 při testování rušení staré smlouvy; samotné `bin/console` test nespouští.
 
 ## Presentery
 
@@ -116,7 +118,9 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   opakované selhávání vyžaduje vlastní diagnostiku.
 - Souběžné starty několika `flox activate -s` z neaktivního prostředí mohou přerušit start MariaDB a uváznout
   při ukončování služby (pozorováno 20. 11. 2026). Databázová ověření spouštět postupně, případně v jedné
-  aktivaci Floxu.
+  aktivaci Floxu. Totéž bylo pozorováno 21. 11. 2026 po okamžitém skončení aktivace kvůli syntaktické chybě
+  pomocného skriptu, ještě před dokončením startu DB. Pomocný skript nejprve ověřit bez `-s`; stav služby
+  lze zjistit přímo pomocí `flox services status -d .`, bez další aktivace.
 - Bez přístupu k unix socketu MariaDB (například v sandboxu bez sítě) databázové testy neproběhnou: připojení
   skončí „Operation not permitted“ po třicetisekundovém čekání. Bez databáze běží `ContainerTest`, `RouterTest`
   a čistě jednotkové testy.

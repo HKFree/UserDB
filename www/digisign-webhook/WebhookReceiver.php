@@ -60,7 +60,7 @@ function process_digisign_webhook(mixed $hook): void {
             $novaPoznamka = sprintf(
                 "%s%sSmlouva odeslána %s na adresu %s.",
                 $smlouva->poznamka,
-                empty($smlouva->poznamka) ? '' : "\n",
+                in_array($smlouva->poznamka, [null, '', '0'], true) ? '' : "\n",
                 $odeslano_kdy->format('d.m.Y H:i'),
                 $odeslano_kam
             );
@@ -107,7 +107,7 @@ function process_digisign_webhook(mixed $hook): void {
                             $novaPoznamka = sprintf(
                                 "%s%sNejasné datum narození [%s] (z digisign smlouvy #%u ze dne %s)",
                                 $uzivatel->poznamka,
-                                empty($uzivatel->poznamka) ? '' : "\n\n",
+                                in_array($uzivatel->poznamka, [null, '', '0'], true) ? '' : "\n\n",
                                 $birthdate_dirty,
                                 $smlouva->id,
                                 $podpis->kdy_podepsano->format("d.m.Y")
@@ -151,11 +151,11 @@ function process_digisign_webhook(mixed $hook): void {
             $podpis->update(['kdy_odmitnuto' => $hook->time]);
             print_and_log(sprintf("smlouva #%u podpis \"%s\" odmitnut, datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
             // 2. důvod odmítnutí uložit do poznámky
-            if (!empty($envelope->recipients[0]->declineReason)) {
+            if (!in_array($envelope->recipients[0]->declineReason ?? null, [null, '', '0'], true)) {
                 $novaPoznamka = sprintf(
                     "%s%sSmlouva ODMÍTNUTA %s s důvodem: %s",
                     $smlouva->poznamka,
-                    empty($smlouva->poznamka) ? '' : "\n",
+                    in_array($smlouva->poznamka, [null, '', '0'], true) ? '' : "\n",
                     $envelope->recipients[0]->declinedAt->format('d.m.Y H:i'),
                     $envelope->recipients[0]->declineReason
                 );
@@ -174,7 +174,7 @@ function process_digisign_webhook(mixed $hook): void {
             $novaPoznamka = sprintf(
                 "%s%sVYPRŠEL ČAS na podpis %s",
                 $smlouva->poznamka,
-                empty($smlouva->poznamka) ? '' : "\n",
+                in_array($smlouva->poznamka, [null, '', '0'], true) ? '' : "\n",
                 $envelope->recipients[0]->declinedAt->format('d.m.Y H:i'),
             );
             $smlouva->update(['poznamka' => $novaPoznamka]);

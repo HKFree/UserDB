@@ -54,7 +54,7 @@ class GeneratorSmlouvy
         }
 
         $subjectPrefix = getenv('AGREEMENT_NAME_PREFIX');
-        if (!empty($subjectPrefix)) {
+        if ($subjectPrefix !== false && $subjectPrefix !== '' && $subjectPrefix !== '0') {
             $jmenoString = "($subjectPrefix) $jmenoString";
         }
 

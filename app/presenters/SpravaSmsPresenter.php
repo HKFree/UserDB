@@ -53,7 +53,7 @@ class SpravaSmsPresenter extends SpravaPresenter
         $validni = [];
         foreach ($sos as $so) {
             $tl = $so->Uzivatel->telefon;
-            if (!empty($tl) && $tl != 'missing') {
+            if (!in_array($tl, [null, '', '0'], true) && $tl != 'missing') {
                 $validni[] = $so->Uzivatel->id;
             }
         }
