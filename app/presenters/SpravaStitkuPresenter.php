@@ -13,10 +13,11 @@ use Tracy\Debugger;
  */
 class SpravaStitkuPresenter extends SpravaPresenter
 {
+    /** @var Model\Oblast */
     public $oblast;
-    public $stitek;
-    private $uzivatel;
-    private $stitekUzivatel;
+    public Model\Stitek $stitek;
+    private Model\Uzivatel $uzivatel;
+    private Model\StitekUzivatele $stitekUzivatel;
 
     public function __construct(Model\Oblast $ob, Model\Stitek $stitek, Model\Uzivatel $uzivatel, Model\StitekUzivatele $stitekUzivatel) {
         $this->oblast = $ob;
@@ -25,16 +26,16 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $this->stitekUzivatel = $stitekUzivatel;
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $this->template->canViewOrEdit = true;
         $this->template->stitky = $this->stitek->getSeznamStitku();
     }
 
-    public function renderEdit() {
+    public function renderEdit(): void {
         $this->template->canViewOrEdit = true;
     }
 
-    protected function createComponentEditStitekForm() {
+    protected function createComponentEditStitekForm(): Form {
         $form = new Form($this, "editStitekForm");
         $id = $this->getParameter('id');
 
@@ -125,6 +126,10 @@ class SpravaStitkuPresenter extends SpravaPresenter
 
     }
 
+    /**
+     * @param int|string|null $stitek_id
+     * @param int|string|null $user_id
+     */
     public function actionSaveLabel($stitek_id, $user_id): void {
         $this->getHttpResponse()->setContentType('application/json');
 

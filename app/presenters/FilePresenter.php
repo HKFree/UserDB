@@ -21,7 +21,8 @@ class FilePresenter extends BasePresenter
         $this->ap = $ap;
     }
 
-    public function actionDownloadWinboxCmd($id) {
+    /** @param int|string|null $id */
+    public function actionDownloadWinboxCmd($id): void {
         if ($id) {
             $ip = $this->ipAdresa->getIPAdresa($id);
             if ($ip) {

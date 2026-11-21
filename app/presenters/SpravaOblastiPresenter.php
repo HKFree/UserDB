@@ -5,6 +5,7 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Utils\ArrayHash;
 use Nette\Utils\DateTime;
 use Tracy\Debugger;
 
@@ -13,7 +14,8 @@ use Tracy\Debugger;
  */
 class SpravaOblastiPresenter extends SpravaPresenter
 {
-    private $ap;
+    private Model\AP $ap;
+    /** @var Model\Oblast */
     public $oblast;
 
     public function __construct(Model\Oblast $ob, Model\AP $ap) {
@@ -21,11 +23,11 @@ class SpravaOblastiPresenter extends SpravaPresenter
         $this->oblast = $ob;
     }
 
-    public function renderNovaoblast() {
+    public function renderNovaoblast(): void {
         $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentNovaoblastForm() {
+    protected function createComponentNovaoblastForm(): Form {
         $form = new Form($this, "novaoblastForm");
         $form->addHidden('id');
 
@@ -46,7 +48,8 @@ class SpravaOblastiPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function novaoblastFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function novaoblastFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->jeVVneboTECH());
 
         $idOblasti = $values->id;
@@ -62,11 +65,11 @@ class SpravaOblastiPresenter extends SpravaPresenter
         $this->redirect('Sprava:nastroje');
     }
 
-    public function renderNoveap() {
+    public function renderNoveap(): void {
         $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentNoveapForm() {
+    protected function createComponentNoveapForm(): Form {
         $form = new Form($this, "noveapForm");
         $form->addHidden('id');
 
@@ -92,7 +95,8 @@ class SpravaOblastiPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function noveapFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function noveapFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->jeVVneboTECH());
 
         $idAp = $values->id;
