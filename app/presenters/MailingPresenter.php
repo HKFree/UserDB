@@ -9,12 +9,13 @@ use DateInterval;
 use DateTime;
 use Tracy\Debugger;
 
+/** @property-read Nette\Bridges\ApplicationLatte\Template $template */
 class MailingPresenter extends UzivatelPresenter
 {
-    private $parameters;
-    private $uzivatel;
-    private $mailService;
-    private $cestneClenstviUzivatele;
+    private Model\Parameters $parameters;
+    private Model\Uzivatel $uzivatel;
+    private Services\MailService $mailService;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
 
     private Services\Stitkovac $stitkovac;
 
@@ -35,7 +36,7 @@ class MailingPresenter extends UzivatelPresenter
     }
 
     // generate auth code and encrypt it to DB if not already generated
-    private function oneclickAuthCode($uzivatel) {
+    private function oneclickAuthCode(Nette\Database\Table\ActiveRow $uzivatel): string {
         if (!$uzivatel->oneclick_auth) {
             $code_length = 32;
             $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', (int) ceil($code_length / strlen($x)))), 1, $code_length);
@@ -51,7 +52,7 @@ class MailingPresenter extends UzivatelPresenter
         return $oneclick_auth_code;
     }
 
-    private function setCommonTemplateParams() {
+    private function setCommonTemplateParams(): void {
         $uid = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($uid);
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
@@ -63,7 +64,8 @@ class MailingPresenter extends UzivatelPresenter
         $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
-    private function loadTemplateAndSubject($variant) {
+    /** @param string|null $variant */
+    private function loadTemplateAndSubject($variant): string|false {
         $subject = file_get_contents(__DIR__ . "/../templates/email/{$variant}_subject.latte");
         $this->template->subject = $subject;
 
@@ -72,14 +74,14 @@ class MailingPresenter extends UzivatelPresenter
         return $subject;
     }
 
-    public function renderPreviewUserEmail() {
+    public function renderPreviewUserEmail(): void {
         $variant = $this->getParameter('variant');
 
         $this->loadTemplateAndSubject($variant);
         $this->setCommonTemplateParams();
     }
 
-    public function actionSendUserEmail() {
+    public function actionSendUserEmail(): void {
         $uid = $this->getParameter('id');
         $variant = $this->getParameter('variant');
         $uzivatel =  $this->uzivatel->find($uid);

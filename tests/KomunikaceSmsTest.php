@@ -10,9 +10,11 @@ use App\Presenters\UzivatelMailSmsPresenter;
 use App\Services\MexSmsSender;
 use App\Services\SmsSenderException;
 use Nette\Application\AbortException;
+use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
 use Nette\Database\Table\GroupedSelection;
 use Nette\Http;
+use Nette\Utils\ArrayHash;
 use Tester\Assert;
 use Tester\TestCase;
 
@@ -126,7 +128,7 @@ class KomunikaceSmsTest extends TestCase
         $sender = new RecordingSmsSender();
         $presenter = $this->createPresenter([1 => 'neplatné'], $sender);
 
-        Assert::exception(fn () => $presenter->smsFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+        Assert::exception(fn () => $presenter->smsFormSucceded(new Form(), ArrayHash::from(['message' => 'Test'])), AbortException::class);
 
         $this->assertFlash($presenter, 'SMS nebyla odeslána. ' . self::NO_NUMBER, 'danger');
         Assert::same([], $sender->calls);
@@ -136,7 +138,7 @@ class KomunikaceSmsTest extends TestCase
         $sender = new RecordingSmsSender();
         $presenter = $this->createPresenter([1 => '777222555'], $sender);
 
-        Assert::exception(fn () => $presenter->smsFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+        Assert::exception(fn () => $presenter->smsFormSucceded(new Form(), ArrayHash::from(['message' => 'Test'])), AbortException::class);
 
         $this->assertFlash($presenter, 'SMS byla odeslána na 1 čísel.', 'info');
         Assert::same([[['777222555'], 'Test']], $sender->calls);
@@ -148,7 +150,7 @@ class KomunikaceSmsTest extends TestCase
             1 => 'neplatné', 2 => '777222555', 3 => 'missing', 4 => '+420 777 222 556', 5 => '',
         ], $sender);
 
-        Assert::exception(fn () => $presenter->smsallFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+        Assert::exception(fn () => $presenter->smsallFormSucceded(new Form(), ArrayHash::from(['message' => 'Test'])), AbortException::class);
 
         $this->assertFlash($presenter, 'SMS byla odeslána na 2 čísel.', 'info');
         Assert::same([[['777222555', '+420 777 222 556'], 'Test']], $sender->calls);
@@ -159,7 +161,7 @@ class KomunikaceSmsTest extends TestCase
             $sender = new RecordingSmsSender();
             $presenter = $this->createPresenter($numbers, $sender);
 
-            Assert::exception(fn () => $presenter->smsallFormSucceded(null, (object) ['message' => 'Test']), AbortException::class);
+            Assert::exception(fn () => $presenter->smsallFormSucceded(new Form(), ArrayHash::from(['message' => 'Test'])), AbortException::class);
 
             $this->assertFlash($presenter, 'SMS nebyla odeslána. ' . self::NO_NUMBER, 'danger');
             Assert::same([], $sender->calls);
@@ -167,10 +169,10 @@ class KomunikaceSmsTest extends TestCase
     }
 
     public function testGatewayErrorHasNoStackTrace(): void {
-        $values = (object) ['message' => 'Test'];
+        $values = ArrayHash::from(['message' => 'Test']);
         $handlers = [
-            fn (SmsPresenter $presenter) => $presenter->smsFormSucceded(null, $values),
-            fn (SmsPresenter $presenter) => $presenter->smsallFormSucceded(null, $values),
+            fn (SmsPresenter $presenter) => $presenter->smsFormSucceded(new Form(), $values),
+            fn (SmsPresenter $presenter) => $presenter->smsallFormSucceded(new Form(), $values),
         ];
         foreach ($handlers as $callHandler) {
             $sender = new RecordingSmsSender();
