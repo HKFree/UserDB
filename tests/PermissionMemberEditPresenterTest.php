@@ -133,6 +133,33 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         Assert::same($before, $s->snapshot());
     }
 
+    /** @return list<array{string}> */
+    public function managerPageCases(): array {
+        return [['show'], ['edit']];
+    }
+
+    /**
+     * Issue #226: the check ran one scan of all IP addresses for every subnet in the manager's areas.
+     *
+     * @dataProvider managerPageCases
+     */
+    public function testForeignMemberPageQueriesDoNotGrowWithManagedSubnets(string $action): void {
+        $s = $this->scenario;
+        $this->fixtures->subnet($s->ap->id, '10.107.240.0/24', '10.107.240.1');
+        // An address outside the manager's subnets: the check has to compare it and still deny.
+        $this->fixtures->ipAddress($s->otherMember->id, '10.107.1.1');
+        $open = fn (): PresenterResult => $this->presenters->ui($s->actors['ownSo']->id, 'Uzivatel', ['action' => $action, 'id' => $s->otherMember->id]);
+        $open();
+        $queries = $this->countQueries($open);
+
+        $secondAp = $this->fixtures->ap($s->area->id);
+        foreach (range(241, 246) as $index => $network) {
+            $this->fixtures->subnet($index % 2 === 0 ? $s->ap->id : $secondAp->id, "10.107.$network.0/24", "10.107.$network.1");
+        }
+
+        Assert::same($queries, $this->countQueries($open));
+    }
+
     public function testCooperativeActorCreatesMember(): void {
         $s = $this->scenario;
         $nick = $this->fixtures->name('NewMember');
@@ -143,6 +170,21 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         Assert::same($s->otherAp->id, $created->Ap_id);
         Assert::same($post['poznamka'], $created->poznamka);
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $created->id);
+    }
+
+    private function countQueries(callable $request): int {
+        $connection = $this->database->getConnection();
+        $handlers = $connection->onQuery;
+        $count = 0;
+        $connection->onQuery[] = static function () use (&$count): void {
+            $count++;
+        };
+        try {
+            $request();
+        } finally {
+            $connection->onQuery = $handlers;
+        }
+        return $count;
     }
 
     /**

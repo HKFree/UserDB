@@ -82,14 +82,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())) {
             return true;
         }
-        $seznamUzivatelu = [];
+        $oblastIds = [];
         foreach ($this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid()) as $oblast) {
-            foreach ($oblast->related('Ap.Oblast_id') as $ap) {
-                $subnety = $ap->related('Subnet.Ap_id');
-                $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatelModel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
-            }
+            $oblastIds[] = $oblast->id;
         }
-        return in_array($uzivatel->id, $seznamUzivatelu, true);
+        return $this->uzivatelModel->maIpAdresuVSubnetuCizihoAp($uzivatel->id, $oblastIds);
     }
 
     protected function beforeRender() {

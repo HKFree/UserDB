@@ -32,7 +32,9 @@ final class EmptyCollectionsPresenterTest extends DatabaseTestCase
         $model = $this->container->getByType(Uzivatel::class);
         $expected = $mode === 'matched' ? [$foreign->id] : [];
 
-        Assert::same($expected, $model->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnets));
+        foreach ([$local, $foreign, $unmatched] as $member) {
+            Assert::same(in_array($member->id, $expected, true), $model->maIpAdresuVSubnetuCizihoAp($member->id, [$ap->Oblast_id]));
+        }
         Assert::same($expected, array_values($model->findUsersFromOtherAreasByAreaId($ap->id, $subnets)->fetchPairs('id', 'id')));
     }
 
