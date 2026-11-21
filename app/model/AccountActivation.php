@@ -40,7 +40,7 @@ class AccountActivation
     public function reactivateAccount(Nette\Security\User $loggedUser, $id): string|true {
         $uzivatel = $this->uzivatel->getUzivatel($id);
         if ($uzivatel !== null) {
-            if ($uzivatel->money_aktivni == 0 && $uzivatel->money_deaktivace == 1) {
+            if ((int) $uzivatel->money_aktivni === 0 && (int) $uzivatel->money_deaktivace === 1) {
                 $this->uzivatel->update($uzivatel->id, array('money_aktivni' => 1,'money_deaktivace' => 0));
 
                 $this->uzivatelskeKonto->insert(array('Uzivatel_id' => $uzivatel->id,
@@ -53,7 +53,7 @@ class AccountActivation
                 return 'Účet byl reaktivován.';
             }
 
-            if ($uzivatel->money_aktivni == 1 && $uzivatel->money_deaktivace == 1) {
+            if ((int) $uzivatel->money_aktivni === 1 && (int) $uzivatel->money_deaktivace === 1) {
                 $this->uzivatel->update($uzivatel->id, array('money_deaktivace' => 0));
 
                 $this->uzivatelskeKonto->insert(array('Uzivatel_id' => $uzivatel->id,

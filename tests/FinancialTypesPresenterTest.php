@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Test;
 
 use App\Model\Parameters;
+use App\Model\Uzivatel;
+use App\Model\UzivatelTelevize;
+use App\Presenters\UzivatelTelevizePresenter;
 use Nette\Application\Responses\TextResponse;
 use Nette\Bridges\ApplicationLatte\Template;
 use Nette\Database\Table\ActiveRow;
@@ -23,6 +26,48 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         $this->actor = $this->fixtures->member($ap->id);
         $this->fixtures->role($this->actor->id, 'VV');
         $this->member = $this->fixtures->member($ap->id, ['druzstvo' => 1, 'spolek' => 0]);
+    }
+
+    /** @return list<array{int, int, list<string>, int}> */
+    public function reactivationCases(): array {
+        return [
+            [0, 1, ['Účet byl reaktivován.'], 1],
+            [1, 1, ['Deaktivace byla zrušena.'], 1],
+            [1, 0, [], 0],
+            [0, 0, [], 0],
+        ];
+    }
+
+    /**
+     * @dataProvider reactivationCases
+     * @param list<string> $messages
+     */
+    public function testReactivationOnlyShowsActualMessage(int $active, int $deactivation, array $messages, int $movements): void {
+        $this->member->update(['money_aktivni' => $active, 'money_deaktivace' => $deactivation]);
+        $result = $this->presenters->ui($this->actor->id, 'UzivatelActions', [
+            'action' => 'moneyReactivate', 'id' => (string) $this->member->id,
+        ]);
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id, 302);
+        Assert::same($messages, $result->flashes);
+        Assert::same($movements, $this->database->table('UzivatelskeKonto')->where('Uzivatel_id', $this->member->id)->count('*'));
+    }
+
+    public function testTelevisionDefaultPriceAcceptsNumericConfiguration(): void {
+        foreach ([0, 0.0, '0', '0.0', 100, 100.0, '100'] as $price) {
+            $presenter = new UzivatelTelevizePresenter(
+                new Parameters(290, $price, 'test-only'),
+                $this->container->getByType(Uzivatel::class),
+                $this->container->getByType(UzivatelTelevize::class),
+                $this->database->getConnection(),
+            );
+            $presenter->loadState(['id' => (string) $this->member->id]);
+            $form = $presenter['televizeCenaForm'];
+            $control = $form['cena'];
+            if (!$control instanceof \Nette\Forms\Controls\RadioList) {
+                throw new \LogicException('Expected the television price radio list.');
+            }
+            Assert::same(in_array($price, [0, 0.0, '0', '0.0'], true) ? 0 : 100, $control->getValue());
+        }
     }
 
     /** @return list<array{bool, ?float}> */

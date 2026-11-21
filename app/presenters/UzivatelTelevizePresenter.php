@@ -42,7 +42,7 @@ class UzivatelTelevizePresenter extends BasePresenter
         $this->template->u = $uzivatel;
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
-        $this->template->televize_objednana = $televizeRow?->objednana == 1;
+        $this->template->televize_objednana = (int) $televizeRow?->objednana === 1;
         $this->template->televize_cena = $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
 
         $this->template->televizeAktivniDnesRow = $uzivatel->related('UzivatelTelevizeAktivni')
@@ -74,7 +74,7 @@ class UzivatelTelevizePresenter extends BasePresenter
           "0" => " 0 Kč/měsíc",
           $this->parameters->getCenaSledovaniTV()  => sprintf(" %s Kč/měsíc", $this->parameters->getCenaSledovaniTV())
         ])->setDefaultValue(
-            $this->cena($uid) == 0 ? 0 : $this->parameters->getCenaSledovaniTV()
+            (float) $this->cena($uid) === 0.0 ? 0 : $this->parameters->getCenaSledovaniTV()
         );
 
         $form->addSubmit('send', 'uložit');

@@ -156,10 +156,10 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $grid->addFilterSelect('ucet', 'Účet', array('spolek' => 'Spolek', 'druzstvo' => 'Družstvo'))
             ->setDefaultValue('druzstvo')
             ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
-                if ($value == 'spolek') {
+                if ($value === 'spolek') {
                     return ($connection->where('spolek', 1));
                 }
-                if ($value == 'druzstvo') {
+                if ($value === 'druzstvo') {
                     return ($connection->where('druzstvo', 1));
                 }
                 return ($connection);
