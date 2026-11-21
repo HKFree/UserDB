@@ -62,7 +62,13 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
 
-    public function testTransferKeepsDecimalsAndDebitsPreviousOwner(): void {
+    /** @return list<array{?string, bool}> */
+    public function transferIdCases(): array {
+        return [[null, true], ['', true], ['0', true], ['999', false]];
+    }
+
+    /** @dataProvider transferIdCases */
+    public function testTransferKeepsDecimalsAndDebitsPreviousOwner(?string $id, bool $transfer): void {
         $previous = $this->fixtures->member($this->member->Ap_id);
         $payment = $this->fixtures->insert('PrichoziPlatba', ['datum' => date('Y-m-d'), 'castka' => 1234.56, 'kod_cilove_banky' => 2010, 'druzstvo' => 1, 'spolek' => 0]);
         $this->fixtures->insert('UzivatelskeKonto', [
@@ -71,9 +77,16 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         ]);
         $result = $this->presenters->ui($this->actor->id, 'SpravaNesparovanych', ['action' => 'prevod', 'id' => (string) $payment->id], 'POST', [
             '_do' => 'prevodForm-submit', 'Uzivatel_id' => (string) $this->member->id, 'poznamka' => 'Převod desetinné částky', 'send' => 'Převést',
-        ]);
+        ] + ($id === null ? [] : ['id' => $id]));
         PermissionScenario::assertRedirect($result, 'sprava/nastroje/' . $payment->id);
         $entries = array_values($this->database->table('UzivatelskeKonto')->where('PrichoziPlatba_id', $payment->id)->order('id')->fetchAll());
+        if (!$transfer) {
+            Assert::count(1, $entries);
+            Assert::same($previous->id, $entries[0]->Uzivatel_id);
+            Assert::same(1234.56, $entries[0]->castka);
+            Assert::same([], $result->flashes);
+            return;
+        }
         Assert::count(3, $entries);
         Assert::same([$previous->id, $previous->id, $this->member->id], array_map(static fn (ActiveRow $row): int => $row->Uzivatel_id, $entries));
         Assert::same([1234.56, -1234.56, 1234.56], array_map(static fn (ActiveRow $row): float => $row->castka, $entries));

@@ -146,8 +146,14 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         }
     }
 
-    public function testNewCooperativeMember(): void {
-        $post = $this->post(['id' => '', 'nick' => $this->fixtures->name('New'), 'email' => 'new@example.invalid', 'datum_narozeni' => '1985-06-15']);
+    /** @return list<array{string}> */
+    public function newMemberIdCases(): array {
+        return [[''], ['0']];
+    }
+
+    /** @dataProvider newMemberIdCases */
+    public function testNewCooperativeMember(string $id): void {
+        $post = $this->post(['id' => $id, 'nick' => $this->fixtures->name('New'), 'email' => 'new@example.invalid', 'datum_narozeni' => '1985-06-15']);
         $started = time();
         $result = $this->submit($post);
         $created = $this->database->table('Uzivatel')->where('nick', $post['nick'])->fetch();
@@ -168,6 +174,42 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $this->assertCurrentTime($created->zalozen, $started);
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $created->id);
         $this->assertRegistrationEmails($created, 'Ověření adresy, potvrďte prosím, UID ');
+    }
+
+    /** @return list<array{string, ?string, ?int}> */
+    public function optionalTextCases(): array {
+        return [['', null, null], ['0', null, null], ['00', '00', 0], ['123', '123', 123]];
+    }
+
+    /** @dataProvider optionalTextCases */
+    public function testOptionalMemberAndDeviceTextKeepsZeroAsNull(string $input, ?string $expected, ?int $companyId): void {
+        $columns = ['cislo_clenske_karty', 'firma_nazev', 'firma_ico', 'poznamka'];
+        $ipColumns = ['hostname', 'mac_adresa', 'popis', 'login', 'heslo'];
+        $post = $this->post(array_fill_keys($columns, $input) + ['ip' => ['n1' => $this->ipPost(
+            array_fill_keys($ipColumns, $input) + ['id' => '0', 'ip_adresa' => '192.0.2.20'],
+        )]]);
+        PermissionScenario::assertRedirect($this->submit($post), 'uzivatel/show/' . $this->member->id);
+        $stored = $this->database->table('Uzivatel')->get($this->member->id);
+        foreach (['cislo_clenske_karty', 'firma_nazev', 'poznamka'] as $column) {
+            Assert::same($expected, $stored->$column);
+        }
+        Assert::same($companyId, $stored->firma_ico);
+        $ip = $this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->fetch();
+        Assert::notNull($ip);
+        Assert::same('192.0.2.20', $ip->ip_adresa);
+        foreach (['hostname', 'mac_adresa', 'popis', 'login'] as $column) {
+            Assert::same($expected, $ip->$column);
+        }
+        Assert::same($expected === null ? 0 : 1, $ip->heslo_sifrovane);
+        Assert::same($expected, $expected === null ? $ip->heslo : $this->container->getByType(CryptoSluzba::class)->decrypt($ip->heslo));
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testBlankAndZeroBulkAddressesAreIgnored(): void {
+        foreach ([null, '', '0', []] as $input) {
+            PermissionScenario::assertRedirect($this->submit($this->post(['ipsubnet' => $input, 'iprange' => $input])), 'uzivatel/show/' . $this->member->id);
+            Assert::same(0, $this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->count('*'));
+        }
     }
 
     /** @return list<array{array<string, string>, string}> */

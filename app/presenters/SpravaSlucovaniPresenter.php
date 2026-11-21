@@ -189,7 +189,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
 
             $idSlouceni = $values->id;
 
-            if (empty($values->id)) {
+            if (in_array($values->id, [null, '', 0, '0'], true)) {
                 $values->datum_slouceni = new Nette\Utils\DateTime();
                 $values->sloucil = $this->getIdentity()->getUid();
                 $this->sloucenyUzivatel->insert($values);

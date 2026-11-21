@@ -30,7 +30,7 @@ class SpravaCcTestPresenter extends SpravaCcPresenter
 
 class SpravaCcPresenterTest extends Tester\TestCase
 {
-    /** @return array<string, array{int, int, string|null, string|null}> */
+    /** @return array<string, array{int, ?int, string|null, string|null}> */
     public function decisionCases(): array {
         return [
             'approved, finite' => [0, 1, '2027-12-31', 'schválena'],
@@ -42,11 +42,12 @@ class SpravaCcPresenterTest extends Tester\TestCase
             'unchanged approval' => [1, 1, '2027-12-31', null],
             'unchanged rejection' => [2, 2, null, null],
             'reset to undecided' => [1, 0, null, null],
+            'missing decision' => [1, null, null, null],
         ];
     }
 
     /** @dataProvider decisionCases */
-    public function testDecision(int $previousState, int $state, ?string $endDate, ?string $decision): void {
+    public function testDecision(int $previousState, ?int $state, ?string $endDate, ?string $decision): void {
         $connection = new Nette\Database\Connection('sqlite::memory:');
         $structure = new Nette\Database\Structure($connection, new Nette\Caching\Storages\MemoryStorage());
         $database = new Nette\Database\Context($connection, $structure);
@@ -114,7 +115,7 @@ class SpravaCcPresenterTest extends Tester\TestCase
         Assert::same('SpravaCc:schvalovanicc', $presenter->redirectDestination);
 
         $saved = $database->table('CestneClenstviUzivatele')->get(1);
-        Assert::same($state, $saved->schvaleno);
+        Assert::same($state ?? 0, $saved->schvaleno);
         Assert::same('Za pomoc spolku.', $saved->poznamka);
         Assert::same('2026-12-01', $saved->plati_od->format('Y-m-d'));
         Assert::same($endDate ?: null, $saved->plati_do?->format('Y-m-d'));

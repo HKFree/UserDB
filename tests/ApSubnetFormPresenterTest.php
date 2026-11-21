@@ -60,6 +60,39 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
         Assert::same($gateway, $saved->gateway);
         Assert::same($arpProxy ? 1 : 0, $saved->arp_proxy);
     }
+
+    /** @return list<array{string}> */
+    public function newIdCases(): array {
+        return [[''], ['0']];
+    }
+
+    /** @dataProvider newIdCases */
+    public function testNewApAndRelatedRowsAcceptEmptyOrZeroId(string $id): void {
+        $name = $this->fixtures->name('NewAP');
+        $key = $this->fixtures->name('ApiKey');
+        $result = $this->presenters->ui($this->actor->id, 'Ap', ['action' => 'edit'], 'POST', [
+            '_do' => 'apForm-submit', 'id' => $id, 'aktivni' => 'on', 'jmeno' => $name,
+            'Oblast_id' => (string) $this->ap->Oblast_id, 'gps' => '50.209722,15.832778',
+            'ulice_cp' => 'Testovací 1', 'mesto' => 'Hradec Králové', 'psc' => '50002', 'save' => 'Uložit',
+            'ip' => ['n1' => ['id' => $id, 'ip_adresa' => '192.0.2.1']],
+            'subnet' => ['n1' => ['id' => $id, 'subnet' => '192.0.2.0/24', 'gateway' => '192.0.2.1']],
+            'apiKlic' => ['n1' => ['id' => $id, 'klic' => $key, 'plati_do' => '', 'poznamka' => 'Nový klíč']],
+        ]);
+        $ap = $this->database->table('Ap')->where('jmeno', $name)->fetch();
+        Assert::notNull($ap);
+        PermissionScenario::assertRedirect($result, 'ap/show/' . $ap->id);
+        Assert::notSame($this->ap->id, $ap->id);
+        foreach (['IPAdresa' => ['ip_adresa', '192.0.2.1'], 'Subnet' => ['subnet', '192.0.2.0/24'], 'ApiKlic' => ['klic', $key]] as $table => [$column, $value]) {
+            $rows = $this->database->table($table)->where('Ap_id', $ap->id);
+            Assert::same(1, $rows->count('*'));
+            $row = $rows->fetch();
+            Assert::same($value, $row->$column);
+            Assert::same(1, $this->database->table('Log')->where([
+                'tabulka' => 'Ap', 'tabulka_id' => $ap->id, 'akce' => 'I',
+                'sloupec' => $table . '[' . $row->id . '].' . $column, 'nova_hodnota' => $value,
+            ])->count('*'));
+        }
+    }
 }
 
 (new ApSubnetFormPresenterTest())->run();

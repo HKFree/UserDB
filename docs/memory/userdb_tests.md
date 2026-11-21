@@ -105,6 +105,15 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 
 ## Spouštění
 
+- `DemoDataPresenterTest` občas selže při objemovém `INSERT INTO UzivatelskeKonto` chybou MariaDB
+  `Error on delete of '#sql-temptable-*.MAI' (Errcode: 2)`, někdy místo očekávané chyby unikátního klíče.
+  Ověřeno 21. 11. 2026 ve dvou nezávislých bězích testů přes Flox; stejný test mezi nimi procházel.
+  Při dalším běhu MariaDB 10.11.19 na macOS skončila na SIGSEGV v obsluze dočasných tabulek při
+  `SHOW FULL COLUMNS`. Navazující testy pak padaly na nedostupném spojení.
+  **Why:** Příčina zatím není zjištěna, samotné selhání neprokazuje regresi právě upraveného kódu.
+  **How to apply:** Uchovat původní log i `.flox/cache/logs/mariadb.log`, zkontrolovat službu pouze
+  daného worktree a zopakovat sadu. Neměnit kvůli tomu očekávanou výjimku ani test nepřeskakovat;
+  opakované selhávání vyžaduje vlastní diagnostiku.
 - Souběžné starty několika `flox activate -s` z neaktivního prostředí mohou přerušit start MariaDB a uváznout
   při ukončování služby (pozorováno 20. 11. 2026). Databázová ověření spouštět postupně, případně v jedné
   aktivaci Floxu.

@@ -230,7 +230,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
             $values->druzstvo = $pPlatba->druzstvo;
             $values->spolek = $pPlatba->spolek;
 
-            if (empty($values->id)) {
+            if (in_array($values->id, [null, '', 0, '0'], true)) {
                 $this->uzivatelskeKonto->insert($values);
                 $values->castka = $pPlatba->castka;
                 $values->TypPohybuNaUctu_id = 1;

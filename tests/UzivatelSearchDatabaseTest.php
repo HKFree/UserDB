@@ -124,6 +124,17 @@ final class UzivatelSearchDatabaseTest extends DatabaseTestCase
         // ID 70 does not exist, so the exact-ID query cannot mask the LIKE query.
         Assert::same([], $this->searchIds('70_', $this->unassignedId));
     }
+
+    public function testZeroIdStillFallsThroughToTextSearch(): void {
+        $this->database->table('Uzivatel')->where('id', 7)->update(['id' => 0]);
+        $this->fixtures->ipAddress(0, '192.0.2.0');
+        $this->database->table('Uzivatel')->where('id', 42)->update(['nick' => '192.0.2.0']);
+        Assert::same([42], $this->searchIds('192.0.2.0', $this->unassignedId, ['TECH']));
+        // All fixtures have a zero in their phone number or in this explicit nickname.
+        $expected = [0, 42, 701, $this->managerId, ...$this->restrictedUserIds];
+        sort($expected);
+        Assert::same($expected, $this->searchIds('0', $this->unassignedId, ['TECH']));
+    }
 }
 
 (new UzivatelSearchDatabaseTest())->run();

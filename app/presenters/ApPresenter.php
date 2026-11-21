@@ -338,7 +338,7 @@ class ApPresenter extends BasePresenter
         unset($values["apiKlic"]);
 
         // Zpracujeme nejdriv APcko
-        if (empty($values->id)) {
+        if (in_array($values->id, [null, '', 0, '0'], true)) {
             $idAP = $this->ap->insert($values)->id;
             $this->log->logujInsert($values, 'Ap', $log);
         } else {
@@ -360,7 +360,7 @@ class ApPresenter extends BasePresenter
                 $ip->heslo_sifrovane = 0;
             }
 
-            if (empty($ip->id)) {
+            if (in_array($ip->id, [null, '', 0, '0'], true)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa[' . $idIp . ']', $log);
             } else {
@@ -388,7 +388,7 @@ class ApPresenter extends BasePresenter
         foreach ($subnets as $subnet) {
             $subnet->Ap_id = $idAP;
             $idSubnet = $subnet->id;
-            if (empty($subnet->id)) {
+            if (in_array($subnet->id, [null, '', 0, '0'], true)) {
                 $idSubnet = $this->subnet->insert($subnet)->id;
                 $this->log->logujInsert($subnet, 'Subnet[' . $idSubnet . ']', $log);
             } else {
@@ -420,7 +420,7 @@ class ApPresenter extends BasePresenter
             if ($apiKey->plati_do === '') {
                 $apiKey->plati_do = null;
             } // save NULL instead of '0000-00-00' when inserting empty string
-            if (empty($apiKey->id)) {
+            if (in_array($apiKey->id, [null, '', 0, '0'], true)) {
                 $idApiKey = $this->apiKlic->insert($apiKey)->id;
                 $this->log->logujInsert($apiKey, 'ApiKlic[' . $idApiKey . ']', $log);
             } else {

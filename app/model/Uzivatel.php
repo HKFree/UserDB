@@ -142,7 +142,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                                             Uzivatel.id = ?
                                             OR  IPAdresa.ip_adresa = ?
                                             ) LIMIT 1", $searchId, $search)->fetchField();
-        if (!empty($completeMatchId)) {
+        if ($completeMatchId !== null && $completeMatchId !== 0) {
             return ($this->findBy(array('id' => $completeMatchId)));
         }
         //\Tracy\Debugger::barDump($search);
@@ -152,7 +152,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                                             WHERE (
                                             Uzivatel.id LIKE ?
                                             ) LIMIT 1", $search . '%')->fetchField();
-            if (!empty($partialMatchId)) {
+            if ($partialMatchId !== null && $partialMatchId !== 0) {
                 return ($this->findBy(array('id' => $partialMatchId)));
             }
         }

@@ -473,12 +473,12 @@ class UzivatelPresenter extends BasePresenter
             }
         }
 
-        if (isset($data['ipsubnet']) && !empty($data['ipsubnet'])) {
+        if (isset($data['ipsubnet']) && !in_array($data['ipsubnet'], ['', '0', 0, 0.0, false, []], true)) {
             if (!preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $data['ipsubnet'])) {
                 $form->addError('IP subnet není validní!');
             }
         }
-        if (isset($data['iprange']) && !empty($data['iprange'])) {
+        if (isset($data['iprange']) && !in_array($data['iprange'], ['', '0', 0, 0.0, false, []], true)) {
             if (!preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $data['iprange'])) {
                 $form->addError('IP rozsah není validní!');
             }
@@ -536,7 +536,7 @@ class UzivatelPresenter extends BasePresenter
     /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values */
     public function uzivatelFormSucceded(Form $form, ArrayHash $values): void {
         // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
-        if (!empty($values->id)) {
+        if (!in_array($values->id, [null, '', 0, '0'], true)) {
             $uzivatel = $this->uzivatel->getUzivatel($values->id);
             $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
         }
@@ -559,19 +559,19 @@ class UzivatelPresenter extends BasePresenter
         // generovani ip pro vlozeni z rozsahu
         $genaddresses = array_merge($genaddresses, $this->ipAdresa->getListOfIPFromRange($iprange));
 
-        if (empty($values->cislo_clenske_karty)) {
+        if (in_array($values->cislo_clenske_karty, [null, '', '0'], true)) {
             $values->cislo_clenske_karty = null;
         }
-        if (empty($values->firma_nazev)) {
+        if (in_array($values->firma_nazev, [null, '', '0'], true)) {
             $values->firma_nazev = null;
         }
-        if (empty($values->firma_ico)) {
+        if (in_array($values->firma_ico, [null, '', '0'], true)) {
             $values->firma_ico = null;
         }
-        if (empty($values->email2)) {
+        if (in_array($values->email2, [null, '', '0'], true)) {
             $values->email2 = null;
         }
-        if (empty($values->poznamka)) {
+        if (in_array($values->poznamka, [null, '', '0'], true)) {
             $values->poznamka = null;
         }
         if (($values->TypClenstvi_id ?? -1) < 0) {
@@ -582,7 +582,7 @@ class UzivatelPresenter extends BasePresenter
         $values->location_status = 'pending';
 
         // Zpracujeme nejdriv uzivatele
-        if (empty($values->id)) {
+        if (in_array($values->id, [null, '', 0, '0'], true)) {
             $values->regform_downloaded_password_sent = 0;
             if (($values->spolek == 1 && $values->TypClenstvi_id > 0) || ($values->druzstvo == 1 && $values->smazano == 0)) {
                 $values->money_aktivni = 1;
@@ -652,22 +652,22 @@ class UzivatelPresenter extends BasePresenter
             $ip->Uzivatel_id = $idUzivatele;
             $idIp = $ip->id;
 
-            if (empty($ip->ip_adresa)) {
+            if (in_array($ip->ip_adresa, [null, '', '0'], true)) {
                 $ip->ip_adresa = null;
             }
-            if (empty($ip->hostname)) {
+            if (in_array($ip->hostname, [null, '', '0'], true)) {
                 $ip->hostname = null;
             }
-            if (empty($ip->mac_adresa)) {
+            if (in_array($ip->mac_adresa, [null, '', '0'], true)) {
                 $ip->mac_adresa = null;
             }
-            if (empty($ip->popis)) {
+            if (in_array($ip->popis, [null, '', '0'], true)) {
                 $ip->popis = null;
             }
-            if (empty($ip->login)) {
+            if (in_array($ip->login, [null, '', '0'], true)) {
                 $ip->login = null;
             }
-            if (empty($ip->heslo)) {
+            if (in_array($ip->heslo, [null, '', '0'], true)) {
                 $ip->heslo = null;
             }
 
@@ -678,7 +678,7 @@ class UzivatelPresenter extends BasePresenter
                 $ip->heslo_sifrovane = 0;
             }
 
-            if (empty($ip->id)) {
+            if (in_array($ip->id, [null, '', 0, '0'], true)) {
                 $idIp = $this->ipAdresa->insert($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);
             } else {
