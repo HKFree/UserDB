@@ -155,7 +155,8 @@ A shared testing server runs one instance for `master` and one for every open pu
 this repository, each under its own host name: `master.<domain>` and `pr-<number>.<domain>`. An instance runs
 the same way as the [local web with Flox](#local-web-database-and-pdf-with-flox): `config.flox.neon`, demo data,
 mail captured to files, and every visitor signed in as the demo user. All instances sit behind a reverse proxy
-with HTTP Basic; the maintainers have the password.
+that lets in the HKFree network without a password and asks everyone else for HTTP Basic; the maintainers
+have the password.
 
 1. [deploy-testing.yml](.github/workflows/deploy-testing.yml) runs on a push to `master` and when a pull
    request is opened, updated, reopened or closed. It connects to the server over SSH and sends one request:
@@ -204,7 +205,9 @@ the Wewimo reader connects to whatever address is stored in the database. On the
 rule rejects connections of the deploy account to private networks.
 
 The reverse proxy maps `pr-<number>.<domain>` to the port above and obtains a certificate for a host name
-only after the script has created `/srv/userdb-testing/deployed/<instance>`.
+only after the script has created `/srv/userdb-testing/deployed/<instance>`. It recognises the HKFree network
+by the address of the connecting client (the internal addresses and the public prefixes of HKFree), never by
+a forwarded header.
 
 ### Jobs to be run
 
