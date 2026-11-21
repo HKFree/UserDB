@@ -11,6 +11,7 @@ class DevicePresenter extends ApiPresenter
     private \App\Model\Log $log;
 
     public function __construct(\App\Model\IPAdresa $ipadresa, \App\Services\CryptoSluzba $cryptosvc, \App\Model\Log $log) {
+        parent::__construct();
         $this->ipadresa = $ipadresa;
         $this->cryptosvc = $cryptosvc;
         $this->log = $log;

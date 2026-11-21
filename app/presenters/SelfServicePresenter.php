@@ -18,6 +18,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
         private CryptoSluzba $cryptosvc,
         private Parameters $parameters,
     ) {
+        parent::__construct();
     }
 
     /** @param string|null $key */

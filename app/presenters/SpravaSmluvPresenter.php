@@ -14,6 +14,7 @@ class SpravaSmluvPresenter extends BasePresenter
     protected Model\PodpisSmlouvy $podpis;
 
     public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis) {
+        parent::__construct();
         $this->smlouva = $smlouva;
         $this->podpis = $podpis;
     }

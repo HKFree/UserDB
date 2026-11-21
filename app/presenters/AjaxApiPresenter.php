@@ -16,6 +16,7 @@ class AjaxApiPresenter extends BasePresenter
     private Model\Sojka $sojka;
 
     public function __construct(Model\Subnet $subnet, Model\Sojka $sojka) {
+        parent::__construct();
         $this->subnet = $subnet;
         $this->sojka = $sojka;
     }

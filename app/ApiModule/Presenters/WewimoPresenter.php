@@ -9,6 +9,7 @@ class WewimoPresenter extends ApiPresenter
     private \App\Model\Wewimo $wewimo;
 
     public function __construct(\App\Model\Wewimo $wewimo) {
+        parent::__construct();
         $this->wewimo = $wewimo;
     }
 

@@ -11,6 +11,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 $users = new class () extends Model\Uzivatel {
     public function __construct() {
+        parent::__construct(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()));
     }
 
     public function getUzivatel($id): ?\Nette\Database\Table\ActiveRow {

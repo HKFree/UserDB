@@ -17,6 +17,7 @@ class WewimoPresenter extends BasePresenter
     private Model\AP $ap;
 
     public function __construct(Model\Wewimo $wewimo, Model\AP $ap) {
+        parent::__construct();
         $this->wewimo = $wewimo;
         $this->ap = $ap;
     }

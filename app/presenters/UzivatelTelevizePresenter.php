@@ -29,6 +29,7 @@ class UzivatelTelevizePresenter extends BasePresenter
         Model\UzivatelTelevize $uzivatelTelevize,
         Nette\Database\Connection $connection
     ) {
+        parent::__construct();
         $this->uzivatel = $uzivatel;
         $this->uzivatelTelevize = $uzivatelTelevize;
         $this->parameters = $parameters;

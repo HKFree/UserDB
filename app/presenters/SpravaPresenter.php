@@ -15,6 +15,7 @@ class SpravaPresenter extends BasePresenter
     private ?string $googleMapsApiKey = null;
 
     public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct();
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
     }

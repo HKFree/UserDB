@@ -23,6 +23,7 @@ class UzivatelListPresenter extends BasePresenter
     private Model\UzivatelListGrid $tabulkaUzivatelu;
 
     public function __construct(Model\UzivatelListGrid $ULGrid, Model\CestneClenstviUzivatele $cc, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct();
         $this->cestneClenstviUzivatele = $cc;
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;

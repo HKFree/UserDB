@@ -16,7 +16,8 @@ class SpravaPlatebPresenter extends SpravaPresenter
     private Model\OdchoziPlatba $odchoziPlatba;
     private Model\PrichoziPlatba $prichoziPlatba;
 
-    public function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba) {
+    public function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->odchoziPlatba = $odchplatba;
         $this->prichoziPlatba = $platba;
     }

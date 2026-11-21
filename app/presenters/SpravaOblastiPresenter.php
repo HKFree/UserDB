@@ -18,7 +18,8 @@ class SpravaOblastiPresenter extends SpravaPresenter
     /** @var Model\Oblast */
     public $oblast;
 
-    public function __construct(Model\Oblast $ob, Model\AP $ap) {
+    public function __construct(Model\Oblast $ob, Model\AP $ap, Model\Uzivatel $uzivatel) {
+        parent::__construct($uzivatel, $ap);
         $this->ap = $ap;
         $this->oblast = $ob;
     }

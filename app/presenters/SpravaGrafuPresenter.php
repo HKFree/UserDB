@@ -15,7 +15,8 @@ class SpravaGrafuPresenter extends SpravaPresenter
 {
     private Model\Uzivatel $uzivatel;
 
-    public function __construct(Model\Uzivatel $uzivatel) {
+    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->uzivatel = $uzivatel;
     }
 

@@ -21,6 +21,7 @@ class SubnetPresenter extends BasePresenter
     private Model\Subnet $subnet;
 
     public function __construct(Model\Subnet $subnet, Model\IPAdresa $ipAdresa, Model\AP $ap) {
+        parent::__construct();
         $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
         $this->subnet = $subnet;

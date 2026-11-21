@@ -32,6 +32,7 @@ class ApPresenter extends BasePresenter
     public $logTableFactory;
 
     public function __construct(CryptoSluzba $cryptosvc, Model\SpravceOblasti $prava, Model\Uzivatel $uzivatel, Model\AP $ap, Model\IPAdresa $ipAdresa, Model\Subnet $subnet, Model\TypZarizeni $typZarizeni, Model\Log $log, Model\ApiKlic $apiKlic, Model\IdsConnector $idsConnector) {
+        parent::__construct();
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->uzivatel = $uzivatel;

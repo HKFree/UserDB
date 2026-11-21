@@ -14,7 +14,8 @@ class SpravaUctuPresenter extends SpravaPresenter
 {
     private Model\StavBankovnihoUctu $stavBankovnihoUctu;
 
-    public function __construct(Model\StavBankovnihoUctu $stavuctu) {
+    public function __construct(Model\StavBankovnihoUctu $stavuctu, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->stavBankovnihoUctu = $stavuctu;
     }
 

@@ -13,6 +13,7 @@ class AppPresenter extends ApiPresenter
     private \App\Model\AP $ap;
 
     public function __construct(\App\Model\Uzivatel $uzivatel, \App\Model\AplikaceToken $aplikaceToken, \App\Model\AplikaceLog $aplikaceLog, \App\Model\AP $ap) {
+        parent::__construct();
         $this->uzivatel = $uzivatel;
         $this->aplikaceToken = $aplikaceToken;
         $this->aplikaceLog = $aplikaceLog;

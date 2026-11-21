@@ -15,6 +15,7 @@ class StatusPresenter extends BasePresenter
     private Model\Status $status;
 
     public function __construct(Model\Status $status) {
+        parent::__construct();
         $this->status = $status;
     }
 

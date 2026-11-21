@@ -4,6 +4,7 @@ namespace App\Presenters;
 
 use Nette;
 use App\Model;
+use App\Services;
 use Nette\Application\UI\Form;
 use Nette\Forms\Container;
 use Nette\Mail\Message;
@@ -25,7 +26,57 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
-    public function __construct(Model\AP $ap, Model\Uzivatel $uzivatel, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\TypSpravceOblasti $typSpravce, Model\CestneClenstviUzivatele $cc, Model\SpravceOblasti $prava, Model\Log $log) {
+    public function __construct(
+        Model\AP $ap,
+        Model\Uzivatel $uzivatel,
+        Model\TypCestnehoClenstvi $typCestnehoClenstvi,
+        Model\TypSpravceOblasti $typSpravce,
+        Model\CestneClenstviUzivatele $cc,
+        Model\SpravceOblasti $prava,
+        Model\Log $log,
+        Services\MailService $mailsvc,
+        Services\CryptoSluzba $cryptosvc,
+        Model\PovoleneSMTP $alowedSMTP,
+        Model\DNat $dnat,
+        Model\Parameters $parameters,
+        Model\SloucenyUzivatel $slUzivatel,
+        Model\Smlouva $smlouva,
+        Services\SmlouvaStavSluzba $smlouvaStavSluzba,
+        Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
+        Model\TypClenstvi $typClenstvi,
+        Model\ZpusobPripojeni $zpusobPripojeni,
+        Model\TechnologiePripojeni $technologiePripojeni,
+        Model\IPAdresa $ipAdresa,
+        Model\TypZarizeni $typZarizeni,
+        Model\IdsConnector $idsConnector,
+        Model\AplikaceToken $aplikaceToken,
+        Model\Stitek $stitek,
+        Model\StitekUzivatele $stitkyUzivatele,
+    ) {
+        parent::__construct(
+            mailsvc: $mailsvc,
+            cryptosvc: $cryptosvc,
+            alowedSMTP: $alowedSMTP,
+            dnat: $dnat,
+            parameters: $parameters,
+            slUzivatel: $slUzivatel,
+            smlouva: $smlouva,
+            smlouvaStavSluzba: $smlouvaStavSluzba,
+            prava: $prava,
+            cc: $cc,
+            typPravniFormyUzivatele: $typPravniFormyUzivatele,
+            typClenstvi: $typClenstvi,
+            zpusobPripojeni: $zpusobPripojeni,
+            technologiePripojeni: $technologiePripojeni,
+            uzivatel: $uzivatel,
+            ipAdresa: $ipAdresa,
+            typZarizeni: $typZarizeni,
+            log: $log,
+            idsConnector: $idsConnector,
+            aplikaceToken: $aplikaceToken,
+            stitek: $stitek,
+            stitkyUzivatele: $stitkyUzivatele,
+        );
         $this->uzivatel = $uzivatel;
         $this->spravceOblasti = $prava;
         $this->typSpravceOblasti = $typSpravce;

@@ -12,6 +12,7 @@ class MonitoringPresenter extends ApiPresenter
     private Model\AP $ap;
 
     public function __construct(Model\TypZarizeni $typZarizeni, Model\IPAdresa $iPAdresa, Model\AP $ap) {
+        parent::__construct();
         $this->typZarizeni = $typZarizeni;
         $this->ipAdresa = $iPAdresa;
         $this->ap = $ap;

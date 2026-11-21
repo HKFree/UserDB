@@ -75,6 +75,7 @@ class UzivatelPresenter extends BasePresenter
         Model\Stitek $stitek,
         Model\StitekUzivatele $stitkyUzivatele,
     ) {
+        parent::__construct();
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;

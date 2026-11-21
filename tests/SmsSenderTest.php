@@ -29,6 +29,7 @@ namespace Test {
     final class SmsAwegAccount extends AwegUser
     {
         public function __construct(private bool $exists = true) {
+            parent::__construct(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()));
         }
 
         public function getAwegUser($uid): ActiveRow|false {
@@ -39,6 +40,7 @@ namespace Test {
                 public string $aweg_name = 'test-user';
 
                 public function __construct() {
+                    parent::__construct(['aweg_name' => $this->aweg_name], (new OfflineDatabase())->table('AwegUser'));
                 }
             };
         }

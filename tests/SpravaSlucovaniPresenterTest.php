@@ -14,6 +14,7 @@ use Nette\Http;
 use Tester\Assert;
 
 require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/TestDoubles.php';
 \Tester\Environment::setup();
 
 class MergeUserRow extends ActiveRow
@@ -22,11 +23,18 @@ class MergeUserRow extends ActiveRow
     public int $money_deaktivace = 0;
 
     public function __construct(public int $kauce_mobil, private int $balance) {
+        parent::__construct([
+            'kauce_mobil' => $kauce_mobil,
+            'money_aktivni' => $this->money_aktivni,
+            'money_deaktivace' => $this->money_deaktivace,
+        ], (new OfflineDatabase())->table('Uzivatel'));
     }
 
     public function related(string $key, ?string $throughColumn = null): GroupedSelection {
         return new class ($this->balance) extends GroupedSelection {
             public function __construct(private int $balance) {
+                $database = new OfflineDatabase();
+                parent::__construct($database, $database->getConventions(), 'UzivatelskeKonto', 'Uzivatel_id', $database->table('Uzivatel'));
             }
 
             /** @param string|array<array-key, mixed> $condition */
@@ -64,6 +72,7 @@ foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
     $users = new class ([11 => new MergeUserRow($deposit1, 1000), 22 => new MergeUserRow($deposit2, 2000)]) extends Model\Uzivatel {
         /** @param array<int, MergeUserRow> $rows */
         public function __construct(private array $rows) {
+            parent::__construct(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()));
         }
 
         public function getUzivatel($id): ActiveRow {
@@ -72,6 +81,7 @@ foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
     };
     $memberships = new class () extends Model\CestneClenstviUzivatele {
         public function __construct() {
+            parent::__construct(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()));
         }
 
         public function getHasCC($userID): bool {
@@ -79,15 +89,12 @@ foreach ($cases as [$deposit1, $deposit2, $expected1, $expected2]) {
         }
     };
     $unusedModel = fn (string $class) => (new \ReflectionClass($class))->newInstanceWithoutConstructor();
-    $presenter = new class ($unusedModel(Model\SloucenyUzivatel::class), $users, $unusedModel(Model\Log::class), $unusedModel(Model\IPAdresa::class), $memberships) extends SpravaSlucovaniPresenter {
+    $presenter = new class ($unusedModel(Model\SloucenyUzivatel::class), $users, $unusedModel(Model\Log::class), $unusedModel(Model\IPAdresa::class), $memberships, new Model\AP(new OfflineDatabase(), new \Nette\Security\User(new MemoryUserStorage()))) extends SpravaSlucovaniPresenter {
         protected function createTemplate(?string $class = null): Template {
             return new DefaultTemplate(new \Latte\Engine());
         }
     };
-    $user = new class () extends \Nette\Security\User {
-        public function __construct() {
-        }
-
+    $user = new class (new MemoryUserStorage()) extends \Nette\Security\User {
         /** @return list<string> */
         public function getRoles(): array {
             return ['VV'];

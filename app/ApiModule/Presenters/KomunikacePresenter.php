@@ -11,6 +11,7 @@ class KomunikacePresenter extends ApiPresenter
     private \App\Model\Uzivatel $uzivatel;
 
     public function __construct(\App\Model\Komunikace $komunikace, \App\Model\Uzivatel $uzivatel) {
+        parent::__construct();
         $this->komunikace = $komunikace;
         $this->uzivatel = $uzivatel;
     }
