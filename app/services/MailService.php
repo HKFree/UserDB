@@ -209,7 +209,10 @@ class MailService
         $this->mailer->send($mailso);
     }
 
-    /** @param Nette\Bridges\ApplicationLatte\Template $t */
+    /**
+     * @param Nette\Bridges\ApplicationLatte\Template $t
+     * @return Nette\Bridges\ApplicationLatte\Template
+     */
     public function addLinkGeneratorToTemplate($t): Nette\Application\UI\Template {
         $t->getLatte()->addProvider('uiControl', $this->linkGenerator);
         return $t;

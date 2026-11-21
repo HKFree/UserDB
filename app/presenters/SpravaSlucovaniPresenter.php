@@ -8,6 +8,7 @@ use Nette\Application\UI\Form;
 use Nette\Utils\Html;
 use Grido\Grid;
 use Nette\Utils\DateTime;
+use Nette\Utils\ArrayHash;
 use Tracy\Debugger;
 
 /**
@@ -15,11 +16,11 @@ use Tracy\Debugger;
  */
 class SpravaSlucovaniPresenter extends SpravaPresenter
 {
-    private $uzivatel;
-    private $log;
-    private $ipAdresa;
-    private $sloucenyUzivatel;
-    private $cestneClenstviUzivatele;
+    private Model\Uzivatel $uzivatel;
+    private Model\Log $log;
+    private Model\IPAdresa $ipAdresa;
+    private Model\SloucenyUzivatel $sloucenyUzivatel;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
 
     public function __construct(Model\SloucenyUzivatel $slUzivatel, Model\Uzivatel $uzivatel, Model\Log $log, Model\IPAdresa $ipAdresa, Model\CestneClenstviUzivatele $cc) {
         $this->uzivatel = $uzivatel;
@@ -29,11 +30,11 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         $this->cestneClenstviUzivatele = $cc;
     }
 
-    public function renderSlouceni() {
+    public function renderSlouceni(): void {
         $this->vyzadujOpravneni($this->jeVV()); // odkaz je jen v nástrojích pro VV
     }
 
-    protected function createComponentSlouceniGrid($name) {
+    protected function createComponentSlouceniGrid(string $name): void {
         $this->vyzadujOpravneni($this->jeVV()); // i export a stránkování gridu
 
         $grid = new \Grido\Grid($this, $name);
@@ -51,7 +52,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         $grid->addColumnText('sloucil', 'Sloučil')->setSortable()->setFilterText()->setSuggestion();
     }
 
-    public function renderSlucovani() {
+    public function renderSlucovani(): void {
         $this->template->canViewOrEdit = $this->jeVV();
 
         $u1id = 1;
@@ -130,7 +131,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         }
     }
 
-    protected function createComponentSlucovaniForm() {
+    protected function createComponentSlucovaniForm(): Form {
         $form = new Form($this, "slucovaniForm");
         $form->addHidden('id');
 
@@ -152,10 +153,11 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function slucovaniFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function slucovaniFormSucceded(Form $form, ArrayHash $values): bool {
         $this->vyzadujOpravneni($this->jeVV());
 
-        if ($form->isSubmitted()->name == "nahled") {
+        if ($form->isSubmitted() === $form['nahled']) {
             if ($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id, $values->slouceny_uzivatel)) {
                 $this->flashMessage('Takové sloučení již existuje.');
             }
@@ -168,7 +170,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
             $this->redirect('SpravaSlucovani:slucovani', array('u1' => $values->Uzivatel_id, 'u2' => $values->slouceny_uzivatel));
         }
 
-        if ($form->isSubmitted()->name == "slouceni") {
+        if ($form->isSubmitted() === $form['slouceni']) {
             $u2 = $this->uzivatel->getUzivatel($values->slouceny_uzivatel);
 
             if ($this->sloucenyUzivatel->getSlouceniExists($values->Uzivatel_id, $values->slouceny_uzivatel)) {

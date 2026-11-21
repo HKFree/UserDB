@@ -17,7 +17,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
     ) {
     }
 
-    public function actionSubscribe() {
+    public function actionSubscribe(): void {
         $user_id = $this->getParameter('id');
 
         $cena = $this->parameters->getCenaSledovaniTV();
@@ -36,13 +36,17 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', ['id' => $user_id]);
     }
 
+    /**
+     * @param int|string|null $uid
+     * @return int|float|numeric-string
+     */
     private function cena($uid) {
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
         return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
-    public function actionActivate() {
+    public function actionActivate(): void {
         $user_id = $this->getParameter('id');
 
         $cena = $this->cena($user_id);
@@ -75,7 +79,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', ['id' => $user_id]);
     }
 
-    public function actionUnsubscribe() {
+    public function actionUnsubscribe(): void {
         $user_id = $this->getParameter('id');
 
         $this->connection->query(
