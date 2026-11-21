@@ -24,7 +24,7 @@ php bin/console migrations:continue
 
 ### Tests with Flox
 
-Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2 with the PCOV coverage driver, Composer, MariaDB 10.11.19 and LibreOffice for Apple Silicon macOS and x86_64 Linux, including CI. PHP in the environment reads `scripts/userdb_php/php.ini`, selected through `PHPRC` on activation; the file keeps `max_input_vars` at the value of the production image.
+Tests run in the project's Flox environment (tested with Flox 1.19.4). The committed environment provides PHP 8.2 with the PCOV coverage driver, Composer, MariaDB 10.11.19, InfluxDB 2.7.12 and LibreOffice for Apple Silicon macOS and x86_64 Linux, including CI. PHP in the environment reads `scripts/userdb_php/php.ini`, selected through `PHPRC` on activation; the file keeps `max_input_vars` at the value of the production image.
 
 Check availability with `flox --version`. If Flox is missing, install the current release:
 
@@ -44,9 +44,21 @@ flox activate -- vendor/bin/phpstan analyse --no-progress --memory-limit=512M
 flox activate -- vendor/bin/latte-lint app
 ```
 
-The test container loads `app/config/config.neon` and `tests/config.test.neon` with a synthetic environment. Mail, SMS and contract requests use recording doubles; the IDS connector, Sojka pinger, outer scanner, IGW IP checkers, MEX and InfluxDB URLs point at `http://127.0.0.1:0/`. It uses in-memory session and user storage and does not read `config.local.neon` or `USERDB_DB_*` variables.
+The test container loads `app/config/config.neon` and `tests/config.test.neon` with a synthetic environment. Mail, SMS and contract requests use recording doubles; the IDS connector, Sojka pinger, outer scanner, IGW IP checkers and MEX URLs point at `http://127.0.0.1:0/`. InfluxDB defaults to the disconnected `influxdb://127.0.0.1:0/wewimo` DSN. It uses in-memory session and user storage and does not read `config.local.neon` or `USERDB_DB_*` variables.
 
-`-s` starts MariaDB. Database tests use the restricted `userdb_test` account and database on the Flox Unix socket. The schema is built from migrations in `db/structures` and `db/basic-data`, without dummy data, and rebuilt automatically when migrations change. Database tests run serially and roll back their data after each case. A guard checks the database name and MariaDB data directory and refuses a database outside the checkout. Docker is not needed.
+`-s` starts MariaDB and InfluxDB. Database tests use the restricted `userdb_test` account and database on the Flox Unix socket. The schema is built from migrations in `db/structures` and `db/basic-data`, without dummy data, and rebuilt automatically when migrations change. Database tests run serially and roll back their data after each case. A guard checks the database name and MariaDB data directory and refuses a database outside the checkout. Docker is not needed.
+
+`InfluxIntegrationTest` provisions a local organization, bucket and v1 database mapping, writes through the same Guzzle writer as `app:wewimo2influx`, then reads the values and field types back. Each worktree stores InfluxDB data in `.flox/cache/influxdb`; the server listens only on `127.0.0.1` on a free OS-assigned port recorded in `.flox/cache/logs/influxdb.log`. The log outlives the service, so before any setup request the test asks the server on that port for its command line (`/debug/pprof/cmdline`, no authentication) and continues only when the bolt and engine paths belong to this worktree; a healthy InfluxDB of another worktree on a stale port is left untouched, and `InfluxIntegrationTest` starts a second server to prove it. Tests use synthetic credentials and leave the sample points in place. Telemetry is disabled. Run just these tests with `flox activate -s -- vendor/bin/tester -C tests/InfluxIntegrationTest.php`. The ordinary local web remains disconnected from InfluxDB and real Wewimo devices.
+
+The writer retains the existing `INFLUX_URL` format (`influxdb://user:password@host:port/database`), Basic authentication and the v1 `/write` endpoint. The `station` measurement, tag/field names, floating-point values and server-assigned timestamps remain compatible with the existing Grafana data.
+
+Behaviour that differs from the former `influxdb/influxdb-php` client:
+
+- `https+influxdb://` verifies the server certificate; the former client did not. `influxdb://` and `http+influxdb://` use plain HTTP.
+- A write waits at most 5 seconds for the connection and 15 seconds in total; the former client had no limit. Redirects are not followed.
+- The port defaults to 8086. Percent-encode special characters in the user name and password. A URL with a query string or fragment, `udp+influxdb://` or any other scheme is rejected when the command is created.
+- A user name is sent with Basic authentication even when the password is empty.
+- A station whose MAC address or interface MAC address is missing or is not a string is not written. `app:wewimo2influx` prints the error for that AP, skips its remaining stations and continues with the next AP.
 
 The suite covers:
 

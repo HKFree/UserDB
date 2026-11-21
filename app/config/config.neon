@@ -106,7 +106,8 @@ services:
 			- setGoogleMapsApiKey(%env.USERDB_GOOGLE_MAPS_KEY%)
 	settings: App\Settings(%debug.fakeUser%)
 	- App\Console\UpdateLocationsCommand(%googleMapsApiKey%)
-	- App\Console\Wewimo2InfluxCommand(%influxUrl%)
+	- App\Services\InfluxWriter(%influxUrl%)
+	- App\Console\Wewimo2InfluxCommand
 	- App\Console\DigisignGenerovatUcastnickouSmlouvu
 	- App\Console\SendSMSCommand
 

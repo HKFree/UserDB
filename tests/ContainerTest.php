@@ -63,9 +63,12 @@ final class ContainerTest extends TestCase
             'mysql:unix_socket=' . getenv('USERDB_MARIADB_SOCKET') . ';dbname=userdb_test',
             $container->getByType(Connection::class)->getDsn(),
         );
-        foreach (['igw1IpCheckerUrl', 'igw2IpCheckerUrl', 'sojkaPingerURL', 'outerScannerURL', 'influxUrl', 'maternaMexUrl'] as $name) {
+        foreach (['igw1IpCheckerUrl', 'igw2IpCheckerUrl', 'sojkaPingerURL', 'outerScannerURL', 'maternaMexUrl'] as $name) {
             Assert::same('http://127.0.0.1:0/', $container->parameters[$name]);
         }
+        Assert::same('influxdb://127.0.0.1:0/wewimo', $container->parameters['influxUrl']);
+        Assert::type(\App\Services\InfluxWriter::class, $container->getByType(\App\Services\InfluxWriter::class));
+        Assert::type(\App\Console\Wewimo2InfluxCommand::class, $container->getByType(\App\Console\Wewimo2InfluxCommand::class));
         Assert::same('test-only', $container->parameters['env']['USERDB_SALT']);
         Assert::same('test-only', getenv('DIGISIGN_ACCESS_KEY'));
         Assert::same('test-only', getenv('DIGISIGN_SECRET_KEY'));

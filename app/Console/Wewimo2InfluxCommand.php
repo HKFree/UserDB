@@ -4,8 +4,7 @@ namespace App\Console;
 
 use App\Model\AP;
 use App\Model\Wewimo;
-use InfluxDB;
-use InfluxDB\Point;
+use App\Services\InfluxWriter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,22 +16,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class Wewimo2InfluxCommand extends Command
 {
-    private string $influxUrl;
-    /** @var AP */
-    private $ap;
-    /** @var Wewimo */
-    private $wewimo;
-
-    public function __construct(string $influxUrl, AP $ap, Wewimo $wewimo) {
+    public function __construct(private InfluxWriter $influx, private AP $ap, private Wewimo $wewimo) {
         parent::__construct();
-        $this->influxUrl = $influxUrl;
-        $this->ap = $ap;
-        $this->wewimo = $wewimo;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        $database = InfluxDB\Client::fromDSN($this->influxUrl); // 'influxdb://user:pass@host:port/db'
-
         // projit vsechny RB, u kterych je zaskrtnut priznak Wewimo
         $aps = $this->ap->findAll()->order('id');
         foreach ($aps as $ap) {
@@ -45,8 +33,10 @@ class Wewimo2InfluxCommand extends Command
                     foreach ($device['interfaces'] as $ifaceName => $interface) {
                         foreach ($interface['stations'] as $station) {
                             // kazdeho klienta podle MAC zapsat do InfluxDB
+                            // chybejici MAC odmitne InfluxWriter vyjimkou, ktera ukonci jen toto AP
+                            $stationMac = $station['mac-address'] ?? null;
                             $fields = [
-                                'macField' => $station['mac-address'],
+                                'macField' => $stationMac,
                             ];
                             $this->addFloatField($fields, 'rx_signal_strength', $station, 'x-signal-strength');
                             $this->addFloatField($fields, 'rx_signal_strength_ch0', $station, 'signal-strength-ch0');
@@ -59,21 +49,15 @@ class Wewimo2InfluxCommand extends Command
                             $this->addFloatField($fields, 'tx_CCQ', $station, 'tx-ccq');
                             $this->addFloatField($fields, 'rx_rate', $station, 'x-rx-rate');
                             $this->addFloatField($fields, 'tx_rate', $station, 'x-tx-rate');
-                            $point = new Point(
+                            $this->influx->writePoint(
                                 'station', // name of the measurement
-                                null, // the measurement value, dummy here
                                 [   // tags:
-                                    'macStationTag' => $station['mac-address'],
-                                    'interfaceMacTag' => $interface['mac-address'],
+                                    'macStationTag' => $stationMac,
+                                    'interfaceMacTag' => $interface['mac-address'] ?? null,
                                     'deviceIPTag' => $device['ip'],
                                 ],
                                 $fields   // additional fields
                             );
-                            $points = [
-                                $point
-                            ];
-                            //echo "    Writing signal for station MAC=".$station['mac-address'].' '.$point;
-                            $result = $database->writePoints($points);
                             $counter++;
                         }
                     }

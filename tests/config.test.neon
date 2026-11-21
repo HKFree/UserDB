@@ -3,7 +3,7 @@ parameters:
     igw2IpCheckerUrl: 'http://127.0.0.1:0/'
     sojkaPingerURL: 'http://127.0.0.1:0/'
     outerScannerURL: 'http://127.0.0.1:0/'
-    influxUrl: 'http://127.0.0.1:0/'
+    influxUrl: 'influxdb://127.0.0.1:0/wewimo'
     maternaMexUrl: 'http://127.0.0.1:0/'
     debug:
         fakeUser: false
