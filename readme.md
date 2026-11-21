@@ -112,7 +112,7 @@ Then, for every task:
 4. Orca creates the worktree and opens its tabs:
    - **Setup** installs the Composer dependencies and builds this worktree's database with demo data. It takes about half a minute.
    - The agent starts when the setup has finished.
-   - **web** waits for the setup as well, then starts the local web and prints its address. The web opens signed in as the demo user, without a login.
+   - **web** waits for the setup as well, then starts the local web and opens it in a browser tab of the worktree. The web is signed in as the demo user, without a login.
 5. Describe the task to the agent, check the result on the local web and review the diff before a pull request is opened.
 
 Without Flox the **Setup** tab only prints how to install it, and the agent starts in a worktree that is not prepared. After installing Flox, run `scripts/userdb_worktree.sh setup` and then `scripts/userdb_worktree.sh web` in the worktree.

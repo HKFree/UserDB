@@ -29,6 +29,18 @@ is_set_up() {
     [ -f vendor/autoload.php ] && [ -f .flox/cache/encryption.key ]
 }
 
+# Passes the server output on. In an Orca terminal it also opens the address PHP announces
+# in a browser tab of this worktree.
+open_browser_tab() {
+    local line started='\((http://[^)]+)\) started$'
+    while IFS= read -r line; do
+        printf '%s\n' "$line"
+        if [[ $line =~ $started ]] && [ -x "${ORCA_CLI_BIN_DIR:-}/orca" ]; then
+            "$ORCA_CLI_BIN_DIR/orca" tab create --url "${BASH_REMATCH[1]}" >/dev/null || true
+        fi
+    done
+}
+
 web() {
     if ! is_set_up; then
         echo 'Waiting for "scripts/userdb_worktree.sh setup" to finish. Run it in another terminal if nothing runs it.'
@@ -36,7 +48,7 @@ web() {
             sleep 1
         done
     fi
-    exec flox activate -s -- php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
+    flox activate -s -- php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php 2>&1 | open_browser_tab
 }
 
 case "${1:-}" in
