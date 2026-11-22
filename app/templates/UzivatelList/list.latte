@@ -20,6 +20,7 @@
 </div>
 <div class="member-list" data-save-url="{link SpravaStitku:saveLabel id=>null}" data-delete-url="{link SpravaStitku:deleteLabel id=>null}">
 <div class="list-toolbar">
+{include memberQuickFilter}
 <div class="list-view"><span>Zobrazit navíc:</span>
 {if $canViewOrEdit}
 <a n:if="!$money" href="{link UzivatelList:list id=>$ap->id, money=>1}" class="btn btn-default btn-sm money-toggle" role="button" aria-pressed="false" title="Zobrazit informace z money"><i class="fa fa-square-o" aria-hidden="true"></i> Platby a aktivace</a>
@@ -32,9 +33,7 @@
 </div>
 </div>
 
-{include memberQuickFilter}
-
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam členů AP">{control grid}</div>
+{control grid}
 
 {include memberStats}
 

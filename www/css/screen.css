@@ -2353,7 +2353,7 @@ html {
     white-space: normal;
 }
 
-/* Member lists: view switches, loaded-row filter and state legend. */
+/* Member lists: one row with the loaded-row filter on the left and the view switches on the right; state legend. */
 .list-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -2376,13 +2376,15 @@ html {
     margin: 10px 0;
 }
 
+/* Takes the room the view switches leave, so both fit on one row from about 1280 px. */
 .quick-filter {
     position: relative;
     display: flex;
+    flex: 1 1 360px;
     flex-wrap: wrap;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
+    min-width: 0;
 }
 
 .quick-filter > .fa {
@@ -2394,13 +2396,27 @@ html {
 }
 
 .main .quick-filter input {
-    width: 340px;
-    max-width: 100%;
+    flex: 1 1 180px;
+    width: auto;
+    min-width: 0;
+    max-width: 340px;
     height: 30px;
     padding-left: 28px;
+    text-overflow: ellipsis;
 }
 
+/* On a phone the quick filter takes a whole row; its hint would not fit beside the row count. */
+@media (max-width: 767px) {
+    .main .quick-filter input {
+        flex-basis: 100%;
+        max-width: none;
+    }
+}
+
+/* A fixed room for the count, so the field beside it does not change width while typing. */
 .quick-filter-count {
+    flex: 0 0 auto;
+    min-width: 165px;
     font-size: 12px;
     color: #6b7280;
 }
