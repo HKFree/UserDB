@@ -20,6 +20,14 @@ class Uzivatel extends Table
     public const AKTIVNI_CLEN = '((spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0))';
 
     /**
+     * Stejné pravidlo jako AKTIVNI_CLEN pro hodnoty, které ještě nejsou v databázi (odeslaný formulář).
+     * Oba zápisy měň spolu; jejich shodu hlídá RecordConditionsDatabaseTest.
+     */
+    public static function jeAktivniClen(int $spolek, ?int $typClenstviId, int $druzstvo, int $smazano): bool {
+        return ($spolek === 1 && $typClenstviId > 1) || ($druzstvo === 1 && $smazano === 0);
+    }
+
+    /**
      * @param int|string $id_uzivatel
      * @return list<Nette\Database\Row>
      */

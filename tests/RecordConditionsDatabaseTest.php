@@ -37,6 +37,32 @@ final class RecordConditionsDatabaseTest extends DatabaseTestCase
         Assert::null($model->getDuplicatePhoneArea($member->telefon, $other->id));
     }
 
+    public function testActiveMemberRuleInPhpMatchesSqlCondition(): void {
+        Assert::true(Uzivatel::jeAktivniClen(1, 3, 0, 0));
+        Assert::false(Uzivatel::jeAktivniClen(1, 1, 0, 0));
+        Assert::false(Uzivatel::jeAktivniClen(1, 0, 0, 0));
+        Assert::false(Uzivatel::jeAktivniClen(0, 3, 0, 0));
+        Assert::true(Uzivatel::jeAktivniClen(0, null, 1, 0));
+        Assert::false(Uzivatel::jeAktivniClen(0, null, 1, 1));
+
+        $member = $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id);
+        $model = $this->container->getByType(Uzivatel::class);
+        foreach ([0, 1] as $spolek) {
+            foreach ([null, 0, 1, 2, 3] as $typClenstviId) {
+                foreach ([0, 1] as $druzstvo) {
+                    foreach ([0, 1] as $smazano) {
+                        $member->update(['spolek' => $spolek, 'TypClenstvi_id' => $typClenstviId, 'druzstvo' => $druzstvo, 'smazano' => $smazano]);
+                        Assert::same(
+                            $model->findAll()->where(Uzivatel::AKTIVNI_CLEN)->where('id', $member->id)->count('*') === 1,
+                            Uzivatel::jeAktivniClen($spolek, $typClenstviId, $druzstvo, $smazano),
+                            'spolek=' . $spolek . ', TypClenstvi_id=' . ($typClenstviId ?? 'null') . ', druzstvo=' . $druzstvo . ', smazano=' . $smazano,
+                        );
+                    }
+                }
+            }
+        }
+    }
+
     public function testAreaRoleRequiresAnExistingCurrentlyValidRecord(): void {
         $area = $this->fixtures->area();
         $otherArea = $this->fixtures->area();

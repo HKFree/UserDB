@@ -697,7 +697,7 @@ class UzivatelPresenter extends BasePresenter
             }
 
             // pokud neni aktivni ani ve spolku ani v druzstvu
-            if (!(($values->spolek === 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo === 1 && $values->smazano === 0))) {
+            if (!Model\Uzivatel::jeAktivniClen($values->spolek, $values->TypClenstvi_id, $values->druzstvo, $values->smazano)) {
                 $this->aplikaceToken->deleteTokensForUID($idUzivatele);
             }
 
