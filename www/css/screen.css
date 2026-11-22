@@ -1392,6 +1392,16 @@ tbody>tr.wewimo-table-header>th {
     color: #4b5563;
 }
 
+/* The search button next to the filters is as tall as their fields and sits on their line. */
+.grido.grido-search-top .filter.outer .buttons {
+    padding-top: 27px;
+}
+
+.grido.grido-search-top .filter.outer .buttons .btn {
+    height: 30px;
+    padding: 4px 12px;
+}
+
 .grido tfoot input[type="submit"] {
     padding: 4px 10px;
     background-color: #fff;

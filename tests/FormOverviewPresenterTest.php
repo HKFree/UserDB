@@ -59,7 +59,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         ];
         $sections = $this->elements($document, '//form[@id="frm-uzivatelForm"]//section');
         Assert::same(array_keys($groups), array_map(fn (DOMElement $section): string => trim($this->child($section, 'h2')->textContent), $sections));
-        $expected = ['id', 'save', '_do', 'ip[add]'];
+        $expected = ['id', 'ipOtisk', 'save', '_do', 'ip[add]'];
         foreach (array_values($groups) as $index => $fields) {
             $sectionId = $sections[$index]->getAttribute('id');
             $actual = $this->names($document, '//*[@id="' . $sectionId . '"]//*[self::input or self::select or self::textarea][@name and not(starts-with(@name,"ip["))]');
@@ -135,7 +135,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         $document = $this->home($actor);
         $menu = $this->links($document, '//*[@id="navbar-tools"]//a');
         $home = $this->links($document, '//*[contains(@class,"home-tools")]//a[@data-tool]');
-        Assert::count(8, $menu);
+        Assert::count(9, $menu);
         Assert::same($menu, $home);
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/uzivatel-list/listall"]'));
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/sprava/mapa"]'));
@@ -162,6 +162,14 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
             $document = $this->document($this->presenters->ui($this->scenario->actors['vv']->id, $presenter, ['action' => $action])->html);
             Assert::same($this->text($document, '(//*[@id="obsah"]//*[self::h1 or self::h2 or self::h3])[1]') . ' | HKFree UserDB', $this->text($document, '//title'));
         }
+    }
+
+    public function testIpTransferTitleMatchesItsHeading(): void {
+        $s = $this->scenario;
+        $ip = $this->fixtures->ipAddress($s->member->id, '10.107.99.12');
+        $document = $this->document($this->presenters->ui($s->actors['vv']->id, 'Uzivatel', ['action' => 'presunIp', 'id' => $s->member->id, 'ipId' => $ip->id])->html);
+        Assert::same('Přesun IP k jinému členovi | HKFree UserDB', $this->text($document, '//title'));
+        Assert::same('Přesun IP k jinému členovi', $this->text($document, '//*[@id="obsah"]//h1'));
     }
 
     public function testAddingIpKeepsUnsavedState(): void {
