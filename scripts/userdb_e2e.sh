@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# Browser tests of the main processes (Playwright, tests/e2e) against a local web of this checkout:
+#   scripts/userdb_e2e.sh [arguments of "playwright test", e.g. specs/smoke.spec.mjs --headed]
+# Needs Flox, Composer dependencies and Node of tests/screenshots/.nvmrc. Every run rebuilds the database
+# userdb_e2e from the scenario demo data and starts its own web; the developer's database, web, sessions
+# and e-mails are never used.
+set -euo pipefail
+# Job control gives every launched command its own process group, including the web server's.
+set -m
+
+scripts_dir=$(cd "$(dirname "$0")" && pwd -P)
+# shellcheck source=scripts/userdb_web_lib.sh
+source "$scripts_dir/userdb_web_lib.sh"
+
+# The physical path: PHP derives the names of the session and persona cookies from it.
+repository=$(cd "$scripts_dir/.." && pwd -P)
+tests_dir=$repository/tests/e2e
+out=$repository/temp/e2e
+lock_dir=
+web_pidfile=$out/logs/web.pid
+
+fail() {
+    echo "$1" >&2
+    exit 1
+}
+
+check_node() {
+    local node_major required_node
+    node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true)
+    required_node=$(cat "$repository/tests/screenshots/.nvmrc")
+    if [ "$node_major" != "$required_node" ]; then
+        fail "Node $required_node is required (tests/screenshots/.nvmrc), found: ${node_major:-none}."
+    fi
+}
+
+# Installs what package-lock.json names, and its browser, whenever the lock file is newer than the installation.
+install_node_packages() {
+    if [ "$tests_dir/node_modules/.package-lock.json" -nt "$tests_dir/package-lock.json" ]; then
+        return
+    fi
+    echo 'Installing Playwright...'
+    (cd "$tests_dir" && npm ci --no-audit --no-fund && npx playwright install chromium)
+}
+
+wait_for_database() {
+    local deadline=$((SECONDS + 60))
+    until mariadb-admin --socket="$USERDB_MARIADB_SOCKET" --connect-timeout=2 ping >/dev/null 2>&1; do
+        if [ "$SECONDS" -ge "$deadline" ]; then
+            fail 'Flox MariaDB is not ready; check .flox/cache/logs/mariadb.log.'
+        fi
+        sleep 1
+    done
+}
+
+# Two runs in one worktree would rebuild the database under each other.
+acquire_lock() {
+    local directory=$FLOX_ENV_CACHE/e2e.lock other
+    if ! mkdir "$directory" 2>/dev/null; then
+        other=$(cat "$directory/pid" 2>/dev/null || true)
+        case "$other" in ''|*[!0-9]*) other= ;; esac
+        if [ -n "$other" ] && kill -0 "$other" 2>/dev/null; then
+            fail "Another run of the browser tests (PID $other) is using this worktree."
+        fi
+        # The previous run was killed before it could clean up.
+        rm -rf "$directory"
+        mkdir "$directory"
+    fi
+    lock_dir=$directory
+    echo "$$" > "$lock_dir/pid"
+}
+
+# Invoked by the EXIT trap.
+# shellcheck disable=SC2329
+cleanup() {
+    local status=$? pid
+    trap - EXIT INT TERM
+    set +e
+    set +m
+    stop_process_groups
+    stop_detached_service "$web_pidfile" "$repository"
+    wait_for_services
+    pid=$(cat "$web_pidfile" 2>/dev/null)
+    case "$pid" in ''|*[!0-9]*) pid= ;; esac
+    if [ -n "$pid" ] && ps -p "$pid" -o command= | grep -F -- "$repository/" >/dev/null; then
+        echo "Cleanup failed: the web of the browser tests is still running (PID $pid)." >&2
+        status=1
+    fi
+    [ -z "$lock_dir" ] || rm -rf "$lock_dir"
+    exit "$status"
+}
+
+if [ "${FLOX_ENV_PROJECT:-}" != "$repository" ] || [ -z "${USERDB_MARIADB_SOCKET:-}" ]; then
+    [ -z "${USERDB_E2E_IN_FLOX:-}" ] || fail "Flox activated another project than $repository."
+    command -v flox >/dev/null || fail 'Flox is required, see "Tests with Flox" in readme.md.'
+    # Everything that can fail at once is checked before Flox starts MariaDB: an activation that ends
+    # while the database is still starting can leave the service hanging.
+    [ -f "$repository/vendor/autoload.php" ] || fail 'Composer dependencies are missing: run scripts/userdb_worktree.sh setup.'
+    check_node
+    install_node_packages
+    USERDB_E2E_IN_FLOX=1 exec flox activate -s -d "$repository" -- bash "$scripts_dir/userdb_e2e.sh" "$@"
+fi
+
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+wait_for_database
+[ -f "$repository/vendor/autoload.php" ] || fail 'Composer dependencies are missing: run composer install.'
+check_node
+install_node_packages
+acquire_lock
+rm -rf "$out"
+mkdir -p "$out/logs"
+
+echo 'Preparing the database userdb_e2e...'
+# A MariaDB started before the init file knew this database only gets it now; the statements are idempotent.
+mariadb --socket="$USERDB_MARIADB_SOCKET" < "$scripts_dir/userdb_mariadb_init.sql"
+if ! (cd "$repository" && USERDB_LOCAL_INSTANCE=e2e USERDB_DEMO_VOLUME=0 php scripts/userdb_dev_setup.php) \
+    > "$out/logs/setup.log" 2>&1; then
+    tail -n 20 "$out/logs/setup.log" >&2
+    fail "The database setup failed. See $out/logs/setup.log"
+fi
+
+if ! start_web "$repository" "$out/logs/web.log" "$web_pidfile" env USERDB_LOCAL_INSTANCE=e2e; then
+    fail "The web did not start ($failure_reason). See $out/logs/web.log"
+fi
+echo "Web of the browser tests: $web_origin"
+
+export USERDB_E2E_ORIGIN=$web_origin
+export USERDB_E2E_MAIL_DIR=$FLOX_ENV_CACHE/e2e/mail
+# PHP expands its own variables.
+# shellcheck disable=SC2016
+USERDB_E2E_PERSONA_COOKIE=$(php -r 'require $argv[1] . "/scripts/UserdbDemoPersonas.php"; echo UserdbDemoPersonas::cookieName($argv[1]);' "$repository")
+export USERDB_E2E_PERSONA_COOKIE
+
+status=0
+(cd "$tests_dir" && exec npx playwright test "$@") || status=$?
+exit "$status"

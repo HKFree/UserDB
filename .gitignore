@@ -38,3 +38,6 @@ tests/**/output/
 
 # Pull request screenshots (local captures live under the ignored temp/ directory)
 tests/screenshots/node_modules/
+
+# Browser tests (their results and report live under the ignored temp/ directory)
+tests/e2e/node_modules/

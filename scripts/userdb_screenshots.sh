@@ -3,6 +3,9 @@ set -euo pipefail
 # Job control gives every launched command its own process group, including Flox's children.
 set -m
 
+# shellcheck source=scripts/userdb_web_lib.sh
+source "$(dirname "$0")/userdb_web_lib.sh"
+
 tools_dir=$(cd "$(dirname "$0")/../tests/screenshots" && pwd)
 repository=$(git -C "$tools_dir" rev-parse --show-toplevel)
 mode=${1:-}
@@ -11,10 +14,8 @@ head=
 base=
 out=
 run_dir=
-groups=
 owned_labels=
 base_reason=
-failure_reason=
 base_commit=
 head_commit=HEAD
 
@@ -24,51 +25,14 @@ usage() {
     exit 2
 }
 
-running_services() {
-    # pgrep -fl prints no command arguments with Linux procps.
-    # shellcheck disable=SC2009
-    ps ax -o pid=,command= | grep -E 'mariadbd|php -S' | grep -F -- "$1/"
-}
-
-stop_process_groups() {
-    local pid
-    # Stop the process groups first so no wrapper can start another service during cleanup.
-    for pid in $groups; do
-        # These jobs are being stopped deliberately. Remove only their shell job notifications.
-        disown "$pid" 2>/dev/null || true
-        kill -TERM -- "-$pid" 2>/dev/null
-    done
-}
-
 stop_detached_services() {
-    local label directory file pid
+    local label directory
     for label in $owned_labels; do
         if [ "$label" = head ]; then directory=$head; else directory=$base; fi
         [ -n "$directory" ] || continue
-        for file in "$directory/.flox/cache/mariadb/mariadb.pid" "$out/logs/$label-web.pid"; do
-            [ -f "$file" ] || continue
-            pid=$(cat "$file")
-            case "$pid" in ''|*[!0-9]*) continue ;; esac
-            # A service may have moved out of the wrapper's process group.
-            if ps -p "$pid" -o command= | grep -F -- "$directory/" >/dev/null; then
-                kill -TERM "$pid" 2>/dev/null
-                remaining="$remaining $pid"
-            fi
-        done
+        stop_detached_service "$directory/.flox/cache/mariadb/mariadb.pid" "$directory"
+        stop_detached_service "$out/logs/$label-web.pid" "$directory"
     done
-}
-
-wait_for_services() {
-    local pid alive
-    for _ in $(seq 10); do
-        alive=false
-        for pid in $groups; do kill -0 -- "-$pid" 2>/dev/null && alive=true; done
-        for pid in $remaining; do kill -0 "$pid" 2>/dev/null && alive=true; done
-        [ "$alive" = true ] || break
-        sleep 1
-    done
-    for pid in $groups; do kill -KILL -- "-$pid" 2>/dev/null; done
-    for pid in $remaining; do kill -KILL "$pid" 2>/dev/null; done
 }
 
 collect_logs_and_check_services() {
@@ -104,7 +68,7 @@ remove_local_worktrees() {
 }
 
 cleanup() {
-    local status=$? remaining=
+    local status=$?
     trap - EXIT INT TERM
     set +e
     set +m
@@ -174,24 +138,6 @@ if [ "$node_major" != "$required_node" ]; then
     exit 1
 fi
 
-launch() {
-    local directory=$1 logfile=$2
-    shift 2
-    (cd "$directory" && exec "$@") </dev/null >"$logfile" 2>&1 &
-    launched_pid=$!
-    groups="$groups $launched_pid"
-}
-
-wait_job() {
-    local waited_pid=$1 pid status=0 running=
-    wait "$waited_pid" || status=$?
-    for pid in $groups; do
-        if [ "$pid" != "$waited_pid" ]; then running="$running $pid"; fi
-    done
-    groups=$running
-    return "$status"
-}
-
 prepare() {
     local directory=$1 label=$2
     failure_reason=
@@ -215,45 +161,12 @@ prepare() {
     if ! wait_job "$launched_pid"; then failure_reason=setup-failed; return 1; fi
 }
 
-web_is_running() {
-    local wrapper_pid=$1 pidfile=$2 pid
-    kill -0 "$wrapper_pid" 2>/dev/null || return 1
-    [ -f "$pidfile" ] || return 0
-    pid=$(cat "$pidfile")
-    kill -0 "$pid" 2>/dev/null
-}
-
-start_web() {
-    local directory=$1 label=$2 deadline status web_pid
-    local started='.*Development Server \((http://127\.0\.0\.1:[0-9]+)\) started.*'
-    failure_reason=
-    # The PID and arguments must be expanded by the shell inside Flox.
-    # shellcheck disable=SC2016
-    launch "$directory" "$out/logs/$label-web.log" \
-        flox activate -- bash --noprofile --norc -e -o pipefail -c \
-        'echo $$ > "$1"; shift; unset PHP_CLI_SERVER_WORKERS; exec php "$@"' screenshots-web \
-        "$out/logs/$label-web.pid" -S 127.0.0.1:0 -t "$directory/www" "$directory/scripts/userdb_dev_router.php"
-    web_pid=$launched_pid
-    deadline=$((SECONDS + 60))
-    while [ "$SECONDS" -lt "$deadline" ]; do
-        if ! web_is_running "$web_pid" "$out/logs/$label-web.pid"; then
-            echo "$label web process exited before becoming ready. See $out/logs/$label-web.log" >&2
-            wait_job "$web_pid" || true
-            failure_reason=setup-failed
-            return 1
-        fi
-        web_origin=$(sed -nE "s|$started|\1|p" "$out/logs/$label-web.log" | head -n 1)
-        if [ -n "$web_origin" ]; then
-            status=$(curl --silent --max-time 5 --output /dev/null --write-out '%{http_code}' "$web_origin/" || true)
-            if [ "$status" = 200 ] && web_is_running "$web_pid" "$out/logs/$label-web.pid"; then
-                echo "$label web: $web_origin"
-                return 0
-            fi
-        fi
-        sleep 1
-    done
-    failure_reason=web-timeout
-    return 1
+start_labelled_web() {
+    local directory=$1 label=$2
+    if ! start_web "$directory" "$out/logs/$label-web.log" "$out/logs/$label-web.pid" flox activate --; then
+        return 1
+    fi
+    echo "$label web: $web_origin"
 }
 
 echo 'Preparing head database...'
@@ -263,10 +176,10 @@ if [ -n "$base" ]; then
     if ! prepare "$base" base; then base_reason=$failure_reason; echo "Base unavailable: $base_reason"; fi
 fi
 # Both databases have been seeded before either version is captured.
-if ! start_web "$head" head; then echo "Head web failed. See $out/logs" >&2; exit 1; fi
+if ! start_labelled_web "$head" head; then echo "Head web failed. See $out/logs" >&2; exit 1; fi
 head_origin=$web_origin
 if [ -n "$base" ] && [ -z "$base_reason" ]; then
-    if start_web "$base" base; then
+    if start_labelled_web "$base" base; then
         base_origin=$web_origin
     else
         base_reason=$failure_reason

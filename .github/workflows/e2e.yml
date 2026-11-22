@@ -1,0 +1,54 @@
+name: Browser tests (Playwright)
+
+# Needs no secret, so it also runs for pull requests from forks.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Browser tests of the main processes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: flox/install-flox-action@5bb9eaaffbeaa699a8251a1ae21ecf4c8e0e37d4 # v2.7.0
+        with:
+          disable-metrics: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # One Node version for the browser tests and the page screenshots.
+          node-version-file: tests/screenshots/.nvmrc
+      - name: Install Composer dependencies
+        run: flox activate -- composer install --no-interaction --prefer-dist --no-progress
+      - name: Install Playwright
+        working-directory: tests/e2e
+        run: |
+          npm ci
+          # The tests run headless; the headless shell is a smaller download than the full browser.
+          npx playwright install --with-deps --only-shell chromium
+      - name: Run the browser tests
+        run: scripts/userdb_e2e.sh
+      - name: Check cleanup
+        if: always()
+        run: |
+          # pgrep -fl prints no command arguments with Linux procps.
+          # shellcheck disable=SC2009
+          if ps ax -o pid=,command= | grep -E 'mariadbd|php -S' | grep -F -- "$GITHUB_WORKSPACE/"; then
+            echo '::error::Services of the browser tests survived cleanup.'
+            exit 1
+          fi
+      - name: Upload the report, traces and logs of a failed run
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-failure
+          path: |
+            temp/e2e/
+            .flox/cache/logs/
+          retention-days: 14
