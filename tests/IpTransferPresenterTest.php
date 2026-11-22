@@ -69,7 +69,7 @@ final class IpTransferPresenterTest extends DatabaseTestCase
             Assert::same((string) $this->target->id, $log->nova_hodnota);
             Assert::same($s->actors['ownSo']->id, $log->Uzivatel_id);
             $page = $this->presenters->ui($s->actors['ownSo']->id, 'Uzivatel', ['action' => 'show', 'id' => $uid]);
-            Assert::contains('Změna vlastníka z ' . $s->member->id . ' na ' . $this->target->id, $page->html);
+            Assert::contains('Přesun IP od člena ' . $s->member->id . ' ke členovi ' . $this->target->id, $page->html);
         }
         Assert::same(['result' => 'OK', 'Uzivatel_id' => $this->target->id], $this->presenters->api('Api:Uzivatel', $credentials, ['action' => 'getUzivatelbyIP', 'id' => $this->ip->ip_adresa])->json);
         Assert::notSame($hashBefore, $this->presenters->api('Api:Smokeping', $credentials, ['action' => 'check'])->html);

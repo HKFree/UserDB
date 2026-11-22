@@ -74,7 +74,6 @@ class Log extends Table
         );
 
         $slovnikIpAdresa = array(
-            "Uzivatel_id" => "vlastníka",
             "hostname" => "hostname",
             "mac_adresa" => "MAC adresa",
             "mac_filter" => "povoleno v MAC filteru",
