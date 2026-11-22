@@ -2,7 +2,7 @@
 
 ## Co a proč
 
-<!-- Dokončuje-li PR issue, napiš "Closes #N". -->
+<!-- Dokončuje-li PR issue, napiš "Closes #N" a dej tomu issue štítek "má PR". -->
 
 ## Ověření
 

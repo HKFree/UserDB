@@ -337,3 +337,8 @@ použitelnost ve stávajícím vzhledu, ne nový design.
 - Česky, věcně, co a proč. Jeden PR řeší jednu věc.
 - Popis PR vyplň podle šablony `.github/pull_request_template.md`; má stejné
   oddíly jako hlášení v Postupu práce. Neověřené tvrzení označ jako neověřené.
+- Dokončuje-li PR issue, napiš do popisu `Closes #N`; česká slova jako "Řeší"
+  issue po sloučení nezavřou. Hned po otevření PR, i draftu, dej tomu issue
+  štítek `má PR` (`gh issue edit N --add-label "má PR"`). Zavře-li se PR bez
+  sloučení a issue nemá jiný otevřený PR, štítek odeber. Štítek jde s PR:
+  zvláštní schválení zadavatele nepotřebuje.
