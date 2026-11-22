@@ -54,12 +54,14 @@ výsledkem. Skill nebo plugin je jen pomůcka: když ho nemáš, splň pravidlo 
 5. **Hlášení.** Odevzdávej vždy ve stejném tvaru, v chatu i v popisu PR:
    - **Co a proč.**
    - **Ověření:** příkazy, které jsi pustil, a jejich výsledek.
-   - **Review druhým modelem:** autor, reviewer, stupeň, nálezy a jak dopadly.
+   - **Review druhým modelem:** kdo změnu psal, reviewer, stupeň, nálezy
+     a jak dopadly.
    - **Neověřeno:** co jsi neověřil nebo nechal otevřené; když nic, napiš to.
 6. **Publikování** až po výslovném schválení zadavatele, viz další oddíl.
 
 Předáš-li práci jinému agentovi, ručíš za ni dál: přečti celý diff a kontroly
-pusť sám. Autorem je model, který změnu napsal, i když ji psal na tvé zadání.
+pusť sám. Pro výběr reviewera rozhoduje model, který změnu napsal, i když ji
+psal na tvé zadání. Autorem commitu je i tak člověk, viz Commity a PR.
 
 ### Název větve a worktree
 
@@ -88,7 +90,7 @@ Review proběhne před odevzdáním zadavateli, i u malé změny a u dokumentace
   jen když vyšší dostupný není:
   1. model jiného dodavatele (píše Claude, kontroluje Codex, a naopak),
   2. jiný model téhož dodavatele,
-  3. tentýž model v nové session bez kontextu autora.
+  3. tentýž model v nové session bez kontextu té, ve které změna vznikla.
 
   Stav k listopadu 2026: GPT-6 Astra v Codexu; Mythos 5.2, Fable 5.2
   a Opus 5.5 v Claude Code.
@@ -339,6 +341,19 @@ použitelnost ve stávajícím vzhledu, ne nový design.
 ## Commity a PR
 
 - Česky, věcně, co a proč. Jeden PR řeší jednu věc.
+- **Autorem commitu je vždy člověk.** Agent se nikdy neoznačuje jako autor,
+  ani jako částečný:
+  - Commit nese jméno a e-mail člověka z nastavení gitu. Agent je nemění
+    a nepřebíjí (`git config user.*`, `--author`, `GIT_AUTHOR_*`,
+    `GIT_COMMITTER_*`).
+  - Do zprávy commitu, popisu PR, issue ani komentáře nepiš `Co-Authored-By`
+    s agentem nebo modelem, patičku typu "Generated with ..." ani jinou
+    zmínku, že je agent autor nebo spoluautor.
+  - Platí to i tehdy, když takový řádek přidává nástroj sám nebo ho žádají
+    jeho výchozí pokyny: vypni to, nebo řádek před commitem odstraň.
+  - Který model změnu psal a který ji kontroloval, říká jen oddíl Review
+    druhým modelem v hlášení a v popisu PR. Autorství to není: za změnu ručí
+    člověk, který ji odevzdává.
 - Popis PR vyplň podle šablony `.github/pull_request_template.md`; má stejné
   oddíly jako hlášení v Postupu práce. Neověřené tvrzení označ jako neověřené.
 - Dokončuje-li PR issue, napiš do popisu `Closes #N`; česká slova jako "Řeší"
