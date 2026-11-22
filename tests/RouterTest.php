@@ -20,6 +20,9 @@ final class RouterTest extends TestCase
             ['/userdb/', ['presenter' => 'Homepage', 'action' => 'default', 'id' => null]],
             ['/userdb/api/health-check', ['presenter' => 'Api:HealthCheck', 'action' => 'default', 'id' => null]],
             ['/userdb/api/uzivatel/show/17', ['presenter' => 'Api:Uzivatel', 'action' => 'show', 'id' => '17']],
+            ['/userdb/mapi/graphql', ['presenter' => 'Mapi:Graphql', 'action' => 'default']],
+            // Only the exact address is the GraphQL endpoint; anything else under it stays with the web.
+            ['/userdb/mapi/graphql/ja', ['presenter' => 'Mapi', 'action' => 'graphql', 'id' => 'ja']],
             ['/userdb/uzivatel/list/42', ['presenter' => 'UzivatelList', 'action' => 'list', 'id' => '42']],
             ['/userdb/sprava/schvalovanicc', ['presenter' => 'SpravaCc', 'action' => 'schvalovanicc']],
             ['/userdb/uzivatel/email/17', ['presenter' => 'UzivatelMailSms', 'action' => 'email', 'id' => '17']],
@@ -52,6 +55,7 @@ final class RouterTest extends TestCase
         return [
             [['presenter' => 'Uzivatel', 'action' => 'show', 'id' => 17], '/userdb/uzivatel/show/17'],
             [['presenter' => 'Api:HealthCheck', 'action' => 'default'], '/userdb/api/health-check'],
+            [['presenter' => 'Mapi:Graphql', 'action' => 'default'], '/userdb/mapi/graphql'],
             [['presenter' => 'SelfService', 'action' => 'confirmEmail', 'key' => 'fixture-key'], '/userdb/pub/user-confirm-email/fixture-key'],
         ];
     }

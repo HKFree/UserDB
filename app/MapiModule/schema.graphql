@@ -1,0 +1,43 @@
+type Query {
+  "Kdo jsem: přihlášený uživatel, jeho role a oblasti."
+  ja: Ja!
+}
+
+"Přihlášený uživatel."
+type Ja {
+  "Číslo člena (UID)."
+  uid: Int!
+
+  "Přezdívka."
+  nick: String!
+
+  "Všechny platné role, i ty, které k tomuto API neopravňují."
+  role: [Role!]!
+
+  "Oblasti, kde mám roli vázanou na oblast, podle jména."
+  oblasti: [Oblast!]!
+}
+
+"Platná role přihlášeného."
+type Role {
+  "Typ role: VV, TECH, SO, ZSO a další podle číselníku."
+  typ: String!
+
+  "Oblast, na kterou je role vázaná; null u globální role."
+  oblast: Oblast
+}
+
+"Oblast sítě."
+type Oblast {
+  id: Int!
+  jmeno: String!
+
+  "Jen aktivní AP oblasti, podle jména."
+  ap: [Ap!]!
+}
+
+"Přístupový bod (AP)."
+type Ap {
+  id: Int!
+  jmeno: String!
+}

@@ -28,7 +28,8 @@ final class TestEnvironment
     private static ?\Throwable $databaseFailure = null;
     private static ?string $encryptionKey = null;
 
-    public static function container(?Explorer $database = null, ?Http\Request $request = null, ?Container $recordings = null, ?string $novinkyAdresar = null): Container {
+    /** @param array<string, object> $services services replaced in this container only */
+    public static function container(?Explorer $database = null, ?Http\Request $request = null, ?Container $recordings = null, ?string $novinkyAdresar = null, array $services = []): Container {
         $configurator = new Configurator();
         $configurator->setDebugMode(true);
         $configurator->setTempDirectory(self::TEMP_DIR);
@@ -58,6 +59,7 @@ final class TestEnvironment
                 'smsSender' => $recordings->getByType(RecordingSmsSender::class),
                 'mexSmsSender' => $recordings->getByType(RecordingMexSmsSender::class),
                 'requestDruzstvoContract' => $recordings->getByType(RecordingContractRequest::class),
+                'mapiZaznam' => $recordings->getByType(RecordingMapiZaznam::class),
             ]);
         }
         if ($database !== null) {
@@ -69,6 +71,7 @@ final class TestEnvironment
             'http.request' => $request ?? new Http\Request(new Http\UrlScript('http://localhost/userdb/')),
             'http.response' => new Http\Response(),
         ]);
+        $configurator->addServices($services);
         return $configurator->createContainer();
     }
 

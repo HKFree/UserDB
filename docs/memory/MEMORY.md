@@ -14,3 +14,4 @@
 - [Náhledy stránek v PR](userdb_screenshots.md) - nestabilní časy demo dat, mobilní rozměry PNG a prostředí pro focení.
 - [Ověřování UI](userdb_ui_overeni.md) - nástrahy tabulek Grido, odkazů v layoutu a prohlídky stránek na telefonu.
 - [Výběr textu a schránka](userdb_clipboard.md) - nástrahy označování a kopírování hodnot z tabulek a testování bez systémové schránky.
+- [GraphQL API](userdb_graphql.md) - nástrahy knihovny webonyx/graphql-php, limitů, záznamu o přístupu a testů hranice přístupu.

@@ -32,7 +32,7 @@ class Authenticator implements Security\IAuthenticator
     public function authenticate(array $credentials): HkfIdentity {
         list($userID, $password) = $credentials;
         if (in_array($userID, [null, 0, '', '0'], true)) {
-            throw new Nette\Security\AuthenticationException('User not found.');
+            throw new Nette\Security\AuthenticationException('User not found.', Security\Authenticator::IdentityNotFound);
         }
         if ((bool) $this->fakeUser) {            /// debuging identity
             $userID = $this->fakeUser["userID"];
@@ -48,7 +48,7 @@ class Authenticator implements Security\IAuthenticator
             //crypted hash from database
             //$passwordHash = $this->context->table("Uzivatel")->where('id', $userID)->fetchField('heslo_hash');
         } else {
-            throw new Nette\Security\AuthenticationException('User attributes not provided.');
+            throw new Nette\Security\AuthenticationException('User attributes not provided.', Security\Authenticator::Failure);
         }
         $date = new DateTime();
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
@@ -65,7 +65,7 @@ class Authenticator implements Security\IAuthenticator
         }
 
         if (count($roles) < 1) {
-            throw new Nette\Security\AuthenticationException('User not allowed.');
+            throw new Nette\Security\AuthenticationException('User not allowed.', Security\Authenticator::NotApproved);
         }
 
         return new HkfIdentity($userID, $roles, $nick, $passwordHash);

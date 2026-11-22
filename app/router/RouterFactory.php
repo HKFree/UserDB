@@ -41,6 +41,8 @@ class RouterFactory
         $router->addRoute($urlPrefix . '/pub/user-email-feedback/<uid>/<hash>/<variant>/<nextStep>', ['presenter' => 'SelfService','action' => 'userEmailFeedback',]);
         $router->addRoute($urlPrefix . '/pub/user-confirm-email/<key>', ['presenter' => 'SelfService','action' => 'confirmEmail',]);
 
+        $router->addRoute($urlPrefix . '/mapi/graphql', 'Mapi:Graphql:default');
+
         $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
             'module' => 'Api'
         ]);

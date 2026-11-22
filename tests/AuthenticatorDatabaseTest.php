@@ -8,6 +8,7 @@ use App\Model\Authenticator;
 use App\Model\HkfIdentity;
 use Nette\Database\Table\ActiveRow;
 use Nette\Security\AuthenticationException;
+use Nette\Security\Authenticator as SecurityAuthenticator;
 use Tester\Assert;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -97,6 +98,7 @@ final class AuthenticatorDatabaseTest extends DatabaseTestCase
             fn () => $this->authenticator->authenticate([$this->member->id, null]),
             AuthenticationException::class,
             'User not allowed.',
+            SecurityAuthenticator::NotApproved,
         );
     }
 
@@ -123,6 +125,7 @@ final class AuthenticatorDatabaseTest extends DatabaseTestCase
             fn () => $this->authenticator->authenticate([$this->member->id, null]),
             AuthenticationException::class,
             'User attributes not provided.',
+            SecurityAuthenticator::Failure,
         );
     }
 
@@ -132,9 +135,10 @@ final class AuthenticatorDatabaseTest extends DatabaseTestCase
                 fn () => $this->authenticator->authenticate([$id, null]),
                 AuthenticationException::class,
                 'User not found.',
+                SecurityAuthenticator::IdentityNotFound,
             );
         }
-        Assert::exception(fn () => $this->authenticator->authenticate(['00', null]), AuthenticationException::class, 'User not allowed.');
+        Assert::exception(fn () => $this->authenticator->authenticate(['00', null]), AuthenticationException::class, 'User not allowed.', SecurityAuthenticator::NotApproved);
     }
 }
 

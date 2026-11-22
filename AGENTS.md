@@ -244,6 +244,7 @@ npx skills add stablyai/orca
 |---|---|
 | `app/presenters/`, `app/templates/` | webové presentery a jejich Latte šablony |
 | `app/ApiModule/Presenters/` | REST API pod `/userdb/api`, ručně popsané ve `swagger.yaml` |
+| `app/MapiModule/` | GraphQL API pro přihlášené uživatele na `/userdb/mapi/graphql`: základní presenter (`Presenters/`), schéma (`Schema/`, otisk v `schema.graphql`) a čtecí vrstva (`Data/`), jediné místo, které pro GraphQL čte databázi |
 | `app/model/` | modely nad tabulkami (Nette Database), společný předek `Table.php` |
 | `app/services/`, `app/components/` | služby (e-mail, SMS, PDF, šifrování, smlouvy) a komponenty |
 | `app/novinky/` | texty vydání pro stránku Novinky, formát a postup v [dokumentaci](docs/userdb_novinky.md) |
@@ -265,7 +266,8 @@ npx skills add stablyai/orca
 
 - Web přebírá identitu z hlavičky `UID` od Shibbolethu (`BasePresenter::startup()`),
   role z tabulky `SpravceOblasti` (`app/model/Authenticator.php`). API používá
-  HTTP Basic s klíčem (`ApiPresenter::checkRequirements()`).
+  HTTP Basic s klíčem (`ApiPresenter::checkRequirements()`). GraphQL API přihlašuje
+  jako web (`MapiPresenter`) a pustí jen role ze seznamu `PovoleneRole`.
 - V presenterech odvozených z `BasePresenter` ověř oprávnění na začátku obsluhy
   akce nebo formuláře voláním `$this->vyzadujOpravneni(...)` se stejnou
   podmínkou, jakou dostává šablona. Skrytí prvku v šabloně kontrolu nenahrazuje.
@@ -275,7 +277,9 @@ npx skills add stablyai/orca
 - Nový model, službu nebo příkaz zaregistruj v sekci `services` v
   `app/config/config.neon`. Testy si DI kontejner po změně konfigurace sestaví
   znovu samy; že se složí a že jde vytvořit každý presenter, hlídá `ContainerTest`.
-- Změnu API zapiš i do `swagger.yaml`.
+- Změnu API s klíči zapiš i do `swagger.yaml`. Změnu GraphQL API zapiš do otisku
+  schématu `app/MapiModule/schema.graphql`; shodu s kódem hlídá
+  `GraphqlArchitectureTest`.
 - Nový kód psaný agentem musí splňovat výrazně vyšší nároky na čitelnost
   a kvalitu, než vynucuje současná úroveň PHPStanu. Ta je minimum, ne měřítko:
   piš úplné typy parametrů, návratových hodnot a vlastností, krátké funkce
