@@ -204,11 +204,9 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->template->oblasti = $this->oblast->getSeznamOblastiProMenu();
 
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
-        if (count($oblastiSpravce) > 0) {
-            $this->template->mojeOblasti = $this->oblast->formatujOblastiSAP($oblastiSpravce);
-        } else {
-            $this->template->mojeOblasti = false;
-        }
+        $skupiny = $this->oblast->seskupOblastiSAP($oblastiSpravce);
+        $this->template->mojeOblastiSkupiny = $skupiny;
+        $this->template->mojeOblasti = count($oblastiSpravce) > 0 ? $this->oblast->popiskyApVeSkupinach($skupiny) : false;
     }
 
     protected function createComponentSearchForm(): Form {

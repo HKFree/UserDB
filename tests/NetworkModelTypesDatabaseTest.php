@@ -31,6 +31,33 @@ final class NetworkModelTypesDatabaseTest extends DatabaseTestCase
         ], $model->formatujOblastiSAP([$area], false));
     }
 
+    public function testAreaGroupsListApsUnderTheirArea(): void {
+        $area = $this->fixtures->area();
+        $second = $this->fixtures->ap($area->id);
+        $second->update(['jmeno' => 'B druhé']);
+        $first = $this->fixtures->ap($area->id);
+        $first->update(['jmeno' => 'A první']);
+        $inactive = $this->fixtures->ap($area->id);
+        $inactive->update(['jmeno' => 'C vypnuté', 'aktivni' => 0]);
+        $empty = $this->fixtures->area();
+        $model = $this->container->getByType(Oblast::class);
+        $active = [$first->id => 'A první (' . $first->id . ')', $second->id => 'B druhé (' . $second->id . ')'];
+
+        // One group per area, even when the manager holds two roles in it; APs by name; an area without APs is left out.
+        Assert::same(
+            [['id' => $area->id, 'jmeno' => $area->jmeno, 'aps' => $active]],
+            $model->seskupOblastiSAP([$area, $empty, $area]),
+        );
+        Assert::same(
+            [['id' => $area->id, 'jmeno' => $area->jmeno, 'aps' => $active + [$inactive->id => 'C vypnuté (' . $inactive->id . ')']]],
+            $model->seskupOblastiSAP([$area], false),
+        );
+        Assert::same([
+            $first->id => $area->jmeno . ' - A první (' . $first->id . ')',
+            $second->id => $area->jmeno . ' - B druhé (' . $second->id . ')',
+        ], $model->popiskyApVeSkupinach($model->seskupOblastiSAP([$area, $area])));
+    }
+
     public function testAddressMapsAndMissingRows(): void {
         $area = $this->fixtures->area();
         $ap = $this->fixtures->ap($area->id);

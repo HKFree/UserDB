@@ -76,7 +76,8 @@ window.userdbSidebarTree = function () {
         var item = $(this).parent();
         if (item.hasClass('active')) return;
         item.addClass('active');
-        var branch = item.parent().closest('li');
+        // vetve v "Moje oblasti" jsou rozbalene porad a ke stromu nepatri
+        var branch = item.parent().closest('#oblastitree li');
         if (tree && branch.length > 0) tree.expand(branch);
     });
 };
@@ -97,10 +98,13 @@ $(document).ready(function () {
         var found = false;
         areas.each(function () {
             var area = $(this);
-            var areaMatches = fold(area.children('a').text()).indexOf(needle) !== -1;
+            var areaText = fold(area.children('a').text());
+            var areaMatches = areaText.indexOf(needle) !== -1;
             var shown = areaMatches;
             area.find('li').each(function () {
-                var matches = areaMatches || fold($(this).text()).indexOf(needle) !== -1;
+                // AP se najde i pod zapisem "Oblast - AP", jak se dosud v seznamu vypisovalo
+                var apText = fold($(this).text());
+                var matches = areaMatches || apText.indexOf(needle) !== -1 || (areaText + ' - ' + apText).indexOf(needle) !== -1;
                 $(this).toggleClass('sidebar-hidden', !matches);
                 shown = shown || matches;
             });
@@ -725,12 +729,13 @@ $(document).ready(function () {
         return $.trim(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
-    function add(link, description) {
+    // area: jmeno oblasti, pod kterou AP v levem panelu stoji; AP se najde i pod zapisem "Oblast - AP"
+    function add(link, description, area) {
         var href = link.getAttribute('href');
         var text = $.trim(link.textContent);
         if (!href || seen[href]) return;
         seen[href] = true;
-        index.push({ href: href, text: text, description: description, folded: fold(text) });
+        index.push({ href: href, text: text, description: description, folded: fold(text), foldedWithArea: area ? fold(area + ' - ' + text) : '' });
     }
 
     $('.sidebar ul.nav-sidebar > li').each(function () {
@@ -738,7 +743,7 @@ $(document).ready(function () {
         if (!link) return;
         var children = $(this).find('ul a');
         add(link, children.length ? 'oblast' : 'AP');
-        children.each(function () { add(this, 'AP · ' + $.trim(link.textContent)); });
+        children.each(function () { add(this, 'AP · ' + $.trim(link.textContent), $.trim(link.textContent)); });
     });
     $('#navbar-tools a').each(function () { add(this, 'nástroj'); });
     input.attr({ role: 'combobox', 'aria-autocomplete': 'list', 'aria-controls': 'search-options', 'aria-expanded': 'false' });
@@ -761,7 +766,7 @@ $(document).ready(function () {
             index.forEach(function (item) {
                 var at = item.folded.indexOf(needle);
                 if (at === 0) starts.push(item);
-                else if (at > 0) contains.push(item);
+                else if (at > 0 || item.foldedWithArea.indexOf(needle) !== -1) contains.push(item);
             });
             starts.concat(contains).slice(0, 9).forEach(function (item, i) {
                 $('<a class="search-option" role="option" tabindex="-1" aria-selected="false"></a>')

@@ -118,6 +118,29 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         Assert::count(0, $this->elements($this->detail('otherSo'), '//*[contains(@class,"page-actions")]//ul'));
     }
 
+    public function testSidebarGroupsManagedApsUnderTheirArea(): void {
+        $s = $this->scenario;
+        $s->ap->update(['jmeno' => 'B původní']);
+        $second = $this->fixtures->ap($s->area->id);
+        $second->update(['jmeno' => 'A přidané']);
+        $this->fixtures->ap($s->area->id)->update(['aktivni' => 0]);
+        // A second role in the same area must not print the area twice.
+        $this->fixtures->role($s->actors['ownSo']->id, 'ZSO', $s->area->id);
+        $document = $this->document($this->presenters->ui($s->actors['ownSo']->id, 'Homepage')->html);
+        $mine = '//ul[contains(@class,"sidebar-mine")]';
+        // The area name stands once, as a link to the area; its active APs follow by name, without the area prefix.
+        Assert::same([$s->area->jmeno], $this->texts($document, $mine . '/li/a'));
+        Assert::same(['A přidané (' . $second->id . ')', 'B původní (' . $s->ap->id . ')'], $this->texts($document, $mine . '/li/ul/li/a'));
+        Assert::contains('/ap/list/' . $s->area->id, $this->elements($document, $mine . '/li/a')[0]->getAttribute('href'));
+
+        // An area with a single active AP stays on one line, labelled by the AP.
+        $this->fixtures->ap($s->otherArea->id)->update(['aktivni' => 0]);
+        $other = $this->document($this->presenters->ui($s->actors['otherSo']->id, 'Homepage')->html);
+        Assert::same([$s->otherAp->jmeno . ' (' . $s->otherAp->id . ')'], $this->texts($other, $mine . '/li/a'));
+        Assert::count(0, $this->elements($other, $mine . '/li/ul'));
+        Assert::contains('/uzivatel-list/list/' . $s->otherAp->id, $this->elements($other, $mine . '/li/a')[0]->getAttribute('href'));
+    }
+
     /** @return list<array{int}> */
     public function moneyCases(): array {
         return [[0], [1]];
@@ -168,6 +191,11 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
             $counts[] = trim($item->textContent);
         }
         return $counts;
+    }
+
+    /** @return list<string> */
+    private function texts(DOMXPath $document, string $path): array {
+        return array_map(static fn (DOMElement $element): string => trim($element->textContent), $this->elements($document, $path));
     }
 
     private function document(string $html): DOMXPath {

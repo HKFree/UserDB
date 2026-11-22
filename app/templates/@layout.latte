@@ -29,11 +29,11 @@
         <script src="{$basePath}/js/markerclusterer.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v26">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v27">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v11"></script>
+        <script src="{$basePath}/js/main.js?v12"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
@@ -122,11 +122,19 @@
             <label class="sr-only" for="sidebar-filter-input">Filtrovat oblasti a AP</label>
             <input type="search" id="sidebar-filter-input" class="form-control input-sm" placeholder="Filtrovat oblasti a AP…" autocomplete="off">
           </div>
-          {if $mojeOblasti}
+          {if $mojeOblastiSkupiny}
             <h4>Moje oblasti</h4>
-            <ul class="nav nav-sidebar">
-              {foreach $mojeOblasti as $idoblast => $jmenoOblasti}
-                <li id="oblast-{$idoblast}"><a href="{link UzivatelList:list id=>$idoblast}">{$jmenoOblasti}</a></li>
+            <ul class="nav nav-sidebar sidebar-mine">
+              {foreach $mojeOblastiSkupiny as $skupina}
+                {if count($skupina['aps']) === 1}
+                  <li n:foreach="$skupina['aps'] as $idap => $jmenoAp"><a n:href="UzivatelList:list id=>$idap">{$jmenoAp}</a></li>
+                {else}
+                  <li><a n:href="Ap:list id=>$skupina['id']">{$skupina['jmeno']}</a>
+                    <ul class="nav">
+                      <li n:foreach="$skupina['aps'] as $idap => $jmenoAp"><a n:href="UzivatelList:list id=>$idap">{$jmenoAp}</a></li>
+                    </ul>
+                  </li>
+                {/if}
               {/foreach}
             </ul>
           {/if}
