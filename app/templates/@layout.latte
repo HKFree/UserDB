@@ -30,17 +30,17 @@
         <script src="{$basePath}/js/rickshaw.min.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v20">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v21">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/rickshaw.min.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v6"></script>
+        <script src="{$basePath}/js/main.js?v7"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
 
-<body>
+<body data-stitky-save-url="{link SpravaStitku:saveLabel id=>null}" data-stitky-delete-url="{link SpravaStitku:deleteLabel id=>null}">
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container-fluid">
         <div class="navbar-header">

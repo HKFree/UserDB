@@ -383,6 +383,21 @@ pre.tracy-dump {
     width: 70% !important;
 }
 
+/* Seznam členů: tlačítko Vyhledat hned za filtry, ve výšce jejich polí */
+.grido.grido-search-top .filter.outer .items {
+    width: auto !important;
+    max-width: 100%;
+}
+
+.grido.grido-search-top .filter.outer .buttons {
+    float: left;
+    padding: 22px 7px 7px;
+}
+
+.grido.grido-search-top .filter.outer .buttons .btn {
+    height: 23px;
+}
+
 .btn-sm,
 .btn-group-sm>.btn {
     padding: 2px 4px;
