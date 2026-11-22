@@ -172,7 +172,7 @@ $(document).ready(function () {
         var values = $('.copy-value').filter(function () {
             return selectedPartOf(this, range) !== '';
         });
-        if (values.length !== 1 || selection.toString().trim() !== selectedPartOf(values[0], range).trim()) {
+        if (values.length !== 1 || withoutWhitespace(selection.toString()) !== withoutWhitespace(selectedPartOf(values[0], range))) {
             return;
         }
         event.originalEvent.clipboardData.setData('text/plain', values.text());
@@ -200,6 +200,12 @@ function selectedPartOf(element, range) {
         part.setEnd(range.endContainer, range.endOffset);
     }
     return part.toString();
+}
+
+// Bílé znaky se při porovnání výběru s hodnotou nepočítají: oddělovače buněk a řádků k hodnotě nepatří
+// a pevnou mezeru vrací Firefox z výběru jako obyčejnou.
+function withoutWhitespace(text) {
+    return text.replace(/\s/g, '');
 }
 
 // Vrací Promise s true, když se text dostal do schránky. navigator.clipboard je jen na HTTPS a na localhostu.

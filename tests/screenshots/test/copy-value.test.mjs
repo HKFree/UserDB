@@ -22,12 +22,21 @@ const rows = [
     { ip: '192.0.2.3', login: 'admin', password: spacedPassword },
     { ip: '192.0.2.4', login: 'admin', password: ' admin' },
 ];
+// Dots, quotes, markup, other scripts and characters that cannot be seen: what a password manager or a paste may bring.
+const unusualRows = [
+    { ip: '192.0.2.11', label: 'dots', login: 'user.name@demo.example', password: '.dots.at.both.ends.' },
+    { ip: '192.0.2.12', label: 'quotes, backslashes and markup', login: 'DEMO\\admin', password: 'It\'s "x" `y` \\n $(id) {$z} %20 <b>&amp;</b>\\' },
+    { ip: '192.0.2.13', label: 'diacritics, other scripts and emoji', login: 'správce', password: 'Žluťoučký kůň 密码 пароль 🔑' },
+    { ip: '192.0.2.14', label: 'tab, non-breaking space and zero-width space', login: 'a\tb', password: 'x\u00a0\u00a0y\u200bz' },
+    { ip: '192.0.2.15', label: 'punctuation only', login: '-n', password: '...' },
+];
+const nonBreaking = unusualRows[3];
 
 const escape = text => text.replace(/[&<>"]/g, character => `&#${character.charCodeAt(0)};`);
 const copyCell = (value, title) => `<td class="copy-value-cell"><span class="copy-value">${escape(value)}</span>`
     + `<button type="button" class="btn btn-default btn-xs btn-in-table copy-value-button" title="${title}" aria-label="${title}"`
     + ' data-toggle="tooltip" data-placement="top" data-container="body"><span class="fa fa-copy" aria-hidden="true"></span></button></td>';
-const fixture = `<!DOCTYPE html><html><head><meta charset="utf-8">
+const fixture = tableRows => `<!DOCTYPE html><html><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/font-awesome.min.css" rel="stylesheet">
@@ -35,7 +44,7 @@ const fixture = `<!DOCTYPE html><html><head><meta charset="utf-8">
     <script src="/js/jquery.min.js"></script><script src="/js/jquery-ui.min.js"></script>
     <script src="/js/bootstrap.min.js"></script><script src="/js/jquery.bonsai.js"></script>
     <script src="/js/main.js"></script></head><body><div class="table-responsive"><table class="table table-striped">
-    <tr><th>IP</th><th></th><th>Popis</th><th>Login</th><th>Heslo</th></tr>${rows.map(row => `<tr><td>${row.ip}</td>`
+    <tr><th>IP</th><th></th><th>Popis</th><th>Login</th><th>Heslo</th></tr>${tableRows.map(row => `<tr><td>${row.ip}</td>`
         + `<td><span class="wboxbutton btn btn-default btn-xs btn-in-table" tag="${escape(sshCommand)}">`
         + '<span class="glyphicon glyphicon-lock"></span></span></td><td>Demo zařízení</td>'
         + `${copyCell(row.login, 'Zkopírovat login')}${copyCell(row.password, 'Zkopírovat heslo')}</tr>`).join('')}
@@ -59,9 +68,9 @@ describe('copying device login and password', () => {
     before(async () => {
         server = createServer(async (request, response) => {
             const path = new URL(request.url, 'http://localhost').pathname;
-            if (path === '/') {
+            if (path === '/' || path === '/unusual') {
                 response.setHeader('Content-Type', 'text/html; charset=utf-8');
-                response.end(fixture);
+                response.end(fixture(path === '/' ? rows : unusualRows));
                 return;
             }
             try {
@@ -85,7 +94,7 @@ describe('copying device login and password', () => {
     });
 
     // Chromium's headless shell keeps a clipboard of its own, the system one is not touched.
-    async function open(t, { contextOptions = {}, initScript } = {}) {
+    async function open(t, { contextOptions = {}, initScript, path = '/' } = {}) {
         const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, ...contextOptions });
         await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin });
         const page = await context.newPage();
@@ -96,7 +105,7 @@ describe('copying device login and password', () => {
             assert.deepEqual(errors, []);
         });
         if (initScript) await page.addInitScript(initScript);
-        await page.goto(origin, { waitUntil: 'load' });
+        await page.goto(origin + path, { waitUntil: 'load' });
         await page.evaluate(text => (window.savedClipboard ?? navigator.clipboard).writeText(text), sentinel);
         return page;
     }
@@ -226,6 +235,46 @@ describe('copying device login and password', () => {
         });
         assert.equal((await selected(page)).trim(), 'admin');
         assert.equal(await copySelection(page), ' admin');
+    });
+
+    for (const [index, row] of unusualRows.entries()) {
+        test(`login and password with ${row.label} are copied character by character`, async t => {
+            const page = await open(t, { path: '/unusual' });
+            const g = await page.evaluate(geometry, index);
+            for (const [value, title, text, startX] of [
+                [row.login, 'Zkopírovat login', g.login, g.description.right - 2],
+                [row.password, 'Zkopírovat heslo', g.password, g.login.right + 2],
+            ]) {
+                await drag(page, { x: startX, y: text.middle }, { x: text.right - 1, y: text.middle });
+                assert.equal(await copySelection(page), value, 'drag started in the neighbouring cell');
+
+                await page.evaluate(sentinelText => navigator.clipboard.writeText(sentinelText), sentinel);
+                await page.mouse.click((text.left + text.right) / 2, text.middle);
+                await becomesSelected(page, value);
+                assert.equal(await copySelection(page), value, 'click');
+
+                await page.evaluate(sentinelText => navigator.clipboard.writeText(sentinelText), sentinel);
+                await copyButton(page, index, title).click();
+                await tooltip(page, 'Zkopírováno').waitFor({ timeout: 5000 });
+                assert.equal(await clipboard(page), value, 'button');
+            }
+        });
+    }
+
+    // Firefox hands out the text of a selection with non-breaking spaces turned into ordinary ones.
+    const selectionTextAsInFirefox = () => {
+        const selectionText = Selection.prototype.toString;
+        Selection.prototype.toString = function () {
+            return selectionText.call(this).replace(/\u00a0/g, ' ');
+        };
+    };
+
+    test('a non-breaking space is copied as stored even where the browser reads the selection with an ordinary space', async t => {
+        const page = await open(t, { path: '/unusual', initScript: selectionTextAsInFirefox });
+        const g = await page.evaluate(geometry, unusualRows.indexOf(nonBreaking));
+        await drag(page, { x: g.login.right + 2, y: g.password.middle }, { x: g.password.right - 1, y: g.password.middle });
+        assert.equal(await selected(page), '\tx  y\u200bz');
+        assert.equal(await copySelection(page), nonBreaking.password);
     });
 
     test('a selection of more than one value is copied as the browser made it', async t => {

@@ -33,6 +33,13 @@ nad detailem AP 200 z demo dat, při opravě kopírování loginu a hesla zaří
   přímo v obsluze tak druhé kliknutí zase zruší; nastavuje se proto přes `setTimeout(..., 0)`.
 - `.table-responsive` má v přibaleném Bootstrapu 3.2 účinek jen pod 768 px: na počítači nic neořízne, na
   telefonu ořízne nápovědy prvního řádku, které se vkládají do buňky.
+- Pevnou mezeru (U+00A0) vrací Firefox z `Selection.toString()` jako obyčejnou a Chromium ji jako obyčejnou
+  zapíše do schránky, když kopíruje samo. Přesná zůstane jen hodnota, kterou do schránky vloží `main.js`;
+  výběr s hodnotou proto porovnává bez bílých znaků (`withoutWhitespace()`). Ověřeno 22. 11. 2026 nad hesly
+  s tečkami, uvozovkami, zpětnými lomítky, značkami HTML, diakritikou, čínštinou, cyrilicí, emoji,
+  tabulátorem, pevnou mezerou a neviditelnými znaky: ve všech třech prohlížečích se zkopírují přesně.
+- Text psaný zprava doleva (hebrejština) se tažením podle souřadnic chová jinak: ve Firefoxu tažení ze
+  sousední buňky neoznačí z hodnoty nic. Kliknutí na hodnotu a tlačítko fungují přesně i tam.
 
 **Why:** Správce si z tabulky zkopíroval heslo s neviditelným znakem navíc a nastavil ho na zařízeních.
 
@@ -50,7 +57,8 @@ hodnotu celou, protože o pár znaků kratší heslo je stejně nenápadná chyb
   `new ClipboardEvent('copy', { clipboardData: new DataTransfer(), bubbles: true, cancelable: true })`
   a přečti z ní `clipboardData.getData('text/plain')`.
 - CI má jen Chromium. Chování, které se liší ve Firefoxu a WebKitu, proto ověř ručně v obou; test v Chromiu
-  ho zachytí, jen když výběr sestaví přes `Range` tak, jak ho ty prohlížeče ukotví.
+  ho zachytí, jen když výběr sestaví přes `Range` tak, jak ho ty prohlížeče ukotví, nebo když si jejich
+  odchylku nasadí sám (přepsaná `Selection.prototype.toString` v testu pevné mezery).
 - `locator.click()` čeká, až prvek přijímá myš, a teprve pak myší pohne. Stav, který má skončit prvním
   pohybem myši, proto zkoušej přes `page.mouse.click(x, y)`.
 - `page.mouse.move()` s malým počtem kroků přeskakuje desítky pixelů. Chování závislé na poslední pozici
