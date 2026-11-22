@@ -109,6 +109,9 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   v `ul.error li`. Hledat přesný vykreslený text, ne atribut `data-nette-rules`, který obsahuje zprávu i bez chyby.
   `DomQuery::fromHtml()` při duplicitním HTML `id` hlásí varování; pro kontrolu validační zprávy duplicitních
   IP proto test porovnává přímo vykreslený text mezi značkami.
+- Nette Forms zapisuje `@` v hodnotě atributu jako `&#64;` (`value="clen&#64;example.invalid"`). Test, který
+  ve vykresleném formuláři hledá e-mail, proto porovnává s `html_entity_decode($html, ENT_QUOTES | ENT_HTML5)`.
+  Ověřeno 23. 11. 2026 na poli Příjemce formuláře e-mailu členovi, Nette Forms z `composer.lock`.
 - `PaymentSchedule:sendPaymentScheduleEmail` čte CSS relativně k `www/`. Test dočasně mění pracovní adresář
   a vrací ho v `finally`. Přesměrování po GET má 302, po POST 303.
 - Hledání člena podle přezdívky pro DRUŽSTEVNÍK vrací prázdný seznam bez spravované oblasti. Pro ověření
