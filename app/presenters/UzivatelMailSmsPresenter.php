@@ -5,6 +5,7 @@ namespace App\Presenters;
 use App\Model;
 use App\Services;
 use Nette\Application\UI\Form;
+use Nette\Database\Table\ActiveRow;
 use Nette\Mail\Message;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Validators;
@@ -86,9 +87,16 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $this->ap->getAP($this->getParameter('id')) !== null && $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
     }
 
+    /** Adresu hlídá jen editace člena; neplatnou z databáze odmítne Nette\Mail výjimkou. */
+    private function maPlatnyEmail(ActiveRow $uzivatel): bool {
+        return is_string($uzivatel->email) && Validators::isEmail($uzivatel->email);
+    }
+
     public function renderEmail(): void {
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
         $this->template->canViewOrEdit = $this->smiPsatClenovi();
-        $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        $this->template->u = $uzivatel;
+        $this->template->emailPlatny = $uzivatel !== null && $this->maPlatnyEmail($uzivatel);
     }
 
     protected function createComponentEmailForm(): Form {
@@ -133,6 +141,10 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
         if ($user === null) {
             $this->error('Uživatel nebyl nalezen.');
+        }
+        if (!$this->maPlatnyEmail($user)) {
+            // Stránka místo formuláře vypíše, že člen platnou adresu nemá.
+            return;
         }
 
         $mail = new Message();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Test;
 
+use Nette\Application\BadRequestException;
 use Nette\Application\Responses\TextResponse;
 use Tester\Assert;
 
@@ -122,6 +123,78 @@ final class MessageFormPresenterTest extends DatabaseTestCase
                 Assert::same('Testovací text', $message->getBody());
             }
         }
+    }
+
+    /** @return array<string, array{string}> */
+    public function unusableAddressCases(): array {
+        return ['doubled at sign' => ['chyba@@example.invalid'], 'no domain' => ['neplatny'], 'leading space' => [' clen@example.invalid'], 'empty' => ['']];
+    }
+
+    /**
+     * A member's address can be invalid in the database even though the edit form rejects it.
+     * The page must say so instead of offering a form that cannot be sent (issue #234).
+     *
+     * @dataProvider unusableAddressCases
+     */
+    public function testSingleMailToUnusableAddressExplainsInsteadOfFailing(string $address): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE + ['email' => $address]);
+        $parameters = ['action' => 'email', 'id' => $member->id];
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters);
+        $submitted = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters, 'POST', [
+            '_do' => 'emailForm-submit', 'id' => (string) $member->id, 'from' => '0',
+            'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+        ]);
+
+        foreach ([$page, $submitted] as $result) {
+            Assert::same(TextResponse::class, $result->response::class);
+            Assert::same(200, $result->status);
+            Assert::contains('nemá platnou e-mailovou adresu', $result->html);
+            Assert::contains('/uzivatel/edit/' . $member->id . '"', $result->html);
+            Assert::notContains('name="send"', $result->html);
+        }
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    /** The warning is for those who may write to the member; the rest learn nothing about the address. */
+    public function testUnusableAddressIsNotReportedWithoutPermission(): void {
+        $area = $this->fixtures->area();
+        $member = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE + ['email' => 'chyba@@example.invalid']);
+        $foreignArea = $this->fixtures->area();
+        $actor = $this->fixtures->member($this->fixtures->ap($foreignArea->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $foreignArea->id);
+        $parameters = ['action' => 'email', 'id' => $member->id];
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters);
+
+        Assert::same(200, $page->status);
+        Assert::contains('Na tuto operaci nemáte oprávnění!', $page->html);
+        Assert::notContains('nemá platnou e-mailovou adresu', $page->html);
+        Assert::notContains('chyba@@example.invalid', html_entity_decode($page->html, ENT_QUOTES | ENT_HTML5));
+        Assert::exception(fn () => $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters, 'POST', [
+            '_do' => 'emailForm-submit', 'id' => (string) $member->id, 'from' => '0',
+            'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+        ]), BadRequestException::class, null, 403);
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testSingleMailToValidAddressOffersTheForm(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE);
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => 'email', 'id' => $member->id]);
+
+        Assert::same(200, $page->status);
+        Assert::contains('name="send"', $page->html);
+        Assert::contains('value="' . $member->email . '"', html_entity_decode($page->html, ENT_QUOTES | ENT_HTML5));
+        Assert::notContains('nemá platnou e-mailovou adresu', $page->html);
     }
 
     private function fieldText(string $html, string $field): string {

@@ -35,7 +35,7 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Ani jedno členství | 20023 Bezčlenství | Bez štítků, filtr včetně zrušených |
 | Smazané družstvo | 20024 Smazaný | AP 202, šedý řádek a štítek |
 | Neplatný e-mail | 20025 Neplatnýemail | AP 202, červená buňka, není v mailing listu |
-| Chybná syntaxe e-mailu a prázdný telefon | 20026 Chybnýemail | `chyba@@example.invalid`: editace a hromadný e-mail adresu odmítnou, odeslání e-mailu jen tomuto členovi skončí chybou aplikace; formulář SMS je bez tlačítka Odeslat |
+| Chybná syntaxe e-mailu a prázdný telefon | 20026 Chybnýemail | `chyba@@example.invalid`: editace a hromadný e-mail adresu odmítnou, stránka pro e-mail jen tomuto členovi místo formuláře napíše, že platnou adresu nemá; formulář SMS je bez tlačítka Odeslat |
 | Druhý e-mail, karta, GPG, narození, více řádků poznámky | 20027 Kontaktní | Detail, editace, globální i oblastní štítky, historie |
 | Přesná poloha | 20028 Přesnápoloha | `valid`, souřadnice a odkaz na mapu |
 | Přibližná poloha | 20029 Přibližnápoloha | `approx`, ikona v seznamu |
