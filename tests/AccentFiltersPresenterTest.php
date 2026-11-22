@@ -127,16 +127,6 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
         }
     }
 
-    public function testMergedUserNumericFilters(): void {
-        $this->fixtures->insert('SloucenyUzivatel', [
-            'Uzivatel_id' => $this->member->id, 'slouceny_uzivatel' => $this->viewer->id,
-            'sloucil' => $this->viewer->id, 'datum_slouceni' => '2026-11-23',
-        ]);
-        foreach (['slouceny_uzivatel', 'sloucil'] as $column) {
-            $this->assertFilter('SpravaSlucovani', 'slouceni', 'slouceniGrid', $column, (string) $this->viewer->id, (string) $this->viewer->id);
-        }
-    }
-
     public function testArrayBackedHonoraryMembershipFiltersAlreadyIgnoreAccents(): void {
         $this->honoraryMembership();
         foreach ([

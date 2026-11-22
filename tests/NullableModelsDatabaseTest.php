@@ -13,7 +13,6 @@ use App\Model\IPAdresa;
 use App\Model\Komunikace;
 use App\Model\Oblast;
 use App\Model\PrichoziPlatba;
-use App\Model\SloucenyUzivatel;
 use App\Model\StitekUzivatele;
 use App\Model\Subnet;
 use App\Model\Uzivatel;
@@ -58,17 +57,6 @@ final class NullableModelsDatabaseTest extends DatabaseTestCase
         Assert::same([$member->id], array_keys($administrators));
         Assert::same($member->nick, $administrators[$member->id]->nick);
         Assert::same([], $areas->getSeznamSpravcu(0));
-    }
-
-    public function testMasterIsOptionalAndUsesTheMergedMember(): void {
-        $ap = $this->fixtures->ap($this->fixtures->area()->id);
-        $master = $this->fixtures->member($ap->id);
-        $slave = $this->fixtures->member($ap->id);
-        $merges = $this->container->getByType(SloucenyUzivatel::class);
-        Assert::null($merges->getMaster($slave->id));
-        $this->fixtures->insert('SloucenyUzivatel', ['Uzivatel_id' => $master->id, 'slouceny_uzivatel' => $slave->id, 'sloucil' => $master->id, 'datum_slouceni' => '2000-01-01']);
-        Assert::same($master->id, $this->requireRow($merges->getMaster($slave->id))->id);
-        Assert::null($merges->getMaster($master->id));
     }
 
     public function testNameForMissingMemberIsNull(): void {

@@ -44,7 +44,7 @@ final class ParentConstructorDatabaseTest extends DatabaseTestCase
         return [
             ['Sprava'], ['SpravaCc'], ['SpravaGrafu'], ['SpravaMailu'],
             ['SpravaNesparovanych'], ['SpravaOblasti'], ['SpravaPlateb'],
-            ['SpravaSifrovani'], ['SpravaSlucovani'], ['SpravaSms'], ['SpravaStitku'], ['SpravaUctu'],
+            ['SpravaSifrovani'], ['SpravaSms'], ['SpravaStitku'], ['SpravaUctu'],
         ];
     }
 

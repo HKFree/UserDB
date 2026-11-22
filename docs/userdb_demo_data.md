@@ -1,7 +1,7 @@
 # UserDB: katalog demo dat
 
 Scénářová data se načítají migracemi `db/dummy-data/` v Dockeru, lokálním Floxu i na testovacích instancích.
-Obsahují 12 oblastí, 25 AP a 89 členů včetně původních 7. Nových 82 členů má v poznámce první řádek `DEMO: `.
+Obsahují 12 oblastí, 25 AP a 86 členů včetně původních 7. Nových 79 členů má v poznámce první řádek `DEMO: `.
 Jména, kontakty, adresy, přihlašovací údaje a platby jsou smyšlené. Datum scénářů se odvozuje od dne načtení.
 
 Flox a testovací instance navíc standardně přidávají objemová data. Při přípravě nové databáze je lze vynechat:
@@ -54,9 +54,6 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Kauce | 20042 Kauce | 500 Kč kauce, 790 Kč platba spolku |
 | Poslední platba NIKDY | 20043 Nikdyneplatil | Platba bez data |
 | Všech 17 pohybů a dlouhá poznámka | 20044 Všechnypohyby | Konto; pohyb s oběma příznaky, další bez obou příznaků |
-| Sloučený master | 20058 Sloučenímaster | Dva odkazy na sloučené členy |
-| První sloučený člen | 20059 Sloučeníprvní | Zrušený spolek, aktivní družstvo, odkaz na 20058 |
-| Druhý sloučený člen | 20060 Sloučenídruhý | Odkaz na 20058 |
 | Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, typy zařízení 1 až 12 |
 | Cizí subnet | 20062 Cizísubnet | Patří na AP 200, IP `203.0.113.20` leží v subnetu AP 213 |
 | Další cizí subnet | 20064 Smlouvabezpodpisů, 20065 Smlouvačekající | Patří na AP 201, IP `203.0.113.21` a `203.0.113.22` leží v subnetu AP 213; ZSO 20004 je proto smí upravit |
@@ -221,7 +218,6 @@ ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho 
 | Přehled a schvalování ČČ | `/sprava-cc/prehledcc`, `/sprava-cc/schvalovanicc` |
 | Štítky bez barev, více řádků a stejný text ve dvou oblastech | `/sprava-stitku/`, štítky 21000 až 21004, členové 20002 a 20027 |
 | Filtr seznamu členů podle štítku | `/uzivatel-list/list/201`, filtr „Hledej štítek“: „Demo globální“ najde člena 20027, „NOT Demo globální“ všechny ostatní, „LAN123“ nikoho |
-| Sloučení se dvěma členy | `/sprava-slucovani/slouceni`, master 20058 |
 | Vyloučení z mailing listu | `/sprava-mailu/mailinglist`, členové 20015, 20016, 20019, 20024, 20025 |
 | Nástroje a formuláře | `/sprava/nastroje` |
 | Globální API | HTTP Basic `apikey200` / `demo-global-only` |
@@ -251,7 +247,6 @@ syntetických řádků, jejich počty ani finanční hodnoty nemění.
 | Konto člena 20044 | Účet Družstvo, Poznámka `PRIZNAKY` (pohyb 2000120) |
 | Nespárované platby, 40000100 | Poznámka `PRISPEVEK CLENA` (pohyb 2000300) |
 | Čestná členství, 20052 | Typ CC `DOCASNA AKTIVACE PRES SMS`, Jméno a příjmení `CESTNESMS`, AP `HLAVNI` |
-| Sloučení, 20058 | Sloučený uživatel `20059`, Sloučil `1`; oba sloupce obsahují číselná ID |
 
 Hledat lze i s diakritikou. V Čestných členstvích jsou i členové 20032 a 20033 bez typu čestného členství;
 filtr Typ CC je má přeskočit, ne skončit chybou.
@@ -292,14 +287,13 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 |---|---|---|
 | Oblast | -20, 200 až 208 | 10000 až 10099 |
 | Ap | 200 až 222 | 10000 až 10449 |
-| Uzivatel | 20000 až 20081 | 100000 až 113499 |
+| Uzivatel | 20000 až 20057, 20061 až 20081 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
 | IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
 | SpravceOblasti | 20000 až 20030 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
 | Čestné členství | 20045 až 20052, 20072 až 20074 | žádné |
 | Stitek | 21000 až 21004 | žádné |
-| SloucenyUzivatel | 20000 až 20001 | žádné |
 | Smlouva / PodpisSmlouvy | 200000 až 200006 / 200000 až 200007 | žádné |
 | UzivatelskeKonto | 2000000 až 2001107 s mezerami | 10000000 až 10323999, 11000000 až 11000549 |
 | PrichoziPlatba | 40000001 až 40000012, 40000100 až 40000104, 40000110 až 40000113 | 50000000 až 50053999 |

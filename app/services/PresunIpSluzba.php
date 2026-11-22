@@ -40,7 +40,7 @@ final class PresunIpSluzba
                 throw new \DomainException('IP lze přesunout pouze mezi členy stejného AP.');
             }
             if ((bool) $zdroj->systemovy || !$this->jePovolenyCil($cilId)) {
-                throw new \DomainException('Nový člen musí být nezrušený, nesystémový a nesloučený.');
+                throw new \DomainException('Nový člen musí být nezrušený a nesystémový.');
             }
             $ip = $this->database->fetch('SELECT * FROM IPAdresa WHERE id = ? FOR UPDATE', $ipId);
             if ($ip === null || (int) $ip->Uzivatel_id !== $zdrojId || $ip->Ap_id !== null) {
@@ -71,8 +71,7 @@ final class PresunIpSluzba
     /** @return Selection<\Nette\Database\Table\ActiveRow> */
     private function povoleniClenove(): Selection {
         return $this->database->table('Uzivatel')->where('systemovy', 0)
-            ->where('(spolek = 1 AND (TypClenstvi_id = 0 OR TypClenstvi_id > 1)) OR (druzstvo = 1 AND smazano = 0)')
-            ->where('id NOT IN (SELECT slouceny_uzivatel FROM SloucenyUzivatel)');
+            ->where('(spolek = 1 AND (TypClenstvi_id = 0 OR TypClenstvi_id > 1)) OR (druzstvo = 1 AND smazano = 0)');
     }
 
     /**

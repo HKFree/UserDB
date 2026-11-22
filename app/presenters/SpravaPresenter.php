@@ -37,7 +37,7 @@ class SpravaPresenter extends BasePresenter
         $this->template->canSeePayments = $this->jeVVneboTECH();
     }
 
-    /** Slučování, schvalování ČČ, mailing list */
+    /** Schvalování ČČ, mailing list */
     protected function jeVV(): bool {
         return $this->getUser()->isInRole('VV');
     }
