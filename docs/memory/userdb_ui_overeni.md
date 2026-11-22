@@ -81,7 +81,7 @@ Zelený presenter test filtru neznamená, že filtr jde použít v prohlížeči
 **Why:** Přidání a odebrání štítku mělo adresu `/userdb/stitky/...` přímo v `main.js`, takže mimo
 produkci končilo hláškou „Nepodařilo se připojit k serveru“ a nedalo se vyzkoušet.
 **How to apply:** Adresu vypiš v šabloně přes `{link}` do atributu `data-*` a v JavaScriptu ji čti
-z něj. Stejný prefix zůstává v `main.js` (skrývání postranního panelu na telefonu) a v `pinger.js`.
+z něj. Stejný prefix zůstává v `pinger.js`; z `main.js` zmizel s novou kostrou aplikace.
 
 ## Rozvržení a zlomy šířky
 
@@ -112,6 +112,9 @@ počítala se zlomem 768 px ze standardního Bootstrapu.
   načtení stránky včetně přesměrování po odeslání formuláře: hlášku po uložení (flash) na
   telefonu uvidíš tak, že `orca viewport` pustíš znovu až po přesměrování, stránku nenačítej
   znovu, jinak hláška zmizí. Ověřeno 23. 11. 2026 na schvalování čestného členství.
+- Seznam členů AP se na telefonu do strany neposouvá: grid širší než stránka má od nové kostry
+  vlastní rám (`form.grido.grid-wide`, třídu nastavuje `main.js`). Šířku dokumentu porovnávej
+  s nastavenou šířkou okna, ne s `innerWidth`, viz [kostra aplikace](userdb_ui_shell.md).
 - Posuvný rám kolem Grida ořízne absolutně umístěnou nabídku štítků, zvlášť u seznamu s jediným
   členem. `overflow-x: auto` totiž současně vytvoří svislý posuv. Ověřeno 23. 11. 2026 v Orce
   a Playwrightu na `/uzivatel-list/listall?search=20022` při 1280 i 375 px.

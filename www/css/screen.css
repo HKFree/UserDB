@@ -125,6 +125,30 @@ body {
     font-size: 20px;
 }
 
+/* Headings inside the news page and the IP transfer page stay below the page heading in size. */
+.main .novinky-vydani h2 {
+    font-size: 20px;
+}
+
+.main .novinky-sekce h3 {
+    font-size: 16px;
+}
+
+.main .ip-transfer-notes h2 {
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.main .ip-transfer .panel-title {
+    margin: 0;
+    font-size: 18px;
+}
+
+/* The issue number behind a news item stays muted; links in the content are blue otherwise. */
+.main a.novinky-cislo {
+    color: #6b7280;
+}
+
 .main h1 small,
 .main h2 small,
 .main h3 small {
@@ -1033,11 +1057,12 @@ ul.error {
 
 .grido .filter.outer .buttons {
     float: left;
-    padding: 22px 7px 7px;
+    padding: 27px 7px 7px;
 }
 
 .grido .filter.outer .buttons .btn {
-    height: 23px;
+    height: 30px;
+    padding: 4px 12px;
 }
 
 .btn-sm,
@@ -1390,16 +1415,6 @@ tbody>tr.wewimo-table-header>th {
 .grido .filter.outer label {
     font-size: 12px;
     color: #4b5563;
-}
-
-/* The search button next to the filters is as tall as their fields and sits on their line. */
-.grido.grido-search-top .filter.outer .buttons {
-    padding-top: 27px;
-}
-
-.grido.grido-search-top .filter.outer .buttons .btn {
-    height: 30px;
-    padding: 4px 12px;
 }
 
 .grido tfoot input[type="submit"] {
@@ -2157,6 +2172,10 @@ input[readonly],
         font-size: 19px;
     }
 
+    .main .novinky-vydani h2 {
+        font-size: 18px;
+    }
+
     .grido .filter.outer .items {
         width: 100% !important;
     }
@@ -2645,9 +2664,17 @@ html {
 }
 
 .detail-panel > .panel-body > .table,
-.detail-panel > .panel-body > .table-scroll > .table {
+.detail-panel > .panel-body > .table-scroll > .table,
+.detail-panel > .panel-body > .table-responsive > .table-scroll > .table {
     width: 100%;
     margin-bottom: 4px;
+}
+
+/* The IP table comes in Bootstrap's .table-responsive; in a panel the frame added by main.js scrolls it at every width. */
+.detail-panel .table-responsive {
+    margin-bottom: 0;
+    border: 0;
+    overflow: visible;
 }
 
 .detail-panel .table > tbody > tr:first-child > td,
@@ -2783,7 +2810,8 @@ html {
     color: #9a1c1c;
 }
 
-.copy-value {
+/* Copy buttons of the member detail. The class .copy-value belongs to the login and password values of the IP table. */
+.copy-button {
     margin-left: 8px;
     padding: 0 5px;
     border: 1px solid transparent;
@@ -2793,14 +2821,14 @@ html {
     font-size: 12px;
 }
 
-.copy-value:hover,
-.copy-value:focus {
+.copy-button:hover,
+.copy-button:focus {
     border-color: #c9ced4;
     background: #fff;
     color: #111;
 }
 
-.copy-value.copied {
+.copy-button.copied {
     color: #2f752f;
 }
 

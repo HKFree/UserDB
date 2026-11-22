@@ -430,5 +430,5 @@ $(function(){
 {/block}
 
 {define copyButton, $value, $what}
-<button n:if="$value !== null && (string) $value !== '' && (string) $value !== '-'" type="button" class="copy-value" data-copy-value="{$value}" title="Zkopírovat {$what}" aria-label="Zkopírovat {$what}"><i class="fa fa-clone" aria-hidden="true"></i></button>
+<button n:if="$value !== null && (string) $value !== '' && (string) $value !== '-'" type="button" class="copy-button" data-copy-value="{$value}" title="Zkopírovat {$what}" aria-label="Zkopírovat {$what}"><i class="fa fa-clone" aria-hidden="true"></i></button>
 {/define}

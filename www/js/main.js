@@ -551,14 +551,14 @@ $(document).ready(function () {
 $(document).ready(function () {
     $('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] > td:first-child').each(function () {
         var value = $.trim($(this).text());
-        $('<button type="button" class="copy-value"><i class="fa fa-clone" aria-hidden="true"></i></button>')
+        $('<button type="button" class="copy-button"><i class="fa fa-clone" aria-hidden="true"></i></button>')
             .attr({ 'data-copy-value': value, title: 'Zkopírovat IP adresu', 'aria-label': 'Zkopírovat IP adresu' })
             .appendTo(this);
     });
 
     var feedback = $('<span class="sr-only" role="status" aria-live="polite"></span>');
-    if ($('.copy-value').length) feedback.appendTo('.main');
-    $(document).on('click', '.copy-value', function () {
+    if ($('.copy-button').length) feedback.appendTo('.main');
+    $(document).on('click', '.copy-button', function () {
         var button = $(this);
         var value = button.attr('data-copy-value');
         function done(success) {

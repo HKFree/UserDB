@@ -32,7 +32,8 @@ nad detailem AP 200 z demo dat, při opravě kopírování loginu a hesla zaří
 - Chromium a WebKit ruší výběr při kliknutí na označený text až po obsluze události `click`. Výběr nastavený
   přímo v obsluze tak druhé kliknutí zase zruší; nastavuje se proto přes `setTimeout(..., 0)`.
 - `.table-responsive` má v přibaleném Bootstrapu 3.2 účinek jen pod 768 px: na počítači nic neořízne, na
-  telefonu ořízne nápovědy prvního řádku, které se vkládají do buňky.
+  telefonu ořízne nápovědy prvního řádku, které se vkládají do buňky. Tabulku IP na detailu člena a AP
+  navíc `main.js` balí do `.table-scroll`, který přesah ořezává na každé šířce.
 - Pevnou mezeru (U+00A0) vrací Firefox z `Selection.toString()` jako obyčejnou a Chromium ji jako obyčejnou
   zapíše do schránky, když kopíruje samo. Přesná zůstane jen hodnota, kterou do schránky vloží `main.js`;
   výběr s hodnotou proto porovnává bez bílých znaků (`withoutWhitespace()`). Ověřeno 22. 11. 2026 nad hesly

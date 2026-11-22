@@ -86,6 +86,8 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         Assert::same('group', $this->elements($document, '//*[@class="fact-strip"]')[0]->getAttribute('role'));
         Assert::count(1, $this->elements($document, '//*[contains(@class,"page-actions")]//ul[@role="menu"]'));
         Assert::count(4, $this->elements($document, '//button[@data-copy-value]'));
+        // The class copy-value is taken by the login and password values of the IP table and their handlers.
+        Assert::count(4, $this->elements($document, '//button[@data-copy-value][@class="copy-button"]'));
         Assert::same('Zatím nic.', $this->text($document, '//*[@id="member-contracts"]//*[contains(@class,"section-empty")]'));
         Assert::count(0, $this->elements($document, '//*[@id="member-contracts"]//table'));
         Assert::same('NE', $this->text($document, '//*[@id="member-internet"]//span[contains(@class,"label")]'));
