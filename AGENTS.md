@@ -316,8 +316,9 @@ Frontend je Bootstrap 3.2, jQuery 3.7, jQuery UI 1.14, Grido a Font Awesome
 použitelnost ve stávajícím vzhledu, ne nový design.
 
 - **Drž se aplikace.** Nová stránka vypadá jako ostatní: komponenty
-  Bootstrapu 3, ikony Font Awesome, tabulky přes Grido. Styl piš do
-  `www/css/screen.css`, ne do atributu `style` ani do `<style>` v šabloně.
+  Bootstrapu 3, ikony Font Awesome, tabulky přes Grido
+  (`App\Components\AppGrid`). Styl piš do `www/css/screen.css`, ne do
+  atributu `style` ani do `<style>` v šabloně.
   Výjimky: hodnota z dat (barva štítku) a stránka, která má fungovat i bez
   aplikace (`/demo-osoba`) a styl si nese sama. Nepřidávej knihovny, build ani zdroje z cizích serverů (CDN, fonty).
   Přibalené knihovny neaktualizuj jako součást jiné změny.

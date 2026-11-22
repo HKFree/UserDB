@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use App\Components\AppGrid;
 use Nette;
 use Nette\Database\Row;
 use Nette\Database\Table\ActiveRow;
@@ -14,8 +15,6 @@ use Latte\Engine;
  */
 class UzivatelListGrid
 {
-    private const TEMPLATE_FILE = __DIR__ . '/../templates/components/memberGrid.latte';
-
     /** Typy pohybů na kontě (TypPohybuNaUctu), ze kterých se bere poslední platba a poslední aktivace. */
     private const PLATBA = [1];
     private const AKTIVACE = [4, 5];
@@ -70,9 +69,7 @@ class UzivatelListGrid
 
         $canViewOrEdit = false;
 
-        $grid = new \Grido\Grid($presenter, $name);
-        $grid->getTranslator()->setLang('cs');
-        $grid->setTemplateFile(self::TEMPLATE_FILE);
+        $grid = new AppGrid($presenter, $name);
         $grid->setExport('user_export');
 
         $apcko = $this->ap->getAP($id);
@@ -293,9 +290,7 @@ class UzivatelListGrid
     public function getListOfUsersGrid(Nette\Application\UI\Presenter $presenter, string $name, Nette\Security\User $loggedUser, $id, $money, $fullnotes, $search): \Grido\Grid {
         $canViewOrEdit = false;
 
-        $grid = new \Grido\Grid($presenter, $name);
-        $grid->getTranslator()->setLang('cs');
-        $grid->setTemplateFile(self::TEMPLATE_FILE);
+        $grid = new AppGrid($presenter, $name);
         $grid->setExport('user_export');
 
         if (!in_array($id, [null, 0, '', '0'], true)) {

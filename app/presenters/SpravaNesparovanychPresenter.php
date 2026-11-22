@@ -6,7 +6,7 @@ use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
-use Grido\Grid;
+use App\Components\AppGrid;
 use Nette\Utils\Strings;
 use Nette\Utils\Html;
 use Nette\Utils\ArrayHash;
@@ -35,8 +35,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
 
         //\Tracy\Debugger::barDump($search);
 
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('account_export');
 
         $seznamTransakci = $this->uzivatelskeKonto->getSeznamNesparovanych();

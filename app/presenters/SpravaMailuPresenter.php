@@ -4,7 +4,7 @@ namespace App\Presenters;
 
 use Nette;
 use App\Model;
-use Grido\Grid;
+use App\Components\AppGrid;
 use Tracy\Debugger;
 
 /**
@@ -26,8 +26,7 @@ class SpravaMailuPresenter extends SpravaPresenter
     protected function createComponentMailinglistGrid(string $name): void {
         $this->vyzadujOpravneni($this->jeVV()); // i export a stránkování gridu
 
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('mailinglist_export');
 
         $grid->setModel($this->uzivatel->getUsersForMailingList());
