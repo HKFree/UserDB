@@ -438,7 +438,7 @@ $(document).ready(function () {
         var key = userId + ':' + labelId;
         if (pendingLabels[key] || (!removing && control.attr('aria-disabled') === 'true')) return;
 
-        var url = component.closest('[data-save-url][data-delete-url]').attr(removing ? 'data-delete-url' : 'data-save-url');
+        var url = $('body').data(removing ? 'stitky-delete-url' : 'stitky-save-url');
         if (!url) {
             labelError(userId, 'Chybí adresa pro úpravu štítků. Obnovte stránku.');
             return;

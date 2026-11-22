@@ -27,8 +27,6 @@ class UserLabelsComponent extends Control
         $this->template->stitkyUzivatele = $this->stitkyUzivatele->getStitekByUserId($this->userId);
 
         $this->template->userId = $this->userId;
-        $this->template->saveLabelUrl = $this->getPresenter()->link('SpravaStitku:saveLabel', ['id' => null]);
-        $this->template->deleteLabelUrl = $this->getPresenter()->link('SpravaStitku:deleteLabel', ['id' => null]);
 
         $this->template->setFile(__DIR__ . '/UserLabelsComponent.latte');
         $this->template->render();

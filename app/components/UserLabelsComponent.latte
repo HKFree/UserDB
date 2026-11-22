@@ -1,8 +1,7 @@
-{* Grido renders this file with standalone Latte; its routed URLs live on the list wrapper. *}
-{default $saveLabelUrl = null, $deleteLabelUrl = null}
+{* Grido renders this file with standalone Latte, without {link}; the routed URLs are on <body> in the layout. *}
 {var $assignedIds = []}
 {foreach $stitkyUzivatele as $assignedLabel}{do $assignedIds[$assignedLabel->id] = true}{/foreach}
-<div class="user-labels-component" data-user-id="{$userId}" n:attr="data-save-url => $saveLabelUrl, data-delete-url => $deleteLabelUrl">
+<div class="user-labels-component" data-user-id="{$userId}">
     <div class="user-labels">
         {foreach $stitkyUzivatele as $stitekUzivatele}
             <span class="badge position-relative" style="background-color: {$stitekUzivatele->barva_pozadi|noescape}; color: {$stitekUzivatele->barva_popredi|noescape};">

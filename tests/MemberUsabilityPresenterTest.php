@@ -48,13 +48,10 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         Assert::true(count($components) > 0);
         foreach ($components as $component) {
             Assert::same('Přidat štítek', $this->child($component, 'button', -1)->getAttribute('title'));
-            $urls = $component;
-            while (!$urls->hasAttribute('data-save-url') && $urls->parentNode instanceof DOMElement) {
-                $urls = $urls->parentNode;
-            }
-            Assert::same($prefix . '/stitky/saveLabel', $urls->getAttribute('data-save-url'));
-            Assert::same($prefix . '/stitky/deleteLabel', $urls->getAttribute('data-delete-url'));
         }
+        $body = $this->elements($document, '//body')[0];
+        Assert::same($prefix . '/stitky/saveLabel', $body->getAttribute('data-stitky-save-url'));
+        Assert::same($prefix . '/stitky/deleteLabel', $body->getAttribute('data-stitky-delete-url'));
         Assert::count(0, $this->elements($document, '//*[@id="dropdownMenu"]'));
         Assert::count(count($components), $this->elements($document, '//*[contains(@class,"user-labels-component")]//ul[@role="menu"]'));
     }

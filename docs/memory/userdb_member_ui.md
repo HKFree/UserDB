@@ -8,8 +8,9 @@ metadata:
 # UserDB: štítky v detailu a gridu
 
 - Grid vykresluje `UserLabelsComponent.latte` samostatným `Latte\Engine`, bez presenteru
-  a jeho makra `{link}`. Detail používá komponentu s presenterem. Adresy pro grid proto
-  dodává rodičovský obal seznamu; JavaScript hledá nejbližší obal s oběma adresami.
+  a jeho makra `{link}`. Detail používá komponentu s presenterem. Adresy obsluh štítků
+  proto nese `<body>` v layoutu (`data-stitky-save-url`, `data-stitky-delete-url`)
+  a JavaScript je čte odtud v seznamu i na detailu.
 - Při generování adresy štítků je nutné předat `id => null`, jinak se do ní přenese
   persistentní ID člena nebo AP. Ověřeno 22. 11. 2026 presenter testem pro kořen webu
   i prefix `/userdb` a čtením obou render callbacků v `UzivatelListGrid.php`.
