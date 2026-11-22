@@ -1,7 +1,34 @@
+{block title}{if $canViewOrEdit}{if $member}Úprava člena {$member->jmeno} {$member->prijmeni} UID {$member->id}{else}Nový člen{/if}{else}Úprava člena{/if}{/block}
 {block content}
 
 {if $canViewOrEdit}
-{include '../form.latte', form => uzivatelForm}
+{var $memberForm = $presenter['uzivatelForm']}
+<nav aria-label="Drobečková navigace">
+    <ol class="breadcrumb page-crumbs">
+        <li><a n:href="Homepage:default id=>null">Přehled</a></li>
+        {if $member}
+            <li><a n:href="Ap:list id=>$member->Ap->Oblast->id">{$member->Ap->Oblast->jmeno}</a></li>
+            <li><a n:href="UzivatelList:list id=>$member->Ap->id">{$member->Ap->jmeno}</a></li>
+            <li><a n:href="Uzivatel:show id=>$member->id">{$member->jmeno} {$member->prijmeni}</a></li>
+            <li class="active" aria-current="page">Úprava</li>
+        {else}
+            <li class="active" aria-current="page">Nový člen</li>
+        {/if}
+    </ol>
+</nav>
+<div class="page-head">
+    <h1 class="page-title">{if $member}Úprava člena {$member->jmeno} {$member->prijmeni} <small>UID {$member->id}</small>{else}Nový člen{/if}</h1>
+    <div class="page-actions" n:if="$member">
+        <a n:href="Uzivatel:show id=>$member->id" class="btn btn-default"><i class="fa fa-arrow-left" aria-hidden="true"></i> Zpět na detail</a>
+    </div>
+</div>
+<div class="member-form-layout">
+    {include '../form.latte', form => uzivatelForm, grouped => true, cancelLink => $member ? $presenter->link('Uzivatel:show', ['id' => $member->id]) : null}
+    <nav class="form-nav" aria-label="Části formuláře">
+        <span>Části formuláře</span>
+        <a n:foreach="$memberForm->getGroups() as $group" href="#member-form-section-{$iterator->counter}">{$group->getOption('label')}</a>
+    </nav>
+</div>
 <script>
     $( document ).ready(function() {
         $(".ip_adresa.ip").keyup(ipClickCallback);

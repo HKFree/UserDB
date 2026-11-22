@@ -1,6 +1,6 @@
 ---
 name: Vykreslování seznamu a detailu člena
-description: Samostatné Latte ve sloupci štítků, routované adresy a stav dropdownu.
+description: Samostatné Latte ve sloupci štítků, routované adresy, stav dropdownu a nástrahy formulářů.
 metadata:
   type: reference
 ---
@@ -22,6 +22,13 @@ metadata:
   jeho podporu nezaměňovat za chování běžného odkazu. Ověřeno 22. 11. 2026 čtením
   inicializace a v prohlížeči. Rychlý filtr zůstává při obnově snippetu, při plné navigaci
   se vyprázdní; hustota řádků se zachová v obou případech.
+- Latte 2 nepřenáší lokální proměnnou vytvořenou přes `{var}` v layoutu automaticky
+  do bloku `content` potomka. Sdílená data definovaná v layoutu předat jako argument
+  `{include content, ...}`. Ověřeno 22. 11. 2026 presenter testem přehledu: bez
+  argumentu skončil na `Undefined variable $toolLinks`.
+- Tlačítka dynamického seznamu IP formulář skutečně odešlou, ale neuloží člena.
+  Vrácený formulář proto stále obsahuje neuložené změny. Ověřeno 22. 11. 2026
+  presenter testem přidání IP (beze změny databáze) a lokálně v prohlížeči.
 
 **Why:** Stejná šablona běží ve dvou odlišných kontextech a musí snést i obnovu snippetu.
 

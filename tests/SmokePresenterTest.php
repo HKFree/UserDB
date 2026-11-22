@@ -41,6 +41,12 @@ final class SmokePresenterTest extends DatabaseTestCase
         Assert::contains($this->ap->jmeno, $home->html);
         Assert::contains('Odhlášení', $home->html);
         Assert::notContains('demo-osoba', $home->html);
+        // The shell: menu in one group, account menu, areas filter and the current page marked.
+        foreach (['/uzivatel-list/listall"', '/sprava/mapa"', '/uzivatel/edit"', '/sprava/logout"', '/uzivatel/show/' . $this->actor->id . '"', 'id="sidebar-filter-input"', 'id="navareas"'] as $expected) {
+            Assert::contains($expected, $home->html);
+        }
+        Assert::match('~<a href="[^"]*" aria-current="page">Přehled</a>~', $home->html);
+        Assert::contains('<title>Přehled | HKFree UserDB</title>', $home->html);
 
         $member = $this->fixtures->member($this->ap->id);
         $detail = $this->presenters->ui($this->actor->id, 'Uzivatel', ['action' => 'show', 'id' => $member->id]);

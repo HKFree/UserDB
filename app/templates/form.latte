@@ -1,9 +1,32 @@
-<form n:name=$form>
+{default $grouped = false, $cancelLink = null}
+<form n:name=$form n:class="$grouped ? member-form, $grouped && $form->isSubmitted() ? form-dirty">
 
     <ul class="error" n:if="$form->ownErrors" n:block="#errors">
         <li n:foreach="$form->ownErrors as $error">{$error}</li>
     </ul>
 
+    {if $grouped}
+        <section n:foreach="$form->getGroups() as $group" class="form-section" id="member-form-section-{$iterator->counter}" aria-labelledby="member-form-heading-{$iterator->counter}">
+            <h2 id="member-form-heading-{$iterator->counter}">{$group->getOption('label')}</h2>
+            <table class="form">
+                <tr n:foreach="$group->getControls() as $field">
+                    <th>{label $field /}{$field->required ? '<span class="red">*</span>'|noescape}</th>
+                    <td>{input $field} {inputError $field}</td>
+                </tr>
+                {if $group->getOption('dynamicContainer')}
+                    {include 'dynamic.latte', recordTemplate => 'ipform.latte', component => $form[$group->getOption('dynamicContainer')]}
+                {/if}
+            </table>
+        </section>
+        <div class="form-save-bar">
+            {foreach $form->components as $component}
+                {if $component instanceof \Nette\Forms\Controls\SubmitButton}{input $component}{/if}
+            {/foreach}
+            <a n:if="$cancelLink" href="{$cancelLink}" class="btn btn-link">Zrušit</a>
+            <span class="form-status" role="status" aria-live="polite"></span>
+            <span class="required-note"><span class="red">*</span> povinné pole</span>
+        </div>
+    {else}
     <table n:block="#controls" class="form">
         {foreach $form->components as $component}
             {if $component instanceof \Nette\Forms\Container}
@@ -29,5 +52,6 @@
             {/if}
         {/foreach}
     </table>
+    {/if}
 
 </form>

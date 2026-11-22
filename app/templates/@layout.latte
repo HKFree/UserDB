@@ -11,7 +11,9 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{ifset #title}{include title|striptags} | {/ifset}HKFree UserDB</title>
+        {capture $pageTitle}{ifset #title}{include title|striptags}{/ifset}{/capture}
+        {var $pageTitle = trim((string) preg_replace('~\s+~u', ' ', (string) $pageTitle))}
+        <title>{if $pageTitle !== ''}{$pageTitle|noescape} | {/if}HKFree UserDB</title>
 
         <link href="{$basePath}/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="{$basePath}/css/font-awesome.min.css">
@@ -27,16 +29,31 @@
         <script src="{$basePath}/js/markerclusterer.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v22">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v23">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v8"></script>
+        <script src="{$basePath}/js/main.js?v9"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
 
-<body data-stitky-save-url="{link SpravaStitku:saveLabel id=>null}" data-stitky-delete-url="{link SpravaStitku:deleteLabel id=>null}">
+<body class="with-navbar" data-stitky-save-url="{link SpravaStitku:saveLabel id=>null}" data-stitky-delete-url="{link SpravaStitku:deleteLabel id=>null}">
+    {var $toolLinks = [
+        'Status:default' => 'Status AP',
+        'SpravaGrafu:usersgraph' => 'Graf počtu účastníků',
+        'VnejsiScanner:default' => 'Vnější scan veřejných IP',
+        'SpravaCc:prehledcc' => 'Přehled platných čestných členství',
+        'SpravaStitku:default' => 'Štítky',
+        'separatorAccounts' => null,
+        'SpravaUctu:ucty' => 'Aktuální stavy účtů',
+        'SpravaPlateb:odchoziplatby' => 'Přehled odchozích plateb',
+        'separatorAdvanced' => null,
+        'Sprava:nastroje' => 'Pokročilé nástroje',
+        'Winbox:default' => 'Otevírání Winboxu z prohlížeče',
+        'separatorNews' => null,
+        'Novinky:default' => 'Novinky',
+    ]}
     {var $toolsCurrent = $presenter->isLinkCurrent('Status:*') || $presenter->isLinkCurrent('SpravaGrafu:*')
         || $presenter->isLinkCurrent('VnejsiScanner:*') || $presenter->isLinkCurrent('SpravaCc:*')
         || $presenter->isLinkCurrent('SpravaStitku:*') || $presenter->isLinkCurrent('SpravaUctu:*')
@@ -51,35 +68,34 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <button n:if="$mojeOblasti || $oblasti" type="button" class="sidebar-toggle" id="navareas" aria-controls="sidebar" aria-expanded="false"><i class="fa fa-bars" aria-hidden="true"></i> Oblasti</button>
+          <button n:if="$mojeOblasti || $oblasti" type="button" class="sidebar-toggle" id="navareas" aria-controls="sidebar" aria-expanded="false"><i class="fa fa-bars" aria-hidden="true"></i> <span class="sidebar-toggle-text">Oblasti</span></button>
           <a class="navbar-brand" href="{link Homepage:default id=>null}">userdb.<span class="brand-domain">hkfree</span><span class="brand-tld">.org</span></a>
         </div>
         <form n:name="searchForm" role="search">
           <i class="fa fa-search" aria-hidden="true"></i>
           <label n:name="search" class="sr-only">Hledat</label>
-          <input n:name="search">
+          <input n:name="search" placeholder="Hledat člena, IP, oblast, AP…" autocomplete="off" aria-describedby="search-hint">
+          <div class="search-suggestions" hidden>
+            <div class="search-hint" id="search-hint" role="status">Zadejte člena nebo IP, oblast, AP či nástroj.</div>
+            <div id="search-options" role="listbox" aria-label="Návrhy hledání"></div>
+            <div class="search-help"><kbd>↑</kbd> <kbd>↓</kbd> výběr <kbd>Enter</kbd> otevřít <kbd>Esc</kbd> zavřít</div>
+          </div>
         </form>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-menu">
-            <li n:class="$presenter->isLinkCurrent('Homepage:*') ? active"><a href="{link Homepage:default id=>null}">Přehled</a></li>
-            <li n:if="$oblasti" n:class="$presenter->isLinkCurrent('UzivatelList:listall') ? active"><a href="{link UzivatelList:listall id=>null}">Členové</a></li>
-            <li n:class="$presenter->isLinkCurrent('Sprava:mapa') ? active"><a href="{link Sprava:mapa id=>null}">Mapa</a></li>
+            <li n:class="$presenter->isLinkCurrent('Homepage:*') ? active"><a href="{link Homepage:default id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('Homepage:*') ? page">Přehled</a></li>
+            <li n:if="$oblasti" n:class="$presenter->isLinkCurrent('UzivatelList:listall') ? active"><a href="{link UzivatelList:listall id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('UzivatelList:listall') ? page">Členové</a></li>
+            <li n:class="$presenter->isLinkCurrent('Sprava:mapa') ? active"><a href="{link Sprava:mapa id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('Sprava:mapa') ? page">Mapa</a></li>
             <li n:class="dropdown, $toolsCurrent ? active">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Nástroje <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li><a n:href="Status:default id=>null">Status AP</a></li>
-                    <li><a n:href="SpravaGrafu:usersgraph id=>null">Graf počtu účastníků</a></li>
-                    <li><a n:href="VnejsiScanner:default id=>null">Vnější scan veřejných IP</a></li>
-                    <li><a n:href="SpravaCc:prehledcc id=>null">Přehled platných čestných členství</a></li>
-                    <li><a n:href="SpravaStitku:default id=>null">Štítky</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li><a n:href="SpravaUctu:ucty id=>null">Aktuální stavy účtů</a></li>
-                    <li><a n:href="SpravaPlateb:odchoziplatby id=>null">Přehled odchozích plateb</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li><a n:href="Sprava:nastroje id=>null">Pokročilé nástroje</a></li>
-                    <li><a n:href="Winbox:default id=>null">Otevírání Winboxu z prohlížeče</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li><a n:href="Novinky:default id=>null">Novinky</a></li>
+                <ul class="dropdown-menu" id="navbar-tools">
+                    {foreach $toolLinks as $destination => $label}
+                        {if $label !== null}
+                            <li><a href="{link $destination id=>null}">{$label}</a></li>
+                        {else}
+                            <li role="separator" class="divider"></li>
+                        {/if}
+                    {/foreach}
                 </ul>
             </li>
             <li class="navbar-add"><a href="{link Uzivatel:edit id=>null}" title="Přidat uživatele"><i class="fa fa-plus" aria-hidden="true"></i> <span class="navbar-add-text">Přidat uživatele</span></a></li>
@@ -134,7 +150,7 @@
               {/foreach}
             </ul>
           {/if}
-          <p class="sidebar-nomatch" id="sidebar-nomatch" hidden>Žádná oblast ani AP neodpovídá.</p>
+          <p class="sidebar-nomatch" id="sidebar-nomatch" role="status" hidden>Žádná oblast ani AP neodpovídá.</p>
         </div>
         <div class="sidebar-backdrop"></div>
         <div class="main" id="obsah">
@@ -145,7 +161,7 @@
       {$flash->message}
     </div>
 
-	  {include content}
+	  {include content, toolLinks => $toolLinks}
         </div>
       </div>
     </div>

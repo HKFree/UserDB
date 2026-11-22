@@ -1,7 +1,7 @@
 {* Latte template *}
 
 {block content}
-    <h3>Nástroje pro správu</h3>
+    <h3 n:block=title>Nástroje pro správu</h3>
 
     {if $canCreateArea}
         <a href="{link SpravaOblasti:novaoblast id=>null}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Vytvořit oblast</a>

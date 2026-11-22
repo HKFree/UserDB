@@ -1,6 +1,6 @@
 {block content}
 
-<h1>{isset($smlouva->kdy_ukonceno) ? 'Vypovězená smlouva' : 'Smlouva'} č. {$id}</h1>
+<h1 n:block=title>{isset($smlouva->kdy_ukonceno) ? 'Vypovězená smlouva' : 'Smlouva'} č. {$id}</h1>
 
 <div style="margin-top:3px;">
     <a href="{link Uzivatel:show id=>$smlouva->uzivatel->id}" class="btn btn-default btn-sm" role="button">

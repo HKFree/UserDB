@@ -1,26 +1,45 @@
+{block title}Přehled{/block}
 {block content}
 
-<h1>Databáze účastníků hkfree.org i.d.</h1>
-
-<script>
-            $(document).ready(function( $ ) {
-                $("#regHeader").click(function(){
-                    $(".regimg").toggle();
-                });
-                $(".regimg").hide();
-            });
-            $(document).ready(function( $ ) {
-                $("#netHeader").click(function(){
-                    $(".netimg").toggle();
-                });
-                $(".netimg").hide();
-            });
-</script>
-
-<h2><a id="regHeader">Jak funguje registrační proces ? (kliknutím rozbalíte)</a></h2>
-<img class="regimg" src="{$basePath}/images/diagram-reg.png">
-
-<h2><a id="netHeader">Do kdy platí připojení k hlavnímu počítači zdarma ? (kliknutím rozbalíte)</a></h2>
-<img class="netimg" src="{$basePath}/images/diagram-free.png">
+<div class="page-head">
+    <h1 class="page-title">Přehled</h1>
+</div>
+<div class="home-grid">
+    <section aria-labelledby="home-areas-title">
+        <h2 id="home-areas-title">Moje oblasti</h2>
+        {if $mojeOblasti}
+            <div class="home-areas">
+                <a n:foreach="$mojeOblasti as $areaId => $areaName" n:href="UzivatelList:list id=>$areaId" class="home-area">
+                    <i class="fa fa-wifi" aria-hidden="true"></i> {$areaName}
+                    <small>členové AP</small>
+                </a>
+            </div>
+        {else}
+            <p class="home-empty">Nespravujete žádnou oblast. Oblasti najdete v levém panelu nebo pod tlačítkem Oblasti.</p>
+        {/if}
+    </section>
+    <section aria-labelledby="home-tools-title">
+        <h2 id="home-tools-title">Nástroje</h2>
+        <ul class="home-tools">
+            <li n:if="$oblasti"><a n:href="UzivatelList:listall id=>null">Všichni členové <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+            <li><a n:href="Sprava:mapa id=>null">Mapa <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+            {foreach $toolLinks as $destination => $label}
+                <li n:if="$label !== null"><a href="{link $destination id=>null}" data-tool>{$label} <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+            {/foreach}
+        </ul>
+        <p class="home-tip"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Klávesa <kbd>/</kbd> přejde do hledání z kterékoli stránky.</p>
+    </section>
+</div>
+<section class="home-help" aria-labelledby="home-help-title">
+    <h2 id="home-help-title">Nápověda</h2>
+    <details>
+        <summary>Jak funguje registrační proces?</summary>
+        <img src="{$basePath}/images/diagram-reg.png" alt="Schéma registračního procesu">
+    </details>
+    <details>
+        <summary>Do kdy platí připojení k hlavnímu počítači zdarma?</summary>
+        <img src="{$basePath}/images/diagram-free.png" alt="Schéma platnosti připojení k hlavnímu počítači zdarma">
+    </details>
+</section>
 
 {/block}

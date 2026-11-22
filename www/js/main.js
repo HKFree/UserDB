@@ -12,7 +12,11 @@ $(document).ready(function () {
     function setSidebarOpen(open) {
         $("html").toggleClass("sidebar-open", open);
         sidebarToggle.attr("aria-expanded", open ? "true" : "false");
-        if (open) $("#sidebar-filter-input").focus();
+        if (open) {
+            // otevrene menu by zustalo pod panelem
+            $(".navbar-collapse.in").collapse("hide");
+            $("#sidebar-filter-input").focus();
+        }
     }
     sidebarToggle.click(function () {
         setSidebarOpen(!$("html").hasClass("sidebar-open"));
@@ -58,7 +62,7 @@ $(document).ready(function () {
     var tree = $('#oblastitree').data('bonsai');
     $('.sidebar .nav-sidebar a').each(function () {
         if (this.pathname !== window.location.pathname) return;
-        var item = $(this).parent().addClass('active');
+        var item = $(this).attr('aria-current', 'page').parent().addClass('active');
         var branch = item.parent().closest('li');
         if (tree && branch.length > 0) tree.expand(branch);
     });
@@ -126,11 +130,14 @@ $(document).ready(function () {
         var menu = $(this).find('.dropdown-menu');
         var left = Math.max(8, Math.min(button.left, window.innerWidth - menu.outerWidth() - 8));
         var fitsBelow = button.bottom + menu.outerHeight() <= window.innerHeight;
-        menu.css({ position: 'fixed', left: left, right: 'auto', top: fitsBelow ? button.bottom : Math.max(8, button.top - menu.outerHeight()) });
+        var minTop = $('.navbar-fixed-top').outerHeight() + 8;
+        menu.css({ position: 'fixed', left: left, right: 'auto', top: fitsBelow ? button.bottom : Math.max(minTop, button.top - menu.outerHeight()) });
     });
-    $(window).on('scroll', function () {
+    // zachytava i vodorovny posun samotneho gridu; posun uvnitr nabidky ji nezavira
+    document.addEventListener('scroll', function (event) {
+        if ($(event.target).closest('.dropdown-menu').length > 0) return;
         $('.grido .dropdown.open .dropdown-toggle').dropdown('toggle');
-    });
+    }, true);
 });
 
 // Scroll na objekt odkazovany ve fragmentu (napr. "#ip10.107.12.1")
@@ -363,7 +370,10 @@ $(document).ready(function () {
     var pendingLabels = {};
 
     // Bootstrap 3.2 stav aria-expanded sam neaktualizuje.
-    $(document).on('shown.bs.dropdown hidden.bs.dropdown', '.user-labels-component .dropdown, .page-actions .btn-group', function (event) {
+    $('.navbar-collapse').on('shown.bs.collapse hidden.bs.collapse', function (event) {
+        $('.navbar-toggle').attr('aria-expanded', event.type === 'shown' ? 'true' : 'false');
+    });
+    $(document).on('shown.bs.dropdown hidden.bs.dropdown', '.dropdown, .btn-group', function (event) {
         $(this).find('.dropdown-toggle').attr('aria-expanded', event.type === 'shown' ? 'true' : 'false');
     });
 
@@ -549,6 +559,244 @@ $(document).ready(function () {
             navigator.clipboard.writeText(value).then(function () { done(true); }, fallback);
         } else {
             fallback();
+        }
+    });
+});
+
+// Validace vsech formularu: zpravy u poli, bez zmeny serverovych chyb.
+$(document).ready(function () {
+    var errorSequence = 0;
+
+    function updateStatus(form) {
+        var count = $(form).find('.field-error-message').length;
+        var message = $(form).hasClass('form-dirty') ? 'Neuložené změny' : '';
+        if (count > 0) {
+            message = 'Formulář obsahuje chyby (' + count + '). Před uložením je opravte.';
+        }
+        $(form).find('.form-status').text(message).toggleClass('form-status-error', count > 0);
+    }
+
+    function clearError(record) {
+        record.fields.each(function () {
+            var field = $(this);
+            var description = (field.attr('aria-describedby') || '').split(/\s+/).filter(function (id) {
+                return id && id !== record.id;
+            });
+            if (description.length) field.attr('aria-describedby', description.join(' '));
+            else field.removeAttr('aria-describedby');
+            var previous = field.data('client-error-previous-invalid');
+            if (previous === undefined) field.removeAttr('aria-invalid');
+            else field.attr('aria-invalid', previous);
+            field.removeClass('field-invalid').removeData('client-error').removeData('client-error-previous-invalid');
+        });
+        record.note.remove();
+    }
+
+    if (window.Nette) {
+        // netteForms.js se nacita az za main.js, proto az po DOM ready.
+        Nette.showFormErrors = function (form, errors) {
+            $(form).find('.field-invalid').each(function () {
+                var record = $(this).data('client-error');
+                if (record) clearError(record);
+            });
+            $(form).children('.client-form-error').remove();
+            var first = null;
+            errors.forEach(function (error) {
+                var field = error.element;
+                if (!field || field === form) {
+                    $('<div class="client-form-error field-error-message" role="alert"></div>').text(error.message).prependTo(form);
+                    return;
+                }
+                var record = $(field).data('client-error');
+                if (!record) {
+                    var fields = $(field);
+                    if (field.type === 'radio') {
+                        fields = $(form.elements).filter(function () { return this.type === 'radio' && this.name === field.name; });
+                    }
+                    var id = 'form-field-error-' + (++errorSequence);
+                    var note = $('<div class="field-error" role="alert"></div>').attr('id', id);
+                    var anchor = fields.last();
+                    if (anchor.parent().is('label')) anchor = anchor.parent();
+                    note.insertAfter(anchor);
+                    record = { fields: fields, note: note, id: id };
+                    fields.each(function () {
+                        var control = $(this);
+                        control.data('client-error-previous-invalid', control.attr('aria-invalid'));
+                        control.data('client-error', record).addClass('field-invalid').attr({
+                            'aria-invalid': 'true',
+                            'aria-describedby': $.trim((control.attr('aria-describedby') || '') + ' ' + id)
+                        });
+                    });
+                    if (!first) first = fields.filter(':visible:not(:disabled)')[0];
+                }
+                $('<div class="field-error-message"></div>').text(error.message).appendTo(record.note);
+            });
+            updateStatus(form);
+            if (first) {
+                first.focus();
+                first.scrollIntoView({ block: 'center' });
+            }
+        };
+    }
+
+    $(document).on('input change', 'input, select, textarea', function () {
+        var record = $(this).data('client-error');
+        if (record) {
+            clearError(record);
+            updateStatus(this.form);
+        }
+    });
+
+    // Seskupeny formular clena: neulozene zmeny a navigace mezi oddily.
+    var form = document.querySelector('form.member-form');
+    if (!form) return;
+    var leaving = false;
+    $(form).on('input change', function () {
+        $(form).addClass('form-dirty');
+        updateStatus(form);
+    });
+    updateStatus(form);
+    // Na window uz probehla validace Nette i obsluhy formulare.
+    window.addEventListener('submit', function (event) {
+        if (event.target === form && !event.defaultPrevented) leaving = true;
+    });
+    window.addEventListener('pageshow', function () { leaving = false; });
+    window.addEventListener('beforeunload', function (event) {
+        if ($(form).hasClass('form-dirty') && !leaving) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    var sections = $(form).find('.form-section');
+    var links = $('.form-nav a');
+    var waiting = false;
+    function highlightSection() {
+        var current = 0;
+        var top = Math.max(150, $('.navbar-fixed-top').outerHeight() + 40);
+        sections.each(function (index) {
+            if (this.getBoundingClientRect().top <= top) current = index;
+        });
+        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+            current = sections.length - 1;
+        }
+        links.each(function (index) {
+            $(this).toggleClass('active', index === current);
+            if (index === current) $(this).attr('aria-current', 'location');
+            else $(this).removeAttr('aria-current');
+        });
+        waiting = false;
+    }
+    $(window).on('scroll resize', function () {
+        if (!waiting) {
+            waiting = true;
+            window.requestAnimationFrame(highlightSection);
+        }
+    });
+    highlightSection();
+});
+
+// Hledani nabizi pouze odkazy, ktere uz prihlaseny uzivatel vidi v navigaci.
+$(document).ready(function () {
+    var form = $('.navbar-search');
+    var input = form.find('input[name="search"]');
+    var panel = form.find('.search-suggestions');
+    var options = $('#search-options');
+    if (!input.length || !panel.length) return;
+    var index = [];
+    var seen = {};
+    var active = -1;
+
+    function fold(value) {
+        return $.trim(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function add(link, description) {
+        var href = link.getAttribute('href');
+        var text = $.trim(link.textContent);
+        if (!href || seen[href]) return;
+        seen[href] = true;
+        index.push({ href: href, text: text, description: description, folded: fold(text) });
+    }
+
+    $('.sidebar ul.nav-sidebar > li').each(function () {
+        var link = $(this).children('a')[0];
+        if (!link) return;
+        var children = $(this).find('ul a');
+        add(link, children.length ? 'oblast' : 'AP');
+        children.each(function () { add(this, 'AP · ' + $.trim(link.textContent)); });
+    });
+    $('#navbar-tools a').each(function () { add(this, 'nástroj'); });
+    input.attr({ role: 'combobox', 'aria-autocomplete': 'list', 'aria-controls': 'search-options', 'aria-expanded': 'false' });
+
+    function close() {
+        panel.prop('hidden', true);
+        input.attr('aria-expanded', 'false').removeAttr('aria-activedescendant');
+        active = -1;
+    }
+
+    function render() {
+        var needle = fold(input.val());
+        options.empty();
+        active = -1;
+        input.removeAttr('aria-activedescendant');
+        form.find('.search-hint').text(needle ? 'Enter vyhledá člena nebo IP adresu.' : 'Zadejte člena nebo IP, oblast, AP či nástroj.');
+        if (needle) {
+            var starts = [];
+            var contains = [];
+            index.forEach(function (item) {
+                var at = item.folded.indexOf(needle);
+                if (at === 0) starts.push(item);
+                else if (at > 0) contains.push(item);
+            });
+            starts.concat(contains).slice(0, 9).forEach(function (item, i) {
+                $('<a class="search-option" role="option" tabindex="-1" aria-selected="false"></a>')
+                    .attr({ href: item.href, id: 'search-option-' + i })
+                    .append($('<span class="search-option-text"></span>').text(item.text))
+                    .append($('<span class="search-option-description"></span>').text(item.description))
+                    .appendTo(options);
+            });
+        }
+        panel.prop('hidden', false);
+        var hasOptions = options.children().length > 0;
+        input.attr('aria-expanded', hasOptions ? 'true' : 'false');
+        form.find('.search-help').prop('hidden', !hasOptions);
+        if (needle && !hasOptions) {
+            form.find('.search-hint').text('Oblast, AP ani nástroj nenalezen. Enter vyhledá člena nebo IP adresu.');
+        }
+    }
+
+    input.on('focus input', render).on('blur', function () {
+        // Kliknuti na navrh musi dobehnout pred skrytim nabidky.
+        setTimeout(function () { if (!form[0].contains(document.activeElement)) close(); }, 150);
+    }).on('keydown', function (event) {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            close();
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (panel.prop('hidden')) render();
+            var rows = options.children();
+            if (!rows.length) return;
+            active = active < 0 ? (event.key === 'ArrowDown' ? 0 : rows.length - 1)
+                : (active + (event.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length;
+            rows.removeClass('active').attr('aria-selected', 'false');
+            rows.eq(active).addClass('active').attr('aria-selected', 'true');
+            input.attr('aria-activedescendant', rows[active].id);
+            rows[active].scrollIntoView({ block: 'nearest' });
+        } else if (event.key === 'Enter' && active >= 0 && !panel.prop('hidden')) {
+            event.preventDefault();
+            window.location.href = options.children().eq(active).attr('href');
+        }
+    });
+    panel.on('mousedown', 'a', function (event) { event.preventDefault(); });
+    $(document).on('click', function (event) {
+        if (!form[0].contains(event.target)) close();
+    }).on('keydown', function (event) {
+        if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey
+            && !$(event.target).is('input, textarea, select') && !event.target.isContentEditable) {
+            event.preventDefault();
+            input.focus().select();
         }
     });
 });

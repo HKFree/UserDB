@@ -117,6 +117,14 @@ body {
     margin: 0 0 12px;
 }
 
+.main h1 {
+    font-size: 24px;
+}
+
+.main h3 {
+    font-size: 20px;
+}
+
 .main h1 small,
 .main h2 small,
 .main h3 small {
@@ -150,7 +158,7 @@ body {
 }
 
 .main {
-    padding: 12px 12px 70px;
+    padding: 15px 15px 70px;
 }
 
 @media (min-width: 990px) {
@@ -324,8 +332,8 @@ body {
 
 @media (max-width: 989px) {
 
-    /* Second row of the fixed navbar holds the search field. */
-    body {
+    /* Second row of the fixed navbar holds the search field. Pages without the navbar keep the default. */
+    body.with-navbar {
         padding-top: 92px;
     }
 
@@ -650,9 +658,18 @@ table.form>tbody>tr>td {
     box-shadow: 0 0 0 3px rgba(66, 139, 202, .25);
 }
 
+.main input:disabled:not(.form-control),
+.main select:disabled:not(.form-control),
+.main textarea:disabled:not(.form-control) {
+    background-color: #e4e6e9;
+    color: #555;
+    cursor: not-allowed;
+}
+
+/* Minimum sizes only: a field with a larger size or rows attribute keeps it. */
 table.form>tbody>tr>td>input[type="text"],
 table.form>tbody>tr>td>input[type="email"] {
-    width: 320px;
+    min-width: 320px;
 }
 
 table.form>tbody>tr>td>select {
@@ -660,9 +677,8 @@ table.form>tbody>tr>td>select {
 }
 
 table.form>tbody>tr>td>textarea {
-    width: 100%;
-    max-width: 520px;
-    height: 96px;
+    min-width: 320px;
+    min-height: 96px;
 }
 
 .ipform,
@@ -714,6 +730,10 @@ table.form>tbody>tr>td>textarea {
 .ip>.login,
 .ip>.heslo {
     width: 100px;
+}
+
+.ip>.ip_adresa {
+    width: 130px;
 }
 
 .ip>.TypZarizeni_id {
@@ -1293,7 +1313,6 @@ tbody>tr.wewimo-table-header>th {
 }
 
 .grido thead th {
-    padding: 7px 8px;
     border-color: #dcdfe3 !important;
     font-size: 11px;
     letter-spacing: .03em;
@@ -2111,12 +2130,36 @@ input[readonly],
     .btn-sm {
         padding: 6px 10px;
     }
+
+    /* A long button label wraps instead of widening the page. */
+    .main .btn {
+        max-width: 100%;
+        white-space: normal;
+    }
 }
 
 /* The user graph has a fixed width; it scrolls in place instead of widening the page. */
 #chart_container {
     max-width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
+    /* Room for the time axis labels, which rickshaw draws below the chart box. */
+    padding-bottom: 45px;
+}
+
+/* IDS events arrive by AJAX after main.js has framed the other tables. */
+#ids {
+    overflow-x: auto;
+}
+
+@media (max-width: 359px) {
+    .sidebar-toggle-text {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+    }
 }
 
 /* Page headers: member list, member detail and AP detail. */
@@ -2786,5 +2829,360 @@ input[readonly],
 
     .page-actions .btn {
         padding: 7px 11px;
+    }
+}
+
+/* Member form: named sections, sticky save row and section navigation. */
+.member-form-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+}
+
+.member-form-layout > form {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 820px;
+}
+
+.form-section {
+    margin-bottom: 22px;
+    scroll-margin-top: 110px;
+}
+
+.main .form-section h2 {
+    margin: 0 0 8px;
+    padding: 0 0 6px;
+    border-bottom: 1px solid #e2e5e9;
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+}
+
+.member-form table.form {
+    table-layout: fixed;
+}
+
+.member-form input,
+.member-form select,
+.member-form textarea,
+.member-form button,
+.member-form a {
+    scroll-margin-top: 110px;
+    scroll-margin-bottom: 140px;
+}
+
+.member-form table.form > tbody > tr > th {
+    width: 34%;
+    overflow-wrap: anywhere;
+}
+
+/* As wide as the longest option, but never wider than the column. */
+.member-form table.form > tbody > tr > td > select {
+    width: auto;
+    min-width: 320px;
+    max-width: 100%;
+}
+
+.member-form .ipform {
+    table-layout: fixed;
+}
+
+.form-save-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0;
+    border-top: 1px solid #e2e5e9;
+    background: rgba(255, 255, 255, .97);
+}
+
+.form-save-bar .btn-edit-save {
+    margin: 0;
+    padding: 7px 26px;
+    font-size: 14px;
+}
+
+.form-status {
+    font-weight: 600;
+    color: #8a5a00;
+}
+
+.form-dirty .form-status:not(:empty)::before {
+    content: "● ";
+}
+
+.form-status.form-status-error {
+    color: #9a1c1c;
+}
+
+.form-status.form-status-error::before {
+    content: "";
+}
+
+.required-note {
+    margin-left: auto;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.form-nav {
+    display: none;
+}
+
+@media (min-width: 1200px) {
+    .form-nav {
+        display: block;
+        position: sticky;
+        top: 76px;
+        flex: 0 0 150px;
+        padding-left: 12px;
+        border-left: 2px solid #e2e5e9;
+    }
+
+    .form-nav > span {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: #6b7280;
+    }
+
+    .main .form-nav a:not(.btn) {
+        display: block;
+        margin-left: -14px;
+        padding: 3px 0 3px 12px;
+        border-left: 2px solid transparent;
+        color: #4b5563;
+        text-decoration: none;
+    }
+
+    .main .form-nav a:hover,
+    .main .form-nav a:focus {
+        color: #111;
+        text-decoration: underline;
+    }
+
+    .main .form-nav a.active {
+        border-left-color: #cc0000;
+        color: #111;
+        font-weight: 700;
+    }
+}
+
+@media (max-width: 989px) {
+    .member-form table.form > tbody > tr > th {
+        width: 100%;
+    }
+}
+
+/* Client validation: messages supplement the existing server error output. */
+.field-invalid[aria-invalid="true"],
+.main .field-invalid[aria-invalid="true"]:not(.form-control) {
+    border-color: #c9302c;
+    box-shadow: 0 0 0 3px rgba(201, 48, 44, .18);
+}
+
+.field-error,
+.client-form-error {
+    margin: 3px 0 2px;
+    color: #9a1c1c;
+    font-size: 12px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+/* Navbar suggestions stay inside the viewport at both shell breakpoints. */
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 15px;
+    right: 15px;
+    z-index: 1040;
+    max-height: calc(100vh - 105px);
+    overflow-y: auto;
+    border: 1px solid #cfd5dc;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+    color: #1f2937;
+}
+
+.search-hint,
+.search-help {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.search-help {
+    border-top: 1px solid #eceef1;
+}
+
+.navbar-search a.search-option {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+    padding: 8px 12px;
+    color: #1f2937;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.navbar-search a.search-option:hover,
+.navbar-search a.search-option:focus,
+.navbar-search a.search-option.active {
+    background: #eaf3fc;
+    color: #123f6d;
+    text-decoration: underline;
+}
+
+.search-option-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.search-option-description {
+    font-size: 11px;
+    color: #4b5563;
+}
+
+@media (min-width: 990px) {
+    .search-suggestions {
+        left: 0;
+        right: 0;
+    }
+}
+
+/* Start page: managed AP cards, shared tools and keyboard accessible help. */
+.home-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 24px 36px;
+}
+
+.main .home-grid h2,
+.main .home-help h2 {
+    margin: 4px 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.home-areas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+    gap: 10px;
+}
+
+.main a.home-area:not(.btn) {
+    padding: 12px 14px;
+    border: 1px solid #d7dce2;
+    border-radius: 4px;
+    background: #fff;
+    color: #1f2937;
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.main a.home-area:hover,
+.main a.home-area:focus {
+    border-color: #428bca;
+    background: #f2f7fc;
+    text-decoration: underline;
+}
+
+.home-area .fa {
+    margin-right: 4px;
+    color: #2165ae;
+}
+
+.home-area small {
+    display: block;
+    margin-top: 4px;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.home-empty {
+    padding: 14px;
+    border: 1px dashed #cfd5dc;
+    border-radius: 4px;
+    color: #6b7280;
+}
+
+.home-tools {
+    margin: 0;
+    padding: 0;
+    border: 1px solid #e2e5e9;
+    border-radius: 4px;
+    list-style: none;
+}
+
+.home-tools li + li {
+    border-top: 1px solid #eceef1;
+}
+
+.main .home-tools a:not(.btn) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    color: #1f2937;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.main .home-tools a:hover,
+.main .home-tools a:focus {
+    background: #f2f7fc;
+    text-decoration: underline;
+}
+
+.home-tools .fa {
+    color: #6b7280;
+}
+
+.home-tip {
+    margin-top: 14px;
+    color: #6b7280;
+}
+
+.home-help {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e5e9;
+}
+
+.home-help summary {
+    display: list-item;
+    list-style-position: inside;
+    padding: 8px 0;
+    color: #2165ae;
+    cursor: pointer;
+}
+
+.home-help summary:focus {
+    outline: 2px solid #428bca;
+    outline-offset: 2px;
+}
+
+.home-help img {
+    max-width: 100%;
+    height: auto;
+    margin: 6px 0 12px;
+}
+
+@media (max-width: 989px) {
+    .home-grid {
+        grid-template-columns: minmax(0, 1fr);
     }
 }

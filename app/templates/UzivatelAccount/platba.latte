@@ -1,3 +1,4 @@
+{block title}{ifset $u}Příchozí platba {if $p->spolek}Spolek {/if}{if $p->druzstvo}Družstvo {/if}pro: {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}{/ifset}{/block}
 {block content}
 
 

@@ -12,7 +12,8 @@
 - [Přihlašovací formulář náhledů PR](userdb_testing_login.md) - nástrahy formuláře před náhledy PR a jeho lokální zkouška.
 - [Image náhledu PR](userdb_preview_image.md) - nástrahy Dockerfile.preview (Flox v Dockeru, emulace, velikost) a chování Coolify.
 - [Demo data](userdb_demo_data.md) - nástrahy při psaní scénářových migrací a objemového kroku pro testovací instance.
-- [UI člena a štítky](userdb_member_ui.md) - samostatné Latte v gridu, routované adresy a stav dropdownu.
+- [UI člena a štítky](userdb_member_ui.md) - samostatné Latte v gridu, routované adresy, stav dropdownu a nástrahy formulářů.
+- [Kostra aplikace a styly](userdb_ui_shell.md) - bod zlomu přibaleného Bootstrapu, řetězce hlídané testy a rozměry polí formulářů.
 - [Registrační PDF](userdb_registration_pdf.md) - rozhodnutí o dokumentu pro členy spolku a odmítnutí ostatních vztahů.
 - [Náhledy stránek v PR](userdb_screenshots.md) - nestabilní časy demo dat, mobilní rozměry PNG a prostředí pro focení.
 - [Ověřování UI](userdb_ui_overeni.md) - nástrahy tabulek Grido, odkazů v layoutu a prohlídky stránek na telefonu.
