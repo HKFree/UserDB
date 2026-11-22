@@ -89,7 +89,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(3, $adapter->scenarioFiles);
+        Assert::same(4, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -249,6 +249,12 @@ final class DemoDataPresenterTest extends TestCase
         // ZSO 20004 may edit the foreign member 20062 only because of his address inside a subnet of AP 213.
         Assert::contains('Editovat', $this->text($this->presenters->ui(20004, 'Uzivatel', ['action' => 'show', 'id' => 20062])->html));
         Assert::notContains('Editovat', $this->text($this->presenters->ui(20004, 'Uzivatel', ['action' => 'show', 'id' => 20063])->html));
+        // An area manager finds only the company of his own area, by its name and by its IČO.
+        foreach ([[20012, 'společnost', [20031]], [20012, '00987654', []], [20002, 'lhota', [20063]], [20002, '00987654', [20063]], [20002, '9999999', []]] as [$manager, $search, $found]) {
+            $html = $this->presenters->ui($manager, 'UzivatelList', ['action' => 'listall', 'search' => $search])->html;
+            $rows = $this->values($html, '//tr[starts-with(@class,"grid-row-")]/@class');
+            Assert::same(array_map(static fn (int $id): string => "grid-row-$id", $found), $rows, "$manager: $search");
+        }
         foreach (['192.0.2', '198.51.100', '10.220.0', '10.220.1', '10.220.2', '10.220.3', '203.0.113', '89.248.240'] as $prefix) {
             $this->page('Subnet', 'overview', $prefix);
             $this->page('Subnet', 'detail', $prefix);

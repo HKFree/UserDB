@@ -13,6 +13,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 final class UzivatelSearchDatabaseTest extends DatabaseTestCase
 {
+    private int $apId;
     private int $managerId;
     private int $unassignedId;
     /** @var list<int> */
@@ -23,6 +24,7 @@ final class UzivatelSearchDatabaseTest extends DatabaseTestCase
         $area = $this->fixtures->area();
         $otherArea = $this->fixtures->area();
         $ap = $this->fixtures->ap($area->id);
+        $this->apId = $ap->id;
 
         // Explicit IDs reproduce issue #154 independently of AUTO_INCREMENT.
         $this->fixtures->member($ap->id, ['id' => 7, 'email' => 'someone.else@example.invalid']);
@@ -67,6 +69,14 @@ final class UzivatelSearchDatabaseTest extends DatabaseTestCase
         }
         sort($ids);
         return $ids;
+    }
+
+    private function companyMemberId(int $companyId = 87654321): int {
+        return $this->fixtures->member($this->apId, [
+            'TypPravniFormyUzivatele_id' => $this->fixtures->lookup('TypPravniFormyUzivatele', 'PO'),
+            'firma_nazev' => 'Železářství Šroubek s.r.o.',
+            'firma_ico' => $companyId,
+        ])->id;
     }
 
     public function testDigitEmailFindsOwnerWithGlobalRole(): void {
@@ -134,6 +144,80 @@ final class UzivatelSearchDatabaseTest extends DatabaseTestCase
         $expected = [0, 42, 701, $this->managerId, ...$this->restrictedUserIds];
         sort($expected);
         Assert::same($expected, $this->searchIds('0', $this->unassignedId, ['TECH']));
+    }
+
+    public function testCompanyNamePartFindsMemberWithGlobalRole(): void {
+        $memberId = $this->companyMemberId();
+        foreach (['TECH', 'VV', 'KONTROLA', 'EXTSUPPORT'] as $role) {
+            Assert::same([$memberId], $this->searchIds('Šroubek', $this->unassignedId, [$role]), $role);
+        }
+    }
+
+    public function testCompanyNamePartFindsMemberForAreaManager(): void {
+        $memberId = $this->companyMemberId();
+        Assert::same([$memberId], $this->searchIds('Šroubek'));
+    }
+
+    public function testCompanyNameMatchesLikePersonName(): void {
+        // Same rules as the name columns: any case, with or without diacritics.
+        $memberId = $this->companyMemberId();
+        foreach ([[], ['TECH']] as $roles) {
+            foreach (['železářství šroubek', 'zelezarstvi sroubek'] as $search) {
+                Assert::same([$memberId], $this->searchIds($search, $this->managerId, $roles), $search);
+            }
+        }
+    }
+
+    public function testCompanyIdOrItsPartFindsMember(): void {
+        $memberId = $this->companyMemberId();
+        foreach ([[], ['TECH']] as $roles) {
+            foreach (['87654321', '8765432', '7654321'] as $search) {
+                Assert::same([$memberId], $this->searchIds($search, $this->managerId, $roles), $search);
+            }
+        }
+    }
+
+    public function testCompanyIdIsSearchedInEightDigitForm(): void {
+        // Stored as the number 123456, written as 00123456.
+        $memberId = $this->companyMemberId(123456);
+        foreach ([[], ['TECH']] as $roles) {
+            foreach (['00123456', '0012345', '0123456'] as $search) {
+                Assert::same([$memberId], $this->searchIds($search, $this->managerId, $roles), $search);
+            }
+            Assert::same([], $this->searchIds('000123456', $this->managerId, $roles));
+        }
+    }
+
+    public function testCompanyIdLongerThanEightDigitsIsNotCut(): void {
+        $memberId = $this->companyMemberId(1234567890);
+        Assert::same([$memberId], $this->searchIds('1234567890', $this->unassignedId, ['TECH']));
+    }
+
+    public function testTextAroundCompanyIdDoesNotMatch(): void {
+        $this->companyMemberId();
+        foreach ([[], ['TECH']] as $roles) {
+            foreach (['87654321x', '+87654321', '8765 4321', '987654321'] as $search) {
+                Assert::same([], $this->searchIds($search, $this->managerId, $roles), $search);
+            }
+        }
+    }
+
+    public function testMemberIdKeepsPrecedenceOverCompanyId(): void {
+        // As for every other searched column: digits that are a member ID or its start mean that member.
+        $this->companyMemberId(701);
+        foreach (['701', '00000701', '70'] as $search) {
+            Assert::same([701], $this->searchIds($search, $this->managerId, ['TECH']), $search);
+        }
+    }
+
+    public function testCompanyIsHiddenWithoutAreaPermission(): void {
+        $this->companyMemberId();
+        // Other area, expired assignment, future assignment and no assignment.
+        foreach ($this->restrictedUserIds as $userId) {
+            foreach (['Šroubek', '87654321', '8765432'] as $search) {
+                Assert::same([], $this->searchIds($search, $userId), "User $userId, $search");
+            }
+        }
     }
 }
 
