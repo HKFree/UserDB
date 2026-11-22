@@ -129,7 +129,7 @@ Install once:
 Then, for every task:
 
 1. The first time only: **Add project**, **Clone from URL**, enter `https://github.com/HKFree/UserDB.git`. If you already have a checkout, add its folder instead.
-2. Click **+** next to the project to create a workspace. Search for the GitHub issue you are going to work on, or just type a name, and choose the agent. Orca derives the branch and the directory from the name, so shorten an issue title to a few ASCII words: Czech diacritics do not survive in a branch name.
+2. Click **+** next to the project to create a workspace. Search for the GitHub issue you are going to work on, or just type a name, and choose the agent. Orca derives the branch and the directory from the name, so name the workspace with the issue number and a few ASCII words, such as `123-presun-ip`, not with the issue title: Czech diacritics do not survive in a branch name.
 3. Allow the setup and default tab commands when Orca asks whether to run them. They are the two commands in `orca.yaml`. They run the code of the branch the worktree starts from, so for somebody else's branch read its diff first.
 4. Orca creates the worktree and opens its tabs:
    - **Setup** installs the Composer dependencies and builds this worktree's database with demo data. It takes about half a minute, longer the first time, when Flox downloads its packages.
