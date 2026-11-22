@@ -182,6 +182,7 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | Všech 12 typů příchozích plateb, banky 2010/800/9999 | `/sprava-plateb/platbycu`, platby 40000001 až 40000012, konto člena 20044 |
 | Nespárovaná bez VS / s chybným VS | `/sprava-nesparovanych/nesparovane`, platby 40000100 / 40000101 |
 | Převedená platba, mimo nespárovaný seznam | 40000102, dva pohyby bez člena se vyrovnají a platba skončí na 20044 |
+| Řazení nespárovaných podle bankovních údajů | `/sprava-nesparovanych/nesparovane`, platby 40000110 až 40000113: každý ze šesti sloupců je řadí jinak, 40000112 nemá SS, 40000111 info banky, 40000113 má dlouhé texty |
 | Platba bez pohybu | 40000103, vidět pouze v příchozích platbách |
 | Převod bez původního pohybu | 40000104, pohyb typu 10 a příjem typu 1 na 20044 |
 | Zaplacené / nezaplacené výdaje, oba subjekty, stránkování | `/sprava-plateb/odchoziplatby`, 120 řádků 20000 až 20119 |
@@ -250,7 +251,7 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 | SloucenyUzivatel | 20000 až 20001 | žádné |
 | Smlouva / PodpisSmlouvy | 200000 až 200006 / 200000 až 200007 | žádné |
 | UzivatelskeKonto | 2000000 až 2001107 s mezerami | 10000000 až 10323999, 11000000 až 11000549 |
-| PrichoziPlatba | 40000001 až 40000012, 40000100 až 40000104 | 50000000 až 50053999 |
+| PrichoziPlatba | 40000001 až 40000012, 40000100 až 40000104, 40000110 až 40000113 | 50000000 až 50053999 |
 | OdchoziPlatba | 20000 až 20119 | žádné |
 | BankovniUcet | 200 až 209 a původní 1, 2 | žádné |
 | StavBankovnihoUctu | 20003 až 20629 s mezerami | žádné |
