@@ -1,0 +1,31 @@
+{block content}
+
+<div class="novinky">
+    <h1 n:block="title">Novinky</h1>
+
+    {foreach $vydani as $vydaniNovinek}
+        <article class="novinky-vydani panel panel-default">
+            <div class="panel-heading">
+                <h2><time datetime="{$vydaniNovinek->datum|date:'Y-m-d'}">{$vydaniNovinek->datum|date:'j. n. Y'}</time></h2>
+            </div>
+            <div class="panel-body">
+                {foreach ['Novinky' => $vydaniNovinek->novinky, 'Opravy' => $vydaniNovinek->opravy] as $nazev => $polozky}
+                    <section class="novinky-sekce" n:if="$polozky">
+                        <h3>{$nazev}</h3>
+                        <ul class="novinky-polozky">
+                            <li n:foreach="$polozky as $polozka">
+                                <span class="novinky-polozka-text">{$polozka->text}</span>
+                                <a n:if="$polozka->cislo !== null" class="novinky-cislo text-muted small" href="https://github.com/HKFree/UserDB/issues/{$polozka->cislo}" title="Podrobnosti na GitHubu">#{$polozka->cislo}</a>
+                                <p n:if="$polozka->detail !== null" class="novinky-detail">{$polozka->detail}</p>
+                            </li>
+                        </ul>
+                    </section>
+                {/foreach}
+            </div>
+        </article>
+    {else}
+        <p class="alert alert-info">Zatím tu nejsou žádné novinky.</p>
+    {/foreach}
+</div>
+
+{/block}

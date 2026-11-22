@@ -5,6 +5,7 @@
 # http://nette.org/security-warning
 #
 parameters:
+	novinkyAdresar: %appDir%/novinky
 	clenskyPrispevek: 290
 	cenaTelevize: 160
 	igw1IpCheckerUrl: http://10.107.0.1:8080/ip4info/
@@ -45,6 +46,7 @@ migrations:
     withDummyData: %withDummyData%
 
 services:
+	- App\Services\Novinky(%novinkyAdresar%)
 	authenticator: App\Model\Authenticator(%debug.fakeUser%)
 	- App\Router\RouterFactory
 	router: @App\Router\RouterFactory::createRouter(%urlPrefix%)

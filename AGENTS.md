@@ -246,6 +246,7 @@ npx skills add stablyai/orca
 | `app/ApiModule/Presenters/` | REST API pod `/userdb/api`, ručně popsané ve `swagger.yaml` |
 | `app/model/` | modely nad tabulkami (Nette Database), společný předek `Table.php` |
 | `app/services/`, `app/components/` | služby (e-mail, SMS, PDF, šifrování, smlouvy) a komponenty |
+| `app/novinky/` | texty vydání pro stránku Novinky, formát a postup v [dokumentaci](docs/userdb_novinky.md) |
 | `app/Console/` | příkazy pro `bin/console` |
 | `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
@@ -335,6 +336,7 @@ použitelnost ve stávajícím vzhledu, ne nový design.
 ## Commity a PR
 
 - Česky, věcně, co a proč. Jeden PR řeší jednu věc.
+- Novinky pro uživatele: [formát a postup přidávání](docs/userdb_novinky.md).
 - Popis PR vyplň podle šablony `.github/pull_request_template.md`; má stejné
   oddíly jako hlášení v Postupu práce. Neověřené tvrzení označ jako neověřené.
 - Dokončuje-li PR issue, napiš do popisu `Closes #N`; česká slova jako "Řeší"

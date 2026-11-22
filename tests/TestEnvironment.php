@@ -28,7 +28,7 @@ final class TestEnvironment
     private static ?\Throwable $databaseFailure = null;
     private static ?string $encryptionKey = null;
 
-    public static function container(?Explorer $database = null, ?Http\Request $request = null, ?Container $recordings = null): Container {
+    public static function container(?Explorer $database = null, ?Http\Request $request = null, ?Container $recordings = null, ?string $novinkyAdresar = null): Container {
         $configurator = new Configurator();
         $configurator->setDebugMode(true);
         $configurator->setTempDirectory(self::TEMP_DIR);
@@ -38,6 +38,7 @@ final class TestEnvironment
         ]);
         $configurator->addDynamicParameters([
             'testSocket' => self::socket(),
+            'novinkyAdresar' => $novinkyAdresar ?? self::TEMP_DIR . '/novinky-empty',
             'env' => [
                 'USERDB_SALT' => 'test-only',
                 'USERDB_GOOGLE_MAPS_KEY' => 'test-only',
