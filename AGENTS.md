@@ -40,7 +40,7 @@ výsledkem. Skill nebo plugin je jen pomůcka: když ho nemáš, splň pravidlo 
 
 1. **Zadání.** Přečti paměť projektu. Když ze zadání neplyne, co má být
    výsledkem, zeptej se dřív, než začneš psát kód. Pracuj ve vlastní větvi,
-   ne v `master`.
+   ne v `master`; jak ji pojmenovat, říká oddíl Název větve a worktree.
 2. **Test napřed.** U chyby napiš nejdřív test, který ji předvede, a ověř, že
    padá. Nové nebo změněné chování dostane test ve stejné změně; i ten musí
    bez změny padat. Bez testu smí zůstat jen změna, která chování nemění:
@@ -60,6 +60,25 @@ výsledkem. Skill nebo plugin je jen pomůcka: když ho nemáš, splň pravidlo 
 
 Předáš-li práci jinému agentovi, ručíš za ni dál: přečti celý diff a kontroly
 pusť sám. Autorem je model, který změnu napsal, i když ji psal na tvé zadání.
+
+### Název větve a worktree
+
+- Řešíš-li issue, začíná název větve jeho číslem a pokračuje dvěma až čtyřmi
+  slovy, která vystihují změnu: `123-presun-ip`. Bez issue zůstanou jen slova:
+  `nazvy-vetvi`. Název issue ani celou větu do něj nepřepisuj. Issue připojené
+  k worktree v Orce ukáže `orca worktree current --json` v poli `linkedIssue`.
+- Jen malá písmena bez diakritiky, číslice a pomlčky. Diakritiku převeď sám
+  (`ověřit názvy` na `overit-nazvy`); Orca by z ní udělala pomlčky.
+- Worktree v Orce se jmenuje stejně jako větev, která má navíc jen předponu
+  z nastavení Orcy (`orca/123-presun-ip`). Orca odvozuje adresář i větev
+  z `--name`, dej jí proto hotový název a issue připoj zvlášť:
+  `orca worktree create --name 123-presun-ip --issue 123`.
+- Neodpovídá-li tomu větev, ve které jsi začal, a ještě není na GitHubu,
+  přejmenuj ji (`git branch -m`, předponu zachovej) a řekni to zadavateli.
+  Adresář worktree nepřesouvej; název zobrazený v Orce změní
+  `orca worktree set --worktree current --display-name 123-presun-ip`.
+- Větev, která už na GitHubu je, nech být a jen to řekni: přejmenováním větve
+  s otevřeným PR by GitHub PR zavřel.
 
 ### Review druhým modelem
 
@@ -318,3 +337,8 @@ použitelnost ve stávajícím vzhledu, ne nový design.
 - Česky, věcně, co a proč. Jeden PR řeší jednu věc.
 - Popis PR vyplň podle šablony `.github/pull_request_template.md`; má stejné
   oddíly jako hlášení v Postupu práce. Neověřené tvrzení označ jako neověřené.
+- Dokončuje-li PR issue, napiš do popisu `Closes #N`; česká slova jako "Řeší"
+  issue po sloučení nezavřou. Hned po otevření PR, i draftu, dej tomu issue
+  štítek `má PR` (`gh issue edit N --add-label "má PR"`). Zavře-li se PR bez
+  sloučení a issue nemá jiný otevřený PR, štítek odeber. Štítek jde s PR:
+  zvláštní schválení zadavatele nepotřebuje.
