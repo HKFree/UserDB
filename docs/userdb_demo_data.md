@@ -59,13 +59,18 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Druhý sloučený člen | 20060 Sloučenídruhý | Odkaz na 20058 |
 | Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, typy zařízení 1 až 12 |
 | Cizí subnet | 20062 Cizísubnet | Patří na AP 200, IP `203.0.113.20` leží v subnetu AP 213 |
-| Bez IP i bez televize | 20063 Bezadres | AP 200, prázdná tabulka adres |
+| Bez IP i bez televize, právnická osoba s krátkým IČO | 20063 Bezadres | AP 200, prázdná tabulka adres; Demo Obec Nulová Lhota, IČO 00987654 (uloženo jako 987654) |
 
 Pohyb 2000120 člena 20044 má oba příznaky spolek/družstvo a je vidět v obou filtrech.
 Pohyb 2000121 nemá žádný příznak a není vidět ani v jednom filtru konta.
 Technologie připojení 0 až 9 jsou rozdělené mezi členy 20028 až 20037.
 Ostatní scénářoví členové mají telefon ve tvaru `0000` + ID a objemoví členové `0001` + pořadí: formát projde
 validací, předčíslí nepoužívá žádný operátor.
+
+Hledání podle firmy: pole Hledat nebo `/uzivatel-list/listall?search=...`. Člena 20031 (oblast 201) najde
+`společnost`, `spolecnost` nebo část IČO `9999999`; člena 20063 (oblast 200) `lhota`, `00987654` nebo `987654`.
+Slovo `Smyšlená` má v ulici každý scénářový člen, k hledání firmy se nehodí. Správce oblasti najde jen firmu
+ve vlastní oblasti: 20012 první, 20002 druhou.
 
 ## Čestné členství, televize a smlouvy
 

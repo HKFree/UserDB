@@ -172,6 +172,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             }
         }
 
+        // IČO is stored as a number; LPAD restores the leading zeros of its eight-digit written form.
         if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV') && !$Uzivatel->isInRole('KONTROLA') && !$Uzivatel->isInRole('EXTSUPPORT')) {
             $identity = $Uzivatel->getIdentity();
             if ($identity === null) {
@@ -192,7 +193,9 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                                             OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
                                             OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
                                             OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE ?
-                                            ) AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...array_fill(0, 9, $like), $uid])->fetchPairs('id', 'id');
+                                            OR CONVERT(Uzivatel.firma_nazev USING utf8) LIKE ?
+                                            OR LPAD(Uzivatel.firma_ico, GREATEST(CHAR_LENGTH(Uzivatel.firma_ico), 8), '0') LIKE ?
+                                            ) AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...array_fill(0, 11, $like), $uid])->fetchPairs('id', 'id');
 
             if ($secureMatchId !== []) {
                 //\Tracy\Debugger::barDump($secureMatchId);
@@ -207,7 +210,11 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             OR CONVERT(prijmeni USING utf8) LIKE ?
             OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
             OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
-            OR CONVERT(ulice_cp USING utf8) LIKE ?",
+            OR CONVERT(ulice_cp USING utf8) LIKE ?
+            OR CONVERT(firma_nazev USING utf8) LIKE ?
+            OR LPAD(firma_ico, GREATEST(CHAR_LENGTH(firma_ico), 8), '0') LIKE ?",
+                '%'.$search.'%',
+                '%'.$search.'%',
                 '%'.$search.'%',
                 '%'.$search.'%',
                 '%'.$search.'%',
