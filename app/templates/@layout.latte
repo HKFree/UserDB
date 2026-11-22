@@ -56,7 +56,6 @@
           <ul class="nav navbar-nav navbar-right">
             <li><a href="{link Uzivatel:show id=>$user->getIdentity()->getId()}">{$user->getIdentity()->getNick()} ({$user->getIdentity()->getId()})</a></li>
             <li><a href="{link Sprava:mapa id=>null}">Mapa</a></li>
-            <li><a href="{link Novinky:default id=>null}">Novinky</a></li>
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Nástroje <span class="caret"></span></a>
                 <ul class="dropdown-menu">
@@ -70,6 +69,8 @@
                     <li><a n:href="SpravaPlateb:odchoziplatby id=>null"><i class="glyphicon glyphicon-usd small"></i> Přehled odchozích plateb</a></li>
                     <li role="separator" class="divider"></li>
                     <li><a n:href="Sprava:nastroje id=>null">Pokročilé nástroje</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a n:href="Novinky:default id=>null">Novinky</a></li>
                 </ul>
             </li>
             <li n:if="$demoPersonaUrl"><a href="{$demoPersonaUrl}" title="Teď se díváš jako {$demoPersonaName}"><i class="glyphicon glyphicon-user small"></i> Změnit osobu</a></li>
