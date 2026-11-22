@@ -1,6 +1,6 @@
 ---
 name: UserDB Nette Database a Grido
-description: Nástrahy načítání souvisejících řádků v tabulkách Grido (limit u related(), průchod tabulkou v callbacku) a pořadí řádků dotazu bez order().
+description: Nástrahy načítání souvisejících řádků v tabulkách Grido (limit u related(), průchod tabulkou v callbacku), pořadí řádků dotazu bez order() a řazení podle sloupce navázané tabulky.
 metadata:
   type: project
 ---
@@ -58,3 +58,22 @@ primárního klíče: data vložená abecedně projdou falešně a opakované na
 posledního sloupce (`text, id`). Test pořadí pusť s keší sloupců a požadavek opakuj ze stejného místa kódu;
 data vlož tak, aby se pořadí vložení, pořadí indexu i abeceda lišily. Rozhodující sloupec při shodě výsledek
 dotazu neprokáže; ověř text dotazu přes `Connection::$onQuery`.
+
+## Řazení tabulky podle sloupce navázané tabulky
+
+Ověřeno 23. 11. 2026 nad MariaDB 10.11.19 testem `SpravaNesparovanychPresenterTest` a proklikáním přehledu
+nespárovaných plateb.
+
+- Sloupec Grida, který ukazuje hodnotu z navázaného řádku (`$item->PrichoziPlatba->vs`), řadí podle svého
+  názvu a skončí chybou `Unknown column`. Skutečný sloupec mu dá `setColumn('PrichoziPlatba.vs')`: Nette
+  Database z tečkové notace udělá `LEFT JOIN`, takže řádky bez navázaného záznamu zůstanou (v MariaDB
+  vzestupně první).
+- Jakmile se tabulka připojí, neúplný název sloupce, který je v obou tabulkách (`castka`, `datum`), skončí ve
+  `WHERE` chybou `Column ... is ambiguous`. Filtr takového sloupce proto potřebuje
+  `setFilterText()->setColumn('UzivatelskeKonto.castka')`. V `ORDER BY` stejný název projde, protože se
+  vyhodnotí proti vybraným sloupcům hlavní tabulky.
+
+**Why:** Chyba se projeví jen v kombinaci řazení podle navázaného sloupce s filtrem; samotné řazení i samotný
+filtr fungují.
+**How to apply:** Při `setColumn()` s tečkou projdi filtry tabulky a porovnej jejich sloupce se schématem
+připojené tabulky. Test veď přes kombinaci řazení a filtru, ne každé zvlášť.

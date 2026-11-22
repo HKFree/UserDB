@@ -89,7 +89,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(6, $adapter->scenarioFiles);
+        Assert::same(7, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -321,6 +321,9 @@ final class DemoDataPresenterTest extends TestCase
         $unmatched = $this->page('SpravaNesparovanych', 'nesparovane');
         Assert::contains('/40000100', $unmatched);
         Assert::contains('/40000101', $unmatched);
+        foreach ([40000110, 40000111, 40000112, 40000113] as $id) {
+            Assert::contains('/' . $id, $unmatched);
+        }
         Assert::notContains('/40000102', $unmatched);
         Assert::notContains('/40000103', $unmatched);
         foreach ($this->database->table('Smlouva') as $contract) {
