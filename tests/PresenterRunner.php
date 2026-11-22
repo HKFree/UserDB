@@ -49,7 +49,7 @@ final class PresenterRunner
     private static bool $shutdownRegistered = false;
 
     /** @param (\Closure(Presenter): void)|null $preparePresenter */
-    public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null, private ?\Closure $preparePresenter = null) {
+    public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null, private ?\Closure $preparePresenter = null, private string $urlPrefix = '/userdb') {
         if (self::$shutdownRegistered === false) {
             self::$shutdownRegistered = true;
             register_shutdown_function(static function (): void {
@@ -98,7 +98,7 @@ final class PresenterRunner
         }
         $parameters += ['action' => 'default'];
         $method = strtoupper($method);
-        $url = (new RouterFactory())->createRouter('/userdb')->constructUrl(
+        $url = (new RouterFactory())->createRouter($this->urlPrefix)->constructUrl(
             ['presenter' => $name] + $parameters,
             new Http\UrlScript('http://localhost/'),
         );
@@ -133,6 +133,8 @@ final class PresenterRunner
             );
             // A new container also replaces the user, session and request-bound Latte factory.
             $container = TestEnvironment::container($this->database, $request, $this->container, $this->novinkyAdresar);
+            $container->removeService('router');
+            $container->addService('router', (new RouterFactory())->createRouter($this->urlPrefix));
             $presenter = $container->getByType(Application\IPresenterFactory::class)->createPresenter($name);
             if (($presenter instanceof Presenter) === false) {
                 throw new \LogicException("$name is not a UI presenter.");

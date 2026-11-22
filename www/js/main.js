@@ -358,76 +358,197 @@ function showMessage(message, type = 'success') {
 }
 
 
+// Delegovane udalosti funguji i po obnoveni gridu pres AJAX.
 $(document).ready(function () {
-    $('.user-labels').on('click', '.badge-remove', function (e) {
-        e.preventDefault();
+    var pendingLabels = {};
 
-        const stitekId = $(this).data('stitek-id');
-        const userId = $(this).data('user-id');
-        const badge = $(this).closest('.badge');
+    // Bootstrap 3.2 stav aria-expanded sam neaktualizuje.
+    $(document).on('shown.bs.dropdown hidden.bs.dropdown', '.user-labels-component .dropdown, .page-actions .btn-group', function (event) {
+        $(this).find('.dropdown-toggle').attr('aria-expanded', event.type === 'shown' ? 'true' : 'false');
+    });
 
-        // AJAX DELETE požadavek
+    function components(userId) {
+        return $('.user-labels-component').filter(function () {
+            return $(this).attr('data-user-id') === userId;
+        });
+    }
+
+    function refreshLabels() {
+        $('.user-labels-component').each(function () {
+            var component = $(this);
+            var labels = component.find('.user-labels');
+            labels.find('.labels-empty').remove();
+            if (!labels.find('.badge').length) {
+                labels.append($('<span class="labels-empty"></span>').text('žádné'));
+            }
+            component.find('.stitky-item').each(function () {
+                var item = $(this);
+                var assigned = labels.find('.badge-remove').filter(function () {
+                    return $(this).attr('data-stitek-id') === item.attr('data-id');
+                }).length > 0;
+                item.toggleClass('label-assigned', assigned)
+                    .attr('aria-disabled', assigned ? 'true' : 'false')
+                    .attr('title', assigned ? 'Člen tento štítek už má' : 'Přidat štítek');
+            });
+        });
+    }
+
+    function labelError(userId, message) {
+        components(userId).each(function () {
+            $(this).find('.label-error').remove();
+            $('<span class="label-error" role="alert"></span>').text(message).appendTo(this);
+        });
+    }
+
+    $(document).on('click', '.user-labels-component .badge-remove, .user-labels-component .stitky-item', function (event) {
+        event.preventDefault();
+        var control = $(this);
+        var component = control.closest('.user-labels-component');
+        var userId = component.attr('data-user-id');
+        var removing = control.hasClass('badge-remove');
+        var labelId = control.attr(removing ? 'data-stitek-id' : 'data-id');
+        var key = userId + ':' + labelId;
+        if (pendingLabels[key] || (!removing && control.attr('aria-disabled') === 'true')) return;
+
+        var url = component.closest('[data-save-url][data-delete-url]').attr(removing ? 'data-delete-url' : 'data-save-url');
+        if (!url) {
+            labelError(userId, 'Chybí adresa pro úpravu štítků. Obnovte stránku.');
+            return;
+        }
+        pendingLabels[key] = true;
+        components(userId).find('.label-error').remove();
+        var data = { stitek_id: labelId, user_id: userId };
         $.ajax({
-            url: $('body').data('stitky-delete-url'),
-            type: 'DELETE',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                stitek_id: stitekId,
-                user_id: userId
-            }),
+            url: url,
+            type: removing ? 'DELETE' : 'POST',
+            contentType: removing ? 'application/json' : 'application/x-www-form-urlencoded; charset=UTF-8',
+            data: removing ? JSON.stringify(data) : data,
             success: function (response) {
-                if (response.success) {
-                    badge.fadeOut(300, function () {
-                        $(this).remove(); // Odstranění badge
-                    });
-                } else {
-                    console.error('Nepodařilo se odstranit štítek: ' + response.message);
+                if (!response.success) {
+                    labelError(userId, 'Štítek se nepodařilo změnit. Zkuste to znovu.');
+                    return;
+                }
+                components(userId).each(function () {
+                    var labels = $(this).find('.user-labels');
+                    labels.find('.badge-remove').filter(function () {
+                        return $(this).attr('data-stitek-id') === labelId;
+                    }).closest('.badge').remove();
+                    if (!removing) {
+                        var badge = $('<span class="badge"></span>').css({
+                            backgroundColor: response.barva_pozadi, color: response.barva_popredi
+                        }).append($('<span></span>').text(response.text));
+                        $('<button type="button" class="badge-remove">&times;</button>')
+                            .attr({ 'data-stitek-id': labelId, 'data-user-id': userId,
+                                'aria-label': 'Odebrat štítek ' + response.text, title: 'Odebrat štítek' })
+                            .appendTo(badge);
+                        labels.append(badge);
+                    }
+                });
+                refreshLabels();
+                if (document.activeElement === document.body || control.is(':focus')) {
+                    component.find('.dropdown-toggle').focus();
                 }
             },
             error: function () {
-                console.error('Chyba při komunikaci se serverem.');
+                labelError(userId, 'Nepodařilo se připojit k serveru. Zkuste to znovu.');
+            },
+            complete: function () {
+                delete pendingLabels[key];
             }
         });
     });
-    $('.stitky-item').on('click', function (e) {
-        e.preventDefault(); // Zabráníme reloadu stránky
+    refreshLabels();
+    $(document).ajaxComplete(refreshLabels);
+});
 
-        const stitekId = $(this).data('id'); // Získáme ID štítku
-        const userId = $(this).closest('.dropdown').parent().data('user-id'); // Získáme user_id z dropdown boxu
+// Filtruje jen nactene radky hlavniho gridu. Ovladani zustava mimo AJAX snippet.
+$(document).ready(function () {
+    var list = $('.member-list');
+    var input = $('#member-quick-filter');
+    if (!list.length) return;
+    var compact = false;
+    try {
+        compact = localStorage.getItem('userdb_rows_compact') === 'true';
+    } catch (error) {
+        // Nastaveni je volitelne, napr. v soukromem rezimu muze byt uloziste nedostupne.
+    }
 
-        const existing = $(`.user-labels-component[data-user-id=${userId}] .user-labels .badge .badge-remove[data-stitek-id=${stitekId}]`);
-        if (existing.length > 0) return;
-
-        // Odeslání AJAX požadavku
-        $.ajax({
-            url: $('body').data('stitky-save-url'),
-            type: 'POST',
-            data: {
-                stitek_id: stitekId,
-                user_id: userId
-            },
-            success: function (response) {
-                if (response.success) {
-                    // uloženo -> zobrazit novej štítek (stejně jako v UserLabelComponents.latte)
-                    const newLabel = `<span class="badge" style="background-color: ${response.barva_pozadi}; color: ${response.barva_popredi};">
-                            ${response.text}
-                            <span class="badge-remove" data-stitek-id="${stitekId}" data-user-id="${userId}">&times;</span>
-                        </span>`;
-                    $(newLabel).hide().appendTo(`.user-labels-component[data-user-id=${userId}] .user-labels`).fadeIn(300);
-                    console.log('Štítek byl úspěšně uložen!', 'success');
-                } else {
-                    alert('Došlo k chybě: ' + response.message, 'danger');
-                    console.error('Došlo k chybě: ' + response.message, 'danger');
-                }
-            },
-            error: function () {
-                alert('Nepodařilo se připojit k serveru.', 'danger');
-                console.error('Nepodařilo se připojit k serveru.', 'danger');
-            }
+    function applyFilter() {
+        var needle = $.trim(input.val()).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        var rows = list.find('#grid tbody tr[class*="grid-row-"]');
+        var shown = 0;
+        rows.each(function () {
+            // Nabidka obsahuje vsechny stitky, do filtru patri jen hodnoty radku a prirazene stitky.
+            var searchable = this.cloneNode(true);
+            $(searchable).find('.dropdown, .labels-empty, button, script').remove();
+            var text = $(searchable).text().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            var matches = !needle || text.indexOf(needle) !== -1;
+            $(this).toggleClass('quick-filter-hidden', !matches);
+            if (matches) shown++;
         });
+        $('.quick-filter-count').text(shown + ' z ' + rows.length + ' načtených řádků');
+        $('.quick-filter').toggleClass('quick-filter-no-match', shown === 0 && needle !== '');
+    }
+
+    function applyDensity() {
+        list.toggleClass('rows-compact', compact);
+        list.find('.row-density button').each(function () {
+            var active = ($(this).attr('data-compact') === '1') === compact;
+            $(this).toggleClass('active', active).attr('aria-pressed', active ? 'true' : 'false');
+        });
+        $(window).trigger('resize');
+    }
+
+    input.on('input', applyFilter);
+    list.on('click', '.row-density button', function () {
+        compact = $(this).attr('data-compact') === '1';
+        try {
+            localStorage.setItem('userdb_rows_compact', compact ? 'true' : 'false');
+        } catch (error) {
+            // Zmena funguje i bez zapamatovani.
+        }
+        applyDensity();
+    });
+    applyFilter();
+    applyDensity();
+    $(document).ajaxComplete(function () {
+        setTimeout(function () {
+            applyFilter();
+            applyDensity();
+        }, 0);
     });
 });
 
+// Kopirovani IP doplnuje pouze autorizovanou tabulku, bez presouvani obsahu nebo skriptu.
+$(document).ready(function () {
+    $('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] > td:first-child').each(function () {
+        var value = $.trim($(this).text());
+        $('<button type="button" class="copy-value"><i class="fa fa-clone" aria-hidden="true"></i></button>')
+            .attr({ 'data-copy-value': value, title: 'Zkopírovat IP adresu', 'aria-label': 'Zkopírovat IP adresu' })
+            .appendTo(this);
+    });
 
-
-/** STITKY **/
+    var feedback = $('<span class="sr-only" role="status" aria-live="polite"></span>');
+    if ($('.copy-value').length) feedback.appendTo('.main');
+    $(document).on('click', '.copy-value', function () {
+        var button = $(this);
+        var value = button.attr('data-copy-value');
+        function done(success) {
+            feedback.text(success ? 'Zkopírováno.' : 'Kopírování se nezdařilo. Označte a zkopírujte hodnotu ručně.');
+            button.toggleClass('copied', success);
+            button.find('i').attr('class', success ? 'fa fa-check' : 'fa fa-exclamation-circle');
+            setTimeout(function () {
+                button.removeClass('copied').find('i').attr('class', 'fa fa-clone');
+            }, 1300);
+        }
+        function fallback() {
+            done(copyTextToClipboard(value));
+            button.focus();
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(value).then(function () { done(true); }, fallback);
+        } else {
+            fallback();
+        }
+    });
+});

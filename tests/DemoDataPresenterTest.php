@@ -410,7 +410,8 @@ final class DemoDataPresenterTest extends TestCase
     private function assertMemberPages(): void {
         foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->order('id') as $member) {
             $show = $this->page('Uzivatel', 'show', $member->id);
-            Assert::contains('UID ' . $member->id . ' - Demo ' . $member->prijmeni, $this->text($show));
+            Assert::contains('Demo ' . $member->prijmeni, $this->values($show, '//h1')[0]);
+            Assert::contains('UID ' . $member->id, $this->values($show, '//h1')[0]);
             $edit = $this->page('Uzivatel', 'edit', $member->id);
             Assert::same([(string) $member->id], $this->values($edit, '//input[@name="id"]/@value'));
             Assert::same([$member->prijmeni], $this->values($edit, '//input[@name="prijmeni"]/@value'));

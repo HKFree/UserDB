@@ -247,6 +247,7 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->u = $uzivatel;
 
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
+                $this->template->ipCount = $ipAdresy->count();
 
                 $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
                 $wewimoLinks = $this->getWewimoLinksFromIPs($ipAdresy);
