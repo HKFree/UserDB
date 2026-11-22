@@ -263,23 +263,7 @@ class UzivatelListGrid
             }
         }
 
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) {
-            $latte = new Engine();
-            $params = [
-                'stitky' => $this->stitek->getSeznamStitku(),
-                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
-                'userId' => $item->id,
-            ];
-            $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
-            return $latte->renderToString($templatePath, $params);
-        })->setCustomRenderExport(function ($item) {
-            $stitkyUzivatele = $this->stitekUzivatele->getStitekByUserId($item->id);
-            $out = [];
-            foreach ($stitkyUzivatele as $stitekUzivateleItem) {
-                $out[] = $stitekUzivateleItem->text;
-            }
-            return join(", ", $out);
-        });
+        $this->pridejSloupecStitku($grid);
 
         return $grid;
     }
@@ -536,24 +520,32 @@ class UzivatelListGrid
             }
         }
 
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) {
-            $latte = new Engine();
+        $this->pridejSloupecStitku($grid);
+
+        return $grid;
+    }
+
+    /** Štítky členů i nabídka všech štítků se načtou jednou na tabulku, ne pro každý řádek. */
+    private function pridejSloupecStitku(\Grido\Grid $grid): void {
+        $stitkyClenu = new StitkyClenu($this->stitekUzivatele);
+        $latte = new Engine();
+        $stitky = null;
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function (ActiveRow $item) use ($stitkyClenu, $latte, &$stitky): string {
+            $stitky ??= $this->stitek->getSeznamStitku()->fetchAll();
             $params = [
-                'stitky' => $this->stitek->getSeznamStitku(),
-                'stitkyUzivatele' => $this->stitekUzivatele->getStitekByUserId($item->id),
+                'stitky' => $stitky,
+                'stitkyUzivatele' => $stitkyClenu->clena($item),
                 'userId' => $item->id,
             ];
             $templatePath = __DIR__ . '/../components/UserLabelsComponent.latte';
             return $latte->renderToString($templatePath, $params);
-        })->setCustomRenderExport(function ($item) {
-            $stitkyUzivatele = $this->stitekUzivatele->getStitekByUserId($item->id);
+        })->setCustomRenderExport(function (ActiveRow $item) use ($stitkyClenu): string {
+            $stitkyUzivatele = $stitkyClenu->clena($item);
             $out = [];
             foreach ($stitkyUzivatele as $stitekUzivateleItem) {
                 $out[] = $stitekUzivateleItem->text;
             }
             return join(", ", $out);
         });
-
-        return $grid;
     }
 }
