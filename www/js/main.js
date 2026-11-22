@@ -9,17 +9,22 @@ $(document).ready(function () {
 
     // na uzkem displeji je seznam oblasti vysouvaci panel (viz .sidebar-open v screen.css)
     var sidebarToggle = $("#navareas");
-    function setSidebarOpen(open) {
+    function setSidebarOpen(open, focusFilter) {
         $("html").toggleClass("sidebar-open", open);
         sidebarToggle.attr("aria-expanded", open ? "true" : "false");
         if (open) {
             // otevrene menu by zustalo pod panelem
             $(".navbar-collapse.in").collapse("hide");
-            $("#sidebar-filter-input").focus();
+            if (focusFilter) {
+                $("#sidebar-filter-input").focus();
+            }
         }
     }
-    sidebarToggle.click(function () {
-        setSidebarOpen(!$("html").hasClass("sidebar-open"));
+    sidebarToggle.click(function (event) {
+        // po tuknuti prstem by kurzor v poli vysunul klavesnici pres seznam oblasti;
+        // event.detail je 0, kdyz tlacitko stiskla klavesnice
+        var focusFilter = event.detail === 0 || !window.matchMedia("(pointer: coarse)").matches;
+        setSidebarOpen(!$("html").hasClass("sidebar-open"), focusFilter);
     });
     $(".sidebar-backdrop").click(function () {
         setSidebarOpen(false);

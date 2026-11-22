@@ -344,8 +344,8 @@ použitelnost ve stávajícím vzhledu, ne nový design.
   [katalog demo dat](docs/userdb_demo_data.md). Chybí-li pro některý stav
   data, doplň je do `db/dummy-data`, ať je má i náhled PR.
 - **Počítač i telefon.** Každou změnu si prohlédni v prohlížeči na šířce
-  1280 px a v emulaci telefonu (šířka 375 px a mobilní user agent, podle
-  kterého se `main.js` rozhoduje). V obou musí jít přečíst a ovládat; stránka se nesmí
+  1280 px a v emulaci telefonu (šířka 375 px, mobilní user agent a dotykové
+  ovládání, podle kterého se `main.js` rozhoduje). V obou musí jít přečíst a ovládat; stránka se nesmí
   posouvat do strany, široká tabulka se posouvá ve vlastním rámu. Zkontroluj
   i konzoli prohlížeče a že stránka neskončila chybou Tracy.
 - **Prohlížeč Orcy.** Je-li Orca dostupná, prohlížej stránky výhradně ve

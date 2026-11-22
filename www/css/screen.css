@@ -2127,6 +2127,11 @@ input[readonly],
         width: 100% !important;
     }
 
+    .apiklic>.klic,
+    .apiklic>.poznamka {
+        width: 100%;
+    }
+
     .btn-sm {
         padding: 6px 10px;
     }
@@ -2150,6 +2155,63 @@ input[readonly],
 /* IDS events arrive by AJAX after main.js has framed the other tables. */
 #ids {
     overflow-x: auto;
+}
+
+/*
+ * iOS Safari zooms the whole page when the cursor lands in a field with text smaller than 16 px,
+ * so on touch screens and narrow windows every text field gets 16 px.
+ */
+@media (max-width: 989px), (pointer: coarse) {
+
+    input:not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    select,
+    textarea,
+    select.form-control,
+    textarea.form-control,
+    select.input-sm,
+    textarea.input-sm {
+        font-size: 16px;
+    }
+
+    /* The hint is longer than a phone is wide at 16 px; its size does not trigger the zoom. */
+    .main .quick-filter input::placeholder {
+        font-size: 14px;
+    }
+
+    /* Fields with a fixed width grow with the text, so that an address still fits. */
+    .ip>.mac_adresa {
+        width: 185px;
+    }
+
+    .ip>.ip_adresa {
+        width: 160px;
+    }
+
+    .ip>.hostname,
+    .ip>.login,
+    .ip>.heslo {
+        width: 125px;
+    }
+
+    .subnet>.subnet_text,
+    .subnet>input[name$="[gateway]"] {
+        width: 155px;
+    }
+}
+
+/* A double tap on a control is a tap, not a request to zoom in. Pinch zoom stays. */
+html {
+    touch-action: manipulation;
+}
+
+/* Merging two members: long option texts must not set the width of the page. */
+.merge-layout {
+    min-width: 640px;
+    table-layout: fixed;
+}
+
+.merge-layout select {
+    width: 100%;
 }
 
 @media (max-width: 359px) {
@@ -2893,7 +2955,7 @@ input[readonly],
 /* As wide as the longest option, but never wider than the column. */
 .member-form table.form > tbody > tr > td > select {
     width: auto;
-    min-width: 320px;
+    min-width: min(320px, 100%);
     max-width: 100%;
 }
 
