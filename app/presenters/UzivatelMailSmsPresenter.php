@@ -194,7 +194,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($ap !== null && !$submitujeSe) {
-            $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
+            $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
             $validni = [];
             foreach ($emaily as $email) {
                 if (Validators::isEmail($email)) {
@@ -223,7 +223,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         if ($ap === null) {
             $this->error('AP nebylo nalezeno.');
         }
-        $emaily = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'email');
+        $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
 
         $mail = new Message();
         if ($values->from === 0) {
@@ -322,7 +322,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             if ($ap === null) {
                 $this->error('AP nebylo nalezeno.');
             }
-            $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
+            $telefony = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'telefon');
             $validni = [];
             foreach ($telefony as $tl) {
                 if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
@@ -348,7 +348,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $this->error('AP nebylo nalezeno.');
         }
 
-        $telefony = $ap->related('Uzivatel.Ap_id')->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetchPairs('id', 'telefon');
+        $telefony = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'telefon');
 
         $validni = [];
         foreach ($telefony as $uid => $tl) {

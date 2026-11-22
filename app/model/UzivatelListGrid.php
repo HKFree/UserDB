@@ -97,7 +97,7 @@ class UzivatelListGrid
             ->setDefaultValue('active')
             ->setWhere(function ($value, $connection) {
                 if ($value === 'active') {
-                    return ($connection->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)'));
+                    return ($connection->where(Uzivatel::AKTIVNI_CLEN));
                 }
                 if ($value === 'planned') {
                     return ($connection->where('spolek = 1 AND TypClenstvi_id = 0'));
@@ -331,7 +331,7 @@ class UzivatelListGrid
                 'all' => 'spolek i družstvo včetně zrušených a smazaných'))
             ->setWhere(function ($value, $connection) {
                 if ($value === 'active') {
-                    return ($connection->where('(spolek = ? AND TypClenstvi_id > ?) OR (druzstvo = ? AND smazano = ?)', 1, 1, 1, 0));
+                    return ($connection->where(Uzivatel::AKTIVNI_CLEN));
                 } elseif ($value === 'spolek') {
                     return ($connection->where('spolek = ? AND TypClenstvi_id > ?', 1, 1));
                 } elseif ($value === 'druzstvo') {
