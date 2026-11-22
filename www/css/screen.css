@@ -666,6 +666,34 @@ table.form>tbody>tr>td {
     cursor: not-allowed;
 }
 
+/*
+ * A select with its own border loses the native arrow and every browser draws a different
+ * fallback, so the arrow is drawn here: the same small triangle as the caret of the menus.
+ */
+select:not([multiple]):not([size]) {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 24px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0 0h8L4 4z' fill='%23333'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+/* With forced colours the fixed fill could vanish against the field, so the native arrow returns. */
+@media (forced-colors: active) {
+    select:not([multiple]):not([size]) {
+        -webkit-appearance: auto;
+        -moz-appearance: auto;
+        appearance: auto;
+        background-image: none;
+    }
+}
+
+select:not([multiple]):not([size]):disabled {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0 0h8L4 4z' fill='%23999'/%3E%3C/svg%3E");
+}
+
 /* Minimum sizes only: a field with a larger size or rows attribute keeps it. */
 table.form>tbody>tr>td>input[type="text"],
 table.form>tbody>tr>td>input[type="email"] {
@@ -2116,6 +2144,11 @@ input[readonly],
         width: 100% !important;
     }
 
+    /* Two filters per row; grido's 12em column is too narrow for a 16 px value. */
+    .grido .filter.outer .items > span {
+        width: 50%;
+    }
+
     .ipform,
     .subnetform,
     .apiklicform,
@@ -2197,6 +2230,17 @@ input[readonly],
     .subnet>input[name$="[gateway]"] {
         width: 155px;
     }
+
+    .ip>.TypZarizeni_id {
+        width: 185px;
+    }
+}
+
+/* Grido's 12em filter column is too narrow for a 16 px value; below 768 px the columns are 50 % wide. */
+@media (min-width: 768px) and (max-width: 989px), (min-width: 768px) and (pointer: coarse) {
+    .grido .filter.outer .items > span {
+        width: 14em;
+    }
 }
 
 /* A double tap on a control is a tap, not a request to zoom in. Pinch zoom stays. */
@@ -2212,6 +2256,20 @@ html {
 
 .merge-layout select {
     width: 100%;
+}
+
+/* Two filters side by side on a phone: tighter spacing, so that a value such as "spolek i družstvo" fits. */
+@media (max-width: 479px) {
+    .grido .filter.outer .items > span {
+        padding-right: 4px;
+        padding-left: 4px;
+    }
+
+    .grido .filter.outer select:not([multiple]):not([size]) {
+        padding-right: 20px;
+        padding-left: 6px;
+        background-position: right 6px center;
+    }
 }
 
 @media (max-width: 359px) {
