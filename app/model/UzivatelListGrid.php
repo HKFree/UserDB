@@ -3,6 +3,8 @@
 namespace App\Model;
 
 use Nette;
+use Nette\Database\Row;
+use Nette\Database\Table\ActiveRow;
 use Nette\Utils\Strings;
 use Nette\Utils\Html;
 use Latte\Engine;
@@ -14,20 +16,39 @@ class UzivatelListGrid
 {
     private const TEMPLATE_FILE = __DIR__ . '/../templates/components/memberGrid.latte';
 
+    /** Typy pohybů na kontě (TypPohybuNaUctu), ze kterých se bere poslední platba a poslední aktivace. */
+    private const PLATBA = [1];
+    private const AKTIVACE = [4, 5];
+    private const MESICNI_AKTIVACE = [4];
+
     private Uzivatel $uzivatel;
     private Stitek $stitek;
     private StitekUzivatele $stitekUzivatele;
     private AP $ap;
     private CestneClenstviUzivatele $cestneClenstviUzivatele;
     private Parameters $parameters;
+    private UzivatelskeKonto $uzivatelskeKonto;
 
-    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel, Stitek $stitky, StitekUzivatele $stitekUzivatele) {
+    public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel, Stitek $stitky, StitekUzivatele $stitekUzivatele, UzivatelskeKonto $uzivatelskeKonto) {
         $this->stitek = $stitky;
         $this->stitekUzivatele = $stitekUzivatele;
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->cestneClenstviUzivatele = $cc;
         $this->parameters = $parameters;
+        $this->uzivatelskeKonto = $uzivatelskeKonto;
+    }
+
+    /** Datum a částka pohybu pro sloupce Poslední platba a Poslední aktivace. */
+    private function popisPohybu(?Row $pohyb, bool $sVlastnikem = false): string {
+        if ($pohyb === null) {
+            return '?';
+        }
+        if ($pohyb->datum === null) {
+            return 'NIKDY';
+        }
+        $vlastnik = $sVlastnikem ? ',' . (in_array($pohyb->druzstvo, [0, false], true) ? 'S' : 'D') : '';
+        return $pohyb->datum->format('d.m.Y') . ' (' . $pohyb->castka . $vlastnik . ')';
     }
 
     private function addressNotice(Html $el, Nette\Database\Table\ActiveRow $item): void {
@@ -193,36 +214,15 @@ class UzivatelListGrid
                 $grid->addColumnText('money_aktivni', 'Aktivní')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
                 $grid->addColumnText('money_deaktivace', 'Deaktivace')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
 
-                $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function ($item) {
-                    $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
-                    if ($posledniPlatba->count() > 0) {
-                        $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum === null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
-                    }
-                    return "?";
-                })->setCustomRender(function ($item) {
-                    $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
-                    if ($posledniPlatba->count() > 0) {
-                        $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum === null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
-                    }
-                    return "?";
-                });
+                $posledniPohyby = new PosledniPohybyKonta($this->uzivatelskeKonto);
+                $posledniPlatba = fn (ActiveRow $item): string => $this->popisPohybu($posledniPohyby->posledni($item, self::PLATBA));
+                $grid->addColumnText('lastp', 'Poslední platba')->setColumn($posledniPlatba)->setCustomRender($posledniPlatba);
 
-                $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function ($item) {
-                    $posledniAktivace = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
-                    if ($posledniAktivace->count() > 0) {
-                        $posledniAktivaceData = $posledniAktivace->fetch();
-                        return ($posledniAktivaceData->datum === null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
-                    }
-                    return "?";
-                })->setCustomRender(function ($item) {
-                    $posledniAktivace = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 4)->order('id DESC')->limit(1);
-                    if ($posledniAktivace->count() > 0) {
-                        $posledniAktivaceData = $posledniAktivace->fetch();
-                        return ($posledniAktivaceData->datum === null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
-                    }
-                    return "?";
+                // Stránka ukazuje jen měsíční aktivaci, export i dočasnou přes SMS.
+                $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function (ActiveRow $item) use ($posledniPohyby): string {
+                    return $this->popisPohybu($posledniPohyby->posledni($item, self::AKTIVACE));
+                })->setCustomRender(function (ActiveRow $item) use ($posledniPohyby): string {
+                    return $this->popisPohybu($posledniPohyby->posledni($item, self::MESICNI_AKTIVACE));
                 });
 
                 $grid->addColumnText('acc', 'Stav účtu')->setColumn(function ($item) {
@@ -496,22 +496,13 @@ class UzivatelListGrid
                 $grid->addColumnText('money_aktivni', 'Aktivní')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
                 $grid->addColumnText('money_deaktivace', 'Deaktivace')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
 
-                $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function ($item) {
-                    $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
-                    if ($posledniPlatba->count() > 0) {
-                        $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum === null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . "," . ($posledniPlatbaData->druzstvo ? "D" : "S") . ")");
-                    }
-                    return "?";
+                $posledniPohyby = new PosledniPohybyKonta($this->uzivatelskeKonto);
+                $grid->addColumnText('lastp', 'Poslední platba')->setColumn(function (ActiveRow $item) use ($posledniPohyby): string {
+                    return $this->popisPohybu($posledniPohyby->posledni($item, self::PLATBA), true);
                 });
 
-                $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function ($item) {
-                    $posledniAktivace = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
-                    if ($posledniAktivace->count() > 0) {
-                        $posledniAktivaceData = $posledniAktivace->fetch();
-                        return ($posledniAktivaceData->datum === null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
-                    }
-                    return "?";
+                $grid->addColumnText('lasta', 'Poslední aktivace')->setColumn(function (ActiveRow $item) use ($posledniPohyby): string {
+                    return $this->popisPohybu($posledniPohyby->posledni($item, self::AKTIVACE));
                 });
 
                 $grid->addColumnText('acc', 'Stav účtu')->setColumn(function ($item) {
