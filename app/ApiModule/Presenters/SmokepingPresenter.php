@@ -60,6 +60,11 @@ class SmokepingPresenter extends ApiPresenter
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');
-        $this->template->md5 = md5(serialize($this->ipAdresa->findBy(array('smokeping' => 1))->fetchPairs('id', 'ip_adresa')));
+        $adresy = $this->ipAdresa->findBy(['smokeping' => 1])->select('id, ip_adresa, Uzivatel_id, Ap_id')->order('id');
+        $stav = [];
+        foreach ($adresy as $adresa) {
+            $stav[] = $adresa->toArray();
+        }
+        $this->template->md5 = md5(serialize($stav));
     }
 }

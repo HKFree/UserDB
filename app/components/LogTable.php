@@ -192,7 +192,8 @@ class LogTable extends UI\Control
             } elseif ($rozparsovano["typ"] === self::IPADRESA) {
                 $id = $rozparsovano["ipId"];
                 $sloupec = $rozparsovano["sloupec"];
-                if (preg_match("/(".$toSkipString.")/i", $sloupec) === 1) {
+                $presun = $sloupec === 'Uzivatel_id' && $line->akce === self::UPDATE;
+                if (!$presun && preg_match("/(".$toSkipString.")/i", $sloupec) === 1) {
                     continue;
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);
@@ -202,7 +203,9 @@ class LogTable extends UI\Control
 
                 if ($last !== null && $last['datum'] === $datum && $last['titulek'] === $titulek) {
                     $text = "";
-                    if ($line->akce === self::INSERT) {
+                    if ($presun) {
+                        $text = "Přesun IP od člena ".$line->puvodni_hodnota." ke členovi ".$line->nova_hodnota.", ";
+                    } elseif ($line->akce === self::INSERT) {
                         $text = $sloupec." = ".$line->nova_hodnota.", ";
                     } elseif ($line->akce === self::DELETE && ($line->puvodni_hodnota ?? '') !== '') {
                         $text = $sloupec." = ".$line->puvodni_hodnota.", ";
@@ -216,7 +219,9 @@ class LogTable extends UI\Control
                     $tr->create('td')->setText($titulek);
 
                     $text = "";
-                    if ($line->akce === self::INSERT) {
+                    if ($presun) {
+                        $text = "Přesun IP od člena ".$line->puvodni_hodnota." ke členovi ".$line->nova_hodnota.", ";
+                    } elseif ($line->akce === self::INSERT) {
                         $text = "Založení IP Adresy s parametry ".$sloupec." = ".$line->nova_hodnota.", ";
                     } elseif ($line->akce === self::DELETE) {
                         $text = "IP Adresa byla smazána. Parametry byly ".$sloupec." = ".$line->puvodni_hodnota.", ";

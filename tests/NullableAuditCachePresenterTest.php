@@ -40,6 +40,7 @@ final class NullableAuditCachePresenterTest extends DatabaseTestCase
         } else {
             $post = [
                 '_do' => 'uzivatelForm-submit', 'id' => (string) $owner->id, 'Ap_id' => (string) $owner->Ap_id,
+                'ipOtisk' => $container->getByType(\App\Services\PresunIpSluzba::class)->otiskIp($owner->id),
                 'TypPravniFormyUzivatele_id' => (string) $owner->TypPravniFormyUzivatele_id,
                 'jmeno' => $owner->jmeno, 'prijmeni' => $owner->prijmeni, 'nick' => $owner->nick,
                 'email' => $owner->email, 'telefon' => $owner->telefon, 'ulice_cp' => $owner->ulice_cp,

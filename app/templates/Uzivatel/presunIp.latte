@@ -1,0 +1,52 @@
+{block content}
+<div class="ip-transfer">
+    <h1>Přesun IP k jinému členovi</h1>
+    <p class="text-muted ip-transfer-intro">Předání zařízení novému členovi v rámci stejného AP.</p>
+
+    {form presunIpForm}
+        <div class="alert alert-danger" role="alert" n:if="$form->hasErrors()">
+            <ul class="error"><li n:foreach="$form->errors as $error">{$error}</li></ul>
+        </div>
+        <section class="panel panel-default" aria-labelledby="ip-transfer-summary">
+            <div class="panel-heading"><h2 class="panel-title" id="ip-transfer-summary">Údaje o přesunu</h2></div>
+            <div class="panel-body">
+                <dl class="ip-transfer-details">
+                    <dt>Původní člen</dt>
+                    <dd><a n:href="Uzivatel:show id => $presunZdroj->id">{$presunZdroj->id} - {$presunZdroj->nick}</a></dd>
+                    {if $presunIp}
+                        <dt>IP adresa</dt><dd><strong>{$presunIp->ip_adresa}</strong></dd>
+                        <dt>Název zařízení</dt><dd>{$presunIp->hostname ?: 'Neuveden'}</dd>
+                        <dt>MAC adresa</dt><dd>{$presunIp->mac_adresa ?: 'Neuvedena'}</dd>
+                        <dt>Navázaná pravidla</dt><dd>DNAT: {$pocetDnat}, výjimky SMTP: {$pocetSmtp}</dd>
+                    {/if}
+                </dl>
+            </div>
+        </section>
+
+        {if $presunIp}
+            <div class="ip-transfer-notes">
+                <section>
+                    <h2>Co se přesune</h2>
+                    <p>Celá konfigurace zařízení včetně přihlašovacích údajů, internetu, DHCP, MAC filtru, monitoringu a navázaných pravidel.</p>
+                </section>
+                <section>
+                    <h2>Co zůstává beze změny</h2>
+                    <p>Členství, smlouvy, kredit a dluhy obou členů. Původního člena případně zrušte samostatně.</p>
+                </section>
+            </div>
+        {/if}
+
+        {if $presunIp && $form['cil']->items !== []}
+            <div class="form-group ip-transfer-target">
+                {label cil /}
+                {input cil class => 'form-control', aria-describedby => 'ip-transfer-help'}
+                <p class="help-block" id="ip-transfer-help">Vyberte člena, který zařízení přebírá. Nabídka obsahuje vhodné členy stejného AP, které smíte upravovat.</p>
+            </div>
+        {/if}
+        <div class="ip-transfer-actions">
+            {if $presunIp && $form['cil']->items !== []}{input potvrdit}{/if}
+            <a n:href="Uzivatel:edit id => $presunZdroj->id" class="btn btn-default">Zpět na editaci člena</a>
+        </div>
+    {/form}
+</div>
+{/block}

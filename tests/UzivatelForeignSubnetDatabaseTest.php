@@ -106,9 +106,26 @@ final class UzivatelForeignSubnetDatabaseTest extends DatabaseTestCase
         Assert::true($this->users->maIpAdresuVSubnetuCizihoAp($member->id, [$this->area->id]));
     }
 
+    public function testBatchIsRestrictedToApAndReturnsEachMemberOnce(): void {
+        $this->fixtures->ipAddress($this->foreignMember->id, '10.107.250.5');
+        $this->fixtures->ipAddress($this->foreignMember->id, '10.107.250.6');
+        $this->fixtures->ipAddress($this->fixtures->member($this->neighbourAp->id)->id, '10.107.250.7');
+        $this->fixtures->member($this->foreignAp->id);
+
+        Assert::same([$this->foreignMember->id], $this->users->najdiUzivateleNaApVSubnetechCizichAp($this->foreignAp->id, [$this->area->id]));
+        Assert::same([], $this->users->najdiUzivateleNaApVSubnetechCizichAp($this->foreignAp->id, []));
+        Assert::same([], $this->users->najdiUzivateleNaApVSubnetechCizichAp($this->foreignAp->id, [$this->foreignArea->id]));
+
+        $this->fixtures->ipAddress($this->fixtures->member($this->ap->id)->id, '10.107.250.8');
+        Assert::same([], $this->users->najdiUzivateleNaApVSubnetechCizichAp($this->ap->id, [$this->area->id]));
+    }
+
     /** @param list<int> $areaIds */
     private function hasAddressIn(array $areaIds): bool {
-        return $this->users->maIpAdresuVSubnetuCizihoAp($this->foreignMember->id, $areaIds);
+        $allowed = $this->users->maIpAdresuVSubnetuCizihoAp($this->foreignMember->id, $areaIds);
+        $batch = $this->users->najdiUzivateleNaApVSubnetechCizichAp($this->foreignAp->id, $areaIds);
+        Assert::same($allowed, in_array($this->foreignMember->id, $batch, true));
+        return $allowed;
     }
 }
 

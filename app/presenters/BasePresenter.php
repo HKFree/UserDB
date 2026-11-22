@@ -79,7 +79,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      * Kdo smí upravovat člena (canViewOrEdit na detailu a editaci člena): EXTSUPPORT, správce AP člena
      * (AP::canViewOrEditAP) a SO/ZSO, v jehož subnetech má člen z jiné oblasti IP adresu.
      */
-    protected function smiUpravitUzivatele(ActiveRow $uzivatel): bool {
+    protected function smiUpravitUzivatele(ActiveRow|Nette\Database\Row $uzivatel): bool {
         if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())) {
             return true;
         }
@@ -88,6 +88,23 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
             $oblastIds[] = $oblast->id;
         }
         return $this->uzivatelModel->maIpAdresuVSubnetuCizihoAp($uzivatel->id, $oblastIds);
+    }
+
+    /**
+     * Filtr nabídky na jednom AP; při zápisu se oprávnění kontroluje znovu přes smiUpravitUzivatele().
+     * @param Nette\Database\Table\Selection<ActiveRow> $clenove
+     * @return Nette\Database\Table\Selection<ActiveRow>
+     */
+    protected function omezNaUpravitelneUzivateleNaAp(Nette\Database\Table\Selection $clenove, int $apId): Nette\Database\Table\Selection {
+        $clenove->where('Ap_id', $apId);
+        if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($apId, $this->getUser())) {
+            return $clenove;
+        }
+        $oblastIds = [];
+        foreach ($this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid()) as $oblast) {
+            $oblastIds[] = $oblast->id;
+        }
+        return $clenove->where('id', $this->uzivatelModel->najdiUzivateleNaApVSubnetechCizichAp($apId, $oblastIds));
     }
 
     protected function beforeRender() {

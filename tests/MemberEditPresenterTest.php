@@ -191,6 +191,23 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same($password, (string) $inputs[0]['value']);
     }
 
+    /** @return list<array{string}> */
+    public function transferDirections(): array {
+        return [['out'], ['in']];
+    }
+
+    /** @dataProvider transferDirections */
+    public function testStaleFormAfterIpTransfer(string $direction): void {
+        $other = $this->fixtures->member($this->member->Ap_id);
+        $ip = $this->fixtures->ipAddress($direction === 'out' ? $this->member->id : $other->id, '10.107.241.50');
+        $post = $this->post(['poznamka' => 'Stale edit']);
+        $ip->update(['Uzivatel_id' => $direction === 'out' ? $other->id : $this->member->id]);
+        $before = $this->snapshot();
+        $result = $this->submit($post);
+        $this->assertValidation($result, 'Seznam IP adres se mezitím změnil. Obnovte stránku a úpravu opakujte.');
+        Assert::same($before, $this->snapshot());
+    }
+
     public function testIpRangeSkipsOccupiedAddress(): void {
         $other = $this->fixtures->member($this->member->Ap_id);
         $occupied = $this->fixtures->ipAddress($other->id, '10.107.242.2');
@@ -202,6 +219,44 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         foreach ($this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id) as $ip) {
             $this->assertLog('I', 'IPAdresa[' . $ip->id . '].ip_adresa', null, $ip->ip_adresa);
         }
+    }
+
+    public function testMissingIpSnapshotRejectsExistingMemberEdit(): void {
+        $post = $this->post();
+        unset($post['ipOtisk']);
+        $before = $this->snapshot();
+        $this->assertValidation($this->submit($post), 'Seznam IP adres se mezitím změnil. Obnovte stránku a úpravu opakujte.');
+        Assert::same($before, $this->snapshot());
+    }
+
+    public function testForeignIpCannotBeTakenThroughMemberEdit(): void {
+        $other = $this->fixtures->member($this->member->Ap_id);
+        $ip = $this->fixtures->ipAddress($other->id, '10.107.241.51');
+        $post = $this->post(['ip' => [$ip->id => $this->ipPost(['id' => $ip->id, 'ip_adresa' => $ip->ip_adresa])]]);
+        $before = $this->snapshot();
+        Assert::exception(fn () => $this->submit($post), \Nette\Application\BadRequestException::class, 'Nemáte oprávnění.', 403);
+        Assert::same($before, $this->snapshot());
+    }
+
+    public function testNewMemberCannotTakeExistingIp(): void {
+        $ip = $this->fixtures->ipAddress($this->member->id, '10.107.241.52');
+        $post = $this->post([
+            'id' => '', 'datum_narozeni' => '1985-06-15',
+            'ip' => [$ip->id => $this->ipPost(['id' => $ip->id, 'ip_adresa' => $ip->ip_adresa])],
+        ]);
+        $before = $this->snapshot();
+        $this->assertValidation($this->submit($post), 'Nový člen nemůže převzít existující IP přes běžnou editaci.');
+        Assert::same($before, $this->snapshot());
+    }
+
+    public function testExistingDualAssignmentDoesNotBlockUnrelatedEdit(): void {
+        $ip = $this->fixtures->ipAddress($this->member->id, '10.107.241.53', ['Ap_id' => $this->member->Ap_id]);
+        $result = $this->submit($this->post(['poznamka' => 'Updated note']));
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
+        Assert::same('Updated note', $this->requireRow($this->database->table('Uzivatel')->get($this->member->id))->poznamka);
+        $stored = $this->requireRow($this->database->table('IPAdresa')->get($ip->id));
+        Assert::same($this->member->id, $stored->Uzivatel_id);
+        Assert::same($this->member->Ap_id, $stored->Ap_id);
     }
 
     /** @return list<array{string}> */
@@ -354,6 +409,21 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $this->assertRegistrationEmails($stored, 'Žádost o potvrzení registrace člena hkfree.org z.s. - UID ');
     }
 
+    public function testFailedIpDeletionDoesNotSendMembershipEmail(): void {
+        $this->member->update(['druzstvo' => 0, 'spolek' => 1, 'TypClenstvi_id' => 0, 'money_aktivni' => 0]);
+        $ip = $this->fixtures->ipAddress($this->member->id, '10.107.243.4');
+        $device = $this->fixtures->insert('Zarizeni', [
+            'Ap_id' => $this->member->Ap_id, 'TypZarizeni_id' => $this->database->table('TypZarizeni')->min('id'),
+            'nazev' => 'Router', 'smokeping' => 0, 'nagios_ping' => 0, 'nagios_ssh' => 0,
+        ]);
+        $this->database->table('IPAdresaZarizeni')->insert(['Zarizeni_id' => $device->id, 'IPAdresa_id' => $ip->id, 'vychozi' => 1]);
+        $post = $this->post(['TypClenstvi_id' => '3', 'ip' => []]);
+        $before = $this->snapshot();
+        Assert::exception(fn () => $this->submit($post), \Nette\Database\ForeignKeyConstraintViolationException::class);
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+        Assert::same($before, $this->snapshot());
+    }
+
     public function testCooperativeMemberWithCancelledMembershipIsNotDeleted(): void {
         Assert::null($this->member->TypClenstvi_id);
         $ip = $this->fixtures->ipAddress($this->member->id, '10.107.243.2');
@@ -418,6 +488,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         }
         return $changes + [
             '_do' => 'uzivatelForm-submit', 'save' => 'Uložit', 'id' => (string) $m->id, 'Ap_id' => (string) $m->Ap_id,
+            'ipOtisk' => $this->container->getByType(\App\Services\PresunIpSluzba::class)->otiskIp($m->id),
             'TypPravniFormyUzivatele_id' => (string) $m->TypPravniFormyUzivatele_id,
             'firma_nazev' => '', 'firma_ico' => '', 'jmeno' => $m->jmeno, 'prijmeni' => $m->prijmeni,
             'datum_narozeni' => '', 'nick' => $m->nick, 'email' => $m->email, 'email2' => '', 'telefon' => $m->telefon,
