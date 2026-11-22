@@ -39,8 +39,6 @@ vidět. Ověřeno 21. 11. 2026 lokálně ve Floxu (MariaDB 10.11.19), není-li u
 - Plánovaný člen (`TypClenstvi_id=0`) nesmí mít pohyby na kontě, smlouvu ani jiné závislé řádky. Editace ho při
   změně na „zrušeno“ maže a cizí klíč by smazání zastavil.
 - Editace člena vyžaduje telefon, město a PSČ. Demo člen bez nich nejde uložit ani beze změny.
-- `/api/smokeping` skončí chybou `Filter 'toAscii' is not defined`, jakmile má kterákoli IP adresa příznak
-  `smokeping=1`. Demo data proto příznak nikde nenastavují.
 
 ## Síť
 
