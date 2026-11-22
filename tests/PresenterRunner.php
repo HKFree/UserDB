@@ -42,7 +42,7 @@ final class PresenterRunner
     private static ?string $activeRequest = null;
     private static bool $shutdownRegistered = false;
 
-    public function __construct(private Explorer $database, private Container $container) {
+    public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null) {
         if (!self::$shutdownRegistered) {
             self::$shutdownRegistered = true;
             register_shutdown_function(static function (): void {
@@ -124,7 +124,7 @@ final class PresenterRunner
                 remoteAddress: '127.0.0.1',
             );
             // A new container also replaces the user, session and request-bound Latte factory.
-            $container = TestEnvironment::container($this->database, $request, $this->container);
+            $container = TestEnvironment::container($this->database, $request, $this->container, $this->novinkyAdresar);
             $presenter = $container->getByType(Application\IPresenterFactory::class)->createPresenter($name);
             if (!$presenter instanceof Presenter) {
                 throw new \LogicException("$name is not a UI presenter.");

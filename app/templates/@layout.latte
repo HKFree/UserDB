@@ -30,7 +30,7 @@
         <script src="{$basePath}/js/rickshaw.min.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v21">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v22">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/rickshaw.min.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
@@ -56,6 +56,7 @@
           <ul class="nav navbar-nav navbar-right">
             <li><a href="{link Uzivatel:show id=>$user->getIdentity()->getId()}">{$user->getIdentity()->getNick()} ({$user->getIdentity()->getId()})</a></li>
             <li><a href="{link Sprava:mapa id=>null}">Mapa</a></li>
+            <li><a href="{link Novinky:default id=>null}">Novinky</a></li>
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Nástroje <span class="caret"></span></a>
                 <ul class="dropdown-menu">

@@ -246,6 +246,7 @@ npx skills add stablyai/orca
 | `app/ApiModule/Presenters/` | REST API pod `/userdb/api`, ručně popsané ve `swagger.yaml` |
 | `app/model/` | modely nad tabulkami (Nette Database), společný předek `Table.php` |
 | `app/services/`, `app/components/` | služby (e-mail, SMS, PDF, šifrování, smlouvy) a komponenty |
+| `app/novinky/` | texty vydání pro stránku Novinky, formát a postup v [dokumentaci](docs/userdb_novinky.md) |
 | `app/Console/` | příkazy pro `bin/console` |
 | `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
@@ -290,6 +291,9 @@ npx skills add stablyai/orca
   `Oblast`), obsluhy formulářů `*FormSucceded` (zavedený název, nepřejmenovávej).
   Úpravy stylu a přejmenování nemíchej do věcné změny.
 - Každá změna chování má test v `tests/`, viz Postup práce.
+- Změna, které si uživatel všimne na obrazovce nebo v chování aplikace, má
+  ve stejném PR položku pro stránku Novinky v `app/novinky/`. Co tam patří
+  a jak ji zapsat, říká [postup](docs/userdb_novinky.md#přidání-novinek).
 
 ## UI a UX
 
