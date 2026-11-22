@@ -89,7 +89,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(4, $adapter->scenarioFiles);
+        Assert::same(5, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -258,6 +258,21 @@ final class DemoDataPresenterTest extends TestCase
         foreach (['192.0.2', '198.51.100', '10.220.0', '10.220.1', '10.220.2', '10.220.3', '203.0.113', '89.248.240'] as $prefix) {
             $this->page('Subnet', 'overview', $prefix);
             $this->page('Subnet', 'detail', $prefix);
+        }
+        // Device logins and passwords on AP 200: each stored value, spaces included, has an element of its own and a copy button.
+        $credentials = $this->page('Ap', 'show', 200);
+        Assert::same(
+            ['demo', 'demo-only', 'admin', 'demo-60-znaku!Aa1#Bb2$Cc3%Dd4&Ee5<Ff6>Gg7=Hh8?Ii9+Jj0~Kk1^Ll', 'demo', 'demo only', 'jenlogin', 'jen-heslo'],
+            $this->values($credentials, '//td/span[@class="copy-value"]'),
+        );
+        Assert::contains('<span class="copy-value"> demo  only </span>', $credentials);
+        Assert::same(
+            ['Zkopírovat login', 'Zkopírovat heslo', 'Zkopírovat login', 'Zkopírovat heslo', 'Zkopírovat login', 'Zkopírovat heslo', 'Zkopírovat login', 'Zkopírovat heslo'],
+            $this->values($credentials, '//td/span[@class="copy-value"]/following-sibling::button[@type="button"]/@aria-label'),
+        );
+        // On a phone the wide table scrolls in a frame of its own, not the whole page.
+        foreach ([$credentials, $this->page('Uzivatel', 'show', 20027)] as $html) {
+            Assert::true(count($this->values($html, '//div[@class="table-responsive"]/table//span[@class="copy-value"]')) >= 2);
         }
         $subnet = $this->page('Subnet', 'detail', '198.51.100');
         Assert::count(6, $this->values($subnet, '//tr[contains(@class,"subnet-ip-network-row")]'));

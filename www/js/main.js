@@ -109,15 +109,129 @@ function copyTextToClipboard(text) {
     textArea.value = text;
     document.body.appendChild(textArea);
     textArea.select();
+    var successful = false;
     try {
-        var successful = document.execCommand('copy');
+        successful = document.execCommand('copy');
         var msg = successful ? 'successful' : 'unsuccessful';
         console.log('Copying text command was ' + msg);
     } catch (err) {
         console.log('Oops, unable to copy');
     }
     document.body.removeChild(textArea);
+    return successful;
 }
+
+/** KOPÍROVÁNÍ LOGINU A HESLA **/
+// Buňky Login a Heslo skládá App\Model\IPAdresa: hodnota je v prvku .copy-value, za ní tlačítko .copy-value-button.
+$(document).ready(function () {
+    $(document).on('click', '.copy-value-button', function () {
+        var button = $(this);
+        writeTextToClipboard(button.siblings('.copy-value').text()).then(function (copied) {
+            showCopyResult(button, copied);
+        });
+    });
+
+    // Výběr tažený myší, který skončí nad tlačítkem, ve Firefoxu nedosáhne na konec hodnoty.
+    // Po dobu tažení proto tlačítka myš nevnímají (pointer-events v screen.css) a výběr se chová jako nad prázdným místem.
+    $(document).on('mousedown', function (event) {
+        if (event.which !== 1 || $(event.target).closest('.copy-value-button').length > 0) {
+            return;
+        }
+        $('body').addClass('copy-value-selecting');
+        // Puštění tlačítka myši se může ztratit (kontextové menu, jiné okno); skončí to i první pohyb bez stisku.
+        $(document).off('.copyValueDrag').on('mousemove.copyValueDrag mouseup.copyValueDrag', function (move) {
+            if (move.type === 'mouseup' || move.buttons !== 1) {
+                $('body').removeClass('copy-value-selecting');
+                $(document).off('.copyValueDrag');
+            }
+        });
+    });
+
+    // Kliknutí nebo dvojklik označí celou hodnotu; dvojklik by jinak vybral jen část hesla po nejbližší oddělovač.
+    // Výběr tažením zůstává na prohlížeči (user-select: all v CSS ho v Chromiu i Firefoxu kazí).
+    // Označuje se až po obsluze kliknutí: Chromium a WebKit při ní výběr teprve ruší.
+    $(document).on('click dblclick', '.copy-value', function (event) {
+        var value = this;
+        if (!event.shiftKey) {
+            setTimeout(function () {
+                window.getSelection().selectAllChildren(value);
+            }, 0);
+        }
+    });
+
+    // Výběr tažením myší často začne nebo skončí mimo hodnotu: prohlížeč pak před ni vloží tabulátor
+    // (oddělovač buněk tabulky), za ni někdy konec řádku, nebo z ní pár znaků chybí. Zasahuje-li výběr
+    // do jediné hodnoty a nic dalšího v něm není, jde do schránky celá a přesná a celá se i označí.
+    // Kopírování z textového pole (i z pomocného pole v copyTextToClipboard) se netýká výběru na stránce.
+    $(document).on('copy', function (event) {
+        var selection = window.getSelection();
+        if (selection.rangeCount !== 1 || $(event.target).is('input, textarea')) {
+            return;
+        }
+        var range = selection.getRangeAt(0);
+        var values = $('.copy-value').filter(function () {
+            return selectedPartOf(this, range) !== '';
+        });
+        if (values.length !== 1 || selection.toString().trim() !== selectedPartOf(values[0], range).trim()) {
+            return;
+        }
+        event.originalEvent.clipboardData.setData('text/plain', values.text());
+        event.preventDefault();
+        selection.selectAllChildren(values[0]);
+    });
+
+    // Výsledek kopírování pro čtečky obrazovky.
+    if ($('.copy-value-button').length > 0) {
+        $('<div id="copy-value-status" class="sr-only" role="status"></div>').appendTo('body');
+    }
+});
+
+// Text prvku, který leží uvnitř výběru. Prvek, kterého se výběr jen dotýká na okraji, dá prázdný řetězec.
+function selectedPartOf(element, range) {
+    if (!range.intersectsNode(element)) {
+        return '';
+    }
+    var part = document.createRange();
+    part.selectNodeContents(element);
+    if (part.compareBoundaryPoints(Range.START_TO_START, range) < 0) {
+        part.setStart(range.startContainer, range.startOffset);
+    }
+    if (part.compareBoundaryPoints(Range.END_TO_END, range) > 0) {
+        part.setEnd(range.endContainer, range.endOffset);
+    }
+    return part.toString();
+}
+
+// Vrací Promise s true, když se text dostal do schránky. navigator.clipboard je jen na HTTPS a na localhostu.
+function writeTextToClipboard(text) {
+    if (!navigator.clipboard) {
+        return Promise.resolve(copyTextToClipboard(text));
+    }
+    return navigator.clipboard.writeText(text).then(function () {
+        return true;
+    }, function () {
+        return copyTextToClipboard(text);
+    });
+}
+
+// Na chvíli ukáže u tlačítka výsledek kopírování, pak vrátí původní ikonu a nápovědu.
+function showCopyResult(button, copied) {
+    var icon = button.children('.fa');
+    var resultIcon = copied ? 'fa-check' : 'fa-exclamation-triangle';
+    var resultText = copied ? 'Zkopírováno' : 'Kopírování se nezdařilo. Klikněte na hodnotu a zkopírujte ji ručně.';
+
+    icon.removeClass('fa-copy fa-check fa-exclamation-triangle').addClass(resultIcon);
+    $('#copy-value-status').text(resultText);
+    // copyTextToClipboard přesouvá fokus do pomocného pole; vrátit ho, ať jde pokračovat klávesnicí.
+    button.trigger('focus').attr('data-original-title', resultText).tooltip('show');
+    clearTimeout(button.data('copyResultTimer'));
+    button.data('copyResultTimer', setTimeout(function () {
+        icon.removeClass(resultIcon).addClass('fa-copy');
+        $('#copy-value-status').text('');
+        button.attr('data-original-title', button.attr('aria-label')).tooltip('hide');
+    }, 2000));
+}
+/** KOPÍROVÁNÍ LOGINU A HESLA **/
 
 function openMikrotikWebfig(ip, username, password) {
     var theHTML = "<!doctype html><html>" +

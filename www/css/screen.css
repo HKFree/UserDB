@@ -635,6 +635,31 @@ pre.tracy-dump {
     border-color: #ccc;
 }
 
+/* Login a heslo zařízení: hodnota i tlačítko zůstávají na jednom řádku, mezery se zobrazí tak, jak jsou uložené. */
+.copy-value-cell {
+    white-space: nowrap;
+}
+
+.copy-value {
+    white-space: pre;
+}
+
+.copy-value-button {
+    margin-left: 6px;
+}
+
+/* Na telefonu větší plocha pro prst. */
+@media (max-width: 767px) {
+    .copy-value-button {
+        padding: 6px 10px;
+    }
+}
+
+/* Při výběru textu tažením myší (třídu nastavuje main.js) tlačítko výběru nepřekáží. */
+.copy-value-selecting .copy-value-button {
+    pointer-events: none;
+}
+
 .btn-edit-save {
     margin-bottom: 20px;
     margin-top: 20px;

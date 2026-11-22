@@ -123,6 +123,9 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | AP bez členů | AP 214 Demo bez členů | `/uzivatel-list/list/214` |
 | Uživatelé mimo AP | AP 213 Demo cizí členové, člen 20062 | `/uzivatel-list/list/213`; ZSO 20004 smí člena 20062 upravit, i když patří do cizí oblasti |
 | AP IP, RouterBoard, všechna běžná nastavení | IP 20000, `192.0.2.1`, AP 200 | `/ap/show/200`, login/heslo `demo` / `demo-only` |
+| Dlouhé heslo se zvláštními znaky | IP 20007, `192.0.2.2`, AP 200 | `/ap/show/200`; 60 znaků včetně `&`, `<` a `>`, hodnota se nezalamuje |
+| Heslo s mezerami | IP 20008, `192.0.2.3`, AP 200 | `/ap/show/200`; mezera na začátku i na konci a dvě uvnitř, do schránky se dostanou všechny |
+| Jen login, jen heslo | IP 20009 `192.0.2.4` a 20010 `192.0.2.5`, AP 200 | `/ap/show/200`; prázdná buňka je bez tlačítka pro kopírování |
 | Koncové zařízení a Ubiquiti | IP 20001 a 20002, AP 201 | `/ap/show/201` |
 | Wewimo odmítnuté připojení | AP 210 Demo Wewimo loopback, IP 20003 `127.0.0.1` | `/wewimo/show/210`, červené hlášení o nedostupném zařízení |
 | Čerstvé SSID, shoda MAC, odkaz na AP IP | Člen 20027, IP 20100 | `/uzivatel/show/20027` |
