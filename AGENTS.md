@@ -308,6 +308,7 @@ použitelnost ve stávajícím vzhledu, ne nový design.
 - **Cache.** Po změně `screen.css` nebo `main.js` zvyš číslo za `?v`
   všude, kde se soubor načítá (dnes `@layout.latte`
   a `SelfService/confirmEmail.latte`), jinak prohlížeče drží starou verzi.
+  Rozchod čísel mezi šablonami a chybějící číslo hlídá `AssetVersionsTest`.
 - **Odevzdání.** V hlášení uveď adresu lokálního webu, demo osobu a stavy,
   které si má zadavatel proklikat. Screenshoty dělej jen nad demo daty; do PR
   ani issue nepatří obrázek s údaji skutečných členů.
