@@ -64,36 +64,24 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
     }
 
     /**
+     * Členové jiných AP, kteří mají IP adresu v některém z daných subnetů (tabulka „Uživatelé mimo AP“).
+     *
      * @param int|string $referentialApId
      * @param iterable<Nette\Database\Table\ActiveRow> $subnety
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
      */
     public function findUsersFromOtherAreasByAreaId($referentialApId, iterable $subnety): Nette\Database\Table\Selection {
-        $uids = array();
+        $zapisy = [];
         foreach ($subnety as $subnet) {
-            list($network, $cidr) = explode("/", $subnet->subnet);
-
-            $userids = $this->getConnection()->query("select DISTINCT U.*
-            from Uzivatel U
-            LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id
-            LEFT JOIN Ap A on A.id=U.Ap_id
-            where A.id != ?
-            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)
-            order by U.id", $referentialApId, (int) $cidr, $network)->fetchPairs('id', 'id');
-
-            if ($userids !== []) {
-                //\Tracy\Debugger::barDump($userids);
-                //\Tracy\Debugger::barDump(array_values($userids));
-                $uids = array_merge(array_values($userids), $uids);
-            }
+            $zapisy[] = $subnet->subnet;
         }
-        if ($uids !== []) {
-            //\Tracy\Debugger::barDump($uids);
-            //\Tracy\Debugger::barDump(array_values($userids));
-            return ($this->findBy(array('id' => $uids)));
-        }
+        $podminka = $this->podminkaIpVSubnetech($zapisy);
+        // Jeden průchod IP adres pro všechny subnety; podmínku nad výrazem index neurychlí.
+        $uids = $podminka === null ? [] : $this->getConnection()->query('SELECT DISTINCT U.id
+            FROM IPAdresa I JOIN Uzivatel U ON U.id = I.Uzivatel_id
+            WHERE U.Ap_id != ? AND ?', $referentialApId, $podminka)->fetchPairs('id', 'id');
 
-        return ($this->findBy(array('id' => 0)));
+        return $this->findBy(['id' => $uids === [] ? 0 : array_values($uids)]);
     }
 
     /**
@@ -140,7 +128,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         $podminky = [];
         $parametry = [];
         foreach ($subnety as $subnet) {
-            // Masku převádí PHP přes (int), stejně jako seznam „Uživatelé mimo AP“. SQL by nestandardní zápis četlo jinak.
+            // Masku převádí PHP přes (int). SQL by nestandardní zápis četlo jinak.
             list($network, $cidr) = explode("/", $subnet);
             $podminky[] = '(inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)';
             array_push($parametry, (int) $cidr, $network);
