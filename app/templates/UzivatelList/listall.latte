@@ -10,7 +10,6 @@
 {/if}
 <div class="member-list" data-save-url="{link SpravaStitku:saveLabel id=>null}" data-delete-url="{link SpravaStitku:deleteLabel id=>null}">
 <div class="list-toolbar">
-{if !$search}{include memberStats}{/if}
 <div class="list-view"><span>Zobrazit navíc:</span>
 {if $canViewOrEdit}
 <a n:if="!$money" href="{link UzivatelList:listall search=>$search, money=>1}" class="btn btn-default btn-sm money-toggle" role="button" aria-pressed="false"><i class="fa fa-square-o" aria-hidden="true"></i> Platby a aktivace</a>
@@ -29,6 +28,8 @@
 
 
 <div class="user-list-scroll" tabindex="0" role="region" aria-label="Kompletní seznam členů">{control grid}</div>
+
+{if !$search}{include memberStats}{/if}
 
 {include memberLegend}
 </div>

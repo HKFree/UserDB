@@ -20,7 +20,6 @@
 </div>
 <div class="member-list" data-save-url="{link SpravaStitku:saveLabel id=>null}" data-delete-url="{link SpravaStitku:deleteLabel id=>null}">
 <div class="list-toolbar">
-{include memberStats}
 <div class="list-view"><span>Zobrazit navíc:</span>
 {if $canViewOrEdit}
 <a n:if="!$money" href="{link UzivatelList:list id=>$ap->id, money=>1}" class="btn btn-default btn-sm money-toggle" role="button" aria-pressed="false" title="Zobrazit informace z money"><i class="fa fa-square-o" aria-hidden="true"></i> Platby a aktivace</a>
@@ -37,6 +36,8 @@
 
 <div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam členů AP">{control grid}</div>
 
+{include memberStats}
+
 {include memberLegend}
 <section class="panel panel-default detail-panel">
 <div class="panel-heading"><h4>Uživatelé mimo AP:</h4></div>
@@ -51,15 +52,15 @@
 {/block}
 
 {define memberStats}
-<div class="stat-strip" role="group" aria-label="Počty členů">
-    <div class="stat-box stat-total"><b>{$u_celkem}</b><span>všech členů</span></div>
-    <div class="stat-box"><b>{$u_zrusenych}</b><span>zrušených členů</span></div>
-    <div class="stat-box"><b>{$u_primarnich}</b><span>primárních členů</span></div>
-    <div class="stat-box"><b>{$u_radnych}</b><span>řádných členů</span></div>
-    <div class="stat-box"><b>{$u_cestnych}</b><span>čestných členů</span></div>
-    <div n:if="$money" class="stat-box" role="group" aria-label="Počet aktivních členů"><b>{$u_aktivnich}</b><span>aktivních členů</span></div>
-    <div class="stat-box"><b>{$u_celkemz}</b><span>všech členů včetně zrušených</span></div>
-</div>
+<ul class="member-counts">
+    <li>Počet zrušených členů: {$u_zrusenych}</li>
+    <li>Počet primárních členů: {$u_primarnich}</li>
+    <li>Počet řádných členů: {$u_radnych}</li>
+    <li>Počet čestných členů: {$u_cestnych}</li>
+    <li n:if="$money">Počet aktivních členů: {$u_aktivnich}</li>
+    <li>Počet všech členů: {$u_celkem}</li>
+    <li>Počet všech členů včetně zrušených: {$u_celkemz}</li>
+</ul>
 {/define}
 
 {define memberDensity}

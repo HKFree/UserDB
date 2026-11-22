@@ -2346,7 +2346,7 @@ html {
     white-space: normal;
 }
 
-/* Member lists: statistics, view switches, loaded-row filter and state legend. */
+/* Member lists: view switches, loaded-row filter and state legend. */
 .list-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -2365,35 +2365,8 @@ html {
     color: #6b7280;
 }
 
-.stat-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 0;
-}
-
-.stat-box {
-    min-width: 86px;
-    padding: 6px 12px;
-    border: 1px solid #e2e5e9;
-    border-radius: 4px;
-    background: #fff;
-}
-
-.stat-box b {
-    display: block;
-    font-size: 18px;
-    line-height: 1.2;
-}
-
-.stat-box span {
-    font-size: 11px;
-    color: #6b7280;
-}
-
-.stat-total {
-    border-color: #b9cfe6;
-    background: #f2f7fc;
+.member-counts {
+    margin: 10px 0;
 }
 
 .quick-filter {

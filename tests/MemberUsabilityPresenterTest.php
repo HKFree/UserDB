@@ -47,7 +47,7 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         $components = $this->elements($document, '//*[contains(concat(" ", @class, " "), " user-labels-component ")]');
         Assert::true(count($components) > 0);
         foreach ($components as $component) {
-            Assert::same('Přidat štítek', $component->getElementsByTagName('button')->item($component->getElementsByTagName('button')->length - 1)->getAttribute('title'));
+            Assert::same('Přidat štítek', $this->child($component, 'button', -1)->getAttribute('title'));
             $urls = $component;
             while (!$urls->hasAttribute('data-save-url') && $urls->parentNode instanceof DOMElement) {
                 $urls = $urls->parentNode;
@@ -131,22 +131,20 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         }
         $result = $this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'list', 'id' => $s->ap->id, 'money' => $money]);
         $document = $this->document($result->html);
-        $expected = ['všech členů' => '3', 'zrušených členů' => '1', 'primárních členů' => '1', 'řádných členů' => '2', 'čestných členů' => '0'];
+        $expected = ['Počet zrušených členů: 1', 'Počet primárních členů: 1', 'Počet řádných členů: 2', 'Počet čestných členů: 0'];
         if ($money === 1) {
-            $expected['aktivních členů'] = '1';
+            $expected[] = 'Počet aktivních členů: 1';
         }
-        $expected['všech členů včetně zrušených'] = '4';
-        $actual = [];
-        foreach ($this->elements($document, '//*[contains(@class,"stat-strip")]/div') as $box) {
-            $actual[trim($box->getElementsByTagName('span')->item(0)->textContent)] = trim($box->getElementsByTagName('b')->item(0)->textContent);
-        }
-        Assert::same($expected, $actual);
-        Assert::same('group', $this->elements($document, '//*[@class="stat-strip"]')[0]->getAttribute('role'));
+        $expected[] = 'Počet všech členů: 3';
+        $expected[] = 'Počet všech členů včetně zrušených: 4';
+        Assert::same($expected, $this->countsBelowTable($document));
+        $all = $this->document($this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'listall', 'money' => $money])->html);
+        Assert::count(count($expected), $this->countsBelowTable($all));
         Assert::same($money === 1 ? 'true' : 'false', $this->elements($document, '//a[contains(@class,"money-toggle")]')[0]->getAttribute('aria-pressed'));
         Assert::count(1, $this->elements($document, '//input[@id="member-quick-filter"]'));
         $search = $this->document($this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'listall', 'search' => 'verejny-nick', 'money' => $money])->html);
         Assert::same('Kompletní seznam členů | HKFree UserDB', $this->text($search, '//title'));
-        Assert::count(0, $this->elements($search, '//*[@class="stat-strip"]'));
+        Assert::count(0, $this->elements($search, '//*[@class="member-counts"]'));
         Assert::count(1, $this->elements($search, '//input[@id="member-quick-filter"]'));
         Assert::count(1, $this->elements($search, '//*[@class="member-legend"]'));
     }
@@ -154,6 +152,22 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
     private function detail(string $actor): DOMXPath {
         $s = $this->scenario;
         return $this->document($this->presenters->ui($s->actors[$actor]->id, 'Uzivatel', ['action' => 'show', 'id' => $s->member->id])->html);
+    }
+
+    /**
+     * The counts stay right below the member table, where they were before the redesign.
+     *
+     * @return list<string>
+     */
+    private function countsBelowTable(DOMXPath $document): array {
+        $above = '(//*[contains(@class,"grido")])[1]/preceding::*[contains(@class,"member-counts") or contains(@class,"stat-strip")]';
+        Assert::count(0, $this->elements($document, $above));
+        $counts = [];
+        $below = '//ul[@class="member-counts"][preceding::*[contains(@class,"grido")]][not(preceding::h4[contains(.,"mimo AP")])]/li';
+        foreach ($this->elements($document, $below) as $item) {
+            $counts[] = trim($item->textContent);
+        }
+        return $counts;
     }
 
     private function document(string $html): DOMXPath {
@@ -181,6 +195,16 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
             }
         }
         return $elements;
+    }
+
+    /** Negative index counts from the end. */
+    private function child(DOMElement $parent, string $tag, int $index = 0): DOMElement {
+        $children = $parent->getElementsByTagName($tag);
+        $child = $children->item($index < 0 ? $children->length + $index : $index);
+        if (!$child instanceof DOMElement) {
+            throw new \LogicException("Missing <$tag> element.");
+        }
+        return $child;
     }
 
     private function text(DOMXPath $document, string $path): string {
