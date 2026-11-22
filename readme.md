@@ -421,6 +421,9 @@ The Node tests include browser fixtures, artifact validation, golden Markdown fi
 against local bare Git repositories. After an intentional comment change, regenerate and review the golden
 files with `UPDATE_SNAPSHOTS=1 npm test` from `tests/screenshots/`. These tests never publish to GitHub.
 
+The same `npm test` runs `test/copy-value.test.mjs`, a browser test of the application's own `www/js/main.js`:
+copying a device login and password from the IP address table (mouse selection, the copy button, keyboard and touch).
+
 ### Jobs to be run
 
 Run `php www/index.php app:update_locations` regularly in order to update users' locations based on their addresses.

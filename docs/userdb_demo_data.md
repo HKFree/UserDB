@@ -123,6 +123,13 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | AP bez členů | AP 214 Demo bez členů | `/uzivatel-list/list/214` |
 | Uživatelé mimo AP | AP 213 Demo cizí členové, člen 20062 | `/uzivatel-list/list/213`; ZSO 20004 smí člena 20062 upravit, i když patří do cizí oblasti |
 | AP IP, RouterBoard, všechna běžná nastavení | IP 20000, `192.0.2.1`, AP 200 | `/ap/show/200`, login/heslo `demo` / `demo-only` |
+| Dlouhé heslo se zvláštními znaky | IP 20007, `192.0.2.2`, AP 200 | `/ap/show/200`; 43 znaků včetně `&`, `<` a `>`, hodnota se nezalamuje. Delší heslo se zašifrované do sloupce `heslo` nevejde |
+| Heslo s mezerami | IP 20008, `192.0.2.3`, AP 200 | `/ap/show/200`; mezera na začátku i na konci a dvě uvnitř, do schránky se dostanou všechny |
+| Jen login, jen heslo | IP 20009 `192.0.2.4` a 20010 `192.0.2.5`, AP 200 | `/ap/show/200`; prázdná buňka je bez tlačítka pro kopírování |
+| Login a heslo s tečkami | IP 20011, `192.0.2.6`, AP 200 | `/ap/show/200`; tečka na začátku i na konci hesla, login s tečkou a zavináčem |
+| Login a heslo s uvozovkami, zpětnými lomítky a značkami | IP 20012, `192.0.2.7`, AP 200 | `/ap/show/200`; apostrof, uvozovky, `\n`, `$(id)`, `{$z}`, `%20` a značka `<b>` se zobrazí i zkopírují jako text |
+| Login a heslo s diakritikou a jiným písmem | IP 20013, `192.0.2.8`, AP 200 | `/ap/show/200`; čeština, čínské znaky a cyrilice |
+| Login s tabulátorem, heslo s pevnou mezerou a neviditelným znakem | IP 20014, `192.0.2.9`, AP 200 | `/ap/show/200`; heslo `pevna mezera konec` má mezi slovy U+00A0 a U+200B, do schránky se dostanou oba |
 | Koncové zařízení a Ubiquiti | IP 20001 a 20002, AP 201 | `/ap/show/201` |
 | Wewimo odmítnuté připojení | AP 210 Demo Wewimo loopback, IP 20003 `127.0.0.1` | `/wewimo/show/210`, červené hlášení o nedostupném zařízení |
 | Čerstvé SSID, shoda MAC, odkaz na AP IP | Člen 20027, IP 20100 | `/uzivatel/show/20027` |

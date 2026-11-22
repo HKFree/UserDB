@@ -23,6 +23,12 @@ vidět. Ověřeno 21. 11. 2026 lokálně ve Floxu (MariaDB 10.11.19), není-li u
 - Šifrovací klíč má každá instance jiný (`scripts/userdb_dev_setup.php`). SQL proto nemůže obsahovat platné
   `IPAdresa.heslo` s `heslo_sifrovane=1` ani `Uzivatel.oneclick_auth`; s neplatnou hodnotou spadne detail člena,
   AP i jejich editace.
+- Heslo zařízení v demo datech drž do 43 bajtů (znak s diakritikou jsou 2 bajty, čínský znak 3). Uložení
+  formuláře AP nebo člena zašifruje hesla všech jeho IP adres; šifrovaná hodnota má 168 znaků a další 2 na každý
+  bajt hesla, sloupec `IPAdresa.heslo` jich pojme 255. Ověřeno 22. 11. 2026 uložením formuláře AP lokálně ve
+  Floxu: 43 bajtů dá 254 znaků. Délku hlídá `DemoDataPresenterTest`.
+- Scénářový soubor, který už je v pushnuté větvi, neupravuj ani před sloučením: `MODE_CONTINUE` na databázi,
+  která ho načetla, skončí chybou kontrolního součtu. Opravu řádku dej do dalšího souboru jako `UPDATE`.
 
 ## Řádky, které rozbijí stránky
 

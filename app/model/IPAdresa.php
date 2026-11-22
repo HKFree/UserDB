@@ -180,6 +180,27 @@ class IPAdresa extends Table
         }
     }
 
+    /**
+     * Buňka s hodnotou, která se má do schránky dostat přesně: samostatný prvek s hodnotou a tlačítko,
+     * které ji zkopíruje. Obojí obsluhuje www/js/main.js.
+     */
+    private function addCopyableTd(Html $tr, ?string $value, string $buttonTitle): void {
+        $td = $tr->create('td');
+        if ($value === null || $value === '') {
+            return;
+        }
+        $td->setClass('copy-value-cell');
+        $td->create('span')->setClass('copy-value')->setText($value);
+        $td->create('button')
+            ->setAttribute('type', 'button')
+            ->setClass('btn btn-default btn-xs btn-in-table copy-value-button')
+            ->setTitle($buttonTitle)
+            ->setAttribute('aria-label', $buttonTitle)
+            // Nápověda patří mimo tabulku: uvnitř buňky by se její text dostal do výběru a do schránky.
+            ->addAttributes(['data-toggle' => 'tooltip', 'data-placement' => 'top', 'data-container' => 'body'])
+            ->addHtml(Html::el('span')->setClass('fa fa-copy')->setAttribute('aria-hidden', 'true'));
+    }
+
     public function file_get_contents_curl(string $url): string|false {
         if ($url === '') {
             return false;
@@ -528,8 +549,8 @@ class IPAdresa extends Table
                 }
                 $tr->create('td')->setText($ip->popis); // popis
                 if ($canViewCredentialsOrEdit) {
-                    $tr->create('td')->setText($ip->login);
-                    $tr->create('td')->setText($ip_password);
+                    $this->addCopyableTd($tr, $ip->login, 'Zkopírovat login');
+                    $this->addCopyableTd($tr, $ip_password, 'Zkopírovat heslo');
                 }
             } else {
                 // subnet mode, nesmi videt detaily
