@@ -89,7 +89,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(7, $adapter->scenarioFiles);
+        Assert::same(8, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -367,10 +367,23 @@ final class DemoDataPresenterTest extends TestCase
         $members = $this->presenters->api('Api:Hlasys', $credentials, ['action' => 'getClenySpolku']);
         Assert::same('demo20018', $members->json['clenove'][20018]);
         Assert::false(isset($members->json['clenove'][20015]));
-        $smoke = $this->presenters->api('Api:Smokeping', $credentials);
-        // The application's toAscii filter is missing. No smokeping flag may expose that error page.
-        Assert::same(0, $this->database->table('IPAdresa')->where('smokeping', 1)->count('*'));
-        Assert::same('+ userdb menu = userdb title = generovano z userdb', $this->text($smoke->html));
+        // Watched addresses: AP addresses with a description, with a hostname only and with neither, and two member addresses.
+        Assert::same([20000, 20004, 20005, 20100, 20104], $this->database->table('IPAdresa')->where('smokeping', 1)->order('id')->fetchPairs(null, 'id'));
+        $smoke = $this->text($this->presenters->api('Api:Smokeping', $credentials)->html);
+        foreach ([
+            '++ userdb-demo-mala-oblast-200 menu = Demo mala oblast - Demo male AP title = Demo mala oblast - Demo male AP',
+            'menu = Demo brana RouterBoard title = Demo brana RouterBoard host = 192.0.2.1',
+            // An AP named like its area gets a single title.
+            '++ userdb-demo-shodny-nazev-211 menu = Demo shodny nazev title = Demo shodny nazev',
+            'menu = demo-hostname title = demo-hostname host = 10.220.5.1',
+            'menu = AP-IP-20005 title = AP-IP-20005 host = 10.220.5.2',
+            '+++ userdb-demo-hlavni-ap-20027 menu = 20027-demo20027 title = 20027-demo20027',
+            'menu = Demo RouterBoard, priznaky DHCP, MAC a internet title = Demo RouterBoard, priznaky DHCP, MAC a internet host = 198.51.100.20',
+            'menu = Demo bez SSID title = Demo bez SSID host = 198.51.100.23',
+        ] as $section) {
+            Assert::contains($section, $smoke);
+        }
+        Assert::contains('IP je sledovaná ve smokepingu', $this->page('Ap', 'show', 211));
         $check = $this->presenters->api('Api:Smokeping', $credentials, ['action' => 'check']);
         Assert::match('~^[a-f0-9]{32}\s*$~', $check->html);
         $token = ['uid' => 20018, 'token' => 'demo-token-20018'];

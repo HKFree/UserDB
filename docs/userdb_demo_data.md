@@ -131,6 +131,8 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | Login a heslo s diakritikou a jiným písmem | IP 20013, `192.0.2.8`, AP 200 | `/ap/show/200`; čeština, čínské znaky a cyrilice |
 | Login s tabulátorem, heslo s pevnou mezerou a neviditelným znakem | IP 20014, `192.0.2.9`, AP 200 | `/ap/show/200`; heslo `pevna mezera konec` má mezi slovy U+00A0 a U+200B, do schránky se dostanou oba |
 | Koncové zařízení a Ubiquiti | IP 20001 a 20002, AP 201 | `/ap/show/201` |
+| Sledování Smokepingem: AP IP s popisem, jen s hostname a bez obojího | IP 20000 na AP 200, IP 20004 a 20005 na AP 211 | `/ap/show/200`, `/ap/show/211`, ikona oka u adresy; `/api/smokeping` s klíčem `apikey200` / `demo-global-only` |
+| Sledování Smokepingem u člena | Členové 20027 (IP 20100) a 20018 (IP 20104) | `/uzivatel/show/20027`, `/uzivatel/show/20018`; v `/api/smokeping` pod AP 201 |
 | Wewimo odmítnuté připojení | AP 210 Demo Wewimo loopback, IP 20003 `127.0.0.1` | `/wewimo/show/210`, červené hlášení o nedostupném zařízení |
 | Čerstvé SSID, shoda MAC, odkaz na AP IP | Člen 20027, IP 20100 | `/uzivatel/show/20027` |
 | Staré SSID, LAST_IP, odkaz na členskou IP | Člen 20028, IP 20101 | `/uzivatel/show/20028`, ZASTARALÉ |
@@ -140,7 +142,7 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 Wewimo je zapnuté pouze na `127.0.0.1`. Ostatní adresy se při vykreslení přes RouterOS nekontaktují.
 WebFig, SSH, Winbox a Grafana jsou odkazy nebo tlačítka pro klienta; Winbox závisí také na operačním systému prohlížeče.
 Hesla IP jsou v otevřeném textu. Formulář Přešifrování je umí zašifrovat klíčem konkrétní instance.
-Příznak Smokeping nemá žádná IP adresa: `/api/smokeping` s ním skončí chybou `Filter 'toAscii' is not defined`.
+Příznak Smokeping mají AP IP 20000, 20004 a 20005 a členské IP 20100 a 20104; ostatní adresy v `/api/smokeping` nejsou.
 
 ## Persony
 
