@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Test;
 
+use Nette\Application\BadRequestException;
+use Nette\Caching\Storages\MemoryStorage;
+use Nette\Database\Explorer;
 use Nette\Database\Table\ActiveRow;
 use Tester\Assert;
 
@@ -196,6 +199,51 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         Assert::same(1, $this->database->table('Log')->where([
             'tabulka_id' => $s->member->id, 'sloupec' => 'SpravceOblasti[' . $right->id . '].od', 'akce' => 'U',
         ])->count('*'));
+    }
+
+    public function testEditAfterRejectedRequestLogsOriginalRightWithColumnCache(): void {
+        $s = $this->scenario;
+        // Tests read whole rows by default; a cache storage makes Nette Database remember the columns read at each call site.
+        $cached = new Explorer($this->database->getConnection(), $this->database->getStructure(), $this->database->getConventions(), new MemoryStorage());
+        $runner = new PresenterRunner($cached, TestEnvironment::container($cached));
+        $right = $this->fixtures->role($s->member->id, 'SO', $s->area->id, '2000-01-01', null);
+        $row = [
+            'id' => (string) $right->id, 'TypSpravceOblasti_id' => (string) $right->TypSpravceOblasti_id,
+            'Oblast_id' => (string) $s->area->id, 'od' => '2000-01-01', 'do' => '2098-12-31',
+        ];
+        // The override skips the validation lookup, so the unknown right is rejected only after the existing one was loaded.
+        $unknown = ['id' => '-1', 'override' => 'on'] + $row;
+
+        // The column cache key includes the full call stack: both requests must use the same call site.
+        foreach ([[$right->id => $row, 'n1' => $unknown], [$right->id => $row]] as $index => $rights) {
+            try {
+                $result = $runner->ui($s->actors['vv']->id, 'UzivatelRightsCc', ['action' => 'editrights', 'id' => $s->member->id], 'POST', [
+                    '_do' => 'uzivatelRightsForm-submit', 'id' => (string) $s->member->id, 'rights' => $rights, 'save' => 'Uložit',
+                ]);
+                Assert::same(1, $index, 'The request with the unknown right must be rejected.');
+                PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $s->member->id);
+            } catch (BadRequestException $e) {
+                Assert::same(0, $index, 'The valid request must succeed.');
+                Assert::same([404, 'Oprávnění nebylo nalezeno.'], [$e->getCode(), $e->getMessage()]);
+                // The validation throws the same error; only a rejection in the success handler leaves the existing right loaded but unread.
+                Assert::contains('uzivatelRightsFormSucceded', array_column($e->getTrace(), 'function'));
+                Assert::same(0, $this->database->table('Log')->count('*'));
+                Assert::null($this->requireRow($this->database->table('SpravceOblasti')->get($right->id))->do);
+            }
+            unset($e, $result);
+            // Columns read by the rejected request are remembered when its selection is destroyed;
+            // a row loaded lazily with only those would be refetched after the update.
+            gc_collect_cycles();
+        }
+
+        Assert::same('2098-12-31', $this->requireRow($this->database->table('SpravceOblasti')->get($right->id))->do?->format('Y-m-d'));
+        $logs = $this->database->table('Log')->where('tabulka_id', $s->member->id);
+        Assert::same(1, $logs->count('*'));
+        $entry = $this->requireRow($logs->fetch());
+        Assert::same(
+            ['Uzivatel', 'SpravceOblasti[' . $right->id . '].do', null, '2098-12-31 00:00:00', 'U'],
+            [$entry->tabulka, $entry->sloupec, $entry->puvodni_hodnota, $entry->nova_hodnota, $entry->akce],
+        );
     }
 
     private function submitHonorary(string $actor, ActiveRow $target, string $note): PresenterResult {

@@ -179,7 +179,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
                 if ($starePravo === null) {
                     $this->error('Oprávnění nebylo nalezeno.');
                 }
-                $staraPrava[$pravo->id] = $starePravo;
+                // Snímek před uložením: líně načítaný řádek by se po update() při čtení chybějícího sloupce načetl celý znovu, už s novými hodnotami.
+                $staraPrava[$pravo->id] = $starePravo->toArray();
             }
         }
 
@@ -195,13 +196,12 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
                 $pravoId = $novePravo->id;
                 $this->log->logujInsert($novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             } else {
-                $starePravo = $staraPrava[$pravoId];
                 $this->spravceOblasti->update($pravoId, $pravo);
                 $novePravo = $this->spravceOblasti->getPravo($pravoId);
                 if ($novePravo === null) {
                     $this->error('Oprávnění nebylo nalezeno.');
                 }
-                $this->log->logujUpdate($starePravo, $novePravo, 'SpravceOblasti['.$pravoId.']', $log);
+                $this->log->logujUpdate($staraPrava[$pravoId], $novePravo, 'SpravceOblasti['.$pravoId.']', $log);
             }
         }
 
