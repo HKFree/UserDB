@@ -69,23 +69,51 @@ proto patří sem, nikoli do `app/novinky/README.md`.
 
 ## Přidání novinek
 
-Postup platí pro lidi i pro agenty libovolného nástroje. Publikování a nasazení
-se řídí [AGENTS.md](../AGENTS.md).
+Novinky přibývají dvěma cestami: položku přidá PR, který změnu přináší,
+a dávkový průchod doplní, co chybí. Obojí platí pro lidi i pro agenty
+libovolného nástroje. Publikování a nasazení se řídí [AGENTS.md](../AGENTS.md).
 
-1. Hranicí je datum nejnovějšího souboru. Projdi PR sloučené od tohoto data,
-   včetně PR ze stejného dne. Porovnej jejich čísla s dosavadními položkami,
-   aby se už popsané změny neopakovaly. Pokud soubory zatím nejsou, projdi
-   historii pro první vydání.
-2. Vyber jen změny, kterých si uživatel všimne na obrazovce nebo v chování
-   aplikace. Co vynecháš, zaznamenej s důvodem pro popis PR.
-3. Piš česky s diakritikou, slovy uživatele, nikoli názvem PR. Názvy obrazovek
-   přebírej z aplikace. Položka pro issue se štítkem `bug` patří do sekce
-   Opravy, ostatní do sekce Novinky.
-4. Zapiš položky do souboru s dnešním datem. Pokud už dnešní soubor existuje,
-   přidej je do něj; starší soubory neměň. Pokud adresář chybí, vytvoř ho.
-   Nemáš-li žádnou vhodnou položku, prázdný soubor nevytvářej.
+Pro obě cesty:
+
+- Do novinek patří jen změna, které si uživatel všimne na obrazovce nebo
+  v chování aplikace.
+- Piš česky s diakritikou, slovy uživatele, nikoli názvem PR. Názvy obrazovek
+  přebírej z aplikace.
+- Položka pro issue se štítkem `bug` patří do sekce Opravy, ostatní do sekce
+  Novinky.
+- Zapisuj do souboru s dnešním datem. Pokud neexistuje, založ ho; pokud
+  adresář chybí, vytvoř ho. Soubor bez položek nezakládej.
+
+### Položka v PR se změnou
+
+PR, který přináší změnu viditelnou pro uživatele, přidá její položku sám,
+ve stejné větvi jako změnu.
+
+- Uveď číslo issue, které PR dokončuje. Nemá-li issue, doplň číslo PR, až ho
+  PR dostane, nebo nech položku bez čísla.
+- Položka zůstává v souboru se dnem, kdy vznikla, i když se PR sloučí později.
+- Potkají-li se dva PR v souboru ze stejného dne v konfliktu, zůstanou
+  položky obou.
+- Má-li PR viditelnou změnu, která se v novinkách objevit nemá, dej mu štítek
+  `skip-changelog`, aby ji dávkový průchod nedoplnil.
+
+### Dávkový průchod
+
+Průchod je pojistka pro PR, které položku nepřidaly. Dělá se samostatným PR.
+
+1. Projdi PR sloučené od data posledního průchodu, včetně toho dne. Datum je
+   na konci tohoto oddílu.
+2. PR přeskoč, když položku do `app/novinky/` přidal sám, i bez čísla (je to
+   vidět v jeho diffu), když je v novinkách jeho číslo nebo číslo issue, které
+   zavírá, nebo když on či jeho issue má štítek `skip-changelog`. Ostatní
+   posuď podle pravidel výše a toho, co do novinek nepatří. Co vynecháš,
+   zaznamenej s důvodem pro popis PR.
+3. Zapiš položky do souboru s dnešním datem; starší soubory neměň.
+4. Přepiš datum posledního průchodu níže na dnešní.
 5. Spusť kontroly a předej změnu jako běžný PR ke schválení. V popisu PR uveď
    vynechané PR a důvody jejich vynechání. Produkční nasazení provádí člověk.
+
+Poslední průchod: 22. 11. 2026.
 
 Do novinek nepatří:
 

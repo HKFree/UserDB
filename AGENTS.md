@@ -291,6 +291,9 @@ npx skills add stablyai/orca
   `Oblast`), obsluhy formulářů `*FormSucceded` (zavedený název, nepřejmenovávej).
   Úpravy stylu a přejmenování nemíchej do věcné změny.
 - Každá změna chování má test v `tests/`, viz Postup práce.
+- Změna, které si uživatel všimne na obrazovce nebo v chování aplikace, má
+  ve stejném PR položku pro stránku Novinky v `app/novinky/`. Co tam patří
+  a jak ji zapsat, říká [postup](docs/userdb_novinky.md#přidání-novinek).
 
 ## UI a UX
 
@@ -336,7 +339,6 @@ použitelnost ve stávajícím vzhledu, ne nový design.
 ## Commity a PR
 
 - Česky, věcně, co a proč. Jeden PR řeší jednu věc.
-- Novinky pro uživatele: [formát a postup přidávání](docs/userdb_novinky.md).
 - Popis PR vyplň podle šablony `.github/pull_request_template.md`; má stejné
   oddíly jako hlášení v Postupu práce. Neověřené tvrzení označ jako neověřené.
 - Dokončuje-li PR issue, napiš do popisu `Closes #N`; česká slova jako "Řeší"

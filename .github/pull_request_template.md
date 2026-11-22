@@ -3,6 +3,7 @@
 ## Co a proč
 
 <!-- Dokončuje-li PR issue, napiš "Closes #N" a dej tomu issue štítek "má PR". -->
+<!-- Pozná změnu uživatel? Přidej položku do app/novinky/, viz docs/userdb_novinky.md. -->
 
 ## Ověření
 
