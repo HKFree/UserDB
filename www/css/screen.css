@@ -2409,6 +2409,19 @@ input[readonly],
     background-color: transparent !important;
 }
 
+/* A warning on a cell stays visible for every membership type; repeated here to outrank the rule above. */
+.member-list tr.neaktivni > td.grid-cell-money_aktivni,
+.member-list tr.neaktivni > td.grid-cell-money_deaktivace,
+.member-list tr.neaktivni > td.grid-cell-lastp,
+.member-list tr.neaktivni > td.grid-cell-lasta,
+.member-list tr.invalidemail > td.grid-cell-email {
+    background-color: #fbe0e0 !important;
+}
+
+.member-list tr.preplatek > td.grid-cell-acc {
+    background-color: #f6dcf3 !important;
+}
+
 .member-list tr.planovane > td:first-child {
     box-shadow: inset 4px 0 0 #2f8fd8;
     background-color: #eef6fd !important;

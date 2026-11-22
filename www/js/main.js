@@ -57,12 +57,20 @@ $(document).ready(function () {
     $('#oblastitree').bonsai();
 });
 
-// Zvyrazneni prave otevrene oblasti nebo AP v levem panelu a rozbaleni jeji vetve
+// Zvyrazneni prave otevrene oblasti nebo AP v levem panelu a rozbaleni jeji vetve.
+// Detail clena a detail AP patri k AP, na jehoz seznam clenu odkazuji v hlavicce stranky.
 $(document).ready(function () {
     var tree = $('#oblastitree').data('bonsai');
+    var current = window.location.pathname;
+    var related = $('.page-crumbs a, .page-actions a').filter(function () {
+        return /\/uzivatel-list\/list\/\d+$/.test(this.pathname);
+    }).map(function () {
+        return this.pathname;
+    }).get();
     $('.sidebar .nav-sidebar a').each(function () {
-        if (this.pathname !== window.location.pathname) return;
-        var item = $(this).attr('aria-current', 'page').parent().addClass('active');
+        if (this.pathname !== current && related.indexOf(this.pathname) === -1) return;
+        if (this.pathname === current) $(this).attr('aria-current', 'page');
+        var item = $(this).parent().addClass('active');
         var branch = item.parent().closest('li');
         if (tree && branch.length > 0) tree.expand(branch);
     });

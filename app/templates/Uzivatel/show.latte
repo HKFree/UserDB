@@ -51,8 +51,7 @@
         <a href="#member-payments" n:class="fact-tile, substr((string) $money_bal_spolek, 0, 1) === '-' ? fact-bad"><span>Konto spolek</span><b>{$money_bal_spolek}{if is_numeric($money_bal_spolek)} Kč{/if}</b></a>
         <a href="#member-payments" n:class="fact-tile, $money_bal_druzstvo < 0 ? fact-bad"><span>Konto družstvo</span><b>{$money_bal_druzstvo} Kč</b></a>
         <a href="#member-tv" n:class="fact-tile, $televize_aktivni ? fact-ok : ($televize_objednana ? fact-warn)"><span>Televize</span><b>{if $televize_aktivni}Aktivní{elseif $televize_objednana}Objednaná{else}Neobjednaná{/if}</b><small n:if="$televize_aktivni && !$televize_objednana">odhlášená, doběhne</small><small n:if="$televize_objednana && !$televize_aktivni">zatím neaktivní</small></a>
-        {var $contractRows = $smlouvy->fetchAll()}
-        <a href="#member-contracts" class="fact-tile"><span>Smlouvy</span><b>{count($contractRows) ?: 'Žádná'}</b><small n:if="$contractRows">poslední: {$smlouvaStavSluzba->getStav(end($contractRows))}</small></a>
+        <a href="#member-contracts" class="fact-tile"><span>Smlouvy</span><b>{count($smlouvy) ?: 'Žádná'}</b></a>
         <a href="#member-ip" class="fact-tile"><span>IP adresy</span><b>{$ipCount ?: 'Žádná'}</b></a>
     </div>
     {/if}
