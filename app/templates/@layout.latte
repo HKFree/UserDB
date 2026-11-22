@@ -33,7 +33,7 @@
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v10"></script>
+        <script src="{$basePath}/js/main.js?v11"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
@@ -152,6 +152,8 @@
           {/if}
           <p class="sidebar-nomatch" id="sidebar-nomatch" role="status" hidden>Žádná oblast ani AP neodpovídá.</p>
         </div>
+        {* Hned, ne az po nacteni cele stranky: u velke oblasti by strom zustal dlouho rozbaleny a bez zvyrazneni. *}
+        <script>if (window.userdbSidebarTree) userdbSidebarTree();</script>
         <div class="sidebar-backdrop"></div>
         <div class="main" id="obsah">
 <!--          <h1 class="page-header">Dashboard</h1> -->

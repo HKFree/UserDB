@@ -16,6 +16,8 @@
         {/if}
     </ol>
 </nav>
+{* Odkaz na seznam clenu AP uz je v hlavicce: levy panel se zvyrazni hned, ne az po nacteni cele stranky. *}
+<script>if (window.userdbSidebarTree) userdbSidebarTree();</script>
 <div class="page-head">
     <h1 class="page-title">{if $member}Úprava člena {$member->jmeno} {$member->prijmeni} <small>UID {$member->id}</small>{else}Nový člen{/if}</h1>
     <div class="page-actions" n:if="$member">

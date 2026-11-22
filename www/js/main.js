@@ -57,15 +57,13 @@ $(document).ready(function () {
     });
 });
 
-// INICIALIZATOR pro JSTREE
-$(document).ready(function () {
-    $('#oblastitree').bonsai();
-});
-
-// Zvyrazneni prave otevrene oblasti nebo AP v levem panelu a rozbaleni jeji vetve.
-// Detail clena a detail AP patri k AP, na jehoz seznam clenu odkazuji v hlavicce stranky.
-$(document).ready(function () {
-    var tree = $('#oblastitree').data('bonsai');
+// Strom oblasti v levem panelu: sbaleni vetvi, zvyrazneni prave otevrene oblasti nebo AP a rozbaleni jeji vetve.
+// Vola se hned za levym panelem (viz @layout.latte), aby velka stranka neukazovala nezvyrazneny rozbaleny
+// strom, dokud se nenacte cela. Detail clena, uprava clena a detail AP patri k AP, na jehoz seznam clenu
+// odkazuji v hlavicce stranky; jejich sablony proto volaji znovu hned za hlavickou. Volani po nacteni je pojistka.
+window.userdbSidebarTree = function () {
+    // opakovane volani bonsai() strom znovu nezaklada
+    var tree = $('#oblastitree').bonsai().data('bonsai');
     var current = window.location.pathname;
     var related = $('.page-crumbs a, .page-actions a').filter(function () {
         return /\/uzivatel-list\/list\/\d+$/.test(this.pathname);
@@ -75,11 +73,14 @@ $(document).ready(function () {
     $('.sidebar .nav-sidebar a').each(function () {
         if (this.pathname !== current && related.indexOf(this.pathname) === -1) return;
         if (this.pathname === current) $(this).attr('aria-current', 'page');
-        var item = $(this).parent().addClass('active');
+        var item = $(this).parent();
+        if (item.hasClass('active')) return;
+        item.addClass('active');
         var branch = item.parent().closest('li');
         if (tree && branch.length > 0) tree.expand(branch);
     });
-});
+};
+$(document).ready(window.userdbSidebarTree);
 
 // Filtr oblasti a AP v levem panelu, bez ohledu na diakritiku a velikost pismen
 $(document).ready(function () {
