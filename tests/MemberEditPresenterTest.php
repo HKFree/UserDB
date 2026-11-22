@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Test;
 
 use App\Services\CryptoSluzba;
+use Nette\Caching\Storages\MemoryStorage;
+use Nette\Database\Explorer;
 use Nette\Database\Table\ActiveRow;
 use Tester\Assert;
 use Tester\DomQuery;
@@ -318,6 +320,40 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         }
     }
 
+    /** @return array<string, array{array<string, string>, bool}> */
+    public function columnCacheWarmUps(): array {
+        return ['cancelled planned membership' => [['TypClenstvi_id' => '1'], true], 'ordinary edit' => [['jmeno' => 'Changed'], false]];
+    }
+
+    /**
+     * @dataProvider columnCacheWarmUps
+     * @param array<string, string> $warmUp
+     */
+    public function testPlannedMembershipKeepsOriginalValuesWithColumnCache(array $warmUp, bool $deletesMember): void {
+        $this->useColumnCache();
+        $apId = $this->member->Ap_id;
+        // The column cache key includes the full call stack: both requests must use the same call site.
+        foreach ([$warmUp, ['TypClenstvi_id' => '3']] as $index => $changes) {
+            $this->member = $this->fixtures->member($apId, ['druzstvo' => 0, 'spolek' => 1, 'TypClenstvi_id' => 0, 'money_aktivni' => 0]);
+            $result = $this->submit($this->post($changes));
+            $deleted = $index === 0 && $deletesMember;
+            PermissionScenario::assertRedirect($result, $deleted ? 'uzivatel-list/list/' . $apId : 'uzivatel/show/' . $this->member->id);
+            Assert::same($deleted, $this->database->table('Uzivatel')->get($this->member->id) === null);
+            unset($result);
+            // Columns read by the first request are remembered when its selection is destroyed;
+            // a row loaded lazily with only those would be refetched after the update.
+            gc_collect_cycles();
+        }
+
+        $stored = $this->requireRow($this->database->table('Uzivatel')->get($this->member->id));
+        Assert::same(3, $stored->TypClenstvi_id);
+        $this->assertLog('U', 'Uzivatel.TypClenstvi_id', '0', '3');
+        $this->assertLog('U', 'Uzivatel.money_aktivni', '0', '1');
+        $created = $this->requireRow($this->database->table('Log')->where(['tabulka_id' => $this->member->id, 'sloupec' => 'Uzivatel.zalozen'])->fetch());
+        Assert::same('2000-01-01 00:00:00', $created->puvodni_hodnota);
+        $this->assertRegistrationEmails($stored, 'Žádost o potvrzení registrace člena hkfree.org z.s. - UID ');
+    }
+
     public function testCooperativeMemberWithCancelledMembershipIsNotDeleted(): void {
         Assert::null($this->member->TypClenstvi_id);
         $ip = $this->fixtures->ipAddress($this->member->id, '10.107.243.2');
@@ -400,6 +436,13 @@ final class MemberEditPresenterTest extends DatabaseTestCase
     private function ipPost(array $values): array {
         $defaults = ['id' => '', 'ip_adresa' => '', 'hostname' => '', 'TypZarizeni_id' => '', 'internet' => '1', 'smokeping' => '', 'login' => '', 'heslo' => '', 'mac_adresa' => '', 'mac_filter' => '', 'dhcp' => '', 'popis' => ''];
         return array_map(static fn ($value) => (string) $value, array_intersect_key($values, $defaults) + $defaults);
+    }
+
+    /** Tests read whole rows by default; this makes Nette Database remember the columns read at each call site. */
+    private function useColumnCache(): void {
+        $this->database = new Explorer($this->database->getConnection(), $this->database->getStructure(), $this->database->getConventions(), new MemoryStorage());
+        $this->container = TestEnvironment::container($this->database);
+        $this->presenters = new PresenterRunner($this->database, $this->container);
     }
 
     /** @param array<string, mixed> $post */

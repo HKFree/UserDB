@@ -645,8 +645,11 @@ class UzivatelPresenter extends BasePresenter
             if ($olduzivatel === null) {
                 $this->error('Uživatel nebyl nalezen.');
             }
+            // Snímek před uložením: líně načítaný řádek by se po update() při čtení chybějícího sloupce načetl celý znovu, už s novými hodnotami.
+            $puvodniUzivatel = $olduzivatel->toArray();
+            $bylPlanovany = 0 === $puvodniUzivatel['TypClenstvi_id'];
 
-            if (($olduzivatel->email ?? '') !== ($values->email ?? '') || ($olduzivatel->email2 ?? '') !== ($values->email2 ?? '')) {
+            if (($puvodniUzivatel['email'] ?? '') !== ($values->email ?? '') || ($puvodniUzivatel['email2'] ?? '') !== ($values->email2 ?? '')) {
                 $values->email_invalid = 0;
             }
 
@@ -656,26 +659,26 @@ class UzivatelPresenter extends BasePresenter
             }
 
             // TODO: spolek / druzstvo
-            if (0 === $olduzivatel->TypClenstvi_id && 1 === $values->TypClenstvi_id) {
+            if ($bylPlanovany && 1 === $values->TypClenstvi_id) {
                 $this->povoleneSMTP->deleteIPs($smtpIPIDs);
                 $existinguserIPIDs = array_keys($olduzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
                 $this->uzivatel->delete(['id' => [$idUzivatele]]);
-                $this->redirect('UzivatelList:list', ['id' => $olduzivatel->Ap_id]);
+                $this->redirect('UzivatelList:list', ['id' => $puvodniUzivatel['Ap_id']]);
             }
 
             // TODO: spolek / druzstvo
-            if (0 === $olduzivatel->TypClenstvi_id && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id) {
+            if ($bylPlanovany && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id) {
                 $values->zalozen = new \DateTime();
                 $values->money_aktivni = 1;
             }
 
             $uzivatel = $olduzivatel;
             $this->uzivatel->update($idUzivatele, $values);
-            $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
+            $this->log->logujUpdate($puvodniUzivatel, $values, 'Uzivatel', $log);
 
             // TODO: spolek / druzstvo
-            if (0 === $olduzivatel->TypClenstvi_id && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id && $values->spolek === 1) {
+            if ($bylPlanovany && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id && $values->spolek === 1) {
                 $this->sendSpolekRegistrationEmail($idUzivatele);
             }
         }

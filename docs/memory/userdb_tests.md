@@ -45,6 +45,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   a `PresenterRunner`. Požadavky musí jít ve smyčce ze stejného místa: klíč keše obsahuje celý backtrace.
   Mezi požadavky uvolnit výjimky a zavolat `gc_collect_cycles()`. Ověřeno 21. 11. 2026 v
   `NullableAuditCachePresenterTest` nad Nette Database 3.2.4.
+  Neúplný seznam sloupců vznikne i bez chyby: stačí, když první požadavek nečte všechny sloupce,
+  které potřebuje druhý. Platí to pro větev s přesměrováním (zrušení plánovaného členství) i pro
+  obyčejnou editaci, pokud druhý požadavek přidává sloupce mimo formulář (`zalozen`, `money_aktivni`).
+  Ověřeno 22. 11. 2026 oběma případy s keší v `MemberEditPresenterTest` (`useColumnCache()`): před
+  opravou editace člena neodešel registrační e-mail a v `Log` chyběly změněné sloupce.
   **Why:** Čtení dosud nenačteného sloupce z `ActiveRow` může řádek znovu načíst; po zápisu už nejde
   o původní hodnoty. **How to apply:** Auditní snímek převést přes `toArray()` před změnou a ověřit
   skutečné hodnoty v `Log`, ne pouze úspěšné uložení formuláře.
