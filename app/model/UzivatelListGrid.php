@@ -348,7 +348,7 @@ class UzivatelListGrid
             $tz->setDefaultValue('active');
         }
 
-        $seznamStitku = $this->stitek->getSeznamStitku()->fetchPairs("id", "text");
+        $seznamStitku = $this->stitek->getSeznamStitku()->order('text, id')->fetchPairs("id", "text");
         $seznamNotStitku = [];
         foreach ($seznamStitku as $stitekId => $stitekText) {
             $seznamNotStitku[-$stitekId] = "NOT " . $stitekText;
