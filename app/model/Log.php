@@ -7,17 +7,15 @@ use Nette\Utils\Html;
 
 /**
  * @author
+ * @phpstan-type LogEntry array{sloupec: string, puvodni_hodnota: mixed, nova_hodnota: mixed, akce: string}
  */
 class Log extends Table
 {
-    private $typZarizeni;
-
-    private $request;
+    private Nette\Http\Request $request;
 
     public function __construct(
         Nette\Database\Context $db,
         Nette\Security\User $user,
-        TypZarizeni $t,
         Nette\Http\Request $request
     ) {
         parent::__construct($db, $user);
@@ -29,17 +27,25 @@ class Log extends Table
     */
     protected $tableName = 'Log';
 
-    public function getLogyUzivatele($uid) {
+    /**
+     * @param int|string $uid
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function getLogyUzivatele($uid): Nette\Database\Table\Selection {
         $logy = $this->findAll()->where("tabulka = ?", "Uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
         return ($logy);
     }
 
-    public function getLogyAP($Apid) {
+    /**
+     * @param int|string $Apid
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function getLogyAP($Apid): Nette\Database\Table\Selection {
         $logy = $this->findAll()->where("tabulka = ?", "Ap")->where("tabulka_id = ?", $Apid)->order("datum DESC, sloupec DESC");
         return ($logy);
     }
 
-    public function translateJmeno($jmeno) {
+    public function translateJmeno(string $jmeno): string {
         $slovnikUzivatel = array(
             "Ap_id" => "AP",
             "jmeno" => "jméno",
@@ -95,28 +101,33 @@ class Log extends Table
      *
      * takhle blbě je to řešené, protože mysql neumí sort-before-groupby
      *
-     * @param int[] $ids ipId pro které chceme zjistit ipAdresy / subnety
+     * @param array<array-key, int|string> $ids ipId pro které chceme zjistit ipAdresy / subnety
      * @param string $type Typ objektu pro který zjišťujeme - ip / subnet
-     * @return array pole ipId=>ipAdresa
+     * @return array<int|string, string> pole ipId=>ipAdresa
      */
-    public function getAdvancedzLogu(array $ids, $type = "ip") {
+    public function getAdvancedzLogu(array $ids, string $type = "ip"): array {
+        if ($type !== "ip" && $type !== "subnet") {
+            throw new \InvalidArgumentException("Neznámý typ objektu: ".$type);
+        }
+
         $names = array();
         foreach ($ids as $id) {
-            if ($type == "ip") {
+            if ($type === "ip") {
                 $names[] = "IPAdresa[".$id."].ip_adresa";
-            } elseif ($type == "subnet") {
+            } elseif ($type === "subnet") {
                 $names[] = "Subnet[".$id."].subnet";
             }
         }
 
         $logy = $this->findAll()->where("sloupec", $names)->order("datum ASC");
 
+        $vzor = $type === "ip" ? "/^ipadresa\[(\d+)\]\.ip_adresa/i" : "/^subnet\[(\d+)\]\.subnet/i";
+
         $out = array();
         foreach ($logy as $log) {
-            if ($type == "ip") {
-                preg_match("/^ipadresa\[(\d+)\]\.ip_adresa/i", $log->sloupec, $matches);
-            } elseif ($type == "subnet") {
-                preg_match("/^subnet\[(\d+)\]\.subnet/i", $log->sloupec, $matches);
+            // SQL porovnává sloupec podle kolace, vzor po bajtech; řádek bez čitelného ID nelze přiřadit.
+            if (preg_match($vzor, $log->sloupec, $matches) !== 1) {
+                continue;
             }
 
             $id = $matches[1];
@@ -133,9 +144,14 @@ class Log extends Table
         return ($out);
     }
 
-    public function logujInsert($data, $sloupecPrefix, &$log) {
+    /**
+     * @param iterable<array-key, mixed> $data
+     * @param list<LogEntry> $log
+     */
+    public function logujInsert(iterable $data, string $sloupecPrefix, array &$log): void {
         foreach ($data as $key => $value) {
-            if (!empty($value)) {
+            // Audit při vložení dosud vynechával i nuly, nejen chybějící hodnoty.
+            if (!in_array($value, [null, false, 0, 0.0, '', '0', []], true)) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
                     'puvodni_hodnota' => null,
@@ -146,13 +162,18 @@ class Log extends Table
         }
     }
 
-    public function logujUpdate($staraData, $novaData, $sloupecPrefix, &$log) {
+    /**
+     * @param array<array-key, mixed>|\ArrayAccess<array-key, mixed> $staraData
+     * @param iterable<array-key, mixed> $novaData
+     * @param list<LogEntry> $log
+     */
+    public function logujUpdate(array|\ArrayAccess $staraData, iterable $novaData, string $sloupecPrefix, array &$log): void {
         foreach ($novaData as $key => $value) {
-            $isSet = isset($staraData[$key]) || ($staraData[$key] == null);
-            if (!($isSet && $value == $staraData[$key])) {
+            $puvodniHodnota = $staraData[$key] ?? null;
+            if (!$this->shodneHodnoty($puvodniHodnota, $value)) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
-                    'puvodni_hodnota' => isset($staraData[$key]) ? $staraData[$key] : null,
+                    'puvodni_hodnota' => $puvodniHodnota,
                     'nova_hodnota' => $value,
                     'akce' => 'U'
                 );
@@ -160,9 +181,40 @@ class Log extends Table
         }
     }
 
-    public function logujDelete($staraData, $sloupecPrefix, &$log) {
+    private function shodneHodnoty(mixed $puvodni, mixed $nova): bool {
+        if ($puvodni instanceof \DateTimeInterface && $nova instanceof \DateTimeInterface) {
+            return $puvodni->format('U.u') === $nova->format('U.u');
+        }
+
+        // Prázdné textové pole formuláře odpovídá nevyplněné hodnotě v databázi.
+        if ($puvodni === null || $nova === null) {
+            return ($puvodni ?? '') === ($nova ?? '');
+        }
+
+        // Checkboxy vracejí bool, zatímco příznaky v databázi jsou celá čísla.
+        $puvodni = is_bool($puvodni) ? (int) $puvodni : $puvodni;
+        $nova = is_bool($nova) ? (int) $nova : $nova;
+        if (is_int($puvodni) || is_float($puvodni)) {
+            if (is_string($nova) && is_numeric($nova)) {
+                $nova += 0;
+            }
+            if ((is_int($nova) || is_float($nova)) && (is_float($puvodni) || is_float($nova))) {
+                return (float) $puvodni === (float) $nova;
+            }
+        }
+
+        // Texty zůstávají texty, i když vypadají jako čísla (telefon, přezdívka).
+        return $puvodni === $nova;
+    }
+
+    /**
+     * @param iterable<array-key, mixed> $staraData
+     * @param list<LogEntry> $log
+     */
+    public function logujDelete(iterable $staraData, string $sloupecPrefix, array &$log): void {
         foreach ($staraData as $key => $value) {
-            if (!empty($value)) {
+            // Stejná pravidla pro vynechání hodnot jako při vložení.
+            if (!in_array($value, [null, false, 0, 0.0, '', '0', []], true)) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
                     'puvodni_hodnota' => $value,
@@ -174,8 +226,14 @@ class Log extends Table
     }
 
     // Uzivatel_id je ten, kdo zmenu provedl
-    public function loguj($tabulka, $tabulka_id, $data, $uzivatel_id = null) {
-        if (!is_array($data) || count($data) == 0) {
+    /**
+     * @param int|string $tabulka_id
+     * @param mixed $data Log entries; non-array input is ignored.
+     * @param int|string|null $uzivatel_id
+     * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
+     */
+    public function loguj(string $tabulka, $tabulka_id, $data, $uzivatel_id = null): Nette\Database\Table\ActiveRow|array|int|bool {
+        if (!is_array($data) || count($data) === 0) {
             return true;
         }
 
@@ -184,17 +242,17 @@ class Log extends Table
         $ted = new Nette\Utils\DateTime();
 
         // Zmenu udelal prihlaseny uzivatel
-        if (empty($uzivatel_id)) {
+        if (in_array($uzivatel_id, [null, '', 0, '0'], true)) {
             $uzivatel_id = $this->userService->getId();
         }
 
         // Pokud neni zadny uzivatel prihlaseny (napr verejny callback) a logujeme neco u uzivatele, vem jeho
-        if (empty($uzivatel_id) & $tabulka == 'Uzivatel') {
+        if (in_array($uzivatel_id, [null, '', 0, '0'], true) && $tabulka === 'Uzivatel') {
             $uzivatel_id = $tabulka_id;
         }
 
         // A pokud ani to nevyjde, zaloguj to pod systemovym uzivatelem
-        if (empty($uzivatel_id)) {
+        if (in_array($uzivatel_id, [null, '', 0, '0'], true)) {
             $uzivatel_id = 1;
         }
 

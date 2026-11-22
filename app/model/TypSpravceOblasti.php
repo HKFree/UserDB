@@ -14,7 +14,8 @@ class TypSpravceOblasti extends Table
     */
     protected $tableName = 'TypSpravceOblasti';
 
-    public function getTypySpravcuOblasti() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getTypySpravcuOblasti(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 }

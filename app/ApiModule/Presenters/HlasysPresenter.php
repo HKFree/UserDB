@@ -8,19 +8,21 @@ use App\Model;
 
 class HlasysPresenter extends ApiPresenter
 {
-    private $spravceOblasti;
-    private $typSpravceOblasti;
-    private $uzivatel;
+    private Model\SpravceOblasti $spravceOblasti;
+    private TypSpravceOblasti $typSpravceOblasti;
+    private Model\Uzivatel $uzivatel;
 
     public function __construct(\App\Model\SpravceOblasti $spravceOblasti, TypSpravceOblasti $typSpravceOblasti, \App\Model\Uzivatel $uzivatel) {
+        parent::__construct();
         $this->spravceOblasti = $spravceOblasti;
         $this->typSpravceOblasti = $typSpravceOblasti;
         $this->uzivatel = $uzivatel;
     }
 
-    public function actionGetSpravce($typSpravce) {
+    /** @param string|null $typSpravce */
+    public function actionGetSpravce($typSpravce): void {
         $typSpravceRec = $this->typSpravceOblasti->findOneBy(['text' => $typSpravce]);
-        if (!$typSpravceRec) {
+        if ($typSpravceRec === null) {
             $this->sendResponse(new JsonResponse(['result' => 'ERROR, typ spravce '.$typSpravce.' not found']));
         }
 
@@ -34,7 +36,7 @@ class HlasysPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'spravci' => $out, 'typSpravce' => $typSpravce]));
     }
 
-    public function actionGetClenySpolku() {
+    public function actionGetClenySpolku(): void {
         $clenove = $this->uzivatel->findAll()->where('spolek = ? AND TypClenstvi_id > ?', 1, 1)->where('systemovy = ?', 0);
 
         $out = array();

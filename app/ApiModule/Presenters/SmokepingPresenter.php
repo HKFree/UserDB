@@ -9,19 +9,20 @@ use App\Model;
  */
 class SmokepingPresenter extends ApiPresenter
 {
-    public $oblast;
-    private $uzivatel;
-    private $ipAdresa;
-    private $ap;
+    public Model\Oblast $oblast;
+    private Model\Uzivatel $uzivatel;
+    private Model\IPAdresa $ipAdresa;
+    private Model\AP $ap;
 
     public function __construct(Model\Oblast $oblast, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap) {
+        parent::__construct();
         $this->oblast = $oblast;
         $this->uzivatel = $uzivatel;
         $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');
@@ -55,10 +56,15 @@ class SmokepingPresenter extends ApiPresenter
         $this->template->users_ips = $users_ips;
     }
 
-    public function renderCheck() {
+    public function renderCheck(): void {
         $httpResponse = $this->presenter->getHttpResponse();
         $httpResponse->setContentType('text/plain', 'UTF-8');
         $httpResponse->setHeader('Pragma', 'no-cache');
-        $this->template->md5 = md5(serialize($this->ipAdresa->findBy(array('smokeping' => 1))->fetchPairs('id', 'ip_adresa')));
+        $adresy = $this->ipAdresa->findBy(['smokeping' => 1])->select('id, ip_adresa, Uzivatel_id, Ap_id')->order('id');
+        $stav = [];
+        foreach ($adresy as $adresa) {
+            $stav[] = $adresa->toArray();
+        }
+        $this->template->md5 = md5(serialize($stav));
     }
 }

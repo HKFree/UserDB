@@ -1,0 +1,53 @@
+name: Tests and static analysis (Nette Tester, PHPStan)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Nette Tester and PHPStan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: flox/install-flox-action@5bb9eaaffbeaa699a8251a1ae21ecf4c8e0e37d4 # v2.7.0
+        with:
+          disable-metrics: true
+      - name: Install dependencies, run Nette Tester and PHPStan
+        shell: flox activate -s -- bash --noprofile --norc -e -o pipefail {0}
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          vendor/bin/tester -C tests
+          vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+      # Coverage is informational: a failure of the next two steps does not fail the job, the last step reports it.
+      - name: Code coverage
+        id: coverage
+        continue-on-error: true
+        timeout-minutes: 3
+        shell: flox activate -s -- bash --noprofile --norc -e -o pipefail {0}
+        run: |
+          mkdir -p temp/coverage
+          scripts/userdb_test_coverage.sh temp/coverage/coverage.html | tee temp/coverage/tester.log
+          covered=$(grep -oE '[0-9]+% covered' temp/coverage/tester.log | tail -n 1 || true)
+          echo "Line coverage of \`app\`, \`pdfGenerator/www\` and \`www/digisign-webhook\`: ${covered:-not found in the Tester output}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload coverage report
+        id: upload
+        if: steps.coverage.outcome == 'success'
+        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-report
+          path: temp/coverage/coverage.html
+          retention-days: 14
+          if-no-files-found: error
+      - name: Report missing coverage report
+        if: steps.coverage.outcome != 'success' || steps.upload.outcome != 'success'
+        run: |
+          echo "::warning title=Code coverage::No coverage report is attached to this run: the Code coverage or Upload coverage report step did not succeed. The test run without coverage passed."
+          echo "No coverage report is attached to this run: the Code coverage or Upload coverage report step did not succeed." >> "$GITHUB_STEP_SUMMARY"

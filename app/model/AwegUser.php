@@ -17,10 +17,11 @@ class AwegUser extends Table
     */
     protected $tableName = 'AwegUsers';
 
-    public function getAwegUser($uid) {
+    /** @param int|string $uid */
+    public function getAwegUser($uid): Nette\Database\Table\ActiveRow|false {
         $r = $this->findOneBy(["hkfree_uid" => $uid]);
 
-        if ($r) {
+        if ($r !== null) {
             return ($r);
         } else {
             return (false);

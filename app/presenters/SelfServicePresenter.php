@@ -15,33 +15,40 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
     public function __construct(
         private RequestDruzstvoContract $requestDruzstvoContract,
         private Uzivatel $uzivatelModel,
-        private Model\UzivatelTelevize $uzivatelTelevize,
         private CryptoSluzba $cryptosvc,
         private Parameters $parameters,
-        private Nette\Database\Connection $connection,
-        private Services\Stitkovac $stitkovac,
     ) {
+        parent::__construct();
     }
 
-    public function renderConfirmEmail($key) {
+    /** @param string|null $key */
+    public function renderConfirmEmail($key): void {
         $this->setLayout('pub');
         $this->template->stav = false;
-        if ($key) {
+        if (!in_array($key, [null, '', '0'], true)) {
 
-            list($uid, $hash) = explode('-', base64_decode($key));
+            $decodedKey = base64_decode($key, true);
+            if ($decodedKey === false) {
+                return;
+            }
+            $parts = explode('-', $decodedKey, 2);
+            if (count($parts) !== 2) {
+                return;
+            }
+            [$uid, $hash] = $parts;
 
             $uzivatel = $this->uzivatelModel->getUzivatel($uid);
-            if ($uzivatel) {
+            if ($uzivatel !== null) {
                 $this->template->uzivatel = $uzivatel;
 
-                if ($hash != md5($this->parameters->salt . $uzivatel->zalozen)) {
-                    die('Incorrect request (invalid hash)');
+                if (!hash_equals(md5($this->parameters->salt . $uzivatel->zalozen), $hash)) {
+                    return;
                 }
 
-                if ($uzivatel->regform_downloaded_password_sent == 0) {
+                if ($uzivatel->regform_downloaded_password_sent === 0) {
                     $uzivatel->update(['regform_downloaded_password_sent' => 1]);
 
-                    if ($uzivatel->spolek) {
+                    if (!in_array($uzivatel->spolek, [0, false], true)) {
                         /*
                          * TODO předělat registrační formulář spolku podle nových stanov od 1.2.2025
                          */
@@ -50,7 +57,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
                         // $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
                     }
 
-                    if ($uzivatel->druzstvo) {
+                    if (!in_array($uzivatel->druzstvo, [0, false], true)) {
                         $this->requestDruzstvoContract->execute($uzivatel->id);
                     }
                 }
@@ -60,12 +67,18 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
         }
     }
 
-    public function renderUserEmailFeedback($uid, $hash, $variant, $nextStep) {
+    /**
+     * @param int|string|null $uid
+     * @param string|null $hash
+     * @param string|null $variant
+     * @param string|null $nextStep
+     */
+    public function renderUserEmailFeedback($uid, $hash, $variant, $nextStep): void {
         $this->setLayout('pub');
         $this->template->error = null;
 
-        $uzivatel = $this->uzivatelModel->getUzivatel($uid);
-        if (!$uzivatel) {
+        $uzivatel = $uid !== null ? $this->uzivatelModel->getUzivatel($uid) : null;
+        if ($uzivatel === null) {
             $this->error('neplatný odkaz');
         }
         $oneclick_auth_code = $this->cryptosvc->decrypt($uzivatel->oneclick_auth);

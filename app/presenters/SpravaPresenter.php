@@ -9,38 +9,50 @@ use App\Model;
  */
 class SpravaPresenter extends BasePresenter
 {
-    private $uzivatel;
-    private $ap;
+    private Model\Uzivatel $uzivatel;
+    private Model\AP $ap;
 
-    private $googleMapsApiKey;
+    private ?string $googleMapsApiKey = null;
 
     public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct();
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
     }
 
-    public function setGoogleMapsApiKey($googleMapsApiKey) {
+    public function setGoogleMapsApiKey(?string $googleMapsApiKey): void {
         $this->googleMapsApiKey = $googleMapsApiKey;
     }
 
-    public function actionLogout() {
+    public function actionLogout(): void {
         $this->getUser()->logout();
         header("Location: https://userdb.hkfree.org/Shibboleth.sso/Logout?return=https://idp.hkfree.org/idp/logout?return=http://www.hkfree.org");
         die();
     }
 
-    public function renderNastroje() {
-        $this->template->canApproveCC = $this->getUser()->isInRole('VV');
-        $this->template->canSeeMailList = $this->getUser()->isInRole('VV');
-        $this->template->canCreateArea = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
-        $this->template->canSeePayments = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    public function renderNastroje(): void {
+        $this->template->canApproveCC = $this->jeVV();
+        $this->template->canSeeMailList = $this->jeVV();
+        $this->template->canCreateArea = $this->jeVVneboTECH();
+        $this->template->canSeePayments = $this->jeVVneboTECH();
     }
 
-    public function actionShow($id) {
+    /** Slučování, schvalování ČČ, mailing list */
+    protected function jeVV(): bool {
+        return $this->getUser()->isInRole('VV');
+    }
+
+    /** Oblasti a AP, platby, SMS správcům, přešifrování */
+    protected function jeVVneboTECH(): bool {
+        return $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    }
+
+    /** @param int|string|null $id */
+    public function actionShow($id): void {
         $this->redirect('Uzivatel:show', array('id' => $id));
     }
 
-    public function renderMapa() {
+    public function renderMapa(): void {
         $aps = $this->ap->findAll();
         $povoleneAp = [];
         foreach ($aps as $ap) {

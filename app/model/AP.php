@@ -14,35 +14,44 @@ class AP extends Table
     */
     protected $tableName = 'Ap';
 
-    public function getAP($id) {
-        return ($this->find($id));
+    /** @param int|string|null $id */
+    public function getAP($id): ?Nette\Database\Table\ActiveRow {
+        return $id === null ? null : $this->find($id);
     }
 
-    public function findAP(array $by) {
+    /**
+     * @param array<array-key, mixed> $by
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function findAP(array $by): Nette\Database\Table\Selection {
         return ($this->findBy($by));
     }
 
-    public function canViewOrEditAP($ApID, $Uzivatel) {
-        //\Tracy\Debugger::barDump($ApID);
-        //\Tracy\Debugger::barDump($Uzivatel);
-        return $Uzivatel->isInRole('TECH')
-           || $Uzivatel->isInRole('VV')
-           || $Uzivatel->isInRole('KONTROLA')
-           || $Uzivatel->isInRole('SO-'.$this->find($ApID)->Oblast_id)
-           || $Uzivatel->isInRole('ZSO-'.$this->find($ApID)->Oblast_id);
+    /** @param int|string|null $ApID */
+    public function canViewOrEditAP($ApID, Nette\Security\User $Uzivatel): bool {
+        if ($this->canViewOrEditAll($Uzivatel)) {
+            return true;
+        }
+        $ap = $this->getAP($ApID);
+        return $ap !== null && ($Uzivatel->isInRole('SO-'.$ap->Oblast_id)
+            || $Uzivatel->isInRole('ZSO-'.$ap->Oblast_id));
     }
 
-    public function canViewOrEditAll($Uzivatel) {
+    public function canViewOrEditAll(Nette\Security\User $Uzivatel): bool {
         return $Uzivatel->isInRole('TECH') || $Uzivatel->isInRole('VV') || $Uzivatel->isInRole('KONTROLA');
     }
 
-    public function findAPByIP($search) {
+    /**
+     * @param string $search
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function findAPByIP($search): Nette\Database\Table\Selection {
         $completeMatchId = $this->getConnection()->query("SELECT Ap.id FROM Ap
                                             LEFT JOIN  IPAdresa ON Ap.id = IPAdresa.Ap_id
                                             WHERE (
-                                            IPAdresa.ip_adresa = '$search'
-                                            ) LIMIT 1")->fetchField();
-        if (!empty($completeMatchId)) {
+                                            IPAdresa.ip_adresa = ?
+                                            ) LIMIT 1", $search)->fetchField();
+        if ($completeMatchId !== null) {
             return ($this->findBy(array('id' => $completeMatchId)));
         }
         return ($this->findBy(array('id' => 0)));

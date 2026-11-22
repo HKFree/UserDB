@@ -14,32 +14,33 @@ use Tracy\Debugger;
  */
 class Authenticator implements Security\IAuthenticator
 {
-    protected $context;
-    private $fakeUser;
-    private $spravceOb;
+    protected Nette\Database\Explorer $context;
+    /** @var false|array{userID: int|string, userName: string, passwordHash?: string} */
+    private bool|array $fakeUser;
 
-    public function __construct($fakeUser, Nette\Database\Context $ctx) {
+    /** @param false|array{userID: int|string, userName: string, passwordHash?: string} $fakeUser */
+    public function __construct(bool|array $fakeUser, Nette\Database\Explorer $ctx) {
         $this->context = $ctx;
         $this->fakeUser = $fakeUser;
     }
 
     /**
      * Performs an authentication.
-     * @return Nette\Security\Identity
+     * @param array{int|string|null, string|null} $credentials
      * @throws Nette\Security\AuthenticationException
      */
-    public function authenticate(array $credentials) {
+    public function authenticate(array $credentials): HkfIdentity {
         list($userID, $password) = $credentials;
-        if (!$userID) {
+        if (in_array($userID, [null, 0, '', '0'], true)) {
             throw new Nette\Security\AuthenticationException('User not found.');
         }
-        if ($this->fakeUser != false) {            /// debuging identity
+        if ((bool) $this->fakeUser) {            /// debuging identity
             $userID = $this->fakeUser["userID"];
             $nick = $this->fakeUser["userName"];
             $passwordHash = $this->fakeUser["passwordHash"] ?? 'dummy';  // optional
             //crypted hash from database
             //$passwordHash = $this->context->table("Uzivatel")->where('id', $userID)->fetchField('heslo_hash');
-        } elseif (array_key_exists('HTTP_GIVENNAME', $_SERVER)) {
+        } elseif (isset($_SERVER['HTTP_GIVENNAME'], $_SERVER['HTTP_INITIALS'])) {
             $nick = $_SERVER['HTTP_GIVENNAME'];
             //plaintext password from shibboleth
             $passwordHash = $_SERVER['HTTP_INITIALS'];
@@ -47,18 +48,19 @@ class Authenticator implements Security\IAuthenticator
             //crypted hash from database
             //$passwordHash = $this->context->table("Uzivatel")->where('id', $userID)->fetchField('heslo_hash');
         } else {
-            $args = array('nick' => 'NoNickFound');
+            throw new Nette\Security\AuthenticationException('User attributes not provided.');
         }
         $date = new DateTime();
         $spravcepro = $this->context->table("SpravceOblasti")->where('Uzivatel_id', $userID)->fetchAll();
         $roles = [];
         foreach ($spravcepro as $key => $value) {
-            if ($value->od->getTimestamp() < $date->getTimestamp() && (!$value->do || $value->do->getTimestamp() > $date->getTimestamp())) {
-                if ($value->Oblast) {
-                    $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text."-".$value->Oblast;
-                } else {
-                    $roles[] = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id')->text;
+            if ($value->od->getTimestamp() < $date->getTimestamp() && ($value->do === null || $value->do->getTimestamp() > $date->getTimestamp())) {
+                $typ = $value->ref('TypSpravceOblasti', 'TypSpravceOblasti_id');
+                $oblast = $value->ref('Oblast', 'Oblast_id');
+                if ($typ === null || ($value->Oblast_id !== null && $oblast === null)) {
+                    continue;
                 }
+                $roles[] = $oblast !== null ? $typ->text."-".$oblast->id : $typ->text;
             }
         }
 

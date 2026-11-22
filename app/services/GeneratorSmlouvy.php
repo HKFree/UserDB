@@ -9,12 +9,24 @@ class GeneratorSmlouvy
 {
     /**
      * Náhled smlouvy - rovnou vrací PDFko
+     * @param \Nette\Database\Table\ActiveRow $uzivatel
+     * @param int|string|null $cislo_smlouvy
      */
-    public static function nahledUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
+    public static function nahledUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null): string|false {
 
         $parametry = self::parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy);
 
-        if (!getenv('PDF_GENERATOR_URL')) {
+        if (getenv('USERDB_LOCAL_PDF') === '1') {
+            require_once __DIR__ . '/../../pdfGenerator/www/ContractPdf.php';
+            return \ContractPdf::generate(
+                $parametry,
+                __DIR__ . '/../../pdfGenerator/templates/SmlouvaUcastnicka_v7_template.odt',
+                getenv('USERDB_LIBREOFFICE') ?: 'libreoffice',
+                getenv('FLOX_ENV_CACHE') . '/pdf'
+            );
+        }
+
+        if (in_array(getenv('PDF_GENERATOR_URL'), [false, '', '0'], true)) {
             throw new \Exception("Missing PDF_GENERATOR_URL environment variable\n");
         }
 
@@ -23,7 +35,12 @@ class GeneratorSmlouvy
         return file_get_contents("$url?$params");
     }
 
-    public static function parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null) {
+    /**
+     * @param \Nette\Database\Table\ActiveRow $uzivatel
+     * @param int|string|null $cislo_smlouvy
+     * @return array<string, string|int|null>
+     */
+    public static function parametryUcastnickeSmlouvy($uzivatel, $cislo_smlouvy = null): array {
         global $container;
 
         $cestneClenstviUzivateleModel = $container->getByType('App\Model\CestneClenstviUzivatele');
@@ -37,7 +54,7 @@ class GeneratorSmlouvy
         }
 
         $subjectPrefix = getenv('AGREEMENT_NAME_PREFIX');
-        if (!empty($subjectPrefix)) {
+        if ($subjectPrefix !== false && $subjectPrefix !== '' && $subjectPrefix !== '0') {
             $jmenoString = "($subjectPrefix) $jmenoString";
         }
 
@@ -66,14 +83,14 @@ class GeneratorSmlouvy
           'uid' => (string) $uzivatel->id,
           'jmeno_prijmeni' => $jmenoString,
           'upresneni' => 'Datum narození',
-          'datum_narozeni' => $uzivatel->datum_narozeni ? $uzivatel->datum_narozeni->format('d.m.Y') : '',
+          'datum_narozeni' => $uzivatel->datum_narozeni !== null ? $uzivatel->datum_narozeni->format('d.m.Y') : '',
           'email' => $uzivatel->email,
           'telefon' => $uzivatel->telefon,
           'adresa' => $adresaString,
           'email_spravce_oblasti' => sprintf('oblast%u@hkfree.org', $uzivatel->Ap->Oblast->id),
           'cena' => $cenaString
         ];
-        if ($uzivatel->TypPravniFormyUzivatele->text == "PO") {
+        if ($uzivatel->TypPravniFormyUzivatele->text === "PO") {
             $parametrySmlouvy['upresneni'] = 'Firma';
             $parametrySmlouvy['datum_narozeni'] = '';
             $parametrySmlouvy['firma'] = sprintf("%s, IČO: %s", $uzivatel->firma_nazev, $uzivatel->firma_ico);
@@ -81,7 +98,7 @@ class GeneratorSmlouvy
         for ($i = 1; $i <= count($ip4Adresy); ++$i) {
             $parametrySmlouvy["IPv4-$i"] = $ip4Adresy[$i - 1][0];
             $parametrySmlouvy["GW-$i"] = $ip4Adresy[$i - 1][1];
-            if ($i == 4) {
+            if ($i === 4) {
                 $parametrySmlouvy["IPv4-more"] = sprintf('... a další (%u)', count($ip4Adresy) - 4);
                 break;
             }

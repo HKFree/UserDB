@@ -13,9 +13,9 @@ class Stitkovac
     ) {
     }
 
-    public function addStitek(\Nette\Database\Table\ActiveRow $uzivatel, string $string) {
+    public function addStitek(\Nette\Database\Table\ActiveRow $uzivatel, string $string): void {
         $stitek = $this->stitek->getStitekByText($string);
-        if (!$stitek) {
+        if ($stitek === null) {
             $stitek = $this->stitek->createStitek([
                 'text' => $string,
                 'barva_pozadi' => '#5bc0de',
@@ -23,7 +23,7 @@ class Stitkovac
             ]);
         }
         // check if the user already has the stitek or not
-        if (!$this->stitekUzivatele->uzivatelHasStitek($uzivatel->id, $stitek->id)) {
+        if ($this->stitekUzivatele->uzivatelHasStitek($uzivatel->id, $stitek->id) === null) {
             $this->stitekUzivatele->createStitekUzivatele([
                 'Stitek_id' => $stitek->id,
                 'Uzivatel_id' => $uzivatel->id,
@@ -31,13 +31,13 @@ class Stitkovac
         }
     }
 
-    public function hasStitekByText(\Nette\Database\Table\ActiveRow $uzivatel, string $string) {
+    public function hasStitekByText(\Nette\Database\Table\ActiveRow $uzivatel, string $string): bool {
         $stitek = $this->stitek->getStitekByText($string);
-        if (!$stitek) {
+        if ($stitek === null) {
             return false;
         }
 
-        return $this->stitekUzivatele->uzivatelHasStitek($uzivatel->id, $stitek->id) ? true : false;
+        return $this->stitekUzivatele->uzivatelHasStitek($uzivatel->id, $stitek->id) !== null;
     }
 
 }

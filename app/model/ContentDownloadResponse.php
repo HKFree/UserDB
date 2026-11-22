@@ -13,14 +13,14 @@ class ContentDownloadResponse implements Nette\Application\IResponse
     /** @var string */
     private $name;
     /**
-     * @param  string  content
-     * @param  string  user name name
-     * @param  string  MIME content type
+     * @param  string  $content Downloaded content
+     * @param  string  $name User-visible file name
+     * @param  string|null  $contentType MIME content type
      */
     public function __construct($content, $name, $contentType = null) {
         $this->content = $content;
         $this->name = $name;
-        $this->contentType = $contentType ? $contentType : 'application/octet-stream';
+        $this->contentType = $contentType ?: 'application/octet-stream';
     }
     /**
      * Returns the content of downloaded file.
@@ -47,14 +47,14 @@ class ContentDownloadResponse implements Nette\Application\IResponse
      * Sends response to output.
      * @return void
      */
-    public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse) {
+    public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse): void {
         $httpResponse->setContentType($this->contentType);
         $httpResponse->setHeader('Pragma', "public");
-        $httpResponse->setHeader('Expires', 0);
+        $httpResponse->setHeader('Expires', '0');
         $httpResponse->setHeader('Cache-Control', "must-revalidate, post-check=0, pre-check=0");
         $httpResponse->setHeader('Content-Transfer-Encoding', "binary");
         $httpResponse->setHeader('Content-Description', "File Transfer");
-        $httpResponse->setHeader('Content-Length', mb_strlen($this->content));
+        $httpResponse->setHeader('Content-Length', (string) mb_strlen($this->content));
         $httpResponse->setHeader('Content-Disposition', 'attachment; filename="' . $this->name . '"');
         echo $this->content;
     }

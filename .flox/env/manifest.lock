@@ -1,0 +1,652 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "schema-version": "1.19.0",
+    "install": {
+      "composer": {
+        "pkg-path": "php82Packages.composer"
+      },
+      "influxdb": {
+        "pkg-path": "influxdb2-server",
+        "pkg-group": "influxdb",
+        "version": "2.7.12"
+      },
+      "libreoffice-linux": {
+        "pkg-path": "libreoffice",
+        "pkg-group": "pdf",
+        "systems": [
+          "x86_64-linux"
+        ]
+      },
+      "libreoffice-macos": {
+        "pkg-path": "libreoffice-bin",
+        "pkg-group": "pdf",
+        "systems": [
+          "aarch64-darwin"
+        ]
+      },
+      "mariadb": {
+        "pkg-path": "mariadb_1011",
+        "pkg-group": "mariadb",
+        "version": "10.11.19"
+      },
+      "pcov": {
+        "pkg-path": "php82Extensions.pcov"
+      },
+      "php": {
+        "pkg-path": "php82"
+      },
+      "poppler": {
+        "pkg-path": "poppler-utils",
+        "pkg-group": "pdf"
+      },
+      "procps": {
+        "pkg-path": "procps",
+        "pkg-group": "procps",
+        "systems": [
+          "x86_64-linux"
+        ]
+      },
+      "unzip": {
+        "pkg-path": "unzip",
+        "pkg-group": "pdf"
+      },
+      "zip": {
+        "pkg-path": "zip",
+        "pkg-group": "pdf"
+      }
+    },
+    "hook": {
+      "on-activate": "socket_id=$(php -r 'echo substr(hash(\"sha256\", getenv(\"FLOX_ENV_CACHE\")), 0, 20);')\nexport USERDB_MARIADB_SOCKET=\"/tmp/userdb-mariadb-$(id -u)-$socket_id/mysql.sock\"\nexport PHPRC=\"$FLOX_ENV_PROJECT/scripts/userdb_php\"\nif [ -z \"${USERDB_LIBREOFFICE:-}\" ]; then\n  if [ -d \"$FLOX_ENV/Applications/LibreOffice.app\" ]; then\n    export USERDB_LIBREOFFICE=\"$FLOX_ENV/Applications/LibreOffice.app/Contents/MacOS/soffice\"\n  else\n    export USERDB_LIBREOFFICE=\"$FLOX_ENV/bin/libreoffice\"\n  fi\nfi\n"
+    },
+    "options": {
+      "systems": [
+        "aarch64-darwin",
+        "x86_64-linux"
+      ]
+    },
+    "services": {
+      "influxdb": {
+        "command": "exec bash \"$FLOX_ENV_PROJECT/scripts/userdb_influxdb.sh\""
+      },
+      "mariadb": {
+        "command": "exec bash \"$FLOX_ENV_PROJECT/scripts/userdb_mariadb.sh\""
+      }
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "influxdb2-server",
+      "broken": false,
+      "derivation": "/nix/store/j2jldwaaxgvw7p55whm1rrx9h5dkwlcz-influxdb-2.7.12.drv",
+      "description": "Open-source distributed time series database",
+      "install_id": "influxdb",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "name": "influxdb-2.7.12",
+      "pname": "influxdb2-server",
+      "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "rev_count": 1124497,
+      "rev_date": "2026-11-19T10:51:41Z",
+      "scrape_date": "2026-11-21T05:47:34.310199Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.7.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/f2p8mj594d9pd6423hqdd9vsvv06ygf9-influxdb-2.7.12"
+      },
+      "system": "aarch64-darwin",
+      "group": "influxdb",
+      "priority": 5
+    },
+    {
+      "attr_path": "influxdb2-server",
+      "broken": false,
+      "derivation": "/nix/store/6dg8cdyns0jz051hdlhx9fr6g9705l5n-influxdb-2.7.12.drv",
+      "description": "Open-source distributed time series database",
+      "install_id": "influxdb",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "name": "influxdb-2.7.12",
+      "pname": "influxdb2-server",
+      "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "rev_count": 1124497,
+      "rev_date": "2026-11-19T10:51:41Z",
+      "scrape_date": "2026-11-21T06:43:09.398912Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.7.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/s57cvh7k670inl69la1sgamsy81d6d0n-influxdb-2.7.12"
+      },
+      "system": "x86_64-linux",
+      "group": "influxdb",
+      "priority": 5
+    },
+    {
+      "attr_path": "mariadb_1011",
+      "broken": false,
+      "derivation": "/nix/store/hz5ar9dgvnlbmy7r76q9hdnkpzfnskmk-mariadb-server-10.11.19.drv",
+      "description": "Enhanced, drop-in replacement for MySQL",
+      "install_id": "mariadb",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "mariadb-server-10.11.19",
+      "pname": "mariadb_1011",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.288660Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "10.11.19",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "man": "/nix/store/60nxjv0j2wg7bf8765yyv775ypf2gzbf-mariadb-server-10.11.19-man",
+        "out": "/nix/store/6wiish5ybry57n2pcak8x3kqwqpmq6h7-mariadb-server-10.11.19"
+      },
+      "system": "aarch64-darwin",
+      "group": "mariadb",
+      "priority": 5
+    },
+    {
+      "attr_path": "mariadb_1011",
+      "broken": false,
+      "derivation": "/nix/store/hn2v92jml0mwiw9r1zdaykhfvbmv31sw-mariadb-server-10.11.19.drv",
+      "description": "Enhanced, drop-in replacement for MySQL",
+      "install_id": "mariadb",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "mariadb-server-10.11.19",
+      "pname": "mariadb_1011",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:20.731275Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "10.11.19",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "man": "/nix/store/2gsdplw8vkb78nvs0729a6kqfcyqnrl0-mariadb-server-10.11.19-man",
+        "out": "/nix/store/ay5zw12x3r2jm8g3g8d89imb2hw1a2hw-mariadb-server-10.11.19"
+      },
+      "system": "x86_64-linux",
+      "group": "mariadb",
+      "priority": 5
+    },
+    {
+      "attr_path": "libreoffice",
+      "broken": false,
+      "derivation": "/nix/store/x8xpx5jsgwb8zl3144q2qzrh5x4wl2aj-libreoffice-26.8.0.3-wrapped.drv",
+      "description": "Comprehensive, professional-quality productivity suite, a variant of openoffice.org",
+      "install_id": "libreoffice-linux",
+      "license": "[ MPL-2.0, LGPL-3.0-or-later, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "libreoffice-26.8.0.3-wrapped",
+      "pname": "libreoffice",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:20.703997Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.8.0.3-wrapped",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/pjc9vq553dnk82dkyqmbmgznq9lqjrag-libreoffice-26.8.0.3-wrapped"
+      },
+      "system": "x86_64-linux",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "libreoffice-bin",
+      "broken": false,
+      "derivation": "/nix/store/l5fa7cmaamfawyvah6lqmxh350mmawga-libreoffice-26.2.5.drv",
+      "description": "Comprehensive, professional-quality productivity suite, a variant of openoffice.org",
+      "install_id": "libreoffice-macos",
+      "license": "LGPL-3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "libreoffice-26.2.5",
+      "pname": "libreoffice-bin",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.257430Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.2.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/spkm94m3gbsq5gg400il6nbn6q63an3c-libreoffice-26.2.5"
+      },
+      "system": "aarch64-darwin",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "poppler-utils",
+      "broken": false,
+      "derivation": "/nix/store/wlm0px9njgpm3ddz3xbndxj3ma7h2b30-poppler-utils-26.11.0.drv",
+      "description": "PDF rendering library",
+      "install_id": "poppler",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "poppler-utils-26.11.0",
+      "pname": "poppler-utils",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.363511Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.11.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/smqa5n3bydya75d22qfzswxljckr42g4-poppler-utils-26.11.0-dev",
+        "out": "/nix/store/63b7spm7sqsjwq612n0v20zj2xpck6a2-poppler-utils-26.11.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "poppler-utils",
+      "broken": false,
+      "derivation": "/nix/store/75pwmkw9cjpjz9qi63d9a66f2gq60bkp-poppler-utils-26.11.0.drv",
+      "description": "PDF rendering library",
+      "install_id": "poppler",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "poppler-utils-26.11.0",
+      "pname": "poppler-utils",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:20.777579Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.11.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/p7drj2hywj7lpsj3jimdzk9vh2yy43g1-poppler-utils-26.11.0-dev",
+        "out": "/nix/store/nx16mjcv442bx13rn80az81a83aw2xvy-poppler-utils-26.11.0"
+      },
+      "system": "x86_64-linux",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "unzip",
+      "broken": false,
+      "derivation": "/nix/store/bf85iqm4rccbm3q6qyziab9pwmnirrs6-unzip-6.0.drv",
+      "description": "Extraction utility for archives compressed in .zip format",
+      "install_id": "unzip",
+      "license": "Info-ZIP",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "unzip-6.0",
+      "pname": "unzip",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.811714Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/jqm7c3xsjzcf80m4qpzfyi4abrpmn4mp-unzip-6.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "unzip",
+      "broken": false,
+      "derivation": "/nix/store/72b0ba1q37jsczk6nn95jk8yjxabzbxi-unzip-6.0.drv",
+      "description": "Extraction utility for archives compressed in .zip format",
+      "install_id": "unzip",
+      "license": "Info-ZIP",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "unzip-6.0",
+      "pname": "unzip",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:20.989815Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "6.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/fl6ffqm8pxv0cdmm4gx0d7vk3njd4dbc-unzip-6.0"
+      },
+      "system": "x86_64-linux",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "zip",
+      "broken": false,
+      "derivation": "/nix/store/kcd4rsg2hmrq808lx9bcra00xwz36w6v-zip-3.0.drv",
+      "description": "Compressor/archiver for creating and modifying zipfiles",
+      "install_id": "zip",
+      "license": "BSD-4-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "zip-3.0",
+      "pname": "zip",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T05:47:33.834832Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/z0l79y7m9zxrwyky0jr26da67wzzzyhw-zip-3.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "zip",
+      "broken": false,
+      "derivation": "/nix/store/ls72aa78vpyp2rn1acfz2w6icc71jz43-zip-3.0.drv",
+      "description": "Compressor/archiver for creating and modifying zipfiles",
+      "install_id": "zip",
+      "license": "BSD-4-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "name": "zip-3.0",
+      "pname": "zip",
+      "rev": "04906337b6d53e8bb0eaf0470ae9f070a4d4eb55",
+      "rev_count": 1122823,
+      "rev_date": "2026-11-17T04:43:17Z",
+      "scrape_date": "2026-11-19T06:43:21.009912Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/iz5r7d5g87msk5afq2pgfcg1qnvqcs2p-zip-3.0"
+      },
+      "system": "x86_64-linux",
+      "group": "pdf",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82Packages.composer",
+      "broken": false,
+      "derivation": "/nix/store/6pxwjwb8bwcsd716f3s5xv0hax3d82ld-composer-2.10.3.drv",
+      "description": "Dependency Manager for PHP",
+      "install_id": "composer",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "composer-2.10.3",
+      "pname": "composer",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T05:50:29.033465Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "2.10.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/qbzn7rw4gnk0n8cyr1s0r2d6fsyqs12j-composer-2.10.3"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82Packages.composer",
+      "broken": false,
+      "derivation": "/nix/store/l1w0c56y2m91pvjpdsyb1ir873yr4chk-composer-2.10.3.drv",
+      "description": "Dependency Manager for PHP",
+      "install_id": "composer",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "composer-2.10.3",
+      "pname": "composer",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T07:05:52.951578Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "2.10.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/7hf858j4k1y1l7a0dw8yhkqhx403dbgn-composer-2.10.3"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82Extensions.pcov",
+      "broken": false,
+      "derivation": "/nix/store/hmdlb6s8k7g3aisvmmjw61ha1wp0bajw-php-pcov-1.0.12.drv",
+      "description": "Self contained php-code-coverage compatible driver for PHP",
+      "install_id": "pcov",
+      "license": "PHP-3.01",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "php-pcov-1.0.12",
+      "pname": "pcov",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T05:50:29.033285Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "1.0.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/v11mv72jy45mvx50lh1ga4mnkggmv57l-php-pcov-1.0.12"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82Extensions.pcov",
+      "broken": false,
+      "derivation": "/nix/store/brxy1wh9i5bjbix3mqw1nc9dl7nryis4-php-pcov-1.0.12.drv",
+      "description": "Self contained php-code-coverage compatible driver for PHP",
+      "install_id": "pcov",
+      "license": "PHP-3.01",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "php-pcov-1.0.12",
+      "pname": "pcov",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T07:05:52.951364Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "1.0.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/c4awn496yhq8wlg66qiv449awnr98dfa-php-pcov-1.0.12"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82",
+      "broken": false,
+      "derivation": "/nix/store/ja8asgx885ipfnn3bjn3kjyz5vwyp31z-php-with-extensions-8.2.34.drv",
+      "description": "HTML-embedded scripting language",
+      "install_id": "php",
+      "license": "PHP-3.01",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "php-with-extensions-8.2.34",
+      "pname": "php82",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T05:50:29.033109Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "8.2.34",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/p2fyg8khnl37d6gdz4yl7x3mgfdlnb2z-php-with-extensions-8.2.34"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "php82",
+      "broken": false,
+      "derivation": "/nix/store/m7ggaxn5zk7q71zal32ix6vmwk48fjq5-php-with-extensions-8.2.34.drv",
+      "description": "HTML-embedded scripting language",
+      "install_id": "php",
+      "license": "PHP-3.01",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "name": "php-with-extensions-8.2.34",
+      "pname": "php82",
+      "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+      "rev_count": 1097682,
+      "rev_date": "2026-10-20T13:28:04Z",
+      "scrape_date": "2026-10-21T07:05:52.951162Z",
+      "stabilities": [
+        "unstable",
+        "staging"
+      ],
+      "unfree": false,
+      "version": "8.2.34",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/8icsnkczhxfiy93659q90cbhrnz918rr-php-with-extensions-8.2.34"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "procps",
+      "broken": false,
+      "derivation": "/nix/store/550nvkpdqc2nzjsdwl6g4h44jv4q58hv-procps-4.0.7.drv",
+      "description": "Utilities that give information about processes using the /proc filesystem",
+      "install_id": "procps",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "name": "procps-4.0.7",
+      "pname": "procps",
+      "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "rev_count": 1124497,
+      "rev_date": "2026-11-19T10:51:41Z",
+      "scrape_date": "2026-11-21T06:43:09.481064Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.0.7",
+      "outputs_to_install": [
+        "man",
+        "out",
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/5i2w8kmhkaspcyv8nv3yr4wxxy82k8qq-procps-4.0.7-dev",
+        "doc": "/nix/store/ydkhk7v2g2frlfij1bdpv9bp07551hf1-procps-4.0.7-doc",
+        "man": "/nix/store/dy76ig2sl49xi2ih58lqhrshk2bkkpm3-procps-4.0.7-man",
+        "out": "/nix/store/aj08b694apkc1jay2akywym9ghlailf5-procps-4.0.7"
+      },
+      "system": "x86_64-linux",
+      "group": "procps",
+      "priority": 5
+    }
+  ]
+}

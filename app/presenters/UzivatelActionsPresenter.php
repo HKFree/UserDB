@@ -5,25 +5,22 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use App\Services;
-use DateInterval;
-use DateTime;
 use Tracy\Debugger;
 
 /**
  * Uzivatel actions presenter.
+ * @property-read Nette\Bridges\ApplicationLatte\Template $template
+ * @method Nette\Bridges\ApplicationLatte\Template createTemplate(?string $class = null)
  */
 class UzivatelActionsPresenter extends UzivatelPresenter
 {
-    private $parameters;
-    private $accountActivation;
-    private $uzivatel;
-    private $pdfGenerator;
-    private $mailService;
-    private $smlouva;
+    private Model\Parameters $parameters;
+    private Model\AccountActivation $accountActivation;
+    private Model\Uzivatel $uzivatel;
+    private Services\PdfGenerator $pdfGenerator;
+    private Services\MailService $mailService;
 
     private Services\RequestDruzstvoContract $requestDruzstvoContract;
-    private Services\Stitkovac $stitkovac;
-    private $cestneClenstviUzivatele;
 
     public function __construct(
         Model\Parameters $parameters,
@@ -31,27 +28,63 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         Services\PdfGenerator $pdf,
         Model\AccountActivation $accActivation,
         Model\Uzivatel $uzivatel,
-        Model\Smlouva $smlouva,
         Services\RequestDruzstvoContract $requestDruzstvoContract,
-        Services\Stitkovac $stitkovac,
         Services\CryptoSluzba $cryptosvc,
-        Model\CestneClenstviUzivatele $cestneClenstviUzivatele
+        Model\PovoleneSMTP $alowedSMTP,
+        Model\DNat $dnat,
+        Model\SloucenyUzivatel $slUzivatel,
+        Model\Smlouva $smlouva,
+        Services\SmlouvaStavSluzba $smlouvaStavSluzba,
+        Model\SpravceOblasti $prava,
+        Model\CestneClenstviUzivatele $cc,
+        Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
+        Model\TypClenstvi $typClenstvi,
+        Model\ZpusobPripojeni $zpusobPripojeni,
+        Model\TechnologiePripojeni $technologiePripojeni,
+        Model\IPAdresa $ipAdresa,
+        Model\TypZarizeni $typZarizeni,
+        Model\Log $log,
+        Model\IdsConnector $idsConnector,
+        Model\AplikaceToken $aplikaceToken,
+        Model\Stitek $stitek,
+        Model\StitekUzivatele $stitkyUzivatele,
     ) {
+        parent::__construct(
+            mailsvc: $mailsvc,
+            cryptosvc: $cryptosvc,
+            alowedSMTP: $alowedSMTP,
+            dnat: $dnat,
+            parameters: $parameters,
+            slUzivatel: $slUzivatel,
+            smlouva: $smlouva,
+            smlouvaStavSluzba: $smlouvaStavSluzba,
+            prava: $prava,
+            cc: $cc,
+            typPravniFormyUzivatele: $typPravniFormyUzivatele,
+            typClenstvi: $typClenstvi,
+            zpusobPripojeni: $zpusobPripojeni,
+            technologiePripojeni: $technologiePripojeni,
+            uzivatel: $uzivatel,
+            ipAdresa: $ipAdresa,
+            typZarizeni: $typZarizeni,
+            log: $log,
+            idsConnector: $idsConnector,
+            aplikaceToken: $aplikaceToken,
+            stitek: $stitek,
+            stitkyUzivatele: $stitkyUzivatele,
+        );
         $this->parameters = $parameters;
         $this->pdfGenerator = $pdf;
         $this->accountActivation = $accActivation;
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
-        $this->smlouva = $smlouva;
         $this->requestDruzstvoContract = $requestDruzstvoContract;
-        $this->stitkovac = $stitkovac;
         $this->cryptosvc = $cryptosvc;
-        $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
     }
 
-    public function actionMoneyActivate() {
+    public function actionMoneyActivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             if ($this->accountActivation->activateAccount($this->getUser(), $id)) {
                 $this->flashMessage('Účet byl aktivován.');
             }
@@ -60,11 +93,11 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionMoneyReactivate() {
+    public function actionMoneyReactivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $result = $this->accountActivation->reactivateAccount($this->getUser(), $id);
-            if ($result != '') {
+            if (is_string($result) && $result !== '') {
                 $this->flashMessage($result);
             }
 
@@ -72,9 +105,9 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionMoneyDeactivate() {
+    public function actionMoneyDeactivate(): void {
         $id = $this->getParameter('id');
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             if ($this->accountActivation->deactivateAccount($this->getUser(), $id)) {
                 $this->flashMessage('Účet byl deaktivován.');
             }
@@ -83,31 +116,34 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionExportPdf() {
-        if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-                $pdftemplate = $this->createTemplate()->setFile(__DIR__."/../templates/Uzivatel/pdf-form.latte");
-                $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+    public function actionExportPdf(): void {
+        if ($this->maVyplnenyParametr('id')) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
+                $this->vyzadujOpravneni($this->smiUpravitUzivatele($uzivatel));
+                $pdf = $this->vytvorRegistracniPdf($uzivatel);
                 $this->sendResponse($pdf);
             }
         }
     }
-    public function actionSendRegActivation() {
-        if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
+    public function actionSendRegActivation(): void {
+        if ($this->maVyplnenyParametr('id')) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 $hash = base64_encode($uzivatel->id . '-' . md5($this->parameters->salt . $uzivatel->zalozen));
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+                if ($so === null) {
+                    $this->error('Uživatel nebyl nalezen.');
+                }
 
                 $link = $this->link('//SelfService:confirmEmail', $hash);
 
-                if ($uzivatel->druzstvo == 1) {
+                if ((int) $uzivatel->druzstvo === 1) {
 
                     $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);
                     $this->mailService->sendDruzstvoConfirmationRequestCopy($uzivatel, $so);
 
                     $this->flashMessage('E-mail s žádostí o ověření emailu pro registraci do družstva byl odeslán.');
-                } elseif ($uzivatel->spolek == 1) {
+                } elseif ((int) $uzivatel->spolek === 1) {
 
                     $this->mailService->sendSpolekConfirmationRequest($uzivatel, $so, $link);
                     $this->mailService->sendSpolekConfirmationRequestCopy($uzivatel, $so);
@@ -120,16 +156,16 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    public function actionExportAndSendRegForm() {
-        if ($this->getParameter('id')) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-                if ($uzivatel->spolek == 0) {
+    public function actionExportAndSendRegForm(): void {
+        if ($this->maVyplnenyParametr('id')) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
+                $this->vyzadujOpravneni($this->smiUpravitUzivatele($uzivatel));
+                if ((int) $uzivatel->spolek === 0) {
                     $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
 
                     $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
                 } else {
-                    $pdftemplate = $this->createTemplate()->setFile(__DIR__ . "/../templates/Uzivatel/pdf-form.latte");
-                    $pdf = $this->pdfGenerator->generatePdf($uzivatel, $pdftemplate);
+                    $pdf = $this->vytvorRegistracniPdf($uzivatel);
 
                     $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
 
@@ -141,44 +177,35 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         }
     }
 
-    private function checkTimeSinceLastGenerateContract(string $interval = 'PT5M') {
-        $user_id = $this->getParameter('id');
-
-        $last_generated = $this->smlouva->findAll()
-            ->where('Uzivatel_id', $user_id)->order('kdy_vygenerovano DESC')->limit(1)->fetch();
-
-        // Pokud neexistuje zadna smlouva, je to v pohode => return
-        if (!$last_generated) {
-            return;
-        }
-
-        $last_generated_datetime = \Nette\Utils\DateTime::from($last_generated['kdy_vygenerovano']);
-        $interval_ago = (new DateTime())
-            ->sub(new DateInterval($interval));
-
-        if ($interval_ago < $last_generated_datetime) {
-            $this->flashMessage('Ochrana proti přetížení: Nelze vytvořit další smlouvu dříve než 5 minut po předchozí. Pokud je to záměr, prosím chvíli počkej.', 'danger');
-            $this->redirect('Uzivatel:show', array('id' => $user_id));
+    private function vytvorRegistracniPdf(Nette\Database\Table\ActiveRow $uzivatel): \PdfResponse\PdfResponse {
+        $template = $this->createTemplate()->setFile(__DIR__ . '/../templates/Uzivatel/pdf-form.latte');
+        try {
+            return $this->pdfGenerator->generatePdf($uzivatel, $template);
+        } catch (\InvalidArgumentException $e) {
+            $this->flashMessage($e->getMessage(), 'danger');
+            $this->redirect('Uzivatel:show', ['id' => $uzivatel->id]);
         }
     }
 
-    public function actionHandleSubscriberContractPreview() {
+    public function actionHandleSubscriberContractPreview(): void {
         $user_id = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($user_id);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
-        $tmpname = sprintf('/dev/shm/document_%u.pdf', rand(1, 1e9));
         $pdfData = \App\Services\GeneratorSmlouvy::nahledUcastnickeSmlouvy($uzivatel);
-        file_put_contents($tmpname, $pdfData);
-
-        $this->sendResponse(new Nette\Application\Responses\FileResponse($tmpname, "náhled smlouvy", 'application/pdf', false));
-
-        unlink($tmpname);
+        $this->sendResponse(new Nette\Application\Responses\CallbackResponse(function (Nette\Http\IRequest $request, Nette\Http\IResponse $response) use ($pdfData): void {
+            $response->setContentType('application/pdf');
+            $response->setHeader('Content-Disposition', 'inline; filename="contract-preview.pdf"');
+            echo $pdfData;
+        }));
     }
 
-    public function actionHandleSubscriberContract() {
+    public function actionHandleSubscriberContract(): void {
         // TODO: Logování změn
 
-        if (!$this->getParameter('id')) {
+        if (!$this->maVyplnenyParametr('id')) {
             $this->flashMessage('Žádné id.');
             $this->redirect('UzivatelList:listall');
         }
@@ -186,13 +213,10 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $user_id = $this->getParameter('id');
         $current_user = $this->uzivatel->find($user_id);
 
-        if (!$current_user) {
+        if ($current_user === null) {
             $this->flashMessage('Žádný uživatel s tímto id.');
             $this->redirect('UzivatelList:listall');
         }
-
-        // Kontrola, že od poslední generace uběhlo aspoň 5 minut...
-        // $this->checkTimeSinceLastGenerateContract();
 
         $newId = $this->requestDruzstvoContract->execute($user_id);
 
@@ -201,15 +225,18 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->redirect('Uzivatel:show', array('id' => $user_id));
     }
 
-    public function actionSendUserEmail() {
+    public function actionSendUserEmail(): void {
         $uid = $this->getParameter('id');
         $variant = $this->getParameter('variant');
         $uzivatel =  $this->uzivatel->find($uid);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         // generate auth code and encrypt it to DB if not already generated
-        if (!$uzivatel->oneclick_auth) {
+        if (in_array($uzivatel->oneclick_auth, [null, '', '0'], true)) {
             $code_length = 32;
-            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', ceil($code_length / strlen($x)))), 1, $code_length);
+            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', (int) ceil($code_length / strlen($x)))), 1, $code_length);
             $oneclick_auth_code_encrypted = $this->cryptosvc->encrypt($oneclick_auth_code);
             $this->uzivatel->update($uzivatel->id, [
                 'oneclick_auth' => $oneclick_auth_code_encrypted,

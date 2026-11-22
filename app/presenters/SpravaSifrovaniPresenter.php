@@ -6,6 +6,7 @@ use App\Services\CryptoSluzba;
 use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Utils\ArrayHash;
 use Tracy\Debugger;
 
 /**
@@ -13,19 +14,20 @@ use Tracy\Debugger;
  */
 class SpravaSifrovaniPresenter extends SpravaPresenter
 {
-    private $ipAdresa;
-    private $cryptosvc;
+    private Model\IPAdresa $ipAdresa;
+    private CryptoSluzba $cryptosvc;
 
-    public function __construct(CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa) {
+    public function __construct(CryptoSluzba $cryptosvc, Model\IPAdresa $ipAdresa, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->cryptosvc = $cryptosvc;
         $this->ipAdresa = $ipAdresa;
     }
 
-    public function renderPresifrovani() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    public function renderPresifrovani(): void {
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentPresifrovaniForm() {
+    protected function createComponentPresifrovaniForm(): Form {
         // Tohle je nutne abychom mohli zjistit isSubmited
         $form = new Form($this, "presifrovaniForm");
         $form->addHidden('id');
@@ -37,11 +39,14 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function presifrovaniFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function presifrovaniFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
         $nesifrovane = $this->ipAdresa->findBy(array('heslo_sifrovane' => 0));
 
         foreach ($nesifrovane as $ip) {
-            if ($ip->heslo && strlen($ip->heslo) > 0) {
+            if (!in_array($ip->heslo, [null, '', '0'], true) && strlen($ip->heslo) > 0) {
                 $encrypted = $this->cryptosvc->encrypt($ip->heslo);
                 $this->ipAdresa->update($ip->id, array('heslo' => $encrypted, 'heslo_sifrovane' => 1));
             }
@@ -50,6 +55,5 @@ class SpravaSifrovaniPresenter extends SpravaPresenter
         $this->flashMessage('Hesla ip adres jsou přešifrovány.');
 
         $this->redirect('Sprava:nastroje', array('id' => null));
-        return true;
     }
 }

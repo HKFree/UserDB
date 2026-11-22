@@ -18,11 +18,13 @@ use DigitalCz\DigiSign\DigiSign;
 )]
 class DigisignGenerovatUcastnickouSmlouvu extends Command
 {
-    private $templateId = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
-    private $FILE_STORAGE_PATH;
-    private $uzivatelModel;
-    private $smlouvaModel;
-    private $podpisSmlouvyModel;
+    private string $templateId = "0193d3fc-257b-7383-bcc8-692dfeb49903"; # účastnická smlouva v7 (onboarding - nový připojenec)
+    private string $FILE_STORAGE_PATH;
+    private string $accessKey;
+    private string $secretKey;
+    private Uzivatel $uzivatelModel;
+    private Smlouva $smlouvaModel;
+    private PodpisSmlouvy $podpisSmlouvyModel;
 
     public function __construct(
         Uzivatel $uzivatelModel,
@@ -41,20 +43,27 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
     protected function configure() {
         $this->addArgument('smlouva_id', InputArgument::REQUIRED, 'ID smlouvy (index do tabulky Smlouva)');
 
-        if (!getenv('DIGISIGN_ACCESS_KEY') || !getenv('DIGISIGN_SECRET_KEY')) {
+        $accessKey = getenv('DIGISIGN_ACCESS_KEY');
+        $secretKey = getenv('DIGISIGN_SECRET_KEY');
+        if (in_array($accessKey, [false, '', '0'], true) || in_array($secretKey, [false, '', '0'], true)) {
             throw new \Exception("Missing DIGISIGN_ACCESS_KEY or DIGISIGN_SECRET_KEY environment variables\n");
         }
+        $this->accessKey = $accessKey;
+        $this->secretKey = $secretKey;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
         $smlouva_id = $input->getArgument('smlouva_id');
 
         $smlouva = $this->smlouvaModel->find($smlouva_id);
-        if (!$smlouva) {
+        if ($smlouva === null) {
             throw new \Exception("Smlouva cislo [$smlouva_id] neni v DB\n");
         }
 
         $uzivatel = $this->uzivatelModel->find($smlouva->uzivatel_id);
+        if ($uzivatel === null) {
+            throw new \RuntimeException('Člen smlouvy nebyl nalezen.');
+        }
 
         $parametry = \App\Services\GeneratorSmlouvy::parametryUcastnickeSmlouvy($uzivatel, $smlouva_id);
         $smlouva->update(['parametry_smlouvy' => json_encode($parametry, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)]);
@@ -62,8 +71,8 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         print("Generovat ucastnickou smlouvu smlouva_id $smlouva_id uid $uzivatel->id ($uzivatel->jmeno $uzivatel->prijmeni \"$uzivatel->nick\") $uzivatel->email\n");
 
         $dgs = new DigiSign([
-          'access_key' => getenv('DIGISIGN_ACCESS_KEY'),
-          'secret_key' => getenv('DIGISIGN_SECRET_KEY')
+          'access_key' => $this->accessKey,
+          'secret_key' => $this->secretKey
         ]);
 
         $ENVELOPES = $dgs->envelopes();
@@ -85,7 +94,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
           'Smlouva.kdy_ukonceno' => null,
         ]);
 
-        if ($chybejiciPodpis && $chybejiciPodpis->smlouva->externi_id) {
+        if ($chybejiciPodpis !== null && $chybejiciPodpis->smlouva->externi_id) {
             $zrusitSmlouvu = $chybejiciPodpis->smlouva;
 
             printf("Krok %u: zrušit předchozí nepodepsanou smlouvu %u (datum %s) externi_id=%s\n", ++$krok, $zrusitSmlouvu->id, $zrusitSmlouvu->kdy_vygenerovano, $zrusitSmlouvu->externi_id);
@@ -94,7 +103,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
             $novaPoznamka = sprintf(
                 "%s%sSmlouva zrušena před podepsáním a nahrazena smlouvou č. %u (ze dne %s)",
                 $zrusitSmlouvu->poznamka,
-                empty($zrusitSmlouvu->poznamka) ? '' : "\n",
+                in_array($zrusitSmlouvu->poznamka, [null, '', '0'], true) ? '' : "\n",
                 $smlouva_id,
                 (new \DateTime())->format('d.m.Y H:i'),
             );
@@ -113,6 +122,10 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
 
         $envelope = $ENVELOPES->get($envelopeId);
         // $this::trace_to_file('envelope', $envelope);
+        $prijemce = $envelope->recipients[0] ?? null;
+        if ($prijemce === null) {
+            throw new \RuntimeException('DigiSign nevrátil příjemce obálky.');
+        }
 
         $documentName = "SmlouvaUcastnicka_{$smlouva_id}_uid{$uzivatel->id}.pdf";
         printf("Krok %u: vygenerovat a predvyplnit PDF podle sablony\n", ++$krok);
@@ -127,7 +140,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
           'file' => $file->self()
         ]);
 
-        $recipient1 = $ENVELOPES->recipients($envelope)->get($envelope->recipients[0]->id);
+        $recipient1 = $ENVELOPES->recipients($envelope)->get($prijemce->id);
 
         printf("Krok %u: podpisovy tag\n", ++$krok);
         $tag = $ENVELOPES->tags($envelope)->create([
@@ -160,14 +173,14 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
               'address' => $parametry['adresa'],
               'emailBody' => str_replace(
                   ['{UID}',        '{cena}',   '{adresa}'],
-                  [$uzivatel->id, $parametry['cena_celkem'], $parametry['adresa']],
+                  [(string) $uzivatel->id, (string) $parametry['cena_celkem'], (string) $parametry['adresa']],
                   $envelope->emailBody
               ),
             ]
         );
 
         // Nemame datum narozeni? -> vlozit editovatelny policko
-        if ($uzivatel->TypPravniFormyUzivatele->text == "FO" && !$uzivatel->datum_narozeni) {
+        if ($uzivatel->TypPravniFormyUzivatele->text === "FO" && $uzivatel->datum_narozeni === null) {
             printf("Krok %u: Nemame datum narozeni -> vlozit editovatelny policko\n", ++$krok);
             $parametry['datum_narozeni'] = '';
             $parametry['firma'] = '';
@@ -200,7 +213,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
         return 0;
     }
 
-    protected static function trace_to_file($what, $payload = null) {
+    protected static function trace_to_file(string $what, mixed $payload = null): void {
         global $debugCounter;
         file_put_contents(
             "trace" . (++$debugCounter) . "-" . $what . ".json",

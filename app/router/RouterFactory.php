@@ -12,7 +12,7 @@ use Nette\Application\Routers\SimpleRouter;
  */
 class RouterFactory
 {
-    public function createRouter($urlPrefix): Nette\Routing\Router {
+    public function createRouter(string $urlPrefix): Nette\Routing\Router {
         $router = new RouteList();
         $router->addRoute($urlPrefix . '/uzivatel/list/<id>', 'UzivatelList:list', Route::ONE_WAY);
         $router->addRoute($urlPrefix . '/uzivatel/listall', 'UzivatelList:listall', Route::ONE_WAY);
@@ -41,8 +41,6 @@ class RouterFactory
         $router->addRoute($urlPrefix . '/pub/user-email-feedback/<uid>/<hash>/<variant>/<nextStep>', ['presenter' => 'SelfService','action' => 'userEmailFeedback',]);
         $router->addRoute($urlPrefix . '/pub/user-confirm-email/<key>', ['presenter' => 'SelfService','action' => 'confirmEmail',]);
 
-        // Členská část (moje.hkfree.org); presentery samy odmítnou jinou doménu
-        $router->addRoute($urlPrefix . '/clen/<presenter=Notifikace>[/<action=default>]', ['module' => 'Member']);
         $router[] = new Route($urlPrefix . '/api/<presenter>[/<action=default>[/<id>]]', [
             'module' => 'Api'
         ]);

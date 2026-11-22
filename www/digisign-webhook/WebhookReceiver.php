@@ -9,7 +9,8 @@ $container = $bootstrap->boot();
 
 \Tracy\Debugger::$showBar = false;
 
-function process_digisign_webhook($hook) {
+/** Decoded JSON payload. */
+function process_digisign_webhook(mixed $hook): void {
     global $container;
 
     $UzivatelModel = $container->getByType(\App\Model\Uzivatel::class);
@@ -22,13 +23,18 @@ function process_digisign_webhook($hook) {
     $FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
     $FILE_STORAGE_PATH .= '/ucastnickeSmlouvy';
 
+    $accessKey = getenv('DIGISIGN_ACCESS_KEY');
+    $secretKey = getenv('DIGISIGN_SECRET_KEY');
+    if (in_array($accessKey, [false, '', '0'], true) || in_array($secretKey, [false, '', '0'], true)) {
+        throw new RuntimeException('Missing DIGISIGN_ACCESS_KEY or DIGISIGN_SECRET_KEY environment variables');
+    }
     $dgs = new DigiSign([
-        'access_key' => getenv('DIGISIGN_ACCESS_KEY'),
-        'secret_key' => getenv('DIGISIGN_SECRET_KEY')
+        'access_key' => $accessKey,
+        'secret_key' => $secretKey
     ]);
     $ENVELOPES = $dgs->envelopes();
 
-    if ($hook->entityName != "envelope") {
+    if ($hook->entityName !== "envelope") {
         return;
     }
 
@@ -38,32 +44,35 @@ function process_digisign_webhook($hook) {
         return;
     }
 
-    if ($smlouva->typ != 'ucastnicka') {
+    if ($smlouva->typ !== 'ucastnicka') {
         print_and_log(sprintf("Smlouva #%u typ %s tady neumime zpracovat", $smlouva->id, $smlouva->typ));
         return;
     }
 
     // zpetne volat API nacist detaily smlouvy:
+    // Neznámá obálka skončí výjimkou klienta DigiSign.
     $envelope = $ENVELOPES->get($hook->entityId);
-
-    if (!$smlouva) {
-        print_and_log("Smlouvu nezna digisign API -> ignorovat");
-        return;
-    }
 
     switch ($hook->event) {
         case 'envelopeSent': // obálka odeslána
             /**
              *  {"id":"0193b7bc-3bee-7393-b19d-02c49b5781a9","event":"envelopeSent","name":"envelope.sent","time":"2024-12-11T22:59:46+01:00","entityName":"envelope","entityId":"0193b7bc-1797-70f6-a095-231c750d3487","data":{"status":"sent"},"envelope":{"id":"0193b7bc-1797-70f6-a095-231c750d3487","status":"sent"}}
              */
-            $odeslano_kdy = $envelope->recipients[0]->sentAt;
-            $odeslano_kam = $envelope->recipients[0]->email;
+            $prijemce = $envelope->recipients[0] ?? null;
+            if ($prijemce === null) {
+                throw new RuntimeException('DigiSign nevrátil příjemce obálky.');
+            }
+            $odeslano_kdy = $prijemce->sentAt;
+            if ($odeslano_kdy === null) {
+                throw new RuntimeException('DigiSign nevrátil čas odeslání obálky.');
+            }
+            $odeslano_kam = $prijemce->email;
 
             // 1. uložit do DB že je smlouva odeslaná
             $novaPoznamka = sprintf(
                 "%s%sSmlouva odeslána %s na adresu %s.",
                 $smlouva->poznamka,
-                empty($smlouva->poznamka) ? '' : "\n",
+                in_array($smlouva->poznamka, [null, '', '0'], true) ? '' : "\n",
                 $odeslano_kdy->format('d.m.Y H:i'),
                 $odeslano_kam
             );
@@ -81,25 +90,45 @@ function process_digisign_webhook($hook) {
                 break;
             }
 
-            // 1. uložit do DB že je smlouva podepsaná
+            // Neúplné podklady odmítnout před zápisem podpisu a stažením dokumentu.
             $podpis = $PodpisSmlouvyModel->findOneBy(['smlouva_id' => $smlouva->id, 'smluvni_strana' => 'ucastnik']);
-            $podpis->update(['kdy_podepsano' => $hook->time]);
+            if ($podpis === null) {
+                throw new RuntimeException('Podpis účastníka nebyl nalezen.');
+            }
+            $dokument = $envelope->documents[0] ?? null;
+            if ($dokument === null) {
+                throw new RuntimeException('DigiSign nevrátil podepsaný dokument.');
+            }
+            $uzivatel = $UzivatelModel->find($smlouva->uzivatel_id);
+            if ($uzivatel === null) {
+                throw new RuntimeException('Člen smlouvy nebyl nalezen.');
+            }
+            $tags = [];
+            if ($uzivatel->datum_narozeni === null) {
+                $prijemce = $envelope->recipients[0] ?? null;
+                if ($prijemce === null) {
+                    throw new RuntimeException('DigiSign nevrátil příjemce obálky.');
+                }
+                $recipient1 = $ENVELOPES->recipients($envelope)->get($prijemce->id);
+                $tags = $recipient1->tags->toArray();
+            }
+            $podepsanoKdy = digisign_webhook_event_time($hook->time ?? null);
+
+            // 1. uložit do DB že je smlouva podepsaná
+            $podpis->update(['kdy_podepsano' => $podepsanoKdy]);
             print_and_log(sprintf("smlouva #%u podpis ucastnika \"%s\" datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
             // 2. stáhnout podepsaný PDF a uložit
             $fileResponse = $ENVELOPES->download($envelope->id);
-            $documentFullName = "{$FILE_STORAGE_PATH}/{$envelope->documents[0]->name}";
+            $documentFullName = "{$FILE_STORAGE_PATH}/{$dokument->name}";
             $fileResponse->save($documentFullName);
             print_and_log(sprintf('Ulozeno do %s', $documentFullName));
-            $smlouva->update(['podepsany_dokument_nazev' => $envelope->documents[0]->name]);
+            $smlouva->update(['podepsany_dokument_nazev' => $dokument->name]);
             $smlouva->update(['podepsany_dokument_content_type' => 'application/pdf']);
             $smlouva->update(['podepsany_dokument_path' => $documentFullName]);
             // 3. pokud nemáme datum narození, zkusíme parsovat vyplněný ze smlouvy
-            $uzivatel = $UzivatelModel->find($smlouva->uzivatel);
-            if (!$uzivatel->datum_narozeni) {
-                $recipient1 = $ENVELOPES->recipients($envelope)->get($envelope->recipients[0]->id);
-                $tags = $recipient1->tags->toArray();
+            if ($uzivatel->datum_narozeni === null) {
                 foreach ($tags as $tag) {
-                    if ($tag['recipientClaim'] == 'birthdate') {
+                    if ($tag['recipientClaim'] === 'birthdate') {
                         $birthdate_dirty = $tag['value'];
                         try {
                             $d = new DateTime(preg_replace('/\s+/', '', $birthdate_dirty) . " 00:00:00");
@@ -110,7 +139,7 @@ function process_digisign_webhook($hook) {
                             $novaPoznamka = sprintf(
                                 "%s%sNejasné datum narození [%s] (z digisign smlouvy #%u ze dne %s)",
                                 $uzivatel->poznamka,
-                                empty($uzivatel->poznamka) ? '' : "\n\n",
+                                in_array($uzivatel->poznamka, [null, '', '0'], true) ? '' : "\n\n",
                                 $birthdate_dirty,
                                 $smlouva->id,
                                 $podpis->kdy_podepsano->format("d.m.Y")
@@ -130,7 +159,7 @@ function process_digisign_webhook($hook) {
                 $AplikaceLog->log("digisign-webhook", "Overime ze UID {$uzivatel->id} neni SO nebo ZSO, zde je jejich seznam (" . implode(', ', $soAndZso). ")");
 
                 // 4.1. rozhodnutim SO rusime clenstvi ve spolku clenum, kteri nejsou SO ci ZSO
-                if (in_array($uzivatel->id, $soAndZso) === false) {
+                if (in_array($uzivatel->id, $soAndZso, true) === false) {
                     $AplikaceLog->log("digisign-webhook", "Uzivatel UID {$uzivatel->id} neni SO ani ZSO, nastavujeme mu TypClenstvi_id = 1 (zrusene)");
                     $uzivatel->update(['TypClenstvi_id' => 1]); // zrušeno
                 }
@@ -149,19 +178,33 @@ function process_digisign_webhook($hook) {
                 break;
             }
 
-            // 1. uložit do DB že je smlouva odmítnuta
             $podpis = $PodpisSmlouvyModel->findOneBy(['smlouva_id' => $smlouva->id, 'smluvni_strana' => 'ucastnik']);
-            $podpis->update(['kdy_odmitnuto' => $hook->time]);
-            print_and_log(sprintf("smlouva #%u podpis \"%s\" odmitnut, datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
-            // 2. důvod odmítnutí uložit do poznámky
-            if (!empty($envelope->recipients[0]->declineReason)) {
+            if ($podpis === null) {
+                throw new RuntimeException('Podpis účastníka nebyl nalezen.');
+            }
+            $prijemce = $envelope->recipients[0] ?? null;
+            if ($prijemce === null) {
+                throw new RuntimeException('DigiSign nevrátil příjemce obálky.');
+            }
+            $novaPoznamka = null;
+            if (!in_array($prijemce->declineReason, [null, '', '0'], true)) {
+                $odmitnutoKdy = $prijemce->declinedAt;
+                if ($odmitnutoKdy === null) {
+                    throw new RuntimeException('DigiSign nevrátil čas odmítnutí obálky.');
+                }
                 $novaPoznamka = sprintf(
                     "%s%sSmlouva ODMÍTNUTA %s s důvodem: %s",
                     $smlouva->poznamka,
-                    empty($smlouva->poznamka) ? '' : "\n",
-                    $envelope->recipients[0]->declinedAt->format('d.m.Y H:i'),
-                    $envelope->recipients[0]->declineReason
+                    in_array($smlouva->poznamka, [null, '', '0'], true) ? '' : "\n",
+                    $odmitnutoKdy->format('d.m.Y H:i'),
+                    $prijemce->declineReason
                 );
+            }
+            // 1. uložit do DB že je smlouva odmítnuta
+            $podpis->update(['kdy_odmitnuto' => digisign_webhook_event_time($hook->time ?? null)]);
+            print_and_log(sprintf("smlouva #%u podpis \"%s\" odmitnut, datum/cas: %s", $smlouva->id, $podpis->jmeno, $hook->time));
+            // 2. důvod odmítnutí uložit do poznámky
+            if ($novaPoznamka !== null) {
                 $smlouva->update(['poznamka' => $novaPoznamka]);
             }
             break;
@@ -172,13 +215,14 @@ function process_digisign_webhook($hook) {
                 break;
             }
 
+            $vyprseloKdy = $envelope->expiredAt ?? digisign_webhook_event_time($hook->time ?? null);
             // 1. uložit do DB že smlouva vypršela
             print_and_log(sprintf("smlouva #%u vyexpirovala datum/cas: %s", $smlouva->id, $hook->time));
             $novaPoznamka = sprintf(
                 "%s%sVYPRŠEL ČAS na podpis %s",
                 $smlouva->poznamka,
-                empty($smlouva->poznamka) ? '' : "\n",
-                $envelope->recipients[0]->declinedAt->format('d.m.Y H:i'),
+                in_array($smlouva->poznamka, [null, '', '0'], true) ? '' : "\n",
+                $vyprseloKdy->format('d.m.Y H:i'),
             );
             $smlouva->update(['poznamka' => $novaPoznamka]);
             break;
@@ -200,7 +244,23 @@ function process_digisign_webhook($hook) {
 
 }
 
-function print_and_log($message) {
+function digisign_webhook_event_time(mixed $time): DateTimeImmutable {
+    if (!is_string($time) || preg_match('/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})?$/D', $time) !== 1) {
+        throw new RuntimeException('Čas události DigiSign chybí nebo není platný.');
+    }
+    try {
+        $date = new DateTimeImmutable($time);
+    } catch (Exception $e) {
+        throw new RuntimeException('Čas události DigiSign chybí nebo není platný.', 0, $e);
+    }
+    $errors = DateTimeImmutable::getLastErrors();
+    if ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) {
+        throw new RuntimeException('Čas události DigiSign chybí nebo není platný.');
+    }
+    return $date->setTimezone(new DateTimeZone(date_default_timezone_get()));
+}
+
+function print_and_log(string $message): void {
     error_log("digisign_webhook: $message.");
     print("$message.\n");
 }

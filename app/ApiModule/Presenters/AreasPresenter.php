@@ -6,13 +6,14 @@ use Nette\Application\Responses\JsonResponse;
 
 class AreasPresenter extends ApiPresenter
 {
-    private $oblast;
+    private \App\Model\Oblast $oblast;
 
     public function __construct(\App\Model\Oblast $oblast) {
+        parent::__construct();
         $this->oblast = $oblast;
     }
 
-    public function actionDefault() {
+    public function actionDefault(): void {
         $oblasti = [];
         $oblastiData = $this->oblast->getSeznamOblasti();
         foreach ($oblastiData as $idoblast => $o) {
@@ -43,11 +44,14 @@ class AreasPresenter extends ApiPresenter
             $spravci = [];
             foreach ($o->related('SpravceOblasti.Oblast_id')->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())') as $spravceMtm) {
                 $spravce = $spravceMtm->ref('Uzivatel', 'Uzivatel_id');
-                if ($spravce['systemovy']) {
+                if ($spravce === null || !in_array($spravce['systemovy'], [0, false], true)) {
                     continue;
                 }
 
                 $role = $spravceMtm->ref('TypSpravceOblasti', 'TypSpravceOblasti_id');
+                if ($role === null) {
+                    continue;
+                }
                 $spravci[$spravce['id']] = [
                     'id' => $spravce['id'],
                     'nick' => $spravce['nick'],

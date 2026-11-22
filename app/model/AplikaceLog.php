@@ -17,7 +17,7 @@ class AplikaceLog extends Table
      */
     protected $tableName = 'AplikaceLog';
 
-    private $request;
+    private Nette\Http\Request $request;
 
     public function __construct(
         Nette\Database\Context $db,
@@ -28,7 +28,8 @@ class AplikaceLog extends Table
         $this->request = $request;
     }
 
-    public function log($action, $data = array()) {
+    /** @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool */
+    public function log(string $action, mixed $data = array()): Nette\Database\Table\ActiveRow|array|int|bool {
         return ($this->insert(array(
             'action' => $action,
             'ip' => $this->request->getRemoteAddress(),
@@ -37,7 +38,8 @@ class AplikaceLog extends Table
         )));
     }
 
-    public function getLogy() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getLogy(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 }

@@ -13,18 +13,20 @@ class FilePresenter extends BasePresenter
     /** @var Model\IPAdresa **/
     private $ipAdresa;
 
-    /** @var Model\Ap **/
+    /** @var Model\AP **/
     private $ap;
 
     public function __construct(Model\IPAdresa $ipAdresa, Model\AP $ap) {
+        parent::__construct();
         $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
     }
 
-    public function actionDownloadWinboxCmd($id) {
-        if ($id) {
+    /** @param int|string|null $id */
+    public function actionDownloadWinboxCmd($id): void {
+        if (!in_array($id, [null, 0, '', '0'], true)) {
             $ip = $this->ipAdresa->getIPAdresa($id);
-            if ($ip) {
+            if ($ip !== null) {
                 $apOfIp = $this->ipAdresa->getAPOfIP($ip);
                 if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($apOfIp, $this->getUser())) {
                     $cmd = "winbox.exe " . $ip->ip_adresa . " " . $ip->login . "\n";

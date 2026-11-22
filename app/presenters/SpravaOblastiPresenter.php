@@ -5,6 +5,7 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Utils\ArrayHash;
 use Nette\Utils\DateTime;
 use Tracy\Debugger;
 
@@ -13,19 +14,21 @@ use Tracy\Debugger;
  */
 class SpravaOblastiPresenter extends SpravaPresenter
 {
-    private $ap;
+    private Model\AP $ap;
+    /** @var Model\Oblast */
     public $oblast;
 
-    public function __construct(Model\Oblast $ob, Model\AP $ap) {
+    public function __construct(Model\Oblast $ob, Model\AP $ap, Model\Uzivatel $uzivatel) {
+        parent::__construct($uzivatel, $ap);
         $this->ap = $ap;
         $this->oblast = $ob;
     }
 
-    public function renderNovaoblast() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    public function renderNovaoblast(): void {
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentNovaoblastForm() {
+    protected function createComponentNovaoblastForm(): Form {
         $form = new Form($this, "novaoblastForm");
         $form->addHidden('id');
 
@@ -35,10 +38,10 @@ class SpravaOblastiPresenter extends SpravaPresenter
 
         $form->onSuccess[] = array($this, 'novaoblastFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $existujiciOblast = $this->oblast->getOblast($this->getParameter('id'));
-            if ($existujiciOblast) {
+            if ($existujiciOblast !== null) {
                 $form->setValues($existujiciOblast);
             }
         }
@@ -46,10 +49,13 @@ class SpravaOblastiPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function novaoblastFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function novaoblastFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
         $idOblasti = $values->id;
 
-        if (empty($values->id)) {
+        if (in_array($values->id, [null, '', 0, '0'], true)) {
             $values->datum_zalozeni = new Nette\Utils\DateTime();
             $this->oblast->insert($values);
             $this->flashMessage('Oblast byla vytvořena.');
@@ -58,14 +64,13 @@ class SpravaOblastiPresenter extends SpravaPresenter
         }
 
         $this->redirect('Sprava:nastroje');
-        return true;
     }
 
-    public function renderNoveap() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    public function renderNoveap(): void {
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentNoveapForm() {
+    protected function createComponentNoveapForm(): Form {
         $form = new Form($this, "noveapForm");
         $form->addHidden('id');
 
@@ -80,10 +85,10 @@ class SpravaOblastiPresenter extends SpravaPresenter
 
         $form->onSuccess[] = array($this, 'noveapFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $existujiciAp = $this->ap->getAP($this->getParameter('id'));
-            if ($existujiciAp) {
+            if ($existujiciAp !== null) {
                 $form->setValues($existujiciAp);
             }
         }
@@ -91,10 +96,13 @@ class SpravaOblastiPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function noveapFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function noveapFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
         $idAp = $values->id;
 
-        if (empty($values->id)) {
+        if (in_array($values->id, [null, '', 0, '0'], true)) {
             $this->ap->insert($values);
             $this->flashMessage('AP bylo vytvořeno.');
         } else {
@@ -102,6 +110,5 @@ class SpravaOblastiPresenter extends SpravaPresenter
         }
 
         $this->redirect('Sprava:nastroje');
-        return true;
     }
 }

@@ -7,17 +7,18 @@ use App\Model;
 
 class MonitoringPresenter extends ApiPresenter
 {
-    private $typZarizeni;
-    private $ipAdresa;
-    private $ap;
+    private Model\TypZarizeni $typZarizeni;
+    private Model\IPAdresa $ipAdresa;
+    private Model\AP $ap;
 
     public function __construct(Model\TypZarizeni $typZarizeni, Model\IPAdresa $iPAdresa, Model\AP $ap) {
+        parent::__construct();
         $this->typZarizeni = $typZarizeni;
         $this->ipAdresa = $iPAdresa;
         $this->ap = $ap;
     }
 
-    public function actionGetTypyZarizeni() {
+    public function actionGetTypyZarizeni(): void {
         $typyZarizení = $this->typZarizeni->getTypyZarizeni();
 
         $out = array();
@@ -29,26 +30,31 @@ class MonitoringPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse(['result' => 'OK', 'typyZarizeni' => $out]));
     }
 
-    public function actionGetZarizeni($typ = null, $uzivatele = 0, $ap = null) {
+    /**
+     * @param int|string|null $typ
+     * @param int|string $uzivatele
+     * @param int|string|null $ap
+     */
+    public function actionGetZarizeni($typ = null, $uzivatele = 0, $ap = null): void {
         $ap = parent::checkApID($ap);
 
         $adresy = $this->ipAdresa->findAll();
 
-        if ($typ) {
+        if (!in_array($typ, [null, 0, '', '0'], true)) {
             $typZarizeni = $this->typZarizeni->find($typ);
 
-            if (!$typZarizeni) {
+            if ($typZarizeni === null) {
                 $this->sendResponse(new JsonResponse(['result' => 'ERROR, typZarizeni ' . $typ . ' not valid']));
             }
             $adresy = $adresy->where('TypZarizeni_id', $typZarizeni->id);
         }
 
-        if ($ap) {
+        if (!in_array($ap, [null, 0, '', '0'], true)) {
             $apRec = $this->ap->find($ap);
-            if (!$apRec) {
+            if ($apRec === null) {
                 $this->sendResponse(new JsonResponse(['result' => 'ERROR, AP ID ' . $ap . ' does not exist']));
             }
-            if ($uzivatele) {
+            if (!in_array($uzivatele, [0, '', '0'], true)) {
                 $adresy = $adresy->whereOr([
                     'IPAdresa.Ap_id' => $ap,
                     'Uzivatel.Ap_id' => $ap,
@@ -57,7 +63,7 @@ class MonitoringPresenter extends ApiPresenter
                 $adresy = $adresy->where("Ap_id", $apRec->id);
             }
         } else {
-            if (!$uzivatele) {
+            if (in_array($uzivatele, [0, '', '0'], true)) {
                 $adresy = $adresy->where('Ap_id IS NOT NULL');
             }
         }
@@ -69,7 +75,7 @@ class MonitoringPresenter extends ApiPresenter
                 'popis' => $adresa->popis
             );
 
-            if ($adresa->Ap_id) {
+            if (!in_array($adresa->Ap_id, [null, 0], true)) {
                 $out[$adresa->ip_adresa]['Ap_id'] = $adresa->Ap_id;
             } else {
                 $out[$adresa->ip_adresa]['Uzivatel_id'] = $adresa->Uzivatel_id;

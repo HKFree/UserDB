@@ -24,18 +24,25 @@ class Subnet extends Table
     */
     protected $tableName = 'Subnet';
 
-    public function getSeznamSubnetu() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getSeznamSubnetu(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 
-    public function getSeznamSubnetuZacinajicich($prefix) {
+    /**
+     * @param string $prefix
+     * @return array<int, Nette\Database\Table\ActiveRow>
+     */
+    public function getSeznamSubnetuZacinajicich($prefix): array {
         return $this->findAll()->where("subnet LIKE ?", $prefix.'%')->fetchAll();
     }
 
-    public function getSubnet($id) {
-        return ($this->find($id));
+    /** @param int|string|null $id */
+    public function getSubnet($id): ?Nette\Database\Table\ActiveRow {
+        return $id === null ? null : $this->find($id);
     }
-    public function deleteSubnet(array $subnets) {
+    /** @param array<array-key, int|string> $subnets */
+    public function deleteSubnet(array $subnets): int|true {
         if (count($subnets) > 0) {
             return ($this->delete(array('id' => $subnets)));
         } else {
@@ -43,7 +50,7 @@ class Subnet extends Table
         }
     }
 
-    public function getSubnetForm(&$subnet) {
+    public function getSubnetForm(Nette\Forms\Container &$subnet): void {
         $subnet->addHidden('id')->setAttribute('class', 'id subnet');
         $subnet->addText('subnet', 'Subnet', 11)->setAttribute('class', 'subnet_text subnet')->setAttribute('placeholder', 'Subnet');
         $subnet->addText('gateway', 'Gateway', 11)->setAttribute('class', 'gateway_text subnet')->setAttribute('placeholder', 'Gateway');
@@ -54,8 +61,8 @@ class Subnet extends Table
     /**
      * Párová metoda k \App\Model\Log::getAdvancedzLogu(), Vrati seznam idSubnet -> subnet
      *
-     * @param int[] $ids idSubnet pro které chceme zjistit subnet
-     * @return array pole idSubnet=>subnet
+     * @param array<array-key, int|string> $ids idSubnet pro které chceme zjistit subnet
+     * @return array<int, string> pole idSubnet=>subnet
      */
     public function getSubnetzDB(array $ids) {
         return ($this->getTable()->where("id", $ids)->fetchPairs("id", "subnet"));
@@ -69,10 +76,11 @@ class Subnet extends Table
      * Př: vstup 10.107.17.0/26 , 10.107.17.64/26
      *     výstup 10.107.17
      *
-     * @param string $subnet Vstupní subnet
+     * @param iterable<Nette\Database\Table\ActiveRow> $subnets Vstupní subnety
      * @return string[] Pole s položkami
      */
     public function getAPCSubnets($subnets) {
+        $results = [];
         foreach ($subnets as $subnet) {
             $out = $this->parseSubnet($subnet->subnet);
             //\Tracy\Debugger::barDump(explode(".", $out["network"]));
@@ -80,14 +88,11 @@ class Subnet extends Table
             $resultnet = $a .".". $b .".". $c .".";
             $results[] = $resultnet;
         }
-        if (isset($results)) {
-            return (array_unique($results));
-        } else {
-            return array();
-        }
+        return (array_unique($results));
     }
 
-    public function getSubnetTable($subnets) {
+    /** @param iterable<Nette\Database\Table\ActiveRow> $subnets */
+    public function getSubnetTable($subnets): Html {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $subnetyTab = Html::el('table')->setClass('table table-striped');
@@ -104,7 +109,7 @@ class Subnet extends Table
             $arpProxy = $tr->create('td')->create('span');
             $arpProxy->setTitle(Subnet::ARP_PROXY_DESCRIPTION)
                      ->addAttributes($tooltips);
-            if ($subnet->arp_proxy) {
+            if (!in_array($subnet->arp_proxy, [0, false], true)) {
                 $arpProxy->setClass('label label-success');
                 $arpProxy->setText("zapnuto");
             } else {
@@ -123,28 +128,28 @@ class Subnet extends Table
      * a udělám WHERE subnet IN ...
      *
      * @param string $ip IP adresa
-     * @return string[] Subnet a informace o něm
+     * @return array{subnet: string, network: string, cidr: numeric-string, mask: string, gateway: string}|array{subnet: string, network: string, cidr: numeric-string, mask: string, error: 2}|array{error: 1}|array{error: 3, multiple_subnets: array<int, string>} Subnet a informace o něm
      */
     public function getSubnetOfIP($ip) {
         $possibleSubnets = $this->genSubnets($ip);
         $subnets = $this->findAll()->where("subnet", $possibleSubnets);
 
         if (count($subnets) > 1) {
-            $out["error"] = Subnet::ERR_MULTIPLE_GW;
-            $out["multiple_subnets"] = $subnets->fetchPairs("id", "subnet");
-            return ($out);
+            return [
+                "error" => Subnet::ERR_MULTIPLE_GW,
+                "multiple_subnets" => $subnets->fetchPairs("id", "subnet"),
+            ];
         }
 
-        if (count($subnets) == 1) {
-            $subnet = $subnets->fetch();
-
-            if ($subnet->arp_proxy) {
+        $subnet = $subnets->fetch();
+        if ($subnet !== null) {
+            if (!in_array($subnet->arp_proxy, [0, false], true)) {
                 $out = $this->parseSubnet(Subnet::ARP_PROXY_SUBNET);
                 $out["gateway"] = Subnet::ARP_PROXY_GW;
             } else {
                 $out = $this->parseSubnet($subnet->subnet);
 
-                if (empty($subnet->gateway)) {
+                if ($subnet->gateway === '' || $subnet->gateway === '0') {
                     $out["error"] = Subnet::ERR_NO_GW;
                 } else {
                     $out["gateway"] = $subnet->gateway;
@@ -154,8 +159,7 @@ class Subnet extends Table
             return ($out);
         }
 
-        $out["error"] = Subnet::ERR_NOT_FOUND;
-        return ($out);
+        return ["error" => Subnet::ERR_NOT_FOUND];
     }
 
     /**
@@ -168,17 +172,20 @@ class Subnet extends Table
      *  - mask (c->mask)
      *
      * @param string $subnet Vstupní subnet
-     * @return string[] Pole s položkami
+     * @return array{subnet: string, network: string, cidr: numeric-string, mask: string} Pole s položkami
      */
     public function parseSubnet($subnet) {
         list($network, $cidr) = explode("/", $subnet);
+        if (!is_numeric($cidr)) {
+            throw new Nette\InvalidArgumentException("Maska subnetu musí být číslo.");
+        }
 
-        $out["subnet"] = $subnet;
-        $out["network"] = $network;
-        $out["cidr"] = $cidr;
-        $out["mask"] = $this->CIDRToMask($cidr);
-
-        return ($out);
+        return [
+            "subnet" => $subnet,
+            "network" => $network,
+            "cidr" => $cidr,
+            "mask" => $this->CIDRToMask($cidr),
+        ];
     }
 
     /**
@@ -192,10 +199,13 @@ class Subnet extends Table
      */
     private function genSubnets($ip) {
         $lip = ip2long($ip);
+        if ($lip === false) {
+            return [];
+        }
         $subnets = array();
         for ($mask = 32; $mask >= 16; $mask--) {
             $lmask = pow(2, 32 - $mask);
-            $subnet = long2ip(floor($lip / $lmask) * $lmask);
+            $subnet = long2ip((int) (floor($lip / $lmask) * $lmask));
             $subnets[] = $subnet."/".$mask;
         }
         return ($subnets);
@@ -205,8 +215,8 @@ class Subnet extends Table
      * Najde kolidující/překrývající-se subnety v DB
      *
      * @param string $s Subnet
-     * @param integer $apId ID testovaného subnetu - určené k vyhnutí se
-     * @return boolean|string[] false pokud zadaný subnet nekoliduje,
+     * @param int|string|null $apId ID testovaného subnetu - určené k vyhnutí se
+     * @return false|list<string> false pokud zadaný subnet nekoliduje,
      *               pole kolidujících subnetů pokud koliduje
      */
     public function getOverlapingSubnet($s, $apId = null) {
@@ -237,14 +247,17 @@ class Subnet extends Table
      * Používá se, protože DB neumí se subnety přímo pracovat.
      *
      * @param string $s Subnet
-     * @return Nette\Database\Table\Selection Možné kolidující subnety
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> Možné kolidující subnety
      */
     private function getPossiblyColiding($s) {
         list($network, $cidr) = explode("/", $s);
-        $bigCidr = floor($cidr / 8);
+        $bigCidr = floor((float) $cidr / 8);
 
         $bigNetwork = long2ip(ip2long($network) & ip2long($this->CIDRToMask($bigCidr * 8)));
 
+        if ($bigNetwork === false) {
+            throw new Nette\UnexpectedValueException("Nelze převést adresu sítě na IPv4.");
+        }
         $bigNetworkExploded = explode(".", $bigNetwork);
         for ($i = 0; $i <= 3; $i++) {
             if ($i >= $bigCidr) {
@@ -270,10 +283,13 @@ class Subnet extends Table
         list($n2, $c2) = explode("/", $s2);
 
         $first_1 = ip2long($n1);
-        $last_1 = $first_1 + pow(2, 32 - $c1) - 1;
-
         $first_2 = ip2long($n2);
-        $last_2 = $first_2 + pow(2, 32 - $c2) - 1;
+        if ($first_1 === false || $first_2 === false) {
+            throw new Nette\InvalidArgumentException("Porovnání subnetů vyžaduje IPv4 adresy.");
+        }
+        $last_1 = $first_1 + pow(2, 32 - (float) $c1) - 1;
+
+        $last_2 = $first_2 + pow(2, 32 - (float) $c2) - 1;
 
         if (($first_1 < $first_2) && ($last_1 < $first_2)) {
             return (false);
@@ -294,7 +310,7 @@ class Subnet extends Table
      * @return boolean
      */
     public function inSubnet($ip, $subnet) {
-        if ($subnet == "0.0.0.0/0") {
+        if ($subnet === "0.0.0.0/0") {
             return (true);
         }
         return ($this->checkColision($ip."/32", $subnet));
@@ -304,7 +320,7 @@ class Subnet extends Table
      * Pro zadané pole subnetů zjistí, jestli se nějaké nepřekrývají
      *
      * @param string[] $subnets Pole subnetů ke kontrole
-     * @return boolean|string[] false pokud se žádné dva subnety nepřekrývají
+     * @return false|list<string> false pokud se žádné dva subnety nepřekrývají
      *                          string[] pokud se překrývají
      */
     public function checkColisions($subnets) {
@@ -323,7 +339,7 @@ class Subnet extends Table
             }
         }
 
-        if (count($collisions) == 0) {
+        if (count($collisions) === 0) {
             return (false);
         } else {
             return ($collisions);
@@ -345,14 +361,14 @@ class Subnet extends Table
         $disected_subnet = explode("/", $subnet);
 
         // Zkontrolujeme jestli máme přesně jedno lomítko
-        if (count($disected_subnet) != 2) {
+        if (count($disected_subnet) !== 2) {
             return (false);
         }
 
         list($network, $cidr) = $disected_subnet;
 
         // Zkontroluje validitu adresy sítě
-        if (!filter_var($network, FILTER_VALIDATE_IP)) {
+        if (filter_var($network, FILTER_VALIDATE_IP) === false) {
             return (false);
         }
 
@@ -362,16 +378,19 @@ class Subnet extends Table
         }
 
         $lnet = ip2long($network);
+        if ($lnet === false) {
+            return false;
+        }
 
         // Zkontrolujeme síť 0.0.0.0/0 (cokoliv jiného/0 zahodíme)
         // (hlavně protože % nemá rádo 2^32, musíme to vyfiltrovat tady)
-        if ($cidr == 0) {
-            return ($lnet == 0);
+        if ((float) $cidr === 0.0) {
+            return ($lnet === 0);
         }
 
         // Zkontroluje jestli opravdu jde o subnet a ne IP/maska
         $lmask = pow(2, 32 - $cidr);
-        return (($lnet % $lmask) == 0);
+        return (($lnet % $lmask) === 0);
     }
 
     /**
@@ -379,10 +398,14 @@ class Subnet extends Table
      *
      * například 24 na 255.255.255.0
      *
-     * @param integer $cidr CIDR
+     * @param int|float|numeric-string $cidr CIDR
      * @return string Maska
      */
     public function CIDRToMask($cidr) {
-        return (long2ip(pow(2, 32) - pow(2, 32 - $cidr)));
+        $mask = long2ip((int) (pow(2, 32) - pow(2, 32 - $cidr)));
+        if ($mask === false) {
+            throw new Nette\UnexpectedValueException("Nelze převést CIDR na masku IPv4.");
+        }
+        return $mask;
     }
 }

@@ -14,7 +14,8 @@ class TypClenstvi extends Table
     */
     protected $tableName = 'TypClenstvi';
 
-    public function getTypyClenstvi() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getTypyClenstvi(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 }

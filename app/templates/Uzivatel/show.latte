@@ -92,7 +92,7 @@
                 {if $u->TypClenstvi}
                     {if $hasCC}platné čestné členství{else}{$u->TypClenstvi->text}{/if}
                     <br>
-                    {if $u->TypClenstvi->id != 1}
+                    {if $canViewOrEdit && $u->TypClenstvi->id > 1}
                     <a n:href="UzivatelActions:exportPdf id=>$u->id" role="button" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-file icon-file"></i> Registrační formulář</a>
                     {/if}
                     {else}
@@ -348,7 +348,7 @@
     </div>
         <h4>IP Adresy</h4>
         {if $canViewOrEdit}
-            {$adresy}
+            <div class="table-responsive">{$adresy}</div>
         {else}
             <p>{$adresyline}</p>
         {/if}

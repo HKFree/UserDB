@@ -1,0 +1,9 @@
+[
+    { "id": "homepage", "path": "/" },
+    { "id": "ap-201", "path": "/ap/show/201" },
+    { "id": "uzivatel-list-201", "path": "/uzivatel-list/list/201" },
+    { "id": "uzivatel-20027", "path": "/uzivatel/show/20027" },
+    { "id": "konto-20044", "path": "/uzivatel-account/account/20044", "mask": [".grido tbody .grid-cell-datum_cas"] },
+    { "id": "subnet-198-51-100", "path": "/subnet/detail/198.51.100" },
+    { "id": "sprava-nastroje", "path": "/sprava/nastroje" }
+]

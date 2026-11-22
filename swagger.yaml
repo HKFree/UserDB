@@ -1,7 +1,13 @@
 swagger: '2.0'
 info:
   title: UserDB.hkfree.org API
-  description: API pro přístup k některým údajům v databázi uživatelů hkfree.org
+  description: >-
+    API pro přístup k některým údajům v databázi uživatelů hkfree.org.
+    U klíče omezeného na konkrétní AP musí požadované ID AP odpovídat jeho
+    celočíselnému zápisu v desítkové soustavě; úvodní nuly jsou povolené.
+    Jiný zápis nebo jiné ID vrací 403.
+    Čtení i změna přihlašovacích údajů zařízení klíčem omezeným na AP vyžadují
+    známé AP zařízení; chybějící přiřazení vrací 403.
   version: "1.0.2"
 # the domain of the service
 host: userdb.hkfree.org
@@ -60,6 +66,18 @@ paths:
       responses:
         200:
           description: Konfigurační soubor
+
+  /smokeping/check:
+    get:
+      produces:
+        - text/plain
+      summary: Kontrolní otisk sledovaných IP adres pro obnovu konfigurace SmokePingu
+      description: Otisk zohledňuje adresu i přiřazení ke členovi nebo AP. Klient porovnává hodnotu s předchozí odpovědí.
+      responses:
+        200:
+          description: MD5 otisk, který se změní také při přesunu sledované IP k jinému členovi
+          schema:
+            type: string
 
   /areas:
     get:

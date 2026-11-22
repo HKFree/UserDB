@@ -7,32 +7,34 @@ use Nette\Application\UI\Form;
 use Nette\Forms\Container;
 use Nette\Mail\Message;
 use Nette\Forms\Controls\SubmitButton;
+use Nette\Utils\ArrayHash;
 
 /**
  * Sprava presenter.
  */
 class SpravaCcPresenter extends SpravaPresenter
 {
-    private $cestneClenstviUzivatele;
-    private $uzivatel;
-    private $platneCC;
-    private $ap;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
+    private Model\Uzivatel $uzivatel;
+    private Model\cc $platneCC;
+    private Model\AP $ap;
 
     public function __construct(Model\CestneClenstviUzivatele $cc, Model\cc $actualCC, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->cestneClenstviUzivatele = $cc;
         $this->uzivatel = $uzivatel;
         $this->platneCC = $actualCC;
         $this->ap = $ap;
     }
 
-    public function renderPrehledcc() {
+    public function renderPrehledcc(): void {
     }
 
-    protected function createComponentGrid($name) {
+    protected function createComponentGrid(string $name): void {
         $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
 
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('cc_export');
 
         if ($canViewOrEdit) {
@@ -55,16 +57,16 @@ class SpravaCcPresenter extends SpravaPresenter
                 ->setIcon('eye-open');
     }
 
-    public function renderSchvalovanicc() {
+    public function renderSchvalovanicc(): void {
         /*** clear old registration files ***/
-        foreach (glob(sys_get_temp_dir()."/registrace*") as $file) {
+        foreach (glob(sys_get_temp_dir()."/registrace*") ?: [] as $file) {
             /*** if file is 7 days old then delete it ***/
             if (filemtime($file) < time() - 604800) {
                 unlink($file);
             }
         }
 
-        $this->template->canApproveCC = $this->getUser()->isInRole('VV');
+        $this->template->canApproveCC = $this->jeVV();
         $uzivatele = array();
         foreach ($this->cestneClenstviUzivatele->getNeschvalene() as $cc_id => $cc_data) {
             $uzivatele[] = $cc_data->Uzivatel_id;
@@ -74,11 +76,10 @@ class SpravaCcPresenter extends SpravaPresenter
         $this->template->uzivatele = $this->uzivatel->findBy(array("id" => $uzivatele));
     }
 
-    protected function createComponentSpravaCCForm() {
+    protected function createComponentSpravaCCForm(): Form {
         $form = new Form($this, "spravaCCForm");
 
-        $data = $this->cestneClenstviUzivatele;
-        $rights = $form->addDynamic('rights', function (Container $right) use ($data) {
+        $rights = $form->addDynamic('rights', function (Container $right) {
             $right->addHidden('Uzivatel_id')->setAttribute('class', 'id ip');
             $right->addHidden('id')->setAttribute('class', 'id ip');
 
@@ -106,10 +107,10 @@ class SpravaCcPresenter extends SpravaPresenter
 
         $form->onSuccess[] = array($this, 'spravaCCFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if (!$submitujeSe) {
             foreach ($this->cestneClenstviUzivatele->getNeschvalene() as $rights_id => $rights_data) {
-                $form["rights"][$rights_id]->setValues($rights_data);
+                $rights->createOne($rights_id)->setValues($rights_data);
             }
         }
 
@@ -118,42 +119,54 @@ class SpravaCcPresenter extends SpravaPresenter
 
     /**
     * Schválení čestného členství
+    * @param ArrayHash<mixed>&object{rights: ArrayHash<ArrayHash<mixed>>} $values
     */
-    public function spravaCCFormSucceded($form, $values) {
+    public function spravaCCFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->jeVV());
+
         $log = array();
         $prava = $values->rights;
 
-        // Zpracujeme prava
-        foreach ($prava as $pravo) {
+        $podklady = [];
+        foreach ($prava as $key => $pravo) {
+            if (in_array($pravo->id, [null, '', 0, '0'], true)) {
+                continue;
+            }
+            $starePravo = $this->cestneClenstviUzivatele->getCC($pravo->id);
+            if ($starePravo === null) {
+                $this->error('Čestné členství nebylo nalezeno.');
+            }
+            $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
+            $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
+            if ($navrhovatel === null || $schvaleny === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
+            $podklady[$key] = [$starePravo, $navrhovatel, $schvaleny];
+        }
+
+        // Zpracujeme prava až po ověření všech podkladů.
+        foreach ($prava as $key => $pravo) {
             $pravoId = $pravo->id;
 
-            //osetreni aby prazdne pole od davalo null a ne 00-00-0000
-            if (empty($pravo->plati_od)) {
-                $pravo->plati_od = null;
-            }
-            if (empty($pravo->plati_do)) {
-                $pravo->plati_do = null;
-            }
-            if (empty($pravo->schvaleno)) {
+            if (in_array($pravo->schvaleno ?? null, [null, 0, '0'], true)) {
                 $pravo->schvaleno = 0;
             }
 
-            if (!empty($pravo->id)) {
-                $starePravo = $this->cestneClenstviUzivatele->getCC($pravoId);
+            if (!in_array($pravo->id, [null, '', 0, '0'], true)) {
+                [$starePravo, $navrhovatel, $schvaleny] = $podklady[$key];
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
 
-                if ($starePravo->schvaleno != $pravo->schvaleno && ($pravo->schvaleno == 1 || $pravo->schvaleno == 2)) {
-                    $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
-                    $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
-
-                    $stav = $pravo->schvaleno == 1 ? "schválena" : "zamítnuta";
+                if ($starePravo->schvaleno !== $pravo->schvaleno && ($pravo->schvaleno === 1 || $pravo->schvaleno === 2)) {
+                    $stav = $pravo->schvaleno === 1 ? "schválena" : "zamítnuta";
+                    $platiOd = $pravo->plati_od->format('d.m.Y');
+                    $platiDo = $pravo->plati_do?->format('d.m.Y') ?? 'neomezeně';
 
                     $mail = new Message();
                     $mail->setFrom('UserDB <userdb@hkfree.org>')
                         ->addTo($navrhovatel->email)
                         ->addTo($schvaleny->email)
                         ->setSubject('Žádost o čestné členství')
-                        ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $pravo->plati_od - $pravo->plati_do.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
+                        ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $platiOd - $platiDo.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
 
                     $this->mailer->send($mail);
                 }
@@ -161,6 +174,5 @@ class SpravaCcPresenter extends SpravaPresenter
         }
 
         $this->redirect('SpravaCc:schvalovanicc');
-        return true;
     }
 }

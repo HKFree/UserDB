@@ -15,19 +15,15 @@ class VnejsiScanner
     */
     protected $outerScannerURL;
 
-    /**
-     * @var IPAdresa
-     */
-    private $ipadresa;
+    /** @var array<array-key, list<string>>|null */
+    private ?array $scanData = null;
+    private \DateTime|false|null $scanDate = null;
 
-    private $scanData;
-    private $scanDate;
-
-    public function __construct($outerScannerURL, IPAdresa $iPAdresa) {
+    public function __construct(string $outerScannerURL) {
         $this->outerScannerURL = $outerScannerURL;
-        $this->ipadresa = $iPAdresa;
     }
 
+    /** @return array{}|void */
     public function downloadScan() {
         $client = new Client(['verify' => false]);
 
@@ -37,7 +33,7 @@ class VnejsiScanner
             return ([]);
         }
 
-        if ($r->getStatusCode() != 200) {
+        if ($r->getStatusCode() !== 200) {
             return ([]);
         }
 
@@ -49,7 +45,7 @@ class VnejsiScanner
         $date = "";
 
         while ($line !== false) {
-            if (preg_match('/^#/', $line)) {
+            if (preg_match('/^#/', $line) === 1) {
                 $this->scanDate = \DateTime::createFromFormat('\#Y.m.d\_H.i', $line);
                 $line = strtok($separator);
                 continue;
@@ -65,32 +61,42 @@ class VnejsiScanner
         $this->scanData = $out;
     }
 
-    public function getScan() {
-        if (!$this->scanData) {
+    /** @return array<array-key, list<string>>|null */
+    public function getScan(): ?array {
+        if ($this->scanData === null || $this->scanData === []) {
             $this->downloadScan();
         }
 
         return ($this->scanData);
     }
 
-    public function getScanDate() {
-        if (!$this->scanDate) {
+    public function getScanDate(): \DateTime|false|null {
+        if ($this->scanDate === null || $this->scanDate === false) {
             $this->downloadScan();
         }
 
         return ($this->scanDate);
     }
 
-    public function getScanNaPortech($filtr) {
-        $scan = $this->getScan();
+    /**
+     * @param array<array-key, int|string> $filtr
+     * @return array<array-key, list<string>>
+     */
+    public function getScanNaPortech($filtr): array {
+        $scan = $this->getScan() ?? [];
+        // Porty ze scanu jsou text. Zachovat číselnou shodu i pro úvodní nuly či mezery,
+        // ale nepřevádět nečíselné položky (např. prázdný text) na port 0.
+        $normalizujPort = static fn (int|string $port): float|string => is_numeric($port) ? (float) $port : $port;
+        $filtr = array_map($normalizujPort, $filtr);
 
         $out = [];
 
         foreach ($scan as $ip => $ports) {
             $validni = false;
+            $porovnavanePorty = array_map($normalizujPort, $ports);
 
             foreach ($filtr as $port) {
-                if (in_array($port, $ports)) {
+                if (in_array($port, $porovnavanePorty, true)) {
                     $validni = true;
                 }
             }

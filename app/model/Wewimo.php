@@ -17,9 +17,9 @@ use Nette;
 
 class Wewimo
 {
-    private $ipadresa;
-    private $ap;
-    private $cryptoService;
+    private IPAdresa $ipadresa;
+    private AP $ap;
+    private CryptoSluzba $cryptoService;
 
     public function __construct(CryptoSluzba $cryptoService, IPAdresa $ipadresa, AP $ap) {
         $this->ipadresa = $ipadresa;
@@ -27,7 +27,17 @@ class Wewimo
         $this->cryptoService = $cryptoService;
     }
 
-    public function getWewimoData($ip, $username, $password, $invoker) {
+    /**
+     * @param string $ip
+     * @param string|null $username
+     * @param string|null $password
+     * @param string $invoker
+     * @return array{interfaces: array<string, array<string, mixed>>, resources: array<string, mixed>, neighborsByIp: array<string, array<string, mixed>>}
+     */
+    public function getWewimoData($ip, $username, $password, $invoker): array {
+        if ($username === null || $password === null) {
+            throw new \InvalidArgumentException('Chybí přihlašovací údaje zařízení.');
+        }
         // default values (when not present in $responses) of optional attributes
         $defaultRegistrationRow = array(
             'radio-name' => '',
@@ -63,7 +73,7 @@ class Wewimo
         $systemResourcesResponses = $client->sendSync(new RouterOS\Request('/system/resource/print'));
         // actually, there is only one row in the response, but we have to iterate
         foreach ($systemResourcesResponses as $response) {
-            if ($response->getType() === Response::TYPE_DATA) {
+            if ($response !== false && $response->getType() === Response::TYPE_DATA) {
                 $row = $response->getIterator()->getArrayCopy(); // ArrayObject => array
                 $data['resources'] = $row;
             }
@@ -72,7 +82,7 @@ class Wewimo
         // get wireless table
         $wirelessTableResponses = $client->sendSync(new RouterOS\Request('/interface/wireless/print'));
         foreach ($wirelessTableResponses as $response) {
-            if ($response->getType() === Response::TYPE_DATA) {
+            if ($response !== false && $response->getType() === Response::TYPE_DATA) {
                 $row = $response->getIterator()->getArrayCopy(); // ArrayObject => array
                 // merge default values and real values (override defaults with real, leave default when real value missing)
                 $row = array_merge($defaultInterfaceRow, $row);
@@ -83,7 +93,7 @@ class Wewimo
                 // get monitored values (e.g. current tx power)
                 $wirelessInterfaceMonitorResponses = $client->sendSync(new RouterOS\Request('/interface wireless monitor numbers='.$row['.id'].' once'));
                 foreach ($wirelessInterfaceMonitorResponses as $response2) {
-                    if ($response2->getType() === Response::TYPE_DATA) {
+                    if ($response2 !== false && $response2->getType() === Response::TYPE_DATA) {
                         $row2 = $response2->getIterator()->getArrayCopy();
                         $this->parseAddCurrentTxPower($row2);
                         $data['interfaces'][$row['name']]['monitor'] = $row2;
@@ -97,19 +107,19 @@ class Wewimo
         $neighborsByMac = array();
         $neighborsByIp = array();
         foreach ($neighborsTableResponses as $neighResponse) {
-            if ($neighResponse->getType() === Response::TYPE_DATA) {
+            if ($neighResponse !== false && $neighResponse->getType() === Response::TYPE_DATA) {
                 $row = $neighResponse->getIterator()->getArrayCopy(); // ArrayObject => array
                 // merge default values and real values (override defaults with real, leave default when real value missing)
                 $row = array_merge($defaultNeighborRow, $row);
                 // derive additional attributes (marked with x- prefix)
                 $row['x-device-type'] = str_replace('MikroTik', 'MT', $row['platform'].' '.$row['board']);
-                if ($row['platform'] != 'MikroTik') {
+                if ($row['platform'] !== 'MikroTik') {
                     $row['x-device-type'] .= ' '.$row['version'];
                 }
                 //Debugger::dump($row);
                 $neighborsByMac[$row['mac-address']] = $row;
 
-                if (in_array('address', $row)) {
+                if (in_array('address', $row, true)) {
                     $neighborsByIp[$row['address']] = $row;
                 }
             }
@@ -120,7 +130,7 @@ class Wewimo
         // see  /interface wireless registration-table print stats
         // command in terminal for available attributes
         foreach ($regTableResponses as $response) {
-            if ($response->getType() === Response::TYPE_DATA) {
+            if ($response !== false && $response->getType() === Response::TYPE_DATA) {
                 $row = $response->getIterator()->getArrayCopy(); // ArrayObject => array
                 // merge default values and real values (override defaults with real, leave default when real value missing)
                 $row = array_merge($defaultRegistrationRow, $row);
@@ -129,7 +139,7 @@ class Wewimo
                 $row['x-signal-to-noise-pct'] = $this->dbm2pct($row['x-signal-to-noise'], 0, 90);
                 $row['x-signal-strength'] = preg_replace('/^(\\-[0-9]+).*$/', '$1', $row['signal-strength']); // signal strength as a plain number -54 instead of -54dBm@HT20-6
                 $row['x-signal-strength-pct'] = $this->dbm2pct($row['x-signal-strength']);
-                if ($row['tx-signal-strength']) {
+                if (!in_array($row['tx-signal-strength'], [null, false, 0, 0.0, '', '0', []], true)) {
                     $row['x-tx-signal-strength'] = preg_replace('/^(\\-[0-9]+).*$/', '$1', $row['tx-signal-strength']); // signal strength as a plain number -54 instead of -54dBm@HT20-6
                     $row['x-tx-signal-strength-pct'] = $this->dbm2pct($row['x-tx-signal-strength']);
                 }
@@ -165,19 +175,26 @@ class Wewimo
         return $data;
     }
 
-    private function parseAddCurrentTxPower(&$monitorRow) {
+    /** @param array<string, mixed> $monitorRow */
+    private function parseAddCurrentTxPower(array &$monitorRow): void {
         $monitorRow['x-current-tx-powers'] = [];
         if (array_key_exists('current-tx-powers', $monitorRow)) {
             // comma is usually used as a separator of different modulation rates but in some versions semicolon is used instead
-            foreach (preg_split('/[;,]/', $monitorRow['current-tx-powers']) as $modulationRec) {
-                if (preg_match('/^(.+?):(\d+)/', $modulationRec, $match)) {
+            foreach (explode(',', str_replace(';', ',', $monitorRow['current-tx-powers'])) as $modulationRec) {
+                if (preg_match('/^(.+?):(\d+)/', $modulationRec, $match) === 1) {
                     $monitorRow['x-current-tx-powers'][$match[1]] = $match[2];
                 }
             }
         }
     }
 
-    private function dbm2pct($dBm, $min = -100, $max = -20) {
+    private function dbm2pct(mixed $dBm, int $min = -100, int $max = -20): float {
+        if (is_string($dBm) && preg_match('/^(-?\d+(?:\.\d+)?)dBm?(?:@.*)?$/D', $dBm, $matches) === 1) {
+            $dBm = $matches[1];
+        }
+        if (!is_numeric($dBm)) {
+            throw new Nette\UnexpectedValueException('Wewimo vrátilo nečíselnou hodnotu signálu.');
+        }
         // linear approx.
         $a = 100 / ($max - $min);
         $b = -$a * $min;
@@ -192,9 +209,10 @@ class Wewimo
         return round($val);
     }
 
-    public function sanitizeAttribute(&$assocArray, $attributeName) {
+    /** @param array<string, mixed> $assocArray */
+    public function sanitizeAttribute(array &$assocArray, string $attributeName): void {
         if (array_key_exists($attributeName, $assocArray)) {
-            if (!mb_detect_encoding($assocArray[$attributeName], 'UTF-8', true)) {
+            if (mb_detect_encoding($assocArray[$attributeName], 'UTF-8', true) === false) {
                 // if not valid UTF-8 string, convert from latin-1 to UTF-8
                 $assocArray[$attributeName] =  mb_convert_encoding($assocArray[$attributeName], 'UTF-8', 'ISO-8859-1'); // TODO maybe detect which encoding is used in source string
                 //$assocArray[$attributeName] = urlencode($assocArray[$attributeName]); // for debugging purpose
@@ -202,18 +220,22 @@ class Wewimo
         }
     }
 
-    public function getWewimoFullData($apId, $invokerStr, $ip = null) {
+    /**
+     * @param int|string|null $apId
+     * @return array{devices: list<array<string, mixed>>, error?: string}
+     */
+    public function getWewimoFullData($apId, string $invokerStr, ?string $ip = null): array {
         // AP podle ID
-        $apt = $this->ap->getAP($apId * 1);
+        $apt = $this->ap->getAP($apId);
         $wewimoMultiData = [];
         $wewimoMultiData['devices'] = [];
-        if (!$apt) {
+        if ($apt === null) {
             $wewimoMultiData['error'] = 'Uknown AP ' . $apId;
             return $wewimoMultiData;
         }
         // k AP dohledat IP adresy, ktere maji nastaven priznak Wewimo
         $apIps = $apt->related('IPAdresa.Ap_id')->where('wewimo', 1);
-        if ($ip) {
+        if (!in_array($ip, [null, '', '0'], true)) {
             // omezit jen na jednu IP - vyuziva se v AJAXovem prekreslovani zmen,
             // misto jednoho pozadavku-odpovedi na vsechny IP (RB) se AJAXem posila
             // nekolik pozadavku (jeden na jednu IP) cimz je aktualizace rychlejsi (paralelizace)
@@ -223,7 +245,7 @@ class Wewimo
         foreach ($apIps as $ip) {
             try {
                 $ip_password = $ip['heslo'];
-                if ($ip['heslo_sifrovane'] == 1) {
+                if ($ip['heslo_sifrovane'] === 1) {
                     $ip_password = $this->cryptoService->decrypt($ip['heslo']);
                 }
                 $wewimoData = $this->getWewimoData($ip['ip_adresa'], $ip['login'], $ip_password, $invokerStr);
@@ -233,10 +255,10 @@ class Wewimo
                 foreach ($wewimoData['interfaces'] as $interfaceName => &$xinterface) {
                     $this->sanitizeAttribute($xinterface, 'comment');
                     foreach ($xinterface['stations'] as &$xstation) {
-                        if ($xstation['mac-address']) {
+                        if (!in_array($xstation['mac-address'], [null, false, 0, 0.0, '', '0', []], true)) {
                             $searchMacs[] = $xstation['mac-address'];
                         }
-                        if ($xstation['last-ip']) {
+                        if (!in_array($xstation['last-ip'], [null, false, 0, 0.0, '', '0', []], true)) {
                             $searchIps[] = $xstation['last-ip'];
                         }
                         $this->sanitizeAttribute($xstation, 'comment');
@@ -251,21 +273,22 @@ class Wewimo
                         $station['xx-grafana-link'] = 'http://sojka.hkfree.org/grafana/d/dKlgTs6mk/wewimo?orgId=1&from=now-20d&to=now&refresh=1h&var-Station_MAC=' . $station['mac-address'];
                         if (array_key_exists($station['mac-address'], $ips)) {
                             $ipRec = $ips[$station['mac-address']];
-                            if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {
+                            $uzivatel = $ipRec->ref('Uzivatel');
+                            if (!in_array($ipRec->hostname, [null, '', '0'], true) || $uzivatel === null) {
                                 $station['xx-mac-host'] = $ipRec->hostname;
                             } else {
-                                $station['xx-mac-host'] = '('.$ipRec->ref('Uzivatel')->nick.')';
+                                $station['xx-mac-host'] = '('.$uzivatel->nick.')';
                             }
                             $station['xx-mac-ip-id'] = $ipRec->id;
-                            if ($ipRec->Uzivatel_id) {
+                            if ($uzivatel !== null) {
                                 $station['xx-mac-link'] = [
                                     'presenter' => 'Uzivatel:show',
                                     'id' => $ipRec->Uzivatel_id,
                                     'anchor' => "#ip" . $ipRec->ip_adresa,
                                 ];
                                 //$this->link('Uzivatel:show', array('id' => $ipRec->Uzivatel_id)) . "#ip" . $ipRec->ip_adresa;
-                                $station['xx-user-nick'] = $ipRec->ref('Uzivatel')->nick;
-                            } else {
+                                $station['xx-user-nick'] = $uzivatel->nick;
+                            } elseif (!in_array($ipRec->Ap_id, [null, 0], true)) {
                                 $station['xx-mac-link'] = [
                                     'presenter' => 'Ap:show',
                                     'id' => $ipRec->Ap_id,
@@ -273,8 +296,11 @@ class Wewimo
                                 ];
                                 //$this->link('Ap:show', array('id' => $ipRec->Ap_id)) . "#ip" . $ipRec->ip_adresa;
                                 $station['xx-user-nick'] = 'AP';
+                            } else {
+                                $station['xx-mac-link'] = null;
+                                $station['xx-user-nick'] = null;
                             }
-                            if (!$station['x-in-neighbors']) {
+                            if ($station['x-in-neighbors'] === 0) {
                                 // pokud uz zarizeni nebylo nalezeno v neighbors podle MAC (v ramci metody getWewimoData)
                                 // tak zkusit doparovat podle IP: MAC -> IP (z databaze) -> info o zarizeni (z neighbors podle IP)
                                 $stationIp = $ipRec->ip_adresa; // IP adresa z databaze dohledana podle MAC
@@ -307,7 +333,7 @@ class Wewimo
                             $relevantIpRecords = array_filter(
                                 $lastIpsByMac[$station['mac-address']],
                                 function ($row) use ($station) {
-                                    return ($row['ip_adresa'] != $station['last-ip']);
+                                    return ($row['ip_adresa'] !== $station['last-ip']);
                                 }
                             );
                             // k last-ips vygenerovat linky a nazvy (host/nick)
@@ -343,25 +369,25 @@ class Wewimo
     }
 
     /**
-     * @param $ipRec
-     * @param $station
+     * @param array<string, mixed> $station
      */
-    public function prepareIpInfoAndLink($ipRec, &$station) {
-        if ($ipRec->hostname || !($ipRec->Uzivatel_id)) {
+    public function prepareIpInfoAndLink(Nette\Database\Table\ActiveRow $ipRec, array &$station): void {
+        $uzivatel = $ipRec->ref('Uzivatel');
+        if (!in_array($ipRec->hostname, [null, '', '0'], true) || $uzivatel === null) {
             $station['xx-last-ip-host'] = $ipRec->hostname;
         } else {
-            $station['xx-last-ip-host'] = '('.$ipRec->ref('Uzivatel')->nick.')';
+            $station['xx-last-ip-host'] = '('.$uzivatel->nick.')';
         }
         $station['xx-last-ip-id'] = $ipRec->id;
-        if ($ipRec->Uzivatel_id) {
+        if ($uzivatel !== null) {
             $station['xx-last-ip-link'] = [
                 'presenter' => 'Uzivatel:show',
                 'id' => $ipRec->Uzivatel_id,
                 'anchor' => "#ip" . $ipRec->ip_adresa,
             ];
             //$this->link('Uzivatel:show', array('id' => $ipRec->Uzivatel_id)) . "#ip" . $ipRec->ip_adresa;
-            $station['xx-last-ip-user-nick'] = $ipRec->ref('Uzivatel')->nick;
-        } else {
+            $station['xx-last-ip-user-nick'] = $uzivatel->nick;
+        } elseif (!in_array($ipRec->Ap_id, [null, 0], true)) {
             $station['xx-last-ip-link'] = [
                 'presenter' => 'Ap:show',
                 'id' => $ipRec->Ap_id,
@@ -369,6 +395,9 @@ class Wewimo
             ];
             //$this->link('Ap:show', array('id' => $ipRec->Ap_id)) . "#ip" . $ipRec->ip_adresa;
             $station['xx-last-ip-user-nick'] = 'AP';
+        } else {
+            $station['xx-last-ip-link'] = null;
+            $station['xx-last-ip-user-nick'] = null;
         }
     }
 }

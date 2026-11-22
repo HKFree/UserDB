@@ -2,7 +2,13 @@
 
  *samostatný kontejner*
 
-Generuje PDF dokumenty podle ODS šablony s nahrazením placeholderů.
+Generuje PDF dokumenty podle ODT šablony s nahrazením placeholderů.
+
+## Lokální vývoj ve Floxu
+
+Postup je v [hlavním README](../readme.md#local-web-database-and-pdf-with-flox). Lokální aplikace používá stejný převodník přímo, bez kontejneru a dalšího portu. Každý převod má vlastní pracovní adresář i profil LibreOffice. PDF a český text ověřuje `flox activate -s -- vendor/bin/tester -C tests`.
+
+Následující HTTP rozhraní zůstává dostupné pro kontejnerový běh.
 
 ## šablony pro účastnickou smlouvu
 

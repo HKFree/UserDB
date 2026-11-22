@@ -12,21 +12,20 @@ use Nette\Application\Responses\JsonResponse;
  */
 class AjaxApiPresenter extends BasePresenter
 {
-    private $subnet;
-    private $ap;
-    private $sojka;
+    private Model\Subnet $subnet;
+    private Model\Sojka $sojka;
 
-    public function __construct(Model\Subnet $subnet, Model\AP $ap, Model\Sojka $sojka) {
+    public function __construct(Model\Subnet $subnet, Model\Sojka $sojka) {
+        parent::__construct();
         $this->subnet = $subnet;
-        $this->ap = $ap;
         $this->sojka = $sojka;
     }
 
     /**
      *  Najde subnet a gateway k příslušné IP adrese
      *
-     *  @param string $ip Hledaná IP adresa
-     *  @return type Description
+     *  Parametr požadavku ip obsahuje hledanou IP adresu.
+     *  @return void
      */
     public function renderGetIpDetails() {
         $errorTable = array(
@@ -36,8 +35,9 @@ class AjaxApiPresenter extends BasePresenter
         );
 
         $ip = $this->getParameter("ip");
+        $out = [];
 
-        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
             $out["error"] = "Neplatná IP adresa!";
         } else {
             $subnet = $this->subnet->getSubnetOfIP($ip);
@@ -45,7 +45,7 @@ class AjaxApiPresenter extends BasePresenter
             if (isset($subnet["error"])) {
                 $out["error"] = $errorTable[$subnet["error"]];
 
-                if ($subnet["error"] == Model\Subnet::ERR_MULTIPLE_GW) {
+                if ($subnet["error"] === Model\Subnet::ERR_MULTIPLE_GW) {
                     $out["error"] .= implode(", ", $subnet["multiple_subnets"]);
                 }
             } else {
@@ -55,8 +55,8 @@ class AjaxApiPresenter extends BasePresenter
         }
 
         // featura pro javascript
-        if ($reqid = $this->getParameter("reqid")) {
-            $out["reqid"] = $reqid;
+        if ($this->maVyplnenyParametr("reqid")) {
+            $out["reqid"] = $this->getParameter("reqid");
         }
 
         $this->sendResponse(new JsonResponse($out));
@@ -65,13 +65,13 @@ class AjaxApiPresenter extends BasePresenter
     /**
      *  Opingá zadané IP adresy prostřednictvím SojkaPingeru
      *
-     *  @param string[] $ips Hledané IP adresy
-     *  @return type Description
+     *  Parametr požadavku ips obsahuje pole hledaných IP adres.
+     *  @return void
      */
     public function renderGetIpsPing() {
         $ips = $this->getParameter("ips");
 
-        if (empty($ips)) {
+        if (in_array($ips, [null, '', '0', 0, 0.0, false, []], true)) {
             $this->sendResponse(new JsonResponse(array()));
         }
 

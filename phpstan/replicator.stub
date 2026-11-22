@@ -1,0 +1,32 @@
+<?php
+
+// Methods that Kdyby\Replicator\Container::register() adds at runtime through
+// Nette extensionMethod (ReplicatorExtension in app/config/config.neon).
+// A stub PHPDoc replaces the original class PHPDoc, so existing tags are repeated here.
+
+namespace Nette\Application\UI {
+    /**
+     * @method \Kdyby\Replicator\Container addDynamic(string $name, callable $factory, int $createDefault = 0, bool $forceDefault = false)
+     */
+    class Form
+    {
+    }
+}
+
+namespace Nette\Forms\Controls {
+    /**
+     * @property-read bool $submittedBy
+     * @method $this addRemoveOnClick(?callable $callback = null)
+     * @method $this addCreateOnClick(bool $allowEmpty = false, ?callable $callback = null)
+     */
+    class SubmitButton
+    {
+    }
+}
+
+// Declared only so the stub validator knows the return type above; adds no PHPDoc.
+namespace Kdyby\Replicator {
+    class Container
+    {
+    }
+}

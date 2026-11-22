@@ -13,28 +13,30 @@ use Tracy\Debugger;
  */
 class SpravaStitkuPresenter extends SpravaPresenter
 {
+    /** @var Model\Oblast */
     public $oblast;
-    public $stitek;
-    private $uzivatel;
-    private $stitekUzivatel;
+    public Model\Stitek $stitek;
+    private Model\Uzivatel $uzivatel;
+    private Model\StitekUzivatele $stitekUzivatel;
 
-    public function __construct(Model\Oblast $ob, Model\Stitek $stitek, Model\Uzivatel $uzivatel, Model\StitekUzivatele $stitekUzivatel) {
+    public function __construct(Model\Oblast $ob, Model\Stitek $stitek, Model\Uzivatel $uzivatel, Model\StitekUzivatele $stitekUzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->oblast = $ob;
         $this->stitek = $stitek;
         $this->uzivatel = $uzivatel;
         $this->stitekUzivatel = $stitekUzivatel;
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $this->template->canViewOrEdit = true;
         $this->template->stitky = $this->stitek->getSeznamStitku();
     }
 
-    public function renderEdit() {
+    public function renderEdit(): void {
         $this->template->canViewOrEdit = true;
     }
 
-    protected function createComponentEditStitekForm() {
+    protected function createComponentEditStitekForm(): Form {
         $form = new Form($this, "editStitekForm");
         $id = $this->getParameter('id');
 
@@ -47,14 +49,14 @@ class SpravaStitkuPresenter extends SpravaPresenter
             ->setHtmlType('color')
             ->setRequired('Barva popředí');
         $form->addTextArea('poznamka', 'Poznámka', 100, 15);
-        if (empty($id)) {
+        if (in_array($id, [null, '', '0', 0, 0.0, false, []], true)) {
             $form->addSubmit('send', 'Vytvořit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
         } else {
             $form->addSubmit('send', 'Upravit')->setAttribute('class', 'btn btn-success btn-xs btn-white');
         }
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $stitek = $this->stitek->getStitekById($id);
-            if ($stitek) {
+            if ($stitek !== null) {
                 $form->setDefaults([
                     'text' => $stitek->text,
                     // 'Oblast_id' => $stitek->Oblast_id,
@@ -75,7 +77,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $id = $this->getParameter('id');
         // $values->Oblast_id = $values->Oblast_id === '' ? null : $values->Oblast_id;
 
-        if ($id) {
+        if ($this->maVyplnenyParametr('id')) {
             $this->stitek->updateStitek($id, [
                 'text' => $values->text,
                 // 'Oblast_id' => $values->Oblast_id,
@@ -105,10 +107,10 @@ class SpravaStitkuPresenter extends SpravaPresenter
         if (!$this->getHttpRequest()->isMethod("DELETE")) {
             $this->error('Pouze DELETE požadavky jsou povoleny.', Nette\Http\IResponse::S405_METHOD_NOT_ALLOWED);
         }
-        $data = json_decode($this->getHttpRequest()->getRawBody(), true);
+        $data = json_decode($this->getHttpRequest()->getRawBody() ?? '', true);
         $stitek_id = $data['stitek_id'] ?? null;
         $user_id = $data['user_id'] ?? null;
-        if (!$stitek_id || !$user_id) {
+        if (in_array($stitek_id, [null, false, 0, 0.0, '', '0', []], true) || in_array($user_id, [null, false, 0, 0.0, '', '0', []], true)) {
             echo json_encode(['success' => false, 'message' => 'Neplatné parametry.']);
             $this->terminate();
         }
@@ -125,6 +127,10 @@ class SpravaStitkuPresenter extends SpravaPresenter
 
     }
 
+    /**
+     * @param int|string|null $stitek_id
+     * @param int|string|null $user_id
+     */
     public function actionSaveLabel($stitek_id, $user_id): void {
         $this->getHttpResponse()->setContentType('application/json');
 
@@ -134,15 +140,15 @@ class SpravaStitkuPresenter extends SpravaPresenter
         }
 
         // Ověření, že štítek existuje
-        $stitek = $this->stitek->getStitekById($stitek_id);
-        if (!$stitek) {
+        $stitek = $stitek_id !== null ? $this->stitek->getStitekById($stitek_id) : null;
+        if ($stitek === null) {
             echo json_encode(['success' => false, 'message' => 'Štítek nebyl nalezen.']);
             $this->terminate();
         }
 
         // Ověření, že uživatel existuje
-        $user = $this->uzivatel->getUzivatel($user_id);
-        if (!$user) {
+        $user = $user_id !== null ? $this->uzivatel->getUzivatel($user_id) : null;
+        if ($user === null) {
             echo json_encode(['success' => false, 'message' => 'Uživatel nebyl nalezen.']);
             $this->terminate();
         }
@@ -152,7 +158,6 @@ class SpravaStitkuPresenter extends SpravaPresenter
                 'Stitek_id' => $stitek_id,
                 'Uzivatel_id' => $user_id,
             ]);
-            $stitek = $this->stitek->getStitekById($stitek_id);
             echo json_encode(['success' => true, 'barva_popredi' => $stitek->barva_popredi, 'barva_pozadi' => $stitek->barva_pozadi, 'text' => $stitek->text]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Nepodarilo se ulozit stitek.', 'exception' => $e]);

@@ -12,18 +12,19 @@ use Tracy\Debugger;
  */
 class SpravaUctuPresenter extends SpravaPresenter
 {
-    private $stavBankovnihoUctu;
+    private Model\StavBankovnihoUctu $stavBankovnihoUctu;
 
-    public function __construct(Model\StavBankovnihoUctu $stavuctu) {
+    public function __construct(Model\StavBankovnihoUctu $stavuctu, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->stavBankovnihoUctu = $stavuctu;
     }
 
-    public function renderUcty() {
+    public function renderUcty(): void {
     }
 
-    protected function createComponentStavyuctu($name) {
+    protected function createComponentStavyuctu(string $name): void {
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
 
         $grid->setModel($this->stavBankovnihoUctu->getAktualniStavyBankovnihoUctu());
 

@@ -4,6 +4,7 @@ namespace App\Presenters;
 
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Utils\ArrayHash;
 use App\Services\SmsSenderException;
 
 /**
@@ -11,20 +12,21 @@ use App\Services\SmsSenderException;
  */
 class SpravaSmsPresenter extends SpravaPresenter
 {
-    private $spravceOblasti;
+    private Model\SpravceOblasti $spravceOblasti;
 
-    private $komunikace;
+    private Model\Komunikace $komunikace;
 
-    public function __construct(Model\SpravceOblasti $sob, Model\Komunikace $k) {
+    public function __construct(Model\SpravceOblasti $sob, Model\Komunikace $k, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->spravceOblasti = $sob;
         $this->komunikace = $k;
     }
 
-    public function renderSms() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    public function renderSms(): void {
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
     }
 
-    protected function createComponentSmsForm() {
+    protected function createComponentSmsForm(): Form {
         $form = new Form($this, "smsForm");
         $form->addHidden('id');
 
@@ -38,8 +40,11 @@ class SpravaSmsPresenter extends SpravaPresenter
         return $form;
     }
 
-    public function smsFormSucceded($form, $values) {
-        if ($values->komu == 0) {
+    /** @param ArrayHash<mixed> $values */
+    public function smsFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->jeVVneboTECH());
+
+        if ($values->komu === 0) {
             $sos = $this->spravceOblasti->getSO();
         } else {
             $sos = $this->spravceOblasti->getZSO();
@@ -48,7 +53,7 @@ class SpravaSmsPresenter extends SpravaPresenter
         $validni = [];
         foreach ($sos as $so) {
             $tl = $so->Uzivatel->telefon;
-            if (!empty($tl) && $tl != 'missing') {
+            if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
                 $validni[] = $so->Uzivatel->id;
             }
         }
@@ -56,15 +61,15 @@ class SpravaSmsPresenter extends SpravaPresenter
         $this->sendSMSAndValidate($validni, $values->message);
 
         $this->redirect('Sprava:nastroje', array('id' => null));
-        return true;
     }
 
-    private function sendSMSAndValidate($uzivateleID, $message) {
+    /** @param array<array-key, int|string> $uzivateleID */
+    private function sendSMSAndValidate(array $uzivateleID, string $message): void {
         try {
-            $this->komunikace->posliSMS($uzivateleID, $message);
-            $this->flashMessage('SMS byla odeslána na ' . count($uzivateleID) . ' čísel.');
+            $pocetCisel = $this->komunikace->posliSMS($uzivateleID, $message);
+            $this->flashMessage('SMS byla odeslána na ' . $pocetCisel . ' čísel.');
         } catch (SmsSenderException $e) {
-            $this->flashMessage('SMS nebyla odeslána. ' . $e, "danger");
+            $this->flashMessage('SMS nebyla odeslána. ' . $e->getMessage(), "danger");
         }
     }
 }

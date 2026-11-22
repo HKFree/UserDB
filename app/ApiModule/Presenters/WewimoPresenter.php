@@ -6,13 +6,15 @@ use Nette\Application\Responses\JsonResponse;
 
 class WewimoPresenter extends ApiPresenter
 {
-    private $wewimo;
+    private \App\Model\Wewimo $wewimo;
 
     public function __construct(\App\Model\Wewimo $wewimo) {
+        parent::__construct();
         $this->wewimo = $wewimo;
     }
 
-    public function actionDefault($id) {
+    /** @param int|string|null $id */
+    public function actionDefault($id): void {
         parent::checkApID($id);
 
         $wewimoMultiData = $this->wewimo->getWewimoFullData($id, 'API');
@@ -21,7 +23,7 @@ class WewimoPresenter extends ApiPresenter
         $this->sendResponse(new JsonResponse($wewimoMultiData));
     }
 
-    public function sanitize($mixed) {
+    public function sanitize(mixed $mixed): mixed {
         if (is_array($mixed)) {
             foreach ($mixed as $key => $value) {
                 $mixed[$key] = $this->sanitize($value);

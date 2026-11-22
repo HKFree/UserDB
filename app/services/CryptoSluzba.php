@@ -12,20 +12,23 @@ use Defuse\Crypto\Crypto;
 class CryptoSluzba
 {
     /**
-     * @var string
+     * @var Key
      */
     protected $passPhrase;
 
+    /** @param string $passPhrase */
     public function __construct($passPhrase) {
         $this->passPhrase = Key::loadFromAsciiSafeString($passPhrase);
     }
 
-    public function encrypt($plaintext) {
+    /** @param string $plaintext */
+    public function encrypt($plaintext): string {
         $ciphertext = Crypto::encrypt($plaintext, $this->passPhrase);
         return ($ciphertext);
     }
 
-    public function decrypt($cyphered) {
+    /** @param string $cyphered */
+    public function decrypt($cyphered): string {
         $plaintext = Crypto::decrypt($cyphered, $this->passPhrase);
         return ($plaintext);
     }

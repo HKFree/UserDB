@@ -14,7 +14,8 @@ class BankovniUcet extends Table
     */
     protected $tableName = 'BankovniUcet';
 
-    public function getBankovniUcty() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getBankovniUcty(): Nette\Database\Table\Selection {
         return ($this->findAll());
     }
 }

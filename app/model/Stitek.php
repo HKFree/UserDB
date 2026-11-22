@@ -8,41 +8,59 @@ use Nette\Database\Explorer;
 /**
  * @author
  */
-class Stitek extends Table
+class Stitek
 {
     /**
-     * @var string
+     * @var Explorer
      */
 
     private Explorer $database;
 
+    /** @var string */
     protected $tableName = 'Stitek';
 
     public function __construct(Explorer $database) {
         $this->database = $database;
     }
 
-    public function getSeznamStitku() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getSeznamStitku(): Nette\Database\Table\Selection {
         return $this->database->table($this->tableName);
     }
 
-    public function updateStitek($id, array $data) {
+    /**
+     * @param int|string $id
+     * @param array<string, mixed> $data
+     */
+    public function updateStitek($id, array $data): void {
         $this->database->table($this->tableName)->where('id', $id)->update($data);
     }
 
-    public function createStitek(array $data) {
-        return $this->database->table($this->tableName)->insert($data);
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function createStitek(array $data): Nette\Database\Table\ActiveRow {
+        $row = $this->database->table($this->tableName)->insert($data);
+        if (!$row instanceof Nette\Database\Table\ActiveRow) {
+            throw new Nette\UnexpectedValueException('Vložení štítku nevrátilo databázový řádek.');
+        }
+        return $row;
     }
 
-    public function getStitekById($id) {
+    /** @param int|string $id */
+    public function getStitekById($id): ?Nette\Database\Table\ActiveRow {
         return $this->database->table($this->tableName)->get($id);
     }
 
-    public function getStitkyByOblast($id) {
-        return ($this->findAll().where("Oblast_id", $id));
+    /**
+     * @param int|string|null $id
+     * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
+     */
+    public function getStitkyByOblast($id): Nette\Database\Table\Selection {
+        return $this->getSeznamStitku()->where('Oblast_id', $id);
     }
 
-    public function getStitekByText($nazev) {
+    public function getStitekByText(string $nazev): ?Nette\Database\Table\ActiveRow {
         return $this->database->table($this->tableName)->where('text', $nazev)->fetch();
     }
 

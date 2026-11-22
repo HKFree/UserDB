@@ -3,8 +3,10 @@
 namespace App\Presenters;
 
 use App\Model;
+use App\Services;
 use Nette\Application\UI\Form;
 use Nette\Mail\Message;
+use Nette\Utils\ArrayHash;
 use Nette\Utils\Validators;
 use App\Components;
 use App\Services\SmsSenderException;
@@ -14,27 +16,93 @@ use App\Services\SmsSenderException;
  */
 class UzivatelMailSmsPresenter extends UzivatelPresenter
 {
-    private $uzivatel;
-    private $ap;
-    private $komunikace;
+    private Model\Uzivatel $uzivatel;
+    private Model\AP $ap;
+    private Model\Komunikace $komunikace;
 
-    public function __construct(Model\Uzivatel $uzivatel, Model\AP $ap, Model\Komunikace $k) {
+    public function __construct(
+        Model\Uzivatel $uzivatel,
+        Model\AP $ap,
+        Model\Komunikace $k,
+        Services\MailService $mailsvc,
+        Services\CryptoSluzba $cryptosvc,
+        Model\PovoleneSMTP $alowedSMTP,
+        Model\DNat $dnat,
+        Model\Parameters $parameters,
+        Model\SloucenyUzivatel $slUzivatel,
+        Model\Smlouva $smlouva,
+        Services\SmlouvaStavSluzba $smlouvaStavSluzba,
+        Model\SpravceOblasti $prava,
+        Model\CestneClenstviUzivatele $cc,
+        Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
+        Model\TypClenstvi $typClenstvi,
+        Model\ZpusobPripojeni $zpusobPripojeni,
+        Model\TechnologiePripojeni $technologiePripojeni,
+        Model\IPAdresa $ipAdresa,
+        Model\TypZarizeni $typZarizeni,
+        Model\Log $log,
+        Model\IdsConnector $idsConnector,
+        Model\AplikaceToken $aplikaceToken,
+        Model\Stitek $stitek,
+        Model\StitekUzivatele $stitkyUzivatele,
+    ) {
+        parent::__construct(
+            mailsvc: $mailsvc,
+            cryptosvc: $cryptosvc,
+            alowedSMTP: $alowedSMTP,
+            dnat: $dnat,
+            parameters: $parameters,
+            slUzivatel: $slUzivatel,
+            smlouva: $smlouva,
+            smlouvaStavSluzba: $smlouvaStavSluzba,
+            prava: $prava,
+            cc: $cc,
+            typPravniFormyUzivatele: $typPravniFormyUzivatele,
+            typClenstvi: $typClenstvi,
+            zpusobPripojeni: $zpusobPripojeni,
+            technologiePripojeni: $technologiePripojeni,
+            uzivatel: $uzivatel,
+            ipAdresa: $ipAdresa,
+            typZarizeni: $typZarizeni,
+            log: $log,
+            idsConnector: $idsConnector,
+            aplikaceToken: $aplikaceToken,
+            stitek: $stitek,
+            stitkyUzivatele: $stitkyUzivatele,
+        );
         $this->uzivatel = $uzivatel;
         $this->ap = $ap;
         $this->komunikace = $k;
     }
 
-    public function renderEmail() {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->uzivatel->getUzivatel($this->getParameter('id'))->Ap_id, $this->getUser());
+    /** E-mail a SMS členovi posílá správce jeho AP */
+    private function smiPsatClenovi(): bool {
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        return $uzivatel !== null && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
+    }
+
+    /** E-mail a SMS všem členům AP posílá správce AP */
+    private function smiPsatCelemuAp(): bool {
+        return $this->ap->getAP($this->getParameter('id')) !== null && $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+    }
+
+    public function renderEmail(): void {
+        $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->u = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentEmailForm() {
+    protected function createComponentEmailForm(): Form {
         $form = new Form($this, "emailForm");
         $form->addHidden('id');
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($user === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $form->addSelect('from', 'Odesílatel', array(0 => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1 => 'oblast'.$user->Ap->Oblast_id.'@hkfree.org'))->setDefaultValue(0);
 
         $form->addText('email', 'Příjemce', 70)->setDisabled(true);
@@ -45,29 +113,35 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $form->onSuccess[] = array($this, 'emailFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
-            if ($user) {
-                $form->setValues($user);
-                $form->setDefaults(array(
-                        'from' => 0,
-                        'subject' => 'Zpráva od správce sítě hkfree.org',
-                    ));
-            }
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+            $form->setValues($user);
+            $form->setDefaults(array(
+                    'from' => 0,
+                    'subject' => 'Zpráva od správce sítě hkfree.org',
+                ));
         }
 
         return $form;
     }
 
-    public function emailFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function emailFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->smiPsatClenovi());
         $idUzivatele = $values->id;
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($user === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         $mail = new Message();
 
-        if ($values->from == 0) {
+        if ($values->from === 0) {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+            if ($so === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
              ->addTo($user->email)
              ->setSubject($values->subject)
@@ -84,23 +158,30 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->flashMessage('E-mail byl odeslán.');
 
         $this->redirect('Uzivatel:show', array('id' => $idUzivatele));
-        return true;
     }
 
-    public function renderEmailall() {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+    public function renderEmailall(): void {
+        $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
     }
 
-    protected function createComponentEmailallForm() {
+    protected function createComponentEmailallForm(): Form {
         $form = new Form($this, "emailallForm");
         $form->addHidden('id');
 
-        if ($this->getParameter('id')) {
+        $oblastMail = null;
+        $ap = null;
+        if ($this->maVyplnenyParametr('id')) {
             $ap = $this->ap->getAP($this->getParameter('id'));
+            if ($ap === null) {
+                $this->error('AP nebylo nalezeno.');
+            }
             $oblastMail = 'oblast'.$ap->Oblast_id.'@hkfree.org';
         }
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $form->addSelect('from', 'Odesílatel', array(0 => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1 => $oblastMail))->setDefaultValue(0);
 
         $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(true);
@@ -111,38 +192,45 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $form->onSuccess[] = array($this, 'emailallFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
+        if ($ap !== null && !$submitujeSe) {
             $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
+            $validni = [];
             foreach ($emaily as $email) {
                 if (Validators::isEmail($email)) {
                     $validni[] = $email;
                 }
             }
-            $tolist = join(";", array_values($validni));
+            $tolist = join(";", $validni);
 
-            if ($ap) {
-                $form->setValues($ap);
-                $form->setDefaults(array(
-                        'from' => 0,
-                        'email' => $tolist,
-                        'subject' => 'Zpráva od správce sítě hkfree.org',
-                    ));
-            }
+            $form->setValues($ap);
+            $form->setDefaults(array(
+                    'from' => 0,
+                    'email' => $tolist,
+                    'subject' => 'Zpráva od správce sítě hkfree.org',
+                ));
         }
 
         return $form;
     }
 
-    public function emailallFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function emailallFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->smiPsatCelemuAp());
         $idUzivatele = $values->id;
 
         $ap = $this->ap->getAP($this->getParameter('id'));
+        if ($ap === null) {
+            $this->error('AP nebylo nalezeno.');
+        }
         $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
 
         $mail = new Message();
-        if ($values->from == 0) {
+        if ($values->from === 0) {
             $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+            if ($so === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
             $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
              ->setSubject($values->subject)
              ->setBody($values->message);
@@ -164,16 +252,14 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->flashMessage('E-mail byl odeslán.');
 
         $this->redirect('UzivatelList:list', array('id' => $this->getParameter('id')));
-        return true;
     }
 
-    public function renderSms() {
-        $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($user->Ap_id, $this->getUser());
+    public function renderSms(): void {
+        $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->uziv = $this->uzivatel->getUzivatel($this->getParameter('id'));
     }
 
-    protected function createComponentSmsForm() {
+    protected function createComponentSmsForm(): Form {
         $form = new Form($this, "smsForm");
         $form->addHidden('id');
 
@@ -181,40 +267,45 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->addTextArea('message', 'Text', 72, 10);
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($user === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
-        if (!empty($user->telefon) && $user->telefon != 'missing') {
+        if (!in_array($user->telefon ?? null, [null, '', '0'], true) && $user->telefon !== 'missing') {
             $form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
             $form->onSuccess[] = array($this, 'smsFormSucceded');
         }
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
-            if ($user) {
-                $form->setValues($user);
-                $form->setDefaults(array(
-                        'komu' => $user->telefon
-                    ));
-            }
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+            $form->setValues($user);
+            $form->setDefaults(array(
+                    'komu' => $user->telefon
+                ));
         }
 
         return $form;
     }
 
-    public function smsFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function smsFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->smiPsatClenovi());
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        if ($user === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         $this->sendSMSAndValidate([ $user->id ], $values->message);
 
         $this->redirect('Uzivatel:show', array('id' => $this->getParameter('id')));
-        return true;
     }
 
-    public function renderSmsall() {
-        $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
+    public function renderSmsall(): void {
+        $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
     }
 
-    protected function createComponentSmsallForm() {
+    protected function createComponentSmsallForm(): Form {
         $form = new Form($this, "smsallForm");
         $form->addHidden('id');
 
@@ -225,36 +316,43 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $form->onSuccess[] = array($this, 'smsallFormSucceded');
 
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $ap = $this->ap->getAP($this->getParameter('id'));
+            if ($ap === null) {
+                $this->error('AP nebylo nalezeno.');
+            }
             $telefony = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'telefon');
+            $validni = [];
             foreach ($telefony as $tl) {
-                if (!empty($tl) && $tl != 'missing') {
+                if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
                     $validni[] = $tl;
                 }
             }
-            $tls = join(",", array_values($validni));
+            $tls = join(",", $validni);
 
-            if ($ap) {
-                $form->setValues($ap);
-                $form->setDefaults(array(
-                        'komu' => $tls
-                    ));
-            }
+            $form->setValues($ap);
+            $form->setDefaults(array(
+                    'komu' => $tls
+                ));
         }
 
         return $form;
     }
 
-    public function smsallFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed> $values */
+    public function smsallFormSucceded(Form $form, ArrayHash $values): void {
+        $this->vyzadujOpravneni($this->smiPsatCelemuAp());
         $ap = $this->ap->getAP($this->getParameter('id'));
+        if ($ap === null) {
+            $this->error('AP nebylo nalezeno.');
+        }
 
         $telefony = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'telefon');
 
         $validni = [];
         foreach ($telefony as $uid => $tl) {
-            if (!empty($tl) && $tl != 'missing') {
+            if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
                 $validni[] = $uid;
             }
         }
@@ -262,15 +360,15 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->sendSMSAndValidate($validni, $values->message);
 
         $this->redirect('UzivatelList:list', array('id' => $this->getParameter('id')));
-        return true;
     }
 
-    private function sendSMSAndValidate($uzivateleID, $message) {
+    /** @param array<array-key, int|string> $uzivateleID */
+    private function sendSMSAndValidate(array $uzivateleID, string $message): void {
         try {
-            $this->komunikace->posliSMS($uzivateleID, $message);
-            $this->flashMessage('SMS byla odeslána na ' . count($uzivateleID) . ' čísel.');
+            $pocetCisel = $this->komunikace->posliSMS($uzivateleID, $message);
+            $this->flashMessage('SMS byla odeslána na ' . $pocetCisel . ' čísel.');
         } catch (SmsSenderException $e) {
-            $this->flashMessage('SMS nebyla odeslána. ' . $e, "danger");
+            $this->flashMessage('SMS nebyla odeslána. ' . $e->getMessage(), "danger");
         }
     }
 }

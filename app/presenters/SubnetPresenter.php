@@ -16,42 +16,21 @@ use Nette\Utils\Strings;
  */
 class SubnetPresenter extends BasePresenter
 {
-    private $spravceOblasti;
-    private $cestneClenstviUzivatele;
-    private $typClenstvi;
-    private $typCestnehoClenstvi;
-    private $typPravniFormyUzivatele;
-    private $typSpravceOblasti;
-    private $zpusobPripojeni;
-    private $technologiePripojeni;
-    private $uzivatel;
-    private $ipAdresa;
-    private $ap;
-    private $typZarizeni;
-    private $log;
-    private $subnet;
+    private Model\IPAdresa $ipAdresa;
+    private Model\AP $ap;
+    private Model\Subnet $subnet;
 
-    public function __construct(Model\Subnet $subnet, Model\SpravceOblasti $prava, Model\CestneClenstviUzivatele $cc, Model\TypSpravceOblasti $typSpravce, Model\TypPravniFormyUzivatele $typPravniFormyUzivatele, Model\TypClenstvi $typClenstvi, Model\TypCestnehoClenstvi $typCestnehoClenstvi, Model\ZpusobPripojeni $zpusobPripojeni, Model\TechnologiePripojeni $technologiePripojeni, Model\Uzivatel $uzivatel, Model\IPAdresa $ipAdresa, Model\AP $ap, Model\TypZarizeni $typZarizeni, Model\Log $log) {
-        $this->spravceOblasti = $prava;
-        $this->cestneClenstviUzivatele = $cc;
-        $this->typSpravceOblasti = $typSpravce;
-        $this->typClenstvi = $typClenstvi;
-        $this->typCestnehoClenstvi = $typCestnehoClenstvi;
-        $this->typPravniFormyUzivatele = $typPravniFormyUzivatele;
-        $this->zpusobPripojeni = $zpusobPripojeni;
-        $this->technologiePripojeni = $technologiePripojeni;
-        $this->uzivatel = $uzivatel;
+    public function __construct(Model\Subnet $subnet, Model\IPAdresa $ipAdresa, Model\AP $ap) {
+        parent::__construct();
         $this->ipAdresa = $ipAdresa;
         $this->ap = $ap;
-        $this->typZarizeni = $typZarizeni;
-        $this->log = $log;
         $this->subnet = $subnet;
     }
 
-    public function renderOverview() {
-        if ($this->getParameter('id')) {
+    public function renderOverview(): void {
+        if ($this->maVyplnenyParametr('id')) {
             $targetSubnet = $this->getParameter('id');
-            if (substr($targetSubnet, -1) != ".") {
+            if (substr($targetSubnet, -1) !== ".") {
                 $targetSubnet .= ".";
             }
 
@@ -63,7 +42,7 @@ class SubnetPresenter extends BasePresenter
             foreach ($existujici as $snet) {
                 $out = $this->subnet->parseSubnet($snet->subnet);
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
-                $networks[$d] = 1 << (32 - $out["cidr"]); //calculates number of ips in cidr
+                $networks[$d] = 1 << (32 - (float) $out["cidr"]); //calculates number of ips in cidr
                 $captions[$d] = $snet->popis;
             }
 
@@ -77,10 +56,10 @@ class SubnetPresenter extends BasePresenter
         }
     }
 
-    public function renderDetail() {
-        if ($this->getParameter('id')) {
+    public function renderDetail(): void {
+        if ($this->maVyplnenyParametr('id')) {
             $targetSubnet = $this->getParameter('id');
-            if (substr($targetSubnet, -1) != ".") {
+            if (substr($targetSubnet, -1) !== ".") {
                 $targetSubnet .= ".";
             }
 
@@ -92,7 +71,7 @@ class SubnetPresenter extends BasePresenter
                 $out = $this->subnet->parseSubnet($snet->subnet);
                 list($a, $b, $c, $d) = explode(".", $out["network"]);
                 $networks[$d] = array(
-                    'ips' => 1 << (32 - $out["cidr"]), //calculates number of ips in cidr
+                    'ips' => 1 << (32 - (float) $out["cidr"]), //calculates number of ips in cidr
                     'cidr' => $out['cidr'],
                     'popis' => $snet->popis,
                     'subnet' => $snet->subnet,
@@ -120,36 +99,43 @@ class SubnetPresenter extends BasePresenter
                 $networkBroadcastAddrClass = '';
                 if (array_key_exists($i, $networks)) {
                     $networkBroadcastAddrClass = 'danger subnet-ip-network-row';
-                } elseif ($i == ($lastindex + $lastlenght - 1)) {
+                } elseif ($i === ($lastindex + $lastlenght - 1)) {
                     $networkBroadcastAddrClass = 'danger subnet-ip-broadcast-row';
                 }
 
                 if (array_key_exists($ipAdresa, $existujiciIP)) {
                     $ip = $existujiciIP[$ipAdresa];
                     list($a, $b, $c, $d) = explode(".", $ip->ip_adresa);
-                    $subnetInfo = null;
-                    if (!empty($ip->Uzivatel_id)) {
+                    $uzivatel = $ip->ref('Uzivatel');
+                    if ($uzivatel !== null) {
                         $subnetInfo = array(
                             'type' => 'Uzivatel',
-                            'id' => $ip->ref('Uzivatel')->id,
-                            'nick' => $ip->ref('Uzivatel')->nick,
-                            'canViewOrEdit' => $this->ap->canViewOrEditAP($ip->ref('Uzivatel')->Ap_id, $this->getUser()),
-                            'link' => $this->link('Uzivatel:show', array('id' => $ip->ref('Uzivatel')->id)).'#ip'.$ipAdresa,
-                            'editLink' => $this->link('Uzivatel:edit', array('id' => $ip->ref('Uzivatel')->id)).'#ip'.$ipAdresa,
+                            'id' => $uzivatel->id,
+                            'nick' => $uzivatel->nick,
+                            'canViewOrEdit' => $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser()),
+                            'link' => $this->link('Uzivatel:show', array('id' => $uzivatel->id)).'#ip'.$ipAdresa,
+                            'editLink' => $this->link('Uzivatel:edit', array('id' => $uzivatel->id)).'#ip'.$ipAdresa,
+                            'rowClass' => $networkBroadcastAddrClass,
+                            'ipTitle' => $ipAdresaTitle,
+                        );
+                    } elseif (($ap = $ip->ref('Ap')) !== null) {
+                        $subnetInfo = array(
+                            'type' => 'Ap',
+                            'id' => $ap->id,
+                            'jmeno' => $ap->jmeno,
+                            'canViewOrEdit' => $this->ap->canViewOrEditAP($ap->id, $this->getUser()),
+                            'link' => $this->link('Ap:show', array('id' => $ap->id)).'#ip'.$ipAdresa,
+                            'editLink' => $this->link('Ap:edit', array('id' => $ap->id)).'#ip'.$ipAdresa,
                             'rowClass' => $networkBroadcastAddrClass,
                             'ipTitle' => $ipAdresaTitle,
                         );
                     } else {
-                        $subnetInfo = array(
-                            'type' => 'Ap',
-                            'id' => $ip->ref('Ap')->id,
-                            'jmeno' => $ip->ref('Ap')->jmeno,
-                            'canViewOrEdit' => $this->ap->canViewOrEditAP($ip->ref('Ap')->id, $this->getUser()),
-                            'link' => $this->link('Ap:show', array('id' => $ip->ref('Ap')->id)).'#ip'.$ipAdresa,
-                            'editLink' => $this->link('Ap:edit', array('id' => $ip->ref('Ap')->id)).'#ip'.$ipAdresa,
+                        $subnetInfo = [
+                            'type' => 'unknown',
+                            'canViewOrEdit' => false,
                             'rowClass' => $networkBroadcastAddrClass,
                             'ipTitle' => $ipAdresaTitle,
-                        );
+                        ];
                     }
                     $wewimoLink = $this->getWewimoLinkFromIpAddress($ip);
                     $tr = $this->ipAdresa->addIPTableRow($ip, false, $adresyTab, $subnetInfo, null, $wewimoLink, null, false, array($this, "linker"));

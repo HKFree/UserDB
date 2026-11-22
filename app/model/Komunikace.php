@@ -4,40 +4,46 @@ namespace App\Model;
 
 use Nette;
 use App\Services\MexSmsSender;
+use App\Services\SmsSenderException;
 use App\Model\Uzivatel;
 
 /**
  * @author bkralik
  */
-class Komunikace extends Table
+class Komunikace
 {
-    public $smsSender;
-    public $uzivatel;
-
-    /**
-     * @var string
-     */
-    protected $tableName = 'Komunikace';
+    public MexSmsSender $smsSender;
+    public Uzivatel $uzivatel;
 
     public function __construct(MexSmsSender $m, Uzivatel $u) {
         $this->smsSender = $m;
         $this->uzivatel = $u;
     }
 
-    public function posliSMS(array $uzivateleID, string $zprava) {
+    /** @param array<array-key, int|string> $uzivateleID */
+    public function posliSMS(array $uzivateleID, string $zprava): int {
         $cisla = [];
         foreach ($uzivateleID as $uid) {
             $u = $this->uzivatel->getUzivatel($uid);
+            if ($u === null) {
+                throw new SmsSenderException('Uživatel pro odeslání SMS nebyl nalezen.');
+            }
             if ($this->smsSender->checkCzechNumber($u->telefon)) {
                 $cisla[] = $u->telefon;
             }
         }
 
+        if ($cisla === []) {
+            throw new SmsSenderException('Žádný z vybraných uživatelů nemá platné české telefonní číslo.');
+        }
+
         $this->smsSender->sendSMS($cisla, $zprava);
+        return count($cisla);
     }
 
-    public function maValidniCislo($uid) {
+    /** @param int|string $uid */
+    public function maValidniCislo($uid): bool {
         $u = $this->uzivatel->getUzivatel($uid);
-        return ($this->smsSender->checkCzechNumber($u->telefon));
+        return $u !== null && $this->smsSender->checkCzechNumber($u->telefon);
     }
 }

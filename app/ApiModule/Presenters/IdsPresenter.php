@@ -6,13 +6,14 @@ use Nette\Application\Responses\JsonResponse;
 
 class IdsPresenter extends ApiPresenter
 {
-    private $idsConnector;
+    private \App\Model\IdsConnector $idsConnector;
 
     public function __construct(\App\Model\IdsConnector $idsConnector) {
+        parent::__construct();
         $this->idsConnector = $idsConnector;
     }
 
-    public function actionDefault() {
+    public function actionDefault(): void {
         $this->sendResponse(new JsonResponse($this->idsConnector->getUniqueIpsFromPrivateSubnets()));
     }
 }

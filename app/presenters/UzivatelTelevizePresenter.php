@@ -5,6 +5,7 @@ namespace App\Presenters;
 use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Utils\ArrayHash;
 use App\Components;
 
 /**
@@ -12,11 +13,12 @@ use App\Components;
  */
 class UzivatelTelevizePresenter extends BasePresenter
 {
-    private $uzivatel;
-    private $uzivatelTelevize;
-    private $parameters;
+    private Model\Uzivatel $uzivatel;
+    private Model\UzivatelTelevize $uzivatelTelevize;
+    private Model\Parameters $parameters;
+    /** @var \App\Services\CryptoSluzba|null */
     protected $cryptosvc;
-    private $connection;
+    private Nette\Database\Connection $connection;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
@@ -27,20 +29,24 @@ class UzivatelTelevizePresenter extends BasePresenter
         Model\UzivatelTelevize $uzivatelTelevize,
         Nette\Database\Connection $connection
     ) {
+        parent::__construct();
         $this->uzivatel = $uzivatel;
         $this->uzivatelTelevize = $uzivatelTelevize;
         $this->parameters = $parameters;
         $this->connection = $connection;
     }
 
-    public function renderShow() {
+    public function renderShow(): void {
         $uid = $this->getParameter('id');
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $uzivatel = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $this->template->u = $uzivatel;
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
-        $this->template->televize_objednana = $televizeRow?->objednana == 1;
-        $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+        $this->template->televize_objednana = (int) $televizeRow?->objednana === 1;
+        $this->template->televize_cena = $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
 
         $this->template->televizeAktivniDnesRow = $uzivatel->related('UzivatelTelevizeAktivni')
             ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
@@ -53,10 +59,17 @@ class UzivatelTelevizePresenter extends BasePresenter
         $this->template->televizeReportRows = $uzivatel->related('UzivatelTelevizeReport')->order('rok, mesic');
     }
 
+    /**
+     * @param int|string|null $uid
+     * @return int|float|numeric-string
+     */
     private function cena($uid) {
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $uzivatel = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-        return $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+        return $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
     }
 
     protected function createComponentTelevizeCenaForm(): Form {
@@ -65,9 +78,9 @@ class UzivatelTelevizePresenter extends BasePresenter
 
         $form->addRadioList('cena', 'Nová cena', [
           "0" => " 0 Kč/měsíc",
-          $this->parameters->getCenaSledovaniTV()  => sprintf(" %s Kč/měsíc", $this->parameters->getCenaSledovaniTV())
-        ])->setDefaultValue(
-            $this->cena($uid) == 0 ? 0 : $this->parameters->getCenaSledovaniTV()
+          (string) $this->parameters->getCenaSledovaniTV() => sprintf(" %s Kč/měsíc", $this->parameters->getCenaSledovaniTV())
+        ])->setRequired('Vyberte cenu služby.')->setDefaultValue(
+            (float) $this->cena($uid) === 0.0 ? 0 : $this->parameters->getCenaSledovaniTV()
         );
 
         $form->addSubmit('send', 'uložit');
@@ -76,26 +89,28 @@ class UzivatelTelevizePresenter extends BasePresenter
         return $form;
     }
 
-    public function renderEdit() {
+    public function renderEdit(): void {
         $uid = $this->getParameter('id');
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
+        $uzivatel = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $this->template->u = $uzivatel;
         $this->template->televize_cena = $this->cena($uid);
     }
 
-    private function formSucceeded(Form $form, $data): void {
+    /** @param ArrayHash<mixed> $data */
+    private function formSucceeded(Form $form, ArrayHash $data): void {
         $uid = $this->getParameter('id');
 
         $this->connection->query(
-            sprintf(
-                'INSERT INTO %s (id,cena) VALUES (%u,%u) ON DUPLICATE KEY UPDATE cena=values(cena)',
-                $this->uzivatelTelevize->tableName,
-                $uid,
-                $data->cena
-            )
+            'INSERT INTO ?name (id,cena) VALUES (?,?) ON DUPLICATE KEY UPDATE cena=values(cena)',
+            $this->uzivatelTelevize->tableName,
+            sprintf('%u', $uid),
+            $data->cena
         );
 
-        $this->flashMessage(sprintf('Cena služby Televize změněna na %u Kč/měsíc.', $data->cena));
+        $this->flashMessage(sprintf('Cena služby Televize změněna na %s Kč/měsíc.', $data->cena));
 
         $this->redirect('Uzivatel:show', ['id' => $uid]);
     }

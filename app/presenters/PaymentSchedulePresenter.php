@@ -5,27 +5,28 @@ namespace App\Presenters;
 use App\Model;
 use App\Services;
 
+/** @property-read \Nette\Bridges\ApplicationLatte\Template $template */
 class PaymentSchedulePresenter extends BasePresenter
 {
-    private $uzivatel;
-    private $parameters;
-    private $mailService;
-    private $cestneClenstviUzivatele;
+    private Model\Uzivatel $uzivatel;
+    private Model\Parameters $parameters;
+    private Services\MailService $mailService;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
     public function __construct(
         Services\MailService $mailsvc,
         Model\Parameters $parameters,
         Model\Uzivatel $uzivatel,
         Model\CestneClenstviUzivatele $cc,
     ) {
+        parent::__construct();
         $this->uzivatel = $uzivatel;
         $this->parameters = $parameters;
         $this->mailService = $mailsvc;
         $this->cestneClenstviUzivatele = $cc;
     }
 
-    private function computeTemplateParams() {
-        $uid = $this->getParameter('id');
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
+    private function computeTemplateParams(\Nette\Database\Table\ActiveRow $uzivatel): void {
+        $uid = $uzivatel->id;
         $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
 
         $this->template->u = $uzivatel;
@@ -40,10 +41,10 @@ class PaymentSchedulePresenter extends BasePresenter
                 $this->cestneClenstviUzivatele->getHasCC($uid) ? 0 : $this->parameters->getVyseClenskehoPrispevku()
             ]
         ];
-        if ($televizeRow?->objednana == 1) {
+        if ($televizeRow !== null && (int) $televizeRow->objednana === 1) {
             array_push($pravidelne_mesicni_platby, [
                 'Televize - START balíček SledovaniTV',
-                $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV()
+                $televizeRow->cena
             ]);
         }
 
@@ -73,9 +74,7 @@ class PaymentSchedulePresenter extends BasePresenter
         $poznamka = "QR-rozpis";
 
         $spayd = sprintf('SPD*1.0*ACC:%s*AM:%.2f*CC:CZK*MSG:%s*X-VS:%u', $cisloUctuIBAN, $platby_celkem, $poznamka, $uzivatel->id);
-        if ($datumPlatby) {
-            $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
-        }
+        $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
 
         $this->template->spayd = $spayd;
 
@@ -83,19 +82,24 @@ class PaymentSchedulePresenter extends BasePresenter
         $this->template->qrImagePngBase64 = $qrImagePngBase64;
     }
 
-    public function renderShow() {
-        $this->computeTemplateParams();
+    /** Rozpis plateb ukazuje detail člena jen tomu, kdo smí člena upravovat */
+    private function vyzadujOpravneniKClenovi(): \Nette\Database\Table\ActiveRow {
+        $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
+        $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
+        return $uzivatel;
     }
 
-    public function actionSendPaymentScheduleEmail() {
-        $uid = $this->getParameter('id');
+    public function renderShow(): void {
+        $uzivatel = $this->vyzadujOpravneniKClenovi();
+        $this->computeTemplateParams($uzivatel);
+    }
 
-        $uzivatel = $this->uzivatel->getUzivatel($uid);
-        if ($uzivatel->druzstvo != 1) {
+    public function actionSendPaymentScheduleEmail(): void {
+        $uzivatel = $this->vyzadujOpravneniKClenovi();
+        if ((int) $uzivatel->druzstvo !== 1) {
             $this->error('Jen pro družstvo');
-            return;
         }
-        $this->computeTemplateParams();
+        $this->computeTemplateParams($uzivatel);
 
         $template = $this->mailService->addLinkGeneratorToTemplate($this->template);
 

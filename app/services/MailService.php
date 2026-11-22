@@ -13,30 +13,25 @@ use Nette\Mail\Message;
  */
 class MailService
 {
-    private $templateDir;
-    private $uzivatel;
-    private $mailer;
-    private $linkGenerator;
-    private $templateFactory;
-    private $cestneClenstviUzivatele;
+    private Model\Uzivatel $uzivatel;
+    private Nette\Mail\Mailer $mailer;
+    private Nette\Application\LinkGenerator $linkGenerator;
 
     public function __construct(
-        string $templateDir,
         Nette\Mail\IMailer $mailer,
         Model\Uzivatel $uzivatel,
-        Nette\Application\LinkGenerator $linkGenerator,
-        Nette\Bridges\ApplicationLatte\TemplateFactory $templateFactory,
-        Model\CestneClenstviUzivatele $cestneClenstviUzivatele
+        Nette\Application\LinkGenerator $linkGenerator
     ) {
-        $this->templateDir = $templateDir;
         $this->uzivatel = $uzivatel;
         $this->mailer = $mailer;
         $this->linkGenerator = $linkGenerator;
-        $this->templateFactory = $templateFactory;
-        $this->cestneClenstviUzivatele = $cestneClenstviUzivatele;
     }
 
-    public function sendSpolekConfirmationRequest($uzivatel, $so, $link): void {
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Database\Table\ActiveRow|null $so
+     */
+    public function sendSpolekConfirmationRequest($uzivatel, $so, string $link): void {
         $fromAddress = 'spolek hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mail = new Message();
@@ -49,12 +44,16 @@ class MailService
                 'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. ' .
                 'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org z.s.');
-        if (!empty($uzivatel->email2)) {
+        if (!in_array($uzivatel->email2, [null, '', '0'], true)) {
             $mail->addTo($uzivatel->email2);
         }
         $this->mailer->send($mail);
     }
 
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Database\Table\ActiveRow $so
+     */
     public function sendSpolekConfirmationRequestCopy($uzivatel, $so): void {
         $fromAddress = 'spolek hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
@@ -68,7 +67,7 @@ class MailService
                 'souhlas s Pravidly sítě a souhlas se zpracováním osobních údajů pro potřeby evidence člena zapsaného spolku. ' .
                 'Veškeré dokumenty naleznete na stránkách <a href="http://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org z.s.');
-        if (!empty($so->email2)) {
+        if (!in_array($so->email2, [null, '', '0'], true)) {
             $mailso->addTo($so->email2);
         }
 
@@ -80,7 +79,11 @@ class MailService
         $this->mailer->send($mailso);
     }
 
-    public function sendDruzstvoConfirmationRequest($uzivatel, $so, $link): void {
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Database\Table\ActiveRow|null $so
+     */
+    public function sendDruzstvoConfirmationRequest($uzivatel, $so, string $link): void {
         $fromAddress = 'hkfree.org internetové družstvo, oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $mail = new Message();
@@ -91,12 +94,16 @@ class MailService
                 'následující odkaz:<br><br><a href="' . $link . '">' . $link . '</a><br><br>' .
                 'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org internetové družstvo');
-        if (!empty($uzivatel->email2)) {
+        if (!in_array($uzivatel->email2, [null, '', '0'], true)) {
             $mail->addTo($uzivatel->email2);
         }
         $this->mailer->send($mail);
     }
 
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Database\Table\ActiveRow $so
+     */
     public function sendDruzstvoConfirmationRequestCopy($uzivatel, $so): void {
         $fromAddress = 'hkfree.org internetové družstvo, oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
@@ -108,7 +115,7 @@ class MailService
                 'následující odkaz:<br><br>.....odkaz má v emailu pouze uživatel UID ' . $uzivatel->id . '<br><br>' .
                 'Veškeré relevantní dokumenty naleznete na stránkách <a href="https://www.hkfree.org">www.hkfree.org</a> v sekci Základní dokumenty.<br><br>' .
                 'S pozdravem hkfree.org internetové družstvo');
-        if (!empty($so->email2)) {
+        if (!in_array($so->email2, [null, '', '0'], true)) {
             $mailso->addTo($so->email2);
         }
 
@@ -120,7 +127,11 @@ class MailService
         $this->mailer->send($mailso);
     }
 
-    public function sendEmailFromTemplate($uzivatel, $subject, $renderovatTemplate): void {
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Bridges\ApplicationLatte\Template $renderovatTemplate
+     */
+    public function sendEmailFromTemplate($uzivatel, string $subject, $renderovatTemplate): void {
         $fromAddress = 'hkfree.org internetové družstvo <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
 
         $htmlContent = $renderovatTemplate->renderToString();
@@ -131,14 +142,23 @@ class MailService
             ->addReplyTo('podpora@hkfree.org')
             ->setSubject($subject)
             ->setHtmlBody($htmlContent);
-        if (!empty($uzivatel->email2)) {
+        if (!in_array($uzivatel->email2, [null, '', '0'], true)) {
             $mail->addTo($uzivatel->email2);
         }
         $this->mailer->send($mail);
     }
 
+    /**
+     * @param Nette\Database\Table\ActiveRow $uzivatel
+     * @param Nette\Http\IRequest $request
+     * @param Nette\Http\IResponse $response
+     * @param int|string $userid
+     */
     public function mailPdf(PdfResponse $pdf, $uzivatel, $request, $response, $userid): void {
         $so = $this->uzivatel->getUzivatel($userid);
+        if ($so === null) {
+            throw new \InvalidArgumentException('Odesílající uživatel nebyl nalezen.');
+        }
 
         $fromAddress = 'hkfree.org oblast ' . $uzivatel->Ap->Oblast->jmeno . ' <oblast' . $uzivatel->Ap->Oblast->id . '@hkfree.org>';
         //\Tracy\Debugger::barDump($fromAddress);
@@ -151,17 +171,27 @@ class MailService
             ->setBody('Dobrý den, zasíláme Vám registrační formulář. S pozdravem hkfree.org z.s.');
 
         $temp_file = tempnam(sys_get_temp_dir(), 'registrace');
+        if ($temp_file === false) {
+            throw new Nette\IOException('Nelze vytvořit dočasný soubor pro registrační formulář.');
+        }
         $pdf->outputName = $temp_file;
         $pdf->outputDestination = PdfResponse::OUTPUT_FILE;
         $pdf->send($request, $response);
-        $mail->addAttachment('hkfree-registrace-' . $uzivatel->id . '.pdf', file_get_contents($temp_file));
+        $mail->addAttachment('hkfree-registrace-' . $uzivatel->id . '.pdf', Nette\Utils\FileSystem::read($temp_file));
 
         $this->mailer->send($mail);
     }
 
+    /**
+     * @param int|string $idUzivatele
+     * @param int|string $actuser
+     */
     public function sendPlannedUserNotificationEmail($idUzivatele, $actuser): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         $so = $this->uzivatel->getUzivatel($actuser);
+        if ($newUser === null || $so === null) {
+            throw new \InvalidArgumentException('Uživatel pro odeslání e-mailu nebyl nalezen.');
+        }
 
         $fromAddress = 'hkfree.org oblast ' . $newUser->Ap->Oblast->jmeno . ' <oblast' . $newUser->Ap->Oblast->id . '@hkfree.org>';
 
@@ -177,7 +207,7 @@ class MailService
                 'Bude pravděpodobně následovat připojení od techniků<br><br>' .
                 'Prosím zkontrolujte si adresu přípojného místa a pokud máte pro techniky nějaké informace tak je kontaktujte.<br><br>' .
                 'S pozdravem UserDB');
-        if (!empty($so->email2)) {
+        if (!in_array($so->email2, [null, '', '0'], true)) {
             $mailso->addTo($so->email2);
         }
 
@@ -188,14 +218,12 @@ class MailService
         $this->mailer->send($mailso);
     }
 
+    /**
+     * @param Nette\Bridges\ApplicationLatte\Template $t
+     * @return Nette\Bridges\ApplicationLatte\Template
+     */
     public function addLinkGeneratorToTemplate($t): Nette\Application\UI\Template {
         $t->getLatte()->addProvider('uiControl', $this->linkGenerator);
         return $t;
-    }
-
-    private function createTemplate(): Nette\Application\UI\Template {
-        $template = $this->templateFactory->createTemplate();
-        $template->getLatte()->addProvider('uiControl', $this->linkGenerator);
-        return $template;
     }
 }

@@ -16,6 +16,7 @@ use Nette\Utils\Html;
 use Tracy\Debugger;
 use Nette\Utils\Validators;
 use Nette\Utils\Strings;
+use Nette\Utils\ArrayHash;
 use App\Components;
 
 /**
@@ -23,43 +24,36 @@ use App\Components;
  */
 class UzivatelPresenter extends BasePresenter
 {
-    private $spravceOblasti;
-    private $cestneClenstviUzivatele;
-    private $typClenstvi;
-    private $typPravniFormyUzivatele;
-    private $typSpravceOblasti;
-    private $zpusobPripojeni;
-    private $technologiePripojeni;
-    private $uzivatel;
-    private $ipAdresa;
-    private $ap;
-    private $typZarizeni;
-    private $log;
-    private $subnet;
-    private $sloucenyUzivatel;
-    private $smlouva;
-    private $smlouvaStavSluzba;
-    private $parameters;
-    private $povoleneSMTP;
-    private $dnat;
-    protected $cryptosvc;
-    private $pdfGenerator;
-    private $mailService;
-    private $idsConnector;
-    private $aplikaceToken;
-    private $stitek;
+    private Services\PresunIpSluzba $presunIpSluzba;
+    private Model\SpravceOblasti $spravceOblasti;
+    private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
+    private Model\TypClenstvi $typClenstvi;
+    private Model\TypPravniFormyUzivatele $typPravniFormyUzivatele;
+    private Model\ZpusobPripojeni $zpusobPripojeni;
+    private Model\TechnologiePripojeni $technologiePripojeni;
+    private Model\Uzivatel $uzivatel;
+    private Model\IPAdresa $ipAdresa;
+    private Model\TypZarizeni $typZarizeni;
+    private Model\Log $log;
+    private Model\SloucenyUzivatel $sloucenyUzivatel;
+    private Model\Smlouva $smlouva;
+    private SmlouvaStavSluzba $smlouvaStavSluzba;
+    private Model\Parameters $parameters;
+    private Model\PovoleneSMTP $povoleneSMTP;
+    private Model\DNat $dnat;
+    protected CryptoSluzba $cryptosvc;
+    private Services\MailService $mailService;
+    private Model\IdsConnector $idsConnector;
+    private Model\AplikaceToken $aplikaceToken;
+    private Model\Stitek $stitek;
 
-    private Services\Stitkovac $stitkovac;
-
-    private $stitkyUzivatele;
-    private Explorer $databaseExplorer;
+    private Model\StitekUzivatele $stitkyUzivatele;
 
     /** @var Components\LogTableFactory @inject **/
     public $logTableFactory;
 
     public function __construct(
         Services\MailService $mailsvc,
-        Services\PdfGenerator $pdf,
         CryptoSluzba $cryptosvc,
         Model\PovoleneSMTP $alowedSMTP,
         Model\DNat $dnat,
@@ -67,7 +61,6 @@ class UzivatelPresenter extends BasePresenter
         Model\SloucenyUzivatel $slUzivatel,
         Model\Smlouva $smlouva,
         SmlouvaStavSluzba $smlouvaStavSluzba,
-        Model\Subnet $subnet,
         Model\SpravceOblasti $prava,
         Model\CestneClenstviUzivatele $cc,
         Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
@@ -76,16 +69,14 @@ class UzivatelPresenter extends BasePresenter
         Model\TechnologiePripojeni $technologiePripojeni,
         Model\Uzivatel $uzivatel,
         Model\IPAdresa $ipAdresa,
-        Model\AP $ap,
         Model\TypZarizeni $typZarizeni,
         Model\Log $log,
         Model\IdsConnector $idsConnector,
         Model\AplikaceToken $aplikaceToken,
         Model\Stitek $stitek,
         Model\StitekUzivatele $stitkyUzivatele,
-        Services\Stitkovac $stitkovac,
-        Explorer $databaseExplorer,
     ) {
+        parent::__construct();
         $this->cryptosvc = $cryptosvc;
         $this->spravceOblasti = $prava;
         $this->cestneClenstviUzivatele = $cc;
@@ -95,35 +86,35 @@ class UzivatelPresenter extends BasePresenter
         $this->technologiePripojeni = $technologiePripojeni;
         $this->uzivatel = $uzivatel;
         $this->ipAdresa = $ipAdresa;
-        $this->ap = $ap;
         $this->typZarizeni = $typZarizeni;
         $this->log = $log;
-        $this->subnet = $subnet;
         $this->sloucenyUzivatel = $slUzivatel;
         $this->smlouva = $smlouva;
         $this->smlouvaStavSluzba = $smlouvaStavSluzba;
         $this->parameters = $parameters;
         $this->povoleneSMTP = $alowedSMTP;
         $this->dnat = $dnat;
-        $this->pdfGenerator = $pdf;
         $this->mailService = $mailsvc;
         $this->idsConnector = $idsConnector;
         $this->aplikaceToken = $aplikaceToken;
         $this->stitek = $stitek;
         $this->stitkyUzivatele = $stitkyUzivatele;
-        $this->stitkovac = $stitkovac;
-        $this->databaseExplorer = $databaseExplorer;
     }
 
     protected function createComponentUserLabels(): UserLabelsComponent {
-        // Předej do komponenty databázi a aktuální user ID
+        // Předej do komponenty aktuální user ID
         $userId = $this->getParameter('id'); // Nebo jiný způsob získání ID uživatele
-        $ulc = new UserLabelsComponent($this->databaseExplorer, $this->stitek, $this->stitkyUzivatele);
+        $ulc = new UserLabelsComponent($this->stitek, $this->stitkyUzivatele);
         $ulc->setUserId($userId);
         return $ulc;
     }
 
-    public function sendSpolekNotificationEmail($idUzivatele) {
+    public function injectPresunIpSluzba(Services\PresunIpSluzba $presunIpSluzba): void {
+        $this->presunIpSluzba = $presunIpSluzba;
+    }
+
+    /** @param int|string $idUzivatele */
+    public function sendSpolekNotificationEmail($idUzivatele): void {
         try {
             $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
             $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
@@ -132,12 +123,19 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function sendSpolekRegistrationEmail($idUzivatele) {
+    /** @param int|string $idUzivatele */
+    public function sendSpolekRegistrationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+        if ($newUser === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         try {
             $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
@@ -149,12 +147,19 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function sendDruzstvoRegistrationEmail($idUzivatele) {
+    /** @param int|string $idUzivatele */
+    public function sendDruzstvoRegistrationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+        if ($newUser === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = $this->link('//SelfService:confirmEmail', $hash);
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
 
         try {
             $this->mailService->sendDruzstvoConfirmationRequest($newUser, $so, $link);
@@ -166,58 +171,52 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderShow() {
-        if ($this->getParameter('id')) {
+    public function renderShow(): void {
+        if ($this->maVyplnenyParametr('id')) {
             $uid = $this->getParameter('id');
-            if ($uzivatel = $this->uzivatel->getUzivatel($uid)) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($uid)) !== null) {
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
                 $this->template->stitky = $this->stitek->getSeznamStitku();
                 $this->template->stitkyUzivatele = $this->stitkyUzivatele->getStitekByUserId($uid);
 
-                $this->template->money_act = (1 == $uzivatel->money_aktivni) ? 'ANO' : 'NE';
-                $this->template->money_dis = (1 == $uzivatel->money_deaktivace) ? 'ANO' : 'NE';
+                $this->template->money_act = (1 === (int) $uzivatel->money_aktivni) ? 'ANO' : 'NE';
+                $this->template->money_dis = (1 === (int) $uzivatel->money_deaktivace) ? 'ANO' : 'NE';
 
                 $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
-                $this->template->televize_objednana = $televizeRow?->objednana == 1;
-                $this->template->televize_cena = $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
+                $this->template->televize_objednana = (int) $televizeRow?->objednana === 1;
+                $this->template->televize_cena = $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
                 $televizeAktivniRow = $uzivatel->related('UzivatelTelevizeAktivni')
                     ->where(['datum_od <= curdate()', 'datum_do >= curdate()'])
                     ->order('datum_od DESC')
                     ->limit(1)
                     ->fetch();
-                $this->template->televize_aktivni = $televizeAktivniRow ? true : false;
+                $this->template->televize_aktivni = $televizeAktivniRow !== null;
                 $this->template->televize_aktivni_poznamka = $televizeAktivniRow?->poznamka;
                 $this->template->televize_aktivni_do = $televizeAktivniRow?->datum_do;
 
                 $posledniPlatbaSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('spolek', 1)->order('id DESC')->limit(1);
                 $posledniPlatbaDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->where('druzstvo', 1)->order('id DESC')->limit(1);
-                if ($posledniPlatbaSpolek->count() > 0) {
-                    $posledniPlatbaData = $posledniPlatbaSpolek->fetch();
-                    $this->template->money_lastpay_spolek = (null == $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
+                $posledniPlatbaData = $posledniPlatbaSpolek->fetch();
+                if ($posledniPlatbaData !== null) {
+                    $this->template->money_lastpay_spolek = (null === $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
                 } else {
                     $this->template->money_lastpay_spolek = '?';
                 }
-                if ($posledniPlatbaDruzstvo->count() > 0) {
-                    $posledniPlatbaData = $posledniPlatbaDruzstvo->fetch();
-                    $this->template->money_lastpay_druzstvo = (null == $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
+                $posledniPlatbaData = $posledniPlatbaDruzstvo->fetch();
+                if ($posledniPlatbaData !== null) {
+                    $this->template->money_lastpay_druzstvo = (null === $posledniPlatbaData->datum) ? 'NIKDY' : ($posledniPlatbaData->datum->format('d.m.Y').' ('.$posledniPlatbaData->castka.')');
                 } else {
                     $this->template->money_lastpay_druzstvo = '?';
                 }
                 $posledniAktivace = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', [4, 5])->order('id DESC')->limit(1);
-                if ($posledniAktivace->count() > 0) {
-                    $posledniAktivaceData = $posledniAktivace->fetch();
-                    $this->template->money_lastact = (null == $posledniAktivaceData->datum) ? 'NIKDY' : ($posledniAktivaceData->datum->format('d.m.Y').' ('.$posledniAktivaceData->castka.')');
+                $posledniAktivaceData = $posledniAktivace->fetch();
+                if ($posledniAktivaceData !== null) {
+                    $this->template->money_lastact = (null === $posledniAktivaceData->datum) ? 'NIKDY' : ($posledniAktivaceData->datum->format('d.m.Y').' ('.$posledniAktivaceData->castka.')');
                 } else {
                     $this->template->money_lastact = '?';
                 }
-                $stavUctuSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->sum('castka');
-                if (!$stavUctuSpolek || '' == $stavUctuSpolek) {
-                    $stavUctuSpolek = 0;
-                }
-                $stavUctuDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
-                if (!$stavUctuDruzstvo || '' == $stavUctuDruzstvo) {
-                    $stavUctuDruzstvo = 0;
-                }
+                $stavUctuSpolek = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->sum('castka') ?: 0;
+                $stavUctuDruzstvo = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka') ?: 0;
 
                 $this->template->money_bal_druzstvo = $stavUctuDruzstvo;
                 if ($uzivatel->kauce_mobil > 0) {
@@ -227,10 +226,7 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->money_bal_spolek = $stavUctuSpolek;
                 }
 
-                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka');
-                if (!$stavUctuDph || '' == $stavUctuDph) {
-                    $stavUctuDph = 0;
-                }
+                $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka') ?: 0;
                 $this->template->money_dph = $stavUctuDph;
 
                 if ($this->sloucenyUzivatel->getIsAlreadyMaster($uid)) {
@@ -263,41 +259,27 @@ class UzivatelPresenter extends BasePresenter
                     $this->template->adresyline = null;
                 }
 
-                $seznamUzivatelu = [];
-                $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
-                foreach ($oblastiAktualnihoUzivatele as $oblast) {
-                    foreach ($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-                        // \Tracy\Debugger::barDump($ap->id);
-                        $apcko = $this->ap->getAP($ap->id);
-                        $subnety = $apcko->related('Subnet.Ap_id');
-                        $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
-                    }
-                }
-                // \Tracy\Debugger::barDump($seznamUzivatelu);
-
-                $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
-                                                    || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
-                                                    || in_array($uid, $seznamUzivatelu);
+                $this->template->canViewOrEdit = $this->smiUpravitUzivatele($uzivatel);
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
 
                 $this->template->activaceVisible = false;
                 $this->template->reactivaceVisible = false;
-                if ($uzivatel->money_aktivni == 0
+                if ((int) $uzivatel->money_aktivni === 0
                     && (
                         ($stavUctuSpolek - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku()
                         || ($stavUctuDruzstvo - $uzivatel->kauce_mobil) >= $this->parameters->getVyseClenskehoPrispevku()
                     )
                 ) {
-                    if ($uzivatel->money_deaktivace == 0) {
+                    if ((int) $uzivatel->money_deaktivace === 0) {
                         $this->template->activaceVisible = true;
                     }
-                    if ($uzivatel->money_deaktivace == 1) {
+                    if ((int) $uzivatel->money_deaktivace === 1) {
                         $this->template->reactivaceVisible = true;
                     }
                 }
                 $this->template->deactivaceVisible =
-                    1 == $uzivatel->money_aktivni
-                    && 0 == $uzivatel->money_deaktivace;
+                    1 === (int) $uzivatel->money_aktivni
+                    && 0 === (int) $uzivatel->money_deaktivace;
 
                 $this->template->igw = $this->getParameter('igw', false);
                 $this->template->smlouvaStavSluzba = $this->smlouvaStavSluzba;
@@ -306,9 +288,12 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
-    public function renderPaymentSummary() {
+    public function renderPaymentSummary(): void {
         $uid = $this->getParameter('id');
         $uzivatel = $this->uzivatel->getUzivatel($uid);
+        if ($uzivatel === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
 
         $this->template->u = $uzivatel;
@@ -318,8 +303,8 @@ class UzivatelPresenter extends BasePresenter
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
         $pravidelne_mesicni_platby = [['Pevný přístup k internetu', $this->parameters->getVyseClenskehoPrispevku()]];
-        if ($televizeRow?->objednana == 1) {
-            array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV()]);
+        if ($televizeRow !== null && (int) $televizeRow->objednana === 1) {
+            array_push($pravidelne_mesicni_platby, ['Televize - START balíček SledovaniTV', $televizeRow->cena]);
         }
 
         $this->template->pravidelne_mesicni_platby = $pravidelne_mesicni_platby;
@@ -343,40 +328,24 @@ class UzivatelPresenter extends BasePresenter
         $poznamka = "{$nazev_uzivatele} UID{$uzivatel->id} QR1";
 
         $spayd = sprintf('SPD*1.0*ACC:%s*AM:%.2f*CC:CZK*MSG:%s*X-VS:%u', $cisloUctuIBAN, $platby_celkem, $poznamka, $uzivatel->id);
-        if ($datumPlatby) {
-            $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
-        }
+        $spayd .= sprintf('*DT:%s', $datumPlatby->format("Ymd"));
 
         $this->template->spayd = $spayd;
     }
 
-    public function createComponentLogTable() {
+    public function createComponentLogTable(): Components\LogTable {
         return $this->logTableFactory->create($this);
     }
 
-    public function renderEdit() {
-        if ($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) {
-            $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-            $seznamUzivatelu = [];
-            $oblastiAktualnihoUzivatele = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
-            foreach ($oblastiAktualnihoUzivatele as $oblast) {
-                foreach ($oblast->related('Ap.Oblast_id') as $apid => $ap) {
-                    // \Tracy\Debugger::barDump($ap->id);
-                    $apcko = $this->ap->getAP($ap->id);
-                    $subnety = $apcko->related('Subnet.Ap_id');
-                    $seznamUzivatelu = array_merge($seznamUzivatelu, $this->uzivatel->findUsersIdsFromOtherAreasByAreaId($ap->id, $subnety));
-                }
-            }
-
-            $this->template->canViewOrEdit = $this->getUser()->isInRole('EXTSUPPORT')
-                                                || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())
-                                                || in_array($uzivatel->id, $seznamUzivatelu);
+    public function renderEdit(): void {
+        if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
+            $this->template->canViewOrEdit = $this->smiUpravitUzivatele($uzivatel);
         } else {
             $this->template->canViewOrEdit = true;
         }
     }
 
-    protected function createComponentUzivatelForm() {
+    protected function createComponentUzivatelForm(): Form {
         $typClenstvi = [-1 => '-'] + $this->typClenstvi->getTypyClenstvi()->fetchPairs('id', 'text');
         $typPravniFormy = $this->typPravniFormyUzivatele->getTypyPravniFormyUzivatele()->fetchPairs('id', 'text');
         $zpusobPripojeni = $this->zpusobPripojeni->getZpusobyPripojeni()->fetchPairs('id', 'text');
@@ -393,10 +362,14 @@ class UzivatelPresenter extends BasePresenter
 
         $form = new Form($this, 'uzivatelForm');
         $form->addHidden('id');
+        $ipOtisk = $form->addHidden('ipOtisk');
+        if (!$this->getHttpRequest()->isMethod('POST')) {
+            $ipOtisk->setDefaultValue($this->presunIpSluzba->otiskIp((int) $this->getParameter('id')));
+        }
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
-        $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::Filled, 'Vyberte typ právní formy');
-        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::Equal, 2)->setRequired('Zadejte název firmy');
-        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($form['TypPravniFormyUzivatele_id'], Form::Equal, 2)->setRequired('Zadejte IČ');
+        $pravniForma = $form->addSelect('TypPravniFormyUzivatele_id', 'Právní forma', $typPravniFormy)->addRule(Form::Filled, 'Vyberte typ právní formy');
+        $form->addText('firma_nazev', 'Název firmy', 30)->addConditionOn($pravniForma, Form::Equal, Model\TypPravniFormyUzivatele::PRAVNICKA_OSOBA)->setRequired('Zadejte název firmy');
+        $form->addText('firma_ico', 'IČO', 8)->addConditionOn($pravniForma, Form::Equal, Model\TypPravniFormyUzivatele::PRAVNICKA_OSOBA)->setRequired('Zadejte IČ');
         //http://phpfashion.com/jak-overit-platne-ic-a-rodne-cislo
         $form->addText('jmeno', 'Jméno', 30)->setRequired('Zadejte jméno');
         $form->addText('prijmeni', 'Přijmení', 30)->setRequired('Zadejte příjmení');
@@ -407,7 +380,7 @@ class UzivatelPresenter extends BasePresenter
         $form->addText('email2', 'Sekundární email', 30)->addCondition(Form::Filled)->addRule(Form::Email, 'Musíte zadat platný email');
         $form->addText('telefon', 'Telefon', 30)->setRequired('Zadejte telefon');
         if (count($this->spravceOblasti->getOblastiSpravce($this->getParameter('id'))) > 0) {
-            $form->addCheckBox('publicPhone', 'Telefon je viditelný pro členy', 30)->setDefaultValue(true);
+            $form->addCheckbox('publicPhone', 'Telefon je viditelný pro členy')->setDefaultValue(true);
         }
         $form->addText('cislo_clenske_karty', 'Číslo členské karty', 30);
         $form->addText('kauce_mobil', 'Kauce na mobilní tarify', 30);
@@ -428,7 +401,7 @@ class UzivatelPresenter extends BasePresenter
 
         $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
         $data = $this->ipAdresa;
-        $ips = $form->addDynamic('ip', function (Container $ip) use ($data, $typyZarizeni, $form) {
+        $ips = $form->addDynamic('ip', function (Container $ip) use ($data, $typyZarizeni) {
             $data->getIPForm($ip, $typyZarizeni);
 
             $ip->addSubmit('remove', '– Odstranit IP')
@@ -452,22 +425,22 @@ class UzivatelPresenter extends BasePresenter
 
         $form->setDefaults(array(
             'TypClenstvi_id' => -1,
-            'TypPravniFormyUzivatele_id' => 1,
+            'TypPravniFormyUzivatele_id' => Model\TypPravniFormyUzivatele::FYZICKA_OSOBA,
         ));
 
         // pokud editujeme, nacteme existujici ipadresy
-        $submitujeSe = ($form->isAnchored() && $form->isSubmitted());
-        if ($this->getParameter('id') && !$submitujeSe) {
+        $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
+        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
-            if ($values) {
+            if ($values !== null) {
                 foreach ($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
-                    if ($ip_data->heslo_sifrovane == 1) {
+                    if ($ip_data->heslo_sifrovane === 1) {
                         $decrypted = $this->cryptosvc->decrypt($ip_data->heslo);
                         $ipdata = $ip_data->toArray();
                         $ipdata['heslo'] = $decrypted;
-                        $form["ip"][$ip_id]->setValues($ipdata);
+                        $ips->createOne($ip_id)->setValues($ipdata);
                     } else {
-                        $form["ip"][$ip_id]->setValues($ip_data);
+                        $ips->createOne($ip_id)->setValues($ip_data);
                     }
                 }
                 $form->setValues($values);
@@ -477,59 +450,62 @@ class UzivatelPresenter extends BasePresenter
         return $form;
     }
 
-    public function validateUzivatelForm($form) {
+    public function validateUzivatelForm(Nette\Forms\Form $form): void {
         $data = $form->getHttpData();
+        if (!is_array($data)) {
+            throw new Nette\UnexpectedValueException('Data celého formuláře musí být pole.');
+        }
 
         // Validujeme jenom při uložení formuláře
         if (!isset($data['save'])) {
-            return 0;
+            return;
         }
 
         $uzivatelBeforeSave = $this->uzivatel->getUzivatel($data['id']);
 
-        if ($uzivatelBeforeSave) {
-            if ($uzivatelBeforeSave->druzstvo == 1 && $data['druzstvo'] != 1) {
+        if ($uzivatelBeforeSave !== null) {
+            if ((int) $uzivatelBeforeSave->druzstvo === 1 && $data['druzstvo'] !== '1') {
                 $form->addError('Právní vztah k družstvu již nelze nikdy změnit na Ne.');
             }
 
-            if ($uzivatelBeforeSave->spolek == 1 && $data['spolek'] != 1) {
+            if ((int) $uzivatelBeforeSave->spolek === 1 && $data['spolek'] !== '1') {
                 $form->addError('Právní vztah ke spolku již nelze nikdy změnit na Ne.');
             }
         } else {
-            if ($data['druzstvo'] == 1) {
-                if (($data['datum_narozeni'] ?? "") == "") {
+            if ($data['druzstvo'] === '1' && $data['TypPravniFormyUzivatele_id'] === (string) Model\TypPravniFormyUzivatele::FYZICKA_OSOBA) {
+                if (($data['datum_narozeni'] ?? "") === "") {
                     $form->addError('Právní vztah k družstvu vyžaduje zadání data narození.');
                 }
             }
 
-            if ($data['smazano'] != 0) {
+            if ($data['smazano'] !== '0') {
                 $form->addError('Nelze založit uživatele s atributem Smazáno.');
             }
 
-            if ($data['spolek'] == 1 && $data['druzstvo'] == 1) {
+            if ($data['spolek'] === '1' && $data['druzstvo'] === '1') {
                 $form->addError('Založení nového uživatele NEPODPORUJE právní vztahy k družstvu a ke spolku najednou, založte uživatele jen s jedním právním vztahem.');
             }
         }
 
-        if ($data['spolek'] == 1) {
-            if (($data['TypClenstvi_id'] ?? -1) == -1) {
+        if ($data['spolek'] === '1') {
+            if (($data['TypClenstvi_id'] ?? '-1') === '-1') {
                 $form->addError('Právní vztah ke spolku vyžaduje vyplnění Typu členství.');
             }
         }
 
-        if ($data['spolek'] == 0) {
+        if ($data['spolek'] === '0') {
             if (($data['TypClenstvi_id'] ?? -1) >= 0) {
                 $form->addError('Právní vztah ke spolku Ne vyžaduje nevyplnění Typu členství.');
             }
         }
 
-        if (isset($data['ipsubnet']) && !empty($data['ipsubnet'])) {
-            if (!preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $data['ipsubnet'])) {
+        if (isset($data['ipsubnet']) && !in_array($data['ipsubnet'], ['', '0', 0, 0.0, false, []], true)) {
+            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $data['ipsubnet']) !== 1) {
                 $form->addError('IP subnet není validní!');
             }
         }
-        if (isset($data['iprange']) && !empty($data['iprange'])) {
-            if (!preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $data['iprange'])) {
+        if (isset($data['iprange']) && !in_array($data['iprange'], ['', '0', 0, 0.0, false, []], true)) {
+            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $data['iprange']) !== 1) {
                 $form->addError('IP rozsah není validní!');
             }
         }
@@ -537,12 +513,12 @@ class UzivatelPresenter extends BasePresenter
         if (isset($data['ip'])) {
             $formIPs = [];
             foreach ($data['ip'] as $ip) {
-                if (!$this->ipAdresa->validateIP($ip['ip_adresa'])) {
+                if ($this->ipAdresa->validateIP($ip['ip_adresa']) === false) {
                     $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
                 }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
-                if ($duplIp) {
+                if (!in_array($duplIp, [null, '', '0'], true)) {
                     $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
                 }
 
@@ -558,7 +534,7 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
 
-            if (0 != count($formDuplicates)) {
+            if (0 !== count($formDuplicates)) {
                 $formDuplicatesReadible = implode(', ', $formDuplicates);
                 $form->addError('IP adresa '.$formDuplicatesReadible.' je v tomto formuláři vícekrát!');
             }
@@ -583,14 +559,67 @@ class UzivatelPresenter extends BasePresenter
         // }
     }
 
-    public function uzivatelFormSucceded($form, $values) {
+    /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values */
+    public function uzivatelFormSucceded(Form $form, ArrayHash $values): void {
+        // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
+        if (!in_array($values->id, [null, '', 0, '0'], true)) {
+            $uzivatel = $this->uzivatel->getUzivatel($values->id);
+            $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
+        }
+
+        $odeslanaId = [];
+        foreach ($values->ip as $ip) {
+            if (!in_array($ip->id, [null, '', 0, '0'], true)) {
+                $odeslanaId[] = (int) $ip->id;
+            }
+        }
+        try {
+            if (!in_array($values->id, [null, '', 0, '0'], true)) {
+                $cil = $this->presunIpSluzba->priEditaci((int) $values->id, (string) $values->ipOtisk, $odeslanaId, function () use ($values): array {
+                    $uzivatel = $this->uzivatel->getUzivatel($values->id);
+                    $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
+                    return $this->ulozUzivatele($values, $uzivatel);
+                });
+            } else {
+                if ($odeslanaId !== []) {
+                    throw new \DomainException('Nový člen nemůže převzít existující IP přes běžnou editaci.');
+                }
+                $cil = $this->ulozUzivatele($values, null);
+            }
+        } catch (\DomainException $e) {
+            $form->addError($e->getMessage());
+            return;
+        }
+        if ($cil['poslatRegistraciSpolku']) {
+            $this->sendSpolekRegistrationEmail($cil['id']);
+        }
+        $this->redirect($cil['stranka'], ['id' => $cil['id']]);
+    }
+
+    /**
+     * @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values
+     * @return array{stranka: string, id: int, poslatRegistraciSpolku: bool}
+     */
+    private function ulozUzivatele(Nette\Utils\ArrayHash $values, ?Nette\Database\Table\ActiveRow $uzivatel): array {
+        $poslatRegistraciSpolku = false;
         $log = array();
         $idUzivatele = $values->id;
         $ips = $values->ip;
+        $existingIPs = [];
+        foreach ($ips as $ip) {
+            if (!in_array($ip->id, [null, '', 0, '0'], true)) {
+                $oldip = $this->ipAdresa->getIPAdresa($ip->id);
+                if ($oldip === null) {
+                    $this->error('IP adresa nebyla nalezena.');
+                }
+                $this->vyzadujOpravneni($uzivatel !== null && $oldip->Uzivatel_id === $uzivatel->id);
+                $existingIPs[$ip->id] = $oldip->toArray();
+            }
+        }
         $ipsubnet = $values->ipsubnet;
         $iprange = $values->iprange;
         // \Tracy\Debugger::barDump($ips);exit;
-        unset($values['ip'], $values['ipsubnet'], $values['iprange']);
+        unset($values['ip'], $values['ipsubnet'], $values['iprange'], $values['ipOtisk']);
 
         $genaddresses = [];
         $newUserIPIDs = [];
@@ -602,19 +631,19 @@ class UzivatelPresenter extends BasePresenter
         // generovani ip pro vlozeni z rozsahu
         $genaddresses = array_merge($genaddresses, $this->ipAdresa->getListOfIPFromRange($iprange));
 
-        if (empty($values->cislo_clenske_karty)) {
+        if (in_array($values->cislo_clenske_karty, [null, '', '0'], true)) {
             $values->cislo_clenske_karty = null;
         }
-        if (empty($values->firma_nazev)) {
+        if (in_array($values->firma_nazev, [null, '', '0'], true)) {
             $values->firma_nazev = null;
         }
-        if (empty($values->firma_ico)) {
+        if (in_array($values->firma_ico, [null, '', '0'], true)) {
             $values->firma_ico = null;
         }
-        if (empty($values->email2)) {
+        if (in_array($values->email2, [null, '', '0'], true)) {
             $values->email2 = null;
         }
-        if (empty($values->poznamka)) {
+        if (in_array($values->poznamka, [null, '', '0'], true)) {
             $values->poznamka = null;
         }
         if (($values->TypClenstvi_id ?? -1) < 0) {
@@ -625,9 +654,9 @@ class UzivatelPresenter extends BasePresenter
         $values->location_status = 'pending';
 
         // Zpracujeme nejdriv uzivatele
-        if (empty($values->id)) {
+        if (in_array($values->id, [null, '', 0, '0'], true)) {
             $values->regform_downloaded_password_sent = 0;
-            if (($values->spolek == 1 && $values->TypClenstvi_id > 0) || ($values->druzstvo == 1 && $values->smazano == 0)) {
+            if (($values->spolek === 1 && $values->TypClenstvi_id > 0) || ($values->druzstvo === 1 && $values->smazano === 0)) {
                 $values->money_aktivni = 1;
             } else {
                 $values->money_aktivni = 0;
@@ -638,12 +667,12 @@ class UzivatelPresenter extends BasePresenter
             $values->heslo_strong_hash = $this->uzivatel->generateStrongHash($values->heslo);
             $values->id = $this->uzivatel->getNewID();
 
-            $uzivatel = $this->uzivatel->insert($values);
+            $uzivatel = $this->uzivatel->insertRow($values);
 
             $idUzivatele = $uzivatel->id;
             $this->log->logujInsert($values, 'Uzivatel', $log);
 
-            if ($values->spolek == 1) {
+            if ($values->spolek === 1) {
                 if ($values->TypClenstvi_id > 0) {
                     $this->sendSpolekRegistrationEmail($idUzivatele);
                 } else {
@@ -651,44 +680,49 @@ class UzivatelPresenter extends BasePresenter
                 }
             }
 
-            if ($values->druzstvo == 1) {
+            if ($values->druzstvo === 1) {
                 $this->sendDruzstvoRegistrationEmail($idUzivatele);
             }
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
+            if ($olduzivatel === null) {
+                $this->error('Uživatel nebyl nalezen.');
+            }
+            // Snímek před uložením: líně načítaný řádek by se po update() při čtení chybějícího sloupce načetl celý znovu, už s novými hodnotami.
+            $puvodniUzivatel = $olduzivatel->toArray();
+            $bylPlanovany = 0 === $puvodniUzivatel['TypClenstvi_id'];
 
-            if ($olduzivatel->email != $values->email || $olduzivatel->email2 != $values->email2) {
+            if (($puvodniUzivatel['email'] ?? '') !== ($values->email ?? '') || ($puvodniUzivatel['email2'] ?? '') !== ($values->email2 ?? '')) {
                 $values->email_invalid = 0;
             }
 
             // pokud neni aktivni ani ve spolku ani v druzstvu
-            if (!(($values->spolek == 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo == 1 && $values->smazano == 0))) {
+            if (!(($values->spolek === 1 && $values->TypClenstvi_id > 1) || ($values->druzstvo === 1 && $values->smazano === 0))) {
                 $this->aplikaceToken->deleteTokensForUID($idUzivatele);
             }
 
             // TODO: spolek / druzstvo
-            if (0 == $olduzivatel->TypClenstvi_id && 1 == $values->TypClenstvi_id) {
+            if ($bylPlanovany && 1 === $values->TypClenstvi_id) {
                 $this->povoleneSMTP->deleteIPs($smtpIPIDs);
-                $existinguserIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
+                $existinguserIPIDs = array_keys($olduzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
                 $this->ipAdresa->deleteIPAdresy($existinguserIPIDs);
                 $this->uzivatel->delete(['id' => [$idUzivatele]]);
-                $this->redirect('UzivatelList:list', ['id' => $olduzivatel->Ap_id]);
-
-                return true;
+                return ['stranka' => 'UzivatelList:list', 'id' => (int) $puvodniUzivatel['Ap_id'], 'poslatRegistraciSpolku' => false];
             }
 
             // TODO: spolek / druzstvo
-            if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id) {
+            if ($bylPlanovany && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id) {
                 $values->zalozen = new \DateTime();
                 $values->money_aktivni = 1;
             }
 
+            $uzivatel = $olduzivatel;
             $this->uzivatel->update($idUzivatele, $values);
-            $this->log->logujUpdate($olduzivatel, $values, 'Uzivatel', $log);
+            $this->log->logujUpdate($puvodniUzivatel, $values, 'Uzivatel', $log);
 
             // TODO: spolek / druzstvo
-            if (0 == $olduzivatel->TypClenstvi_id && 0 != $values->TypClenstvi_id && $values->spolek == 1) {
-                $this->sendSpolekRegistrationEmail($idUzivatele);
+            if ($bylPlanovany && $values->TypClenstvi_id !== null && 0 !== $values->TypClenstvi_id && $values->spolek === 1) {
+                $poslatRegistraciSpolku = true;
             }
         }
 
@@ -697,22 +731,22 @@ class UzivatelPresenter extends BasePresenter
             $ip->Uzivatel_id = $idUzivatele;
             $idIp = $ip->id;
 
-            if (empty($ip->ip_adresa)) {
+            if (in_array($ip->ip_adresa, [null, '', '0'], true)) {
                 $ip->ip_adresa = null;
             }
-            if (empty($ip->hostname)) {
+            if (in_array($ip->hostname, [null, '', '0'], true)) {
                 $ip->hostname = null;
             }
-            if (empty($ip->mac_adresa)) {
+            if (in_array($ip->mac_adresa, [null, '', '0'], true)) {
                 $ip->mac_adresa = null;
             }
-            if (empty($ip->popis)) {
+            if (in_array($ip->popis, [null, '', '0'], true)) {
                 $ip->popis = null;
             }
-            if (empty($ip->login)) {
+            if (in_array($ip->login, [null, '', '0'], true)) {
                 $ip->login = null;
             }
-            if (empty($ip->heslo)) {
+            if (in_array($ip->heslo, [null, '', '0'], true)) {
                 $ip->heslo = null;
             }
 
@@ -723,11 +757,11 @@ class UzivatelPresenter extends BasePresenter
                 $ip->heslo_sifrovane = 0;
             }
 
-            if (empty($ip->id)) {
-                $idIp = $this->ipAdresa->insert($ip)->id;
+            if (in_array($ip->id, [null, '', 0, '0'], true)) {
+                $idIp = $this->ipAdresa->insertRow($ip)->id;
                 $this->log->logujInsert($ip, 'IPAdresa['.$idIp.']', $log);
             } else {
-                $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                $oldip = $existingIPs[$idIp];
                 $this->ipAdresa->update($idIp, $ip);
                 $this->log->logujUpdate($oldip, $ip, 'IPAdresa['.$idIp.']', $log);
             }
@@ -736,7 +770,7 @@ class UzivatelPresenter extends BasePresenter
         // rozsahy ip adres
         foreach ($genaddresses as $gi) {
             $duplIp = $this->ipAdresa->getDuplicateIP($gi, 0);
-            if (!$duplIp) {
+            if (in_array($duplIp, [null, '', '0'], true)) {
                 $rngip = [
                     'ip_adresa' => $gi,
                     'internet' => true,
@@ -745,25 +779,28 @@ class UzivatelPresenter extends BasePresenter
                     'dhcp' => false,
                     'Uzivatel_id' => $idUzivatele,
                 ];
-                $idrngip = $this->ipAdresa->insert($rngip)->id;
+                $idrngip = $this->ipAdresa->insertRow($rngip)->id;
                 $this->log->logujInsert($rngip, 'IPAdresa['.$idrngip.']', $log);
                 $newUserIPIDs[] = intval($idrngip);
             }
         }
 
         // A tady smazeme v DB ty ipcka co jsme smazali
-        $userIPIDs = array_keys($this->uzivatel->getUzivatel($idUzivatele)->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
+        $userIPIDs = array_keys($uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa'));
         $toDelete = array_values(array_diff($userIPIDs, $newUserIPIDs));
-        if (!empty($toDelete)) {
+        if ($toDelete !== []) {
             foreach ($toDelete as $idIp) {
                 $oldip = $this->ipAdresa->getIPAdresa($idIp);
+                if ($oldip === null) {
+                    continue;
+                }
                 $this->log->logujDelete($oldip, 'IPAdresa['.$idIp.']', $log);
                 $isSMTP = $this->povoleneSMTP->getIP($oldip->id);
-                if ($isSMTP) {
+                if ($isSMTP !== null) {
                     $smtpIPIDs[] = intval($isSMTP->id);
                 }
                 $isDNAT = $this->dnat->getIP($oldip->id);
-                if ($isDNAT) {
+                if ($isDNAT !== null) {
                     $dnatIPIDs[] = intval($isDNAT->ip);
                 }
             }
@@ -776,21 +813,79 @@ class UzivatelPresenter extends BasePresenter
 
         $this->log->loguj('Uzivatel', $idUzivatele, $log);
 
-        $this->redirect('Uzivatel:show', ['id' => $idUzivatele]);
-
-        return true;
+        return ['stranka' => 'Uzivatel:show', 'id' => (int) $idUzivatele, 'poslatRegistraciSpolku' => $poslatRegistraciSpolku];
     }
 
-    public function actionIds($id) {
-        if ($id) {
-            if ($uzivatel = $this->uzivatel->getUzivatel($id)) {
+    public function actionPresunIp(int $id, int $ipId): void {
+        $zdroj = $this->zdrojPresunu();
+        $ip = $this->ipAdresa->findOneBy(['id' => $ipId, 'Uzivatel_id' => $id, 'Ap_id' => null]);
+        $this->template->presunZdroj = $zdroj;
+        $this->template->presunIp = $ip;
+        $this->template->pocetDnat = $ip !== null ? $this->dnat->findBy(['ip' => $ipId])->count('*') : 0;
+        $this->template->pocetSmtp = $ip !== null ? $this->povoleneSMTP->findBy(['IPAdresa_id' => $ipId])->count('*') : 0;
+        if ($ip === null) {
+            $this['presunIpForm']->addError(Services\PresunIpSluzba::ZMENENY_VLASTNIK);
+        }
+    }
+
+    private function zdrojPresunu(): Nette\Database\Table\ActiveRow {
+        if ($this->getAction() !== 'presunIp') {
+            $this->error('Stránka neexistuje.');
+        }
+        $zdroj = $this->uzivatel->getUzivatel((int) $this->getParameter('id'));
+        $this->vyzadujOpravneni($zdroj !== null && $this->smiUpravitUzivatele($zdroj));
+        return $zdroj;
+    }
+
+    protected function createComponentPresunIpForm(): Form {
+        $zdroj = $this->zdrojPresunu();
+        $moznosti = [];
+        $cile = $this->presunIpSluzba->cileNaAp((int) $zdroj->Ap_id, (int) $zdroj->id);
+        foreach ($this->omezNaUpravitelneUzivateleNaAp($cile, (int) $zdroj->Ap_id) as $clen) {
+            $moznosti[$clen->id] = $clen->id . ' - ' . $clen->nick . ' - ' . $clen->jmeno . ' ' . $clen->prijmeni
+                . ((bool) $clen->money_aktivni ? '' : ' (účet není aktivní)');
+        }
+        $form = new Form();
+        $form->addSelect('cil', 'Nový člen', $moznosti)->setPrompt('Vyberte člena stejného AP')->setRequired('Vyberte nového člena.');
+        $form->addSubmit('potvrdit', 'Přesunout IP')->setHtmlAttribute('class', 'btn btn-primary');
+        $form->onSuccess[] = [$this, 'presunIpFormSucceded'];
+        if ($moznosti === []) {
+            $form->addError('Na tomto AP není jiný vhodný člen, kterého smíte upravovat.');
+        }
+        return $form;
+    }
+
+    public function presunIpFormSucceded(Form $form, Nette\Utils\ArrayHash $values): void {
+        $zdroj = $this->zdrojPresunu();
+        try {
+            $this->presunIpSluzba->presun(
+                (int) $this->getParameter('ipId'),
+                (int) $zdroj->id,
+                (int) $values->cil,
+                $this->getIdentity()->getUid(),
+                function (Nette\Database\Row $clen): void {
+                    $this->vyzadujOpravneni($this->smiUpravitUzivatele($clen));
+                },
+            );
+        } catch (\DomainException $e) {
+            $form->addError($e->getMessage());
+            return;
+        }
+        $this->flashMessage('IP adresa byla přesunuta. Členství a účty obou členů zůstaly beze změny.');
+        $this->redirect('Uzivatel:show', ['id' => (int) $values->cil]);
+    }
+
+    /** @param int|string|null $id */
+    public function actionIds($id): void {
+        if (!in_array($id, [null, 0, '', '0'], true)) {
+            if (($uzivatel = $this->uzivatel->getUzivatel($id)) !== null) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
                 $ips = array_values($ipAdresy->fetchPairs('id', 'ip_adresa'));
 
                 try {
                     $this->template->idsEvents = $this->idsConnector->getEventsForIps($ips);
                 } catch (\Exception $ex) {
-                    if (Debugger::$productionMode) {
+                    if (Debugger::$productionMode === true) {
                         throw $ex;
                     }
                     $this->template->idsEvents = []; // silently ignore in non-prod environment

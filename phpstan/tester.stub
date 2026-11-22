@@ -1,0 +1,11 @@
+<?php
+
+namespace Tester;
+
+// Tests use Tester's default failure handler, which throws AssertException.
+// A returning Assert::$onFailure callback would invalidate this contract.
+class Assert
+{
+    /** @phpstan-assert true $actual */
+    public static function true(mixed $actual, ?string $description = null): void {}
+}

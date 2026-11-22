@@ -13,18 +13,23 @@ use App\Model;
 
 class WewimoPresenter extends BasePresenter
 {
-    private $wewimo;
-    private $ap;
+    private Model\Wewimo $wewimo;
+    private Model\AP $ap;
 
     public function __construct(Model\Wewimo $wewimo, Model\AP $ap) {
+        parent::__construct();
         $this->wewimo = $wewimo;
         $this->ap = $ap;
     }
 
-    public function fetchWewimo($apId, $ip = null) {
+    /**
+     * @param int|string|null $apId
+     * @param string|null $ip
+     */
+    public function fetchWewimo($apId, $ip = null): void {
         // AP podle ID
-        $apt = $this->ap->getAP($apId * 1);
-        if (!$apt) {
+        $apt = $this->ap->getAP($apId);
+        if ($apt === null) {
             $this->error('AP not found');
         } else {
             $this->template->ap = $apt;
@@ -40,28 +45,29 @@ class WewimoPresenter extends BasePresenter
         }
     }
 
-    public function anonymizeWewimoData(&$wewimoMultiData) {
+    /** @param list<array<string, mixed>> $wewimoMultiData */
+    public function anonymizeWewimoData(array &$wewimoMultiData): void {
         foreach ($wewimoMultiData as &$wewimoData) {
             foreach ($wewimoData['interfaces'] as &$interface) {
                 foreach ($interface['stations'] as &$station) {
-                    if (array_key_exists('xx-user-nick', $station)) {
+                    if (isset($station['xx-user-nick'])) {
                         $station['xx-mac-host'] = '('.$station['xx-user-nick'].')';
                     } else {
-                        if ($station['xx-mac-host']) {
+                        if (!in_array($station['xx-mac-host'], [null, false, 0, 0.0, '', '0', []], true)) {
                             $station['xx-mac-host'] = '***';
                         }
                     }
-                    if (array_key_exists('xx-last-ip-user-nick', $station)) {
+                    if (isset($station['xx-last-ip-user-nick'])) {
                         $station['xx-last-ip-host'] = '('.$station['xx-last-ip-user-nick'].')';
                     } else {
-                        if ($station['xx-last-ip-host']) {
+                        if (!in_array($station['xx-last-ip-host'], [null, false, 0, 0.0, '', '0', []], true)) {
                             $station['xx-last-ip-host'] = '***';
                         }
                     }
-                    if ($station['x-identity']) {
+                    if (!in_array($station['x-identity'], [null, false, 0, 0.0, '', '0', []], true)) {
                         $station['x-identity'] = '***';
                     }
-                    if ($station['radio-name']) {
+                    if (!in_array($station['radio-name'], [null, false, 0, 0.0, '', '0', []], true)) {
                         $station['radio-name'] = '***';
                     }
                     $station['mac-address'] = $station['x-anonymous-mac-address'];
@@ -70,7 +76,8 @@ class WewimoPresenter extends BasePresenter
         }
     }
 
-    public function addWewimoLinks(&$wewimoMultiData) {
+    /** @param list<array<string, mixed>> $wewimoMultiData */
+    public function addWewimoLinks(array &$wewimoMultiData): void {
         foreach ($wewimoMultiData as &$wewimoData) {
             foreach ($wewimoData['interfaces'] as &$interface) {
                 foreach ($interface['stations'] as &$station) {
@@ -84,20 +91,26 @@ class WewimoPresenter extends BasePresenter
         }
     }
 
-    public function renderShow($id) {
+    /** @param int|string|null $id */
+    public function renderShow($id): void {
         // viz https://pla.nette.org/cs/dynamicke-snippety
         if (!isset($this->template->wewimo)) {
             $this->fetchWewimo($id);
         }
     }
 
-    public function handleUpdate($id, $ip) {
+    /**
+     * @param int|string|null $id
+     * @param string|null $ip
+     */
+    public function handleUpdate($id, $ip): void {
         // viz https://pla.nette.org/cs/dynamicke-snippety
         $this->redrawControl('wewimoContainer');
         $this->fetchWewimo($id, $ip);
     }
 
-    private function resolveLink($linkStruct) {
+    /** @param array{presenter: string, id: int|string|null, anchor: string}|null $linkStruct */
+    private function resolveLink($linkStruct): string {
         if (is_array($linkStruct)) {
             return $this->link($linkStruct['presenter'], array('id' => $linkStruct['id'])) . $linkStruct['anchor'];
         } else {

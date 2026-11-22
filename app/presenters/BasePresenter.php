@@ -6,6 +6,7 @@ use App\Settings;
 use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Database\Table\ActiveRow;
 use Tracy\Debugger;
 use Nette\Mail\IMailer;
 
@@ -14,19 +15,25 @@ use Nette\Mail\IMailer;
  */
 abstract class BasePresenter extends Nette\Application\UI\Presenter
 {
-    /** @persistent */
+    /**
+     * @persistent
+     * @var int|string|null
+     */
     public $id;
 
+    /** @var Model\Oblast */
     public $oblast;
-    private $spravceOblasti;
-    private $ap;
+    private Model\SpravceOblasti $spravceOblasti;
+    private Model\AP $ap;
 
     /** @var IMailer */
     protected $mailer;
 
     protected Settings $settings;
 
-    public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer, Settings $settings) {
+    private Model\Uzivatel $uzivatelModel;
+
+    public function inject(Model\Oblast $oblast, Model\SpravceOblasti $spravceOblasti, Model\AP $ap, IMailer $mailer, Settings $settings): void {
         $this->oblast = $oblast;
         $this->spravceOblasti = $spravceOblasti;
         $this->ap = $ap;
@@ -34,24 +41,77 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         $this->settings = $settings;
     }
 
+    public function injectUzivatelModel(Model\Uzivatel $uzivatel): void {
+        $this->uzivatelModel = $uzivatel;
+    }
+
     public function startup() {
         parent::startup();
-        if ($this->getHttpRequest()->getUrl()->getHost() === $this->settings->memberHost) {
-            $this->error(); // správcovská část není na členské doméně dostupná (R4)
-        }
 
         //$uri = $this->getHttpRequest()->getUrl();
-        if ($this->settings->fakeUser == false) {
+        if (!(bool) $this->settings->fakeUser) {
             $this->getUser()->login($_SERVER['HTTP_UID'], null);
         } else {
             $this->getUser()->login("DBG", null);
         }
     }
 
+    /**
+     * Zachovává význam prázdných parametrů: i 0 a "0" znamenají nezadanou hodnotu.
+     * Neověřuje formát ani oprávnění; např. "00" je vyplněný parametr.
+     */
+    protected function maVyplnenyParametr(string $name): bool {
+        return !in_array($this->getParameter($name), [null, false, 0, 0.0, '', '0', []], true);
+    }
+
+    /**
+     * Obsluha formuláře nebo akce pokračuje jen s oprávněním, jinak 403.
+     * Podmínka má být stejná, jakou dostává šablona: šablona formulář jen skryje, odeslat ho jde i bez ní.
+     * @phpstan-assert true $smi
+     */
+    protected function vyzadujOpravneni(bool $smi): void {
+        if (!$smi) {
+            $this->error('Nemáte oprávnění.', Nette\Http\IResponse::S403_Forbidden);
+        }
+    }
+
+    /**
+     * Kdo smí upravovat člena (canViewOrEdit na detailu a editaci člena): EXTSUPPORT, správce AP člena
+     * (AP::canViewOrEditAP) a SO/ZSO, v jehož subnetech má člen z jiné oblasti IP adresu.
+     */
+    protected function smiUpravitUzivatele(ActiveRow|Nette\Database\Row $uzivatel): bool {
+        if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser())) {
+            return true;
+        }
+        $oblastIds = [];
+        foreach ($this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid()) as $oblast) {
+            $oblastIds[] = $oblast->id;
+        }
+        return $this->uzivatelModel->maIpAdresuVSubnetuCizihoAp($uzivatel->id, $oblastIds);
+    }
+
+    /**
+     * Filtr nabídky na jednom AP; při zápisu se oprávnění kontroluje znovu přes smiUpravitUzivatele().
+     * @param Nette\Database\Table\Selection<ActiveRow> $clenove
+     * @return Nette\Database\Table\Selection<ActiveRow>
+     */
+    protected function omezNaUpravitelneUzivateleNaAp(Nette\Database\Table\Selection $clenove, int $apId): Nette\Database\Table\Selection {
+        $clenove->where('Ap_id', $apId);
+        if ($this->getUser()->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($apId, $this->getUser())) {
+            return $clenove;
+        }
+        $oblastIds = [];
+        foreach ($this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid()) as $oblast) {
+            $oblastIds[] = $oblast->id;
+        }
+        return $clenove->where('id', $this->uzivatelModel->najdiUzivateleNaApVSubnetechCizichAp($apId, $oblastIds));
+    }
+
     protected function beforeRender() {
-        parent::__construct();
         parent::beforeRender();
 
+        $this->template->demoPersonaUrl = $this->settings->demoPersonaUrl;
+        $this->template->demoPersonaName = $this->settings->demoPersonaName;
         $this->template->oblasti = $this->oblast->getSeznamOblasti();
 
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
@@ -62,7 +122,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         }
     }
 
-    protected function createComponentSearchForm() {
+    protected function createComponentSearchForm(): Form {
         $form = new Form();
         $form->getElementPrototype()->class('navbar-form navbar-right');
         $form->addText('search', 'Vyhledej:')->setAttribute('class', 'form-control')->setAttribute('placeholder', 'Hledat...');
@@ -72,42 +132,47 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         return $form;
     }
 
-    public function searchFormSucceeded(Form $form) {
+    public function searchFormSucceeded(Form $form): void {
         $values = $form->getValues();
-        $ipIsInAp = $this->ap->findAPByIP($values->search);
-        if ($ipIsInAp && $ipIsInAp->count() > 0) {
-            $ap = $ipIsInAp->fetch();
+        $ap = $this->ap->findAPByIP($values->search)->fetch();
+        if ($ap !== null) {
             $this->redirect('Ap:show', array('id' => $ap->id));
         }
         $this->redirect('UzivatelList:listall', array('search' => $values->search, 'id' => null));
     }
 
-    protected function getSubnetLinkFromIpAddress($ipAddress) {
+    /** @param string|null $ipAddress */
+    protected function getSubnetLinkFromIpAddress($ipAddress): string {
+        if ($ipAddress === null) {
+            return '';
+        }
         list($a, $b, $c, $d) = explode(".", $ipAddress);
         $resultnet = $a .".". $b .".". $c .".";
         return $this->link('Subnet:detail', array('id' => $resultnet)).'#ip'.$ipAddress;
     }
 
-    protected function getWewimoLinkFromIpAddress($ip) {
-        if ($ip->w_ssid) {
+    protected function getWewimoLinkFromIpAddress(ActiveRow $ip): ?string {
+        if (!in_array($ip->w_ssid, [null, '', '0'], true)) {
             // najit IPAdresu zarizeni (AP), na ktere je tato ip (podle Wewima) pripojena
             $apAdresa = $ip->ref('IPAdresa', 'w_ap_IPAdresa_id');
-            if ($apAdresa) {
+            if ($apAdresa !== null) {
                 // ok, mame adresu APcka, muze byt navazano na uzivatele (hodne nepravdepodobne),
                 // nebo muze byt navazano na (entitu) AP
-                if ($apAdresa->ref('Uzivatel')) {
-                    $apId = $apAdresa->ref('Uzivatel')->ref('Ap')->id;
-                    return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
-                } elseif ($apAdresa->ref('Ap')) {
-                    $apId = $apAdresa->ref('Ap')->id;
-                    return $this->link('Wewimo:show', array('id' => $apId))."#mac:".$ip->w_client_mac;
+                $uzivatel = $apAdresa->ref('Uzivatel');
+                $ap = $uzivatel !== null ? $uzivatel->ref('Ap') : $apAdresa->ref('Ap');
+                if ($ap !== null) {
+                    return $this->link('Wewimo:show', array('id' => $ap->id))."#mac:".$ip->w_client_mac;
                 }
             }
         }
         return null; // fallback
     }
 
-    protected function getSubnetLinksFromIPs($ips) {
+    /**
+     * @param iterable<ActiveRow> $ips
+     * @return array<string, string>
+     */
+    protected function getSubnetLinksFromIPs(iterable $ips): array {
         $result = array();
         foreach ($ips as $ip) {
             $result[$ip->ip_adresa] = $this->getSubnetLinkFromIpAddress($ip->ip_adresa);
@@ -115,7 +180,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         return $result;
     }
 
-    protected function getWewimoLinksFromIPs($ips) {
+    /**
+     * @param iterable<ActiveRow> $ips
+     * @return array<string, string|null>
+     */
+    protected function getWewimoLinksFromIPs(iterable $ips): array {
         $result = array();
         foreach ($ips as $ip) {
             $result[$ip->ip_adresa] = $this->getWewimoLinkFromIpAddress($ip);

@@ -12,12 +12,14 @@ use Latte\Engine;
  */
 class UzivatelListGrid
 {
-    private $uzivatel;
-    private $stitek;
-    private $stitekUzivatele;
-    private $ap;
-    private $cestneClenstviUzivatele;
-    private $parameters;
+    private const TEMPLATE_FILE = __DIR__ . '/../templates/components/memberGrid.latte';
+
+    private Uzivatel $uzivatel;
+    private Stitek $stitek;
+    private StitekUzivatele $stitekUzivatele;
+    private AP $ap;
+    private CestneClenstviUzivatele $cestneClenstviUzivatele;
+    private Parameters $parameters;
 
     public function __construct(Parameters $parameters, AP $ap, CestneClenstviUzivatele $cc, Uzivatel $uzivatel, Stitek $stitky, StitekUzivatele $stitekUzivatele) {
         $this->stitek = $stitky;
@@ -28,7 +30,7 @@ class UzivatelListGrid
         $this->parameters = $parameters;
     }
 
-    private function addressNotice($el, $item) {
+    private function addressNotice(Html $el, Nette\Database\Table\ActiveRow $item): void {
         if ($item->location_status === 'approx') {
             $el->addHtml(' <i class="fa fa-exclamation-triangle" title="Nepřesná adresa, opravte!"></i>');
         } elseif ($item->location_status === 'unknown') {
@@ -36,20 +38,30 @@ class UzivatelListGrid
         }
     }
 
-    public function getListOfOtherUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
+    /**
+     * @param int|string|null $id
+     * @param bool|int|string|null $money
+     * @param bool|int|string|null $fullnotes
+     * @param string|false|null $search
+     */
+    public function getListOfOtherUsersGrid(Nette\Application\UI\Presenter $presenter, string $name, Nette\Security\User $loggedUser, $id, $money, $fullnotes, $search): \Grido\Grid {
         //\Tracy\Debugger::barDump($search);
 
         $canViewOrEdit = false;
 
         $grid = new \Grido\Grid($presenter, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
+        $grid->setTemplateFile(self::TEMPLATE_FILE);
         $grid->setExport('user_export');
 
         $apcko = $this->ap->getAP($id);
+        if ($apcko === null) {
+            $presenter->error('AP nebylo nalezeno.');
+        }
         $subnety = $apcko->related('Subnet.Ap_id');
 
-        $seznamUzivatelu = $this->uzivatel->findUsersFromOtherAreasByAreaId($id, $subnety);
-        $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
+        $seznamUzivatelu = $this->uzivatel->findUsersFromOtherAreasByAreaId($apcko->id, $subnety);
+        $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($apcko->id);
         $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($id, $loggedUser);
 
         $grid->setModel($seznamUzivatelu);
@@ -63,52 +75,52 @@ class UzivatelListGrid
         $grid->addFilterSelect('TypClenstvi_id', 'Zobrazit', $list)
             ->setDefaultValue('active')
             ->setWhere(function ($value, $connection) {
-                if ($value == 'active') {
+                if ($value === 'active') {
                     return ($connection->where(Uzivatel::AKTIVNI_CLEN));
                 }
-                if ($value == 'planned') {
+                if ($value === 'planned') {
                     return ($connection->where('spolek = 1 AND TypClenstvi_id = 0'));
                 }
                 return ($connection);
             });
 
-        if ($money) {
+        if (!in_array($money, [null, false, 0, '', '0'], true) && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $thisparams) {
 
                 $konto = $item->related('UzivatelskeKonto.Uzivatel_id');
-                if ($item->money_aktivni != 1) {
+                if ((int) $item->money_aktivni !== 1) {
                     $tr->class[] = 'neaktivni';
                 }
                 if (($konto->sum('castka') - $item->kauce_mobil) > ($thisparams->getVyseClenskehoPrispevku() * 12)) {
                     $tr->class[] = 'preplatek';
                 }
-                if (in_array($item->id, $seznamUzivateluCC)) {
+                if (in_array($item->id, $seznamUzivateluCC, true)) {
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
                 // TODO: spolek / druzstvo
-                if ($item->spolek && $item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id === 2) {
                     $tr->class[] = 'primarni';
                 }
                 return $tr;
             });
         } else {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC) {
 
-                if ($item->email_invalid == 1) {
+                if ((int) $item->email_invalid === 1) {
                     $tr->class[] = 'invalidemail';
                 }
-                if (in_array($item->id, $seznamUzivateluCC)) {
+                if (in_array($item->id, $seznamUzivateluCC, true)) {
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                if ($item->spolek && $item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id === 2) {
                     $tr->class[] = 'primarni';
                 }
-                if ($item->spolek && $item->TypClenstvi_id == 1 && (!$item->druzstvo)
+                if ($item->spolek && $item->TypClenstvi_id === 1 && (!$item->druzstvo)
                     || $item->druzstvo && $item->smazano && (!$item->spolek)
-                    || $item->spolek && $item->druzstvo && $item->TypClenstvi_id == 1 && $item->smazano) {
+                    || $item->spolek && $item->druzstvo && $item->TypClenstvi_id === 1 && $item->smazano) {
                     $tr->class[] = 'zrusene';
                 }
                 if ($item->TypClenstvi_id === 0) {
@@ -141,7 +153,7 @@ class UzivatelListGrid
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
                 return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
             })->setSortable();
-            if ($fullnotes) {
+            if (!in_array($fullnotes, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {
                     $el = Html::el('span');
                     $el->setText($item->ulice_cp);
@@ -177,7 +189,7 @@ class UzivatelListGrid
         });
 
         if ($canViewOrEdit) {
-            if ($money) {
+            if (!in_array($money, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('money_aktivni', 'Aktivní')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
                 $grid->addColumnText('money_deaktivace', 'Deaktivace')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
 
@@ -185,14 +197,14 @@ class UzivatelListGrid
                     $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
                     if ($posledniPlatba->count() > 0) {
                         $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+                        return ($posledniPlatbaData->datum === null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
                     }
                     return "?";
                 })->setCustomRender(function ($item) {
                     $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
                     if ($posledniPlatba->count() > 0) {
                         $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
+                        return ($posledniPlatbaData->datum === null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . ")");
                     }
                     return "?";
                 });
@@ -201,14 +213,14 @@ class UzivatelListGrid
                     $posledniAktivace = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
                     if ($posledniAktivace->count() > 0) {
                         $posledniAktivaceData = $posledniAktivace->fetch();
-                        return ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
+                        return ($posledniAktivaceData->datum === null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
                     }
                     return "?";
                 })->setCustomRender(function ($item) {
                     $posledniAktivace = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 4)->order('id DESC')->limit(1);
                     if ($posledniAktivace->count() > 0) {
                         $posledniAktivaceData = $posledniAktivace->fetch();
-                        return ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
+                        return ($posledniAktivaceData->datum === null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
                     }
                     return "?";
                 });
@@ -239,7 +251,7 @@ class UzivatelListGrid
                         ->data("placement", "right");
             })->setSortable();
 
-            if ($fullnotes) {
+            if (!in_array($fullnotes, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable();
             } else {
                 $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function ($item) {
@@ -251,7 +263,7 @@ class UzivatelListGrid
             }
         }
 
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) {
             $latte = new Engine();
             $params = [
                 'stitky' => $this->stitek->getSeznamStitku(),
@@ -272,19 +284,26 @@ class UzivatelListGrid
         return $grid;
     }
 
-    public function getListOfUsersGrid($presenter, $name, $loggedUser, $id, $money, $fullnotes, $search) {
+    /**
+     * @param int|string|null $id
+     * @param bool|int|string|null $money
+     * @param bool|int|string|null $fullnotes
+     * @param string|false|null $search
+     */
+    public function getListOfUsersGrid(Nette\Application\UI\Presenter $presenter, string $name, Nette\Security\User $loggedUser, $id, $money, $fullnotes, $search): \Grido\Grid {
         $canViewOrEdit = false;
 
         $grid = new \Grido\Grid($presenter, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
+        $grid->setTemplateFile(self::TEMPLATE_FILE);
         $grid->setExport('user_export');
 
-        if ($id) {
+        if (!in_array($id, [null, 0, '', '0'], true)) {
             $seznamUzivatelu = $this->uzivatel->getSeznamUzivateluZAP($id);
             $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCCOfAP($id);
             $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAP($id, $loggedUser);
         } else {
-            if ($search) {
+            if ($search !== null && $search !== false && $search !== '' && $search !== '0') {
                 $seznamUzivatelu = $this->uzivatel->findUserByFulltext($search, $loggedUser);
                 $seznamUzivateluCC = $this->cestneClenstviUzivatele->getListCC(); //TODO
                 $canViewOrEdit = $loggedUser->isInRole('EXTSUPPORT') || $this->ap->canViewOrEditAll($loggedUser);
@@ -311,11 +330,11 @@ class UzivatelListGrid
                 'druzstvo' => 'družstvo',
                 'all' => 'spolek i družstvo včetně zrušených a smazaných'))
             ->setWhere(function ($value, $connection) {
-                if ($value == 'active') {
+                if ($value === 'active') {
                     return ($connection->where('(spolek = ? AND TypClenstvi_id > ?) OR (druzstvo = ? AND smazano = ?)', 1, 1, 1, 0));
-                } elseif ($value == 'spolek') {
+                } elseif ($value === 'spolek') {
                     return ($connection->where('spolek = ? AND TypClenstvi_id > ?', 1, 1));
-                } elseif ($value == 'druzstvo') {
+                } elseif ($value === 'druzstvo') {
                     return ($connection->where('druzstvo = ? AND smazano = ?', 1, 0));
                     // } elseif ($value == 'nedruzstvo') {
                     // return ($connection->where('druzstvo = ?', 0));
@@ -323,7 +342,7 @@ class UzivatelListGrid
                 return ($connection);
             });
 
-        if ($search) {
+        if ($search !== null && $search !== false && $search !== '' && $search !== '0') {
             $tz->setDefaultValue('all');
         } else {
             $tz->setDefaultValue('active');
@@ -335,7 +354,7 @@ class UzivatelListGrid
             $seznamNotStitku[-$stitekId] = "NOT " . $stitekText;
         }
 
-        $stitkyKFiltrovani[0] = "---";
+        $stitkyKFiltrovani = [0 => "---"];
         $stitkyKFiltrovani += $seznamStitku;
         $stitkyKFiltrovani += $seznamNotStitku;
 
@@ -355,42 +374,42 @@ class UzivatelListGrid
                 return ($connection);
             });
 
-        if ($money) {
+        if (!in_array($money, [null, false, 0, '', '0'], true) && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter, $thisparams) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $thisparams) {
 
                 $konto = $item->related('UzivatelskeKonto.Uzivatel_id');
-                if ($item->money_aktivni != 1) {
+                if ((int) $item->money_aktivni !== 1) {
                     $tr->class[] = 'neaktivni';
                 }
                 if (($konto->sum('castka') - $item->kauce_mobil) > ($thisparams->getVyseClenskehoPrispevku() * 12)) {
                     $tr->class[] = 'preplatek';
                 }
-                if (in_array($item->id, $seznamUzivateluCC)) {
+                if (in_array($item->id, $seznamUzivateluCC, true)) {
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                if ($item->spolek && $item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id === 2) {
                     $tr->class[] = 'primarni';
                 }
                 return $tr;
             });
         } else {
-            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC, $presenter) {
+            $grid->setRowCallback(function ($item, $tr) use ($seznamUzivateluCC) {
 
-                if ($item->email_invalid == 1) {
+                if ((int) $item->email_invalid === 1) {
                     $tr->class[] = 'invalidemail';
                 }
-                if (in_array($item->id, $seznamUzivateluCC)) {
+                if (in_array($item->id, $seznamUzivateluCC, true)) {
                     $tr->class[] = 'cestne';
                     return $tr;
                 }
-                if ($item->spolek && $item->TypClenstvi_id == 2) {
+                if ($item->spolek && $item->TypClenstvi_id === 2) {
                     $tr->class[] = 'primarni';
                 }
-                if ($item->spolek && $item->TypClenstvi_id == 1 && (!$item->druzstvo)
+                if ($item->spolek && $item->TypClenstvi_id === 1 && (!$item->druzstvo)
                     || $item->druzstvo && $item->smazano && (!$item->spolek)
-                    || $item->spolek && $item->druzstvo && $item->TypClenstvi_id == 1 && $item->smazano) {
+                    || $item->spolek && $item->druzstvo && $item->TypClenstvi_id === 1 && $item->smazano) {
                     $tr->class[] = 'zrusene';
                 }
                 if ($item->TypClenstvi_id === 0) {
@@ -407,7 +426,7 @@ class UzivatelListGrid
             ->setText($item->id);
 
             $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
-            $spanSpolek->addClass($item->TypClenstvi_id != 1 ? "label-spolek" : "label-neaktivni");
+            $spanSpolek->addClass($item->TypClenstvi_id !== 1 ? "label-spolek" : "label-neaktivni");
 
             $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
             $spanDruzstvo->addClass(!$item->smazano ? "label-druzstvo" : "label-neaktivni");
@@ -437,7 +456,7 @@ class UzivatelListGrid
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
                 return $item->jmeno . ' '. $item->prijmeni . ($item->firma_nazev ? ", {$item->firma_nazev}" : '') . ($item->nick ? " ({$item->nick})" : '');
             })->setSortable();
-            if ($fullnotes) {
+            if (!in_array($fullnotes, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {
                     $el = Html::el('span');
                     $el->setText($item->ulice_cp);
@@ -473,7 +492,7 @@ class UzivatelListGrid
         });
 
         if ($canViewOrEdit) {
-            if ($money) {
+            if (!in_array($money, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('money_aktivni', 'Aktivní')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
                 $grid->addColumnText('money_deaktivace', 'Deaktivace')->setSortable()->setReplacement(array('1' => 'ANO', '0' => 'NE'));
 
@@ -481,7 +500,7 @@ class UzivatelListGrid
                     $posledniPlatba = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', 1)->order('id DESC')->limit(1);
                     if ($posledniPlatba->count() > 0) {
                         $posledniPlatbaData = $posledniPlatba->fetch();
-                        return ($posledniPlatbaData->datum == null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . "," . ($posledniPlatbaData->druzstvo ? "D" : "S") . ")");
+                        return ($posledniPlatbaData->datum === null) ? "NIKDY" : ($posledniPlatbaData->datum->format('d.m.Y') . " (" . $posledniPlatbaData->castka . "," . ($posledniPlatbaData->druzstvo ? "D" : "S") . ")");
                     }
                     return "?";
                 });
@@ -490,7 +509,7 @@ class UzivatelListGrid
                     $posledniAktivace = $item->related('UzivatelskeKonto.Uzivatel_id')->where('TypPohybuNaUctu_id', array(4, 5))->order('id DESC')->limit(1);
                     if ($posledniAktivace->count() > 0) {
                         $posledniAktivaceData = $posledniAktivace->fetch();
-                        return ($posledniAktivaceData->datum == null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
+                        return ($posledniAktivaceData->datum === null) ? "NIKDY" : ($posledniAktivaceData->datum->format('d.m.Y') . " (" . $posledniAktivaceData->castka . ")");
                     }
                     return "?";
                 });
@@ -514,7 +533,7 @@ class UzivatelListGrid
                         ->data("placement", "right");
             })->setSortable();
 
-            if ($fullnotes) {
+            if (!in_array($fullnotes, [null, false, 0, '', '0'], true)) {
                 $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable()->setFilterText();
             } else {
                 $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function ($item) {
@@ -526,7 +545,7 @@ class UzivatelListGrid
             }
         }
 
-        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) use ($presenter) {
+        $grid->addColumnText('stitky', 'Štítky')->setCustomRender(function ($item) {
             $latte = new Engine();
             $params = [
                 'stitky' => $this->stitek->getSeznamStitku(),

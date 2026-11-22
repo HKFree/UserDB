@@ -42,7 +42,6 @@
 		"pauluswebster/shutterstock-rickshaw": "dev-master",
 		"defuse/php-encryption": "~2.2.1",
 		"ext-json": "*",
-		"influxdb/influxdb-php": "~1.15.2",
 		"nette/application": "~3.2.0",
 		"nette/forms": "~3.2.0",
 		"nette/di": "~3.2.0",
@@ -55,12 +54,14 @@
 		"kdyby/forms-replicator": "dev-master#5a71bc343d5d0a2e183ee8dc6b0b4dc645955030",
 		"tracy/tracy": "^2.10",
 		"contributte/console": "^0.10.1",
-		"digitalcz/digisign": "^2.5",
-		"minishlink/web-push": "^10.0"
+		"digitalcz/digisign": "^2.5"
 	},
 	"require-dev": {
 		"nette/tester": "^2.5",
-		"friendsofphp/php-cs-fixer": "^3.65"
+		"friendsofphp/php-cs-fixer": "^3.65",
+		"phpstan/phpstan": "^2.3",
+		"phpstan/phpstan-nette": "^2.0",
+		"phpstan/phpstan-strict-rules": "^2.1"
 	},
         "autoload": {
             "psr-4": {

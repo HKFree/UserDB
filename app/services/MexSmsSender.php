@@ -33,25 +33,32 @@ class MexSmsSender
         $this->cache = $cache;
     }
 
+    protected function createHttpClient(): Client {
+        return new Client();
+    }
+
     public function checkCzechNumber(string $number): bool {
         return (strlen($this->formatCzechNumber($number, false)) > 0);
     }
 
     private function formatCzechNumber(string $number, bool $strict = true): string {
         $number_cleared = preg_replace('/\s/', '', $number);
+        if ($number_cleared === null) {
+            throw new SmsSenderException('Telefonní číslo se nepodařilo zpracovat.');
+        }
 
         // match 777222555
-        if (preg_match('/^\d{9}$/', $number_cleared)) {
+        if (preg_match('/^\d{9}$/', $number_cleared) === 1) {
             return ("00420" . $number_cleared);
         }
 
         // match +420777222555
-        if (preg_match('/^\+420(\d{9})$/', $number_cleared, $matches)) {
+        if (preg_match('/^\+420(\d{9})$/', $number_cleared, $matches) === 1) {
             return ("00420" . $matches[1]);
         }
 
         // match 420777222555 (not really valid)
-        if (preg_match('/^420(\d{9})$/', $number_cleared, $matches)) {
+        if (preg_match('/^420(\d{9})$/', $number_cleared, $matches) === 1) {
             return ("00420" . $matches[1]);
         }
 
@@ -62,8 +69,12 @@ class MexSmsSender
         }
     }
 
+    /**
+     * @param array<array-key, mixed> $data
+     * @return array<array-key, mixed>|bool|float|int|string|null Raw decoded JSON, without response validation.
+     */
     private function apiCall(string $endpoint, array $data, string $method = "POST", bool $initial = false) {
-        $client = new Client();
+        $client = $this->createHttpClient();
 
         try {
             $reqdata = [
@@ -80,11 +91,11 @@ class MexSmsSender
             throw new SmsSenderException("Chyba přístupu k MEX API. Kontaktujte správce UserDB.\n" . $e->getMessage());
         }
 
-        if ($r->getStatusCode() == 401) {
+        if ($r->getStatusCode() === 401) {
             throw new SmsSenderException("Chyba přihlášení k MEX API (chybný token). Kontaktujte správce UserDB.");
         }
 
-        if ($r->getStatusCode() != 200) {
+        if ($r->getStatusCode() !== 200) {
             throw new SmsSenderException("Chyba vstupu MEX API. Kontaktujte správce UserDB.");
         }
 
@@ -92,7 +103,7 @@ class MexSmsSender
         return (json_decode($rBody, true));
     }
 
-    private function login() {
+    private function login(): string {
         $data = [
             "username" => $this->mexUser,
             "password" => $this->mexPass
@@ -100,9 +111,13 @@ class MexSmsSender
 
         $res = $this->apiCall("/login", $data, "POST", true);
 
-        return ($res["token"]);
+        if (!is_array($res) || !isset($res['token']) || !is_string($res['token']) || $res['token'] === '') {
+            throw new SmsSenderException('MEX API nevrátilo platný přihlašovací token.');
+        }
+        return $res['token'];
     }
 
+    /** @return mixed Cache result; freshly loaded tokens are validated by login(). */
     private function getToken() {
         return ($this->cache->load("authToken", function (&$dependencies) {
             $dependencies[Cache::EXPIRE] = '50 minutes';
@@ -110,7 +125,8 @@ class MexSmsSender
         }));
     }
 
-    public function sendSMS(array $bnumbers, string $text) {
+    /** @param array<array-key, string> $bnumbers */
+    public function sendSMS(array $bnumbers, string $text): void {
         $data = array();
         foreach ($bnumbers as $bnumber) {
             $data[] = [

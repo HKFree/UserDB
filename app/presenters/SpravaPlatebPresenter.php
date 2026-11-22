@@ -13,20 +13,21 @@ use Tracy\Debugger;
  */
 class SpravaPlatebPresenter extends SpravaPresenter
 {
-    private $odchoziPlatba;
-    private $prichoziPlatba;
+    private Model\OdchoziPlatba $odchoziPlatba;
+    private Model\PrichoziPlatba $prichoziPlatba;
 
-    public function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba) {
+    public function __construct(Model\PrichoziPlatba $platba, Model\OdchoziPlatba $odchplatba, Model\Uzivatel $uzivatel, Model\AP $ap) {
+        parent::__construct($uzivatel, $ap);
         $this->odchoziPlatba = $odchplatba;
         $this->prichoziPlatba = $platba;
     }
 
-    public function renderOdchoziplatby() {
+    public function renderOdchoziplatby(): void {
     }
 
-    protected function createComponentOdchplatby($name) {
+    protected function createComponentOdchplatby(string $name): void {
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('op_export');
 
         $grid->setModel($this->odchoziPlatba->getOdchoziPlatby());
@@ -37,17 +38,17 @@ class SpravaPlatebPresenter extends SpravaPresenter
         $grid->addFilterSelect('ucet', 'Účet', array('vsechny' => 'Všechny', 'spolek' => 'Spolek', 'druzstvo' => 'Družstvo'))
         ->setDefaultValue('vsechny')
         ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
-            if ($value == 'spolek') {
+            if ($value === 'spolek') {
                 return ($connection->where('spolek', 1));
             }
-            if ($value == 'druzstvo') {
+            if ($value === 'druzstvo') {
                 return ($connection->where('druzstvo', 1));
             }
             return ($connection);
         });
 
         $grid->setRowCallback(function ($item, $tr) {
-            if ($item->datum_platby == null) {
+            if ($item->datum_platby === null) {
                 $tr->class[] = 'primarni';
             }
 
@@ -78,16 +79,18 @@ class SpravaPlatebPresenter extends SpravaPresenter
         $grid->getColumn('datum_platby')->headerPrototype->style['width'] = '10%';
     }
 
-    public function renderPlatbycu() {
-        $this->template->canViewOrEdit = $this->getUser()->isInRole('VV') || $this->getUser()->isInRole('TECH');
+    public function renderPlatbycu(): void {
+        $this->template->canViewOrEdit = $this->jeVVneboTECH();
         $this->template->cu = "";
     }
 
-    protected function createComponentPaymentgrid($name) {
+    protected function createComponentPaymentgrid(string $name): void {
+        $this->vyzadujOpravneni($this->jeVVneboTECH()); // i export a stránkování gridu
+
         $id = $this->getParameter('type');
 
         $grid = new \Grido\Grid($this, $name);
-        $grid->translator->setLang('cs');
+        $grid->getTranslator()->setLang('cs');
         $grid->setExport('payment_export');
 
         $prichoziPlatby = $this->prichoziPlatba->getPrichoziPlatby();

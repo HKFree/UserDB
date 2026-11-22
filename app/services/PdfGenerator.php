@@ -2,44 +2,59 @@
 
 namespace App\Services;
 
-use Nette;
+use Nette\Database\Table\ActiveRow;
+use Nette\Bridges\ApplicationLatte\Template;
 use PdfResponse\PdfResponse;
 use App\Model;
-use DateInterval;
 
 /**
  * @author
  */
 class PdfGenerator
 {
-    private $subnet;
+    private Model\Subnet $subnet;
 
     public function __construct(Model\Subnet $subnet) {
         $this->subnet = $subnet;
     }
 
-    public function generatePdf($uzivatel, $template): PdfResponse {
+    public function generatePdf(ActiveRow $uzivatel, Template $template): PdfResponse {
+        if ((int) $uzivatel->spolek !== 1) {
+            throw new \InvalidArgumentException('Registrační PDF je dostupné pouze členům spolku.');
+        }
+        $clenstvi = $uzivatel->ref('TypClenstvi');
+        if ($clenstvi === null) {
+            throw new \InvalidArgumentException('Pro registrační PDF chybí typ členství ve spolku.');
+        }
+        if ($clenstvi->id === 0) {
+            throw new \InvalidArgumentException('Registrační PDF nelze vytvořit pro plánované členství.');
+        }
+        if ($clenstvi->id === 1) {
+            throw new \InvalidArgumentException('Registrační PDF nelze vytvořit pro zrušené členství.');
+        }
+        $forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id');
+        if ($forma === null) {
+            throw new \InvalidArgumentException('Pro registrační PDF chybí právní forma člena.');
+        }
         $template->oblast = $uzivatel->Ap->Oblast->jmeno;
         $oblastid = $uzivatel->Ap->Oblast->id;
         $template->oblastemail = "oblast$oblastid@hkfree.org";
         $template->jmeno = $uzivatel->jmeno;
         $template->prijmeni = $uzivatel->prijmeni;
-        $template->forma = $uzivatel->ref('TypPravniFormyUzivatele', 'TypPravniFormyUzivatele_id')->text;
+        $template->forma = $forma->text;
         $template->firma = $uzivatel->firma_nazev;
         $template->ico = $uzivatel->firma_ico;
         $template->nick = $uzivatel->nick;
         $template->uid = $uzivatel->id;
-        $template->heslo = $uzivatel->regform_downloaded_password_sent == 0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
+        $template->heslo = $uzivatel->regform_downloaded_password_sent === 0 ? $uzivatel->heslo : "-- nelze zpětně zjistit --";
         $template->email = $uzivatel->email;
         $template->telefon = $uzivatel->telefon;
         $template->ulice = $uzivatel->ulice_cp;
         $template->mesto = $uzivatel->mesto;
         $template->psc = $uzivatel->psc;
-        $template->clenstvi = $uzivatel->TypClenstvi->text;
-        $template->nthmesic = "prvního";
-        $template->nthmesicname = $this->mesicName($uzivatel->zalozen, 1);
-        $template->nthmesicdate = $this->mesicDate($uzivatel->zalozen, 0);
+        $template->clenstvi = $clenstvi->text;
         $ipadrs = $uzivatel->related('IPAdresa.Uzivatel_id')->fetchPairs('id', 'ip_adresa');
+        $out = [];
         foreach ($ipadrs as $ip) {
             $subnet = $this->subnet->getSubnetOfIP($ip);
 
@@ -51,7 +66,7 @@ class PdfGenerator
             }
         }
 
-        if (count($ipadrs) == 0) {
+        if (count($ipadrs) === 0) {
             $out[] = array('ip' => 'není přidána žádná ip', 'subnet' => 'subnet není v databázi', 'gateway' => 'subnet není v databázi', 'mask' => 'subnet není v databázi');
         }
         $template->ips = $out;
@@ -66,20 +81,4 @@ class PdfGenerator
         return $pdf;
     }
 
-    public function mesicName($indate, $addmonth) {
-        $date = new Nette\Utils\DateTime($indate);
-        $date->add(new \DateInterval('P'.$addmonth.'M'));
-        $datestr = $date->format('F');
-
-        $aj = array("January","February","March","April","May","June","July","August","September","October","November","December");
-        $cz = array("leden","únor","březen","duben","květen","červen","červenec","srpen","září","říjen","listopad","prosinec");
-        $datum = str_replace($aj, $cz, $datestr);
-        return $datum;
-    }
-
-    public function mesicDate($indate, $addmonth) {
-        $date = new Nette\Utils\DateTime($indate);
-        $date->add(new \DateInterval('P'.$addmonth.'M'));
-        return $date->format('17.m.Y');
-    }
 }

@@ -14,24 +14,39 @@ class Oblast extends Table
     */
     protected $tableName = 'Oblast';
 
-    public function getSeznamOblasti() {
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
+    public function getSeznamOblasti(): Nette\Database\Table\Selection {
         return ($this->findAll()->order("jmeno"));
     }
 
-    public function getOblast($id) {
-        return ($this->find($id));
+    /** @param int|string|null $id */
+    public function getOblast($id): ?Nette\Database\Table\ActiveRow {
+        return $id === null ? null : $this->find($id);
     }
 
-    public function getSeznamOblastiBezAP() {
+    /** @return array<int, string> */
+    public function getSeznamOblastiBezAP(): array {
         $oblasti = $this->getSeznamOblasti();
         return ($oblasti->fetchPairs('id', 'jmeno'));
     }
 
-    public function getSeznamSpravcu($IDoblasti) {
-        return ($this->find($IDoblasti)->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id', 'Uzivatel'));
+    /**
+     * @param int|string $IDoblasti
+     * @return array<int, Nette\Database\Table\ActiveRow>
+     */
+    public function getSeznamSpravcu($IDoblasti): array {
+        $oblast = $this->find($IDoblasti);
+        if ($oblast === null) {
+            return [];
+        }
+        return ($oblast->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id', 'Uzivatel'));
     }
 
-    public function formatujOblastiSAP($oblasti, $pouzeAktivni = true) {
+    /**
+     * @param iterable<Nette\Database\Table\ActiveRow> $oblasti
+     * @return array<int, string>
+     */
+    public function formatujOblastiSAP($oblasti, bool $pouzeAktivni = true): array {
         $aps = array();
         foreach ($oblasti as $oblast) {
             $apcka_oblasti = $oblast->related('Ap.Oblast_id');
@@ -39,11 +54,11 @@ class Oblast extends Table
                 $apcka_oblasti = $apcka_oblasti->where('aktivni');
             }
 
-            foreach ($apcka_oblasti->order("jmeno") as $apid => $ap) {
-                if (count($apcka_oblasti) == 1) {
-                    $aps[$apid] = $ap->jmeno . ' (' . $ap->id . ')';
+            foreach ($apcka_oblasti->order("jmeno") as $ap) {
+                if (count($apcka_oblasti) === 1) {
+                    $aps[$ap->id] = $ap->jmeno . ' (' . $ap->id . ')';
                 } else {
-                    $aps[$apid] = $oblast->jmeno . ' - ' . $ap->jmeno . ' (' . $ap->id . ')';
+                    $aps[$ap->id] = $oblast->jmeno . ' - ' . $ap->jmeno . ' (' . $ap->id . ')';
                 }
             }
         }
@@ -52,8 +67,10 @@ class Oblast extends Table
 
     /**
     * seznam oblasti pro vytvareni noveho AP
+    * @param iterable<Nette\Database\Table\ActiveRow> $oblasti
+    * @return array<int, string>
     */
-    public function formatujOblasti($oblasti) {
+    public function formatujOblasti($oblasti): array {
         $aps = array();
         foreach ($oblasti as $oblast) {
             $aps[$oblast->id] = $oblast->jmeno . ' (' . $oblast->id . ')';

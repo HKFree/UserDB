@@ -10,20 +10,11 @@ use App\Model;
  */
 class HomepagePresenter extends BasePresenter
 {
-    /** @var Model\Uzivatel */
-    private $uzivatel;
-
-    public function __construct(Model\Uzivatel $uzivatel) {
-        $this->uzivatel = $uzivatel;
+    public function __construct() {
+        parent::__construct();
     }
 
-    public function renderDefault() {
+    public function renderDefault(): void {
         $this->template->anyVariable = 'any value';
-    }
-
-    public function renderTest() {
-        \Tracy\Debugger::barDump($this->context->parameters);
-        $this->template->test1 = 1;
-        $this->template->test2 = 1;
     }
 }

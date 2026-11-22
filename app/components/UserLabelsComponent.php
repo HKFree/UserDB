@@ -6,15 +6,14 @@ use Nette\Application\UI\Control;
 use Nette\Database\Explorer;
 use App\Model;
 
+/** @property-read \Nette\Bridges\ApplicationLatte\Template $template */
 class UserLabelsComponent extends Control
 {
-    private Explorer $database;
     private int $userId;
-    private $stitkyUzivatele;
-    private $stitky;
+    private Model\StitekUzivatele $stitkyUzivatele;
+    private Model\Stitek $stitky;
 
-    public function __construct(Explorer $database, Model\Stitek $stitky, Model\StitekUzivatele $stitkyUzivatele) {
-        $this->database = $database;
+    public function __construct(Model\Stitek $stitky, Model\StitekUzivatele $stitkyUzivatele) {
         $this->stitky = $stitky;
         $this->stitkyUzivatele = $stitkyUzivatele;
     }

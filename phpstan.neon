@@ -1,0 +1,24 @@
+includes:
+    - vendor/phpstan/phpstan-nette/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+
+parameters:
+    level: 8
+    stubFiles:
+        - phpstan/replicator.stub
+        - phpstan/tester.stub
+    phpVersion: 80200
+    tmpDir: temp/phpstan
+    paths:
+        - app
+        - bin/console
+        - bin/create-user.php
+        - tests
+        - scripts
+        - www
+        - pdfGenerator/www
+    scanDirectories:
+        - lib/phpqrcode
+    strictRules:
+        # Vypnuto trvale: krátký ternár pro výchozí hodnotu (getenv('X') ?: 'výchozí') zůstává povolený.
+        disallowedShortTernary: false

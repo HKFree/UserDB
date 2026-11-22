@@ -10,60 +10,52 @@ class SpravaSmluvPresenter extends BasePresenter
 {
     public string $smlouva_id;
 
-    protected $smlouva;
-    protected $podpis;
+    protected Model\Smlouva $smlouva;
+    protected Model\PodpisSmlouvy $podpis;
 
     public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis) {
+        parent::__construct();
         $this->smlouva = $smlouva;
         $this->podpis = $podpis;
     }
 
     // Zkontroluje ze jsme dostali ID a existuje smlouva s timto ID
-    private function idAndContractExists($contract_id) {
-        if (
-            !(isset($contract_id) && $this->smlouva->find($contract_id))
-        ) {
+    /** @param int|string|null $contract_id */
+    private function idAndContractExists($contract_id): \Nette\Database\Table\ActiveRow {
+        $smlouva = $contract_id !== null ? $this->smlouva->find($contract_id) : null;
+        if ($smlouva === null) {
             $this->flashMessage('Nezname ID smlouvy.');
             $this->redirect('Homepage:default');
         }
+        return $smlouva;
     }
 
-    private function userCanChange(int $contract_id) {
+    private function userCanChange(int $contract_id): void {
         // TODO: Dodelat tuto logiku
-        if (false) {
-            $this->flashMessage('❌ Na tuhle smlouvy ty šmatlat nemůžeš.', 'danger');
-            $this->redirect('Homepage:default');
-        }
     }
 
-    private function userCanView(int $contract_id) {
+    private function userCanView(int $contract_id): void {
         // TODO: Dodelat tuto logiku
-        if (false) {
-            $this->flashMessage('❌ Na tuhle smlouvy ty koukat nemůžeš.', 'danger');
-            $this->redirect('Homepage:default');
-        }
     }
 
-    public function renderShow() {
+    public function renderShow(): void {
         $contract_id = $this->getParameter('id');
-        $this->idAndContractExists($contract_id);
+        $smlouva = $this->idAndContractExists($contract_id);
         $this->userCanView($contract_id);
 
         $this->smlouva_id = $this->getParameter('id');
 
         $this->template->id = $this->smlouva_id;
-        $this->template->smlouva = $this->smlouva->find($this->smlouva_id);
+        $this->template->smlouva = $smlouva;
 
         $podpisy = $this->podpis->findBy(['Smlouva_id' => $this->smlouva_id]);
         $this->template->podpisy = $podpisy;
     }
 
-    public function actionhandleDownload() {
+    public function actionhandleDownload(): void {
         $contract_id = $this->getParameter('id');
-        $this->idAndContractExists($contract_id);
+        $smlouva = $this->idAndContractExists($contract_id);
         $this->userCanView($contract_id);
-
-        $smlouva = $this->smlouva->find($contract_id);
 
         if (!is_file($smlouva->podepsany_dokument_path)) {
             $this->flashMessage("❌ chybí soubor ($smlouva->podepsany_dokument_path)", 'danger');
@@ -84,14 +76,14 @@ class SpravaSmluvPresenter extends BasePresenter
         return \Nette\Utils\DateTime::from($timestamp);
     }
 
-    public function actionCancelContract() {
+    public function actionCancelContract(): void {
         // TODO: Logování změn
 
         $contract_id = $this->getParameter('id');
-        $this->idAndContractExists($contract_id);
+        $smlouva = $this->idAndContractExists($contract_id);
         $this->userCanChange($contract_id);
 
-        $current_contract = $this->smlouva->find($contract_id);
+        $current_contract = $smlouva;
         if (isset($current_contract->kdy_ukonceno)) {
             $this->flashMessage('Tato smlouva je již vypovězena. Byla vypovězena ' . $current_contract->kdy_ukonceno->format('d.m.Y \v h:m'), 'warning');
             $this->redirect('SpravaSmluv:show');
@@ -109,7 +101,7 @@ class SpravaSmluvPresenter extends BasePresenter
         $this->redirect('SpravaSmluv:show');
     }
 
-    public function actionUpdateNote() {
+    public function actionUpdateNote(): void {
         // TODO: Logování změn
 
         $request = $this->getHttpRequest();
@@ -120,10 +112,10 @@ class SpravaSmluvPresenter extends BasePresenter
             $this->redirect('SpravaSmluv:show');
         }
 
-        $this->idAndContractExists($contract_id);
+        $smlouva = $this->idAndContractExists($contract_id);
         $this->userCanChange($contract_id);
 
-        $updated_row = $this->smlouva->find($contract_id)->update([
+        $updated_row = $smlouva->update([
             'poznamka' => $request->getPost('interni-poznamka')
         ]);
 
