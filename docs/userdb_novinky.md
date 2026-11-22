@@ -1,6 +1,6 @@
 # UserDB: Novinky
 
-Stránka **Novinky** v horní liště za odkazem **Mapa** ukazuje změny aplikace
+Stránka **Novinky** v nabídce **Nástroje** v horní liště ukazuje změny aplikace
 každému přihlášenému uživateli. Přihlášení se nemění: člen bez aktivní role
 se do UserDB nepřihlásí.
 

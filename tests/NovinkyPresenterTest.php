@@ -98,16 +98,17 @@ final class NovinkyPresenterTest extends DatabaseTestCase
         Assert::same('https://github.com/HKFree/UserDB/issues/266', (string) $links[0]['href']);
     }
 
-    public function testHomepageTopBarLinkImmediatelyFollowsMapForLoginOnlyRole(): void {
+    public function testToolsMenuLinksToNewsForLoginOnlyRole(): void {
         $result = $this->presenters->ui($this->reader(), 'Homepage');
         Assert::same(200, $result->status);
         $dom = DomQuery::fromHtml($result->html);
-        $links = $dom->find('.navbar a');
-        $labels = $this->texts($dom, '.navbar a');
-        $map = array_search('Mapa', $labels, true);
-        Assert::true(is_int($map));
-        Assert::same('Novinky', $labels[$map + 1]);
-        Assert::same('/userdb/novinky/', (string) $links[$map + 1]['href']);
+        $links = [];
+        foreach ($dom->find('.navbar .dropdown-menu a') as $link) {
+            $links[trim((string) $link)] = (string) $link['href'];
+        }
+        Assert::same('/userdb/novinky/', $links['Novinky'] ?? null);
+        // The link lives only in the Nástroje menu, not next to it in the bar.
+        Assert::count(1, array_keys($this->texts($dom, '.navbar a'), 'Novinky', true));
     }
 
     private function reader(): int {
