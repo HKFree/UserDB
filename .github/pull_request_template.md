@@ -13,7 +13,7 @@
 
 <!-- U PR psaného bez AI agenta tento oddíl smaž. -->
 
-- Autor:
+- Změnu psal:
 - Reviewer:
 - Stupeň: jiný dodavatel / jiný model téhož dodavatele / tentýž model v nové session
 
