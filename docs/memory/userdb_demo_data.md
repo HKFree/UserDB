@@ -27,6 +27,11 @@ vidět. Ověřeno 21. 11. 2026 lokálně ve Floxu (MariaDB 10.11.19), není-li u
   formuláře AP nebo člena zašifruje hesla všech jeho IP adres; šifrovaná hodnota má 168 znaků a další 2 na každý
   bajt hesla, sloupec `IPAdresa.heslo` jich pojme 255. Ověřeno 22. 11. 2026 uložením formuláře AP lokálně ve
   Floxu: 43 bajtů dá 254 znaků. Délku hlídá `DemoDataPresenterTest`.
+- Nová migrace se musí jménem řadit za všechny, které už jsou v `master`: `MODE_CONTINUE` odmítne soubor, který
+  by patřil před poslední provedenou migraci („must follow after the latest executed migration“). Čas v názvu
+  proto po každém přenesení větve na `master` porovnej s nejnovějším souborem tam a případně ho posuň; stejný čas
+  rozhoduje abecední pořadí zbytku jména. Ověřeno 23. 11. 2026: `…120000-demo-odesilatel…` se zařadila mezi
+  dvě migrace z `master` se stejným časem a lokální příprava databáze skončila touto chybou.
 - Scénářový soubor, který už je v pushnuté větvi, neupravuj ani před sloučením: `MODE_CONTINUE` na databázi,
   která ho načetla, skončí chybou kontrolního součtu. Opravu řádku dej do dalšího souboru jako `UPDATE`.
 
@@ -39,6 +44,11 @@ vidět. Ověřeno 21. 11. 2026 lokálně ve Floxu (MariaDB 10.11.19), není-li u
 - Plánovaný člen (`TypClenstvi_id=0`) nesmí mít pohyby na kontě, smlouvu ani jiné závislé řádky. Editace ho při
   změně na „zrušeno“ maže a cizí klíč by smazání zastavil.
 - Editace člena vyžaduje telefon, město a PSČ. Demo člen bez nich nejde uložit ani beze změny.
+- Osoba s rolí a syntakticky neplatným e-mailem shodí registrační e-mail, který sama odešle: členovi dojde,
+  kopie na její adresu skončí `AssertionException` (ověřeno 23. 11. 2026 jednorázovým testem akce
+  `UzivatelActions:sendRegActivation`). Kopie jde i všem SO a ZSO oblasti člena (`getSeznamSpravcuUzivatele()`,
+  jen přečteno v kódu), proto má taková demo osoba roli globální nebo v oblasti, kde se členové neregistrují
+  (20070 KONTROLA, 20071 ZSO technické oblasti -20).
 
 ## Síť
 

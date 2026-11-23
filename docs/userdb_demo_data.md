@@ -1,7 +1,7 @@
 # UserDB: katalog demo dat
 
 Scénářová data se načítají migracemi `db/dummy-data/` v Dockeru, lokálním Floxu i na testovacích instancích.
-Obsahují 8 oblastí, 20 AP a 77 členů včetně původních 7. Nových 70 členů má v poznámce první řádek `DEMO: `.
+Obsahují 8 oblastí, 20 AP a 79 členů včetně původních 7. Nových 72 členů má v poznámce první řádek `DEMO: `.
 Jména, kontakty, adresy, přihlašovací údaje a platby jsou smyšlené. Datum scénářů se odvozuje od dne načtení.
 
 Flox a testovací instance navíc standardně přidávají objemová data. Při přípravě nové databáze je lze vynechat:
@@ -178,6 +178,8 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | 20013 | Zahraničnítelefon | SO-201, nečeský telefon |
 | 20014 | Dnešníkonec | SO-201 s koncem v den načtení: role už neplatí; aktivní DRUŽSTEVNÍK |
 | 20015 | Systémový | Systémový ZSO-201, některé exporty ho vynechávají |
+| 20070 | Chybnýodesílatel | KONTROLA, vlastní e-mail `odesilatel@@example.invalid`: e-mail členovi (`/uzivatel-mail-sms/email/20018`) i celému AP (`/uzivatel-mail-sms/emailall/201`) nabídne jako odesílatele jen adresu oblasti; upozornění odkazuje na editaci vlastních údajů. Registrační e-mail odeslaný touto osobou členovi dojde, kopie pro správce ale skončí chybou na její neplatné adrese |
+| 20071 | Odesílatelodjinud | ZSO technické oblasti -20 se stejně chybným e-mailem, patří na AP 201: u e-mailu členovi 20015 a AP 217 upozornění odkaz na editaci nemá, své údaje upravit nesmí |
 
 ## Finance, správa a API
 
@@ -245,10 +247,10 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 |---|---|---|
 | Oblast | -20, 200 až 204 | 10000 až 10099 |
 | Ap | 200 až 217 | 10000 až 10449 |
-| Uzivatel | 20000 až 20069 | 100000 až 113499 |
+| Uzivatel | 20000 až 20071 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
 | IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
-| SpravceOblasti | 20000 až 20024 s mezerami | 100000 |
+| SpravceOblasti | 20000 až 20026 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
 | Čestné členství | 20045 až 20052 | žádné |
 | Stitek | 21000 až 21004 | žádné |
