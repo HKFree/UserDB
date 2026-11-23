@@ -333,6 +333,79 @@ final class MessageFormPresenterTest extends DatabaseTestCase
         Assert::match('~<form [^>]*id="frm-' . $action . 'Form"[^>]*>\s*<table class="form">\s*<tr>\s*<th></th>\s*<td><input type="hidden"~', $page->html);
     }
 
+    /** @return array<string, array{string}> */
+    public function mailActions(): array {
+        return ['email' => ['email'], 'emailall' => ['emailall']];
+    }
+
+    /**
+     * The recipient field is disabled, so the browser never sends it back.
+     * A form returned with an error must still say whom the message goes to (issue #316).
+     *
+     * @dataProvider mailActions
+     */
+    public function testRecipientStaysFilledWhenTheFormReturnsWithAnError(string $action): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE);
+        $id = $action === 'email' ? $member->id : $ap->id;
+        $parameters = ['action' => $action, 'id' => $id];
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters);
+        $returned = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters, 'POST', [
+            '_do' => $action . 'Form-submit', 'id' => (string) $id, 'from' => '0',
+            'subject' => '', 'message' => 'Rozepsaný text', 'send' => 'Odeslat',
+        ]);
+
+        Assert::same($member->email, $this->recipient($page->html, $action));
+        Assert::same(TextResponse::class, $returned->response::class);
+        Assert::same(200, $returned->status);
+        // The message is also in data-nette-rules of an untouched form; look for the highlighted text.
+        Assert::contains('<span class="text-danger">Zadejte předmět</span>', $returned->html);
+        Assert::same($member->email, $this->recipient($returned->html, $action));
+        Assert::same('Rozepsaný text', $this->fieldText($returned->html, 'message'));
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    /**
+     * A submitted form is built before the permission check, recipients included.
+     * Without permission the returned page still shows no address.
+     *
+     * @dataProvider mailActions
+     */
+    public function testRecipientIsNotShownWithoutPermissionWhenTheFormReturnsWithAnError(string $action): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE);
+        $foreignArea = $this->fixtures->area();
+        $actor = $this->fixtures->member($this->fixtures->ap($foreignArea->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $foreignArea->id);
+        $id = $action === 'email' ? $member->id : $ap->id;
+
+        $returned = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => $action, 'id' => $id], 'POST', [
+            '_do' => $action . 'Form-submit', 'id' => (string) $id, 'from' => '0',
+            'subject' => '', 'message' => 'Rozepsaný text', 'send' => 'Odeslat',
+        ]);
+
+        Assert::same(200, $returned->status);
+        Assert::contains('Na tuto operaci nemáte oprávnění!', $returned->html);
+        Assert::notContains($member->email, html_entity_decode($returned->html, ENT_QUOTES | ENT_HTML5));
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    /** What the disabled recipient field shows: a text input for one member, a textarea for a whole AP. */
+    private function recipient(string $html, string $action): string {
+        if ($action === 'emailall') {
+            return $this->fieldText($html, 'email');
+        }
+        $found = preg_match('~<input[^>]*name="email"[^>]*>~', $html, $input);
+        Assert::same(1, $found, 'The form has no recipient field.');
+        preg_match('~value="([^"]*)"~', $input[0] ?? '', $value);
+        return html_entity_decode($value[1] ?? '', ENT_QUOTES | ENT_HTML5);
+    }
+
     /** @return array<string, string> option value => label of the sender choice */
     private function senderOptions(string $html): array {
         $found = preg_match('~<select name="from"[^>]*>(.*?)</select>~s', $html, $select);

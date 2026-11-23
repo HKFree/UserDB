@@ -640,7 +640,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::contains('id="frm-uzivatelForm"', $result->html);
         // Match rendered error text, never the message embedded in data-nette-rules.
         $escaped = preg_quote(htmlspecialchars($message, ENT_NOQUOTES, 'UTF-8'), '~');
-        Assert::same(1, preg_match('~>\\s*' . $escaped . '</(?:li|td)>~u', $result->html), $message);
+        Assert::same(1, preg_match('~>\\s*' . $escaped . '</(?:li|span)>~u', $result->html), $message);
         Assert::same(0, $this->database->table('Log')->count('*'));
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
@@ -660,7 +660,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         preg_match_all('~name="ip\[(\d+)\]\[ip_adresa\]"(?:[^>]*? value="([^"]*)")?~', $result->html, $rows);
         Assert::same($addresses, $rows[2]);
         // Match rendered error text, never the message embedded in data-nette-rules.
-        Assert::notContains('Zadejte telefon</td>', $result->html);
+        Assert::notContains('Zadejte telefon</span>', $result->html);
         Assert::notContains('<ul class="error"', $result->html);
         Assert::same(1, preg_match('~<input[^>]*name="jmeno"[^>]*value="Rozepsané"~u', $result->html));
         Assert::same(1, preg_match('~<input(?:(?! value=)[^>])*name="telefon"(?:(?! value=)[^>])*>~', $result->html));

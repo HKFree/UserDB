@@ -147,7 +147,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $odesilatele = $this->odesilatele('oblast'.$user->Ap->Oblast_id.'@hkfree.org');
         $form->addSelect('from', 'Odesílatel', $odesilatele)->setDefaultValue(array_key_first($odesilatele));
 
-        $form->addText('email', 'Příjemce', 70)->setDisabled(true);
+        // Zakázané pole prohlížeč neposílá; hodnotu proto dostane i formulář vrácený s chybou.
+        $form->addText('email', 'Příjemce', 70)->setDisabled(true)->setDefaultValue($user->email);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
 
@@ -216,7 +217,9 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $odesilatele = $this->odesilatele($oblastMail);
         $form->addSelect('from', 'Odesílatel', $odesilatele)->setDefaultValue(array_key_first($odesilatele));
 
-        $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(true);
+        // Zakázané pole prohlížeč neposílá; hodnotu proto dostane i formulář vrácený s chybou.
+        $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(true)
+            ->setDefaultValue($ap === null ? null : $this->adresyClenuAp($ap));
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
 
@@ -226,24 +229,20 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
         if ($ap !== null && !$submitujeSe) {
-            $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
-            $validni = [];
-            foreach ($emaily as $email) {
-                if (Validators::isEmail($email)) {
-                    $validni[] = $email;
-                }
-            }
-            $tolist = join(";", $validni);
-
             $form->setValues($ap);
             $form->setDefaults(array(
                     'from' => array_key_first($odesilatele),
-                    'email' => $tolist,
                     'subject' => 'Zpráva od správce sítě hkfree.org',
                 ));
         }
 
         return $form;
+    }
+
+    /** Platné adresy aktivních členů AP oddělené středníkem, jak je ukazuje pole Příjemce. */
+    private function adresyClenuAp(ActiveRow $ap): string {
+        $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
+        return join(';', array_filter($emaily, static fn (mixed $email): bool => Validators::isEmail($email)));
     }
 
     /** @param ArrayHash<mixed> $values */

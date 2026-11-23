@@ -110,7 +110,7 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - `ApPresenter` čte `$_SERVER['HTTP_HOST']` a `IPAdresa` `$_SERVER['HTTP_USER_AGENT']`; runner je nastavuje.
 - `ActiveRow` nemá veřejná data pro `json_encode()`: přímé kódování vrací `{}`. Při porovnání stavu databáze
   převést každý řádek přes `toArray()`, jinak se změny hodnot v existujících řádcích nezachytí.
-- `form.latte` vypisuje chyby jednotlivých polí přímo jako text v `td`, pouze chyby celého formuláře jsou
+- `form.latte` vypisuje chybu pole za polem ve `span.text-danger`, pouze chyby celého formuláře jsou
   v `ul.error li`. Hledat přesný vykreslený text, ne atribut `data-nette-rules`, který obsahuje zprávu i bez chyby.
   `DomQuery::fromHtml()` při duplicitním HTML `id` hlásí varování; pro kontrolu validační zprávy duplicitních
   IP proto test porovnává přímo vykreslený text mezi značkami.
