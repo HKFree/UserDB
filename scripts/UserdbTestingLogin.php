@@ -3,15 +3,14 @@
 declare(strict_types=1);
 
 /**
- * Sign-in form in front of the instances of the shared testing server, see "Testing server" in readme.md.
+ * Sign-in form in front of a pull request preview, see "Pull request previews" in readme.md.
  *
- * The reverse proxy asks VERIFY_PATH about every request from outside the HKFree network and serves LOGIN_PATH
- * from here. A visitor who knows the shared password gets a signed cookie that is valid for all instances.
- * The service runs on the server outside any checkout, so it uses nothing but PHP itself.
+ * scripts/userdb_preview_router.php asks guard() about every request before the application sees it. Visitors
+ * from the open networks come in as they are; anyone else needs the shared password and gets a signed cookie
+ * that is valid for all previews. The form uses nothing but PHP itself, so it answers before Composer's autoloader.
  */
 final class UserdbTestingLogin
 {
-    public const VERIFY_PATH = '/verify';
     public const LOGIN_PATH = '/testing-login';
     public const SIGN_OUT_PATH = self::LOGIN_PATH . '/sign-out';
     public const COOKIE = 'userdb_testing_login';
@@ -19,16 +18,25 @@ final class UserdbTestingLogin
     public const MAX_FAILURES = 5;
     public const FAILURE_WINDOW_SECONDS = 15 * 60;
 
+    private const VARIABLES = [
+        'USERDB_TESTING_LOGIN_PASSWORD_HASH',
+        'USERDB_TESTING_LOGIN_COOKIE_DOMAIN',
+        'USERDB_TESTING_LOGIN_STATE',
+        'USERDB_TESTING_LOGIN_OPEN_NETWORKS',
+    ];
+
     /**
      * @param string $passwordHash bcrypt hash of the shared password; it also signs the cookies, so a new password signs everyone out
      * @param string $cookieDomain domain shared by the instances, or '' for a cookie of the one visited host
      * @param string $stateDirectory writable directory for the counters of failed attempts
+     * @param list<string> $openNetworks networks whose visitors come in without signing in, as address/prefix length
      */
     public function __construct(
         #[\SensitiveParameter]
         private readonly string $passwordHash,
         private readonly string $cookieDomain,
         private readonly string $stateDirectory,
+        private readonly array $openNetworks = [],
     ) {
         if (self::isPasswordHash($passwordHash) === false) {
             throw new InvalidArgumentException('The password must be given as a bcrypt hash made by password_hash().');
@@ -39,25 +47,72 @@ final class UserdbTestingLogin
         if (is_dir($stateDirectory) === false || is_writable($stateDirectory) === false) {
             throw new InvalidArgumentException('The state directory is missing or not writable.');
         }
+        foreach ($openNetworks as $network) {
+            if (self::networkRange($network) === null) {
+                throw new InvalidArgumentException('An open network must be written as address/prefix length.');
+            }
+        }
     }
 
     /**
-     * Answers one request. The parameters are the PHP superglobals of that request and its getallheaders().
+     * The form set up by the variables of the preview. They are taken out of the environment of the request:
+     * the local web shows its environment to every visitor in the Tracy bar, and the hash signs the cookies.
+     */
+    public static function fromEnvironment(): self {
+        [$passwordHash, $cookieDomain, $stateDirectory, $openNetworks] = array_map(
+            static fn (string $name): string => (string) getenv($name),
+            self::VARIABLES,
+        );
+        foreach (self::VARIABLES as $name) {
+            putenv($name);
+            unset($_ENV[$name], $_SERVER[$name]);
+        }
+        $networks = preg_split('~\s*,\s*~', trim($openNetworks), -1, PREG_SPLIT_NO_EMPTY);
+        return new self($passwordHash, $cookieDomain, $stateDirectory, $networks === false ? [] : $networks);
+    }
+
+    /**
+     * Decides about one request. The parameters are the PHP superglobals of that request and its getallheaders().
      *
      * @param array<array-key, mixed> $server
      * @param array<array-key, mixed> $headers
      * @param array<array-key, mixed> $query
      * @param array<array-key, mixed> $post
      * @param array<array-key, mixed> $cookies
+     * @return UserdbTestingLoginResponse|null the answer to send instead of the application, null when the request goes on to it
      */
-    public function handle(array $server, array $headers, array $query, array $post, array $cookies, int $now): UserdbTestingLoginResponse {
+    public function guard(array $server, array $headers, array $query, array $post, array $cookies, int $now): ?UserdbTestingLoginResponse {
         $method = self::text($server, 'REQUEST_METHOD');
-        $path = parse_url(self::text($server, 'REQUEST_URI'), PHP_URL_PATH);
+        $uri = self::text($server, 'REQUEST_URI');
+        $path = parse_url($uri, PHP_URL_PATH);
         $signedIn = $this->isSignedIn(self::text($cookies, self::COOKIE), $now);
+        $client = self::clientAddress($server, $headers);
+        if ($path === self::LOGIN_PATH || (is_string($path) && str_starts_with($path, self::LOGIN_PATH . '/'))) {
+            return $this->form($method, $path, $headers, $query, $post, $signedIn, $client, $now);
+        }
+        if ($signedIn || $this->isFromOpenNetwork($client)) {
+            return null;
+        }
+        // Only a page that was asked for can be asked for again after signing in.
+        if (in_array($method, ['GET', 'HEAD'], true) === false) {
+            return new UserdbTestingLoginResponse(
+                403,
+                ['Content-Type: text/plain; charset=utf-8'],
+                'Nejste přihlášeni. Přihlaste se na ' . self::LOGIN_PATH . " a požadavek zopakujte.\n",
+            );
+        }
+        return new UserdbTestingLoginResponse(302, ['Location: ' . self::LOGIN_PATH . '?back=' . rawurlencode(self::localPath($uri))]);
+    }
+
+    /**
+     * @param array<array-key, mixed> $headers
+     * @param array<array-key, mixed> $query
+     * @param array<array-key, mixed> $post
+     */
+    private function form(string $method, string $path, array $headers, array $query, array $post, bool $signedIn, string $client, int $now): UserdbTestingLoginResponse {
         $isRead = in_array($method, ['GET', 'HEAD'], true);
 
         return match (true) {
-            $path === self::VERIFY_PATH => $this->verify($headers, $signedIn),
             $method === 'POST' && self::isFromAnotherSite($headers) => new UserdbTestingLoginResponse(
                 403,
                 ['Content-Type: text/plain; charset=utf-8'],
@@ -68,7 +123,7 @@ final class UserdbTestingLogin
             $path === self::LOGIN_PATH && $method === 'POST' => $this->signIn(
                 self::text($post, 'password'),
                 self::localPath(self::text($post, 'back')),
-                self::header($headers, 'X-Forwarded-For') ?: self::text($server, 'REMOTE_ADDR'),
+                $client,
                 $now,
             ),
             $path === self::SIGN_OUT_PATH && $method === 'POST' => new UserdbTestingLoginResponse(303, ['Location: ' . self::LOGIN_PATH, $this->cookie('', 0)]),
@@ -77,24 +132,54 @@ final class UserdbTestingLogin
     }
 
     /**
-     * The proxy lets the request through to the instance on 2xx and returns any other answer to the visitor.
-     * It describes the original request in the X-Forwarded-* headers.
+     * The address the visitor comes from. A proxy in front of the preview connects from a private address
+     * and appends the address of its visitor to X-Forwarded-For, so only the last address there is the proxy's
+     * word; the ones before it are whatever the visitor sent. Whoever connects from a public address is the
+     * visitor itself, and the header is then only its claim.
      *
+     * @param array<array-key, mixed> $server
      * @param array<array-key, mixed> $headers
      */
-    private function verify(array $headers, bool $signedIn): UserdbTestingLoginResponse {
-        if ($signedIn) {
-            return new UserdbTestingLoginResponse(204);
+    private static function clientAddress(array $server, array $headers): string {
+        $connecting = self::text($server, 'REMOTE_ADDR');
+        $forwardedFor = self::header($headers, 'X-Forwarded-For');
+        $isPublic = filter_var($connecting, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+        if ($forwardedFor === '' || $isPublic) {
+            return $connecting;
         }
-        if (in_array(self::header($headers, 'X-Forwarded-Method'), ['GET', 'HEAD'], true) === false) {
-            return new UserdbTestingLoginResponse(
-                403,
-                ['Content-Type: text/plain; charset=utf-8'],
-                'Nejste přihlášeni. Přihlaste se na ' . self::LOGIN_PATH . " a požadavek zopakujte.\n",
-            );
+        $addresses = explode(',', $forwardedFor);
+        return trim($addresses[count($addresses) - 1]);
+    }
+
+    private function isFromOpenNetwork(string $client): bool {
+        $address = filter_var($client, FILTER_VALIDATE_IP) === false ? false : inet_pton($client);
+        if ($address === false) {
+            return false;
         }
-        $back = self::localPath(self::header($headers, 'X-Forwarded-Uri'));
-        return new UserdbTestingLoginResponse(302, ['Location: ' . self::LOGIN_PATH . '?back=' . rawurlencode($back)]);
+        foreach ($this->openNetworks as $network) {
+            $range = self::networkRange($network);
+            if ($range !== null && strlen($address) === strlen($range[0]) && ($address & $range[1]) === $range[0]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return array{string, string}|null packed first address of the network and its mask, null for anything
+     * but address/prefix length; an address with bits set behind the prefix is taken as the network it lies in
+     */
+    private static function networkRange(string $network): ?array {
+        if (preg_match('~^([0-9a-f.:]+)/(\d{1,3})$~iD', $network, $match) !== 1) {
+            return null;
+        }
+        $address = filter_var($match[1], FILTER_VALIDATE_IP) === false ? false : inet_pton($match[1]);
+        $prefix = (int) $match[2];
+        if ($address === false || $prefix > 8 * strlen($address)) {
+            return null;
+        }
+        $mask = str_pad(str_repeat("\xff", intdiv($prefix, 8)) . ($prefix % 8 === 0 ? '' : chr(0xff << (8 - $prefix % 8) & 0xff)), strlen($address), "\x00");
+        return [$address & $mask, $mask];
     }
 
     private function signIn(#[\SensitiveParameter] string $password, string $back, string $client, int $now): UserdbTestingLoginResponse {
@@ -213,7 +298,7 @@ final class UserdbTestingLogin
         $action = self::SIGN_OUT_PATH;
         $backHtml = self::escape($back);
         return $this->page(200, <<<HTML
-            <p>Jste přihlášeni. Přihlášení platí pro všechny instance testovacího serveru.</p>
+            <p>Jste přihlášeni. Přihlášení platí pro všechny testovací instance.</p>
             <p><a href="$backHtml">Pokračovat do aplikace</a></p>
             <form method="post" action="$action">
                 <button type="submit" class="secondary">Odhlásit</button>
@@ -234,7 +319,7 @@ final class UserdbTestingLogin
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <meta name="robots" content="noindex">
-                <title>UserDB: testovací server</title>
+                <title>UserDB: testovací instance</title>
                 <style>
                     body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1f2933; background: #eef1f4; }
                     main { max-width: 24rem; margin: 12vh auto 0; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgb(0 0 0 / 15%); }
@@ -248,7 +333,7 @@ final class UserdbTestingLogin
             </head>
             <body>
                 <main>
-                    <h1>UserDB: testovací server</h1>
+                    <h1>UserDB: testovací instance</h1>
                     $content
                 </main>
             </body>

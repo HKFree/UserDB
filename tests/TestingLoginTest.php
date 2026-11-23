@@ -15,14 +15,15 @@ require_once __DIR__ . '/../scripts/UserdbTestingLogin.php';
 \Tester\Environment::setup();
 
 /**
- * The sign-in form of the shared testing server. The reverse proxy in front of it is not part of the tests.
+ * The sign-in form in front of a pull request preview: it answers before the application does.
  */
 final class TestingLoginTest extends TestCase
 {
     private const PASSWORD = 'správné heslo';
     private const NOW = 1_800_000_000;
     private const VISITOR = '192.0.2.10';
-    private const HOST = 'master.testing.example';
+    private const HOST = '42.testing.example';
+    private const OPEN_NETWORKS = ['203.0.113.0/24', '2001:db8:1::/48'];
 
     private string $directory;
     private string $passwordHash;
@@ -46,7 +47,7 @@ final class TestingLoginTest extends TestCase
 
     public function testVisitorWithoutCookieIsSentToTheFormAndBack(): void {
         foreach (['GET', 'HEAD'] as $method) {
-            $response = $this->verify($method, '/sprava/nastroje?od=1&do=2', '');
+            $response = $this->send($method, '/sprava/nastroje?od=1&do=2');
             Assert::same(302, $response->status);
             Assert::same(['Location: /testing-login?back=%2Fsprava%2Fnastroje%3Fod%3D1%26do%3D2'], $response->headers);
         }
@@ -62,7 +63,7 @@ final class TestingLoginTest extends TestCase
 
     public function testRequestThatCannotBeRedirectedIsRefused(): void {
         foreach (['POST', 'OPTIONS', ''] as $method) {
-            $response = $this->verify($method, '/uzivatel/edit/1', '');
+            $response = $this->send($method, '/uzivatel/edit/1');
             Assert::same(403, $response->status);
             Assert::contains('/testing-login', $response->body);
             Assert::same([], $this->headers($response, 'Location'));
@@ -80,8 +81,97 @@ final class TestingLoginTest extends TestCase
         );
 
         $cookie = $this->cookieValue($response);
-        Assert::same(204, $this->verify('GET', '/', $cookie)->status);
-        Assert::same(204, $this->verify('POST', '/uzivatel/edit/1', $cookie)->status);
+        Assert::true($this->isLetIn('GET', '/', $cookie));
+        Assert::true($this->isLetIn('POST', '/uzivatel/edit/1', $cookie));
+        Assert::true($this->isLetIn('GET', '/css/screen.css', $cookie));
+    }
+
+    public function testNothingButTheFormIsServedWithoutSigningIn(): void {
+        foreach (['/', '/css/screen.css', '/demo-osoba', '/api/health-check', '/testing-loginx', '//testing-login'] as $uri) {
+            Assert::same(302, $this->send('GET', $uri)->status, $uri);
+        }
+    }
+
+    public function testOpenNetworkComesInWithoutSigningIn(): void {
+        $this->login = new UserdbTestingLogin($this->passwordHash, 'testing.example', $this->directory, self::OPEN_NETWORKS);
+        foreach (['203.0.113.1', '203.0.113.255', '2001:db8:1:ffff::1', '198.51.100.7, 203.0.113.9'] as $forwardedFor) {
+            Assert::true($this->isLetIn('GET', '/', '', headers: ['X-Forwarded-For' => $forwardedFor]), $forwardedFor);
+            Assert::true($this->isLetIn('POST', '/uzivatel/edit/1', '', headers: ['X-Forwarded-For' => $forwardedFor]), $forwardedFor);
+        }
+        // Only the last address was written by the proxy; the ones before it are whatever the visitor sent.
+        foreach (['203.0.112.255', '203.0.114.0', '2001:db8:2::1', '203.0.113.9, 198.51.100.7', 'unknown', ''] as $forwardedFor) {
+            Assert::same(302, $this->send('GET', '/', ['X-Forwarded-For' => $forwardedFor])->status, $forwardedFor);
+        }
+        Assert::same(302, $this->send('GET', '/', ['X_Forwarded_For' => '203.0.113.1', 'X-Forwarded-For' => self::VISITOR])->status);
+    }
+
+    /** @return list<array{string, string, bool}> network, address of the visitor, whether the address lies in it */
+    public function networkEdges(): array {
+        return [
+            ['0.0.0.0/0', '198.51.100.7', true],
+            ['0.0.0.0/0', '2001:db8::1', false],
+            ['::/0', '2001:db8::1', true],
+            ['::/0', '198.51.100.7', false],
+            ['203.0.113.7/32', '203.0.113.7', true],
+            ['203.0.113.7/32', '203.0.113.6', false],
+            ['203.0.113.6/31', '203.0.113.7', true],
+            ['203.0.113.6/31', '203.0.113.8', false],
+            ['203.0.112.0/20', '203.0.127.255', true],
+            ['203.0.112.0/20', '203.0.128.0', false],
+            ['203.0.112.0/20', '203.0.111.255', false],
+            // An address inside the network stands for the network it lies in.
+            ['203.0.119.5/20', '203.0.112.1', true],
+            ['128.0.0.0/1', '128.0.0.1', true],
+            ['128.0.0.0/1', '127.255.255.255', false],
+            ['2001:db8:2::/47', '2001:db8:3:ffff::1', true],
+            ['2001:db8:2::/47', '2001:db8:4::1', false],
+            ['2001:db8:2::/47', '2001:db8:1:ffff::1', false],
+            ['2001:db8::1/128', '2001:db8::1', true],
+            ['2001:db8::1/128', '2001:db8::2', false],
+            ['2001:db8::2/127', '2001:db8::3', true],
+            ['2001:db8::2/127', '2001:db8::4', false],
+            ['::ffff:203.0.113.0/120', '203.0.113.7', false],
+        ];
+    }
+
+    /** @dataProvider networkEdges */
+    public function testOpenNetworkEndsWhereItsPrefixDoes(string $network, string $address, bool $inside): void {
+        $this->login = new UserdbTestingLogin($this->passwordHash, 'testing.example', $this->directory, [$network]);
+        Assert::same($inside, $this->isLetIn('GET', '/', '', headers: ['X-Forwarded-For' => $address]), "$address in $network");
+    }
+
+    /**
+     * Only a proxy connects from a private address. Whoever connects from a public one is the visitor,
+     * and the address it names in the header is its own claim.
+     */
+    public function testVisitorConnectingDirectlyCannotNameItsAddress(): void {
+        $this->login = new UserdbTestingLogin($this->passwordHash, 'testing.example', $this->directory, self::OPEN_NETWORKS);
+        foreach (['198.51.100.1', '2a00:1450:4014::1'] as $outside) {
+            $response = $this->guard('GET', '/', ['X-Forwarded-For' => '203.0.113.5'], [], [], '', self::NOW, $outside);
+            Assert::same(302, $response?->status, $outside);
+        }
+        Assert::null($this->guard('GET', '/', ['X-Forwarded-For' => self::VISITOR], [], [], '', self::NOW, '203.0.113.5'));
+        foreach (['10.0.1.7', '172.18.0.2', '192.168.1.1', '127.0.0.1', '::1', 'fd00::2'] as $proxy) {
+            Assert::null($this->guard('GET', '/', ['X-Forwarded-For' => '203.0.113.5'], [], [], '', self::NOW, $proxy), $proxy);
+        }
+
+        for ($attempt = 1; $attempt <= UserdbTestingLogin::MAX_FAILURES; $attempt++) {
+            $named = ['X-Forwarded-For' => "198.51.100.$attempt"];
+            Assert::same(403, $this->guard('POST', '/testing-login', $named, [], ['password' => 'špatné heslo'], '', self::NOW, '192.0.2.99')?->status);
+        }
+        Assert::same(429, $this->guard('POST', '/testing-login', [], [], ['password' => self::PASSWORD], '', self::NOW, '192.0.2.99')?->status);
+    }
+
+    public function testWithoutProxyTheConnectingAddressDecides(): void {
+        $this->login = new UserdbTestingLogin($this->passwordHash, 'testing.example', $this->directory, ['127.0.0.0/8']);
+        Assert::true($this->isLetIn('GET', '/', ''));
+        Assert::same(302, $this->send('GET', '/', ['X-Forwarded-For' => self::VISITOR])->status);
+    }
+
+    public function testNoNetworkIsOpenUnlessNamed(): void {
+        foreach (['203.0.113.1', '127.0.0.1', '10.0.0.1', '::1'] as $forwardedFor) {
+            Assert::same(302, $this->send('GET', '/', ['X-Forwarded-For' => $forwardedFor])->status, $forwardedFor);
+        }
     }
 
     public function testHashWrittenByCaddyIsAccepted(): void {
@@ -93,15 +183,15 @@ final class TestingLoginTest extends TestCase
     public function testCookieEndsAfterItsLifetime(): void {
         $cookie = $this->cookieValue($this->signIn(self::PASSWORD, '/'));
         $lastSecond = self::NOW + UserdbTestingLogin::SESSION_SECONDS - 1;
-        Assert::same(204, $this->verify('GET', '/', $cookie, $lastSecond)->status);
-        Assert::same(302, $this->verify('GET', '/', $cookie, $lastSecond + 1)->status);
+        Assert::true($this->isLetIn('GET', '/', $cookie, $lastSecond));
+        Assert::same(302, $this->send('GET', '/', cookie: $cookie, now: $lastSecond + 1)->status);
     }
 
     public function testForgedCookieIsRefused(): void {
         [$expires, $signature] = explode('.', $this->cookieValue($this->signIn(self::PASSWORD, '/')));
         $later = (string) ((int) $expires + 1);
         foreach (["$later.$signature", "$expires." . strrev($signature), "$expires.$signature\n", $expires, "$expires.", ''] as $forged) {
-            Assert::same(302, $this->verify('GET', '/', $forged)->status, "cookie '$forged'");
+            Assert::same(302, $this->send('GET', '/', cookie: $forged)->status, "cookie '$forged'");
         }
     }
 
@@ -109,7 +199,7 @@ final class TestingLoginTest extends TestCase
         $cookie = $this->cookieValue($this->signIn(self::PASSWORD, '/'));
         $newHash = password_hash('jiné heslo', PASSWORD_BCRYPT, ['cost' => 4]);
         $this->login = new UserdbTestingLogin($newHash, 'testing.example', $this->directory);
-        Assert::same(302, $this->verify('GET', '/', $cookie)->status);
+        Assert::same(302, $this->send('GET', '/', cookie: $cookie)->status);
     }
 
     public function testWrongPasswordShowsTheFormAgain(): void {
@@ -148,11 +238,13 @@ final class TestingLoginTest extends TestCase
     }
 
     /**
-     * PHP files X_Forwarded_For of a client under the same $_SERVER key as X-Forwarded-For of the proxy.
+     * PHP files X_Forwarded_For of a client under the same $_SERVER key as X-Forwarded-For of the proxy,
+     * and the proxy may keep the addresses the client sent in front of the one it adds itself.
      */
     public function testVisitorCannotChooseTheAddressItIsCountedUnder(): void {
         for ($attempt = 1; $attempt <= UserdbTestingLogin::MAX_FAILURES; $attempt++) {
-            $response = $this->send('POST', '/testing-login', ['X-Forwarded-For' => self::VISITOR, 'X_Forwarded_For' => "198.51.100.$attempt"], post: ['password' => 'špatné heslo']);
+            $headers = ['X-Forwarded-For' => "198.51.100.$attempt, " . self::VISITOR, 'X_Forwarded_For' => "198.51.100.$attempt"];
+            $response = $this->send('POST', '/testing-login', $headers, post: ['password' => 'špatné heslo']);
             Assert::same(403, $response->status);
         }
         Assert::same(429, $this->signIn(self::PASSWORD, '/')->status);
@@ -178,7 +270,7 @@ final class TestingLoginTest extends TestCase
     public function testWayBackNeverLeavesTheInstance(string $target): void {
         $signIn = $this->signIn(self::PASSWORD, $target);
         Assert::same('Location: /', $signIn->headers[0]);
-        Assert::same(['Location: /testing-login?back=%2F'], $this->verify('GET', $target, '')->headers);
+        Assert::same(['Location: /testing-login?back=%2F'], $this->send('GET', $target)->headers);
         Assert::contains('name="back" value="/"', $this->send('GET', '/testing-login', query: ['back' => $target])->body);
         $signedInPage = $this->send('GET', '/testing-login', query: ['back' => $target], cookie: $this->cookieValue($signIn));
         Assert::contains('<a href="/">', $signedInPage->body);
@@ -222,7 +314,7 @@ final class TestingLoginTest extends TestCase
     }
 
     public function testOtherPathsAndMethodsDoNotExist(): void {
-        foreach ([['GET', '/'], ['GET', '/testing-login/sign-out'], ['PUT', '/testing-login'], ['GET', '/testing-login/']] as [$method, $uri]) {
+        foreach ([['GET', '/testing-login/sign-out'], ['PUT', '/testing-login'], ['GET', '/testing-login/'], ['GET', '/testing-login/x']] as [$method, $uri]) {
             Assert::same(404, $this->send($method, $uri)->status, "$method $uri");
         }
     }
@@ -241,17 +333,61 @@ final class TestingLoginTest extends TestCase
             Assert::exception(fn () => new UserdbTestingLogin($this->passwordHash, $notADomain, $this->directory), \InvalidArgumentException::class, '%a%domain%a%');
         }
         Assert::exception(fn () => new UserdbTestingLogin($this->passwordHash, 'testing.example', $this->directory . '/missing'), \InvalidArgumentException::class, '%a%directory%a%');
+        foreach (['203.0.113.0', '203.0.113.0/33', '203.0.113.0/-1', '203.0.113.0/8x', 'hkfree/8', '::/129', '', ' 203.0.113.0/24'] as $notANetwork) {
+            Assert::exception(
+                fn () => new UserdbTestingLogin($this->passwordHash, 'testing.example', $this->directory, [$notANetwork]),
+                \InvalidArgumentException::class,
+                '%a%network%a%',
+            );
+        }
     }
 
     /**
-     * The entry script under PHP's own server, started with the options of the systemd unit.
+     * The local web shows its environment to every visitor in the Tracy bar, and the hash signs the cookies.
      */
-    public function testServiceAnswersOverHttp(): void {
-        $port = $this->startService($this->unitOptions(), ['USERDB_TESTING_LOGIN_COOKIE_DOMAIN' => 'testing.example']);
-        [$status, $headers] = $this->http($port, 'GET', '/verify', ['X-Forwarded-Method: GET', 'X-Forwarded-Uri: /sprava']);
-        Assert::same(302, $status);
-        Assert::contains('Location: /testing-login?back=%2Fsprava', $headers);
-        Assert::same([], preg_grep('~^X-Powered-By:~i', $headers));
+    public function testSetupIsTakenOutOfTheEnvironmentOfTheApplication(): void {
+        $setup = [
+            'USERDB_TESTING_LOGIN_PASSWORD_HASH' => $this->passwordHash,
+            'USERDB_TESTING_LOGIN_COOKIE_DOMAIN' => 'testing.example',
+            'USERDB_TESTING_LOGIN_STATE' => $this->directory,
+            'USERDB_TESTING_LOGIN_OPEN_NETWORKS' => ' 203.0.113.0/24 , 2001:db8:1::/48,',
+        ];
+        foreach ($setup as $name => $value) {
+            putenv("$name=$value");
+            $_ENV[$name] = $_SERVER[$name] = $value;
+        }
+        try {
+            $this->login = UserdbTestingLogin::fromEnvironment();
+            foreach (array_keys($setup) as $name) {
+                Assert::false(getenv($name), $name);
+                Assert::false(array_key_exists($name, getenv()), $name);
+                Assert::false(array_key_exists($name, $_ENV), $name);
+                Assert::false(array_key_exists($name, $_SERVER), $name);
+            }
+        } finally {
+            foreach (array_keys($setup) as $name) {
+                putenv($name);
+                unset($_ENV[$name], $_SERVER[$name]);
+            }
+        }
+        $signIn = $this->signIn(self::PASSWORD, '/');
+        Assert::same(303, $signIn->status);
+        Assert::contains('Domain=testing.example;', $signIn->headers[1]);
+        Assert::true($this->isLetIn('GET', '/', '', headers: ['X-Forwarded-For' => '2001:db8:1::7']));
+        Assert::same(302, $this->send('GET', '/', ['X-Forwarded-For' => '198.51.100.7'])->status);
+    }
+
+    /**
+     * The router of a preview under PHP's own server, as scripts/userdb_preview.sh starts it.
+     */
+    public function testPreviewAnswersOverHttp(): void {
+        $port = $this->startService(['USERDB_TESTING_LOGIN_COOKIE_DOMAIN' => 'testing.example']);
+        foreach (['/sprava', '/favicon.ico'] as $path) {
+            [$status, $headers] = $this->http($port, 'GET', $path, []);
+            Assert::same(302, $status, $path);
+            Assert::contains('Location: /testing-login?back=' . rawurlencode($path), $headers);
+            Assert::same([], preg_grep('~^X-Powered-By:~i', $headers));
+        }
 
         $form = ['Content-Type: application/x-www-form-urlencoded'];
         [$status, $headers] = $this->http($port, 'POST', '/testing-login', $form, http_build_query(['password' => self::PASSWORD, 'back' => '/sprava']));
@@ -262,53 +398,64 @@ final class TestingLoginTest extends TestCase
         Assert::count(1, $cookies);
         $cookie = explode(';', substr((string) reset($cookies), strlen('Set-Cookie: ')))[0];
 
-        [$status] = $this->http($port, 'GET', '/verify', ["Cookie: $cookie", 'X-Forwarded-Method: GET', 'X-Forwarded-Uri: /sprava']);
-        Assert::same(204, $status);
+        // A file of www/ is answered by the local web itself, without the application and its database.
+        [$status, , $body] = $this->http($port, 'GET', '/favicon.ico', ["Cookie: $cookie"]);
+        Assert::same(200, $status);
+        Assert::same(file_get_contents(__DIR__ . '/../www/favicon.ico'), $body);
+    }
+
+    public function testOpenNetworkOverHttpIsReadFromTheEnvironment(): void {
+        $port = $this->startService(['USERDB_TESTING_LOGIN_OPEN_NETWORKS' => ' 203.0.113.0/24, 2001:db8:1::/48 ']);
+        [$status] = $this->http($port, 'GET', '/favicon.ico', ['X-Forwarded-For: 203.0.113.5']);
+        Assert::same(200, $status);
+        [$status] = $this->http($port, 'GET', '/favicon.ico', ['X-Forwarded-For: 203.0.113.5, ' . self::VISITOR]);
+        Assert::same(302, $status);
     }
 
     public function testBrokenSetupOverHttpLetsNobodyInAndTellsNothing(): void {
-        $port = $this->startService($this->unitOptions(), ['STATE_DIRECTORY' => $this->directory . '/missing']);
-        [$status, , $body] = $this->http($port, 'GET', '/verify', ['X-Forwarded-Method: GET', 'X-Forwarded-Uri: /']);
-        Assert::same(500, $status);
-        Assert::same('', $body);
-    }
-
-    /**
-     * PHP warns about more than max_input_vars cookies before the script starts. Printed, the warning would
-     * turn the answer into 200, which the reverse proxy takes for a signed-in visitor.
-     */
-    public function testWarningOfPhpDoesNotOpenTheGate(): void {
-        $port = $this->startService($this->unitOptions());
-        $cookies = implode('; ', array_map(static fn (int $number): string => "c$number=1", range(1, (int) ini_get('max_input_vars') + 2)));
-        [$status, , $body] = $this->http($port, 'GET', '/verify', ["Cookie: $cookies", 'X-Forwarded-Method: GET', 'X-Forwarded-Uri: /']);
-        Assert::same(302, $status);
-        Assert::same('', $body);
-    }
-
-    public function testServiceStartedWithoutTheOptionsOfTheUnitLetsNobodyIn(): void {
-        $cookie = UserdbTestingLogin::COOKIE . '=' . $this->cookieValue($this->signIn(self::PASSWORD, '/'));
-        foreach ([['-d', 'display_errors=1', '-d', 'display_startup_errors=0'], ['-d', 'display_errors=0', '-d', 'display_startup_errors=1']] as $options) {
-            $port = $this->startService($options);
-            [$status] = $this->http($port, 'GET', '/verify', ["Cookie: $cookie", 'X-Forwarded-Method: GET', 'X-Forwarded-Uri: /']);
-            Assert::same(500, $status, implode(' ', $options));
+        $broken = [
+            ['USERDB_TESTING_LOGIN_STATE' => $this->directory . '/missing'],
+            ['USERDB_TESTING_LOGIN_PASSWORD_HASH' => ''],
+            ['USERDB_TESTING_LOGIN_OPEN_NETWORKS' => '203.0.113.0/24,hkfree'],
+        ];
+        foreach ($broken as $environment) {
+            $port = $this->startService($environment);
+            foreach (['/', '/favicon.ico', '/testing-login'] as $path) {
+                [$status, , $body] = $this->http($port, 'GET', $path, ['X-Forwarded-For: 203.0.113.5']);
+                Assert::same(500, $status, $path);
+                Assert::same('', $body, $path);
+            }
         }
     }
 
+    /**
+     * PHP warns about more than max_input_vars cookies before the router starts. Printed, the warning would
+     * replace the redirect to the form with a page of paths of the image.
+     */
+    public function testWarningOfPhpIsNotShownToTheVisitor(): void {
+        $port = $this->startService();
+        $cookies = implode('; ', array_map(static fn (int $number): string => "c$number=1", range(1, (int) ini_get('max_input_vars') + 2)));
+        [$status, $headers, $body] = $this->http($port, 'GET', '/sprava', ["Cookie: $cookies"]);
+        Assert::same(302, $status);
+        Assert::contains('Location: /testing-login?back=%2Fsprava', $headers);
+        Assert::same('', $body);
+    }
+
     public function testServiceCountsAttemptsUnderTheAddressNamedByTheProxy(): void {
-        $port = $this->startService($this->unitOptions());
+        $port = $this->startService();
         $body = http_build_query(['password' => 'špatné heslo']);
         for ($attempt = 1; $attempt <= UserdbTestingLogin::MAX_FAILURES + 1; $attempt++) {
-            $headers = ['Content-Type: application/x-www-form-urlencoded', 'X-Forwarded-For: ' . self::VISITOR, "X_Forwarded_For: 198.51.100.$attempt"];
+            $headers = ['Content-Type: application/x-www-form-urlencoded', "X-Forwarded-For: 198.51.100.$attempt, " . self::VISITOR, "X_Forwarded_For: 198.51.100.$attempt"];
             [$status] = $this->http($port, 'POST', '/testing-login', $headers, $body);
             Assert::same($attempt <= UserdbTestingLogin::MAX_FAILURES ? 403 : 429, $status, "attempt $attempt");
         }
     }
 
     /**
-     * Several workers, as on the server: attempts that arrive together must not each see a free place.
+     * Several workers, as in a preview: attempts that arrive together must not each see a free place.
      */
     public function testAttemptsSentAtOnceCannotPassTheLimit(): void {
-        $port = $this->startService($this->unitOptions(), ['PHP_CLI_SERVER_WORKERS' => '4']);
+        $port = $this->startService(['PHP_CLI_SERVER_WORKERS' => '4']);
         $body = http_build_query(['password' => 'špatné heslo']);
         $request = "POST /testing-login HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\nX-Forwarded-For: " . self::VISITOR . "\r\n"
             . "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: " . strlen($body) . "\r\n\r\n$body";
@@ -331,7 +478,7 @@ final class TestingLoginTest extends TestCase
      * Terminated, PHP's server leaves its workers running. Every run of the tests would leave them behind.
      */
     public function testStoppedServiceLeavesNoProcessBehind(): void {
-        $this->startService($this->unitOptions(), ['PHP_CLI_SERVER_WORKERS' => '4']);
+        $this->startService(['PHP_CLI_SERVER_WORKERS' => '4']);
         $server = proc_get_status($this->services[0])['pid'];
         $workers = [];
         for ($attempt = 0; $attempt < 100 && count($workers) < 4; $attempt++) {
@@ -349,8 +496,12 @@ final class TestingLoginTest extends TestCase
         Assert::same([], $left);
     }
 
-    private function verify(string $method, string $uri, string $cookie, int $now = self::NOW): UserdbTestingLoginResponse {
-        return $this->send('GET', '/verify', ['X-Forwarded-Method' => $method, 'X-Forwarded-Uri' => $uri], cookie: $cookie, now: $now);
+    /**
+     * @param array<string, string> $headers
+     * @return bool whether the request goes on to the application
+     */
+    private function isLetIn(string $method, string $uri, string $cookie, int $now = self::NOW, array $headers = []): bool {
+        return $this->guard($method, $uri, $headers, [], [], $cookie, $now) === null;
     }
 
     private function signIn(string $password, string $back, int $now = self::NOW, string $visitor = self::VISITOR): UserdbTestingLoginResponse {
@@ -358,6 +509,8 @@ final class TestingLoginTest extends TestCase
     }
 
     /**
+     * The answer of the form to a request it does not let in to the application.
+     *
      * @param array<string, string> $headers
      * @param array<string, mixed> $query
      * @param array<string, mixed> $post
@@ -371,8 +524,30 @@ final class TestingLoginTest extends TestCase
         string $cookie = '',
         int $now = self::NOW,
     ): UserdbTestingLoginResponse {
-        $server = ['REQUEST_METHOD' => $method, 'REQUEST_URI' => $uri, 'REMOTE_ADDR' => '127.0.0.1'];
-        return $this->login->handle($server, $headers + ['Host' => self::HOST], $query, $post, [UserdbTestingLogin::COOKIE => $cookie], $now);
+        $response = $this->guard($method, $uri, $headers, $query, $post, $cookie, $now);
+        if ($response === null) {
+            throw new \LogicException("$method $uri was let in to the application.");
+        }
+        return $response;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
+     */
+    private function guard(
+        string $method,
+        string $uri,
+        array $headers,
+        array $query,
+        array $post,
+        string $cookie,
+        int $now,
+        string $connectingAddress = '127.0.0.1',
+    ): ?UserdbTestingLoginResponse {
+        $server = ['REQUEST_METHOD' => $method, 'REQUEST_URI' => $uri, 'REMOTE_ADDR' => $connectingAddress];
+        return $this->login->guard($server, $headers + ['Host' => self::HOST], $query, $post, [UserdbTestingLogin::COOKIE => $cookie], $now);
     }
 
     /** @return list<string> */
@@ -385,26 +560,25 @@ final class TestingLoginTest extends TestCase
         return explode(';', substr($response->headers[1], strlen('Set-Cookie: userdb_testing_login=')))[0];
     }
 
-    /** @return list<string> options of PHP from ExecStart of the systemd unit */
-    private function unitOptions(): array {
-        $unit = (string) file_get_contents(__DIR__ . '/../scripts/userdb_testing_login.service');
-        Assert::true(preg_match('~^ExecStart=/usr/bin/php (-d .+) -S 127\.0\.0\.1:\d+ \S+/userdb_testing_login\.php$~m', $unit, $match) === 1);
+    /** @return list<string> options of PHP from the command that starts the web in scripts/userdb_preview.sh */
+    private function previewOptions(): array {
+        $script = (string) file_get_contents(__DIR__ . '/../scripts/userdb_preview.sh');
+        Assert::true(preg_match('~^php (-d .+) -S 0\.0\.0\.0:8080 -t www scripts/userdb_preview_router\.php &$~m', $script, $match) === 1);
         return explode(' ', $match[1]);
     }
 
     /**
-     * @param list<string> $phpOptions
      * @param array<string, string> $environment
-     * @return int port the service listens on; tearDown() stops it
+     * @return int port the preview listens on; tearDown() stops it
      */
-    private function startService(array $phpOptions, array $environment = []): int {
+    private function startService(array $environment = []): int {
         $socket = stream_socket_server('tcp://127.0.0.1:0');
         Assert::true(is_resource($socket));
         $port = (int) substr(strrchr((string) stream_socket_get_name($socket, false), ':') ?: '', 1);
         fclose($socket);
 
-        $command = [PHP_BINARY, ...$phpOptions, '-S', "127.0.0.1:$port", __DIR__ . '/../scripts/userdb_testing_login.php'];
-        $environment += ['USERDB_TESTING_LOGIN_PASSWORD_HASH' => $this->passwordHash, 'STATE_DIRECTORY' => $this->directory] + getenv();
+        $command = [PHP_BINARY, ...$this->previewOptions(), '-S', "127.0.0.1:$port", '-t', __DIR__ . '/../www', __DIR__ . '/../scripts/userdb_preview_router.php'];
+        $environment += ['USERDB_TESTING_LOGIN_PASSWORD_HASH' => $this->passwordHash, 'USERDB_TESTING_LOGIN_STATE' => $this->directory] + getenv();
         $null = ['file', '/dev/null', 'r+'];
         $service = proc_open($command, [$null, $null, $null], $pipes, null, $environment);
         Assert::true(is_resource($service));
@@ -417,7 +591,7 @@ final class TestingLoginTest extends TestCase
             }
             usleep(50_000);
         }
-        throw new \RuntimeException("The service did not start on port $port.");
+        throw new \RuntimeException("The preview did not start on port $port.");
     }
 
     /** PHP's server does not stop its workers when it is terminated, so each of them is terminated too. */

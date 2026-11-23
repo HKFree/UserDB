@@ -120,12 +120,12 @@ Review proběhne před odevzdáním zadavateli, i u malé změny a u dokumentace
   issue, komentář a spuštění vzdáleného CI.
 - Nasazení dělá člověk ručně; sloučení PR do `master` nic nenasazuje. Nespouštěj
   `git push production`. Schválení publikování není svolení nasadit.
-- Změnu zkoušej lokálně přes Flox, viz Příkazy. Sdílený testovací server má
-  instanci pro `master` a pro každý otevřený PR z větve tohoto repa. Nasazuje
-  ji workflow `deploy-testing.yml` při otevření PR a při každém pushi do něj,
-  takže publikováním PR se jeho kód na serveru spustí. Každé nasazení smaže
-  databázi instance a postaví ji znovu z demo dat, viz
-  [README](readme.md#testing-server).
+- Změnu zkoušej lokálně přes Flox, viz Příkazy. `master` a každý otevřený PR
+  z větve tohoto repa má náhled na Coolify. Coolify ho sestaví
+  z `Dockerfile.preview` při otevření PR a při každém pushi do něj, takže
+  publikováním PR se jeho kód na serveru spustí. Každé nasazení začíná
+  s novou databází z demo dat, viz
+  [README](readme.md#pull-request-previews).
 - Do commitů, PR, issue ani paměti nepiš tajné údaje, osobní údaje členů ani
   postup zneužití neopravené chyby. CI workflow `Gitleaks` prochází celou
   historii; do `.gitleaksignore` bez pokynu nic nepřidávej.
@@ -269,9 +269,10 @@ npx skills add stablyai/orca
 | `tests/` | Nette Tester; `tests/bootstrap.php` načte společný základ: testovací kontejner, databázi z migrací ve Floxu a spouštění presenterů |
 | `tests/e2e/` | testy hlavních postupů v prohlížeči (Playwright Test): `specs/` se scénáři, `fixtures.mjs` s přihlášením demo osoby, kontrolou chyb stránky a čtením uložených e-mailů |
 | `tests/screenshots/` | nástroje a testy náhledů stránek v PR: Playwright, porovnání PNG, validace artefaktu a sestavení komentáře; stejným `npm test` běží i testy v prohlížeči nad skutečným `www/js/main.js` a `www/css/screen.css`: kopírování hodnot (`test/copy-value.test.mjs`), šířka formulářů na telefonu (`test/message-form.test.mjs`, `test/edit-form.test.mjs`) a šířka rozvržení stránky (`test/layout-width.test.mjs`) |
-| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, výběr vývojové nebo E2E instance v `UserdbLocalInstance.php`, objemová demo data v `UserdbDemoVolume.php`, demo osoby v `UserdbDemoPersonas.php`, jejich stránka v `UserdbDemoPersonaPage.php` a Tracy panel v `UserdbDemoPersonaPanel.php`, router PHP serveru, nastavení PHP v `userdb_php/php.ini`, příprava worktree), měření pokrytí testy, spuštění testů v prohlížeči (`userdb_e2e.sh`), start webu a úklid procesů společný pro testy v prohlížeči a focení stránek (`userdb_web_lib.sh`), skript nasazení na testovací server a jeho přihlašovací formulář |
+| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, výběr vývojové nebo E2E instance v `UserdbLocalInstance.php`, objemová demo data v `UserdbDemoVolume.php`, demo osoby v `UserdbDemoPersonas.php`, jejich stránka v `UserdbDemoPersonaPage.php` a Tracy panel v `UserdbDemoPersonaPanel.php`, router PHP serveru, nastavení PHP v `userdb_php/php.ini`, příprava worktree), měření pokrytí testy, spuštění testů v prohlížeči (`userdb_e2e.sh`), start webu a úklid procesů společný pro testy v prohlížeči a focení stránek (`userdb_web_lib.sh`), běh náhledu PR v kontejneru (`userdb_preview.sh`, `userdb_preview_router.php`) a jeho přihlašovací formulář (`UserdbTestingLogin.php`) |
 | `orca.yaml` | co Orca spustí v každém novém worktree; jen věci platné pro každého, kdo má Orcu a Flox |
-| `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení na testovací server, testy v prohlížeči (`e2e.yml`), náhledy stránek v PR (`pr-screenshots.yml`) |
+| `Dockerfile.preview` | image náhledu PR na Coolify: prostředí Flox, závislosti a kód commitu; produkční image je `Dockerfile` |
+| `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, testy v prohlížeči (`e2e.yml`), náhledy stránek v PR (`pr-screenshots.yml`) |
 | `.github/pull_request_template.md` | šablona popisu PR: co a proč, ověření, review druhým modelem, neověřeno |
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
 | `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |
@@ -341,7 +342,7 @@ použitelnost ve stávajícím vzhledu, ne nový design.
   formuláři, s dlouhým textem, s mnoha řádky a pro každou roli, která ji
   vidí. Role přepínej přes demo osoby na `/demo-osoba`; co v datech je, říká
   [katalog demo dat](docs/userdb_demo_data.md). Chybí-li pro některý stav
-  data, doplň je do `db/dummy-data`, ať je má i testovací instance PR.
+  data, doplň je do `db/dummy-data`, ať je má i náhled PR.
 - **Počítač i telefon.** Každou změnu si prohlédni v prohlížeči na šířce
   1280 px a v emulaci telefonu (šířka 375 px a mobilní user agent, podle
   kterého se `main.js` rozhoduje). V obou musí jít přečíst a ovládat; stránka se nesmí

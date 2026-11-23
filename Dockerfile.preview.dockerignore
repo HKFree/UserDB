@@ -1,0 +1,30 @@
+# What a checkout holds on top of a fresh clone, which is what Coolify builds from: everything .gitignore
+# names (tests/PreviewImageTest.php keeps the two lists together), git itself and the files of Flox and tools.
+.git
+.flox/cache
+.flox/log
+.flox/run
+.playwright-mcp
+**/.DS_Store
+**/node_modules
+
+log/*
+temp/*
+vendor/*
+!vendor/others
+.idea
+.DS_Store
+app/config/config.local.neon
+app/config/config.local.bak.neon
+docker-compose.override.yml
+nbproject/private
+ca-certificates.crt
+resolv.conf
+.local.env
+.php-cs-fixer.cache
+.php_cs.cache
+.env
+trace*json
+tests/**/output
+tests/screenshots/node_modules
+tests/e2e/node_modules

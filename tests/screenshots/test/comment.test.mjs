@@ -63,3 +63,21 @@ test('a nonzero ratio below rounding precision is not displayed as zero', () => 
     data.snapshots[0].diffRatio = 560 / (1440 * 927);
     assert.match(buildComment(data, urls, meta), /méně než 0,1 % pixelů/);
 });
+
+test('previews are collapsed so that the comment does not push the discussion away', () => {
+    const text = buildComment(manifest('changed'), urls, meta);
+    const visible = text.replace(/<details>[\s\S]*?<\/details>/g, '');
+    assert.equal(visible.includes('<img'), false);
+    assert.match(visible, /\*\*Změněno 1 z 2 snímků\.\*\*/);
+    assert.match(text, /<details>\n<summary>Změny \(1\)<\/summary>\n\n\| Stránka \| Před \| Po \| Rozdíl \|/);
+    assert.match(text, /<details>\n<summary>Všechny stránky \(1\)<\/summary>\n\n\| Stránka \| Desktop \| Mobil \|/);
+    // GitHub renders a table inside <details> only when blank lines separate it from the tags.
+    assert.equal(text.match(/\|\n\n<\/details>/g).length, 2);
+});
+
+test('the introduction is one short line', () => {
+    const intro = buildComment(manifest(), urls, meta).split('\n')[3];
+    assert.equal(intro, 'Commit `aaaaaaa` proti `bbbbbbb` (předek s `master`), základní demo data. '
+        + '[Log běhu](https://github.com/HKFree/UserDB/actions/runs/123) · '
+        + '[Plné rozlišení](https://github.com/HKFree/UserDB/actions/runs/123/artifacts/456)');
+});
