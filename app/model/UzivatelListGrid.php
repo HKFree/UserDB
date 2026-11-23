@@ -159,12 +159,12 @@ class UzivatelListGrid
                 $anchor = Html::el('a')
                             ->setHref($presenter->link('Uzivatel:edit', array('id' => $item->id)))
                             ->setTitle('Editovat')
-                            ->setClass('btn btn-default btn-xs btn-in-table pull-right');
+                            ->setClass('btn btn-default btn-xs btn-in-table');
                 $anchor->create('span')->setClass('glyphicon glyphicon-pencil'); // inner edit icon
                 $uidLink .= $anchor;
             }
 
-            return $uidLink;
+            return Html::el('span')->setClass('user-uid')->setHtml($uidLink);
         })->setSortable();
 
         if ($canViewOrEdit) {
@@ -404,10 +404,10 @@ class UzivatelListGrid
             ->title($item->id)
             ->setText($item->id);
 
-            $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
+            $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label');
             $spanSpolek->addClass($item->TypClenstvi_id !== 1 ? "label-spolek" : "label-neaktivni");
 
-            $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label')->setAttribute('style', 'margin-left: 4px;');
+            $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label');
             $spanDruzstvo->addClass(!$item->smazano ? "label-druzstvo" : "label-neaktivni");
 
             if ($item->spolek) {
@@ -423,12 +423,12 @@ class UzivatelListGrid
                 $anchor = Html::el('a')
                             ->setHref($presenter->link('Uzivatel:edit', array('id' => $item->id)))
                             ->setTitle('Editovat')
-                            ->setClass('btn btn-default btn-xs btn-in-table pull-right');
+                            ->setClass('btn btn-default btn-xs btn-in-table');
                 $anchor->create('span')->setClass('glyphicon glyphicon-pencil'); // inner edit icon
                 $uidLink .= $anchor;
             }
 
-            return $uidLink;
+            return Html::el('span')->setClass('user-uid')->setHtml($uidLink);
         })->setSortable();
 
         if ($canViewOrEdit) {
