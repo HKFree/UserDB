@@ -6,7 +6,7 @@ use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
 use Nette\Utils\Html;
-use Grido\Grid;
+use App\Components\AppGrid;
 use Nette\Utils\DateTime;
 use Nette\Utils\ArrayHash;
 use Tracy\Debugger;
@@ -38,8 +38,7 @@ class SpravaSlucovaniPresenter extends SpravaPresenter
     protected function createComponentSlouceniGrid(string $name): void {
         $this->vyzadujOpravneni($this->jeVV()); // i export a stránkování gridu
 
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('slouceni_export');
 
         $grid->setModel($this->sloucenyUzivatel->getAll());

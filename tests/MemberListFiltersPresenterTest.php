@@ -27,7 +27,7 @@ final class MemberListFiltersPresenterTest extends DatabaseTestCase
         $this->fixtures->role($this->viewer->id, 'VV');
     }
 
-    public function testSearchButtonIsInTheFilterBarAboveEveryMemberGrid(): void {
+    public function testSearchAndResetButtonsAreInTheFilterBarAboveEveryMemberGrid(): void {
         $pages = [
             'list' => ['frm-grid-form', 'frm-othersGrid-form'],
             'listall' => ['frm-grid-form'],
@@ -41,6 +41,8 @@ final class MemberListFiltersPresenterTest extends DatabaseTestCase
                 Assert::match('~<button[^>]*type="submit"[^>]*name="buttons\[search\]"[^>]*>.*Vyhledat\s*</button>~s', (string) $filterBar, "$action/$formId");
                 Assert::notContains('display:none', (string) $filterBar, "$action/$formId hides the button");
                 Assert::same(1, substr_count($form, 'name="buttons[search]"'), "$action/$formId repeats the button under the table");
+                Assert::match('~name="buttons\[search\]".*<button[^>]*type="submit"[^>]*name="buttons\[reset\]"[^>]*>.*Resetovat\s*</button>~s', (string) $filterBar, "$action/$formId");
+                Assert::same(1, substr_count($form, 'name="buttons[reset]"'), "$action/$formId repeats Reset under the table");
             }
         }
     }

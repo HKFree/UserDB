@@ -2,6 +2,7 @@
 
 namespace App\Presenters;
 
+use App\Components\AppGrid;
 use App\Model;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
@@ -35,8 +36,7 @@ class SpravaCcPresenter extends SpravaPresenter
     protected function createComponentGrid(string $name): void {
         $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
 
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('cc_export');
 
         if ($canViewOrEdit) {

@@ -4,7 +4,7 @@ namespace App\Presenters;
 
 use Nette;
 use App\Model;
-use Grido\Grid;
+use App\Components\AppGrid;
 use Tracy\Debugger;
 
 /**
@@ -23,8 +23,7 @@ class SpravaUctuPresenter extends SpravaPresenter
     }
 
     protected function createComponentStavyuctu(string $name): void {
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
 
         $grid->setModel($this->stavBankovnihoUctu->getAktualniStavyBankovnihoUctu());
 
