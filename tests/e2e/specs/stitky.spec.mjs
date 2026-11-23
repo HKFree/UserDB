@@ -25,6 +25,15 @@ test('štítek se přidá a odebere přes AJAX a oba stavy přežijí obnovení 
     await page.reload();
     await expect(label).toBeVisible();
     expect(await colours()).toEqual(added);
+    // Křížek pro odebrání má barvu písma štítku bez průsvitnosti, aby měl stejný kontrast.
+    const remove = label.getByRole('button', { name: 'Odebrat štítek Demo globální', exact: true });
+    expect(await remove.evaluate(element => [getComputedStyle(element).opacity, getComputedStyle(element).color])).toEqual(['1', added[3]]);
+    // Najetí myší na štítek v nabídce nemění jeho barvy, jen přidá stín.
+    await page.getByRole('button', { name: 'Přidat štítek', exact: true }).click();
+    const item = page.getByRole('menuitem', { name: 'Demo oblastní', exact: true });
+    await item.hover();
+    expect(await item.evaluate(element => getComputedStyle(element).filter)).toBe('none');
+    await page.keyboard.press('Escape');
 
     navigations = 0;
     await label.getByRole('button', { name: 'Odebrat štítek Demo globální', exact: true }).click();

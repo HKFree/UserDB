@@ -1521,8 +1521,7 @@ input[readonly],
 
 /* Hover efekt */
 .dropdown-menu>li>a.stitky-item:hover {
-    filter: brightness(95%);
-    /* Efekt ztmavení při hover */
+    /* Bez ztmavení: barvy štítku drží kontrast z BarvaStitku */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
     /* Jemný stín pro hover */
 }
@@ -2919,7 +2918,6 @@ html {
     border: 0;
     background: none;
     color: inherit;
-    opacity: .7;
     font-size: 15px;
     font-weight: 700;
     line-height: 1;
@@ -2927,7 +2925,6 @@ html {
 
 .user-labels .badge-remove:hover,
 .user-labels .badge-remove:focus {
-    opacity: 1;
     text-decoration: underline;
 }
 
