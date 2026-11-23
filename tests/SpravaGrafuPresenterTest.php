@@ -10,7 +10,7 @@ use Tester\DomQuery;
 require_once __DIR__ . '/bootstrap.php';
 
 /**
- * The page Správa → Graf počtu uživatelů: summary, graph data, table of values and the choice of period.
+ * The page Nástroje → Graf počtu účastníků: summary, graph data, table of values and the choice of period.
  */
 final class SpravaGrafuPresenterTest extends DatabaseTestCase
 {
@@ -170,6 +170,8 @@ final class SpravaGrafuPresenterTest extends DatabaseTestCase
             'Počet účastníků. V horním grafu tvoří jen tenký pruh, tady mají vlastní měřítko.',
         ], $this->texts($document, '.graf-clenu-podtitul'));
         Assert::same(['Počet aktivních účastníků po měsících, od nejnovějšího'], $this->texts($document, '.graf-clenu-tabulka caption'));
+        // The menu item leading here uses the same term.
+        Assert::same(['Graf počtu účastníků'], $this->texts($document, '.navbar a[href$="/sprava-grafu/usersgraph"]'));
     }
 
     public function testPeriodLinksMarkTheSelectedOne(): void {
