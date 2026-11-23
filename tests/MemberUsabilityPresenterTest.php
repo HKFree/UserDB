@@ -228,7 +228,7 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
     private function child(DOMElement $parent, string $tag, int $index = 0): DOMElement {
         $children = $parent->getElementsByTagName($tag);
         $child = $children->item($index < 0 ? $children->length + $index : $index);
-        if (!$child instanceof DOMElement) {
+        if (($child instanceof DOMElement) === false) {
             throw new \LogicException("Missing <$tag> element.");
         }
         return $child;
