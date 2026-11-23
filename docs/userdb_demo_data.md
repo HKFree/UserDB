@@ -96,6 +96,9 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | Začátek za rok | 20050 Čestnébudoucí | ČČ 20050, typ 0 |
 | Zamítnuté | 20051 Čestnézamítnuté | ČČ 20051, typ 1 |
 | Dočasná aktivace SMS | 20052 ČestnéSMS | ČČ 20052, typ 5; zelený řádek bez textu „platné čestné členství“ |
+| Nový člen bez žádosti | 20082 Novýbezžádosti | AP 201, založen před dvěma dny; přehled CC jej ukazuje bez typu CC |
+| Nový člen s čekající žádostí | 20083 Novýčekající | AP 200, ČČ 20083; v přehledu CC je i bez schválení, jméno vidí SO 20002, SO 20012 jej nevidí |
+| Nový člen s prošlým CC | 20084 Novýprošlý | AP 201, ČČ 20084; v přehledu CC zůstává díky nedávnému založení, data bere z prošlého CC |
 | TV objednaná, neaktivní, s penězi | 20053 Televizeaktivace | Tlačítka Aktivovat a Odhlásit, cena 160 Kč |
 | TV objednaná, neaktivní, bez peněz | 20054 Televizebezpeněz | Jen Odhlásit |
 | TV aktivní dnes | 20055 Televizeaktivní | Platnost od -7 dní do +1 roku, minulé období a dva měsíční reporty |
@@ -308,12 +311,12 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 |---|---|---|
 | Oblast | -20, 200 až 208 | 10000 až 10099 |
 | Ap | 200 až 222 | 10000 až 10449 |
-| Uzivatel | 20000 až 20057, 20061 až 20081, 20090 až 20092 | 100000 až 113499 |
+| Uzivatel | 20000 až 20057, 20061 až 20084, 20090 až 20092 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
 | IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
 | SpravceOblasti | 20000 až 20030 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
-| Čestné členství | 20045 až 20052, 20072 až 20074 | žádné |
+| Čestné členství | 20045 až 20052, 20072 až 20074, 20083 a 20084 | žádné |
 | Stitek | 21000 až 21004, 21010 až 21013, 21017 | žádné |
 | Smlouva / PodpisSmlouvy | 200000 až 200006 / 200000 až 200007 | žádné |
 | UzivatelskeKonto | 2000000 až 2002402 s mezerami | 9000000 až 9269999 s mezerami, 10000000 až 10323999, 11000000 až 11000549 |
