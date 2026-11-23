@@ -235,6 +235,27 @@ ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho 
 
 Člen 20018 má známý SHA-256 hash hesla `demo-only`.
 
+### Hledání a textové filtry bez diakritiky
+
+Použij personu 1 (VV). Filtr odešli tlačítkem Vyhledat nad tabulkou. Každý filtr zkoušej zvlášť;
+`NENALEZITELNY` vrátí prázdnou tabulku.
+Filtr Obec je jen v režimu „Kompletní poznámky a adresy“; zapni ho přepínačem nad seznamem členů.
+Nová migrace `2026-11-23-150000-demo-hledani-bez-diakritiky.sql` doplňuje chybějící texty do stávajících
+syntetických řádků, jejich počty ani finanční hodnoty nemění.
+
+| Obrazovka / řádek | Filtr a příklad vstupu |
+|---|---|
+| Seznam členů, 20027 na AP 201 | Ulice `SMYSLENA 20027`, Obec `STEZERY` (Stěžery), Poznámka `TRETI RADEK` |
+| Odchozí platby, 20000 | Firma `ZELEZARSTVI SROUBEK`, Popis `RICNI`, Typ `MESICNI UHRADA`, Kategorie `SITOVE SLUZBY` |
+| Příchozí platby, 40000001 | Název účtu `SMYSLENY UCET`, Zpráva pro příjemce `PRICHOZI`, Identifikace `VSECHNYPOHYBY`, Info banky `PRICHOZI UHRADA` |
+| Konto člena 20044 | Účet Družstvo, Poznámka `PRIZNAKY` (pohyb 2000120) |
+| Nespárované platby, 40000100 | Poznámka `PRISPEVEK CLENA` (pohyb 2000300) |
+| Čestná členství, 20052 | Typ CC `DOCASNA AKTIVACE PRES SMS`, Jméno a příjmení `CESTNESMS`, AP `HLAVNI` |
+| Sloučení, 20058 | Sloučený uživatel `20059`, Sloučil `1`; oba sloupce obsahují číselná ID |
+
+Hledat lze i s diakritikou. V Čestných členstvích jsou i členové 20032 a 20033 bez typu čestného členství;
+filtr Typ CC je má přeskočit, ne skončit chybou.
+
 ## Platnost scénářů v čase
 
 Data se počítají ke dni načtení. Testovací instance je načítá při každém nasazení, lokální databáze jen při prvním

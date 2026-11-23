@@ -43,9 +43,23 @@ Ověřeno 22. 11. 2026 na lokálním webu ve Floxu, není-li uvedeno jinak.
 - Persistentní parametr presenteru jde vypnout jen výslovnou hodnotou (`money=>0`,
   `fullnotes=>false`). Odkaz, který ho jen vynechá, ho ponechá zapnutý, a nesou ho i odkazy
   v `@layout.latte` vedoucí na týž presenter.
+- Presenter test, který dá `grid-filter` rovnou do adresy, formulář filtrů i jeho adresu obejde:
+  projde, i když filtr v prohlížeči použít nejde. Chování formuláře ověřuj odesláním formuláře.
+- Našeptávač (`setSuggestion()`) se v prohlížeči nespustí: potřebuje plugin `.grido()`
+  a knihovnu typeahead, která v repu není. Jeho obsluhu na serveru jde ověřit jen AJAX
+  požadavkem v presenter testu.
+- Textový filtr nad `Selection` porovnává přes `App\Model\HledaniBezDiakritiky`; zdroj dat
+  mu podstrčí `AppGrid::setModel()`. Samotné
+  `sloupec COLLATE ...` nestačí: nad datem, částkou nebo číslem skončí chybou 1253, proto je
+  ve výrazu `CONVERT`. Převádí se do `utf8mb4`, ne do `utf8` sloupců: hledaný text přichází
+  v `utf8mb4` a se znakem mimo tříbajtové `utf8` (emoji) končí porovnání s tříbajtovým výrazem
+  chybou 1267. Stejně končí prosté `sloupec LIKE ?` nebo `sloupec = ?` nad textovým sloupcem,
+  tedy i hledání členů se znakem emoji (dotaz na IP adresu a podmínky telefonu a e-mailu).
+  Ověřeno 23. 11. 2026 dotazy na MariaDB 10.11.19.
 
 **Why:** Z kódu aplikace to vidět není a svádí to k hledání chyby v AJAXu nebo k ručně
 navázaným obsluhám, které by po zapnutí pluginu přestaly po překreslení fungovat.
+Zelený presenter test filtru neznamená, že filtr jde použít v prohlížeči.
 
 ## Odkazy v `@layout.latte`
 

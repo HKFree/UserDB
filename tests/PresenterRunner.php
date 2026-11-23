@@ -62,13 +62,13 @@ final class PresenterRunner
      * @param array<string, mixed> $parameters
      * @param array<string, mixed> $post
      */
-    public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true): PresenterResult {
+    public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true, bool $ajax = false): PresenterResult {
         $member = $this->database->table('Uzivatel')->get($uid);
         return $this->run($presenter, $parameters, $method, $post, $sameSite, [
             'HTTP_UID' => (string) $uid,
             'HTTP_GIVENNAME' => $member->nick ?? 'Unknown test member',
             'HTTP_INITIALS' => 'test-only',
-        ]);
+        ], $ajax);
     }
 
     /**
@@ -89,7 +89,7 @@ final class PresenterRunner
      * @param array<string, mixed> $post
      * @param array<string, string> $server
      */
-    private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server): PresenterResult {
+    private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server, bool $ajax = false): PresenterResult {
         if (self::$activeRequest !== null) {
             throw new \LogicException('Nested presenter runs are not supported.');
         }
@@ -124,7 +124,9 @@ final class PresenterRunner
                 $requestUrl,
                 post: $post,
                 cookies: $sameSite ? ['_nss' => '1'] : [],
-                headers: ['Host' => 'localhost', 'User-Agent' => 'UserDB tests'] + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : []),
+                headers: ['Host' => 'localhost', 'User-Agent' => 'UserDB tests']
+                    + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : [])
+                    + ($ajax ? ['X-Requested-With' => 'XMLHttpRequest'] : []),
                 method: $method,
                 remoteAddress: '127.0.0.1',
             );
