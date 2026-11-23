@@ -17,6 +17,10 @@ class UzivatelListPresenter extends BasePresenter
      */
     public $money = 0;
 
+    /** Režim „Kompletní poznámky a adresy“. Persistentní, aby ho nesly i odkazy a formuláře tabulek. */
+    #[Nette\Application\Attributes\Persistent]
+    public bool $fullnotes = false;
+
     private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
     private Model\Uzivatel $uzivatel;
     private Model\AP $ap;
@@ -51,7 +55,7 @@ class UzivatelListPresenter extends BasePresenter
         }
 
         $this->template->money = $this->maVyplnenyParametr("money") && $this->template->canViewOrEdit; // přepínač jen s oprávněním
-        $this->template->fullnotes = $this->getParameter("fullnotes", false);
+        $this->template->fullnotes = $this->fullnotes;
     }
 
     public function renderListall(): void {
@@ -67,8 +71,11 @@ class UzivatelListPresenter extends BasePresenter
         }
 
         $this->template->canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
-        // režim money se řídí stejnou podmínkou jako grid (UzivatelListGrid pouští i EXTSUPPORT)
-        $this->template->money = $this->maVyplnenyParametr("money") && ($this->getUser()->isInRole('EXTSUPPORT') || $this->template->canViewOrEdit);
+        // režim money i plné poznámky a adresy se řídí stejnou podmínkou jako grid (UzivatelListGrid pouští i EXTSUPPORT)
+        $vidiUdajeClenu = $this->getUser()->isInRole('EXTSUPPORT') || $this->template->canViewOrEdit;
+        $this->template->money = $this->maVyplnenyParametr("money") && $vidiUdajeClenu;
+        $this->template->vidiUdajeClenu = $vidiUdajeClenu;
+        $this->template->fullnotes = $this->fullnotes;
         $this->template->search = $this->getParameter('search', false);
     }
 
@@ -79,7 +86,7 @@ class UzivatelListPresenter extends BasePresenter
             $this->getUser(),
             $this->getParameter('id'),
             $this->getParameter('money', false),
-            $this->getParameter('fullnotes', false),
+            $this->fullnotes,
             $this->getParameter('search', false)
         );
     }
@@ -91,7 +98,7 @@ class UzivatelListPresenter extends BasePresenter
             $this->getUser(),
             $this->getParameter('id'),
             $this->getParameter('money', false),
-            $this->getParameter('fullnotes', false),
+            $this->fullnotes,
             $this->getParameter('search', false)
         );
     }

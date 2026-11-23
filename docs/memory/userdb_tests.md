@@ -157,6 +157,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   aktivaci Floxu. Totéž bylo pozorováno 21. 11. 2026 po okamžitém skončení aktivace kvůli syntaktické chybě
   pomocného skriptu, ještě před dokončením startu DB. Pomocný skript nejprve ověřit bez `-s`; stav služby
   lze zjistit přímo pomocí `flox services status -d .`, bez další aktivace.
+- Po dočasné úpravě šablony (zkouška, že test bez podmínky v šabloně padá) nastav obnovené šabloně
+  nový čas (`touch`). Úprava, běh testu a obnova v jednom příkazu nechaly v `temp/tests/cache`
+  zkompilovanou upravenou verzi a celá sada pak na obnovené šabloně selhala; po `touch` prošla.
+  Ověřeno 23. 11. 2026 na `UzivatelList/listall.latte`. Příčina je úsudek: Latte porovnává čas
+  souboru s časem cache na celé vteřiny.
 - Bez přístupu k unix socketu MariaDB (například v sandboxu bez sítě) databázové testy neproběhnou: připojení
   skončí „Operation not permitted“ po třicetisekundovém čekání. Bez databáze běží `ContainerTest`, `RouterTest`
   a čistě jednotkové testy.

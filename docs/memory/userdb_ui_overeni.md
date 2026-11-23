@@ -22,6 +22,18 @@ Ověřeno 22. 11. 2026 na lokálním webu ve Floxu, není-li uvedeno jinak.
   Proměnná `$t` (překlad) vzniká ve výchozí šabloně až v bloku `table`, v blocích nad tabulkou
   není; tam použít `$control->getTranslator()->translate()`.
 
+- Odkazy tabulky (řazení, stránka, export) i adresa jejího formuláře nesou jen persistentní
+  parametry presenteru a parametry metody akce. Parametr čtený jen přes `getParameter()` se
+  v nich ztratí: tak se ztrácel režim `fullnotes` a v kompletním seznamu členů se dál ztrácí
+  `search`. Ověřeno 23. 11. 2026 testem nad skutečnými odkazy vykreslené stránky
+  (`MemberListFullNotesPresenterTest`) a výpisem odkazu řazení ve výsledcích hledání.
+- Odkaz na pojmenovanou akci (`{link UzivatelList:list ...}`) stav tabulek zahodí (řazení,
+  filtr, stránku), protože tabulky nejsou persistentní komponenty; `{link this}` ho zachová.
+  Přepínače režimu nad seznamem členů proto vracejí tabulku do výchozího stavu.
+- Persistentní parametr presenteru jde vypnout jen výslovnou hodnotou (`money=>0`,
+  `fullnotes=>false`). Odkaz, který ho jen vynechá, ho ponechá zapnutý, a nesou ho i odkazy
+  v `@layout.latte` vedoucí na týž presenter.
+
 **Why:** Z kódu aplikace to vidět není a svádí to k hledání chyby v AJAXu nebo k ručně
 navázaným obsluhám, které by po zapnutí pluginu přestaly po překreslení fungovat.
 

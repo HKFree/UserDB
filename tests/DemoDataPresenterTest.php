@@ -89,7 +89,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(8, $adapter->scenarioFiles);
+        Assert::same(9, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -247,9 +247,12 @@ final class DemoDataPresenterTest extends TestCase
         $money = $this->page('UzivatelList', 'list', 201, ['money' => 1]);
         Assert::true(count($this->values($money, '//tr[contains(@class,"preplatek")]')) > 0);
         Assert::true(count($this->values($money, '//tr[contains(@class,"neaktivni")]')) > 0);
-        Assert::contains('demo20062', $this->text($this->page('UzivatelList', 'list', 213)));
-        // ZSO 20004 may edit the foreign member 20062 only because of his address inside a subnet of AP 213.
-        Assert::contains('Editovat', $this->text($this->presenters->ui(20004, 'Uzivatel', ['action' => 'show', 'id' => 20062])->html));
+        $foreignMembers = $this->text($this->page('UzivatelList', 'list', 213));
+        foreach ([20062, 20064, 20065] as $foreign) {
+            Assert::contains('demo' . $foreign, $foreignMembers);
+            // ZSO 20004 may edit a foreign member only because of the member's address inside a subnet of AP 213.
+            Assert::contains('Editovat', $this->text($this->presenters->ui(20004, 'Uzivatel', ['action' => 'show', 'id' => $foreign])->html));
+        }
         Assert::notContains('Editovat', $this->text($this->presenters->ui(20004, 'Uzivatel', ['action' => 'show', 'id' => 20063])->html));
         // An area manager finds only the company of his own area, by its name and by its IČO.
         foreach ([[20012, 'společnost', [20031]], [20012, '00987654', []], [20002, 'lhota', [20063]], [20002, '00987654', [20063]], [20002, '9999999', []]] as [$manager, $search, $found]) {
