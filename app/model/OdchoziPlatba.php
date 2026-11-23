@@ -16,11 +16,11 @@ class OdchoziPlatba extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getOdchoziPlatby(): Nette\Database\Table\Selection {
-        return ($this->findAll());
+        return $this->findAll();
     }
 
     /** @param int|string $id */
     public function getOdchoziPlatba($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $this->find($id);
     }
 }

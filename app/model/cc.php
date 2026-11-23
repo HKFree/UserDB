@@ -17,7 +17,7 @@ class cc extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getCC(): Nette\Database\Table\Selection {
-        return ($this->findAll());
+        return $this->findAll();
     }
 
     /** @return list<Nette\Database\Row> */

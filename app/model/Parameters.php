@@ -31,7 +31,7 @@ class Parameters
 
     /** @return int|float|numeric-string */
     public function getVyseClenskehoPrispevku() {
-        return ($this->clenskyPrispevek);
+        return $this->clenskyPrispevek;
     }
 
     /** @return int|float|numeric-string */

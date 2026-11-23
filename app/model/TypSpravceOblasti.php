@@ -16,6 +16,6 @@ class TypSpravceOblasti extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getTypySpravcuOblasti(): Nette\Database\Table\Selection {
-        return ($this->findAll());
+        return $this->findAll();
     }
 }

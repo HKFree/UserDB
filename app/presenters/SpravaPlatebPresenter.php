@@ -38,12 +38,12 @@ class SpravaPlatebPresenter extends SpravaPresenter
         ->setDefaultValue('vsechny')
         ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
             if ($value === 'spolek') {
-                return ($connection->where('spolek', 1));
+                return $connection->where('spolek', 1);
             }
             if ($value === 'druzstvo') {
-                return ($connection->where('druzstvo', 1));
+                return $connection->where('druzstvo', 1);
             }
-            return ($connection);
+            return $connection;
         });
 
         $grid->setRowCallback(function ($item, $tr) {
@@ -59,10 +59,10 @@ class SpravaPlatebPresenter extends SpravaPresenter
             $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label label-druzstvo')->setAttribute('style', 'margin-left: 4px;');
 
             if ($item->spolek) {
-                return ($spanSpolek);
+                return $spanSpolek;
             }
 
-            return ($spanDruzstvo);
+            return $spanDruzstvo;
         });
 
         $grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();

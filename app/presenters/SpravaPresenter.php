@@ -27,7 +27,7 @@ class SpravaPresenter extends BasePresenter
     public function actionLogout(): void {
         $this->getUser()->logout();
         header("Location: https://userdb.hkfree.org/Shibboleth.sso/Logout?return=https://idp.hkfree.org/idp/logout?return=http://www.hkfree.org");
-        die();
+        die;
     }
 
     public function renderNastroje(): void {

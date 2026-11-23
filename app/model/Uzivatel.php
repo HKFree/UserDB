@@ -44,7 +44,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getSeznamUzivatelu(): Nette\Database\Table\Selection {
-        return ($this->findAll());
+        return $this->findAll();
     }
 
     /** @return array<int, string> */
@@ -54,13 +54,13 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         foreach ($vsichni as $uzivatel) {
             $uss[$uzivatel->id] = $uzivatel->id . ' - ' . $uzivatel->nick . ' - ' . $uzivatel->jmeno . ' ' . $uzivatel->prijmeni;
         }
-        return ($uss);
+        return $uss;
     }
 
     /** @return array<array-key, Nette\Database\Table\ActiveRow> */
     public function getUsersForMailingList(): array {
         $vsichni = $this->findAll()->where(self::AKTIVNI_CLEN)->where('email_invalid=0')->where('systemovy=0')->fetchAll();
-        return ($vsichni);
+        return $vsichni;
     }
 
     /**
@@ -187,7 +187,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                                             OR  IPAdresa.ip_adresa = ?
                                             ) LIMIT 1", $searchId, $search)->fetchField();
         if ($completeMatchId !== null && $completeMatchId !== 0) {
-            return ($this->findBy(array('id' => $completeMatchId)));
+            return $this->findBy(array('id' => $completeMatchId));
         }
         //\Tracy\Debugger::barDump($search);
         if ($searchId !== null) {
@@ -197,7 +197,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                                             Uzivatel.id LIKE ?
                                             ) LIMIT 1", $search . '%')->fetchField();
             if ($partialMatchId !== null && $partialMatchId !== 0) {
-                return ($this->findBy(array('id' => $partialMatchId)));
+                return $this->findBy(array('id' => $partialMatchId));
             }
         }
 
@@ -232,13 +232,13 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             if ($secureMatchId !== []) {
                 //\Tracy\Debugger::barDump($secureMatchId);
                 //\Tracy\Debugger::barDump(array_values($secureMatchId));
-                return ($this->findBy(array('id' => array_values($secureMatchId))));
+                return $this->findBy(array('id' => array_values($secureMatchId)));
             }
         } else {
             return $this->findAll()->where($podminka, ...$hodnoty)->fetchAll();
         }
 
-        return ($this->findBy(array('id' => 0)));
+        return $this->findBy(array('id' => 0));
     }
 
     /**
@@ -246,12 +246,12 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
      */
     public function getSeznamUzivateluZAP($idAP): Nette\Database\Table\Selection {
-        return ($this->findBy(array('Ap_id' => $idAP)));
+        return $this->findBy(array('Ap_id' => $idAP));
     }
 
     /** @param int|string $id */
     public function getUzivatel($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $this->find($id);
     }
 
     /**
@@ -312,11 +312,11 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
 
     /** @param string|null $password */
     public function generateStrongHash($password): string {
-        return (hash('sha256', $password ?? ''));
+        return hash('sha256', $password ?? '');
     }
 
     public function generateWeakHash(string $password): string {
-        return (crypt($password, 'hk'));
+        return crypt($password, 'hk');
     }
 
     /** @return int|null */

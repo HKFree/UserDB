@@ -94,12 +94,12 @@ class UzivatelListGrid
             ->setDefaultValue('active')
             ->setWhere(function ($value, $connection) {
                 if ($value === 'active') {
-                    return ($connection->where(Uzivatel::AKTIVNI_CLEN));
+                    return $connection->where(Uzivatel::AKTIVNI_CLEN);
                 }
                 if ($value === 'planned') {
-                    return ($connection->where('spolek = 1 AND TypClenstvi_id = 0'));
+                    return $connection->where('spolek = 1 AND TypClenstvi_id = 0');
                 }
-                return ($connection);
+                return $connection;
             });
 
         if (!in_array($money, [null, false, 0, '', '0'], true) && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
@@ -310,15 +310,15 @@ class UzivatelListGrid
                 'all' => 'spolek i družstvo včetně zrušených a smazaných'))
             ->setWhere(function ($value, $connection) {
                 if ($value === 'active') {
-                    return ($connection->where(Uzivatel::AKTIVNI_CLEN));
+                    return $connection->where(Uzivatel::AKTIVNI_CLEN);
                 } elseif ($value === 'spolek') {
-                    return ($connection->where('spolek = ? AND TypClenstvi_id > ?', 1, 1));
+                    return $connection->where('spolek = ? AND TypClenstvi_id > ?', 1, 1);
                 } elseif ($value === 'druzstvo') {
-                    return ($connection->where('druzstvo = ? AND smazano = ?', 1, 0));
+                    return $connection->where('druzstvo = ? AND smazano = ?', 1, 0);
                     // } elseif ($value == 'nedruzstvo') {
                     // return ($connection->where('druzstvo = ?', 0));
                 }
-                return ($connection);
+                return $connection;
             });
 
         if ($search !== null && $search !== false && $search !== '' && $search !== '0') {
@@ -340,17 +340,17 @@ class UzivatelListGrid
         $grid->addFilterSelect('stitek', 'Hledej štítek', $stitkyKFiltrovani)
             ->setWhere(function ($value, $connection) {
                 if ($value > 0) { // YES podmínka
-                    return ($connection->where(":StitekUzivatele.Stitek_id = ?", $value));
+                    return $connection->where(":StitekUzivatele.Stitek_id = ?", $value);
                 } elseif ($value < 0) { // NOT podmínka
                     // Pro NOT podmínku musíme filtrovat v joinu a to se dělá pomocí joinWhere
-                    return ($connection
+                    return $connection
                     ->joinWhere(':StitekUzivatele', ':StitekUzivatele.Stitek_id = ?', -$value)
                     ->whereOr([
                         ":StitekUzivatele.Stitek_id != ?" => -$value,
                         ":StitekUzivatele.Stitek_id ?" => null,
-                    ]));
+                    ]);
                 }
-                return ($connection);
+                return $connection;
             });
 
         if (!in_array($money, [null, false, 0, '', '0'], true) && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním

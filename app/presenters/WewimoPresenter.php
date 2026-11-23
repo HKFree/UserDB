@@ -38,7 +38,7 @@ class WewimoPresenter extends BasePresenter
             // doplnit linky
             $this->addWewimoLinks($wewimoMultiData['devices']);
             // ma uzivatel videt detaily? pokud ne, tak detaily "promazat" a anonymizovat MAC
-            if (!($this->ap->canViewOrEditAP($apt->id, $this->getUser()))) {
+            if (!$this->ap->canViewOrEditAP($apt->id, $this->getUser())) {
                 $this->anonymizeWewimoData($wewimoMultiData['devices']);
             }
             $this->template->wewimo = $wewimoMultiData['devices'];

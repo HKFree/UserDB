@@ -167,7 +167,7 @@ class ApPresenter extends BasePresenter
                 ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
                 ->setValidationScope(null)
                 ->addRemoveOnClick();
-        }, ($this->getParameter('id') > 0 ? 0 : 1));
+        }, $this->getParameter('id') > 0 ? 0 : 1);
 
         $ips->addSubmit('add', '+ Přidat další IP')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
@@ -182,7 +182,7 @@ class ApPresenter extends BasePresenter
                 ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
                 ->setValidationScope(null)
                 ->addRemoveOnClick();
-        }, ($this->getParameter('id') > 0 ? 0 : 1));
+        }, $this->getParameter('id') > 0 ? 0 : 1);
 
         $subnets->addSubmit('add_subnet', '+ Přidat další Subnet')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
@@ -197,7 +197,7 @@ class ApPresenter extends BasePresenter
                 ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
                 ->setValidationScope(null)
                 ->addRemoveOnClick();
-        }, ($this->getParameter('id') > 0 ? 0 : 1));
+        }, $this->getParameter('id') > 0 ? 0 : 1);
 
         $apiKlice->addSubmit('add_apiKlic', '+ Přidat další API klíč')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
@@ -234,7 +234,7 @@ class ApPresenter extends BasePresenter
                 $form->setValues($values);
             }
         }
-        return ($form);
+        return $form;
     }
 
     public function validateApForm(Nette\Forms\Form $form): void {

@@ -158,12 +158,12 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             ->setDefaultValue('druzstvo')
             ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
                 if ($value === 'spolek') {
-                    return ($connection->where('spolek', 1));
+                    return $connection->where('spolek', 1);
                 }
                 if ($value === 'druzstvo') {
-                    return ($connection->where('druzstvo', 1));
+                    return $connection->where('druzstvo', 1);
                 }
-                return ($connection);
+                return $connection;
             });
 
         $grid->addColumnText('castka', 'Částka')->setCustomRender(function ($item) {
@@ -178,7 +178,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             if ($item->druzstvo) {
                 $c = $c . $spanDruzstvo;
             }
-            return ($c);
+            return $c;
         })->setSortable()->setFilterText();
 
         $grid->addColumnDate('datum_cas', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATETIME)->setSortable()->setFilterText();

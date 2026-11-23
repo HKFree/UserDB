@@ -33,7 +33,7 @@ class Log extends Table
      */
     public function getLogyUzivatele($uid): Nette\Database\Table\Selection {
         $logy = $this->findAll()->where("tabulka = ?", "Uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
-        return ($logy);
+        return $logy;
     }
 
     /**
@@ -42,7 +42,7 @@ class Log extends Table
      */
     public function getLogyAP($Apid): Nette\Database\Table\Selection {
         $logy = $this->findAll()->where("tabulka = ?", "Ap")->where("tabulka_id = ?", $Apid)->order("datum DESC, sloupec DESC");
-        return ($logy);
+        return $logy;
     }
 
     public function translateJmeno(string $jmeno): string {
@@ -89,9 +89,9 @@ class Log extends Table
         $slovnik = array_merge($slovnikUzivatel, $slovnikIpAdresa);
 
         if (isset($slovnik[$jmeno])) {
-            return ($slovnik[$jmeno]);
+            return $slovnik[$jmeno];
         } else {
-            return ($jmeno);
+            return $jmeno;
         }
     }
 
@@ -141,7 +141,7 @@ class Log extends Table
             }
         }
 
-        return ($out);
+        return $out;
     }
 
     /**
@@ -269,6 +269,6 @@ class Log extends Table
             $toInsert[] = array_merge($radek, $spolecne);
         }
 
-        return ($this->insert($toInsert));
+        return $this->insert($toInsert);
     }
 }

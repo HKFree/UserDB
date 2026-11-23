@@ -29,15 +29,15 @@ class SpravceOblasti extends Table
                 $out[$key] = $oblast;
             }
         }
-        return ($out);
+        return $out;
     }
 
     /** @param int|string|null $idOblasti */
     public function getTypPravaPopisek(string $typPrava, $idOblasti): string {
         if (in_array($idOblasti, [null, '', 0, '0'], true)) {
-            return ($typPrava);
+            return $typPrava;
         } else {
-            return ($typPrava."-".$idOblasti);
+            return $typPrava."-".$idOblasti;
         }
     }
 
@@ -55,13 +55,13 @@ class SpravceOblasti extends Table
 
     /** @param int|string $id */
     public function getPravo($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $this->find($id);
     }
 
     /** @param array<array-key, int|string> $rights */
     public function deletePrava(array $rights): int|true {
         if (count($rights) > 0) {
-            return ($this->delete(array('id' => $rights)));
+            return $this->delete(array('id' => $rights));
         } else {
             return true;
         }
@@ -96,12 +96,12 @@ class SpravceOblasti extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getSO(): Nette\Database\Table\Selection {
-        return ($this->getSpravce(1));
+        return $this->getSpravce(1);
     }
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getZSO(): Nette\Database\Table\Selection {
-        return ($this->getSpravce(2));
+        return $this->getSpravce(2);
     }
 
     /**
@@ -115,9 +115,9 @@ class SpravceOblasti extends Table
         ->where('do IS NULL OR do > NOW()');
 
         if ($ignorujSystemove) {
-            return ($q->where('Uzivatel.systemovy', 0));
+            return $q->where('Uzivatel.systemovy', 0);
         }
 
-        return ($q);
+        return $q;
     }
 }

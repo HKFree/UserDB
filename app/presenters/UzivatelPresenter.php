@@ -396,7 +396,7 @@ class UzivatelPresenter extends BasePresenter
                 ->setHtmlAttribute('class', 'btn btn-danger btn-xs btn-white')
                 ->setValidationScope(null)
                 ->addRemoveOnClick();
-        }, ($this->getParameter('id') > 0 ? 0 : 1));
+        }, $this->getParameter('id') > 0 ? 0 : 1);
 
         $ips->addSubmit('add', '+ Přidat další IP')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')

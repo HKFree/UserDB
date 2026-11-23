@@ -262,5 +262,5 @@ function digisign_webhook_event_time(mixed $time): DateTimeImmutable {
 
 function print_and_log(string $message): void {
     error_log("digisign_webhook: $message.");
-    print("$message.\n");
+    print "$message.\n";
 }

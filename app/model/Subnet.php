@@ -26,7 +26,7 @@ class Subnet extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getSeznamSubnetu(): Nette\Database\Table\Selection {
-        return ($this->findAll());
+        return $this->findAll();
     }
 
     /**
@@ -44,7 +44,7 @@ class Subnet extends Table
     /** @param array<array-key, int|string> $subnets */
     public function deleteSubnet(array $subnets): int|true {
         if (count($subnets) > 0) {
-            return ($this->delete(array('id' => $subnets)));
+            return $this->delete(array('id' => $subnets));
         } else {
             return true;
         }
@@ -65,7 +65,7 @@ class Subnet extends Table
      * @return array<int, string> pole idSubnet=>subnet
      */
     public function getSubnetzDB(array $ids) {
-        return ($this->getTable()->where("id", $ids)->fetchPairs("id", "subnet"));
+        return $this->getTable()->where("id", $ids)->fetchPairs("id", "subnet");
     }
 
     /**
@@ -88,7 +88,7 @@ class Subnet extends Table
             $resultnet = $a .".". $b .".". $c .".";
             $results[] = $resultnet;
         }
-        return (array_unique($results));
+        return array_unique($results);
     }
 
     /** @param iterable<Nette\Database\Table\ActiveRow> $subnets */
@@ -118,7 +118,7 @@ class Subnet extends Table
             }
             $tr->create('td')->setText($subnet->popis);
         }
-        return ($subnetyTab);
+        return $subnetyTab;
     }
 
     /**
@@ -156,7 +156,7 @@ class Subnet extends Table
                 }
             }
 
-            return ($out);
+            return $out;
         }
 
         return ["error" => Subnet::ERR_NOT_FOUND];
@@ -208,7 +208,7 @@ class Subnet extends Table
             $subnet = long2ip((int) (floor($lip / $lmask) * $lmask));
             $subnets[] = $subnet."/".$mask;
         }
-        return ($subnets);
+        return $subnets;
     }
 
     /**
@@ -233,9 +233,9 @@ class Subnet extends Table
         }
 
         if (count($coliding) > 0) {
-            return ($coliding);
+            return $coliding;
         }
-        return (false);
+        return false;
     }
 
     /**
@@ -267,7 +267,7 @@ class Subnet extends Table
 
         $bigNetworkLike = implode(".", $bigNetworkExploded)."/%";
 
-        return ($this->findAll()->where("subnet LIKE ?", $bigNetworkLike));
+        return $this->findAll()->where("subnet LIKE ?", $bigNetworkLike);
     }
 
     /**
@@ -292,14 +292,14 @@ class Subnet extends Table
         $last_2 = $first_2 + pow(2, 32 - (float) $c2) - 1;
 
         if (($first_1 < $first_2) && ($last_1 < $first_2)) {
-            return (false);
+            return false;
         }
 
         if (($first_2 < $first_1) && ($last_2 < $first_1)) {
-            return (false);
+            return false;
         }
 
-        return (true);
+        return true;
     }
 
     /**
@@ -311,9 +311,9 @@ class Subnet extends Table
      */
     public function inSubnet($ip, $subnet) {
         if ($subnet === "0.0.0.0/0") {
-            return (true);
+            return true;
         }
-        return ($this->checkColision($ip."/32", $subnet));
+        return $this->checkColision($ip."/32", $subnet);
     }
 
     /**
@@ -329,7 +329,7 @@ class Subnet extends Table
             foreach ($subnets as $id2 => $subnet2) {
                 // Projizdime jenom trojuhelnik misto ctverce
                 if ($id1 <= $id2) {
-                    continue (1);
+                    continue 1;
                 }
 
                 $colides = $this->checkColision($subnet1, $subnet2);
@@ -340,9 +340,9 @@ class Subnet extends Table
         }
 
         if (count($collisions) === 0) {
-            return (false);
+            return false;
         } else {
-            return ($collisions);
+            return $collisions;
         }
     }
 
@@ -365,19 +365,19 @@ class Subnet extends Table
 
         // Zkontrolujeme jestli máme přesně jedno lomítko
         if (count($disected_subnet) !== 2) {
-            return (false);
+            return false;
         }
 
         list($network, $cidr) = $disected_subnet;
 
         // Zkontroluje validitu adresy sítě
         if (filter_var($network, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
-            return (false);
+            return false;
         }
 
         $prefix = $this->parsePrefixLength($cidr);
         if ($prefix === null) {
-            return (false);
+            return false;
         }
 
         $lnet = ip2long($network);
@@ -388,11 +388,11 @@ class Subnet extends Table
         // Zkontrolujeme síť 0.0.0.0/0 (cokoliv jiného/0 zahodíme)
         // (hlavně protože % nemá rádo 2^32, musíme to vyfiltrovat tady)
         if ($prefix === 0) {
-            return ($lnet === 0);
+            return $lnet === 0;
         }
 
         // Zkontroluje jestli opravdu jde o subnet a ne IP/maska
-        return (($lnet % (1 << (32 - $prefix))) === 0);
+        return ($lnet % (1 << (32 - $prefix))) === 0;
     }
 
     /**

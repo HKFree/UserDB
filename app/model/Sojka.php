@@ -28,7 +28,7 @@ class Sojka
      */
     public function pingIPS($ips) {
         if ($ips === []) {
-            return ([]);
+            return [];
         }
 
         $client = new Client();
@@ -40,17 +40,17 @@ class Sojka
                 'timeout' => 5
             ]);
         } catch (Exception $e) {
-            return ([
+            return [
                 'error' => true,
                 'reason' => $e->getMessage()
-            ]);
+            ];
         }
 
         if ($r->getStatusCode() !== 200) {
-            return ([]);
+            return [];
         }
 
         $body = $r->getBody();
-        return (json_decode($body, true));
+        return json_decode($body, true);
     }
 }

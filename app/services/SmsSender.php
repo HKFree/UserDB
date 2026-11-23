@@ -40,12 +40,12 @@ class SmsSender
         $awegUser = $this->awegUser->getAwegUser($senderIdentity->getUid());
 
         if ($awegUser === false) {
-            return (["status" => SmsSender::STATUS_NO_ACCOUNT, "msg" => "Nemáte účet v AWEG SMS systému!"]);
+            return ["status" => SmsSender::STATUS_NO_ACCOUNT, "msg" => "Nemáte účet v AWEG SMS systému!"];
         }
 
         $password = base64_decode($senderIdentity->getPasswordHash(), true);
         if ($password === false) {
-            return (["status" => SmsSender::STATUS_INVALID_CREDENTIALS, "msg" => "Neplatné přihlašovací údaje pro AWEG SMS systém."]);
+            return ["status" => SmsSender::STATUS_INVALID_CREDENTIALS, "msg" => "Neplatné přihlašovací údaje pro AWEG SMS systém."];
         }
 
         $locale = 'cs_CZ.UTF-8';
@@ -56,6 +56,6 @@ class SmsSender
             ':'.$password.'
              -d '.implode(',', $recipientMsisdns).
             ' "'.$message.'"');
-        return (["status" => SmsSender::STATUS_OK, "msg" => shell_exec($command)]);
+        return ["status" => SmsSender::STATUS_OK, "msg" => shell_exec($command)];
     }
 }
