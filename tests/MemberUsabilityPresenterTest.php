@@ -160,6 +160,9 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         $expected[] = 'Počet všech členů: 3';
         $expected[] = 'Počet všech členů včetně zrušených: 4';
         Assert::same($expected, $this->countsBelowTable($document));
+        // Users outside the AP are a section with its own heading, not a panel in the list.
+        Assert::count(1, $this->elements($document, '//section[@class="list-section"]/h2[normalize-space(.)="Uživatelé mimo AP"]'));
+        Assert::count(0, $this->elements($document, '//*[contains(@class,"panel")]//*[@id="frm-othersGrid-form"]'));
         $all = $this->document($this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'listall', 'money' => $money])->html);
         Assert::count(count($expected), $this->countsBelowTable($all));
         Assert::same($money === 1 ? 'true' : 'false', $this->elements($document, '//a[contains(@class,"money-toggle")]')[0]->getAttribute('aria-pressed'));
@@ -185,7 +188,7 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         $above = '(//*[contains(@class,"grido")])[1]/preceding::*[contains(@class,"member-counts") or contains(@class,"stat-strip")]';
         Assert::count(0, $this->elements($document, $above));
         $counts = [];
-        $below = '//ul[@class="member-counts"][preceding::*[contains(@class,"grido")]][not(preceding::h4[contains(.,"mimo AP")])]/li';
+        $below = '//ul[@class="member-counts"][preceding::*[contains(@class,"grido")]][not(preceding::h2[contains(.,"mimo AP")])]/li';
         foreach ($this->elements($document, $below) as $item) {
             $counts[] = trim($item->textContent);
         }

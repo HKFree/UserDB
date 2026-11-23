@@ -1131,6 +1131,18 @@ ul.error {
     margin-left: auto;
 }
 
+/* Další tabulka pod seznamem (Uživatelé mimo AP): nadpis s linkou místo rámečku kolem filtrů a tabulky. */
+.list-section {
+    margin-top: 28px;
+}
+
+.main .list-section > h2 {
+    margin: 0 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e5e9;
+    font-size: 16px;
+}
+
 /* Posuvný seznam: odsazení ponechá místo pro stín a obrys rámu při zaměření. */
 /* position: absolutně umístěné potomky (text jen pro čtečku) jinak rám neořízne a roztáhnou stránku. */
 .user-list-scroll {

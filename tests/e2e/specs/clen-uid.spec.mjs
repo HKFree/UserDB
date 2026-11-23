@@ -176,7 +176,7 @@ for (const width of [1280, 375]) {
                     expect(layout.formScroll).toBe(0);
                     expect(layout.formScrolls).toBe('visible');
                     expect(Math.abs(layout.cellLeft - layout.frameLeft)).toBeLessThan(16);
-                    await expect(page.getByRole('region', { name: 'Uživatelé mimo AP', exact: true })).toHaveCount(await page.locator('#frm-othersGrid-form.grid-wide').count());
+                    await expect(page.getByRole('region', { name: 'Uživatelé mimo AP', exact: true })).toHaveCount(1);
                 });
             }
         });
