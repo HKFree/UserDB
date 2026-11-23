@@ -27,7 +27,7 @@ final class DemoPersonasTest extends TestCase
     }
 
     public function testOnlyDocumentedPersonasCanBeSelected(): void {
-        foreach ([1, ...range(20000, 20015), 20070, 20071] as $id) {
+        foreach ([1, ...range(20000, 20015), 20070, 20071, 20075, 20076] as $id) {
             $persona = new UserdbDemoPersonas((string) $id);
             Assert::same($id, $persona->fakeUser()['userID']);
             Assert::same($id === 1 ? 'tester' : 'demo' . $id, $persona->fakeUser()['userName']);
@@ -58,8 +58,8 @@ final class DemoPersonasTest extends TestCase
         Assert::contains('Content-Type: text/html; charset=utf-8', $headers);
         Assert::contains('Cache-Control: no-store', $headers);
         Assert::same([], preg_grep('~^Set-Cookie:~i', $headers));
-        Assert::same(19, substr_count($body, '<a class="persona"'));
-        foreach ([1, ...range(20000, 20015), 20070, 20071] as $id) {
+        Assert::same(21, substr_count($body, '<a class="persona"'));
+        foreach ([1, ...range(20000, 20015), 20070, 20071, 20075, 20076] as $id) {
             Assert::contains('href="/demo-osoba?id=' . $id . '"', $body);
             $persona = UserdbDemoPersonas::all()[$id];
             Assert::contains('<span class="name">' . htmlspecialchars($persona['name'], ENT_QUOTES, 'UTF-8') . '</span><span class="id">' . $id . '</span>', $body);

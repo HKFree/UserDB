@@ -112,8 +112,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - Nette Forms zapisuje `@` v hodnotě atributu jako `&#64;` (`value="clen&#64;example.invalid"`). Test, který
   ve vykresleném formuláři hledá e-mail, proto porovnává s `html_entity_decode($html, ENT_QUOTES | ENT_HTML5)`.
   Ověřeno 23. 11. 2026 na poli Příjemce formuláře e-mailu členovi, Nette Forms z `composer.lock`.
-- `PaymentSchedule:sendPaymentScheduleEmail` čte CSS relativně k `www/`. Test dočasně mění pracovní adresář
-  a vrací ho v `finally`. Přesměrování po GET má 302, po POST 303.
+- Tester pouští každý test s pracovním adresářem `tests/`, takže relativní cesta `../www/...` v aplikaci
+  v testu projde, i když lokální web (PHP server spuštěný z kořene repa) na ní spadne. Tak se schovávalo
+  čtení CSS v `PaymentSchedule:sendPaymentScheduleEmail`; ověřeno 23. 11. 2026 chybou 500 na lokálním webu
+  a testem, který před voláním akce přepne do `sys_get_temp_dir()`. Cestu k souboru v aplikaci odvozuj
+  od `__DIR__`. Přesměrování po GET má 302, po POST 303.
 - Hledání člena podle přezdívky pro DRUŽSTEVNÍK vrací prázdný seznam bez spravované oblasti. Pro ověření
   skrytých údajů na skutečně naplněném gridu lze hledat přesné UID; test ponechává i původní hledání přezdívky.
 - Samotný typ odpovědi `Grido\Components\Export` neověří CSV. Data se čtou a CSV vzniká až při `send()`;

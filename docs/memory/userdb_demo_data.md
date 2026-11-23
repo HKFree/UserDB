@@ -44,11 +44,20 @@ vidět. Ověřeno 21. 11. 2026 lokálně ve Floxu (MariaDB 10.11.19), není-li u
 - Plánovaný člen (`TypClenstvi_id=0`) nesmí mít pohyby na kontě, smlouvu ani jiné závislé řádky. Editace ho při
   změně na „zrušeno“ maže a cizí klíč by smazání zastavil.
 - Editace člena vyžaduje telefon, město a PSČ. Demo člen bez nich nejde uložit ani beze změny.
-- Osoba s rolí a syntakticky neplatným e-mailem shodí registrační e-mail, který sama odešle: členovi dojde,
-  kopie na její adresu skončí `AssertionException` (ověřeno 23. 11. 2026 jednorázovým testem akce
-  `UzivatelActions:sendRegActivation`). Kopie jde i všem SO a ZSO oblasti člena (`getSeznamSpravcuUzivatele()`,
-  jen přečteno v kódu), proto má taková demo osoba roli globální nebo v oblasti, kde se členové neregistrují
-  (20070 KONTROLA, 20071 ZSO technické oblasti -20).
+- Tlačítko aktivačního odkazu se na detailu člena kreslí jen při `regform_downloaded_password_sent = 0`,
+  výchozí hodnota sloupce je 1. Ověřeno 23. 11. 2026 v `app/templates/Uzivatel/show.latte`
+  a `db/structures/2016-10-23-102733-new-init-schema.sql`.
+  **Why:** Samotná neplatná adresa nevytvoří scénář, který lze proklikat z detailu člena.
+  **How to apply:** Demo člen pro registrační scénář musí mít tuto hodnotu nastavenou na 0.
+- Pro scénář „kopie nemá žádného příjemce“ nestačí oblast bez platné adresy správce: kopii dostává také
+  přihlášený odesílající. Ověřeno 23. 11. 2026 v `DemoDataPresenterTest` a
+  `InvalidMailRecipientsPresenterTest`: správce 20076 odešle členovi 20077 registraci, kopie neodejde;
+  neplatný správce 20075 v běžné oblasti 201 už odeslání ostatním nezastaví.
+  **Why:** Přepnutí na výchozího Testera přidá platnou adresu příjemce kopie a změní testovaný stav.
+  **How to apply:** Pro úplně neodeslanou kopii přepnout na osobu 20076, pro částečné doručení použít
+  člena 20081 oblasti 201 jako osoba 20012. Rozpis plateb jde odeslat jen členům družstva, tedy
+  20078 (platný jen sekundární e-mail) a 20080 (žádný platný e-mail). Persony 20070 a 20071
+  zůstávají pro formuláře s neplatnou vlastní adresou.
 
 ## Síť
 

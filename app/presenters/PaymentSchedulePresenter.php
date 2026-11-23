@@ -104,14 +104,13 @@ class PaymentSchedulePresenter extends BasePresenter
         $template = $this->mailService->addLinkGeneratorToTemplate($this->template);
 
         // TODO tady be se dalo ušetřit ~120kB velikosti e-mailu kdyby se poslaly jen ty potřebný styly
-        $this->template->copy_of_bootstrap_css = file_get_contents("../www/css/bootstrap.min.css");
+        $this->template->copy_of_bootstrap_css = file_get_contents(__DIR__ . '/../../www/css/bootstrap.min.css');
 
         $subject = "Rozpis plateb pro UID {$uzivatel->id} - {$this->uzivatel->nazevUzivatele($uzivatel->id)}";
         $template->setFile(__DIR__ . '/../templates/PaymentSchedule/paymentSchedule.latte');
 
-        $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $template);
-
-        $this->flashMessage(sprintf('E-mail s rozpisem plateb odeslán na %s.', $uzivatel->email));
+        $vysledek = $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $template);
+        $this->oznamVysledekEmailu($vysledek, $uzivatel, sprintf('E-mail s rozpisem plateb odeslán na %s.', implode(', ', $vysledek->adresy)));
 
         $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
     }
