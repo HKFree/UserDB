@@ -191,7 +191,7 @@ final class GraphqlArchitectureTest extends TestCase
     private function ownTypes(Schema $schema): array {
         $types = [];
         foreach ($schema->getTypeMap() as $type) {
-            if ($type instanceof ObjectType && !Introspection::isIntrospectionType($type)) {
+            if ($type instanceof ObjectType && Introspection::isIntrospectionType($type) === false) {
                 $types[] = $type;
             }
         }

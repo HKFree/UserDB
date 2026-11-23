@@ -30,19 +30,19 @@ final readonly class Pozadavek
         } catch (\JsonException) {
             throw new ChybaPozadavku('Tělo požadavku není platný JSON.');
         }
-        if (!is_array($data)) {
+        if (is_array($data) === false) {
             throw new ChybaPozadavku(self::CHYBI_DOTAZ);
         }
         $dotaz = $data['query'] ?? null;
         $jmenoOperace = $data['operationName'] ?? null;
         $promenne = $data['variables'] ?? [];
-        if (!is_string($dotaz)) {
+        if (is_string($dotaz) === false) {
             throw new ChybaPozadavku(self::CHYBI_DOTAZ);
         }
-        if ($jmenoOperace !== null && !is_string($jmenoOperace)) {
+        if ($jmenoOperace !== null && is_string($jmenoOperace) === false) {
             throw new ChybaPozadavku('Pole "operationName" musí být text.');
         }
-        if (!is_array($promenne) || ($promenne !== [] && array_is_list($promenne))) {
+        if (is_array($promenne) === false || ($promenne !== [] && array_is_list($promenne))) {
             throw new ChybaPozadavku('Pole "variables" musí být objekt.');
         }
         return new self($dotaz, $jmenoOperace, $promenne);

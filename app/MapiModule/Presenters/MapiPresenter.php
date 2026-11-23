@@ -76,7 +76,7 @@ abstract class MapiPresenter implements Application\IPresenter
             return new Vyrizeni($this->odmitnutiPrihlaseni($chyba));
         }
         $this->uid = $kdo->uid;
-        if (!PovoleneRole::maNekterou($kdo)) {
+        if (PovoleneRole::maNekterou($kdo) === false) {
             return new Vyrizeni(self::bezPovoleneRole());
         }
         return $this->vyrid($kdo, $this->httpRequest->getRawBody());
@@ -87,13 +87,13 @@ abstract class MapiPresenter implements Application\IPresenter
      * vyvolat z cizí stránky: jen POST s JSON, vlastní hlavičkou a vlastním původem.
      */
     private function odmitnutiPozadavku(): ?Odpoved {
-        if (!$this->httpRequest->isMethod('POST')) {
+        if ($this->httpRequest->isMethod('POST') === false) {
             return Odpoved::chyba(405, KodChyby::SpatnyVstup, 'Použijte metodu POST.', ['Allow' => 'POST']);
         }
-        if (!$this->maJsonTelo()) {
+        if ($this->maJsonTelo() === false) {
             return Odpoved::chyba(415, KodChyby::SpatnyVstup, 'Pošlete tělo jako Content-Type: application/json.');
         }
-        if (!$this->jeZVlastniStranky()) {
+        if ($this->jeZVlastniStranky() === false) {
             return Odpoved::chyba(403, KodChyby::Odepreno, 'Požadavek musí přijít ze stránek UserDB s hlavičkou ' . self::HLAVICKA_CSRF . ': 1.');
         }
         return null;
@@ -121,7 +121,7 @@ abstract class MapiPresenter implements Application\IPresenter
         $uid = $_SERVER['HTTP_UID'] ?? '';
         $this->user->login((bool) $this->settings->fakeUser ? 'DBG' : (is_string($uid) ? $uid : ''), null);
         $identita = $this->user->getIdentity();
-        if (!$identita instanceof HkfIdentity) {
+        if (($identita instanceof HkfIdentity) === false) {
             throw new \LogicException('Přihlášení nevrátilo identitu UserDB.');
         }
         return new Prihlaseny($identita->getUid(), $identita->getNick(), array_map(RolePrihlaseneho::zTextu(...), array_values($identita->getRoles())));

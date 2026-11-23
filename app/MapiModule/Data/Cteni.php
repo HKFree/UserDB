@@ -29,7 +29,7 @@ final class Cteni
      * Kdo jsem: role z přihlášení a k nim oblasti s aktivními AP, jako postranní panel webu.
      */
     public function ja(Prihlaseny $kdo): Ja {
-        if (!PovoleneRole::maNekterou($kdo)) {
+        if (PovoleneRole::maNekterou($kdo) === false) {
             throw new PristupOdepren('Přihlášený nemá roli povolenou pro toto API.');
         }
         $oblasti = $this->oblasti($this->idOblasti($kdo));
