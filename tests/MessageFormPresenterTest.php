@@ -308,6 +308,31 @@ final class MessageFormPresenterTest extends DatabaseTestCase
         }
     }
 
+    /** @return array<string, array{string}> */
+    public function messageActions(): array {
+        return ['email' => ['email'], 'emailall' => ['emailall'], 'sms' => ['sms'], 'smsall' => ['smsall']];
+    }
+
+    /**
+     * www/css/screen.css fits these forms into a phone screen through the class of their wrapper;
+     * tests/screenshots/test/message-form.test.mjs checks the style on the same markup (issue #303).
+     *
+     * @dataProvider messageActions
+     */
+    public function testMessageFormIsWrappedForNarrowScreens(string $action): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE + ['telefon' => '777111222']);
+        $id = str_ends_with($action, 'all') ? $ap->id : $member->id;
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => $action, 'id' => $id]);
+
+        Assert::same(200, $page->status);
+        Assert::match('~<div class="message-form">\s*<form [^>]*id="frm-' . $action . 'Form"[^>]*>\s*<table class="form">~', $page->html);
+    }
+
     /** @return array<string, string> option value => label of the sender choice */
     private function senderOptions(string $html): array {
         $found = preg_match('~<select name="from"[^>]*>(.*?)</select>~s', $html, $select);

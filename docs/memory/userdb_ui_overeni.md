@@ -64,3 +64,10 @@ z něj. Stejný prefix zůstává v `main.js` (skrývání postranního panelu n
 - Seznam členů AP se na telefonu posouvá do strany už v `master`: tabulka je širší než okno
   a nemá vlastní rám (šířka dokumentu 994 px při okně 375 px). Šířku stránky proto porovnávej
   se stavem před změnou, ne s šířkou okna.
+- V kontextu Playwrightu s `isMobile` se stránce širší než okno zvětší i `innerWidth`
+  (formulář e-mailu: 520 px při okně 375 px). Přetečení proto poznáš porovnáním
+  `document.documentElement.scrollWidth` se zadanou šířkou okna, ne s `innerWidth`.
+  Ověřeno 23. 11. 2026 u issue #303.
+- Levý okraj `.main` (místo pro postranní panel) na telefonu neruší CSS, ale `main.js` podle
+  user agenta. Zkušební stránka bez `main.js` nebo bez mobilního user agenta má proto obsah
+  o tento okraj užší než skutečná stránka (pole 165 px místo 345 px). Ověřeno tamtéž.

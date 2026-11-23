@@ -109,6 +109,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   v `ul.error li`. Hledat přesný vykreslený text, ne atribut `data-nette-rules`, který obsahuje zprávu i bez chyby.
   `DomQuery::fromHtml()` při duplicitním HTML `id` hlásí varování; pro kontrolu validační zprávy duplicitních
   IP proto test porovnává přímo vykreslený text mezi značkami.
+- Přeložené šablony v `temp/tests/cache` se obnoví jen tehdy, když je šablona novější než její překlad.
+  Vrátíš-li úpravu šablony, pustíš test a úpravu hned zase vrátíš (`git apply -R` a `git apply` kvůli
+  důkazu, že test bez opravy padá), může šablona dostat čas ve stejné sekundě jako překlad a testy pak
+  vykreslují starou verzi. Pomůže `touch` na dotčené šablony. Ověřeno 23. 11. 2026 u issue #303:
+  `MessageFormPresenterTest` padal nad opravenou šablonou, po `touch` prošel.
 - Nette Forms zapisuje `@` v hodnotě atributu jako `&#64;` (`value="clen&#64;example.invalid"`). Test, který
   ve vykresleném formuláři hledá e-mail, proto porovnává s `html_entity_decode($html, ENT_QUOTES | ENT_HTML5)`.
   Ověřeno 23. 11. 2026 na poli Příjemce formuláře e-mailu členovi, Nette Forms z `composer.lock`.
