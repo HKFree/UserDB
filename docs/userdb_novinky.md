@@ -4,7 +4,8 @@ Stránka **Novinky** v nabídce **Nástroje** v horní liště ukazuje změny ap
 každému přihlášenému uživateli. Přihlášení se nemění: člen bez aktivní role
 se do UserDB nepřihlásí.
 
-Obsah je v textových souborech `app/novinky/`, jeden soubor pro každé vydání.
+Obsah je v textových souborech `app/novinky/`. Soubory se stejným datem se
+skládají do jednoho vydání.
 Stránka čte obsah pouze z disku, bez databáze novinek, volání GitHubu nebo
 knihovny pro Markdown. Soubory se nasazují spolu s kódem, takže stránka
 zobrazuje pouze novinky obsažené v nasazené verzi. Vydání řadí od nejnovějšího.
@@ -12,10 +13,18 @@ Pokud adresář chybí nebo je prázdný, zobrazí „Zatím tu nejsou žádné 
 
 ## Formát souboru
 
-Název je přesně `YYYY-MM-DD.md`, například `2026-11-22.md`, a musí obsahovat
-skutečné kalendářní datum. Datum je den sepsání novinek, nikoli den nasazení.
-Stránka ho zobrazí jako `22. 11. 2026`. Vydání z června až září 2026 vznikla
-zpětně z historie gitu a nesou datum poslední popsané změny.
+Název je `YYYY-MM-DD-<slug>.md`, například
+`2026-11-23-278-zrusit-slucovani.md`. Soubory `YYYY-MM-DD.md` zůstávají platné.
+Slug odpovídá přesně `[a-z0-9]+(-[a-z0-9]+)*`: obsahuje malá písmena ASCII
+a číslice, oddělené jednotlivými pomlčkami. Datum musí být skutečné kalendářní
+datum a označuje den sepsání novinek, nikoli den nasazení. Stránka ho zobrazí
+jako `23. 11. 2026`. Vydání z června až září 2026 vznikla zpětně z historie
+gitu a nesou datum poslední popsané změny.
+
+Všechny soubory se stejným datem tvoří jedno vydání s jedním nadpisem data.
+V každé sekci jsou nejprve položky souboru bez slugu, potom souborů podle
+slugu vzestupně textovým porovnáním `strcmp`. Uvnitř souboru zůstává pořadí
+řádků. Pořadí souborů vrácené souborovým systémem nemá na výsledek vliv.
 
 Soubor je v UTF-8 s konci řádků LF nebo CRLF. Přípona `.md` neznamená podporu
 Markdownu: text se neinterpretuje jako Markdown ani HTML. Latte ho při výpisu
@@ -34,7 +43,8 @@ automaticky escapuje.
 ```
 
 - Nadpis je přesně `## Novinky` nebo `## Opravy`, bez odsazení a bez dalších
-  znaků. Každá sekce smí být v souboru nejvýše jednou. Pořadí sekcí v souboru
+  znaků. Každá sekce smí být v souboru nejvýše jednou; dva soubory téhož dne
+  smějí oba obsahovat tutéž sekci. Pořadí sekcí v souboru
   je libovolné; stránka vždy ukáže nejprve Novinky a potom Opravy. Prázdnou
   sekci na stránce nevypíše.
 - Položka začíná na prvním sloupci znaky `- ` a patří k aktuální sekci.
@@ -61,8 +71,10 @@ U souboru bez položek se chyba hlásí na řádku 1. Čtečka žádné neplatn�
 nepřeskakuje.
 
 Čtečka ignoruje podadresáře a soubory s jiným názvem, například `README.md`,
-`2026-13-01.md`, `2026-11-2.md`, `2026-11-22.txt` nebo
-`2026-11-22 kopie.md`. Test souborů však každý nesprávně pojmenovaný soubor
+`2026-13-01.md`, `2026-11-2.md`, `2026-11-22.txt`, `2026-11-22 kopie.md`,
+`2026-11-23-Zmena.md`, `2026-11-23-nova_zmena.md`, `2026-11-23-.md`,
+`2026-11-23-zmena-.md` nebo `2026-11-23-dve--pomlcky.md`.
+Test souborů však každý nesprávně pojmenovaný soubor
 v `app/novinky/` odmítne, aby jeho obsah ze stránky tiše nezmizel; skryté
 soubory začínající tečkou přeskočí. Dokumentace
 proto patří sem, nikoli do `app/novinky/README.md`.
@@ -81,19 +93,26 @@ Pro obě cesty:
   přebírej z aplikace.
 - Položka pro issue se štítkem `bug` patří do sekce Opravy, ostatní do sekce
   Novinky.
-- Zapisuj do souboru s dnešním datem. Pokud neexistuje, založ ho; pokud
-  adresář chybí, vytvoř ho. Soubor bez položek nezakládej.
+- Založ vlastní soubor s datem dne sepsání a slugem podle postupu níže.
+  Do souboru jiného PR ani do společného souboru dne `YYYY-MM-DD.md` nepiš.
+  Pokud adresář chybí, vytvoř ho. Soubor bez položek nezakládej.
 
 ### Položka v PR se změnou
 
 PR, který přináší změnu viditelnou pro uživatele, přidá její položku sám,
 ve stejné větvi jako změnu.
 
+- Založ vlastní soubor `YYYY-MM-DD-<slug>.md`, kde datum je den sepsání
+  a slug je název větve bez předpony. Například větev
+  `orca/278-zrusit-slucovani` dává slug `278-zrusit-slucovani` a soubor
+  `2026-11-23-278-zrusit-slucovani.md` pro položku sepsanou 23. 11. 2026.
+  Název větve, který tvaru slugu neodpovídá, převeď na malá písmena ASCII,
+  číslice a pomlčky.
 - Uveď číslo issue, které PR dokončuje. Nemá-li issue, doplň číslo PR, až ho
   PR dostane, nebo nech položku bez čísla.
+- Stejné číslo smí být v `app/novinky/` jen jednou. Pracuje-li na jednom issue
+  víc PR, nese číslo issue jen jeden z nich; ostatní uvedou číslo PR.
 - Položka zůstává v souboru se dnem, kdy vznikla, i když se PR sloučí později.
-- Potkají-li se dva PR v souboru ze stejného dne v konfliktu, zůstanou
-  položky obou.
 - Má-li PR viditelnou změnu, která se v novinkách objevit nemá, dej mu štítek
   `skip-changelog`, aby ji dávkový průchod nedoplnil.
 
@@ -108,7 +127,8 @@ Průchod je pojistka pro PR, které položku nepřidaly. Dělá se samostatným 
    zavírá, nebo když on či jeho issue má štítek `skip-changelog`. Ostatní
    posuď podle pravidel výše a toho, co do novinek nepatří. Co vynecháš,
    zaznamenej s důvodem pro popis PR.
-3. Zapiš položky do souboru s dnešním datem; starší soubory neměň.
+3. Zapiš položky do vlastního souboru `YYYY-MM-DD-davka.md` s datem dne
+   sepsání. Do ostatních souborů nepiš.
 4. Přepiš datum posledního průchodu níže na dnešní.
 5. Spusť kontroly a předej změnu jako běžný PR ke schválení. V popisu PR uveď
    vynechané PR a důvody jejich vynechání. Produkční nasazení provádí člověk.
@@ -127,10 +147,14 @@ Do novinek nepatří:
 ## Kontroly
 
 `tests/NovinkyFilesTest.php` kontroluje skutečný adresář `app/novinky/` bez
-databáze: názvy všech souborů, jejich úplné parsování, zákaz závěrečné tečky
-na prvním řádku položky a zákaz stejného čísla ve dvou různých souborech.
+databáze: názvy všech souborů ve tvaru `YYYY-MM-DD.md` nebo
+`YYYY-MM-DD-<slug>.md` s platným datem a slugem, jejich úplné parsování,
+zákaz závěrečné tečky na prvním řádku položky a zákaz stejného čísla ve dvou
+různých souborech, i když mají stejné datum.
 Chyba obsahuje soubor a řádek. Prázdný nebo chybějící adresář je v pořádku.
 Testy parseru a presenteru používají vlastní soubory v `temp/tests/`.
+Ověřují také sloučení souborů téhož dne, pořadí položek, chyby jednotlivých
+souborů a jediný nadpis vydání pro každé datum na stránce.
 
 Před předáním změny spusť všechny kontroly:
 
