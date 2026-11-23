@@ -130,19 +130,16 @@ $(document).ready(function () {
 
 // Grid sirsi nez stranka dostane vlastni posuvnik; grid, ktery se vejde, zustava bez nej
 $(document).ready(function () {
-    // siroky grid je posuvny ram: jde na nej klavesnici a cteckam se ohlasi jmenem z data-grid-label obalu
+    // siroky grid se posouva ve vlastnim ramu; seznamy clenu maji ram uz v sablone (.user-list-scroll),
+    // ostatnim gridum je ramem sam formular a jde na nej klavesnici
     function markWideGrids() {
         $('form.grido').each(function () {
             var table = $(this).children('table')[0];
             var wide = !!table && table.offsetWidth > this.clientWidth + 1;
-            var label = $(this).closest('[data-grid-label]').attr('data-grid-label');
+            var ownFrame = $(this).closest('.user-list-scroll').length === 0;
             $(this).toggleClass('grid-wide', wide);
-            if (wide) {
-                $(this).attr('tabindex', '0');
-                if (label) $(this).attr({ role: 'region', 'aria-label': label });
-            } else {
-                $(this).removeAttr('tabindex role aria-label');
-            }
+            if (wide && ownFrame) $(this).attr('tabindex', '0');
+            else $(this).removeAttr('tabindex');
         });
     }
     markWideGrids();
@@ -164,7 +161,8 @@ $(document).ready(function () {
     // (stred, ne cely obdelnik: po posunu k tlacitku muze o zlomek pixelu presahovat okraj ramu)
     function gridToggleVisible(dropdown) {
         var button = $(dropdown).find('.dropdown-toggle')[0].getBoundingClientRect();
-        var frameElement = $(dropdown).closest('form.grido')[0];
+        // ram je obal seznamu clenu, jinde formular gridu (closest() by vratil blizsi formular)
+        var frameElement = $(dropdown).closest('.user-list-scroll')[0] || $(dropdown).closest('form.grido')[0];
         var frame = frameElement ? frameElement.getBoundingClientRect() : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
         var bar = $('.navbar-fixed-top')[0];
         var top = Math.max(bar ? bar.getBoundingClientRect().bottom : 0, frame.top);

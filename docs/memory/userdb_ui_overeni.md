@@ -121,7 +121,9 @@ ze standardního Bootstrapu.
   pod `orca viewport` platí měření z předchozího bodu.
 - Posuvný rám kolem Grida (`overflow-x: auto`) ořízne absolutně umístěnou nabídku štítků, zvlášť
   u seznamu s jediným členem, protože vytvoří i svislý posuv. V nové kostře proto `main.js` kreslí
-  otevřenou nabídku v gridu s `position: fixed` u jejího tlačítka. Ověřeno 23. 11. 2026 v Orce
+  otevřenou nabídku v gridu s `position: fixed` u jejího tlačítka. Posuvný je obal `.user-list-scroll`
+  v šabloně (pojmenovaná oblast s `tabindex="0"`), formulář Grida v něm se podruhé neposouvá; rám
+  tlačítka hledej přes `closest('.user-list-scroll')`, `closest()` se dvěma selektory vrátí bližší formulář. Ověřeno 23. 11. 2026 v Orce
   a Playwrightu na `/uzivatel-list/listall?search=20022` při 1280 i 375 px.
 - Posun rámu nesmí takovou nabídku zavřít, jen přesunout: sloupec Štítky je v rámu poslední a po
   kliknutí prohlížeč rám ještě posune k zaměřenému tlačítku, a to až po otevření nabídky. Nabídka

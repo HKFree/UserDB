@@ -1227,6 +1227,14 @@ ul.error {
     margin-left: auto;
 }
 
+/* Posuvný seznam: odsazení ponechá místo pro stín a obrys rámu při zaměření. */
+.user-list-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: -12px;
+    padding: 12px;
+}
+
 /* Login a heslo zařízení: hodnota i tlačítko zůstávají na jednom řádku, mezery se zobrazí tak, jak jsou uložené. */
 .copy-value-cell {
     white-space: nowrap;
@@ -1384,6 +1392,11 @@ tbody>tr.wewimo-table-header>th {
     margin-left: 4px;
 }
 
+/* Tužka u UID v seznamu členů stojí na konci buňky jako na master. */
+.grido td.grid-cell-id .user-uid > .btn-in-table {
+    margin-left: auto;
+}
+
 .grido td.grid-cell-poznamka {
     min-width: 120px;
 }
@@ -1419,7 +1432,13 @@ form.grido.grid-wide {
     -webkit-overflow-scrolling: touch;
 }
 
-form.grido.grid-wide:focus-visible {
+/* Seznamy členů mají rám v šabloně (.user-list-scroll); formulář v něm se neposouvá podruhé. */
+.user-list-scroll form.grido.grid-wide {
+    overflow-x: visible;
+}
+
+form.grido.grid-wide:focus-visible,
+.user-list-scroll:focus-visible {
     outline: 2px solid #5b9bd8;
     outline-offset: 2px;
 }
