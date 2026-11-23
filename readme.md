@@ -161,6 +161,9 @@ by its IP address is not blocked, it only fails the test. `specs/kontrola-chyb.s
 fails a test. A test that provokes an error on purpose names it with `problems.allow()`. Tests share the database of the run, so each uses demo records of its
 own or data it creates; the tests are not retried. Shared page helpers are in `tests/e2e/helpers.mjs`.
 
+A test that finds a bug of the application does not fix it here: the bug gets its own issue and the test stays in
+the file as `test.fixme()` with a comment linking the issue, so that the fix only has to enable it.
+
 [e2e.yml](.github/workflows/e2e.yml) runs the same script on every push and pull request, including pull requests
 from forks, since it needs no secret. A failed run keeps `temp/e2e/` and the Flox logs as the `e2e-failure`
 artifact for 14 days. `BrowserToolsVersionsTest` keeps the Playwright and Node versions of `tests/e2e` and
