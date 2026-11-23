@@ -54,6 +54,13 @@ z něj. Stejný prefix zůstává v `main.js` (skrývání postranního panelu n
 - `orca set device` (Orca 1.4.268) mění jen user agent, šířku okna ne: `innerWidth` zůstala
   na šířce panelu. Šířku 375 px s mobilním user agentem dá Playwright s vlastním kontextem
   (`browser.newContext({viewport, userAgent, isMobile})`).
+- `orca viewport --width 375 --height 812 --scale 2 --mobile` (Orca 1.4.269) obsah na 375 px přeskládá
+  (`documentElement.clientWidth` 375), ale `innerWidth`, `scrollWidth` a pevná horní lišta
+  zůstanou na šířce panelu. Přetečení proto měř přes `getBoundingClientRect()` jednotlivých
+  prvků proti `clientWidth`, ne porovnáním `scrollWidth` s `innerWidth`. Emulaci zruší každé
+  načtení stránky včetně přesměrování po odeslání formuláře: hlášku po uložení (flash) na
+  telefonu uvidíš tak, že `orca viewport` pustíš znovu až po přesměrování, stránku nenačítej
+  znovu, jinak hláška zmizí. Ověřeno 23. 11. 2026 na schvalování čestného členství.
 - Seznam členů AP se na telefonu posouvá do strany už v `master`: tabulka je širší než okno
   a nemá vlastní rám (šířka dokumentu 994 px při okně 375 px). Šířku stránky proto porovnávej
   se stavem před změnou, ne s šířkou okna.

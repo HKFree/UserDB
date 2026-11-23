@@ -1,7 +1,7 @@
 # UserDB: katalog demo dat
 
 Scénářová data se načítají migracemi `db/dummy-data/` v Dockeru, lokálním Floxu i na testovacích instancích.
-Obsahují 8 oblastí, 20 AP a 79 členů včetně původních 7. Nových 72 členů má v poznámce první řádek `DEMO: `.
+Obsahují 8 oblastí, 20 AP a 82 členů včetně původních 7. Nových 75 členů má v poznámce první řádek `DEMO: `.
 Jména, kontakty, adresy, přihlašovací údaje a platby jsou smyšlené. Datum scénářů se odvozuje od dne načtení.
 
 Flox a testovací instance navíc standardně přidávají objemová data. Při přípravě nové databáze je lze vynechat:
@@ -83,6 +83,9 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 |---|---|---|
 | Čekající návrh, navrhovatel 1 | 20045 Čestnéčekající | ČČ 20045, typ 0 |
 | Čekající návrh, navrhovatel 20002 | 20046 Čestnédruhýnávrh | ČČ 20046, typ 1 |
+| Čekající návrh, člen bez platné adresy | 20072 Čestnýbezadresy | ČČ 20072, typ 0, navrhovatel 1; po rozhodnutí dostane e-mail jen navrhovatel a schvalující upozornění na člena |
+| Čekající návrh, navrhovatel bez platné adresy | 20073 Čestnýodchybného | ČČ 20073, typ 1, navrhovatel 20070; e-mail dostane jen člen a schvalující upozornění na navrhovatele |
+| Čekající návrh, člen ani navrhovatel bez platné adresy | 20074 Čestnýbezoznámení | ČČ 20074, typ 2, navrhovatel 20070; žádný e-mail neodejde a upozornění jmenuje oba |
 | Schválené bez konce | 20047 Čestnébezkonce | ČČ 20047, typ 2; rozpis internetu za 0 Kč |
 | Schválené s koncem za rok | 20048 Čestnéomezené | ČČ 20048, typ 3 |
 | Prošlé před týdnem | 20049 Čestnéprošlé | ČČ 20049, typ 4 |
@@ -247,12 +250,12 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 |---|---|---|
 | Oblast | -20, 200 až 204 | 10000 až 10099 |
 | Ap | 200 až 217 | 10000 až 10449 |
-| Uzivatel | 20000 až 20071 | 100000 až 113499 |
+| Uzivatel | 20000 až 20074 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
 | IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
 | SpravceOblasti | 20000 až 20026 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
-| Čestné členství | 20045 až 20052 | žádné |
+| Čestné členství | 20045 až 20052, 20072 až 20074 | žádné |
 | Stitek | 21000 až 21004 | žádné |
 | SloucenyUzivatel | 20000 až 20001 | žádné |
 | Smlouva / PodpisSmlouvy | 200000 až 200006 / 200000 až 200007 | žádné |
