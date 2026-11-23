@@ -445,7 +445,7 @@ class UzivatelPresenter extends BasePresenter
         }
 
         // Validujeme jenom při uložení formuláře
-        if (!isset($data['save'])) {
+        if (!$this->odeslanoTlacitkemUlozit($form)) {
             return;
         }
 
@@ -557,6 +557,10 @@ class UzivatelPresenter extends BasePresenter
         if (!in_array($values->id, [null, '', 0, '0'], true)) {
             $uzivatel = $this->uzivatel->getUzivatel($values->id);
             $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
+        }
+
+        if (!$this->odeslanoTlacitkemUlozit($form)) {
+            return; // bez tlačítka Uložit neproběhly kontroly formuláře
         }
 
         $odeslanaId = [];

@@ -50,6 +50,23 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         }
     }
 
+    public function testSubmitWithoutSaveButtonStoresNothing(): void {
+        $post = $this->post(['jmeno' => 'Changed']);
+        unset($post['save']);
+        $before = $this->snapshot();
+
+        $result = $this->submit($post);
+
+        Assert::same(200, $result->status);
+        Assert::null($result->redirectUrl);
+        Assert::contains('id="frm-uzivatelForm"', $result->html);
+        Assert::same($before, $this->snapshot());
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+        // The same data is saved with the button, so only the missing button kept it from being stored.
+        PermissionScenario::assertRedirect($this->submit($post + ['save' => 'Uložit']), 'uzivatel/show/' . $this->member->id);
+        Assert::same('Changed', $this->database->table('Uzivatel')->get($this->member->id)?->jmeno);
+    }
+
     public function testClearingUnusedPlannedMembershipKeepsAccountAndCreationDate(): void {
         $this->member->update(['TypClenstvi_id' => 0, 'money_aktivni' => 0]);
         $result = $this->submit($this->post(['TypClenstvi_id' => '-1']));

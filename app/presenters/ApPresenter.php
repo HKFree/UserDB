@@ -244,7 +244,7 @@ class ApPresenter extends BasePresenter
         }
 
         // Validujeme jenom při uložení formuláře
-        if (!isset($data["save"])) {
+        if (!$this->odeslanoTlacitkemUlozit($form)) {
             return;
         }
 
@@ -335,6 +335,10 @@ class ApPresenter extends BasePresenter
     /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>, subnet: ArrayHash<ArrayHash<mixed>>, apiKlic: ArrayHash<ArrayHash<mixed>>} $values */
     public function apFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiUpravitAp($values->id)); // AP ze skrytého pole id
+
+        if (!$this->odeslanoTlacitkemUlozit($form)) {
+            return; // bez tlačítka Uložit neproběhly kontroly formuláře
+        }
 
         $log = array();
         $idAP = $values->id;

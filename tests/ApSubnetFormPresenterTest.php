@@ -74,6 +74,21 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
         Assert::same($arpProxy ? 1 : 0, $saved->arp_proxy);
     }
 
+    public function testSubmitWithoutSaveButtonStoresNothing(): void {
+        $post = $this->post('subnet', ['n1' => ['id' => '', 'subnet' => '10.107.70.0/24', 'gateway' => '10.107.70.1', 'popis' => 'Form subnet']]);
+        $before = $this->snapshot();
+
+        $result = $this->submit($post);
+
+        Assert::same(200, $result->status);
+        Assert::null($result->redirectUrl);
+        Assert::contains('id="frm-apForm"', $result->html);
+        Assert::same($before, $this->snapshot());
+        // The same data is saved with the button, so only the missing button kept it from being stored.
+        PermissionScenario::assertRedirect($this->submit($post + ['save' => 'Uložit']), 'ap/show/' . $this->ap->id);
+        Assert::same(1, $this->database->table('Subnet')->where('Ap_id', $this->ap->id)->count('*'));
+    }
+
     /** @return array<string, array{string, string}> */
     public function paddedCases(): array {
         return [
@@ -186,11 +201,7 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
 
     /** @param array<string, array<string, mixed>> $rows */
     private function submitRows(string $container, array $rows): PresenterResult {
-        return $this->presenters->ui($this->actor->id, 'Ap', ['action' => 'edit', 'id' => $this->ap->id], 'POST', [
-            '_do' => 'apForm-submit', 'id' => (string) $this->ap->id, 'aktivni' => 'on', 'jmeno' => $this->ap->jmeno,
-            'Oblast_id' => (string) $this->ap->Oblast_id, 'gps' => '50.209722,15.832778', 'ulice_cp' => 'Test street 1',
-            'mesto' => 'Test city', 'psc' => '50002', $container => $rows, 'save' => 'Uložit',
-        ]);
+        return $this->submit($this->post($container, $rows) + ['save' => 'Uložit']);
     }
 
     /** @return list<array{string}> */
@@ -326,6 +337,24 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
         Assert::same(1, preg_match('~<input[^>]*name="jmeno"[^>]*value="Rozepsané AP"~u', $result->html));
         Assert::same($before, $this->snapshot());
         return $lastKey;
+    }
+
+    /**
+     * Edit form of the fixture AP with the given rows and without the save button.
+     * @param array<string, array<string, mixed>> $rows
+     * @return array<string, mixed>
+     */
+    private function post(string $container, array $rows): array {
+        return [
+            '_do' => 'apForm-submit', 'id' => (string) $this->ap->id, 'aktivni' => 'on', 'jmeno' => $this->ap->jmeno,
+            'Oblast_id' => (string) $this->ap->Oblast_id, 'gps' => '50.209722,15.832778', 'ulice_cp' => 'Test street 1',
+            'mesto' => 'Test city', 'psc' => '50002', $container => $rows,
+        ];
+    }
+
+    /** @param array<string, mixed> $post */
+    private function submit(array $post): PresenterResult {
+        return $this->presenters->ui($this->actor->id, 'Ap', ['action' => 'edit', 'id' => $this->ap->id], 'POST', $post);
     }
 
     /** @return array<string, string> */
