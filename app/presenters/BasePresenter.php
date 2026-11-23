@@ -127,7 +127,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
         $this->template->demoPersonaUrl = $this->settings->demoPersonaUrl;
         $this->template->demoPersonaName = $this->settings->demoPersonaName;
-        $this->template->oblasti = $this->oblast->getSeznamOblasti();
+        $this->template->oblasti = $this->oblast->getSeznamOblastiProMenu();
 
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
         if (count($oblastiSpravce) > 0) {
