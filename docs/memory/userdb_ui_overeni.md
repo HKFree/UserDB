@@ -34,9 +34,18 @@ Ověřeno 22. 11. 2026 na lokálním webu ve Floxu, není-li uvedeno jinak.
 
 - Odkazy tabulky (řazení, stránka, export) i adresa jejího formuláře nesou jen persistentní
   parametry presenteru a parametry metody akce. Parametr čtený jen přes `getParameter()` se
-  v nich ztratí: tak se ztrácel režim `fullnotes` a v kompletním seznamu členů se dál ztrácí
-  `search`. Ověřeno 23. 11. 2026 testem nad skutečnými odkazy vykreslené stránky
-  (`MemberListFullNotesPresenterTest`) a výpisem odkazu řazení ve výsledcích hledání.
+  v nich ztratí: tak se ztrácel režim `fullnotes` i hledaný text `search` v kompletním seznamu
+  členů. Ověřeno 23. 11. 2026 testy nad skutečnými odkazy a formuláři vykreslené stránky
+  (`MemberListFullNotesPresenterTest`, `MemberListSearchPresenterTest`).
+- Parametr, který má platit jen pro jednu akci a skončit odchodem z ní, dej jako argument metodě
+  `action<Akce>()` (`search` v `actionListall()`). Odkazy `this`, tedy i odkazy a formulář
+  tabulky, ho nesou; odkaz na pojmenovanou akci ne, takže ho není třeba nikde vypínat.
+  Metoda `action*` běží před signály tabulky, `render*` až po nich.
+- Model tabulky musí být `Selection`, ne pole z `fetchAll()`. Nad polem dostane obsluha filtru
+  ze `setWhere()` jednotlivý řádek místo dotazu a `->where()` na něm skončí chybou
+  `Call to undefined method ActiveRow::where()`. Tak padaly filtry Zobrazit a štítek ve výsledcích
+  hledání pro role s plným přístupem; ověřeno 23. 11. 2026 testem `MemberListSearchPresenterTest`
+  s vráceným `fetchAll()` ve `findUserByFulltext()`.
 - Odkaz na pojmenovanou akci (`{link UzivatelList:list ...}`) stav tabulek zahodí (řazení,
   filtr, stránku), protože tabulky nejsou persistentní komponenty; `{link this}` ho zachová.
   Přepínače režimu nad seznamem členů proto vracejí tabulku do výchozího stavu.

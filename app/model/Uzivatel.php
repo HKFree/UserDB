@@ -235,7 +235,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                 return $this->findBy(array('id' => array_values($secureMatchId)));
             }
         } else {
-            return $this->findAll()->where($podminka, ...$hodnoty)->fetchAll();
+            return $this->findAll()->where($podminka, ...$hodnoty);
         }
 
         return $this->findBy(array('id' => 0));

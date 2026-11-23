@@ -47,7 +47,6 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
             'all areas' => ['listall', false, null],
             'one AP' => ['list', false, null],
             'members from other APs' => ['list', true, null],
-            // Full-text search supplies an array of rows instead of a Selection.
             'search in all areas' => ['listall', false, 'Fixture'],
         ];
     }
@@ -65,10 +64,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
     public function testExportPreservesEveryMembersLabels(string $action, bool $otherUsers, ?string $search): void {
         $members = array_merge($this->membersWithLabels($otherUsers), $this->membersWithLabels($otherUsers));
         $this->assertExport($members, $this->exportedRows($action, $otherUsers, $search));
-        if ($search === null) {
-            // Grido truncates an array source to its first batch; batching applies to Selection sources.
-            $this->assertExport($members, $this->exportedRows($action, $otherUsers, null, 2));
-        }
+        $this->assertExport($members, $this->exportedRows($action, $otherUsers, $search, 2));
     }
 
     /** @return array<string, array{string, bool, ?string, bool, bool}> */
