@@ -37,6 +37,30 @@ class UzivatelskeKonto extends Table
         return ($this->findBy(array('PrichoziPlatba_id' => $idPlatby))->order('id DESC')->fetch());
     }
 
+    /**
+     * Poslední pohyb (s nejvyšším id) daných typů každého z uživatelů. Uživatel bez takového pohybu ve výsledku chybí.
+     *
+     * @param list<int> $idUzivatelu
+     * @param list<int> $typyPohybu
+     * @return array<int, Nette\Database\Row> podle id uživatele, sloupce Uzivatel_id, datum, castka a druzstvo
+     */
+    public function getPosledniPohyby(array $idUzivatelu, array $typyPohybu): array {
+        if ($idUzivatelu === [] || $typyPohybu === []) {
+            return [];
+        }
+        return $this->getConnection()->query(
+            'SELECT K.Uzivatel_id, K.datum, K.castka, K.druzstvo
+            FROM UzivatelskeKonto K
+            JOIN (
+                SELECT MAX(id) AS id FROM UzivatelskeKonto
+                WHERE Uzivatel_id IN (?) AND TypPohybuNaUctu_id IN (?)
+                GROUP BY Uzivatel_id
+            ) posledni ON posledni.id = K.id',
+            $idUzivatelu,
+            $typyPohybu
+        )->fetchPairs('Uzivatel_id');
+    }
+
     /** @param array<array-key, mixed> $by */
     public function findPohyb(array $by): ?Nette\Database\Table\ActiveRow {
         return ($this->findOneBy($by));

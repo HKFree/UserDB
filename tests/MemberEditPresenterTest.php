@@ -103,6 +103,24 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
 
+    /** @return array<string, array{array<string, string>, int}> */
+    public function appTokenCases(): array {
+        return ['still active' => [['jmeno' => 'Changed'], 1], 'deleted in cooperative' => [['smazano' => '1'], 0]];
+    }
+
+    /**
+     * @param array<string, string> $changes
+     * @dataProvider appTokenCases
+     */
+    public function testEditKeepsAppTokensOnlyForActiveMember(array $changes, int $tokens): void {
+        $this->fixtures->insert('AplikaceToken', [
+            'Uzivatel_id' => $this->member->id, 'token' => str_repeat('x', 64),
+            'pouzit_poprve' => '2001-01-01 00:00:00', 'pouzit_naposledy' => '2001-01-01 00:00:00',
+        ]);
+        PermissionScenario::assertRedirect($this->submit($this->post($changes)), 'uzivatel/show/' . $this->member->id);
+        Assert::same($tokens, $this->database->table('AplikaceToken')->where('Uzivatel_id', $this->member->id)->count('*'));
+    }
+
     public function testMissingDeviceRejectsMemberChangesBeforeSaving(): void {
         $before = $this->snapshot();
         $post = $this->post(['jmeno' => 'Nové jméno', 'ip' => [

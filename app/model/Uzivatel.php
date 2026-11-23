@@ -16,6 +16,17 @@ class Uzivatel extends Table
     */
     protected $tableName = 'Uzivatel';
 
+    /** Aktivní člen spolku nebo družstva (podmínka pro where() nad tabulkou Uzivatel; systémové uživatele nevylučuje). */
+    public const AKTIVNI_CLEN = '((spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0))';
+
+    /**
+     * Stejné pravidlo jako AKTIVNI_CLEN pro hodnoty, které ještě nejsou v databázi (odeslaný formulář).
+     * Oba zápisy měň spolu; jejich shodu hlídá RecordConditionsDatabaseTest.
+     */
+    public static function jeAktivniClen(int $spolek, ?int $typClenstviId, int $druzstvo, int $smazano): bool {
+        return ($spolek === 1 && $typClenstviId > 1) || ($druzstvo === 1 && $smazano === 0);
+    }
+
     /**
      * @param int|string $id_uzivatel
      * @return list<Nette\Database\Row>
@@ -38,7 +49,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
 
     /** @return array<int, string> */
     public function getFormatovanySeznamNezrusenychUzivatelu(): array {
-        $vsichni = $this->findAll()->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->where('systemovy=0')->fetchAll();
+        $vsichni = $this->findAll()->where(self::AKTIVNI_CLEN)->where('systemovy=0')->fetchAll();
         $uss = array();
         foreach ($vsichni as $uzivatel) {
             $uss[$uzivatel->id] = $uzivatel->id . ' - ' . $uzivatel->nick . ' - ' . $uzivatel->jmeno . ' ' . $uzivatel->prijmeni;
@@ -48,7 +59,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
 
     /** @return array<array-key, Nette\Database\Table\ActiveRow> */
     public function getUsersForMailingList(): array {
-        $vsichni = $this->findAll()->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->where('email_invalid=0')->where('systemovy=0')->fetchAll();
+        $vsichni = $this->findAll()->where(self::AKTIVNI_CLEN)->where('email_invalid=0')->where('systemovy=0')->fetchAll();
         return ($vsichni);
     }
 
@@ -346,7 +357,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
 
     /** @param int|string $id */
     public function getDuplicateEmailArea(string $email, $id): ?string {
-        $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetch();
+        $existujici = $this->findAll()->where('email = ? OR email2 = ?', $email, $email)->where('id != ?', $id)->where(self::AKTIVNI_CLEN)->fetch();
         if ($existujici !== null) {
             $ap = $existujici->ref('Ap', 'Ap_id');
             if ($ap === null) {
@@ -359,7 +370,7 @@ ORDER BY t1.id LIMIT 1')->fetchField();
 
     /** @param int|string $id */
     public function getDuplicatePhoneArea(string $telefon, $id): ?string {
-        $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where('(spolek = 1 AND TypClenstvi_id > 1) OR (druzstvo = 1 AND smazano = 0)')->fetch();
+        $existujici = $this->findAll()->where('telefon = ?', $telefon)->where('id != ?', $id)->where(self::AKTIVNI_CLEN)->fetch();
         if ($existujici !== null) {
             $ap = $existujici->ref('Ap', 'Ap_id');
             if ($ap === null) {
