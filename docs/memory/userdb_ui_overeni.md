@@ -113,8 +113,9 @@ počítala se zlomem 768 px ze standardního Bootstrapu.
   telefonu uvidíš tak, že `orca viewport` pustíš znovu až po přesměrování, stránku nenačítej
   znovu, jinak hláška zmizí. Ověřeno 23. 11. 2026 na schvalování čestného členství.
 - Seznam členů AP se na telefonu do strany neposouvá: grid širší než stránka má od nové kostry
-  vlastní rám (`form.grido.grid-wide`, třídu nastavuje `main.js`). Šířku dokumentu porovnávej
-  s nastavenou šířkou okna, ne s `innerWidth`, viz [kostra aplikace](userdb_ui_shell.md).
+  vlastní rám (`form.grido.grid-wide`, třídu nastavuje `main.js`). V emulaci Playwrightu porovnávej
+  šířku dokumentu s nastavenou šířkou okna, ne s `innerWidth`, viz [kostra aplikace](userdb_ui_shell.md);
+  pod `orca viewport` platí měření z předchozího bodu.
 - Posuvný rám kolem Grida ořízne absolutně umístěnou nabídku štítků, zvlášť u seznamu s jediným
   členem. `overflow-x: auto` totiž současně vytvoří svislý posuv. Ověřeno 23. 11. 2026 v Orce
   a Playwrightu na `/uzivatel-list/listall?search=20022` při 1280 i 375 px.

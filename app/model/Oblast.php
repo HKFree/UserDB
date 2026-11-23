@@ -72,6 +72,9 @@ class Oblast extends Table
         foreach ($oblasti as $oblast) {
             $idOblasti[] = $oblast->id;
         }
+        if ($idOblasti === []) {
+            return [];
+        }
 
         $skupiny = [];
         foreach ($this->findAll()->where('id', $idOblasti)->order(self::razeniPodlePopisku($pouzeAktivni)) as $oblast) {

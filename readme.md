@@ -147,7 +147,9 @@ before `scripts/userdb_mariadb_init.sql` knew `userdb_e2e` gets the database fro
 The HTML report, traces and screenshots of failed tests and the logs of the setup and the web are in `temp/e2e/`;
 open the report with `npx playwright show-report ../../temp/e2e/report` from `tests/e2e`.
 
-The scenarios in `tests/e2e/specs/` cover: every page of the menu for four roles, the search in the top bar,
+The scenarios in `tests/e2e/specs/` cover: every page of the menu for four roles, the search in the top bar
+with its suggestions, the filter of areas in the sidebar, the quick filter and row density of the member list,
+the error shown at a field of the member form,
 creating and editing a member with IP addresses, activation, reactivation and deactivation of internet, e-mail to
 one member and to a whole AP, sending the payment schedule with its confirmation, editing an AP with the subnet overlap check, labels on the member detail, sorting and
 filters of the member list, proposing and approving an honorary membership, granting a role and transferring an
@@ -532,7 +534,7 @@ ALTER TABLE `migrations`
 ## Accessing API
 
 [Open swagger.yaml interactive docs](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/HKFree/UserDB/master/swagger.yaml) and try some operations.
-You'll need the credentials (click Authorize in interactive docs). Create credentials in UserDB: Oblast - Zobrazit podrobnosti AP - Editovat - API klíče.
+You'll need the credentials (click Authorize in interactive docs). Create credentials in UserDB: Oblast - AP - Podrobnosti AP - Editovat - API klíče.
 
 ## License
 

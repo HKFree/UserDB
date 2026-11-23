@@ -733,9 +733,19 @@ $(document).ready(function () {
     function add(link, description, area) {
         var href = link.getAttribute('href');
         var text = $.trim(link.textContent);
-        if (!href || seen[href]) return;
-        seen[href] = true;
-        index.push({ href: href, text: text, description: description, folded: fold(text), foldedWithArea: area ? fold(area + ' - ' + text) : '' });
+        if (!href) return;
+        var foldedWithArea = area ? fold(area + ' - ' + text) : '';
+        var known = seen[href];
+        if (known) {
+            // Jedine aktivni AP oblasti stoji v Mych oblastech samo, ve Vsech oblastech pod svou oblasti.
+            if (foldedWithArea && !known.foldedWithArea) {
+                known.foldedWithArea = foldedWithArea;
+                known.description = description;
+            }
+            return;
+        }
+        seen[href] = { href: href, text: text, description: description, folded: fold(text), foldedWithArea: foldedWithArea };
+        index.push(seen[href]);
     }
 
     $('.sidebar ul.nav-sidebar > li').each(function () {
