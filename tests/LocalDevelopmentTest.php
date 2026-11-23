@@ -36,6 +36,9 @@ try {
     Assert::contains('Local development mail', $mail);
 
     Assert::match('mysql:unix_socket=%a%;dbname=userdb_dev', $container->getByType(\Nette\Database\Connection::class)->getDsn());
+    // The setup may only ever complete the developer's database, never drop it.
+    Assert::false(\UserdbLocalInstance::fromEnvironment()->isRebuiltOnSetup());
+    Assert::same($directory, \UserdbLocalInstance::fromEnvironment()->runtimeDirectory($directory));
 
     $crypto = $container->getByType(\App\Services\CryptoSluzba::class);
     Assert::same('local test', $crypto->decrypt($crypto->encrypt('local test')));
@@ -83,6 +86,9 @@ try {
     Assert::count(1, (array) glob($directory . '/mail/*.eml'));
     Assert::same($directory . '/e2e/sessions', $e2e->getByType(\Nette\Http\Session::class)->getOptions()['save_path']);
     Assert::same($directory . '/e2e/storage', getenv('FILE_STORAGE_PATH'));
+    Assert::true(\UserdbLocalInstance::fromEnvironment()->isRebuiltOnSetup());
+    Assert::same('userdb_e2e', \UserdbLocalInstance::fromEnvironment()->database());
+    Assert::same($directory . '/e2e', \UserdbLocalInstance::fromEnvironment()->runtimeDirectory($directory));
 
     // A mistyped name must not fall back to the developer's database.
     putenv('USERDB_LOCAL_INSTANCE=e2e-typo');

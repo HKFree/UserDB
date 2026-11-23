@@ -37,10 +37,11 @@ jobs:
       - name: Check cleanup
         if: always()
         run: |
+          # The script stops only its web; Flox stops MariaDB by itself, a moment after the script has ended.
           # pgrep -fl prints no command arguments with Linux procps.
           # shellcheck disable=SC2009
-          if ps ax -o pid=,command= | grep -E 'mariadbd|php -S' | grep -F -- "$GITHUB_WORKSPACE/"; then
-            echo '::error::Services of the browser tests survived cleanup.'
+          if ps ax -o pid=,command= | grep -F 'php -S' | grep -F -- "$GITHUB_WORKSPACE/"; then
+            echo '::error::The web of the browser tests survived cleanup.'
             exit 1
           fi
       - name: Upload the report, traces and logs of a failed run

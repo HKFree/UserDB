@@ -16,7 +16,7 @@ source "$scripts_dir/userdb_web_lib.sh"
 repository=$(cd "$scripts_dir/.." && pwd -P)
 tests_dir=$repository/tests/e2e
 out=$repository/temp/e2e
-lock_dir=
+lock=
 web_pidfile=$out/logs/web.pid
 
 fail() {
@@ -39,12 +39,17 @@ install_node_packages() {
         return
     fi
     echo 'Installing Playwright...'
-    (cd "$tests_dir" && npm ci --no-audit --no-fund && npx playwright install chromium)
+    (cd "$tests_dir" && npm ci --no-audit --no-fund)
+    if ! (cd "$tests_dir" && npx playwright install chromium); then
+        # Without this the next run would find the packages current and never install the browser.
+        rm -f "$tests_dir/node_modules/.package-lock.json"
+        fail 'Chromium could not be installed.'
+    fi
 }
 
 wait_for_database() {
     local deadline=$((SECONDS + 60))
-    until mariadb-admin --socket="$USERDB_MARIADB_SOCKET" --connect-timeout=2 ping >/dev/null 2>&1; do
+    until mariadb-admin --socket="${USERDB_MARIADB_SOCKET:-}" --connect-timeout=2 ping >/dev/null 2>&1; do
         if [ "$SECONDS" -ge "$deadline" ]; then
             fail 'Flox MariaDB is not ready; check .flox/cache/logs/mariadb.log.'
         fi
@@ -52,21 +57,24 @@ wait_for_database() {
     done
 }
 
-# Two runs in one worktree would rebuild the database under each other.
+# Two runs in one worktree would rebuild the database under each other. The lock is a symbolic link
+# to the PID of its owner: creating it is atomic and it never exists without the PID.
 acquire_lock() {
-    local directory=$FLOX_ENV_CACHE/e2e.lock other
-    if ! mkdir "$directory" 2>/dev/null; then
-        other=$(cat "$directory/pid" 2>/dev/null || true)
-        case "$other" in ''|*[!0-9]*) other= ;; esac
-        if [ -n "$other" ] && kill -0 "$other" 2>/dev/null; then
-            fail "Another run of the browser tests (PID $other) is using this worktree."
+    local link=$FLOX_ENV_CACHE/e2e.lock other
+    if ! ln -s "$$" "$link" 2>/dev/null; then
+        other=$(readlink "$link" 2>/dev/null || true)
+        case "$other" in ''|*[!0-9]*) fail "Remove the unreadable lock $link and run again." ;; esac
+        if kill -0 "$other" 2>/dev/null; then
+            fail "Another run of the browser tests (PID $other) is using this worktree. If none is, remove $link."
         fi
-        # The previous run was killed before it could clean up.
-        rm -rf "$directory"
-        mkdir "$directory"
+        # The previous run was killed before it could clean up: its web may still be running.
+        stop_detached_service "$web_pidfile" "$repository"
+        wait_for_services
+        remaining=
+        rm -f "$link"
+        ln -s "$$" "$link" 2>/dev/null || fail 'Another run of the browser tests has just started in this worktree.'
     fi
-    lock_dir=$directory
-    echo "$$" > "$lock_dir/pid"
+    lock=$link
 }
 
 # Invoked by the EXIT trap.
@@ -76,21 +84,25 @@ cleanup() {
     trap - EXIT INT TERM
     set +e
     set +m
-    stop_process_groups
-    stop_detached_service "$web_pidfile" "$repository"
-    wait_for_services
-    pid=$(cat "$web_pidfile" 2>/dev/null)
-    case "$pid" in ''|*[!0-9]*) pid= ;; esac
-    if [ -n "$pid" ] && ps -p "$pid" -o command= | grep -F -- "$repository/" >/dev/null; then
-        echo "Cleanup failed: the web of the browser tests is still running (PID $pid)." >&2
-        status=1
+    # Without the lock the web and its PID file belong to another run.
+    if [ -n "$lock" ]; then
+        stop_process_groups
+        stop_detached_service "$web_pidfile" "$repository"
+        wait_for_services
+        pid=$(cat "$web_pidfile" 2>/dev/null)
+        case "$pid" in ''|*[!0-9]*) pid= ;; esac
+        if [ -n "$pid" ] && ps -p "$pid" -o command= | grep -F -- "$repository/" >/dev/null; then
+            echo "Cleanup failed: the web of the browser tests is still running (PID $pid)." >&2
+            status=1
+        fi
+        rm -f "$lock"
     fi
-    [ -z "$lock_dir" ] || rm -rf "$lock_dir"
     exit "$status"
 }
 
-if [ "${FLOX_ENV_PROJECT:-}" != "$repository" ] || [ -z "${USERDB_MARIADB_SOCKET:-}" ]; then
-    [ -z "${USERDB_E2E_IN_FLOX:-}" ] || fail "Flox activated another project than $repository."
+# Always through an activation of its own, also from a shell where Flox is already active:
+# only that makes sure the services are running.
+if [ -z "${USERDB_E2E_IN_FLOX:-}" ]; then
     command -v flox >/dev/null || fail 'Flox is required, see "Tests with Flox" in readme.md.'
     # Everything that can fail at once is checked before Flox starts MariaDB: an activation that ends
     # while the database is still starting can leave the service hanging.
@@ -104,10 +116,8 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
+# First of all, see the comment above: nothing may end this activation before MariaDB has started.
 wait_for_database
-[ -f "$repository/vendor/autoload.php" ] || fail 'Composer dependencies are missing: run composer install.'
-check_node
-install_node_packages
 acquire_lock
 rm -rf "$out"
 mkdir -p "$out/logs"
@@ -133,6 +143,10 @@ export USERDB_E2E_MAIL_DIR=$FLOX_ENV_CACHE/e2e/mail
 USERDB_E2E_PERSONA_COOKIE=$(php -r 'require $argv[1] . "/scripts/UserdbDemoPersonas.php"; echo UserdbDemoPersonas::cookieName($argv[1]);' "$repository")
 export USERDB_E2E_PERSONA_COOKIE
 
+# In the background and waited for: bash runs the TERM trap only between foreground commands,
+# so a foreground Playwright would have to finish before the run could be stopped.
+(cd "$tests_dir" && exec npx playwright test "$@") </dev/null &
+groups="$groups $!"
 status=0
-(cd "$tests_dir" && exec npx playwright test "$@") || status=$?
+wait_job "$!" || status=$?
 exit "$status"

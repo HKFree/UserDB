@@ -9,6 +9,8 @@ export const personas = {
     zso: 20004,
     druzstevnik: 20006,
     soRozvetvena: 20012,
+    /** Signs in with DRUŽSTEVNÍK only; the SO role of area 201 ended a week ago. */
+    byvalySo: 20010,
 };
 
 const origin = new URL(process.env.USERDB_E2E_ORIGIN).origin;
@@ -30,6 +32,11 @@ class Problems {
         context.on('weberror', error => this.#add(`uncaught exception: ${error.error().message}`));
         context.on('response', response => {
             if (response.status() >= 500) this.#add(`HTTP ${response.status()}: ${response.url()}`);
+        });
+        // Playwright does not route the hops of a redirect, so they are not blocked. They are still
+        // requests of their own here, and one that leaves the local web fails the test.
+        context.on('request', request => {
+            if (request.redirectedFrom() && new URL(request.url()).origin !== origin) this.blocked(request.url());
         });
     }
 
@@ -90,6 +97,9 @@ export const test = base.extend({
         await use(problems);
         for (const page of context.pages()) {
             if (page.isClosed()) continue;
+            // A test may end right after a navigation. The page it ends on must finish loading, so that
+            // its scripts can still fail the test and closing the browser does not wait for its requests.
+            await page.waitForLoadState('load');
             expect(new URL(page.url()).origin, 'the test ended outside the local web').toBe(origin);
             await expect(page.locator('#tracy-bs'), `Tracy error page at ${page.url()}`).toHaveCount(0);
         }

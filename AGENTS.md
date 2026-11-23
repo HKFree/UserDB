@@ -158,6 +158,14 @@ Stejné kontroly pouští CI při každém pushi a PR. Pusť je lokálně před 
 Které řádky testy provedou, změří `flox activate -s -- scripts/userdb_test_coverage.sh`
 (report v `temp/coverage/coverage.html`). Práh pokrytí se nevynucuje.
 
+Hlavní postupy v prohlížeči (Playwright, `tests/e2e/`) pustí `scripts/userdb_e2e.sh`, sám
+si aktivuje Flox. Potřebuje Node ve verzi z `tests/screenshots/.nvmrc`. Každý běh postaví
+vlastní databázi `userdb_e2e` a spustí nad ní vlastní web; vývojové databáze ani běžícího
+webu se nedotkne. CI ho pouští při každém pushi a PR. Lokálně ho pusť před commitem změny
+stránky, formuláře nebo JavaScriptu, kterými některý z těchto postupů prochází. Jeden soubor
+pustí `scripts/userdb_e2e.sh specs/smoke.spec.mjs`; co testy hlídají samy a jak napsat nový,
+říká [README](readme.md#browser-tests-with-playwright).
+
 Lokální web s demo daty; každý worktree má vlastní databázi a port:
 
 ```sh
@@ -253,10 +261,11 @@ npx skills add stablyai/orca
 | `app/config/` | `config.neon` s registrací služeb, `config.flox.neon` pro lokální běh |
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
 | `tests/` | Nette Tester; `tests/bootstrap.php` načte společný základ: testovací kontejner, databázi z migrací ve Floxu a spouštění presenterů |
+| `tests/e2e/` | testy hlavních postupů v prohlížeči (Playwright Test): `specs/` se scénáři, `fixtures.mjs` s přihlášením demo osoby, kontrolou chyb stránky a čtením uložených e-mailů |
 | `tests/screenshots/` | nástroje a testy náhledů stránek v PR: Playwright, porovnání PNG, validace artefaktu a sestavení komentáře; stejným `npm test` běží i test chování `www/js/main.js` v prohlížeči (`test/copy-value.test.mjs`) |
-| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, objemová demo data v `UserdbDemoVolume.php`, demo osoby v `UserdbDemoPersonas.php`, jejich stránka v `UserdbDemoPersonaPage.php` a Tracy panel v `UserdbDemoPersonaPanel.php`, router PHP serveru, nastavení PHP v `userdb_php/php.ini`, příprava worktree), měření pokrytí testy, skript nasazení na testovací server a jeho přihlašovací formulář |
+| `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, výběr vývojové nebo E2E instance v `UserdbLocalInstance.php`, objemová demo data v `UserdbDemoVolume.php`, demo osoby v `UserdbDemoPersonas.php`, jejich stránka v `UserdbDemoPersonaPage.php` a Tracy panel v `UserdbDemoPersonaPanel.php`, router PHP serveru, nastavení PHP v `userdb_php/php.ini`, příprava worktree), měření pokrytí testy, spuštění testů v prohlížeči (`userdb_e2e.sh`), start webu a úklid procesů společný pro testy v prohlížeči a focení stránek (`userdb_web_lib.sh`), skript nasazení na testovací server a jeho přihlašovací formulář |
 | `orca.yaml` | co Orca spustí v každém novém worktree; jen věci platné pro každého, kdo má Orcu a Flox |
-| `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení na testovací server, náhledy stránek v PR (`pr-screenshots.yml`) |
+| `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení na testovací server, testy v prohlížeči (`e2e.yml`), náhledy stránek v PR (`pr-screenshots.yml`) |
 | `.github/pull_request_template.md` | šablona popisu PR: co a proč, ověření, review druhým modelem, neověřeno |
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
 | `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |
@@ -328,7 +337,8 @@ použitelnost ve stávajícím vzhledu, ne nový design.
 - **Texty** česky s diakritikou a stejnými slovy jako jinde v aplikaci.
   Chybová hláška říká, co se stalo a co má uživatel udělat.
 - **Test.** Co se komu zobrazí (podmínka v šabloně, oprávnění), je chování
-  a má presenter test. Čistě vzhledová úprava test nemá; nahrazuje ho
+  a má presenter test. Postup, který vede přes více stránek nebo rolí nebo stojí
+  na JavaScriptu, má test v `tests/e2e/`. Čistě vzhledová úprava test nemá; nahrazuje ho
   prohlídka v prohlížeči, kterou uvedeš v Ověření.
 - **Cache.** Po změně `screen.css` nebo `main.js` zvyš číslo za `?v`
   všude, kde se soubor načítá (dnes `@layout.latte`

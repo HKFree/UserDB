@@ -39,7 +39,11 @@ $driver = new Nextras\Migrations\Drivers\MySqlDriver($adapter);
 $runner = new Nextras\Migrations\Engine\Runner($driver, new Nextras\Migrations\Printers\Console());
 if ($instance->isRebuiltOnSetup()) {
     // Sessions, files and e-mails of the previous run belong to the database that is about to be dropped.
-    Nette\Utils\FileSystem::delete($instance->runtimeDirectory($cache));
+    $runtime = $instance->runtimeDirectory($cache);
+    if ($runtime === $cache) {
+        throw new LogicException('A rebuilt instance must keep its files in a directory of its own.');
+    }
+    Nette\Utils\FileSystem::delete($runtime);
 }
 $mode = $instance->isRebuiltOnSetup() ? Nextras\Migrations\Engine\Runner::MODE_RESET : Nextras\Migrations\Engine\Runner::MODE_CONTINUE;
 $runner->run($mode, new Nextras\Migrations\Configurations\DefaultConfiguration(__DIR__ . '/../db', $driver, true));

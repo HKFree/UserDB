@@ -1,10 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from '@playwright/test';
 
 const origin = process.env.USERDB_E2E_ORIGIN;
 if (!origin) {
     throw new Error('Run scripts/userdb_e2e.sh: it rebuilds the database of the browser tests and starts their web.');
 }
-const out = new URL('../../temp/e2e/', import.meta.url).pathname;
+const out = fileURLToPath(new URL('../../temp/e2e/', import.meta.url));
 
 export default defineConfig({
     testDir: './specs',
@@ -17,7 +18,8 @@ export default defineConfig({
     retries: 0,
     forbidOnly: Boolean(process.env.CI),
     timeout: 30_000,
-    expect: { timeout: 5_000 },
+    // Twice the default: one slow answer of the single-process PHP server must not fail a correct test.
+    expect: { timeout: 10_000 },
     reporter: [
         [process.env.CI ? 'github' : 'list'],
         ['html', { outputFolder: `${out}report`, open: 'never' }],
