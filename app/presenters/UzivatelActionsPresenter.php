@@ -139,16 +139,14 @@ class UzivatelActionsPresenter extends UzivatelPresenter
 
                 if ((int) $uzivatel->druzstvo === 1) {
 
-                    $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);
-                    $this->mailService->sendDruzstvoConfirmationRequestCopy($uzivatel, $so);
-
-                    $this->flashMessage('E-mail s žádostí o ověření emailu pro registraci do družstva byl odeslán.');
+                    $vysledek = $this->mailService->sendDruzstvoConfirmationRequest($uzivatel, $so, $link);
+                    $kopie = $vysledek->odeslano() ? $this->mailService->sendDruzstvoConfirmationRequestCopy($uzivatel, $so) : null;
+                    $this->oznamVysledekEmailu($vysledek, $uzivatel, 'E-mail s žádostí o ověření emailu pro registraci do družstva byl odeslán.', $kopie);
                 } elseif ((int) $uzivatel->spolek === 1) {
 
-                    $this->mailService->sendSpolekConfirmationRequest($uzivatel, $so, $link);
-                    $this->mailService->sendSpolekConfirmationRequestCopy($uzivatel, $so);
-
-                    $this->flashMessage('E-mail s žádostí o potvrzení registrace do spolku byl odeslán.');
+                    $vysledek = $this->mailService->sendSpolekConfirmationRequest($uzivatel, $so, $link);
+                    $kopie = $vysledek->odeslano() ? $this->mailService->sendSpolekConfirmationRequestCopy($uzivatel, $so) : null;
+                    $this->oznamVysledekEmailu($vysledek, $uzivatel, 'E-mail s žádostí o potvrzení registrace do spolku byl odeslán.', $kopie);
                 }
 
                 $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
@@ -167,9 +165,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 } else {
                     $pdf = $this->vytvorRegistracniPdf($uzivatel);
 
-                    $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
-
-                    $this->flashMessage('E-mail byl odeslán.');
+                    $vysledek = $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
+                    $this->oznamVysledekEmailu($vysledek, $uzivatel, 'E-mail byl odeslán.');
 
                     $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
                 }
@@ -254,9 +251,8 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 $template = $this->mailService->addLinkGeneratorToTemplate($this->template);
                 $subject = "Služba SledovaniTV zdarma do 31.7.2026 v síti hkfree";
                 $template->setFile(__DIR__ . '/../templates/email/Televize2026AnoNe.latte');
-                $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $template);
-
-                $this->flashMessage(sprintf('E-mail %s odeslán na %s.', $variant, $uzivatel->email));
+                $vysledek = $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $template);
+                $this->oznamVysledekEmailu($vysledek, $uzivatel, sprintf('E-mail %s odeslán na %s.', $variant, implode(', ', $vysledek->adresy)));
                 break;
             default:
                 $this->flashMessage(sprintf('Error: undefined UserEmail variant "%s", no action', $variant));

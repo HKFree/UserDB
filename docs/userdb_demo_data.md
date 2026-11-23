@@ -1,7 +1,7 @@
 # UserDB: katalog demo dat
 
 Scénářová data se načítají migracemi `db/dummy-data/` v Dockeru, lokálním Floxu i na testovacích instancích.
-Obsahují 11 oblastí, 24 AP a 82 členů včetně původních 7. Nových 75 členů má v poznámce první řádek `DEMO: `.
+Obsahují 12 oblastí, 25 AP a 89 členů včetně původních 7. Nových 82 členů má v poznámce první řádek `DEMO: `.
 Jména, kontakty, adresy, přihlašovací údaje a platby jsou smyšlené. Datum scénářů se odvozuje od dne načtení.
 
 Flox a testovací instance navíc standardně přidávají objemová data. Při přípravě nové databáze je lze vynechat:
@@ -185,8 +185,25 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | 20013 | Zahraničnítelefon | SO-201, nečeský telefon |
 | 20014 | Dnešníkonec | SO-201 s koncem v den načtení: role už neplatí; aktivní DRUŽSTEVNÍK |
 | 20015 | Systémový | Systémový ZSO-201, některé exporty ho vynechávají |
-| 20070 | Chybnýodesílatel | KONTROLA, vlastní e-mail `odesilatel@@example.invalid`: e-mail členovi (`/uzivatel-mail-sms/email/20018`) i celému AP (`/uzivatel-mail-sms/emailall/201`) nabídne jako odesílatele jen adresu oblasti; upozornění odkazuje na editaci vlastních údajů. Registrační e-mail odeslaný touto osobou členovi dojde, kopie pro správce ale skončí chybou na její neplatné adrese |
+| 20070 | Chybnýodesílatel | KONTROLA, vlastní e-mail `odesilatel@@example.invalid`: e-mail členovi (`/uzivatel-mail-sms/email/20018`) i celému AP (`/uzivatel-mail-sms/emailall/201`) nabídne jako odesílatele jen adresu oblasti; upozornění odkazuje na editaci vlastních údajů. Registrační e-mail odeslaný touto osobou u člena 20081 („Odeslat znovu aktivační link e-mailem“) členovi dojde, kopie přeskočí její neplatnou adresu i správce 20075 a stránka to oznámí |
 | 20071 | Odesílatelodjinud | ZSO technické oblasti -20 se stejně chybným e-mailem, patří na AP 201: u e-mailu členovi 20015 a AP 217 upozornění odkaz na editaci nemá, své údaje upravit nesmí |
+| 20075 | Chybnákopie | ZSO běžné oblasti 201, `spravce@@example.invalid`: jako osoba 20012 u člena 20081 klikni na „Odeslat znovu aktivační link e-mailem“. Kopie přeskočí správce 20075, ostatním správcům odejde; varování obsahuje jméno a UID |
+| 20076 | Bezplatnékopie | SO nové oblasti 208 a AP 222, obě adresy neplatné: jako tato osoba odešli registraci členovi 20077, člen ji dostane a kopie se neodešle. Založení plánovaného člena na AP 222 uloží člena a oznámí neodeslanou notifikaci |
+
+### Neplatné adresy při registraci a odeslání rozpisu plateb
+
+Všechny uvedené členy otevři na `/uzivatel/show/ID`. Aktivační tlačítko mají viditelné
+díky `regform_downloaded_password_sent = 0`. Členové 20078 a 20080 jsou pouze v družstvu,
+ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho adresy jsou neplatné.
+
+| Člen / AP | Adresy (`email`; `email2`) | Přihlášená osoba | Tlačítko a výsledek |
+|---|---|---|---|
+| 20081 Člensčástečnoukopií / 201 | `demo20081@example.invalid`; prázdný | 20012 Chybějícítelefon | „Odeslat znovu aktivační link e-mailem“: registrace odejde členovi, kopie přeskočí ZSO 20075 a ostatním správcům dojde |
+| 20077 Členbezkopie / 222 | `demo20077@example.invalid`; prázdný | 20076 Bezplatnékopie | „Odeslat znovu aktivační link e-mailem“: registrace odejde členovi, kopie nemá žádného příjemce; jedno upozornění na obě vlastní adresy |
+| 20078 Platnádruhá / 222 | `clen@@example.invalid`; `druha@example.invalid` | 1 Tester | „Odeslat znovu aktivační link e-mailem“: registrace do družstva odejde jen na sekundární e-mail, upozornění na přeskočené adresy |
+| 20078 Platnádruhá / 222 | `clen@@example.invalid`; `druha@example.invalid` | 20076 Bezplatnékopie | „Odeslat rozpis plateb e-mailem“: rozpis odejde jen na sekundární e-mail, upozornění na hlavní adresu |
+| 20079 Chybnádruhá / 222 | `demo20079@example.invalid`; `druha@@example.invalid` | 1 Tester | „Odeslat znovu aktivační link e-mailem“: registrace do spolku odejde na hlavní e-mail, upozornění označí sekundární e-mail |
+| 20080 Bezplatnéadresy / 222 | `bezadresy@@example.invalid`; prázdný | 20076 Bezplatnékopie | „Odeslat znovu aktivační link e-mailem“ i „Odeslat rozpis plateb e-mailem“: nic neodejde, hláška danger odkáže na editaci člena |
 
 ## Finance, správa a API
 
@@ -252,12 +269,12 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 
 | Tabulka / objekt | Scénáře | Objem |
 |---|---|---|
-| Oblast | -20, 200 až 207 | 10000 až 10099 |
-| Ap | 200 až 221 | 10000 až 10449 |
-| Uzivatel | 20000 až 20074 | 100000 až 113499 |
+| Oblast | -20, 200 až 208 | 10000 až 10099 |
+| Ap | 200 až 222 | 10000 až 10449 |
+| Uzivatel | 20000 až 20081 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
 | IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
-| SpravceOblasti | 20000 až 20028 s mezerami | 100000 |
+| SpravceOblasti | 20000 až 20030 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
 | Čestné členství | 20045 až 20052, 20072 až 20074 | žádné |
 | Stitek | 21000 až 21004 | žádné |

@@ -115,9 +115,16 @@ class UzivatelPresenter extends BasePresenter
 
     /** @param int|string $idUzivatele */
     public function sendSpolekNotificationEmail($idUzivatele): void {
+        $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+        if ($newUser === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         try {
-            $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
-            $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
+            $vysledek = $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
+            if ($vysledek->odeslano()) {
+                $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
+            }
+            $this->upozorniNaPreskocenePrijemce($this->smiUpravitUzivatele($newUser), $vysledek->odeslano() ? '' : 'Notifikace správcům nebyla odeslána, žádný ze správců nemá platnou e-mailovou adresu.', $vysledek);
         } catch (Nette\Mail\SmtpException $e) {
             $this->flashMessage('Odeslání e-mailu s notifikací správcům se nezdařilo. '.$e->getMessage(), 'danger');
         }
@@ -138,10 +145,9 @@ class UzivatelPresenter extends BasePresenter
         }
 
         try {
-            $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
-            $this->mailService->sendSpolekConfirmationRequestCopy($newUser, $so);
-
-            $this->flashMessage('E-mail s žádostí o potvrzení e-mailu byl odeslán.');
+            $vysledek = $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
+            $kopie = $vysledek->odeslano() ? $this->mailService->sendSpolekConfirmationRequestCopy($newUser, $so) : null;
+            $this->oznamVysledekEmailu($vysledek, $newUser, 'E-mail s žádostí o potvrzení e-mailu byl odeslán.', $kopie);
         } catch (Nette\Mail\SmtpException $e) {
             $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení e-mailu se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
         }
@@ -162,10 +168,9 @@ class UzivatelPresenter extends BasePresenter
         }
 
         try {
-            $this->mailService->sendDruzstvoConfirmationRequest($newUser, $so, $link);
-            $this->mailService->sendDruzstvoConfirmationRequestCopy($newUser, $so);
-
-            $this->flashMessage('E-mail s žádostí o potvrzení registrace do družstva byl odeslán.');
+            $vysledek = $this->mailService->sendDruzstvoConfirmationRequest($newUser, $so, $link);
+            $kopie = $vysledek->odeslano() ? $this->mailService->sendDruzstvoConfirmationRequestCopy($newUser, $so) : null;
+            $this->oznamVysledekEmailu($vysledek, $newUser, 'E-mail s žádostí o potvrzení registrace do družstva byl odeslán.', $kopie);
         } catch (Nette\Mail\SmtpException $e) {
             $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace do družstva se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
         }

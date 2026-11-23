@@ -19,7 +19,10 @@ use Tester\Environment;
 
 final class PresenterResult
 {
-    /** @param list<string> $flashes */
+    /**
+     * @param list<string> $flashes
+     * @param list<string> $flashTypes
+     */
     public function __construct(
         public readonly Application\Response $response,
         public readonly string $html,
@@ -28,6 +31,7 @@ final class PresenterResult
         public readonly mixed $json,
         public readonly ?IIdentity $identity,
         public readonly array $flashes,
+        public readonly array $flashTypes,
     ) {
     }
 }
@@ -42,7 +46,8 @@ final class PresenterRunner
     private static ?string $activeRequest = null;
     private static bool $shutdownRegistered = false;
 
-    public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null) {
+    /** @param (\Closure(Presenter): void)|null $preparePresenter */
+    public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null, private ?\Closure $preparePresenter = null) {
         if (!self::$shutdownRegistered) {
             self::$shutdownRegistered = true;
             register_shutdown_function(static function (): void {
@@ -130,6 +135,9 @@ final class PresenterRunner
                 throw new \LogicException("$name is not a UI presenter.");
             }
             $presenter->autoCanonicalize = false;
+            if ($this->preparePresenter !== null) {
+                ($this->preparePresenter)($presenter);
+            }
             ob_start();
             $response = $presenter->run(new Application\Request($name, $method, $parameters, $post));
             $httpResponse = $container->getByType(Http\Response::class);
@@ -138,10 +146,12 @@ final class PresenterRunner
             }
             $html = (string) ob_get_contents();
             $flashes = [];
+            $flashTypes = [];
             if ($presenter->hasFlashSession()) {
                 foreach ($presenter->getFlashSession() as $messages) {
                     foreach ($messages as $flash) {
                         $flashes[] = (string) $flash->message;
+                        $flashTypes[] = $flash->type;
                     }
                 }
             }
@@ -153,6 +163,7 @@ final class PresenterRunner
                 $response instanceof JsonResponse ? $response->getPayload() : null,
                 $container->getByType(User::class)->getIdentity(),
                 $flashes,
+                $flashTypes,
             );
         } finally {
             self::$activeRequest = null;

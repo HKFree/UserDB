@@ -41,6 +41,7 @@ final class DemoDataPresenterTest extends TestCase
         $this->assertApi();
         $this->assertMemberPages();
         $this->assertUnusableSenders();
+        $this->assertSkippedRegistrationRecipients();
         $this->assertNetworkPages();
         $this->assertAdministration();
         $this->assertVolume();
@@ -90,7 +91,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(12, $adapter->scenarioFiles);
+        Assert::same(13, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -164,8 +165,11 @@ final class DemoDataPresenterTest extends TestCase
     }
 
     private function assertScenarioSafety(): void {
-        Assert::same(75, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20074')->count('*'));
-        Assert::same(75, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20074 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
+        Assert::same(12, $this->database->table('Oblast')->count('*'));
+        Assert::same(25, $this->database->table('Ap')->count('*'));
+        Assert::same(89, $this->database->table('Uzivatel')->count('*'));
+        Assert::same(82, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->count('*'));
+        Assert::same(82, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
         Assert::same(60, $this->database->table('IPAdresa')->where('Uzivatel_id', 20061)->count('*'));
         foreach ([
             'SELECT COUNT(*) FROM Oblast o LEFT JOIN Ap a ON a.Oblast_id = o.id WHERE a.id IS NULL',
@@ -206,8 +210,86 @@ final class DemoDataPresenterTest extends TestCase
         }
     }
 
+    private function assertSkippedRegistrationRecipients(): void {
+        $container = TestEnvironment::container($this->database);
+        $runner = new PresenterRunner($this->database, $container);
+        $mailer = $container->getByType(RecordingMailer::class);
+        $clearMessages = static function () use ($mailer): void {
+            $mailer->messages = [];
+        };
+        foreach (range(20075, 20081) as $id) {
+            $actor = in_array($id, [20075, 20081], true) ? 20012 : 20076;
+            $html = $runner->ui($actor, 'Uzivatel', ['action' => 'show', 'id' => $id])->html;
+            Assert::same(
+                ['/userdb/uzivatel-actions/send-reg-activation/' . $id],
+                $this->values($html, '//a[contains(@href,"/uzivatel-actions/send-reg-activation/")]/@href'),
+            );
+            if (in_array($id, [20078, 20080], true)) {
+                Assert::same(
+                    ['/userdb/payment-schedule/send-payment-schedule-email/' . $id],
+                    $this->values($html, '//a[contains(@href,"/payment-schedule/send-payment-schedule-email/")]/@href'),
+                );
+                $member = $this->database->table('Uzivatel')->get($id);
+                Assert::true($member instanceof \Nette\Database\Table\ActiveRow);
+                Assert::same(1, $member->druzstvo);
+                Assert::same(0, $member->spolek);
+                Assert::null($member->TypClenstvi_id);
+            }
+        }
+        $result = $runner->ui(20012, 'UzivatelActions', ['action' => 'sendRegActivation', 'id' => 20081]);
+        Assert::same(302, $result->status);
+        Assert::count(2, $mailer->messages);
+        Assert::same(['demo20081@example.invalid' => null], $mailer->messages[0]->getHeader('To'));
+        Assert::same(['info', 'warning'], $result->flashTypes);
+        Assert::contains('Demo Chybnákopie (UID 20075)', $result->flashes[1]);
+        Assert::hasKey('demo20012@example.invalid', $mailer->messages[1]->getHeader('To'));
+        Assert::hasKey('demo20013@example.invalid', $mailer->messages[1]->getHeader('To'));
+        Assert::hasNotKey('spravce@@example.invalid', $mailer->messages[1]->getHeader('To'));
+
+        $clearMessages();
+        $result = $runner->ui(20076, 'UzivatelActions', ['action' => 'sendRegActivation', 'id' => 20077]);
+        Assert::same(302, $result->status);
+        Assert::count(1, $mailer->messages);
+        Assert::same(['demo20077@example.invalid' => null], $mailer->messages[0]->getHeader('To'));
+        Assert::same(['info', 'warning'], $result->flashTypes);
+        Assert::same(
+            'Kopie e-mailu nebyla odeslána, žádný ze správců nemá platnou e-mailovou adresu. '
+                . 'Na neplatné e-mailové adresy zpráva neodešla: vaše vlastní, oba e-maily. '
+                . 'Opravte je v editaci dané osoby nebo o opravu požádejte správce její oblasti.',
+            $result->flashes[1],
+        );
+
+        foreach ([20078 => 'druha@example.invalid', 20079 => 'demo20079@example.invalid'] as $id => $address) {
+            $clearMessages();
+            $result = $runner->ui(1, 'UzivatelActions', ['action' => 'sendRegActivation', 'id' => $id]);
+            Assert::same(302, $result->status);
+            Assert::count(2, $mailer->messages);
+            Assert::same([$address => null], $mailer->messages[0]->getHeader('To'));
+            Assert::same(['info', 'warning'], $result->flashTypes);
+            Assert::contains('UID ' . $id, $result->flashes[1]);
+            Assert::contains($id === 20078 ? 'registraci do družstva' : 'registrace do spolku', $result->flashes[0]);
+        }
+
+        foreach ([['UzivatelActions', 'sendRegActivation', 20080], ['PaymentSchedule', 'sendPaymentScheduleEmail', 20078], ['PaymentSchedule', 'sendPaymentScheduleEmail', 20080]] as [$presenter, $action, $id]) {
+            $clearMessages();
+            $result = $runner->ui(20076, $presenter, ['action' => $action, 'id' => $id]);
+            Assert::same(302, $result->status);
+            Assert::contains('/uzivatel/show/' . $id, (string) $result->redirectUrl);
+            if ($id === 20078) {
+                Assert::count(1, $mailer->messages);
+                Assert::same(['druha@example.invalid' => null], $mailer->messages[0]->getHeader('To'));
+                Assert::same(['info', 'warning'], $result->flashTypes);
+            } else {
+                Assert::same([], $mailer->messages);
+                Assert::same(['danger'], $result->flashTypes);
+                Assert::same('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu. Zadejte ji v editaci člena.', strip_tags($result->flashes[0]));
+                Assert::same(['/userdb/uzivatel/edit/20080'], $this->values($result->flashes[0], '//a/@href'));
+            }
+        }
+    }
+
     private function assertMemberPages(): void {
-        foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20074')->order('id') as $member) {
+        foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->order('id') as $member) {
             $show = $this->page('Uzivatel', 'show', $member->id);
             Assert::contains('UID ' . $member->id . ' - Demo ' . $member->prijmeni, $this->text($show));
             $edit = $this->page('Uzivatel', 'edit', $member->id);

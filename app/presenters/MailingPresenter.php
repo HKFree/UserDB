@@ -136,11 +136,10 @@ class MailingPresenter extends UzivatelPresenter
         $subject = $this->loadTemplateAndSubject($variant);
         $this->setCommonTemplateParams();
 
-        $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $this->template);
-
-        $this->flashMessage(sprintf('E-mail %s odeslán na %s.', $variant, $uzivatel->email));
-
-        $this->stitkovac->addStitek($uzivatel, 'Odesláno:' . $variant);
+        $vysledek = $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $this->template);
+        if ($this->oznamVysledekEmailu($vysledek, $uzivatel, sprintf('E-mail %s odeslán na %s.', $variant, implode(', ', $vysledek->adresy)))) {
+            $this->stitkovac->addStitek($uzivatel, 'Odesláno:' . $variant);
+        }
 
         $this->redirect('Uzivatel:show', ['id' => $uid]);
     }
