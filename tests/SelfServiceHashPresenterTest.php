@@ -58,7 +58,7 @@ final class SelfServiceHashPresenterTest extends TestCase
             $member = new ConfirmationMember();
             Assert::same($expectedHash, md5($member->zalozen));
             $presenter = $container->getByType(\Nette\Application\IPresenterFactory::class)->createPresenter('SelfService');
-            if (!$presenter instanceof SelfServicePresenter) {
+            if (($presenter instanceof SelfServicePresenter) === false) {
                 throw new \LogicException('Expected the self-service presenter.');
             }
             (new \ReflectionProperty($presenter, 'uzivatelModel'))->setValue($presenter, new ConfirmationUsers($member));

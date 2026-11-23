@@ -1,0 +1,7 @@
+# Configuration for NoBooleanNotRuleTest: the project configuration with its own cache directory,
+# so the test does not overwrite the result cache of the regular analysis.
+includes:
+    - ../../phpstan.neon
+
+parameters:
+    tmpDir: ../../temp/phpstan-rule-test

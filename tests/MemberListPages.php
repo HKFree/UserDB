@@ -157,7 +157,7 @@ final class MemberListPages
     private function fields(string $html, string $form): array {
         $pairs = [];
         foreach ($this->nodes($html, $form . '//input[not(@type="submit")] | ' . $form . '//select') as $field) {
-            if (!$field instanceof \DOMElement) {
+            if (($field instanceof \DOMElement) === false) {
                 throw new \LogicException('A form field is not an element.');
             }
             // Without a selected option a browser sends the first one.

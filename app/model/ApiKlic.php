@@ -58,7 +58,7 @@ class ApiKlic extends Table
      */
     public function decorateKeys(array &$recordsAssoc): array {
         foreach ($recordsAssoc as $id => $record) {
-            $recordsAssoc[$id]['expired'] = !$this->isNotExpired($record['plati_do']);
+            $recordsAssoc[$id]['expired'] = $this->isNotExpired($record['plati_do']) === false;
         }
         return $recordsAssoc;
     }

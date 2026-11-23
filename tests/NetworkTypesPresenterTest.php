@@ -36,7 +36,7 @@ final class NetworkTypesPresenterTest extends DatabaseTestCase
         }
         $result = $this->presenters->ui($this->actor->id, 'Subnet', ['action' => 'overview', 'id' => '192.0.2']);
         Assert::same(200, $result->status);
-        if (!$result->response instanceof TextResponse || !($template = $result->response->getSource()) instanceof Template) {
+        if (($result->response instanceof TextResponse) === false || (($template = $result->response->getSource()) instanceof Template) === false) {
             throw new \LogicException('Expected the subnet overview template.');
         }
         Assert::equal([0 => 128, 128 => 64, 200 => 1], $template->networks);
@@ -66,7 +66,7 @@ final class NetworkTypesPresenterTest extends DatabaseTestCase
 
     public function testWewimoLinksAndAnonymizationMutateNestedData(): void {
         $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('Wewimo');
-        if (!$presenter instanceof WewimoPresenter) {
+        if (($presenter instanceof WewimoPresenter) === false) {
             throw new \LogicException('Expected the Wewimo presenter.');
         }
         // Presenter::run normally sets the name before any links are generated.
@@ -135,7 +135,7 @@ final class NetworkTypesPresenterTest extends DatabaseTestCase
         $devices = $model->getWewimoFullData($this->ap->id, 'Test')['devices'];
         Assert::same('', $devices[0]['error']);
         $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('Wewimo');
-        if (!$presenter instanceof WewimoPresenter) {
+        if (($presenter instanceof WewimoPresenter) === false) {
             throw new \LogicException('Expected the Wewimo presenter.');
         }
         $presenter->setParent(null, 'Wewimo');
@@ -190,14 +190,14 @@ final class NetworkTypesPresenterTest extends DatabaseTestCase
             $httpResponse = $this->container->getByType(\Nette\Http\Response::class);
             $httpResponse->setCode(200);
             $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('VnejsiScanner');
-            if (!$presenter instanceof VnejsiScannerPresenter) {
+            if (($presenter instanceof VnejsiScannerPresenter) === false) {
                 throw new \LogicException('Expected the scanner presenter.');
             }
             $presenter->setParent(null, 'VnejsiScanner');
             $presenter->setLayout(false);
             $presenter->renderDefault();
             $template = $presenter->getTemplate();
-            if (!$template instanceof Template) {
+            if (($template instanceof Template) === false) {
                 throw new \LogicException('Expected the scanner template.');
             }
             $html = $template->getLatte()->renderToString(
@@ -224,7 +224,7 @@ final class NetworkTypesPresenterTest extends DatabaseTestCase
 
     public function testStatusIntervalBoundaries(): void {
         $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('Status');
-        if (!$presenter instanceof StatusPresenter) {
+        if (($presenter instanceof StatusPresenter) === false) {
             throw new \LogicException('Expected the status presenter.');
         }
         foreach ([0 => '0 sekund', 59 => '59 sekund', 60 => '1 minut', 3599 => '60 minut', 3600 => '1 hodin', 86400 => '1 dny'] as $seconds => $text) {

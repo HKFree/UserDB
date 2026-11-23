@@ -18,7 +18,7 @@ final class InfluxWriter
 
     public function __construct(string $influxUrl, ?ClientInterface $client = null) {
         $url = parse_url($influxUrl);
-        if ($url === false || !in_array($url['scheme'] ?? '', ['influxdb', 'http+influxdb', 'https+influxdb'], true)
+        if ($url === false || in_array($url['scheme'] ?? '', ['influxdb', 'http+influxdb', 'https+influxdb'], true) === false
             || ($url['host'] ?? '') === '' || ($url['path'] ?? '/') === '/' || isset($url['query']) || isset($url['fragment'])) {
             throw new \InvalidArgumentException('Invalid INFLUX_URL; expected influxdb://user:password@host:port/database.');
         }
@@ -63,7 +63,7 @@ final class InfluxWriter
             // Transport exceptions can contain credentials or the full request URI.
             throw new \RuntimeException('InfluxDB write failed: connection error.');
         }
-        if (!in_array($response->getStatusCode(), [200, 204], true)) {
+        if (in_array($response->getStatusCode(), [200, 204], true) === false) {
             throw new \RuntimeException('InfluxDB write failed: HTTP ' . $response->getStatusCode() . '.');
         }
     }
@@ -81,7 +81,7 @@ final class InfluxWriter
     }
 
     private function tagValue(string $key, mixed $value): string {
-        if (!is_string($value) || $value === '') {
+        if (is_string($value) === false || $value === '') {
             $given = $value === '' ? 'empty string' : get_debug_type($value);
             throw new \InvalidArgumentException(sprintf('InfluxDB tag "%s" must be a non-empty string, %s given.', $key, $given));
         }
@@ -93,10 +93,10 @@ final class InfluxWriter
             $this->rejectLineBreaks($value);
             return '"' . strtr($value, ['\\' => '\\\\', '"' => '\\"']) . '"';
         }
-        if (!is_float($value)) {
+        if (is_float($value) === false) {
             throw new \InvalidArgumentException(sprintf('InfluxDB field "%s" must be a string or float, %s given.', $key, get_debug_type($value)));
         }
-        if (!is_finite($value)) {
+        if (is_finite($value) === false) {
             throw new \InvalidArgumentException('InfluxDB numeric fields must be finite.');
         }
         // PHP 8 float-to-string conversion is locale independent; no integer suffix.

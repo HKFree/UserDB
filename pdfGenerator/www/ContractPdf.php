@@ -4,11 +4,11 @@ final class ContractPdf
 {
     /** @param array<array-key, mixed> $parameters Values are validated before template substitution. */
     public static function generate(array $parameters, string $template, string $binary, string $cache): string {
-        if (!is_file($template)) {
+        if (is_file($template) === false) {
             throw new RuntimeException('Contract template does not exist.');
         }
         $directory = $cache . '/contract-' . bin2hex(random_bytes(16));
-        if (!mkdir($directory, 0700, true)) {
+        if (mkdir($directory, 0700, true) === false) {
             throw new RuntimeException('Cannot create the contract working directory.');
         }
         $absoluteDirectory = realpath($directory);
@@ -22,7 +22,7 @@ final class ContractPdf
             $content = self::readFile($directory . '/document/content.xml');
             $replacements = [];
             foreach ($parameters as $key => $value) {
-                if (!is_scalar($value) && $value !== null) {
+                if (is_scalar($value) === false && $value !== null) {
                     throw new RuntimeException('Contract parameters must be scalar values.');
                 }
                 $replacements['{' . $key . '}'] = htmlspecialchars((string) $value, ENT_QUOTES | ENT_XML1, 'UTF-8');
@@ -38,14 +38,14 @@ final class ContractPdf
             self::run([$binary, '-env:UserInstallation=' . $profile, '--headless', '--norestore',
                 '--convert-to', 'pdf:writer_pdf_Export', '--outdir', $directory, $directory . '/document.odt'], $directory);
             $file = $directory . '/document.pdf';
-            if (!is_file($file) || !str_starts_with($pdf = self::readFile($file), '%PDF-')) {
+            if (is_file($file) === false || str_starts_with($pdf = self::readFile($file), '%PDF-') === false) {
                 throw new RuntimeException('LibreOffice did not produce a PDF: ' . trim(self::readFile($directory . '/command.log')));
             }
             return $pdf;
         } finally {
             $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
             foreach ($files as $file) {
-                $file->isDir() && !$file->isLink() ? rmdir($file->getPathname()) : unlink($file->getPathname());
+                $file->isDir() && $file->isLink() === false ? rmdir($file->getPathname()) : unlink($file->getPathname());
             }
             rmdir($directory);
         }
@@ -63,13 +63,13 @@ final class ContractPdf
     private static function run(array $command, string $directory): void {
         // @phpstan-ignore argument.type (PHP requires an int redirect target; PHPStan only allows strings in descriptor lists.)
         $process = proc_open($command, [0 => ['file', '/dev/null', 'r'], 1 => ['file', $directory . '/command.log', 'a'], 2 => ['redirect', 1]], $pipes, $directory);
-        if (!is_resource($process)) {
+        if (is_resource($process) === false) {
             throw new RuntimeException('Cannot start the PDF converter.');
         }
         $deadline = microtime(true) + 60;
         do {
             $status = proc_get_status($process);
-            if (!$status['running']) {
+            if ($status['running'] === false) {
                 break;
             }
             if (microtime(true) >= $deadline) {

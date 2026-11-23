@@ -151,7 +151,7 @@ final class ApiTypesPresenterTest extends DatabaseTestCase
 
     public function testWewimoSanitizerKeepsMixedValuesAndNestedKeys(): void {
         $presenter = $this->container->getByType(Application\IPresenterFactory::class)->createPresenter('Api:Wewimo');
-        if (!$presenter instanceof WewimoPresenter) {
+        if (($presenter instanceof WewimoPresenter) === false) {
             throw new \LogicException('Expected API Wewimo presenter.');
         }
         foreach ([null, false, true, 12, 1.5, []] as $value) {
@@ -179,13 +179,13 @@ final class ApiTypesPresenterTest extends DatabaseTestCase
             $request = new Http\Request(new Http\UrlScript('http://localhost/userdb/api/app'), post: $post, method: $method, remoteAddress: '192.0.2.100');
             $container = TestEnvironment::container($this->database, $request, $this->container);
             $presenter = $container->getByType(Application\IPresenterFactory::class)->createPresenter('Api:App');
-            if (!$presenter instanceof AppPresenter) {
+            if (($presenter instanceof AppPresenter) === false) {
                 throw new \LogicException('Expected API App presenter.');
             }
             $presenter->autoCanonicalize = false;
             $response = $presenter->run(new Application\Request('Api:App', $method, $parameters, $post));
             Assert::same(200, $container->getByType(Http\Response::class)->getCode());
-            if (!$response instanceof JsonResponse) {
+            if (($response instanceof JsonResponse) === false) {
                 throw new \LogicException('Expected a JSON response.');
             }
             return $response->getPayload();

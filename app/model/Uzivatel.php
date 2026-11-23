@@ -173,7 +173,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>|array<array-key, Nette\Database\Table\ActiveRow>
      */
     public function findUserByFulltext($search, Nette\Security\User $Uzivatel): Nette\Database\Table\Selection|array {
-        if (!TextProSloupceUtf8::lzePorovnat((string) $search)) {
+        if (TextProSloupceUtf8::lzePorovnat((string) $search) === false) {
             return [];
         }
         //mobil a email pouze pro ty co maji prava
@@ -217,7 +217,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         ];
         $podminka = implode(' OR ', $podminky);
         $hodnoty = array_fill(0, count($podminky), '%' . $search . '%');
-        if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV') && !$Uzivatel->isInRole('KONTROLA') && !$Uzivatel->isInRole('EXTSUPPORT')) {
+        if ($Uzivatel->isInRole('TECH') === false && $Uzivatel->isInRole('VV') === false && $Uzivatel->isInRole('KONTROLA') === false && $Uzivatel->isInRole('EXTSUPPORT') === false) {
             $identity = $Uzivatel->getIdentity();
             if ($identity === null) {
                 return [];
@@ -296,7 +296,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
 
         $password = str_shuffle($password);
 
-        if (!$add_dashes) {
+        if ($add_dashes === false) {
             return $password;
         }
 

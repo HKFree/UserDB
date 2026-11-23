@@ -20,7 +20,7 @@ final class StitkyClenu
     /** @return list<Row> */
     public function clena(ActiveRow $clen): array {
         $idClena = (int) $clen->id;
-        if (!isset($this->clenove[$idClena])) {
+        if (isset($this->clenove[$idClena]) === false) {
             $idClenu = RadkyTabulky::id($clen);
             $this->clenove = array_fill_keys($idClenu, true);
             $this->stitky = $this->stitekUzivatele->getStitkyClenu($idClenu);

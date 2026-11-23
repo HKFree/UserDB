@@ -452,7 +452,7 @@ final class TestingLoginTest extends TestCase
                 continue;
             }
             [$process, $parent, $state] = $fields;
-            if (!str_starts_with((string) $state, 'Z')) {
+            if (str_starts_with((string) $state, 'Z') === false) {
                 $parents[(int) $process] = (int) $parent;
             }
         }

@@ -81,7 +81,7 @@ class MexSmsSender
                 'json' => $data,
                 'debug' => false
             ];
-            if (!$initial) {
+            if ($initial === false) {
                 $reqdata['headers'] = ['Authorization' => "Bearer " . $this->getToken()];
             }
 
@@ -111,7 +111,7 @@ class MexSmsSender
 
         $res = $this->apiCall("/login", $data, "POST", true);
 
-        if (!is_array($res) || !isset($res['token']) || !is_string($res['token']) || $res['token'] === '') {
+        if (is_array($res) === false || isset($res['token']) === false || is_string($res['token']) === false || $res['token'] === '') {
             throw new SmsSenderException('MEX API nevrátilo platný přihlašovací token.');
         }
         return $res['token'];

@@ -100,14 +100,14 @@ final class Fixtures
      * @param array<string, mixed> $data
      */
     public function insert(string $table, array $data): ActiveRow {
-        if (!$this->database->getConnection()->getPdo()->inTransaction()) {
+        if ($this->database->getConnection()->getPdo()->inTransaction() === false) {
             throw new \LogicException('Fixtures require an active test transaction.');
         }
         if ($this->database->getStructure()->getPrimaryKey($table) !== 'id') {
             throw new \LogicException("Fixtures::insert() needs the primary key id, which $table does not have.");
         }
         $row = $this->database->table($table)->insert($data);
-        if (!$row instanceof ActiveRow) {
+        if (($row instanceof ActiveRow) === false) {
             throw new \RuntimeException("Could not insert fixture into $table.");
         }
         $this->rows[] = [$table, (int) $row->id];

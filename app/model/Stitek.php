@@ -41,7 +41,7 @@ class Stitek
      */
     public function createStitek(array $data): Nette\Database\Table\ActiveRow {
         $row = $this->database->table($this->tableName)->insert($data);
-        if (!$row instanceof Nette\Database\Table\ActiveRow) {
+        if (($row instanceof Nette\Database\Table\ActiveRow) === false) {
             throw new Nette\UnexpectedValueException('Vložení štítku nevrátilo databázový řádek.');
         }
         return $row;

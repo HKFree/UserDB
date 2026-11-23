@@ -39,7 +39,7 @@ abstract class DatabaseTestCase extends TestCase
     }
 
     protected function tearDown(): void {
-        if (!$this->database->getConnection()->getPdo()->inTransaction()) {
+        if ($this->database->getConnection()->getPdo()->inTransaction() === false) {
             TestEnvironment::invalidateSchema();
             Assert::fail('The test committed implicitly; the test database will be rebuilt on the next run.');
         }

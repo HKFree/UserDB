@@ -120,7 +120,7 @@ class AppPresenter extends ApiPresenter
      * @param string|null $token
      */
     private function verifyToken($uid, $token): void {
-        if ($uid === null || !$this->aplikaceToken->verifyToken($uid, $token)) {
+        if ($uid === null || $this->aplikaceToken->verifyToken($uid, $token) === false) {
             $this->aplikaceLog->log('app.verifyToken.failed', array($uid, $token));
             $this->sendResponse(new JsonResponse(['result' => 'Token invalid']));
         }

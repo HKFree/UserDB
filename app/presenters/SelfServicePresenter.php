@@ -25,7 +25,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
     public function renderConfirmEmail($key): void {
         $this->setLayout('pub');
         $this->template->stav = false;
-        if (!in_array($key, [null, '', '0'], true)) {
+        if (in_array($key, [null, '', '0'], true) === false) {
 
             $decodedKey = base64_decode($key, true);
             if ($decodedKey === false) {
@@ -41,14 +41,14 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
             if ($uzivatel !== null) {
                 $this->template->uzivatel = $uzivatel;
 
-                if (!hash_equals(md5($this->parameters->salt . $uzivatel->zalozen), $hash)) {
+                if (hash_equals(md5($this->parameters->salt . $uzivatel->zalozen), $hash) === false) {
                     return;
                 }
 
                 if ($uzivatel->regform_downloaded_password_sent === 0) {
                     $uzivatel->update(['regform_downloaded_password_sent' => 1]);
 
-                    if (!in_array($uzivatel->spolek, [0, false], true)) {
+                    if (in_array($uzivatel->spolek, [0, false], true) === false) {
                         /*
                          * TODO předělat registrační formulář spolku podle nových stanov od 1.2.2025
                          */
@@ -57,7 +57,7 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
                         // $this->mailService->mailPdf($pdf, $uzivatel, $this->getHttpRequest(), $this->getHttpResponse(), $this->getIdentity()->getUid());
                     }
 
-                    if (!in_array($uzivatel->druzstvo, [0, false], true)) {
+                    if (in_array($uzivatel->druzstvo, [0, false], true) === false) {
                         $this->requestDruzstvoContract->execute($uzivatel->id);
                     }
                 }

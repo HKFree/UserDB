@@ -46,7 +46,7 @@ final class TableDatabaseTest extends DatabaseTestCase
         $name = $this->fixtures->name('Table');
         $inserted = $model->insert(ArrayHash::from(['jmeno' => $name, 'datum_zalozeni' => '2000-01-01 00:00:00']));
         Assert::type(ActiveRow::class, $inserted);
-        if (!$inserted instanceof ActiveRow) {
+        if (($inserted instanceof ActiveRow) === false) {
             throw new \LogicException('An area insert must return its row.');
         }
         Assert::same($name, $inserted->jmeno);

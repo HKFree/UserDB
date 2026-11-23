@@ -46,7 +46,7 @@ class AP extends Table
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
      */
     public function findAPByIP($search): Nette\Database\Table\Selection {
-        if (!TextProSloupceUtf8::lzePorovnat($search)) {
+        if (TextProSloupceUtf8::lzePorovnat($search) === false) {
             return $this->findBy(array('id' => 0));
         }
         $completeMatchId = $this->getConnection()->query("SELECT Ap.id FROM Ap

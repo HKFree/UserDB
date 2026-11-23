@@ -104,7 +104,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $this->getHttpResponse()->setContentType('application/json');
 
         // Kontrola HTTP metody
-        if (!$this->getHttpRequest()->isMethod("DELETE")) {
+        if ($this->getHttpRequest()->isMethod("DELETE") === false) {
             $this->error('Pouze DELETE požadavky jsou povoleny.', Nette\Http\IResponse::S405_METHOD_NOT_ALLOWED);
         }
         $data = json_decode($this->getHttpRequest()->getRawBody() ?? '', true);
@@ -135,7 +135,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         $this->getHttpResponse()->setContentType('application/json');
 
         // Kontrola HTTP metody
-        if (!$this->getHttpRequest()->isMethod("POST")) {
+        if ($this->getHttpRequest()->isMethod("POST") === false) {
             $this->error('Pouze POST požadavky jsou povoleny.', Nette\Http\IResponse::S405_METHOD_NOT_ALLOWED);
         }
 

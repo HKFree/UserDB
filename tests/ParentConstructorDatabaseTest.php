@@ -164,7 +164,7 @@ final class ParentConstructorDatabaseTest extends DatabaseTestCase
      */
     private function presenter(string $name, string $type): Presenter {
         $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter($name);
-        if (!$presenter instanceof $type) {
+        if (($presenter instanceof $type) === false) {
             throw new \LogicException("Unexpected presenter type for $name.");
         }
         $presenter->setParent(null, $name);

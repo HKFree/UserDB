@@ -63,7 +63,7 @@ final class DataConditionsPresenterTest extends DatabaseTestCase
             foreach ([false, true] as $enabled) {
                 $ap->update(['aktivni' => $enabled]);
                 $subnet->update(['arp_proxy' => $enabled]);
-                $member->update(['systemovy' => $enabled, 'spolek' => !$enabled, 'druzstvo' => $enabled, 'regform_downloaded_password_sent' => 0]);
+                $member->update(['systemovy' => $enabled, 'spolek' => $enabled === false, 'druzstvo' => $enabled, 'regform_downloaded_password_sent' => 0]);
                 $storedSubnet = $this->database->table('Subnet')->get($subnet->id);
                 Assert::true($storedSubnet !== null);
                 Assert::same($enabled, $storedSubnet->arp_proxy);
@@ -75,13 +75,13 @@ final class DataConditionsPresenterTest extends DatabaseTestCase
 
                 Assert::same($enabled, $this->requireRow($this->database->table('Ap')->get($ap->id))->aktivni);
                 $list = $this->presenters->ui($member->id, 'Ap', ['action' => 'list', 'id' => $area->id]);
-                Assert::same(!$enabled, str_contains($list->html, '<s>' . $ap->jmeno . '</s>'));
+                Assert::same($enabled === false, str_contains($list->html, '<s>' . $ap->jmeno . '</s>'));
                 Assert::same($enabled, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->systemovy);
                 $areas = $this->presenters->api('Api:Areas', ['apikey' . $key->id, $key->klic]);
                 Assert::same($enabled ? [] : [$member->id], array_keys($areas->json[$area->id]['admins']));
 
                 Assert::same($enabled, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->druzstvo);
-                Assert::same(!$enabled, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->spolek);
+                Assert::same($enabled === false, $this->requireRow($this->database->table('Uzivatel')->get($member->id))->spolek);
                 $confirmation = $this->presenters->ui($member->id, 'SelfService', ['action' => 'confirmEmail', 'key' => $confirmationKey]);
                 Assert::contains($enabled ? 'Ověření proběhlo úspěšně' : 'Vaše registrace do hkfree.org z.s. byla úspěšně dokončena.', $confirmation->html);
                 Assert::same($enabled ? [$member->id] : [], $this->container->getByType(RecordingContractRequest::class)->calls);
@@ -125,7 +125,7 @@ final class DataConditionsPresenterTest extends DatabaseTestCase
                 ]);
             }
             $result = $this->presenters->ui($actor->id, 'Uzivatel', ['action' => 'show', 'id' => $member->id]);
-            if (!$result->response instanceof TextResponse || !($template = $result->response->getSource()) instanceof Template) {
+            if (($result->response instanceof TextResponse) === false || (($template = $result->response->getSource()) instanceof Template) === false) {
                 throw new \LogicException('Expected the member detail template.');
             }
             Assert::same($balance, $template->money_bal_spolek);

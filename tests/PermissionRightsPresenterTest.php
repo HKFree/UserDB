@@ -82,7 +82,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
             '_do' => 'uzivatelRightsForm-submit', 'id' => (string) $s->member->id,
             'rights' => [$right->id => $values], 'save' => 'Uložit',
         ]);
-        if (!$allowed) {
+        if ($allowed === false) {
             Assert::same(200, $result->status);
             Assert::contains('<li>NERECYKLUJTE. Upravili jste starší právo a nezaškrtli jste tlačítko OPRAVA. Mysleli jste to vážně?</li>', $result->html);
             Assert::same($before, $s->snapshot());
@@ -121,7 +121,7 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         $target = $forgedId ? $s->otherMember : $s->member;
         $note = $this->fixtures->name('Honorary');
         $request = fn () => $this->submitHonorary($actor, $target, $note);
-        if (!$allowed) {
+        if ($allowed === false) {
             $s->assertDenied($request);
             return;
         }

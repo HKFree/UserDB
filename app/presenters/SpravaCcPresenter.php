@@ -110,7 +110,7 @@ class SpravaCcPresenter extends SpravaPresenter
         $form->onSuccess[] = array($this, 'spravaCCFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if (!$submitujeSe) {
+        if ($submitujeSe === false) {
             foreach ($this->cestneClenstviUzivatele->getNeschvalene() as $rights_id => $rights_data) {
                 $rights->createOne($rights_id)->setValues($rights_data);
             }
@@ -154,7 +154,7 @@ class SpravaCcPresenter extends SpravaPresenter
                 $pravo->schvaleno = 0;
             }
 
-            if (!in_array($pravo->id, [null, '', 0, '0'], true)) {
+            if (in_array($pravo->id, [null, '', 0, '0'], true) === false) {
                 [$starePravo, $navrhovatel, $schvaleny] = $podklady[$key];
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
 

@@ -34,7 +34,7 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
     public function testRegistrationWithoutMemberAddress(int $cooperative, bool $editLink): void {
         $this->member->update(['druzstvo' => $cooperative, 'email' => 'member@@example.invalid']);
         $actor = $this->actor;
-        if (!$editLink) {
+        if ($editLink === false) {
             $actor = $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id);
             $this->fixtures->role($actor->id, 'DRUŽSTEVNÍK');
         }
@@ -112,7 +112,7 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
         Assert::same([$pdf ? 'member@example.invalid' : 'second@example.invalid' => null], $this->messages()[0]->getHeader('To'));
         Assert::same(['info', 'warning'], $result->flashTypes);
         Assert::notContains('@@', implode(' ', $result->flashes));
-        if (!$pdf) {
+        if ($pdf === false) {
             Assert::contains('odeslán na second@example.invalid.', $result->flashes[0]);
         }
         if ($presenter === 'Mailing') {

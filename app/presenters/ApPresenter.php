@@ -134,7 +134,7 @@ class ApPresenter extends BasePresenter
         if ($this->ap->canViewOrEditAll($this->getUser())) {
             return true;
         }
-        return !in_array($idAp, [null, '', 0, '0'], true) && $this->ap->getAP($idAp) !== null && $this->ap->canViewOrEditAP($idAp, $this->getUser());
+        return in_array($idAp, [null, '', 0, '0'], true) === false && $this->ap->getAP($idAp) !== null && $this->ap->canViewOrEditAP($idAp, $this->getUser());
     }
 
     public function renderEdit(): void {
@@ -211,7 +211,7 @@ class ApPresenter extends BasePresenter
         $form->onValidate[] = array($this, 'validateApForm');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $values = $this->ap->getAP($this->getParameter('id'));
             if ($values !== null) {
                 foreach ($values->related('IPAdresa.Ap_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
@@ -239,12 +239,12 @@ class ApPresenter extends BasePresenter
 
     public function validateApForm(Nette\Forms\Form $form): void {
         $data = $form->getHttpData();
-        if (!is_array($data)) {
+        if (is_array($data) === false) {
             throw new Nette\UnexpectedValueException('Data celého formuláře musí být pole.');
         }
 
         // Validujeme jenom při uložení formuláře
-        if (!$this->odeslanoTlacitkemUlozit($form)) {
+        if ($this->odeslanoTlacitkemUlozit($form) === false) {
             return;
         }
 
@@ -258,7 +258,7 @@ class ApPresenter extends BasePresenter
                 }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($zapisIp, $ip['id']);
-                if (!in_array($duplIp, [null, '', '0'], true)) {
+                if (in_array($duplIp, [null, '', '0'], true) === false) {
                     $form->addError('IP adresa ' . $duplIp . ' již  v databázi existuje!');
                 }
 
@@ -290,7 +290,7 @@ class ApPresenter extends BasePresenter
                 $zapisSubnetu = self::oriznoutRadek($subnet['subnet'] ?? null);
                 $zapisGateway = self::oriznoutRadek($subnet['gateway'] ?? null);
 
-                if (!$this->subnet->validateSubnet($zapisSubnetu)) {
+                if ($this->subnet->validateSubnet($zapisSubnetu) === false) {
                     $form->addError('Subnet ' . $zapisSubnetu . ' není validní IPv4 subnet! Zadejte adresu sítě a masku jako celé číslo 0 až 32, například 10.107.70.0/24.');
                     return;
                 }
@@ -314,7 +314,7 @@ class ApPresenter extends BasePresenter
                 }
 
                 if (
-                    !$this->subnet->checkColision($zapisSubnetu, \App\Model\Subnet::ARP_PROXY_SUBNET)
+                    $this->subnet->checkColision($zapisSubnetu, \App\Model\Subnet::ARP_PROXY_SUBNET) === false
                     && isset($subnet['arp_proxy'])
                 ) {
                     $form->addError('ARP Proxy může být zapnuté pouze u veřejných subnetů!');
@@ -336,7 +336,7 @@ class ApPresenter extends BasePresenter
     public function apFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiUpravitAp($values->id)); // AP ze skrytého pole id
 
-        if (!$this->odeslanoTlacitkemUlozit($form)) {
+        if ($this->odeslanoTlacitkemUlozit($form) === false) {
             return; // bez tlačítka Uložit neproběhly kontroly formuláře
         }
 
@@ -346,7 +346,7 @@ class ApPresenter extends BasePresenter
         $subnets = $values->subnet;
         $apiKlice = $values->apiKlic;
         $oldap = null;
-        if (!in_array($idAP, [null, '', 0, '0'], true)) {
+        if (in_array($idAP, [null, '', 0, '0'], true) === false) {
             $oldap = $this->ap->getAP($idAP);
             if ($oldap === null) {
                 $this->error('AP nebylo nalezeno.');

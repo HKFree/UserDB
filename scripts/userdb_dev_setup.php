@@ -64,7 +64,7 @@ if (getenv('USERDB_DEMO_VOLUME') === '0') {
 }
 
 $keyFile = $cache . '/encryption.key';
-if (!is_file($keyFile)) {
+if (is_file($keyFile) === false) {
     Nette\Utils\FileSystem::write($keyFile, Defuse\Crypto\Key::createNewRandomKey()->saveToAsciiSafeString(), 0600);
 }
 echo "Local database and demo data are ready. Start the web server inside Flox:\n";

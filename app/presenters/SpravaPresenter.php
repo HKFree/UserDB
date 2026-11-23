@@ -66,7 +66,7 @@ class SpravaPresenter extends BasePresenter
         $output = []; // klic = kombinace latitude + longitude
         foreach ($uzivatele as $uzivatel) {
             $key = "{$uzivatel->latitude},{$uzivatel->longitude}";
-            if (!isset($output[$key])) {
+            if (isset($output[$key]) === false) {
                 // na danych souradnicich jeste zadny bod v poli $output neni
                 $output[$key] = [
                     'lat' => $uzivatel->latitude,

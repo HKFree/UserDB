@@ -174,7 +174,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
 
         // pokud editujeme, nacteme existujici
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $id = $this->getParameter('id');
             $pPlatba = $this->prichoziPlatba->getPrichoziPlatba($id);
             $posledniPohyb = $this->uzivatelskeKonto->getUzivatelskeKontoByPrichoziPlatba($id);

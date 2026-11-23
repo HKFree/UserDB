@@ -81,7 +81,7 @@ class StatusPresenter extends ApiPresenter
                 $count_dead = 0;
                 foreach ($ap->related('IPAdresa.Ap_id') as $ip) {
                     // IP se nepinga, ignorujeme ji
-                    if (!isset($vysledek_pingu[$ip->ip_adresa])) {
+                    if (isset($vysledek_pingu[$ip->ip_adresa]) === false) {
                         continue;
                     }
 
