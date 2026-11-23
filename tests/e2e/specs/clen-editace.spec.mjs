@@ -37,6 +37,8 @@ test('úprava kontaktů a IP adres se projeví v detailu i historii člena', asy
     await expect(history).toBeHidden();
     const toggle = page.locator('details.log-panel > summary').filter({ hasText: 'Historie změn' });
     await expect(toggle).toHaveCount(1);
+    // Bez nadpisu uvnitř: některé prohlížeče potomkům summary roli nadpisu odeberou.
+    await expect(toggle.locator('h1, h2, h3, h4, h5, h6')).toHaveCount(0);
     // Rozbalí se klávesnicí i myší, bez vlastního skriptu (<details>).
     await toggle.focus();
     await page.keyboard.press('Enter');

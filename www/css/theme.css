@@ -637,7 +637,21 @@
 :root[data-theme="dark"] .navbar-search .form-control,
 :root[data-theme="dark"] .sidebar-toggle {
     background-color: var(--udb-dark-surface-2);
-    border-color: var(--udb-dark-border);
+    border-color: var(--udb-dark-control-border);
+}
+
+/* Pod 768 px jsou nabídky lišty průhledné na liště; šedé písmo Bootstrapu má na tmavé liště malý kontrast. */
+@media (max-width: 767px) {
+    :root[data-theme="dark"] .navbar-inverse .navbar-nav .open .dropdown-menu > li > a,
+    :root[data-theme="dark"] .navbar-inverse .navbar-nav .open .dropdown-menu .dropdown-header {
+        color: #b8bec7;
+    }
+
+    :root[data-theme="dark"] .navbar-inverse .navbar-nav .open .dropdown-menu > li > a:hover,
+    :root[data-theme="dark"] .navbar-inverse .navbar-nav .open .dropdown-menu > li > a:focus {
+        background-color: transparent;
+        color: #ffffff;
+    }
 }
 
 :root[data-theme="dark"] .navbar-search .form-control:focus {

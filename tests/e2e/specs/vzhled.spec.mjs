@@ -145,3 +145,33 @@ test('v tmavém vzhledu mají pole formuláře viditelný rámeček a zvýrazně
     await expect(row).toBeVisible();
     expect(await contrast(page, row.locator('td').nth(2))).toBeGreaterThanOrEqual(4.5);
 });
+
+
+test('v tmavém vzhledu má pole hledání viditelný rámeček a odkazy nabídek na telefonu čitelný text', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('.navbar-account .dropdown-toggle').click();
+    await page.getByRole('radio', { name: 'Tmavý', exact: true }).click();
+    const contrastOf = (a, b) => {
+        const parse = value => value.match(/[\d.]+/g).map(Number);
+        const luminance = ([r, g, b]) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+            .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+        const [x, y] = [luminance(parse(a)), luminance(parse(b))];
+        return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+    };
+    // Bootstrap má na rámečku pole přechod 0,15 s, měří se ustálená barva.
+    const search = () => page.locator('.navbar-search .form-control').evaluate(element => [
+        getComputedStyle(element).borderTopColor, getComputedStyle(element).backgroundColor,
+        getComputedStyle(document.querySelector('.navbar-inverse')).backgroundColor,
+    ]);
+    await expect.poll(async () => { const [line, fill] = await search(); return contrastOf(line, fill); }).toBeGreaterThanOrEqual(3);
+    const [line, , bar] = await search();
+    expect(contrastOf(line, bar)).toBeGreaterThanOrEqual(3);
+
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.reload();
+    await page.locator('.navbar-toggle').click();
+    await page.locator('.navbar-account .dropdown-toggle').click();
+    const link = page.locator('.navbar-account .dropdown-menu a').filter({ hasText: 'Můj profil' });
+    const colours = await link.evaluate(element => [getComputedStyle(element).color, getComputedStyle(document.querySelector('.navbar-inverse')).backgroundColor]);
+    expect(contrastOf(colours[0], colours[1])).toBeGreaterThanOrEqual(4.5);
+});

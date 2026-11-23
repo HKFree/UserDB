@@ -2579,7 +2579,13 @@ html {
     display: none;
 }
 
-.log-panel > summary h4::before {
+/* Text místo nadpisu: některé prohlížeče potomkům summary roli nadpisu odeberou. Vzhled jako nadpis panelu. */
+.log-panel .log-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.log-panel .log-title::before {
     content: "\f054";
     display: inline-block;
     width: 14px;
@@ -2590,7 +2596,7 @@ html {
     transition: transform .15s ease-out;
 }
 
-.log-panel[open] > summary h4::before {
+.log-panel[open] .log-title::before {
     transform: rotate(90deg);
 }
 
@@ -2599,12 +2605,13 @@ html {
     border-radius: 3px;
 }
 
-.log-panel > summary:hover h4 {
+.log-panel > summary:hover .log-title {
     text-decoration: underline;
 }
 
 .log-panel > summary:focus-visible {
-    outline: 2px solid var(--udb-line-5b9bd8);
+    /* Tmavší modrá: proti záhlaví panelu kontrast aspoň 3 : 1. */
+    outline: 2px solid var(--udb-text-2165ae);
     outline-offset: -2px;
 }
 
