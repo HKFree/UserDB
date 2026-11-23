@@ -30,7 +30,7 @@ final class FormMarkupPresenterTest extends DatabaseTestCase
         Assert::same(200, $page->status);
         Assert::match('~<form [^>]*id="frm-apForm"[^>]*>\s*<table class="form">~', $page->html);
         $patterns = [
-            'labelled field' => '<tr>\s*<th><label for="frm-apForm-jmeno">Jméno</label><span class="required-badge">povinné</span></th>\s*<td><input type="text" name="jmeno" ',
+            'labelled field' => '<tr>\s*<th><label for="frm-apForm-jmeno">Jméno</label><span class="required-badge" aria-hidden="true">povinné</span></th>\s*<td><input type="text" name="jmeno" ',
             'checkbox without a label cell' => '<tr>\s*<th></th>\s*<td><label for="frm-apForm-aktivni"><input type="checkbox" name="aktivni" ',
             'IP address record' => '<tr>\s*<td colspan="4">\s*<table class="ipform" [^>]*>\s*<tr>\s*<td class="ip">\s*'
                 . '<input type="hidden" name="ip\[' . $ip->id . '\]\[id\]" [^>]*>\s*<input type="text" name="ip\[' . $ip->id . '\]\[ip_adresa\]" [^>]*class="ip_adresa ip"',
@@ -67,7 +67,7 @@ final class FormMarkupPresenterTest extends DatabaseTestCase
                 . '<a href="[^"]+" class="btn btn-link">Zrušit</a>\s*<span class="form-status" role="status" aria-live="polite"></span>',
             'optional field without the badge' => '<tr>\s*<th><label for="frm-uzivatelForm-email2">[^<]+</label></th>\s*<td><input type="text" name="email2" ',
             'list of the sections' => '</form>\s*<nav class="form-nav" [^>]*>\s*<span>[^<]+</span>\s*<a href="#member-form-section-1">',
-            'e-mail field' => '<tr>\s*<th><label for="frm-uzivatelForm-email">Email</label><span class="required-badge">povinné</span></th>\s*<td><input type="email" name="email" ',
+            'e-mail field' => '<tr>\s*<th><label for="frm-uzivatelForm-email">Email</label><span class="required-badge" aria-hidden="true">povinné</span></th>\s*<td><input type="email" name="email" ',
             'date field' => '<tr>\s*<th><label for="frm-uzivatelForm-datum_narozeni">[^<]*</label></th>\s*<td><input type="date" name="datum_narozeni" ',
             'number field' => '<td><input type="number" name="psc" ',
             'IP address record' => '<tr>\s*<td colspan="4">\s*<table class="ipform" [^>]*>\s*<tr>\s*<td class="ip">\s*<input type="hidden" name="ip\[' . $ip->id . '\]\[id\]"',

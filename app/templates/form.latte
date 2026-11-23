@@ -10,7 +10,7 @@
             <h2 id="member-form-heading-{$iterator->counter}">{$group->getOption('label')}</h2>
             <table class="form">
                 <tr n:foreach="$group->getControls() as $field">
-                    <th>{label $field /}<span n:if="$field->required" class="required-badge">povinné</span></th>
+                    <th>{label $field /}<span n:if="$field->required" class="required-badge" aria-hidden="true">povinné</span></th>
                     <td>{input $field} <span n:if="$field->getErrors()" class="text-danger">{inputError $field}</span></td>
                 </tr>
                 {if $group->getOption('dynamicContainer')}
@@ -39,13 +39,13 @@
                 {else}
                     {* vychozi zpusob vypisu component uvnitr kontejneru *}
                     {foreach $component->controls as $field}
-                        {label $field /}<span n:if="$field->required" class="required-badge">povinné</span> {input $field} <span n:if="$field->getErrors()" class="text-danger">{inputError $field}</span> <br />
+                        {label $field /}<span n:if="$field->required" class="required-badge" aria-hidden="true">povinné</span> {input $field} <span n:if="$field->getErrors()" class="text-danger">{inputError $field}</span> <br />
                     {/foreach}
                 {/if}
             {else}
                 {* normalni ovladaci prvek ve formulari *}
                 <tr>
-                    <th>{label $component /}<span n:if="$component->required" class="required-badge">povinné</span></th>
+                    <th>{label $component /}<span n:if="$component->required" class="required-badge" aria-hidden="true">povinné</span></th>
                     <td>{input $component} <span n:if="$component->getErrors()" class="text-danger">{inputError $component}</span></td>
                 </tr>
             {/if}

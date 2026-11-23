@@ -14,6 +14,11 @@ async function checkUid(page, form, uid, labels, editable, inactive = false) {
         return rect.top + rect.height / 2;
     }));
     expect(Math.max(...centers) - Math.min(...centers), `UID ${uid}: všechny prvky na jednom řádku`).toBeLessThan(4);
+    if (editable) {
+        // Tužka stojí na konci buňky, ne hned za štítky.
+        const gap = await cell.evaluate(td => td.getBoundingClientRect().right - td.querySelector('.btn-in-table').getBoundingClientRect().right);
+        expect(gap, `UID ${uid}: tužka na konci buňky`).toBeLessThan(12);
+    }
 }
 
 async function checkPageWidth(page, width) {
@@ -119,8 +124,12 @@ for (const width of [1280, 375]) {
                     // Malý posun stránky: tlačítko zůstává pod lištou, nabídka se posune s ním.
                     await page.evaluate(() => window.scrollBy(0, 20));
                     await expect.poll(async () => (await place())?.button.top).toBeLessThan(before.button.top - 10);
+                    // Nabídka dosedne k tlačítku tak jako před posunem.
+                    await expect.poll(async () => {
+                        const now = await place();
+                        return now && Math.round(now.menu.top - now.button.bottom);
+                    }).toBe(Math.round(before.menu.top - before.button.bottom));
                     const moved = await place();
-                    expect(moved.menu.top - moved.button.bottom).toBeCloseTo(before.menu.top - before.button.bottom, 0);
                     // Tlačítko zajede pod pevnou horní lištu (stále v okně): nabídka se zavře.
                     await page.evaluate(({ button, bar }) => window.scrollBy(0, button.top + button.height - bar), moved);
                     await expect(menu).toBeHidden();
@@ -134,6 +143,16 @@ for (const width of [1280, 375]) {
                     await frame.focus();
                     await page.keyboard.press('ArrowRight');
                     await expect.poll(() => frame.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+                    // Posouvá se jen obal ze šablony, formulář Grida v něm ne; sloupec UID zůstává u levého okraje rámu.
+                    await frame.evaluate(element => { element.scrollLeft = 200; });
+                    const layout = await frame.evaluate(element => {
+                        const form = element.querySelector('form.grido');
+                        const cell = form.querySelector('td.grid-cell-id').getBoundingClientRect();
+                        return { formScroll: form.scrollLeft, formScrolls: getComputedStyle(form).overflowX, frameLeft: element.getBoundingClientRect().left, cellLeft: cell.left };
+                    });
+                    expect(layout.formScroll).toBe(0);
+                    expect(layout.formScrolls).toBe('visible');
+                    expect(Math.abs(layout.cellLeft - layout.frameLeft)).toBeLessThan(16);
                     await expect(page.getByRole('region', { name: 'Uživatelé mimo AP', exact: true })).toHaveCount(await page.locator('#frm-othersGrid-form.grid-wide').count());
                 });
             }

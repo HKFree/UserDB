@@ -3086,7 +3086,8 @@ html {
     content: "";
 }
 
-/* Povinné pole: štítek u popisku a proužek u pole, aby šlo poznat i bez čtení popisků. */
+/* Povinné pole: štítek u popisku a proužek u pole, aby šlo poznat i bez čtení popisků.
+   Čtečce štítek nic nepřidá, povinnost jí oznámí atribut required pole. */
 .required-badge {
     display: inline-block;
     margin-left: 6px;
@@ -3101,10 +3102,18 @@ html {
     white-space: nowrap;
 }
 
-.main table.form > tbody > tr > td > input[required]:not([type="checkbox"]):not([type="radio"]):not(.field-invalid),
-.main table.form > tbody > tr > td > select[required]:not(.field-invalid),
-.main table.form > tbody > tr > td > textarea[required]:not(.field-invalid) {
+.main table.form > tbody > tr > td:not(:has(> .text-danger)) > input[required]:not([type="checkbox"]):not([type="radio"]):not(.field-invalid),
+.main table.form > tbody > tr > td:not(:has(> .text-danger)) > select[required]:not(.field-invalid),
+.main table.form > tbody > tr > td:not(:has(> .text-danger)) > textarea[required]:not(.field-invalid) {
     border-left: 3px solid #e3a1a1;
+}
+
+/* Pole, u kterého server vrátil chybu, má červený rámeček jako chyba z prohlížeče. */
+.main table.form > tbody > tr > td:has(> .text-danger) > input:not([type="checkbox"]):not([type="radio"]),
+.main table.form > tbody > tr > td:has(> .text-danger) > select,
+.main table.form > tbody > tr > td:has(> .text-danger) > textarea {
+    border-color: #c9302c;
+    box-shadow: 0 0 0 3px rgba(201, 48, 44, .18);
 }
 
 .form-nav {

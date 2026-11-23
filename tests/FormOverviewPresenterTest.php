@@ -81,7 +81,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         Assert::notContains('povinné', $this->text($document, '//*[contains(@class,"form-save-bar")]'));
         Assert::same(['povinné'], array_values(array_unique(array_map(
             static fn (\DOMNode $node): string => trim($node->textContent),
-            $this->elements($document, '//label[@for="frm-uzivatelForm-jmeno"]/following-sibling::span[@class="required-badge"]'),
+            $this->elements($document, '//label[@for="frm-uzivatelForm-jmeno"]/following-sibling::span[@class="required-badge" and @aria-hidden="true"]'),
         ))));
         Assert::count($editing ? 1 : 0, $this->elements($document, '//*[contains(@class,"form-save-bar")]/a'));
     }
