@@ -240,12 +240,7 @@ class UzivatelListGrid
             }
 
             $grid->addColumnText('TechnologiePripojeni_id', 'Tech')->setCustomRender(function ($item) {
-                return Html::el('span')
-                        ->setClass('conntype'.$item->TechnologiePripojeni_id)
-                        ->alt($item->TechnologiePripojeni_id)
-                        ->setTitle($item->TechnologiePripojeni->text)
-                        ->data("toggle", "tooltip")
-                        ->data("placement", "right");
+                return ZnackaTechnologie::html((int) $item->TechnologiePripojeni_id, (string) $item->TechnologiePripojeni->text);
             })->setSortable();
 
             if (in_array($fullnotes, [null, false, 0, '', '0'], true) === false) {
@@ -495,12 +490,7 @@ class UzivatelListGrid
             }
 
             $grid->addColumnText('TechnologiePripojeni_id', 'Tech')->setCustomRender(function ($item) {
-                return Html::el('span')
-                        ->setClass('conntype'.$item->TechnologiePripojeni_id)
-                        ->alt($item->TechnologiePripojeni_id)
-                        ->setTitle($item->TechnologiePripojeni->text)
-                        ->data("toggle", "tooltip")
-                        ->data("placement", "right");
+                return ZnackaTechnologie::html((int) $item->TechnologiePripojeni_id, (string) $item->TechnologiePripojeni->text);
             })->setSortable();
 
             if (in_array($fullnotes, [null, false, 0, '', '0'], true) === false) {

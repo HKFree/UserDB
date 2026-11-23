@@ -19,8 +19,13 @@ function pingIPList(sojkaUrl) {
 }
 
 
+// sluzba pingu odpovedela chybou (napr. neni dostupna): stav adres nezname, nic neoznacovat
+function pingFailed(resp) {
+  return !resp || resp.error === true;
+}
+
 function pingIPListCallback(resp) {
-  if(resp.length <= 0) {
+  if(pingFailed(resp) || resp.length <= 0) {
     return(1);
   }
 
@@ -79,13 +84,17 @@ function removeLabelClass(index, className) {
 }
 
 function drawBar(elem, pings) {
-  var colors = ["rgb(150, 255, 150)", "rgb(255, 255, 150)", "rgb(255, 150, 150)"];
+  // tlumene barvy (dostupna, ztraty, nedostupna); prouzek u leveho okraje podle nejhorsiho stavu dava screen.css
+  var colors = ["rgb(227, 244, 230)", "rgb(253, 241, 207)", "rgb(249, 222, 219)"];
   
   var pings_total = pings[0] + pings[1] + pings[2];
   
   if (pings_total == 0) {
     return(0);
   }
+
+  elem.removeClass("ping-ok ping-warn ping-down")
+    .addClass(pings[2] > 0 ? "ping-down" : (pings[1] > 0 ? "ping-warn" : "ping-ok"));
   
   var can1 = document.createElement("canvas");
   var size_w = parseFloat(elem.css("width")) + parseFloat(elem.css("padding-right")) + parseFloat(elem.css("padding-left"));
@@ -116,6 +125,9 @@ function drawBar(elem, pings) {
 }  
 
 function pingUserListCallback(resp) {
+  if(pingFailed(resp)) {
+    return;
+  }
   $(".grid-cell-IPAdresa span").each(function() {
     ips = $( this ).attr('title');
   

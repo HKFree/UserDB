@@ -1080,105 +1080,6 @@ ul.error {
     border-color: #c9ced4;
 }
 
-.conntype0 {
-    background: url('../images/conntype0.png');
-    width: 16px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype1 {
-    background: url('../images/conntype1.png');
-    width: 16px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype2 {
-    background: url('../images/conntype2.png');
-    width: 16px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype3 {
-    background: url('../images/conntype3.png');
-    width: 16px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype4 {
-    background: url('../images/conntype4.png');
-    width: 16px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype5 {
-    background: url('../images/conntype5.png');
-    width: 16px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype7 {
-    background: url('../images/conntype7.png');
-    width: 32px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype8 {
-    background: url('../images/conntype8.png');
-    width: 32px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype9 {
-    background: url('../images/conntype9.png');
-    width: 32px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype6 {
-    background: url('../images/conntype6.png');
-    width: 16px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
-.conntype10 {
-    background: url('../images/conntype10.png');
-    width: 16px;
-    height: 16px;
-    display: block;
-    float: left;
-    background-position: 0 32px;
-}
-
 .highlighted,
 .highlighted td {
     background-color: #ffa100 !important;
@@ -1231,7 +1132,9 @@ ul.error {
 }
 
 /* Posuvný seznam: odsazení ponechá místo pro stín a obrys rámu při zaměření. */
+/* position: absolutně umístěné potomky (text jen pro čtečku) jinak rám neořízne a roztáhnou stránku. */
 .user-list-scroll {
+    position: relative;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     margin: -12px;
@@ -1395,6 +1298,44 @@ tbody>tr.wewimo-table-header>th {
     margin-left: 4px;
 }
 
+/* Technologie připojení ve sloupci Tech: ikona a krátký text, celý název v tooltipu (ZnackaTechnologie). */
+.conn-tech {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 7px;
+    border: 1px solid #d5dae0;
+    border-radius: 9px;
+    background-color: #f6f7f9;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+    white-space: nowrap;
+}
+
+.conn-tech .fa {
+    color: #6b7280;
+}
+
+.conn-tech-unknown {
+    border-style: dashed;
+    color: #6b7280;
+}
+
+/* Výsledek pingu IP adres (pinger.js): tlumené podbarvení buňky a proužek podle nejhoršího stavu. */
+.grid-cell-IPAdresa.ping-ok {
+    box-shadow: inset 3px 0 0 #3c9a52;
+}
+
+.grid-cell-IPAdresa.ping-warn {
+    box-shadow: inset 3px 0 0 #d9a520;
+}
+
+.grid-cell-IPAdresa.ping-down {
+    box-shadow: inset 3px 0 0 #d9534f;
+}
+
 /* Tužka u UID v seznamu členů stojí na konci buňky jako na master. */
 .grido td.grid-cell-id .user-uid > .btn-in-table {
     margin-left: auto;
@@ -1431,6 +1372,7 @@ tbody>tr.wewimo-table-header>th {
 
 /* A grid wider than the page scrolls in its own frame; main.js sets the class when it does not fit. */
 form.grido.grid-wide {
+    position: relative;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
