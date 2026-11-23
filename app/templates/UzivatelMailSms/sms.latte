@@ -3,9 +3,7 @@
 <h3>Odeslání sms <small>uživateli {$uziv->jmeno} {$uziv->prijmeni}</small></h3>
 
 {if $canViewOrEdit}
-<div class="message-form">
 {include '../form.latte', form => smsForm}
-</div>
 {else}
 <p>Na tuto operaci nemáte oprávnění!</p>
 {/if}

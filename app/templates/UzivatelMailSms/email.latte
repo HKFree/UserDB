@@ -4,9 +4,11 @@
 
 {if $canViewOrEdit && $emailPlatny}
 {include 'odesilatel.latte'}
-<div class="message-form">
+<p n:if="$emailOznacenyNeplatny" class="alert alert-warning">
+    E-mailová adresa člena je označená jako neplatná, zpráva na ni nejspíš nedojde.
+    Ověřte ji u člena a opravte v <a n:href="Uzivatel:edit id => $u->id">editaci člena</a>.
+</p>
 {include '../form.latte', form => emailForm}
-</div>
 {elseif $canViewOrEdit}
 <p class="alert alert-warning">
     E-mail nejde odeslat, člen nemá platnou e-mailovou adresu.

@@ -74,6 +74,11 @@
                 "App\\Components\\": "app/components/"
             }
         },
+        "autoload-dev": {
+            "psr-4": {
+                "UserDb\\PHPStan\\": "phpstan/"
+            }
+        },
 	"minimum-stability": "stable",
 	"config": {
 		"allow-plugins": {

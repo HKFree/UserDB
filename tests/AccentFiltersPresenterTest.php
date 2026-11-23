@@ -6,7 +6,6 @@ declare(strict_types=1);
 
 namespace Test;
 
-use Nette\Application\Responses\JsonResponse;
 use Nette\Database\Table\ActiveRow;
 use Tester\Assert;
 
@@ -100,17 +99,6 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
         $this->assertFilter('SpravaNesparovanych', 'nesparovane', 'accountgrid', 'poznamka', 'PRISPEVEK CLENA', 'Příspěvek člena');
     }
 
-    public function testOutgoingCompanySuggestion(): void {
-        foreach (['ZELEZARSTVI' => ['Železářství Šroubek'], 'NENALEZITELNY' => []] as $query => $expected) {
-            $result = $this->presenters->ui($this->viewer->id, 'SpravaPlateb', [
-                'action' => 'odchoziplatby', 'do' => 'odchplatby-filters-firma-suggest',
-                'odchplatby-filters-firma-query' => $query,
-            ], ajax: true);
-            Assert::type(JsonResponse::class, $result->response);
-            Assert::same($expected, $result->json);
-        }
-    }
-
     public function testDateAndAmountPartialFilters(): void {
         foreach (['datum' => '2026-11', 'castka' => '234.5'] as $column => $query) {
             $this->assertFilter('SpravaPlateb', 'odchoziplatby', 'odchplatby', $column, $query, 'Železářství Šroubek', 'firma');
@@ -124,16 +112,6 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
                 'action' => 'odchoziplatby', 'odchplatby-filter' => [$column => '😀'],
             ]);
             Assert::same([], $this->cells($result, 'odchplatby', 'firma'), $column);
-        }
-    }
-
-    public function testMergedUserNumericFilters(): void {
-        $this->fixtures->insert('SloucenyUzivatel', [
-            'Uzivatel_id' => $this->member->id, 'slouceny_uzivatel' => $this->viewer->id,
-            'sloucil' => $this->viewer->id, 'datum_slouceni' => '2026-11-23',
-        ]);
-        foreach (['slouceny_uzivatel', 'sloucil'] as $column) {
-            $this->assertFilter('SpravaSlucovani', 'slouceni', 'slouceniGrid', $column, (string) $this->viewer->id, (string) $this->viewer->id);
         }
     }
 
@@ -158,7 +136,7 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
         $this->assertFilter('SpravaCc', 'prehledcc', 'grid', 'typcc', 'ZASTUPCE SPRAVCE OBLASTI', 'Zástupce správce oblasti');
     }
 
-    public function testArrayBackedMemberFiltersAfterGlobalSearchAlreadyIgnoreAccents(): void {
+    public function testMemberFiltersAfterGlobalSearchIgnoreAccents(): void {
         foreach (['TECH', 'VV', 'KONTROLA', 'EXTSUPPORT'] as $role) {
             $this->database->table('SpravceOblasti')->where('Uzivatel_id', $this->viewer->id)->update([
                 'TypSpravceOblasti_id' => $this->fixtures->lookup('TypSpravceOblasti', $role),

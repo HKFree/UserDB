@@ -21,6 +21,9 @@ class UzivatelListPresenter extends BasePresenter
     #[Nette\Application\Attributes\Persistent]
     public bool $fullnotes = false;
 
+    /** Text hledaný v kompletním seznamu členů; null, když se nehledá. */
+    private ?string $hledanyText = null;
+
     private Model\CestneClenstviUzivatele $cestneClenstviUzivatele;
     private Model\Uzivatel $uzivatel;
     private Model\AP $ap;
@@ -58,8 +61,17 @@ class UzivatelListPresenter extends BasePresenter
         $this->template->fullnotes = $this->fullnotes;
     }
 
+    /**
+     * Hledaný text je argument akce, aby ho nesly i odkazy a formuláře tabulky: filtr, řazení, stránka a export.
+     * Odkaz na pojmenovanou akci ho nenese, takže hledání končí odchodem ze stránky.
+     */
+    public function actionListall(?string $search = null): void {
+        // Prázdný text a nula hledání nespouštějí.
+        $this->hledanyText = in_array($search, [null, '', '0'], true) ? null : $search;
+    }
+
     public function renderListall(): void {
-        if (!$this->maVyplnenyParametr('search')) {
+        if ($this->hledanyText === null) {
             $cestnych = count($this->cestneClenstviUzivatele->getListCC());
             $this->template->u_celkem = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?", 1)->count("*");
             $this->template->u_celkemz = $this->uzivatel->getSeznamUzivatelu()->where("TypClenstvi_id>?", 0)->count("*");
@@ -76,7 +88,7 @@ class UzivatelListPresenter extends BasePresenter
         $this->template->money = $this->maVyplnenyParametr("money") && $vidiUdajeClenu;
         $this->template->vidiUdajeClenu = $vidiUdajeClenu;
         $this->template->fullnotes = $this->fullnotes;
-        $this->template->search = $this->getParameter('search', false);
+        $this->template->search = $this->hledanyText;
     }
 
     protected function createComponentGrid(string $name): void {
@@ -87,7 +99,7 @@ class UzivatelListPresenter extends BasePresenter
             $this->getParameter('id'),
             $this->getParameter('money', false),
             $this->fullnotes,
-            $this->getParameter('search', false)
+            $this->hledanyText
         );
     }
 
@@ -99,7 +111,7 @@ class UzivatelListPresenter extends BasePresenter
             $this->getParameter('id'),
             $this->getParameter('money', false),
             $this->fullnotes,
-            $this->getParameter('search', false)
+            $this->hledanyText
         );
     }
 }

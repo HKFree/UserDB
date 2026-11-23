@@ -39,7 +39,6 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         Model\PovoleneSMTP $alowedSMTP,
         Model\DNat $dnat,
         Model\Parameters $parameters,
-        Model\SloucenyUzivatel $slUzivatel,
         Model\Smlouva $smlouva,
         Services\SmlouvaStavSluzba $smlouvaStavSluzba,
         Model\TypPravniFormyUzivatele $typPravniFormyUzivatele,
@@ -59,7 +58,6 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             alowedSMTP: $alowedSMTP,
             dnat: $dnat,
             parameters: $parameters,
-            slUzivatel: $slUzivatel,
             smlouva: $smlouva,
             smlouvaStavSluzba: $smlouvaStavSluzba,
             prava: $prava,
@@ -122,7 +120,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
         // pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($user === null) {
                 $this->error('Uživatel nebyl nalezen.');
@@ -137,20 +135,15 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
     }
 
     public function validateRightsForm(Form $form): void {
-        $data = $form->getHttpData();
-        if (!is_array($data)) {
-            throw new Nette\UnexpectedValueException('Data celého formuláře musí být pole.');
-        }
-
         // Validujeme jenom při uložení formuláře
-        if (!isset($data["save"])) {
+        if ($this->odeslanoTlacitkemUlozit($form) === false) {
             return;
         }
 
         $values = $form->getUntrustedValues();
 
         foreach ($values->rights as $pravo) {
-            if (!in_array($pravo->id, [null, '', 0, '0'], true) && !$pravo->override) {
+            if (in_array($pravo->id, [null, '', 0, '0'], true) === false && $pravo->override === false) {
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
                 if ($starePravo === null) {
                     $this->error('Oprávnění nebylo nalezeno.');
@@ -168,13 +161,17 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
     public function uzivatelRightsFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiMenitPrava());
 
+        if ($this->odeslanoTlacitkemUlozit($form) === false) {
+            return; // bez tlačítka Uložit neproběhly kontroly formuláře
+        }
+
         $log = array();
         $idUzivatele = $values->id;
         $prava = $values->rights;
 
         $staraPrava = [];
         foreach ($prava as $pravo) {
-            if (!in_array($pravo->id, [null, '', 0, '0'], true)) {
+            if (in_array($pravo->id, [null, '', 0, '0'], true) === false) {
                 $starePravo = $this->spravceOblasti->getPravo($pravo->id);
                 if ($starePravo === null) {
                     $this->error('Oprávnění nebylo nalezeno.');
@@ -276,7 +273,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
 
         // pokud editujeme, nacteme existujici opravneni
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($user === null) {
                 $this->error('Uživatel nebyl nalezen.');
@@ -306,7 +303,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
             $pravo->zadost_podana = new Nette\Utils\DateTime();
             $pravoId = $pravo->id;
 
-            if (in_array($pravo->schvaleno ?? null, [null, 0, '0'], true) || !$this->smiSchvalitCc()) {
+            if (in_array($pravo->schvaleno ?? null, [null, 0, '0'], true) || $this->smiSchvalitCc() === false) {
                 // ostatním šablona pole stavu nezobrazí, takže ho formulář ani neposílá
                 $pravo->schvaleno = 0;
             }

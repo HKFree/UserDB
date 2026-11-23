@@ -38,12 +38,12 @@ class SpravaPlatebPresenter extends SpravaPresenter
         ->setDefaultValue('vsechny')
         ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
             if ($value === 'spolek') {
-                return ($connection->where('spolek', 1));
+                return $connection->where('spolek', 1);
             }
             if ($value === 'druzstvo') {
-                return ($connection->where('druzstvo', 1));
+                return $connection->where('druzstvo', 1);
             }
-            return ($connection);
+            return $connection;
         });
 
         $grid->setRowCallback(function ($item, $tr) {
@@ -59,22 +59,22 @@ class SpravaPlatebPresenter extends SpravaPresenter
             $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label label-druzstvo')->setAttribute('style', 'margin-left: 4px;');
 
             if ($item->spolek) {
-                return ($spanSpolek);
+                return $spanSpolek;
             }
 
-            return ($spanDruzstvo);
+            return $spanDruzstvo;
         });
 
         $grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();
         $grid->getColumn('datum')->headerPrototype->style['width'] = '10%';
-        $grid->addColumnText('firma', 'Firma')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('popis', 'Popis')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('typ', 'Typ')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('firma', 'Firma')->setSortable()->setFilterText();
+        $grid->addColumnText('popis', 'Popis')->setSortable()->setFilterText();
+        $grid->addColumnText('typ', 'Typ')->setSortable()->setFilterText();
         $grid->getColumn('typ')->headerPrototype->style['width'] = '10%';
-        $grid->addColumnText('kategorie', 'Kategorie')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnNumber('castka', 'Částka', 2, ',', ' ')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('kategorie', 'Kategorie')->setSortable()->setFilterText();
+        $grid->addColumnNumber('castka', 'Částka', 2, ',', ' ')->setSortable()->setFilterText();
         $grid->getColumn('castka')->headerPrototype->style['width'] = '10%';
-        $grid->addColumnDate('datum_platby', 'Datum platby')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnDate('datum_platby', 'Datum platby')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();
         $grid->getColumn('datum_platby')->headerPrototype->style['width'] = '10%';
     }
 

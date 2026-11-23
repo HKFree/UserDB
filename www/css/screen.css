@@ -121,6 +121,14 @@ h4,
     margin-left: 180px;
 }
 
+/* Od 992 px dává Bootstrap sloupci obsahu 83,33 % šířky okna. S pevným okrajem pro postranní
+   panel by do 1079 px přesahoval okno a stránka by se posouvala do strany. */
+@media (min-width: 992px) {
+    .col-md-offset-2 {
+        max-width: calc(100% - 180px);
+    }
+}
+
 @media (min-width: 1300px) {
 
     h4,
@@ -333,47 +341,6 @@ pre.tracy-dump {
     padding-right: 10px;
 }
 
-/* E-mail a SMS členovi nebo celému AP: na telefonu popisek nad polem a pole nejvýš na šířku okna. */
-@media (max-width: 767px) {
-    .message-form .form,
-    .message-form .form tbody,
-    .message-form .form tr,
-    .message-form .form th,
-    .message-form .form td {
-        display: block;
-    }
-
-    .message-form .form th {
-        padding: 8px 0 2px;
-        text-align: left;
-    }
-
-    /* Řádek skrytého pole a tlačítka popisek nemá. */
-    .message-form .form th:empty {
-        display: none;
-    }
-
-    /* Na telefonu větší plocha pro prst. */
-    .message-form .form input[type="submit"] {
-        margin-top: 8px;
-        padding: 6px 12px;
-        font-size: 14px;
-    }
-
-    /* Písmo 16 px: menší by iOS po klepnutí do pole přiblížil a stránka by se zase posouvala do strany. */
-    .message-form .form input[type="text"],
-    .message-form .form select,
-    .message-form .form textarea {
-        max-width: 100%;
-        font-size: 16px;
-    }
-
-    .message-form .form input[type="text"],
-    .message-form .form textarea {
-        width: 100%;
-    }
-}
-
 .ipform,
 .subnetform,
 .apiklicform {
@@ -443,6 +410,123 @@ pre.tracy-dump {
 
 .ip-subnet-form-add:hover {
     background-color: #CAF7CA;
+}
+
+/* Formuláře ze šablony form.latte na telefonu: popisek nad polem, pole nejvýš na šířku okna. */
+@media (max-width: 767px) {
+    .form,
+    .form > tbody,
+    .form > tbody > tr,
+    .form > tbody > tr > th,
+    .form > tbody > tr > td {
+        display: block;
+    }
+
+    .form > tbody > tr > th {
+        padding: 8px 0 2px;
+        text-align: left;
+    }
+
+    /* Řádek skrytého pole, zaškrtávacího pole a tlačítka popisek nemá. */
+    .form > tbody > tr > th:empty {
+        display: none;
+    }
+
+    /* Písmo 16 px: menší by iOS po klepnutí do pole přiblížil a stránka by se zase posouvala do strany. */
+    .form input,
+    .form select,
+    .form textarea {
+        max-width: 100%;
+        font-size: 16px;
+    }
+
+    .form > tbody > tr > td > input[type="text"],
+    .form > tbody > tr > td > input[type="email"],
+    .form > tbody > tr > td > input[type="number"],
+    .form > tbody > tr > td > textarea {
+        width: 100%;
+    }
+
+    /* Na telefonu větší plocha pro prst. */
+    .form input[type="submit"],
+    .form .btn-xs {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+
+    .form > tbody > tr > td > .btn-xs {
+        margin-top: 8px;
+    }
+
+    .form > tbody > tr > td > .ip-subnet-form-add {
+        min-width: 0;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    /* Záznam IP adresy, subnetu a API klíče: rámeček na šířku okna, pole se v něm skládají pod sebe. */
+    table.ipform,
+    table.subnetform,
+    table.apiklicform,
+    table.ipform > tbody,
+    table.subnetform > tbody,
+    table.apiklicform > tbody,
+    table.ipform > tbody > tr,
+    table.subnetform > tbody > tr,
+    table.apiklicform > tbody > tr,
+    table.ipform > tbody > tr > td,
+    table.subnetform > tbody > tr > td,
+    table.apiklicform > tbody > tr > td {
+        display: block;
+    }
+
+    table.ipform,
+    table.subnetform,
+    table.apiklicform {
+        width: auto;
+    }
+
+    table.ipform > tbody > tr > td.ip,
+    table.subnetform > tbody > tr > td.subnet,
+    table.apiklicform > tbody > tr > td.apiklic {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+
+    /* Dvě krátká pole vedle sebe (adresa a hostname, login a heslo, subnet a brána); šířku určuje flex-basis. */
+    td.ip > input[type="text"],
+    td.subnet > input[type="text"] {
+        flex: 1 1 40%;
+        min-width: 0;
+    }
+
+    /* Subnet s maskou je delší než adresa brány. */
+    td.subnet > input.subnet_text {
+        flex-basis: 45%;
+    }
+
+    td.subnet > input.gateway_text {
+        flex-basis: 35%;
+    }
+
+    /* Dlouhé hodnoty mají řádek pro sebe, zaškrtávací pole jdou pod ně. */
+    td.ip > select,
+    td.ip > input.mac_adresa,
+    td.ip > input.popis,
+    td.subnet > input.popis,
+    td.apiklic > input[type="text"] {
+        flex: 1 1 100%;
+    }
+
+    td.ip > label,
+    td.subnet > label {
+        width: auto;
+        margin: 0 10px 0 0;
+    }
 }
 
 .legend td {
@@ -669,6 +753,36 @@ pre.tracy-dump {
 
 .btn-in-table:hover {
     border-color: #ccc;
+}
+
+.user-uid {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.user-uid > * {
+    flex-shrink: 0;
+}
+
+.user-uid > .btn-in-table {
+    margin-left: auto;
+}
+
+/* Posouvá se seznam, ne stránka. Odsazení ponechá místo pro původní stín Grida. */
+.user-list-scroll {
+    overflow-x: auto;
+    margin: -12px;
+    padding: 12px;
+}
+
+/* Nabídka štítků musí zvětšit rám i u jediného nebo posledního řádku. */
+.user-list-scroll .dropdown-menu {
+    position: relative;
+    top: auto;
+    left: auto;
+    float: none;
 }
 
 /* Login a heslo zařízení: hodnota i tlačítko zůstávají na jednom řádku, mezery se zobrazí tak, jak jsou uložené. */

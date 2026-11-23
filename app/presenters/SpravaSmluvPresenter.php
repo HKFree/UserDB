@@ -57,7 +57,7 @@ class SpravaSmluvPresenter extends BasePresenter
         $smlouva = $this->idAndContractExists($contract_id);
         $this->userCanView($contract_id);
 
-        if (!is_file($smlouva->podepsany_dokument_path)) {
+        if (is_file($smlouva->podepsany_dokument_path) === false) {
             $this->flashMessage("❌ chybí soubor ($smlouva->podepsany_dokument_path)", 'danger');
             $this->redirect('SpravaSmluv:show');
         }
@@ -107,7 +107,7 @@ class SpravaSmluvPresenter extends BasePresenter
         $request = $this->getHttpRequest();
         $contract_id = $this->getParameter('id');
 
-        if (!$request->isMethod('POST')) {
+        if ($request->isMethod('POST') === false) {
             $this->flashMessage('Tento endpoint nepodporuje metodu ' . $request->getMethod(), 'warning');
             $this->redirect('SpravaSmluv:show');
         }

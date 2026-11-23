@@ -55,12 +55,12 @@ final class EmptyValuesPresenterTest extends DatabaseTestCase
         foreach ([null, '', '0', 0] as $id) {
             // An empty path segment cannot be routed, so exercise form creation directly too.
             $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('SpravaStitku');
-            if (!$presenter instanceof \App\Presenters\SpravaStitkuPresenter) {
+            if (($presenter instanceof \App\Presenters\SpravaStitkuPresenter) === false) {
                 throw new \LogicException('Expected the tag administration presenter.');
             }
             $presenter->loadState(['id' => $id]);
             $form = $presenter->getComponent('editStitekForm');
-            if (!($button = $form['send']) instanceof \Nette\Forms\Controls\SubmitButton) {
+            if ((($button = $form['send']) instanceof \Nette\Forms\Controls\SubmitButton) === false) {
                 throw new \LogicException('Expected the tag form submit button.');
             }
             Assert::same('Vytvořit', $button->getCaption());

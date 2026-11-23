@@ -49,7 +49,7 @@ final class PresenterRunner
 
     /** @param (\Closure(Presenter): void)|null $preparePresenter */
     public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null, private ?\Closure $preparePresenter = null) {
-        if (!self::$shutdownRegistered) {
+        if (self::$shutdownRegistered === false) {
             self::$shutdownRegistered = true;
             register_shutdown_function(static function (): void {
                 if (self::$activeRequest !== null) {
@@ -63,13 +63,13 @@ final class PresenterRunner
      * @param array<string, mixed> $parameters
      * @param array<string, mixed> $post
      */
-    public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true, bool $ajax = false): PresenterResult {
+    public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true): PresenterResult {
         $member = $this->database->table('Uzivatel')->get($uid);
         return $this->run($presenter, $parameters, $method, $post, $sameSite, [
             'HTTP_UID' => (string) $uid,
             'HTTP_GIVENNAME' => $member->nick ?? 'Unknown test member',
             'HTTP_INITIALS' => 'test-only',
-        ], $ajax);
+        ]);
     }
 
     /**
@@ -111,7 +111,7 @@ final class PresenterRunner
      * @param array<string, string> $headers
      * @param array<string, object> $services
      */
-    private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server, bool $ajax = false, array $headers = [], ?string $body = null, array $services = []): PresenterResult {
+    private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server, array $headers = [], ?string $body = null, array $services = []): PresenterResult {
         if (self::$activeRequest !== null) {
             throw new \LogicException('Nested presenter runs are not supported.');
         }
@@ -146,10 +146,7 @@ final class PresenterRunner
                 $requestUrl,
                 post: $post,
                 cookies: $sameSite ? ['_nss' => '1'] : [],
-                headers: $headers
-                    + ['Host' => 'localhost', 'User-Agent' => 'UserDB tests']
-                    + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : [])
-                    + ($ajax ? ['X-Requested-With' => 'XMLHttpRequest'] : []),
+                headers: $headers + ['Host' => 'localhost', 'User-Agent' => 'UserDB tests'] + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : []),
                 method: $method,
                 remoteAddress: '127.0.0.1',
                 rawBodyCallback: static fn (): ?string => $body,

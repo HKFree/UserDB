@@ -25,7 +25,7 @@ final class PosledniPohybyKonta
     /** @param list<int> $typyPohybu */
     public function posledni(ActiveRow $clen, array $typyPohybu): ?Row {
         $idClena = (int) $clen->id;
-        if (!isset($this->clenove[$idClena])) {
+        if (isset($this->clenove[$idClena]) === false) {
             $this->clenove = array_fill_keys(RadkyTabulky::id($clen), true);
             $this->pohyby = [];
         }

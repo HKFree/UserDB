@@ -53,7 +53,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         parent::startup();
 
         //$uri = $this->getHttpRequest()->getUrl();
-        if (!(bool) $this->settings->fakeUser) {
+        if ((bool) $this->settings->fakeUser === false) {
             $this->getUser()->login($_SERVER['HTTP_UID'], null);
         } else {
             $this->getUser()->login("DBG", null);
@@ -70,11 +70,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      * Neověřuje formát ani oprávnění; např. "00" je vyplněný parametr.
      */
     protected function maVyplnenyParametr(string $name): bool {
-        return !in_array($this->getParameter($name), [null, false, 0, 0.0, '', '0', []], true);
+        return in_array($this->getParameter($name), [null, false, 0, 0.0, '', '0', []], true) === false;
     }
 
     protected function oznamVysledekEmailu(VysledekOdeslaniEmailu $vysledek, ActiveRow $uzivatel, string $uspech, ?VysledekOdeslaniEmailu $kopie = null): bool {
-        if (!$vysledek->odeslano()) {
+        if ($vysledek->odeslano() === false) {
             $zprava = Nette\Utils\Html::el()->addText('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu. Zadejte ji v ');
             if ($this->smiUpravitUzivatele($uzivatel)) {
                 $zprava->addHtml(Nette\Utils\Html::el('a')->href($this->link('Uzivatel:edit', ['id' => $uzivatel->id]))->setText('editaci člena'));
@@ -85,7 +85,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
             return false;
         }
         $this->flashMessage($uspech);
-        $uvod = $kopie !== null && !$kopie->odeslano() ? 'Kopie e-mailu nebyla odeslána, žádný ze správců nemá platnou e-mailovou adresu.' : '';
+        $uvod = $kopie !== null && $kopie->odeslano() === false ? 'Kopie e-mailu nebyla odeslána, žádný ze správců nemá platnou e-mailovou adresu.' : '';
         $this->upozorniNaPreskocenePrijemce($this->smiUpravitUzivatele($uzivatel), $uvod, ...($kopie === null ? [$vysledek] : [$vysledek, $kopie]));
         return true;
     }
@@ -127,7 +127,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         if ($prijemce['uid'] === $this->getIdentity()->getUid()) {
             return 'vaše vlastní';
         }
-        if (!$zobrazitJmena) {
+        if ($zobrazitJmena === false) {
             return 'UID ' . $prijemce['uid'];
         }
         $jmeno = trim($prijemce['jmeno'] . ' ' . $prijemce['prijmeni']);
@@ -149,9 +149,19 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      * @phpstan-assert true $smi
      */
     protected function vyzadujOpravneni(bool $smi): void {
-        if (!$smi) {
+        if ($smi === false) {
             $this->error('Nemáte oprávnění.', Nette\Http\IResponse::S403_Forbidden);
         }
+    }
+
+    /**
+     * Odeslaná data obsahují tlačítko Uložit (pole save). Vlastní kontroly formuláře i jeho uložení se ptají
+     * tady, aby se nedalo uložit bez kontrol. Jiné odeslání formulář jen znovu vykreslí, stejně jako přidání
+     * nebo odebrání řádku.
+     */
+    protected function odeslanoTlacitkemUlozit(Nette\Forms\Form $form): bool {
+        $data = $form->getHttpData();
+        return is_array($data) && isset($data['save']);
     }
 
     /**
@@ -231,7 +241,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     protected function getWewimoLinkFromIpAddress(ActiveRow $ip): ?string {
-        if (!in_array($ip->w_ssid, [null, '', '0'], true)) {
+        if (in_array($ip->w_ssid, [null, '', '0'], true) === false) {
             // najit IPAdresu zarizeni (AP), na ktere je tato ip (podle Wewima) pripojena
             $apAdresa = $ip->ref('IPAdresa', 'w_ap_IPAdresa_id');
             if ($apAdresa !== null) {
@@ -281,7 +291,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      * @return string
      */
     public function linker($destination, $args = []) {
-        return ($this->link($destination, $args));
+        return $this->link($destination, $args);
     }
 
     public function getIdentity(): Model\HkfIdentity {

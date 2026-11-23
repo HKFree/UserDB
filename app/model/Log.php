@@ -33,7 +33,7 @@ class Log extends Table
      */
     public function getLogyUzivatele($uid): Nette\Database\Table\Selection {
         $logy = $this->findAll()->where("tabulka = ?", "Uzivatel")->where("tabulka_id = ?", $uid)->order("datum DESC, sloupec DESC");
-        return ($logy);
+        return $logy;
     }
 
     /**
@@ -42,7 +42,7 @@ class Log extends Table
      */
     public function getLogyAP($Apid): Nette\Database\Table\Selection {
         $logy = $this->findAll()->where("tabulka = ?", "Ap")->where("tabulka_id = ?", $Apid)->order("datum DESC, sloupec DESC");
-        return ($logy);
+        return $logy;
     }
 
     public function translateJmeno(string $jmeno): string {
@@ -89,9 +89,9 @@ class Log extends Table
         $slovnik = array_merge($slovnikUzivatel, $slovnikIpAdresa);
 
         if (isset($slovnik[$jmeno])) {
-            return ($slovnik[$jmeno]);
+            return $slovnik[$jmeno];
         } else {
-            return ($jmeno);
+            return $jmeno;
         }
     }
 
@@ -141,7 +141,7 @@ class Log extends Table
             }
         }
 
-        return ($out);
+        return $out;
     }
 
     /**
@@ -151,7 +151,7 @@ class Log extends Table
     public function logujInsert(iterable $data, string $sloupecPrefix, array &$log): void {
         foreach ($data as $key => $value) {
             // Audit při vložení dosud vynechával i nuly, nejen chybějící hodnoty.
-            if (!in_array($value, [null, false, 0, 0.0, '', '0', []], true)) {
+            if (in_array($value, [null, false, 0, 0.0, '', '0', []], true) === false) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
                     'puvodni_hodnota' => null,
@@ -170,7 +170,7 @@ class Log extends Table
     public function logujUpdate(array|\ArrayAccess $staraData, iterable $novaData, string $sloupecPrefix, array &$log): void {
         foreach ($novaData as $key => $value) {
             $puvodniHodnota = $staraData[$key] ?? null;
-            if (!$this->shodneHodnoty($puvodniHodnota, $value)) {
+            if ($this->shodneHodnoty($puvodniHodnota, $value) === false) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
                     'puvodni_hodnota' => $puvodniHodnota,
@@ -214,7 +214,7 @@ class Log extends Table
     public function logujDelete(iterable $staraData, string $sloupecPrefix, array &$log): void {
         foreach ($staraData as $key => $value) {
             // Stejná pravidla pro vynechání hodnot jako při vložení.
-            if (!in_array($value, [null, false, 0, 0.0, '', '0', []], true)) {
+            if (in_array($value, [null, false, 0, 0.0, '', '0', []], true) === false) {
                 $log[] = array(
                     'sloupec' => $sloupecPrefix.'.'.$key,
                     'puvodni_hodnota' => $value,
@@ -233,7 +233,7 @@ class Log extends Table
      * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
      */
     public function loguj(string $tabulka, $tabulka_id, $data, $uzivatel_id = null): Nette\Database\Table\ActiveRow|array|int|bool {
-        if (!is_array($data) || count($data) === 0) {
+        if (is_array($data) === false || count($data) === 0) {
             return true;
         }
 
@@ -269,6 +269,6 @@ class Log extends Table
             $toInsert[] = array_merge($radek, $spolecne);
         }
 
-        return ($this->insert($toInsert));
+        return $this->insert($toInsert);
     }
 }

@@ -39,8 +39,8 @@ final class PresunIpSluzba
             if ((int) $zdroj->Ap_id !== (int) $cil->Ap_id) {
                 throw new \DomainException('IP lze přesunout pouze mezi členy stejného AP.');
             }
-            if ((bool) $zdroj->systemovy || !$this->jePovolenyCil($cilId)) {
-                throw new \DomainException('Nový člen musí být nezrušený, nesystémový a nesloučený.');
+            if ((bool) $zdroj->systemovy || $this->jePovolenyCil($cilId) === false) {
+                throw new \DomainException('Nový člen musí být nezrušený a nesystémový.');
             }
             $ip = $this->database->fetch('SELECT * FROM IPAdresa WHERE id = ? FOR UPDATE', $ipId);
             if ($ip === null || (int) $ip->Uzivatel_id !== $zdrojId || $ip->Ap_id !== null) {
@@ -71,8 +71,7 @@ final class PresunIpSluzba
     /** @return Selection<\Nette\Database\Table\ActiveRow> */
     private function povoleniClenove(): Selection {
         return $this->database->table('Uzivatel')->where('systemovy', 0)
-            ->where('(spolek = 1 AND (TypClenstvi_id = 0 OR TypClenstvi_id > 1)) OR (druzstvo = 1 AND smazano = 0)')
-            ->where('id NOT IN (SELECT slouceny_uzivatel FROM SloucenyUzivatel)');
+            ->where('(spolek = 1 AND (TypClenstvi_id = 0 OR TypClenstvi_id > 1)) OR (druzstvo = 1 AND smazano = 0)');
     }
 
     /**
@@ -91,7 +90,7 @@ final class PresunIpSluzba
             $adresy = $this->database->fetchAll('SELECT id FROM IPAdresa WHERE Uzivatel_id = ? ORDER BY id', $uid);
             $ids = array_map(static fn (Row $ip): int => (int) $ip->id, $adresy);
             $aktualniOtisk = hash('sha256', $uid . ':' . implode(',', $ids));
-            if (!hash_equals($aktualniOtisk, $otisk) || count(array_unique($odeslanaId)) !== count($odeslanaId)) {
+            if (hash_equals($aktualniOtisk, $otisk) === false || count(array_unique($odeslanaId)) !== count($odeslanaId)) {
                 throw new \DomainException(self::ZMENENE_IP);
             }
             return $ulozit();
@@ -110,7 +109,7 @@ final class PresunIpSluzba
      * @return T
      */
     private function atomicky(callable $operace): mixed {
-        if (!$this->database->getConnection()->getPdo()->inTransaction()) {
+        if ($this->database->getConnection()->getPdo()->inTransaction() === false) {
             return $this->database->transaction($operace);
         }
         // Při volání z existující transakce vlastníme jen tento savepoint, nikoli její commit.

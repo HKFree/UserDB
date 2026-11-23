@@ -86,7 +86,7 @@ final class IpTransferTransactionDatabaseTest extends TestCase
         $listeners = $connection->onQuery;
         $transferred = false;
         $connection->onQuery[] = function (\Nette\Database\Connection $connection, \Nette\Database\ResultSet|\PDOException $result) use (&$transferred): void {
-            if (!$transferred && $result instanceof \Nette\Database\ResultSet && str_contains($result->getQueryString(), 'FROM Uzivatel WHERE id IN') && str_contains($result->getQueryString(), 'FOR UPDATE')) {
+            if ($transferred === false && $result instanceof \Nette\Database\ResultSet && str_contains($result->getQueryString(), 'FROM Uzivatel WHERE id IN') && str_contains($result->getQueryString(), 'FOR UPDATE')) {
                 // A locking read must not establish an older consistent-read snapshot.
                 $this->second->table('IPAdresa')->where('id', $this->ipId)->update(['Uzivatel_id' => $this->targetId]);
                 $transferred = true;

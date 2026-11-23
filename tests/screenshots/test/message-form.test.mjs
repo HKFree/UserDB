@@ -1,23 +1,11 @@
 // The forms for an e-mail and an SMS to a member or to a whole AP must fit into a phone screen (issue #303).
-// The page below loads the real www/css/screen.css and www/js/main.js, which frees the left margin of the page
-// for a mobile user agent. The form has the markup that app/templates/form.latte produces inside the wrapper
-// asserted in tests/MessageFormPresenterTest.php.
+// The form has the markup that app/templates/form.latte produces, asserted in tests/MessageFormPresenterTest.php;
+// test/form-page.mjs serves it with the real www/css/screen.css and www/js/main.js.
 import test, { after, before, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { createServer } from 'node:http';
-import { once } from 'node:events';
-import { readFile } from 'node:fs/promises';
-import { extname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { desktop, formPage, open, phone, serve, smallPhone } from './form-page.mjs';
 
-const www = fileURLToPath(new URL('../../../www/', import.meta.url));
-const contentTypes = { '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.woff': 'font/woff' };
-const userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) '
-    + 'Version/17.0 Mobile/15E148 Safari/604.1';
-const phone = { viewport: { width: 375, height: 667 }, userAgent, isMobile: true, hasTouch: true };
-const smallPhone = { viewport: { width: 320, height: 568 }, userAgent, isMobile: true, hasTouch: true };
-const desktop = { viewport: { width: 1280, height: 800 } };
 const recipients = Array.from({ length: 60 }, (_, index) => `demo${20000 + index}@example.invalid`).join(';');
 
 const row = (label, control) => `<tr><th>${label}</th><td>${control} </td></tr>`;
@@ -26,16 +14,9 @@ const label = (field, text) => `<label for="frm-emailallForm-${field}">${text}</
 // a select, a text input and a textarea, each wider than a phone screen. The textarea after the form shows
 // how wide the browser makes 72 columns on a desktop when no style of the form applies; its own style
 // only keeps it from widening the page on a phone.
-const fixture = `<!DOCTYPE html><html><head><meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/screen.css" rel="stylesheet">
-    <script src="/js/jquery.min.js"></script><script src="/js/jquery-ui.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script><script src="/js/jquery.bonsai.js"></script>
-    <script src="/js/main.js"></script></head><body><div class="container-fluid"><div class="row">
-    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+const fixture = formPage(`
     <h3>Odeslání emailu <small>uživatelům AP Demo hlavní AP</small></h3>
-    <div class="message-form"><form action="/" method="post" id="frm-emailallForm"><table class="form">
+    <form action="/" method="post" id="frm-emailallForm"><table class="form">
     ${row('', '<input type="hidden" name="id" value="201">')}
     ${row(label('from', 'Odesílatel'), '<select name="from" id="frm-emailallForm-from">'
         + '<option value="0" selected>Správce S Velmi Dlouhým Jménem &lt;spravce.s.dlouhou.adresou@example.hkfree.org&gt;</option>'
@@ -46,7 +27,7 @@ const fixture = `<!DOCTYPE html><html><head><meta charset="utf-8">
     ${row(label('message', 'Text'), '<textarea name="message" cols="72" rows="10" id="frm-emailallForm-message"></textarea>')}
     ${row('', '<input type="submit" name="send" class="btn btn-success btn-xs btn-white" value="Odeslat">')}
     ${row('', '<input type="hidden" name="_do" value="emailallForm-submit">')}
-    </table></form></div><textarea id="reference" cols="72" rows="10" style="max-width: 100%"></textarea></div></div></div></body></html>`;
+    </table></form><textarea id="reference" cols="72" rows="10" style="max-width: 100%"></textarea>`);
 
 // Where the visible fields and their labels are, and how wide the browser had to lay the page out.
 const geometry = () => {
@@ -67,45 +48,18 @@ const geometry = () => {
 };
 
 describe('message form on a phone', () => {
-    let server, origin, browser;
+    let server, browser;
     before(async () => {
-        server = createServer(async (request, response) => {
-            const path = new URL(request.url, 'http://localhost').pathname;
-            if (path === '/') {
-                response.setHeader('Content-Type', 'text/html; charset=utf-8');
-                response.end(fixture);
-                return;
-            }
-            try {
-                const body = await readFile(join(www, path));
-                response.setHeader('Content-Type', contentTypes[extname(path)] ?? 'application/octet-stream');
-                response.end(body);
-            } catch {
-                response.statusCode = 404;
-                response.end();
-            }
-        });
-        server.listen(0, '127.0.0.1');
-        await once(server, 'listening');
-        origin = `http://127.0.0.1:${server.address().port}`;
+        server = await serve(fixture);
         browser = await chromium.launch();
     });
     after(async () => {
         await browser?.close();
-        server?.closeAllConnections();
         server?.close();
     });
 
-    async function measure(t, contextOptions) {
-        const context = await browser.newContext(contextOptions);
-        const page = await context.newPage();
-        const errors = [];
-        page.on('pageerror', error => errors.push(error.message));
-        t.after(async () => {
-            await context.close();
-            assert.deepEqual(errors, []);
-        });
-        await page.goto(origin, { waitUntil: 'load' });
+    async function measure(t, device) {
+        const page = await open(t, browser, server.origin, device);
         return page.evaluate(geometry);
     }
 

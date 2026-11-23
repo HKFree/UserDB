@@ -23,7 +23,7 @@ class PovoleneSMTP extends Table
     /** @param array<array-key, int|string> $ips */
     public function deleteIPs(array $ips): int|true {
         if (count($ips) > 0) {
-            return ($this->delete(array('id' => $ips)));
+            return $this->delete(array('id' => $ips));
         } else {
             return true;
         }

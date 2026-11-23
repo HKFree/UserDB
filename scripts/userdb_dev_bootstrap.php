@@ -14,7 +14,7 @@ return (static function (): Nette\DI\Container {
         throw new RuntimeException('Activate the project with flox activate -s first.');
     }
     $keyFile = $cache . '/encryption.key';
-    if (!is_file($keyFile)) {
+    if (is_file($keyFile) === false) {
         throw new RuntimeException('Initialize local development first: php scripts/userdb_dev_setup.php');
     }
     $instance = UserdbLocalInstance::fromEnvironment();

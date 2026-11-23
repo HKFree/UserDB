@@ -66,22 +66,6 @@
         <div class="panel-left">
         <h4>Detail informací</h4>
     <table class="table table-nonfluid table-left">
-        {if $master}
-        <tr class="error">
-            <th>Sloučen pod uživatele </th>
-            <td><a n:href="Uzivatel:show, id=>$master->id">{$master->nick}</a></td>
-        </tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
-        {/if}
-
-        {if $slaves}
-        <tr n:foreach="$slaves as $slave" class="error">
-            <th>Sloučený uživatel </th>
-            <td><a n:href="Uzivatel:show, id=>$slave">{$slave}</a></td>
-        </tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
-        {/if}
-
 	<tr>
             <th>Oblast - AP</th>
             <td><a n:href="Ap:list, id => $u->Ap->Oblast->id">{$u->Ap->Oblast->jmeno}</a> - <a n:href="Ap:show, id => $u->Ap->id">{$u->Ap->jmeno}</a></td>

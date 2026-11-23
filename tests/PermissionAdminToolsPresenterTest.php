@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Test;
 
 use App\Services\CryptoSluzba;
-use Grido\Components\Export;
-use Nette\Http;
 use Tester\Assert;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -23,11 +21,11 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
     /** @return array<string, array{string, string, bool, ?string}> */
     public function toolCases(): array {
         $cases = [];
-        foreach (['sms', 'encryption', 'areaCreate', 'areaEdit', 'apCreate', 'payment', 'merge', 'honorary'] as $tool) {
+        foreach (['sms', 'encryption', 'areaCreate', 'areaEdit', 'apCreate', 'payment', 'honorary'] as $tool) {
             foreach (['cooperative', 'ownSo', 'support', 'tech', 'vv'] as $actor) {
-                $allowed = $actor === 'vv' || ($actor === 'tech' && !in_array($tool, ['merge', 'honorary'], true));
+                $allowed = $actor === 'vv' || ($actor === 'tech' && $tool !== 'honorary');
                 $cases["$tool/$actor"] = [$tool, $actor, $allowed, null];
-                if (in_array($tool, ['areaCreate', 'apCreate', 'merge'], true)) {
+                if (in_array($tool, ['areaCreate', 'apCreate'], true)) {
                     $cases["$tool/$actor/zero-id"] = [$tool, $actor, $allowed, '0'];
                 }
             }
@@ -54,7 +52,6 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
             'areaCreate', 'areaEdit' => ['SpravaOblasti', 'novaoblast', 'novaoblastForm-submit', ['id' => $tool === 'areaEdit' ? (string) $s->area->id : '', 'jmeno' => $name, 'send' => 'Vytvořit']],
             'apCreate' => ['SpravaOblasti', 'noveap', 'noveapForm-submit', ['Oblast_id' => (string) $s->area->id, 'jmeno' => $name, 'send' => 'Vytvořit']],
             'payment' => ['SpravaNesparovanych', 'prevod', 'prevodForm-submit', ['Uzivatel_id' => (string) $s->member->id, 'poznamka' => $name, 'send' => 'Převést']],
-            'merge' => ['SpravaSlucovani', 'slucovani', 'slucovaniForm-submit', ['Uzivatel_id' => (string) $s->member->id, 'slouceny_uzivatel' => (string) $s->otherMember->id, 'slouceni' => 'Sloučit']],
             'honorary' => ['SpravaCc', 'schvalovanicc', 'spravaCCForm-submit', ['rights' => [$cc->id => [
                 'id' => (string) $cc->id, 'Uzivatel_id' => (string) $s->member->id, 'plati_od' => date('Y-m-d'),
                 'schvaleno' => $allowed ? '0' : '1', 'poznamka' => $name, 'zadost_podal' => (string) $s->actors['ownSo']->id,
@@ -69,7 +66,7 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
             $parameters['id'] = $payment->id;
         }
         $request = fn () => $this->presenters->ui($s->actors[$actor]->id, $presenter, $parameters, 'POST', ['_do' => $signal] + $post);
-        if (!$allowed) {
+        if ($allowed === false) {
             $s->assertDenied($request);
             return;
         }
@@ -81,7 +78,6 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
             Assert::match('http://localhost/userdb/sprava/nastroje%A?%', $result->redirectUrl);
         } else {
             PermissionScenario::assertRedirect($result, match ($tool) {
-                'merge' => 'uzivatel/edit/' . $s->member->id,
                 'honorary' => 'sprava-cc/schvalovanicc',
                 default => 'sprava/nastroje',
             });
@@ -119,60 +115,12 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
                 Assert::same($s->member->id, $entries[1]->Uzivatel_id);
                 Assert::same($s->actors[$actor]->id, $entries[1]->zmenu_provedl);
                 break;
-            case 'merge':
-                $merged = $this->database->table('SloucenyUzivatel')->where('slouceny_uzivatel', $s->otherMember->id)->fetch();
-                Assert::true($merged !== null);
-                Assert::same($s->member->id, $merged->Uzivatel_id);
-                Assert::same($s->actors[$actor]->id, $merged->sloucil);
-                break;
             case 'honorary':
                 $stored = $this->database->table('CestneClenstviUzivatele')->get($cc->id);
                 Assert::true($stored !== null);
                 Assert::same($name, $stored->poznamka);
                 Assert::same(0, $stored->schvaleno);
                 break;
-        }
-    }
-
-    /** @return list<array{string, bool}> */
-    public function mergedListCases(): array {
-        $cases = [];
-        foreach (['cooperative', 'ownSo', 'support', 'tech', 'vv'] as $actor) {
-            foreach ([false, true] as $export) {
-                $cases[] = [$actor, $export];
-            }
-        }
-        return $cases;
-    }
-
-    /** @dataProvider mergedListCases */
-    public function testMergedList(string $actor, bool $export): void {
-        $s = $this->scenario;
-        $this->fixtures->insert('SloucenyUzivatel', [
-            'Uzivatel_id' => $s->member->id, 'slouceny_uzivatel' => $s->otherMember->id,
-            'datum_slouceni' => '2020-01-01', 'sloucil' => $s->actors['vv']->id,
-        ]);
-        $parameters = ['action' => 'slouceni'] + ($export ? ['do' => 'slouceniGrid-export-export'] : []);
-        $request = fn () => $this->presenters->ui($s->actors[$actor]->id, 'SpravaSlucovani', $parameters);
-        if ($actor !== 'vv') {
-            $s->assertDenied($request);
-            return;
-        }
-        $result = $request();
-        if ($export) {
-            Assert::type(Export::class, $result->response);
-            ob_start();
-            try {
-                $result->response->send(new Http\Request(new Http\UrlScript('http://localhost/')), new Http\Response());
-                $csv = (string) ob_get_contents();
-            } finally {
-                ob_end_clean();
-            }
-            Assert::contains($s->member->id . ',' . $s->otherMember->id . ',', $csv);
-        } else {
-            Assert::same(200, $result->status);
-            Assert::contains('Přehled sloučených uživatelů', $result->html);
-            Assert::contains((string) $s->otherMember->id, $result->html);
         }
     }
 }

@@ -24,12 +24,12 @@ class CryptoSluzba
     /** @param string $plaintext */
     public function encrypt($plaintext): string {
         $ciphertext = Crypto::encrypt($plaintext, $this->passPhrase);
-        return ($ciphertext);
+        return $ciphertext;
     }
 
     /** @param string $cyphered */
     public function decrypt($cyphered): string {
         $plaintext = Crypto::decrypt($cyphered, $this->passPhrase);
-        return ($plaintext);
+        return $plaintext;
     }
 }

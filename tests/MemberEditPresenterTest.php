@@ -50,6 +50,23 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         }
     }
 
+    public function testSubmitWithoutSaveButtonStoresNothing(): void {
+        $post = $this->post(['jmeno' => 'Changed']);
+        unset($post['save']);
+        $before = $this->snapshot();
+
+        $result = $this->submit($post);
+
+        Assert::same(200, $result->status);
+        Assert::null($result->redirectUrl);
+        Assert::contains('id="frm-uzivatelForm"', $result->html);
+        Assert::same($before, $this->snapshot());
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+        // The same data is saved with the button, so only the missing button kept it from being stored.
+        PermissionScenario::assertRedirect($this->submit($post + ['save' => 'Uložit']), 'uzivatel/show/' . $this->member->id);
+        Assert::same('Changed', $this->database->table('Uzivatel')->get($this->member->id)?->jmeno);
+    }
+
     public function testClearingUnusedPlannedMembershipKeepsAccountAndCreationDate(): void {
         $this->member->update(['TypClenstvi_id' => 0, 'money_aktivni' => 0]);
         $result = $this->submit($this->post(['TypClenstvi_id' => '-1']));
@@ -577,7 +594,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $ips = [];
         foreach ($this->database->table('IPAdresa')->where('Uzivatel_id', $m->id) as $ip) {
             $values = $ip->toArray();
-            if (!in_array($ip->heslo_sifrovane, [0, false], true)) {
+            if (in_array($ip->heslo_sifrovane, [0, false], true) === false) {
                 $values['heslo'] = $this->container->getByType(CryptoSluzba::class)->decrypt($ip->heslo);
             }
             $ips[$ip->id] = $this->ipPost($values);
@@ -623,7 +640,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::contains('id="frm-uzivatelForm"', $result->html);
         // Match rendered error text, never the message embedded in data-nette-rules.
         $escaped = preg_quote(htmlspecialchars($message, ENT_NOQUOTES, 'UTF-8'), '~');
-        Assert::same(1, preg_match('~>\\s*' . $escaped . '</(?:li|td)>~u', $result->html), $message);
+        Assert::same(1, preg_match('~>\\s*' . $escaped . '</(?:li|span)>~u', $result->html), $message);
         Assert::same(0, $this->database->table('Log')->count('*'));
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
@@ -643,7 +660,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         preg_match_all('~name="ip\[(\d+)\]\[ip_adresa\]"(?:[^>]*? value="([^"]*)")?~', $result->html, $rows);
         Assert::same($addresses, $rows[2]);
         // Match rendered error text, never the message embedded in data-nette-rules.
-        Assert::notContains('Zadejte telefon</td>', $result->html);
+        Assert::notContains('Zadejte telefon</span>', $result->html);
         Assert::notContains('<ul class="error"', $result->html);
         Assert::same(1, preg_match('~<input[^>]*name="jmeno"[^>]*value="Rozepsané"~u', $result->html));
         Assert::same(1, preg_match('~<input(?:(?! value=)[^>])*name="telefon"(?:(?! value=)[^>])*>~', $result->html));

@@ -265,7 +265,7 @@ npx skills add stablyai/orca
 | `db/` | migrace nextras/migrations: `structures`, `basic-data`, `dummy-data` |
 | `tests/` | Nette Tester; `tests/bootstrap.php` načte společný základ: testovací kontejner, databázi z migrací ve Floxu a spouštění presenterů |
 | `tests/e2e/` | testy hlavních postupů v prohlížeči (Playwright Test): `specs/` se scénáři, `fixtures.mjs` s přihlášením demo osoby, kontrolou chyb stránky a čtením uložených e-mailů |
-| `tests/screenshots/` | nástroje a testy náhledů stránek v PR: Playwright, porovnání PNG, validace artefaktu a sestavení komentáře; stejným `npm test` běží i testy v prohlížeči nad skutečným `www/js/main.js` a `www/css/screen.css`: kopírování hodnot (`test/copy-value.test.mjs`) a šířka formulářů e-mailu a SMS na telefonu (`test/message-form.test.mjs`) |
+| `tests/screenshots/` | nástroje a testy náhledů stránek v PR: Playwright, porovnání PNG, validace artefaktu a sestavení komentáře; stejným `npm test` běží i testy v prohlížeči nad skutečným `www/js/main.js` a `www/css/screen.css`: kopírování hodnot (`test/copy-value.test.mjs`), šířka formulářů na telefonu (`test/message-form.test.mjs`, `test/edit-form.test.mjs`) a šířka rozvržení stránky (`test/layout-width.test.mjs`) |
 | `scripts/` | lokální vývoj ve Floxu (MariaDB, příprava databáze, výběr vývojové nebo E2E instance v `UserdbLocalInstance.php`, objemová demo data v `UserdbDemoVolume.php`, demo osoby v `UserdbDemoPersonas.php`, jejich stránka v `UserdbDemoPersonaPage.php` a Tracy panel v `UserdbDemoPersonaPanel.php`, router PHP serveru, nastavení PHP v `userdb_php/php.ini`, příprava worktree), měření pokrytí testy, spuštění testů v prohlížeči (`userdb_e2e.sh`), start webu a úklid procesů společný pro testy v prohlížeči a focení stránek (`userdb_web_lib.sh`), skript nasazení na testovací server a jeho přihlašovací formulář |
 | `orca.yaml` | co Orca spustí v každém novém worktree; jen věci platné pro každého, kdo má Orcu a Flox |
 | `.github/workflows/` | CI: testy a PHPStan, PHP CS Fixer, latte-lint, Gitleaks, sestavení Docker image, nasazení na testovací server, testy v prohlížeči (`e2e.yml`), náhledy stránek v PR (`pr-screenshots.yml`) |
@@ -273,6 +273,7 @@ npx skills add stablyai/orca
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
 | `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |
 | `lib/phpqrcode/` | cizí knihovna, neupravuj ji |
+| `phpstan/` | stuby knihoven pro PHPStan a vlastní pravidla v `phpstan/Rules/` |
 | `specs/` | seznam bezpečnostních nálezů |
 
 ## Kód
@@ -302,8 +303,15 @@ npx skills add stablyai/orca
 - Zapnuté je i rozšíření `phpstan-strict-rules`. Skupiny pravidel vypnuté
   v `phpstan.neon` tam mají uvedený důvod; další skupinu kvůli nálezu
   nevypínej.
+- Negaci piš porovnáním `=== false`, ne vykřičníkem: `if ($vysledek->odeslano() === false)`,
+  `($x instanceof Y) === false`, `isset($x) === false`. Hlídá to vlastní pravidlo PHPStanu
+  `phpstan/Rules/NoBooleanNotRule.php`. Porovnání s `false` je správné jen u `bool`; u jiného
+  typu porovnej se skutečnou hodnotou (`=== null`, `=== ''`, `=== []`) nebo nejdřív doplň typ.
+  Šablon Latte se pravidlo netýká.
 - Styl hlídá php-cs-fixer (`.php-cs-fixer.dist.php`) a `.editorconfig`, syntaxi
-  šablon `latte-lint`.
+  šablon `latte-lint`. JavaScript v šablonách a vlastní soubory ve `www/js/`
+  fixer nevidí; `return(false);` a `return(true);` v nich hlídá
+  `ReturnParenthesesTest`.
 - V pojmenování se drž okolního kódu: česká jména podle tabulek (`Uzivatel`,
   `Oblast`), obsluhy formulářů `*FormSucceded` (zavedený název, nepřejmenovávej).
   Úpravy stylu a přejmenování nemíchej do věcné změny.

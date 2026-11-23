@@ -25,7 +25,7 @@ final class UserdbLocalInstance
     public static function fromEnvironment(): self {
         $name = getenv(self::VARIABLE);
         $name = $name === false ? '' : $name;
-        if (!isset(self::INSTANCES[$name])) {
+        if (isset(self::INSTANCES[$name]) === false) {
             throw new RuntimeException(self::VARIABLE . ' must be empty or "' . self::E2E . '".');
         }
         return new self($name);

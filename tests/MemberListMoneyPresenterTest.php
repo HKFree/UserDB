@@ -44,7 +44,7 @@ final class MemberListMoneyPresenterTest extends DatabaseTestCase
     public function lists(): array {
         return [
             'all areas' => ['listall', false, null], 'one AP' => ['list', false, null], 'members from other APs' => ['list', true, null],
-            // Every fixture member has this surname. The search hands the table an array of all matches, not a query.
+            // Every fixture member has this surname.
             'search in all areas' => ['listall', false, 'Fixture'],
         ];
     }
@@ -71,8 +71,7 @@ final class MemberListMoneyPresenterTest extends DatabaseTestCase
     public function testExportShowsTheLastMovementOfEachMember(string $action, bool $otherUsers, ?string $search): void {
         [$none, $paid, $undated] = $this->membersWithAccounts($otherUsers);
         $this->membersWithAccounts($otherUsers);
-        // Grido cuts an array of search results down to its first batch, so the search is exported in one read.
-        $rows = $this->exportedRows($action, $otherUsers, $search, $search === null ? 2 : null);
+        $rows = $this->exportedRows($action, $otherUsers, $search, 2);
         Assert::true(count($rows) >= 6);
         $payment = $otherUsers ? '10.03.2024 (290)' : '10.03.2024 (290,D)';
         Assert::same(['?', '?', '0'], $rows[$none->id]);
@@ -163,7 +162,7 @@ final class MemberListMoneyPresenterTest extends DatabaseTestCase
     private function movement(ActiveRow $member, int $type, ?string $date, float $amount, bool $cooperative = false): void {
         $this->fixtures->insert('UzivatelskeKonto', [
             'Uzivatel_id' => $member->id, 'TypPohybuNaUctu_id' => $type, 'datum' => $date, 'castka' => $amount,
-            'druzstvo' => (int) $cooperative, 'spolek' => (int) !$cooperative, 'poznamka' => 'Test fixture',
+            'druzstvo' => (int) $cooperative, 'spolek' => (int) ($cooperative === false), 'poznamka' => 'Test fixture',
         ]);
     }
 
@@ -229,7 +228,7 @@ final class MemberListMoneyPresenterTest extends DatabaseTestCase
         $parameters = $this->parameters($action, $search) + ['do' => "$grid-export-export"];
         $parameters += $batch !== null ? ["$grid-sort" => ['id' => 'asc']] : [];
         $export = $this->presenters->ui($this->actor->id, 'UzivatelList', $parameters)->response;
-        if (!$export instanceof Export) {
+        if (($export instanceof Export) === false) {
             throw new \LogicException('Expected the export of the table.');
         }
         if ($batch !== null) {

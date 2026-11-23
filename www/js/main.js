@@ -9,7 +9,8 @@ $(document).ready(function () {
 
     $("#navareas").click(function () {
         $(".sidebar").toggle();
-        if ($(".sidebar").is(":visible")) $(".main").css({ marginLeft: "210px" });
+        // Okraj pro zobrazený panel určuje screen.css podle šířky okna.
+        if ($(".sidebar").is(":visible")) $(".main").css({ marginLeft: "" });
         else $(".main").css({ marginLeft: "0px" });
         $(".navbar-toggle").click();
     });

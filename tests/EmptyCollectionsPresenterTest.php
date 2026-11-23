@@ -60,7 +60,7 @@ final class EmptyCollectionsPresenterTest extends DatabaseTestCase
             'Oblast_id' => (string) $ap->Oblast_id, 'gps' => '50.209722,15.832778',
             'ulice_cp' => 'Testovací 1', 'mesto' => 'Hradec Králové', 'psc' => '50002', 'save' => 'Uložit',
         ];
-        if (!$remove) {
+        if ($remove === false) {
             $post['ip'] = [$ip->id => ['id' => (string) $ip->id, 'ip_adresa' => $ip->ip_adresa]];
             $post['subnet'] = [$subnet->id => ['id' => (string) $subnet->id, 'subnet' => $subnet->subnet, 'gateway' => $subnet->gateway]];
             $post['apiKlic'] = [$key->id => ['id' => (string) $key->id, 'klic' => $key->klic, 'plati_do' => '', 'poznamka' => $key->poznamka]];

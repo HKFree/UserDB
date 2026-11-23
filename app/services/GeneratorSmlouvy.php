@@ -69,7 +69,7 @@ class GeneratorSmlouvy
             $gateway = "";
 
             $subnet = $subnetModel->getSubnetOfIP($adresa);
-            if (!isset($subnet["error"])) {
+            if (isset($subnet["error"]) === false) {
                 $gateway = $subnet["gateway"];
                 $adresaLomenoMaska .= "/" . $subnet["cidr"];
             }

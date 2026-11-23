@@ -89,6 +89,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   místního sestavení odkazů Wewimo bez síťového požadavku.
 - Formulář nebo signál bez cookie `_nss` se neprovede a presenter jen přesměruje na sebe. Test, který ověří pouze
   typ odpovědi, by prošel falešně; vždy ověřovat cíl přesměrování nebo vedlejší účinek.
+- Formuláře AP, člena a práv se ukládají jen s polem `save` v odeslaných datech
+  (`BasePresenter::odeslanoTlacitkemUlozit()`). POST bez něj vrátí 200 s formulářem bez chybové hlášky a nic
+  neuloží, takže test, který `save` zapomene, vypadá jako neprošlá validace. Tlačítka replicatoru pro přidání
+  a odebrání řádku ve svém `onClick` vyprázdní `onSuccess`, proto také neukládají. Ověřeno 23. 11. 2026
+  presenter testy tří formulářů a čtením `kdyby/forms-replicator` z `composer.lock`.
 - `Nette\Http\Response` je `final` a `ApiPresenter` vyžaduje přímo tuto třídu, nejde ji nahradit. Hlavičky nejsou
   v CLI čitelné (`WWW-Authenticate` ověřit nelze) a stavový kód je globální pro proces: bez resetu zůstane po
   jedné odpovědi 401 i u dalších.
@@ -105,7 +110,7 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - `ApPresenter` čte `$_SERVER['HTTP_HOST']` a `IPAdresa` `$_SERVER['HTTP_USER_AGENT']`; runner je nastavuje.
 - `ActiveRow` nemá veřejná data pro `json_encode()`: přímé kódování vrací `{}`. Při porovnání stavu databáze
   převést každý řádek přes `toArray()`, jinak se změny hodnot v existujících řádcích nezachytí.
-- `form.latte` vypisuje chyby jednotlivých polí přímo jako text v `td`, pouze chyby celého formuláře jsou
+- `form.latte` vypisuje chybu pole za polem ve `span.text-danger`, pouze chyby celého formuláře jsou
   v `ul.error li`. Hledat přesný vykreslený text, ne atribut `data-nette-rules`, který obsahuje zprávu i bez chyby.
   `DomQuery::fromHtml()` při duplicitním HTML `id` hlásí varování; pro kontrolu validační zprávy duplicitních
   IP proto test porovnává přímo vykreslený text mezi značkami.

@@ -38,7 +38,7 @@ class WewimoPresenter extends BasePresenter
             // doplnit linky
             $this->addWewimoLinks($wewimoMultiData['devices']);
             // ma uzivatel videt detaily? pokud ne, tak detaily "promazat" a anonymizovat MAC
-            if (!($this->ap->canViewOrEditAP($apt->id, $this->getUser()))) {
+            if ($this->ap->canViewOrEditAP($apt->id, $this->getUser()) === false) {
                 $this->anonymizeWewimoData($wewimoMultiData['devices']);
             }
             $this->template->wewimo = $wewimoMultiData['devices'];
@@ -53,21 +53,21 @@ class WewimoPresenter extends BasePresenter
                     if (isset($station['xx-user-nick'])) {
                         $station['xx-mac-host'] = '('.$station['xx-user-nick'].')';
                     } else {
-                        if (!in_array($station['xx-mac-host'], [null, false, 0, 0.0, '', '0', []], true)) {
+                        if (in_array($station['xx-mac-host'], [null, false, 0, 0.0, '', '0', []], true) === false) {
                             $station['xx-mac-host'] = '***';
                         }
                     }
                     if (isset($station['xx-last-ip-user-nick'])) {
                         $station['xx-last-ip-host'] = '('.$station['xx-last-ip-user-nick'].')';
                     } else {
-                        if (!in_array($station['xx-last-ip-host'], [null, false, 0, 0.0, '', '0', []], true)) {
+                        if (in_array($station['xx-last-ip-host'], [null, false, 0, 0.0, '', '0', []], true) === false) {
                             $station['xx-last-ip-host'] = '***';
                         }
                     }
-                    if (!in_array($station['x-identity'], [null, false, 0, 0.0, '', '0', []], true)) {
+                    if (in_array($station['x-identity'], [null, false, 0, 0.0, '', '0', []], true) === false) {
                         $station['x-identity'] = '***';
                     }
-                    if (!in_array($station['radio-name'], [null, false, 0, 0.0, '', '0', []], true)) {
+                    if (in_array($station['radio-name'], [null, false, 0, 0.0, '', '0', []], true) === false) {
                         $station['radio-name'] = '***';
                     }
                     $station['mac-address'] = $station['x-anonymous-mac-address'];
@@ -94,7 +94,7 @@ class WewimoPresenter extends BasePresenter
     /** @param int|string|null $id */
     public function renderShow($id): void {
         // viz https://pla.nette.org/cs/dynamicke-snippety
-        if (!isset($this->template->wewimo)) {
+        if (isset($this->template->wewimo) === false) {
             $this->fetchWewimo($id);
         }
     }

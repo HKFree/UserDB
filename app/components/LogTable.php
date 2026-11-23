@@ -66,7 +66,7 @@ class LogTable extends UI\Control
             $out["subnetId"] = $matches[1];
             $out["sloupec"] = $matches[2];
         }
-        return ($out);
+        return $out;
     }
 
     /**
@@ -87,7 +87,7 @@ class LogTable extends UI\Control
         $ipZDB = array_filter($ipZDB, static fn (?string $ip): bool => $ip !== null);
         $ipZLogu = $this->log->getAdvancedzLogu(array_keys($ipsKProhlednuti));
         // Bacha na poradi!
-        return ($ipZDB + $ipZLogu + $ipsKProhlednuti);
+        return $ipZDB + $ipZLogu + $ipsKProhlednuti;
     }
 
     /**
@@ -107,7 +107,7 @@ class LogTable extends UI\Control
         $subnetZDB = $this->subnet->getSubnetzDB(array_keys($subnetsKProhlednuti));
         $subnetZLogu = $this->log->getAdvancedzLogu(array_keys($subnetsKProhlednuti), 'subnet');
         // Bacha na poradi!
-        return ($subnetZDB + $subnetZLogu + $subnetsKProhlednuti);
+        return $subnetZDB + $subnetZLogu + $subnetsKProhlednuti;
     }
 
     private function tableGetHeader(): Html {
@@ -119,12 +119,12 @@ class LogTable extends UI\Control
             $tr->create('th')->setText($sloupec);
         }
 
-        return ($logyTab);
+        return $logyTab;
     }
 
     private function tableGetFooter(Html &$table): Html {
         $table->create('script')->setHtml('$(\'a\').tooltip();');
-        return ($table);
+        return $table;
     }
 
     private function tableGetLineBegin(Html &$table, ActiveRow $line): Html {
@@ -139,7 +139,7 @@ class LogTable extends UI\Control
                                   ->setTitle('editoval z IP '.$line->ip_adresa)
                                   ->addAttributes($tooltips);
         $tr->create('td')->setHtml($uzivatelA);
-        return ($tr);
+        return $tr;
     }
 
     /** @param ParsedColumn $rozparsovano */
@@ -193,7 +193,7 @@ class LogTable extends UI\Control
                 $id = $rozparsovano["ipId"];
                 $sloupec = $rozparsovano["sloupec"];
                 $presun = $sloupec === 'Uzivatel_id' && $line->akce === self::UPDATE;
-                if (!$presun && preg_match("/(".$toSkipString.")/i", $sloupec) === 1) {
+                if ($presun === false && preg_match("/(".$toSkipString.")/i", $sloupec) === 1) {
                     continue;
                 }
                 $sloupec = $this->log->translateJmeno($sloupec);

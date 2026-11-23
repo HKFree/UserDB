@@ -68,7 +68,7 @@ The suite covers:
 - AP subnet rows with the ARP proxy rule, administration grid pages and TV service activation.
 - Member edit form validation, saves and audit logs, IP/password handling, registration and planned membership transitions.
 - Schema migrations, tag operations and constraints, account activation and ledger entries, and audit-log lookup of deleted IPs and subnets.
-- Subnet calculations and lookups, address lists for bulk adding, generated passwords and API keys, downloads, SSID rendering, QR generation and user merge balances.
+- Subnet calculations and lookups, address lists for bulk adding, generated passwords and API keys, downloads, SSID rendering and QR generation.
 - Local mail capture and contract PDF conversion, including Czech text, optional fields and cleanup.
 
 **Adding a test:** Name the file `*Test.php`, `*DatabaseTest.php` for database tests or `*PresenterTest.php` for presenter tests, and require `tests/bootstrap.php`. Nette Tester runs only `*Test.php` files; `TestNamingTest` fails for a file it would skip. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
@@ -76,6 +76,8 @@ The suite covers:
 PHPStan runs at **level 8** with the Nette extension and without a baseline. It checks application code, PHP entry points and tests. It does not need the test environment variables or local configuration.
 
 The [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules) extension is enabled as well, including `booleansInConditions`, which requires boolean expressions in conditions, and `disallowedLooseComparison`, which rejects `==` and `!=`. Use strict comparisons and normalize values according to their expected types. `disallowedShortTernary` is switched off for good: the short ternary stays allowed for default values such as `getenv('X') ?: 'default'`. The remaining groups keep the extension's defaults and must pass. This includes `disallowedEmpty`: use explicit comparisons for the expected type instead of `empty()`, preserving the meaning of zero and missing values.
+
+A custom rule, `phpstan/Rules/NoBooleanNotRule.php`, rejects the `!` operator: write negation as an explicit comparison, `$x->isValid() === false`, `($x instanceof Y) === false`, `isset($x) === false`. Comparing with `false` keeps the meaning only for `bool`; compare other types with their actual value (`=== null`, `=== ''`, `=== []`). The rule's own test is `tests/NoBooleanNotRuleTest.php`. Latte templates are not analysed by PHPStan and are not covered.
 
 Methods that Kdyby Replicator adds at runtime are described in `phpstan/replicator.stub`. The `phpstan/grido.stub` file gives the Nette Database data source of Grido the generic type of `Selection`, which the library's annotations leave out, so that `App\Model\DatabazovyZdrojGridu` can override it with full types. The `phpstan/tester.stub` file describes the type narrowing guaranteed by a successful `Tester\Assert::true()` call; assertion failures must throw or terminate the test. The only suppressed finding is one inline `@phpstan-ignore` in `pdfGenerator/www/ContractPdf.php`, where PHPStan's `proc_open` signature rejects a valid descriptor.
 
@@ -148,8 +150,8 @@ open the report with `npx playwright show-report ../../temp/e2e/report` from `te
 The scenarios in `tests/e2e/specs/` cover: every page of the menu for four roles, the search in the top bar,
 creating and editing a member with IP addresses, activation, reactivation and deactivation of internet, e-mail to
 one member and to a whole AP, editing an AP with the subnet overlap check, labels on the member detail, sorting and
-filters of the member list, proposing and approving an honorary membership, granting a role, transferring an
-unpaired payment and merging members. Each file names the demo records it changes in its first comment.
+filters of the member list, proposing and approving an honorary membership, granting a role and transferring an
+unpaired payment. Each file names the demo records it changes in its first comment.
 
 Tests import `test` and `expect` from `tests/e2e/fixtures.mjs`. It signs in a demo person through the persona
 cookie (`test.use({ persona: personas.so })`, `signInAs()` to switch during a test), reads the e-mails the web
@@ -472,7 +474,11 @@ files with `UPDATE_SNAPSHOTS=1 npm test` from `tests/screenshots/`. These tests 
 
 The same `npm test` runs `test/copy-value.test.mjs`, a browser test of the application's own `www/js/main.js`:
 copying a device login and password from the IP address table (mouse selection, the copy button, keyboard and touch).
-`test/message-form.test.mjs` checks with the real `www/css/screen.css` that the e-mail and SMS forms fit into a phone screen.
+`test/message-form.test.mjs` and `test/edit-form.test.mjs` check with the real `www/css/screen.css` that the forms rendered by
+`app/templates/form.latte` fit into a phone screen: the e-mail and SMS forms and the edit forms with their nested records.
+`test/layout-width.test.mjs` checks in a browser, against the application's `www/css/screen.css` and `www/js/main.js`,
+that the content column beside the sidebar fits the window at widths from 320 to 1700 px, also after the sidebar
+was hidden and shown again, so that pages do not scroll sideways.
 
 ### Jobs to be run
 

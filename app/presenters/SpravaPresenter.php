@@ -27,7 +27,7 @@ class SpravaPresenter extends BasePresenter
     public function actionLogout(): void {
         $this->getUser()->logout();
         header("Location: https://userdb.hkfree.org/Shibboleth.sso/Logout?return=https://idp.hkfree.org/idp/logout?return=http://www.hkfree.org");
-        die();
+        die;
     }
 
     public function renderNastroje(): void {
@@ -37,7 +37,7 @@ class SpravaPresenter extends BasePresenter
         $this->template->canSeePayments = $this->jeVVneboTECH();
     }
 
-    /** Slučování, schvalování ČČ, mailing list */
+    /** Schvalování ČČ, mailing list */
     protected function jeVV(): bool {
         return $this->getUser()->isInRole('VV');
     }
@@ -66,7 +66,7 @@ class SpravaPresenter extends BasePresenter
         $output = []; // klic = kombinace latitude + longitude
         foreach ($uzivatele as $uzivatel) {
             $key = "{$uzivatel->latitude},{$uzivatel->longitude}";
-            if (!isset($output[$key])) {
+            if (isset($output[$key]) === false) {
                 // na danych souradnicich jeste zadny bod v poli $output neni
                 $output[$key] = [
                     'lat' => $uzivatel->latitude,

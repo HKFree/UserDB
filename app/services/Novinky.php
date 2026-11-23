@@ -15,12 +15,12 @@ final class Novinky
 
     /** @return list<VydaniNovinek> */
     public function nacti(): array {
-        if (!is_dir($this->adresar)) {
+        if (is_dir($this->adresar) === false) {
             return [];
         }
         $soubory = [];
         foreach (new DirectoryIterator($this->adresar) as $soubor) {
-            if (!$soubor->isFile()) {
+            if ($soubor->isFile() === false) {
                 continue;
             }
             $datum = self::datumZeSouboru($soubor->getFilename());
@@ -49,7 +49,7 @@ final class Novinky
 
     public static function datumZeSouboru(string $nazev): ?DateTimeImmutable {
         if (preg_match('~^([0-9]{4})-([0-9]{2})-([0-9]{2})(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?\.md\z~', $nazev, $casti) !== 1
-            || !checkdate((int) $casti[2], (int) $casti[3], (int) $casti[1])
+            || checkdate((int) $casti[2], (int) $casti[3], (int) $casti[1]) === false
         ) {
             return null;
         }

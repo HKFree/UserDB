@@ -2,6 +2,10 @@ includes:
     - vendor/phpstan/phpstan-nette/extension.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
 
+rules:
+    # Negace se píše "=== false", ne vykřičníkem (issue #326).
+    - UserDb\PHPStan\Rules\NoBooleanNotRule
+
 parameters:
     level: 8
     stubFiles:
@@ -18,6 +22,7 @@ parameters:
         - scripts
         - www
         - pdfGenerator/www
+        - phpstan
     scanDirectories:
         - lib/phpqrcode
     strictRules:

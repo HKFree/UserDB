@@ -20,7 +20,7 @@ class CestneClenstviUzivatele extends Table
     /** @param int|string $userID */
     public function getHasCC($userID): bool {
         $PlatnaCestnaClenstvi = $this->findAll()->where('Uzivatel_id', $userID)->where('schvaleno=1')->where('plati_od < NOW()')->where('plati_do IS NULL OR plati_do > NOW()')->where('TypCestnehoClenstvi_id != 5')->fetchAll();
-        return (count($PlatnaCestnaClenstvi) > 0);
+        return count($PlatnaCestnaClenstvi) > 0;
     }
 
     /**
@@ -40,11 +40,11 @@ class CestneClenstviUzivatele extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getNeschvalene(): Nette\Database\Table\Selection {
-        return ($this->findAll()->where('schvaleno=0')->order("plati_od"));
+        return $this->findAll()->where('schvaleno=0')->order("plati_od");
     }
 
     /** @param int|string $id */
     public function getCC($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $this->find($id);
     }
 }

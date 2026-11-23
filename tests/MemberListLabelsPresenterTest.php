@@ -47,7 +47,6 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
             'all areas' => ['listall', false, null],
             'one AP' => ['list', false, null],
             'members from other APs' => ['list', true, null],
-            // Full-text search supplies an array of rows instead of a Selection.
             'search in all areas' => ['listall', false, 'Fixture'],
         ];
     }
@@ -65,10 +64,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
     public function testExportPreservesEveryMembersLabels(string $action, bool $otherUsers, ?string $search): void {
         $members = array_merge($this->membersWithLabels($otherUsers), $this->membersWithLabels($otherUsers));
         $this->assertExport($members, $this->exportedRows($action, $otherUsers, $search));
-        if ($search === null) {
-            // Grido truncates an array source to its first batch; batching applies to Selection sources.
-            $this->assertExport($members, $this->exportedRows($action, $otherUsers, null, 2));
-        }
+        $this->assertExport($members, $this->exportedRows($action, $otherUsers, $search, 2));
     }
 
     /** @return array<string, array{string, bool, ?string, bool, bool}> */
@@ -96,7 +92,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
         $other = array_merge($other, $this->membersWithLabels(true));
         $after = $this->queries($request);
         Assert::same(count($before), count($after), 'More members needed more SELECT queries.');
-        $tables = !$export && $action === 'list' ? 2 : 1;
+        $tables = $export === false && $action === 'list' ? 2 : 1;
         Assert::count($tables, $this->tableQueries($after, 'StitekUzivatele'));
 
         // Equal query counts must not hide a prematurely terminated iteration or a missing export row.
@@ -241,7 +237,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
         $parameters += $batch !== null ? ["$grid-sort" => ['id' => 'asc']] : [];
         $parameters += $labelFilter !== null ? ["$grid-filter" => ['stitek' => $labelFilter]] : [];
         $export = $this->presenters->ui($this->actor->id, 'UzivatelList', $parameters)->response;
-        if (!$export instanceof Export) {
+        if (($export instanceof Export) === false) {
             throw new \LogicException('Expected the export of the table.');
         }
         if ($batch !== null) {

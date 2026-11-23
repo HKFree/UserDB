@@ -58,7 +58,6 @@ final class IpTransferPresenterTest extends DatabaseTestCase
         Assert::equal($contracts, $this->rows('Smlouva'));
         Assert::same(1, $this->database->table('DNat')->where('ip', $this->ip->id)->count('*'));
         Assert::same($this->ip->id, $this->requireRow($this->database->table('PovoleneSMTP')->get($smtp->id))->IPAdresa_id);
-        Assert::same([], $this->rows('SloucenyUzivatel'));
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
         foreach ([$s->member->id, $this->target->id] as $uid) {
             $log = $this->database->table('Log')->where([
@@ -105,7 +104,7 @@ final class IpTransferPresenterTest extends DatabaseTestCase
 
     /** @return list<array{string}> */
     public function invalidTargets(): array {
-        return [['same'], ['missing'], ['otherAp'], ['cancelled'], ['system'], ['merged']];
+        return [['same'], ['missing'], ['otherAp'], ['cancelled'], ['system']];
     }
 
     /** @dataProvider invalidTargets */
@@ -122,8 +121,6 @@ final class IpTransferPresenterTest extends DatabaseTestCase
             $this->target->update(['smazano' => 1]);
         } elseif ($case === 'system') {
             $this->target->update(['systemovy' => 1]);
-        } elseif ($case === 'merged') {
-            $this->fixtures->insert('SloucenyUzivatel', ['Uzivatel_id' => $s->member->id, 'slouceny_uzivatel' => $id, 'datum_slouceni' => '2026-01-01', 'sloucil' => $s->actors['vv']->id]);
         }
         $before = $s->snapshot();
         $result = $this->submit('vv', $id);
@@ -260,7 +257,7 @@ final class IpTransferPresenterTest extends DatabaseTestCase
         $listeners = $connection->onQuery;
         $changed = false;
         $connection->onQuery[] = static function (\Nette\Database\Connection $connection, \Nette\Database\ResultSet|\PDOException $result) use ($targetIp, &$changed): void {
-            if (!$changed && $result instanceof \Nette\Database\ResultSet && str_contains($result->getQueryString(), 'FROM Uzivatel WHERE id IN') && str_contains($result->getQueryString(), 'FOR UPDATE')) {
+            if ($changed === false && $result instanceof \Nette\Database\ResultSet && str_contains($result->getQueryString(), 'FROM Uzivatel WHERE id IN') && str_contains($result->getQueryString(), 'FOR UPDATE')) {
                 $changed = true;
                 $targetIp->update(['ip_adresa' => '192.0.2.20']);
             }

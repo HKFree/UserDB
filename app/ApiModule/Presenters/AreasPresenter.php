@@ -44,7 +44,7 @@ class AreasPresenter extends ApiPresenter
             $spravci = [];
             foreach ($o->related('SpravceOblasti.Oblast_id')->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())') as $spravceMtm) {
                 $spravce = $spravceMtm->ref('Uzivatel', 'Uzivatel_id');
-                if ($spravce === null || !in_array($spravce['systemovy'], [0, false], true)) {
+                if ($spravce === null || in_array($spravce['systemovy'], [0, false], true) === false) {
                     continue;
                 }
 

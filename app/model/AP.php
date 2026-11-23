@@ -24,7 +24,7 @@ class AP extends Table
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
      */
     public function findAP(array $by): Nette\Database\Table\Selection {
-        return ($this->findBy($by));
+        return $this->findBy($by);
     }
 
     /** @param int|string|null $ApID */
@@ -46,14 +46,17 @@ class AP extends Table
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
      */
     public function findAPByIP($search): Nette\Database\Table\Selection {
+        if (TextProSloupceUtf8::lzePorovnat($search) === false) {
+            return $this->findBy(array('id' => 0));
+        }
         $completeMatchId = $this->getConnection()->query("SELECT Ap.id FROM Ap
                                             LEFT JOIN  IPAdresa ON Ap.id = IPAdresa.Ap_id
                                             WHERE (
                                             IPAdresa.ip_adresa = ?
                                             ) LIMIT 1", $search)->fetchField();
         if ($completeMatchId !== null) {
-            return ($this->findBy(array('id' => $completeMatchId)));
+            return $this->findBy(array('id' => $completeMatchId));
         }
-        return ($this->findBy(array('id' => 0)));
+        return $this->findBy(array('id' => 0));
     }
 }

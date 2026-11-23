@@ -115,13 +115,13 @@ abstract class Table
      * @return Nette\Database\Table\ActiveRow|array<array-key, mixed>|int|bool
      */
     public function insert(iterable $data): Nette\Database\Table\ActiveRow|array|int|bool {
-        return ($this->getTable()->insert($data));
+        return $this->getTable()->insert($data);
     }
 
     /** @param iterable<string, mixed> $data */
     public function insertRow(iterable $data): Nette\Database\Table\ActiveRow {
         $row = $this->insert($data);
-        if (!$row instanceof Nette\Database\Table\ActiveRow) {
+        if (($row instanceof Nette\Database\Table\ActiveRow) === false) {
             throw new Nette\UnexpectedValueException('Vložení záznamu nevrátilo databázový řádek.');
         }
         return $row;
@@ -137,6 +137,6 @@ abstract class Table
             throw new \InvalidArgumentException('Záznam pro úpravu nebyl nalezen.');
         }
         $post->update($data);
-        return ($post);
+        return $post;
     }
 }

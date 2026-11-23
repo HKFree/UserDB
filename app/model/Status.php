@@ -45,7 +45,7 @@ class Status
 
         $vysledek_pingu = $this->sojka->pingIPS($ip_k_pingnuti);
 
-        return ($vysledek_pingu);
+        return $vysledek_pingu;
     }
 
     /** @return list<array{Nette\Database\Table\ActiveRow, list<array{Nette\Database\Table\ActiveRow, list<array{Nette\Database\Table\ActiveRow, int, mixed}>}>}> */
@@ -67,7 +67,7 @@ class Status
                 $problemy = array();
                 foreach ($ap->related('IPAdresa.Ap_id') as $ip) {
                     // IP se nepinga, ignorujeme ji
-                    if (!isset($vysledek_pingu[$ip->ip_adresa])) {
+                    if (isset($vysledek_pingu[$ip->ip_adresa]) === false) {
                         continue;
                     }
 
@@ -107,6 +107,6 @@ class Status
             }
             $oblasti_out[] = array($oblast, $ap_out);
         }
-        return ($oblasti_out);
+        return $oblasti_out;
     }
 }

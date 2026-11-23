@@ -52,6 +52,19 @@ final class SharedTypesPresenterTest extends DatabaseTestCase
         }
     }
 
+    public function testSearchWithEmojiEndsInEmptyMemberList(): void {
+        // #306: neither the AP lookup of the search form nor the member search may end in a database error.
+        $result = $this->presenters->ui($this->actor->id, 'Homepage', method: 'POST', post: [
+            '_do' => 'searchForm-submit', 'search' => '😀', 'send' => 'Vyhledat',
+        ]);
+        Assert::same('http://localhost/userdb/uzivatel-list/listall?search=' . rawurlencode('😀'), $result->redirectUrl);
+
+        $page = $this->presenters->ui($this->actor->id, 'UzivatelList', ['action' => 'listall', 'search' => '😀']);
+        Assert::same(200, $page->status);
+        Assert::contains('Fulltextové vyhledávání: <code>😀</code>', $page->html);
+        Assert::contains('class="no-results">Žádné výsledky.</td>', $page->html);
+    }
+
     public function testDownloadKeepsMissingIdsAndAreaPermission(): void {
         foreach ([[], ['id' => '0']] as $parameters) {
             Assert::exception(
@@ -70,7 +83,7 @@ final class SharedTypesPresenterTest extends DatabaseTestCase
         $ip = $this->fixtures->ipAddress($this->actor->id, '192.0.2.42', ['login' => 'fixture-login']);
         $result = $this->presenters->ui($this->actor->id, 'File', ['action' => 'downloadWinboxCmd', 'id' => (string) $ip->id]);
         Assert::type(FileResponse::class, $result->response);
-        if (!$result->response instanceof FileResponse) {
+        if (($result->response instanceof FileResponse) === false) {
             throw new \LogicException('Expected a file response.');
         }
         try {

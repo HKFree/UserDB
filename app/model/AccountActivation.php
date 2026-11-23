@@ -28,7 +28,7 @@ class AccountActivation
             $this->uzivatelskeKonto->insert(array('Uzivatel_id' => $uzivatel->id,
                                                     'TypPohybuNaUctu_id' => 8,
                                                     'druzstvo' => 1,
-                                                    'castka' => -($this->parameters->getVyseClenskehoPrispevku()),
+                                                    'castka' => -$this->parameters->getVyseClenskehoPrispevku(),
                                                     'datum' => new Nette\Utils\DateTime(),
                                                     'poznamka' => 'Aktivace od ['.$actorId.']',
                                                     'zmenu_provedl' => $actorId));
@@ -48,7 +48,7 @@ class AccountActivation
                 $this->uzivatelskeKonto->insert(array('Uzivatel_id' => $uzivatel->id,
                                                     'TypPohybuNaUctu_id' => 8,
                                                     'druzstvo' => 1,
-                                                    'castka' => -($this->parameters->getVyseClenskehoPrispevku()),
+                                                    'castka' => -$this->parameters->getVyseClenskehoPrispevku(),
                                                     'datum' => new Nette\Utils\DateTime(),
                                                     'poznamka' => 'Reaktivace od ['.$actorId.']',
                                                     'zmenu_provedl' => $actorId));

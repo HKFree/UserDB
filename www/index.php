@@ -7,7 +7,7 @@ if (file_exists('maintenance.php')) {
 }
 
 // Load the Composer autoloader
-if (@!include __DIR__ . '/../vendor/autoload.php') {
+if ((@include __DIR__ . '/../vendor/autoload.php') === false) {
     die('Install Nette using `composer install`');
 }
 

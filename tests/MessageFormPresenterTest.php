@@ -127,6 +127,134 @@ final class MessageFormPresenterTest extends DatabaseTestCase
         }
     }
 
+    /**
+     * A member whose address is flagged as invalid is left out of the AP mail,
+     * and the manager sees who the message will not reach (issue #309).
+     */
+    public function testApMailLeavesOutAndNamesMembersWithFlaggedAddress(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $valid = $this->fixtures->member($ap->id, self::COOPERATIVE);
+        $flagged = $this->fixtures->member($ap->id, self::COOPERATIVE + ['email_invalid' => 1, 'jmeno' => 'Žofie', 'prijmeni' => 'Odražená']);
+        $parameters = ['action' => 'emailall', 'id' => $ap->id];
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters);
+
+        Assert::same(200, $page->status);
+        Assert::same($valid->email, $this->fieldText($page->html, 'email'));
+        Assert::contains('označená jako neplatná', $page->html);
+        Assert::contains('/uzivatel/show/' . $flagged->id . '"', $page->html);
+        Assert::contains('Žofie Odražená', $page->html);
+        Assert::notContains('/uzivatel/show/' . $valid->id . '"', $page->html);
+
+        $sent = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters, 'POST', [
+            '_do' => 'emailallForm-submit', 'id' => (string) $ap->id, 'from' => '1',
+            'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+        ]);
+        PermissionScenario::assertRedirect($sent, 'uzivatel-list/list/' . $ap->id);
+        $messages = $this->container->getByType(RecordingMailer::class)->messages;
+        Assert::count(1, $messages);
+        Assert::same([$valid->email => null], $messages[0]->getHeader('Bcc'));
+    }
+
+    /** @return array<string, array{list<array<string, mixed>>}> */
+    public function noRecipientCases(): array {
+        return [
+            'empty AP' => [[]],
+            'only flagged address' => [[['email_invalid' => 1]]],
+            'only malformed address' => [[['email' => 'neplatny']]],
+        ];
+    }
+
+    /**
+     * With nobody left to receive it, the AP mail is not handed to the mailer,
+     * which would fail on a message without recipients; the form says why instead.
+     *
+     * @param list<array<string, mixed>> $members
+     * @dataProvider noRecipientCases
+     */
+    public function testApMailWithoutRecipientsExplainsInsteadOfSending(array $members): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        foreach ($members as $values) {
+            $this->fixtures->member($ap->id, self::COOPERATIVE + $values);
+        }
+
+        $result = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => 'emailall', 'id' => $ap->id], 'POST', [
+            '_do' => 'emailallForm-submit', 'id' => (string) $ap->id, 'from' => '1',
+            'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+        ]);
+
+        Assert::same(TextResponse::class, $result->response::class);
+        Assert::same(200, $result->status);
+        Assert::contains('V AP není nikdo, komu by zpráva přišla', $result->html);
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testApMailWithoutFlaggedAddressHasNoNotice(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $this->fixtures->member($ap->id, self::COOPERATIVE);
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => 'emailall', 'id' => $ap->id]);
+
+        Assert::same(200, $page->status);
+        Assert::notContains('označená jako neplatná', $page->html);
+    }
+
+    /** Those without permission learn nothing about the members of the AP. */
+    public function testFlaggedMembersAreNotNamedWithoutPermission(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $flagged = $this->fixtures->member($ap->id, self::COOPERATIVE + ['email_invalid' => 1]);
+        $foreignArea = $this->fixtures->area();
+        $actor = $this->fixtures->member($this->fixtures->ap($foreignArea->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $foreignArea->id);
+
+        foreach (['emailall' => $ap->id, 'email' => $flagged->id] as $action => $id) {
+            $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => $action, 'id' => $id]);
+            Assert::same(200, $page->status);
+            Assert::contains('Na tuto operaci nemáte oprávnění!', $page->html);
+            Assert::notContains('označená jako neplatná', $page->html);
+            Assert::notContains('/uzivatel/show/' . $flagged->id . '"', $page->html);
+        }
+    }
+
+    /**
+     * Writing to one member with a flagged address stays possible, the manager may be checking it,
+     * but the page warns that the message will likely not arrive (issue #309).
+     */
+    public function testSingleMailToFlaggedAddressWarnsButSends(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE + ['email_invalid' => 1]);
+        $parameters = ['action' => 'email', 'id' => $member->id];
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters);
+
+        Assert::same(200, $page->status);
+        Assert::contains('označená jako neplatná', $page->html);
+        Assert::contains('/uzivatel/edit/' . $member->id . '"', $page->html);
+        Assert::contains('name="send"', $page->html);
+
+        $sent = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters, 'POST', [
+            '_do' => 'emailForm-submit', 'id' => (string) $member->id, 'from' => '1',
+            'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+        ]);
+        PermissionScenario::assertRedirect($sent, 'uzivatel/show/' . $member->id);
+        $messages = $this->container->getByType(RecordingMailer::class)->messages;
+        Assert::count(1, $messages);
+        Assert::same([$member->email => null], $messages[0]->getHeader('To'));
+    }
+
     /** @return array<string, array{string}> */
     public function unusableAddressCases(): array {
         return ['doubled at sign' => ['chyba@@example.invalid'], 'no domain' => ['neplatny'], 'leading space' => [' clen@example.invalid'], 'empty' => ['']];
@@ -314,12 +442,12 @@ final class MessageFormPresenterTest extends DatabaseTestCase
     }
 
     /**
-     * www/css/screen.css fits these forms into a phone screen through the class of their wrapper;
+     * www/css/screen.css fits these forms into a phone screen by the table that app/templates/form.latte renders;
      * tests/screenshots/test/message-form.test.mjs checks the style on the same markup (issue #303).
      *
      * @dataProvider messageActions
      */
-    public function testMessageFormIsWrappedForNarrowScreens(string $action): void {
+    public function testMessageFormIsTheSharedFormTable(string $action): void {
         $area = $this->fixtures->area();
         $ap = $this->fixtures->ap($area->id);
         $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
@@ -330,7 +458,80 @@ final class MessageFormPresenterTest extends DatabaseTestCase
         $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => $action, 'id' => $id]);
 
         Assert::same(200, $page->status);
-        Assert::match('~<div class="message-form">\s*<form [^>]*id="frm-' . $action . 'Form"[^>]*>\s*<table class="form">~', $page->html);
+        Assert::match('~<form [^>]*id="frm-' . $action . 'Form"[^>]*>\s*<table class="form">\s*<tr>\s*<th></th>\s*<td><input type="hidden"~', $page->html);
+    }
+
+    /** @return array<string, array{string}> */
+    public function mailActions(): array {
+        return ['email' => ['email'], 'emailall' => ['emailall']];
+    }
+
+    /**
+     * The recipient field is disabled, so the browser never sends it back.
+     * A form returned with an error must still say whom the message goes to (issue #316).
+     *
+     * @dataProvider mailActions
+     */
+    public function testRecipientStaysFilledWhenTheFormReturnsWithAnError(string $action): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE);
+        $id = $action === 'email' ? $member->id : $ap->id;
+        $parameters = ['action' => $action, 'id' => $id];
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters);
+        $returned = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters, 'POST', [
+            '_do' => $action . 'Form-submit', 'id' => (string) $id, 'from' => '0',
+            'subject' => '', 'message' => 'Rozepsaný text', 'send' => 'Odeslat',
+        ]);
+
+        Assert::same($member->email, $this->recipient($page->html, $action));
+        Assert::same(TextResponse::class, $returned->response::class);
+        Assert::same(200, $returned->status);
+        // The message is also in data-nette-rules of an untouched form; look for the highlighted text.
+        Assert::contains('<span class="text-danger">Zadejte předmět</span>', $returned->html);
+        Assert::same($member->email, $this->recipient($returned->html, $action));
+        Assert::same('Rozepsaný text', $this->fieldText($returned->html, 'message'));
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    /**
+     * A submitted form is built before the permission check, recipients included.
+     * Without permission the returned page still shows no address.
+     *
+     * @dataProvider mailActions
+     */
+    public function testRecipientIsNotShownWithoutPermissionWhenTheFormReturnsWithAnError(string $action): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE);
+        $foreignArea = $this->fixtures->area();
+        $actor = $this->fixtures->member($this->fixtures->ap($foreignArea->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $foreignArea->id);
+        $id = $action === 'email' ? $member->id : $ap->id;
+
+        $returned = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => $action, 'id' => $id], 'POST', [
+            '_do' => $action . 'Form-submit', 'id' => (string) $id, 'from' => '0',
+            'subject' => '', 'message' => 'Rozepsaný text', 'send' => 'Odeslat',
+        ]);
+
+        Assert::same(200, $returned->status);
+        Assert::contains('Na tuto operaci nemáte oprávnění!', $returned->html);
+        Assert::notContains($member->email, html_entity_decode($returned->html, ENT_QUOTES | ENT_HTML5));
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    /** What the disabled recipient field shows: a text input for one member, a textarea for a whole AP. */
+    private function recipient(string $html, string $action): string {
+        if ($action === 'emailall') {
+            return $this->fieldText($html, 'email');
+        }
+        $found = preg_match('~<input[^>]*name="email"[^>]*>~', $html, $input);
+        Assert::same(1, $found, 'The form has no recipient field.');
+        preg_match('~value="([^"]*)"~', $input[0] ?? '', $value);
+        return html_entity_decode($value[1] ?? '', ENT_QUOTES | ENT_HTML5);
     }
 
     /** @return array<string, string> option value => label of the sender choice */

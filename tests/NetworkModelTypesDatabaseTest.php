@@ -160,10 +160,14 @@ final class NetworkModelTypesDatabaseTest extends DatabaseTestCase
         $ap = $this->fixtures->ap($this->fixtures->area()->id);
         $this->fixtures->insert('IPAdresa', ['Ap_id' => $ap->id, 'ip_adresa' => '192.0.2.1']);
         $model = $this->container->getByType(AP::class);
-        foreach (['', '0', '192.0.2.', '192.0.2.2'] as $input) {
+        // #306: the emoji cannot be stored in the three-byte utf8 column and used to end in a database error.
+        foreach (['', '0', '192.0.2.', '192.0.2.2', '😀', '192.0.2.1😀'] as $input) {
             Assert::same([], $model->findAPByIP($input)->fetchPairs('id', 'id'));
         }
-        Assert::same([$ap->id => $ap->id], $model->findAPByIP('192.0.2.1')->fetchPairs('id', 'id'));
+        // The Czech collation of the column ignores an invisible mark pasted with the address.
+        foreach (['192.0.2.1', "\u{200E}192.0.2.1"] as $input) {
+            Assert::same([$ap->id => $ap->id], $model->findAPByIP($input)->fetchPairs('id', 'id'));
+        }
     }
 
     public function testGatewayZeroIsStillReportedAsMissing(): void {

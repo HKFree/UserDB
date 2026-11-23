@@ -49,11 +49,11 @@ class SpravaCcPresenter extends SpravaPresenter
         $grid->setDefaultSort(array('plati_od' => 'DESC'));
 
         $grid->addColumnText('id', 'UID')->setSortable()->setFilterText();
-        $grid->addColumnText('plati_od', 'Platnost od')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('typcc', 'Typ CC')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('name', 'Jméno a příjmení')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('ap', 'AP')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('plati_od', 'Platnost od')->setSortable()->setFilterText();
+        $grid->addColumnText('plati_do', 'Platnost do')->setSortable()->setFilterText();
+        $grid->addColumnText('typcc', 'Typ CC')->setSortable()->setFilterText();
+        $grid->addColumnText('name', 'Jméno a příjmení')->setSortable()->setFilterText();
+        $grid->addColumnText('ap', 'AP')->setSortable()->setFilterText();
 
         $grid->addActionHref('show', 'Zobrazit')
                 ->setIcon('eye-open');
@@ -110,7 +110,7 @@ class SpravaCcPresenter extends SpravaPresenter
         $form->onSuccess[] = array($this, 'spravaCCFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if (!$submitujeSe) {
+        if ($submitujeSe === false) {
             foreach ($this->cestneClenstviUzivatele->getNeschvalene() as $rights_id => $rights_data) {
                 $rights->createOne($rights_id)->setValues($rights_data);
             }
@@ -154,7 +154,7 @@ class SpravaCcPresenter extends SpravaPresenter
                 $pravo->schvaleno = 0;
             }
 
-            if (!in_array($pravo->id, [null, '', 0, '0'], true)) {
+            if (in_array($pravo->id, [null, '', 0, '0'], true) === false) {
                 [$starePravo, $navrhovatel, $schvaleny] = $podklady[$key];
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
 

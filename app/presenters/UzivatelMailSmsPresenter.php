@@ -6,6 +6,7 @@ use App\Model;
 use App\Services;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
+use Nette\Database\Table\Selection;
 use Nette\Mail\Message;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Validators;
@@ -34,7 +35,6 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         Model\PovoleneSMTP $alowedSMTP,
         Model\DNat $dnat,
         Model\Parameters $parameters,
-        Model\SloucenyUzivatel $slUzivatel,
         Model\Smlouva $smlouva,
         Services\SmlouvaStavSluzba $smlouvaStavSluzba,
         Model\SpravceOblasti $prava,
@@ -57,7 +57,6 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             alowedSMTP: $alowedSMTP,
             dnat: $dnat,
             parameters: $parameters,
-            slUzivatel: $slUzivatel,
             smlouva: $smlouva,
             smlouvaStavSluzba: $smlouvaStavSluzba,
             prava: $prava,
@@ -125,7 +124,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     /** Šablona správci vysvětlí, proč v poli Odesílatel chybí jeho vlastní adresa, a kde ji opravit. */
     private function predejStavOdesilatele(): void {
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-        $neplatny = $so !== null && !$this->maPlatnyEmail($so);
+        $neplatny = $so !== null && $this->maPlatnyEmail($so) === false;
         $this->template->odesilatelNeplatny = $neplatny;
         $this->template->editaceOdesilatele = $neplatny && $this->smiUpravitUzivatele($so) ? $so->id : null;
     }
@@ -135,6 +134,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->u = $uzivatel;
         $this->template->emailPlatny = $uzivatel !== null && $this->maPlatnyEmail($uzivatel);
+        $this->template->emailOznacenyNeplatny = $uzivatel !== null && (int) $uzivatel->email_invalid === 1;
         $this->predejStavOdesilatele();
     }
 
@@ -149,7 +149,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $odesilatele = $this->odesilatele('oblast'.$user->Ap->Oblast_id.'@hkfree.org');
         $form->addSelect('from', 'Odesílatel', $odesilatele)->setDefaultValue(array_key_first($odesilatele));
 
-        $form->addText('email', 'Příjemce', 70)->setDisabled(true);
+        // Zakázané pole prohlížeč neposílá; hodnotu proto dostane i formulář vrácený s chybou.
+        $form->addText('email', 'Příjemce', 70)->setDisabled(true)->setDefaultValue($user->email);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
 
@@ -158,7 +159,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'emailFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $form->setValues($user);
             $form->setDefaults(array(
                     'from' => array_key_first($odesilatele),
@@ -178,7 +179,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         if ($user === null) {
             $this->error('Uživatel nebyl nalezen.');
         }
-        if (!$this->maPlatnyEmail($user)) {
+        if ($this->maPlatnyEmail($user) === false) {
             // Stránka místo formuláře vypíše, že člen platnou adresu nemá.
             return;
         }
@@ -197,8 +198,10 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function renderEmailall(): void {
+        $ap = $this->ap->getAP($this->getParameter('id'));
         $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
-        $this->template->ap = $this->ap->getAP($this->getParameter('id'));
+        $this->template->ap = $ap;
+        $this->template->vyrazeniClenove = $ap === null ? [] : $this->clenoveApSOznacenouAdresou($ap);
         $this->predejStavOdesilatele();
     }
 
@@ -218,7 +221,9 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $odesilatele = $this->odesilatele($oblastMail);
         $form->addSelect('from', 'Odesílatel', $odesilatele)->setDefaultValue(array_key_first($odesilatele));
 
-        $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(true);
+        // Zakázané pole prohlížeč neposílá; hodnotu proto dostane i formulář vrácený s chybou.
+        $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(true)
+            ->setDefaultValue($ap === null ? null : $this->adresyClenuAp($ap));
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
         $form->addTextArea('message', 'Text', 72, 10);
 
@@ -227,25 +232,42 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'emailallFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($ap !== null && !$submitujeSe) {
-            $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
-            $validni = [];
-            foreach ($emaily as $email) {
-                if (Validators::isEmail($email)) {
-                    $validni[] = $email;
-                }
-            }
-            $tolist = join(";", $validni);
-
+        if ($ap !== null && $submitujeSe === false) {
             $form->setValues($ap);
             $form->setDefaults(array(
                     'from' => array_key_first($odesilatele),
-                    'email' => $tolist,
                     'subject' => 'Zpráva od správce sítě hkfree.org',
                 ));
         }
 
         return $form;
+    }
+
+    /** Adresy oddělené středníkem, jak je ukazuje pole Příjemce. */
+    private function adresyClenuAp(ActiveRow $ap): string {
+        return join(';', $this->adresatiAp($ap));
+    }
+
+    /**
+     * Platné adresy aktivních členů AP. Adresu označenou jako neplatnou vynechá, stejně jako mailing list.
+     * @return list<string>
+     */
+    private function adresatiAp(ActiveRow $ap): array {
+        $emaily = $this->aktivniClenoveAp($ap)->where('email_invalid', 0)->fetchPairs('id', 'email');
+        return array_values(array_filter($emaily, static fn (mixed $email): bool => Validators::isEmail($email)));
+    }
+
+    /**
+     * Aktivní členové AP, kterým hromadný e-mail nepřijde, protože mají adresu označenou jako neplatnou.
+     * @return list<ActiveRow>
+     */
+    private function clenoveApSOznacenouAdresou(ActiveRow $ap): array {
+        return array_values($this->aktivniClenoveAp($ap)->where('email_invalid', 1)->order('id')->fetchAll());
+    }
+
+    /** @return Selection<ActiveRow> */
+    private function aktivniClenoveAp(ActiveRow $ap): Selection {
+        return $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN);
     }
 
     /** @param ArrayHash<mixed> $values */
@@ -257,18 +279,20 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         if ($ap === null) {
             $this->error('AP nebylo nalezeno.');
         }
-        $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
+        $adresati = $this->adresatiAp($ap);
+        if ($adresati === []) {
+            // Zprávu bez příjemců by SMTP server odmítl.
+            $form->addError('V AP není nikdo, komu by zpráva přišla: žádný aktivní člen nemá platnou e-mailovou adresu.');
+            return;
+        }
 
         $mail = new Message();
         $this->nastavOdesilatele($mail, $values->from, 'oblast'.$ap->Oblast_id.'@hkfree.org');
         $mail->setSubject($values->subject)
             ->setBody($values->message);
 
-        //TODO: check if mail is valid
-        foreach ($emaily as $email) {
-            if (Validators::isEmail($email)) {
-                $mail->addBcc($email);
-            }
+        foreach ($adresati as $email) {
+            $mail->addBcc($email);
         }
 
         $this->mailer->send($mail);
@@ -295,13 +319,13 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $this->error('Uživatel nebyl nalezen.');
         }
 
-        if (!in_array($user->telefon ?? null, [null, '', '0'], true) && $user->telefon !== 'missing') {
+        if (in_array($user->telefon ?? null, [null, '', '0'], true) === false && $user->telefon !== 'missing') {
             $form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
             $form->onSuccess[] = array($this, 'smsFormSucceded');
         }
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $form->setValues($user);
             $form->setDefaults(array(
                     'komu' => $user->telefon
@@ -341,7 +365,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'smsallFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $ap = $this->ap->getAP($this->getParameter('id'));
             if ($ap === null) {
                 $this->error('AP nebylo nalezeno.');
@@ -349,7 +373,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $telefony = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'telefon');
             $validni = [];
             foreach ($telefony as $tl) {
-                if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
+                if (in_array($tl, [null, '', '0'], true) === false && $tl !== 'missing') {
                     $validni[] = $tl;
                 }
             }
@@ -376,7 +400,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $validni = [];
         foreach ($telefony as $uid => $tl) {
-            if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
+            if (in_array($tl, [null, '', '0'], true) === false && $tl !== 'missing') {
                 $validni[] = $uid;
             }
         }

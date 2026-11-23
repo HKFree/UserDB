@@ -39,7 +39,7 @@ function process_digisign_webhook(mixed $hook): void {
     }
 
     $smlouva = $SmlouvaModel->findOneBy(['externi_id' => $hook->entityId]);
-    if (!$smlouva) {
+    if ($smlouva === null) {
         print_and_log("Smlouvu nemame v DB -> ignorovat");
         return;
     }
@@ -187,7 +187,7 @@ function process_digisign_webhook(mixed $hook): void {
                 throw new RuntimeException('DigiSign nevrátil příjemce obálky.');
             }
             $novaPoznamka = null;
-            if (!in_array($prijemce->declineReason, [null, '', '0'], true)) {
+            if (in_array($prijemce->declineReason, [null, '', '0'], true) === false) {
                 $odmitnutoKdy = $prijemce->declinedAt;
                 if ($odmitnutoKdy === null) {
                     throw new RuntimeException('DigiSign nevrátil čas odmítnutí obálky.');
@@ -245,7 +245,7 @@ function process_digisign_webhook(mixed $hook): void {
 }
 
 function digisign_webhook_event_time(mixed $time): DateTimeImmutable {
-    if (!is_string($time) || preg_match('/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})?$/D', $time) !== 1) {
+    if (is_string($time) === false || preg_match('/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})?$/D', $time) !== 1) {
         throw new RuntimeException('Čas události DigiSign chybí nebo není platný.');
     }
     try {
@@ -262,5 +262,5 @@ function digisign_webhook_event_time(mixed $time): DateTimeImmutable {
 
 function print_and_log(string $message): void {
     error_log("digisign_webhook: $message.");
-    print("$message.\n");
+    print "$message.\n";
 }

@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+// Analysed by NoBooleanNotRuleTest. The ".fixture" extension keeps it out of the regular analysis.
+
+function booleanNotFixture(bool $flag, ?object $value, array $items): void {
+    if (!$flag) {
+        echo 'negated variable';
+    }
+    if (!in_array(1, $items, true)) {
+        echo 'negated function call';
+    }
+    if (!$value instanceof \DateTimeInterface) {
+        echo 'negated instanceof';
+    }
+    if (!isset($items['key'])) {
+        echo 'negated isset';
+    }
+    if (!($flag && $value === null)) {
+        echo 'negated expression in parentheses';
+    }
+    if ($flag === false || $value !== null || $items != []) {
+        echo 'comparisons are allowed';
+    }
+}

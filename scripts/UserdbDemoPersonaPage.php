@@ -59,7 +59,7 @@ final class UserdbDemoPersonaPage
             header('Allow: GET');
             return;
         }
-        if (!array_key_exists('id', $query) || self::isFromAnotherSite($headers)) {
+        if (array_key_exists('id', $query) === false || self::isFromAnotherSite($headers)) {
             echo $this->render();
             return;
         }
@@ -93,7 +93,7 @@ final class UserdbDemoPersonaPage
      * @param array<array-key, mixed> $headers
      */
     private static function isFromAnotherSite(array $headers): bool {
-        return !in_array(strtolower(self::header($headers, 'Sec-Fetch-Site')), ['', 'same-origin', 'none'], true);
+        return in_array(strtolower(self::header($headers, 'Sec-Fetch-Site')), ['', 'same-origin', 'none'], true) === false;
     }
 
     /** @param array<array-key, mixed> $headers */

@@ -140,7 +140,7 @@ final class InvalidMailRecipientsDatabaseTest extends DatabaseTestCase
         try {
             $result = $this->service($this->modelWithSender($sender))->mailPdf($pdf, $member, new Http\Request(new Http\UrlScript('http://localhost/')), new Http\Response(), $sender->id);
             $this->assertResult($result, $addresses, $skipMember ? [$this->skipped($member)] : ($skipSender ? [$this->skipped($sender)] : []));
-            Assert::same(!$skipMember, $pdf->written);
+            Assert::same($skipMember === false, $pdf->written);
             if ($skipMember) {
                 Assert::same($originalName, $pdf->outputName);
             } else {

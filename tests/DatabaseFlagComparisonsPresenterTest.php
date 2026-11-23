@@ -71,12 +71,6 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
             Assert::same($convert ? (bool) $deactivation : $deactivation, $stored->money_deaktivace);
             $detail = $this->template($this->presenters->ui($this->actor->id, 'Uzivatel', ['action' => 'show', 'id' => $this->member->id]));
             Assert::same($expected, [$detail->money_act, $detail->money_dis, $detail->activaceVisible, $detail->reactivaceVisible, $detail->deactivaceVisible]);
-            $merge = $this->template($this->presenters->ui($this->actor->id, 'SpravaSlucovani', [
-                'action' => 'slucovani', 'u1' => $this->member->id, 'u2' => $this->member->id,
-            ]));
-            Assert::same([$expected[0], $expected[1], $expected[0], $expected[1]], [
-                $merge->u1money_act, $merge->u1money_dis, $merge->u2money_act, $merge->u2money_dis,
-            ]);
             $before = $this->database->table('UzivatelskeKonto')->count('*');
             $result = $this->presenters->ui($this->actor->id, 'UzivatelActions', ['action' => 'moneyReactivate', 'id' => $this->member->id]);
             PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id, 302);
@@ -105,7 +99,7 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
             }
             // The legacy summary has no template, so verify its prepared values directly.
             $summary = $this->presenter('Uzivatel');
-            if (!$summary instanceof \App\Presenters\UzivatelPresenter) {
+            if (($summary instanceof \App\Presenters\UzivatelPresenter) === false) {
                 throw new \LogicException('Expected the member presenter.');
             }
             $summary->loadState(['id' => $this->member->id]);
@@ -135,7 +129,7 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
                     ? $grids->getListOfOtherUsersGrid($presenter, 'flagsGrid', $user, $this->member->Ap_id, $money, false, null)
                     : $grids->getListOfUsersGrid($presenter, 'flagsGrid', $user, $this->member->Ap_id, $money, false, null);
                 $callback = $grid->getRowCallback();
-                if (!is_callable($callback)) {
+                if (is_callable($callback) === false) {
                     throw new \LogicException('Expected a row callback.');
                 }
                 $callback = \Closure::fromCallable($callback);
@@ -143,8 +137,8 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
                     $this->member->update(['money_aktivni' => $value, 'email_invalid' => $value]);
                     $stored = $this->database->table('Uzivatel')->get($this->member->id);
                     $row = $callback($stored, Html::el('tr'));
-                    Assert::same($money && !$enabled, in_array('neaktivni', $row->class ?? [], true));
-                    Assert::same(!$money && $enabled, in_array('invalidemail', $row->class ?? [], true));
+                    Assert::same($money && $enabled === false, in_array('neaktivni', $row->class ?? [], true));
+                    Assert::same($money === false && $enabled, in_array('invalidemail', $row->class ?? [], true));
                 }
             }
         }
@@ -190,7 +184,7 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
 
     private function template(PresenterResult $result): Template {
         Assert::same(200, $result->status);
-        if (!$result->response instanceof TextResponse || !($template = $result->response->getSource()) instanceof Template) {
+        if (($result->response instanceof TextResponse) === false || (($template = $result->response->getSource()) instanceof Template) === false) {
             throw new \LogicException('Expected a Latte template.');
         }
         return $template;
@@ -198,7 +192,7 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
 
     private function presenter(string $name): Presenter {
         $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter($name);
-        if (!$presenter instanceof Presenter) {
+        if (($presenter instanceof Presenter) === false) {
             throw new \LogicException('Expected a UI presenter.');
         }
         $presenter->setParent(null, $name);

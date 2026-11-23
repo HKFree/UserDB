@@ -78,3 +78,9 @@ vidět. Ověřeno 21. 11. 2026 lokálně ve Floxu (MariaDB 10.11.19), není-li u
 - Hromadné vkládání do `UzivatelskeKonto` musí jít v pořadí primárního klíče. Při vkládání se sestupnými id
   zabralo 324 000 řádků 426 MB místo 27 MB, tabulka se nevešla do paměti MariaDB na testovacím serveru
   (128 MB) a dotaz grafu aktivací tam trval 30 s.
+- Lokální databáze s objemovými daty může mít zastaralé statistiky tabulek. Hledání nečíselného textu pak
+  trvá sekundy: dotaz přesné shody ID nebo IP adresy ve `findUserByFulltext()` spojil `Uzivatel` a `IPAdresa`
+  bez indexu (`EXPLAIN`: `Using join buffer`, `SHOW INDEX` s kardinalitou 0) a běžel 7,8 s; po
+  `ANALYZE TABLE Uzivatel, IPAdresa` 0,012 s. Ověřeno 23. 11. 2026 v databázi jednoho worktree, na testovacím
+  serveru ani na produkci ne.
+  **How to apply:** Než začneš hledat pomalost v kódu, spusť v lokální databázi `ANALYZE TABLE` a změř znovu.

@@ -30,13 +30,13 @@ final class UserdbTestingLogin
         private readonly string $cookieDomain,
         private readonly string $stateDirectory,
     ) {
-        if (!self::isPasswordHash($passwordHash)) {
+        if (self::isPasswordHash($passwordHash) === false) {
             throw new InvalidArgumentException('The password must be given as a bcrypt hash made by password_hash().');
         }
         if (preg_match('~^[a-z0-9.-]*$~D', $cookieDomain) !== 1) {
             throw new InvalidArgumentException('The cookie domain is not a host name.');
         }
-        if (!is_dir($stateDirectory) || !is_writable($stateDirectory)) {
+        if (is_dir($stateDirectory) === false || is_writable($stateDirectory) === false) {
             throw new InvalidArgumentException('The state directory is missing or not writable.');
         }
     }
@@ -86,7 +86,7 @@ final class UserdbTestingLogin
         if ($signedIn) {
             return new UserdbTestingLoginResponse(204);
         }
-        if (!in_array(self::header($headers, 'X-Forwarded-Method'), ['GET', 'HEAD'], true)) {
+        if (in_array(self::header($headers, 'X-Forwarded-Method'), ['GET', 'HEAD'], true) === false) {
             return new UserdbTestingLoginResponse(
                 403,
                 ['Content-Type: text/plain; charset=utf-8'],
@@ -98,11 +98,11 @@ final class UserdbTestingLogin
     }
 
     private function signIn(#[\SensitiveParameter] string $password, string $back, string $client, int $now): UserdbTestingLoginResponse {
-        if (!$this->countAttempt($client, $now)) {
+        if ($this->countAttempt($client, $now) === false) {
             $minutes = intdiv(self::FAILURE_WINDOW_SECONDS, 60);
             return $this->formPage(429, $back, "Příliš mnoho neúspěšných pokusů. Zkuste to znovu za $minutes minut.");
         }
-        if (!password_verify($password, $this->passwordHash)) {
+        if (password_verify($password, $this->passwordHash) === false) {
             return $this->formPage(403, $back, 'Nesprávné heslo.');
         }
         $this->clearAttempts($client);
@@ -146,7 +146,7 @@ final class UserdbTestingLogin
             }
             $counter = implode("\n", [...$recent, $now]);
             // A counter that cannot be kept, for example on a full disk, must not turn into unlimited attempts.
-            if (file_put_contents($file, $counter) !== strlen($counter) || !touch($file, $now)) {
+            if (file_put_contents($file, $counter) !== strlen($counter) || touch($file, $now) === false) {
                 throw new RuntimeException('The counter of sign-in attempts cannot be written.');
             }
             return true;
@@ -156,7 +156,7 @@ final class UserdbTestingLogin
     private function clearAttempts(string $client): void {
         $this->withCountersLocked(function () use ($client): bool {
             $file = $this->counterFile($client);
-            return !is_file($file) || unlink($file);
+            return is_file($file) === false || unlink($file);
         });
     }
 
@@ -181,7 +181,7 @@ final class UserdbTestingLogin
      */
     private function withCountersLocked(Closure $change): bool {
         $lock = fopen($this->stateDirectory . '/lock', 'c');
-        if ($lock === false || !flock($lock, LOCK_EX)) {
+        if ($lock === false || flock($lock, LOCK_EX) === false) {
             throw new RuntimeException('The counters of sign-in attempts cannot be locked.');
         }
         try {

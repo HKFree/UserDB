@@ -60,7 +60,7 @@ final class PermissionGridExportsPresenterTest extends DatabaseTestCase
         }
         $parameters = ['action' => $action, 'do' => $signal] + ($presenter === 'UzivatelAccount' ? ['id' => $s->member->id] : []);
         $request = fn () => $this->presenters->ui($s->actors[$actor]->id, $presenter, $parameters);
-        if (!$allowed) {
+        if ($allowed === false) {
             $s->assertDenied($request);
             return;
         }

@@ -47,7 +47,7 @@ final class PermissionScenario
     /** @return array<string, string> */
     public function snapshot(): array {
         $state = [];
-        foreach (['Oblast', 'Ap', 'Uzivatel', 'SpravceOblasti', 'IPAdresa', 'Subnet', 'CestneClenstviUzivatele', 'PrichoziPlatba', 'UzivatelskeKonto', 'SloucenyUzivatel', 'Log', 'ApiKlic', 'AplikaceToken'] as $table) {
+        foreach (['Oblast', 'Ap', 'Uzivatel', 'SpravceOblasti', 'IPAdresa', 'Subnet', 'CestneClenstviUzivatele', 'PrichoziPlatba', 'UzivatelskeKonto', 'Log', 'ApiKlic', 'AplikaceToken'] as $table) {
             $rows = array_map(static fn (ActiveRow $row) => $row->toArray(), $this->database->table($table)->order('id')->fetchAll());
             $state[$table] = json_encode($rows, JSON_THROW_ON_ERROR);
         }

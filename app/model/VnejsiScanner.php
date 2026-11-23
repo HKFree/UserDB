@@ -30,11 +30,11 @@ class VnejsiScanner
         try {
             $r = $client->request('GET', $this->outerScannerURL);
         } catch (\GuzzleHttp\Exception\TransferException $e) {
-            return ([]);
+            return [];
         }
 
         if ($r->getStatusCode() !== 200) {
-            return ([]);
+            return [];
         }
 
         $body = $r->getBody();
@@ -67,7 +67,7 @@ class VnejsiScanner
             $this->downloadScan();
         }
 
-        return ($this->scanData);
+        return $this->scanData;
     }
 
     public function getScanDate(): \DateTime|false|null {
@@ -75,7 +75,7 @@ class VnejsiScanner
             $this->downloadScan();
         }
 
-        return ($this->scanDate);
+        return $this->scanDate;
     }
 
     /**
@@ -106,6 +106,6 @@ class VnejsiScanner
             }
         }
 
-        return ($out);
+        return $out;
     }
 }

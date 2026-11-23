@@ -36,6 +36,7 @@ final class DemoDataPresenterTest extends TestCase
         $container = TestEnvironment::container($this->database);
         $this->presenters = new PresenterRunner($this->database, $container);
         $this->assertReferences();
+        $this->assertRemovedMembers();
         $this->assertScenarioSafety();
         // First of the page checks: the seeded login limit lasts 15 minutes from the load.
         $this->assertApi();
@@ -91,7 +92,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(13, $adapter->scenarioFiles);
+        Assert::same(14, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -164,12 +165,25 @@ final class DemoDataPresenterTest extends TestCase
             SQL)->fetchPairs('id', 'w_ap_IPAdresa_id'));
     }
 
+    private function assertRemovedMembers(): void {
+        Assert::same(0, $this->database->table('Uzivatel')->where('id', [20058, 20059, 20060])->count('*'));
+        $columns = $this->database->query(<<<'SQL'
+            SELECT c.TABLE_NAME, c.COLUMN_NAME FROM information_schema.COLUMNS c
+            JOIN information_schema.TABLES t ON t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME
+            WHERE c.TABLE_SCHEMA = DATABASE() AND LOWER(c.COLUMN_NAME) = 'uzivatel_id' AND t.TABLE_TYPE = 'BASE TABLE'
+            SQL);
+        foreach ($columns as $column) {
+            Assert::same(0, $this->database->table($column->TABLE_NAME)->where($column->COLUMN_NAME, [20058, 20059, 20060])->count('*'), $column->TABLE_NAME);
+        }
+        Assert::same(0, $this->database->table('Log')->where('tabulka', 'Uzivatel')->where('tabulka_id', [20058, 20059, 20060])->count('*'));
+    }
+
     private function assertScenarioSafety(): void {
         Assert::same(12, $this->database->table('Oblast')->count('*'));
         Assert::same(25, $this->database->table('Ap')->count('*'));
-        Assert::same(89, $this->database->table('Uzivatel')->count('*'));
-        Assert::same(82, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->count('*'));
-        Assert::same(82, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
+        Assert::same(86, $this->database->table('Uzivatel')->count('*'));
+        Assert::same(79, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->count('*'));
+        Assert::same(79, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
         Assert::same(60, $this->database->table('IPAdresa')->where('Uzivatel_id', 20061)->count('*'));
         foreach ([
             'SELECT COUNT(*) FROM Oblast o LEFT JOIN Ap a ON a.Oblast_id = o.id WHERE a.id IS NULL',
@@ -306,8 +320,6 @@ final class DemoDataPresenterTest extends TestCase
         foreach ([20065 => 'čeká na podpis', 20066 => 'odmítnutá dne', 20067 => 'platná od', 20068 => 'ukončená dne'] as $id => $status) {
             Assert::contains($status, $this->text($this->page('Uzivatel', 'show', $id)));
         }
-        Assert::contains('Sloučen pod uživatele', $this->text($this->page('Uzivatel', 'show', 20059)));
-        Assert::contains('Sloučený uživatel', $this->text($this->page('Uzivatel', 'show', 20058)));
         Assert::count(1, $this->values($this->page('Uzivatel', 'show', 20028), '//*[contains(@class,"fade-out-old")]'));
         Assert::count(60, $this->values($this->page('Uzivatel', 'edit', 20061), '//input[contains(@name,"[ip_adresa]")]/@value'));
         Assert::contains('NIKDY', $this->text($this->page('Uzivatel', 'show', 20043)));
@@ -410,10 +422,9 @@ final class DemoDataPresenterTest extends TestCase
     private function assertAdministration(): void {
         $tools = $this->page('Sprava', 'nastroje');
         // All buttons actually linked from the tools page, guarded against future additions.
-        Assert::count(10, $this->values($tools, '//a[contains(@class,"btn")]/@href'));
+        Assert::count(8, $this->values($tools, '//a[contains(@class,"btn")]/@href'));
         foreach ([
             ['SpravaOblasti', 'novaoblast'], ['SpravaOblasti', 'noveap'],
-            ['SpravaSlucovani', 'slucovani'], ['SpravaSlucovani', 'slouceni'],
             ['SpravaSifrovani', 'presifrovani'], ['SpravaCc', 'schvalovanicc'],
             ['SpravaPlateb', 'platbycu'], ['SpravaNesparovanych', 'nesparovane'],
             ['SpravaSms', 'sms'], ['SpravaMailu', 'mailinglist'],

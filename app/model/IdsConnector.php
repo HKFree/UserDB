@@ -132,7 +132,7 @@ class IdsConnector
 
         $elasticResponse = $client->request('POST', $this->idsUrl.'/elasticsearch/'.$indexes.'/_search?ignore_unavailable=true', $elasticFilter);
         $json = json_decode($elasticResponse->getBody(), true);
-        if (!in_array($json, [null, false, 0, 0.0, '', '0', []], true)) {
+        if (in_array($json, [null, false, 0, 0.0, '', '0', []], true) === false) {
             return $json['hits']['hits'];
         } else {
             throw new \RuntimeException('Empty response from IDS, maybe wrong IDS username/password?');
@@ -174,9 +174,9 @@ class IdsConnector
         $json = json_decode($elasticResponse->getBody(), true);
         $resultArray = $json['aggregations']['uniq_ip']['buckets'];
         $resultArrayFiltered = array_filter($resultArray, function ($k) {
-            return !in_array($k['key'], $this->idsIpsWhitelist, true);
+            return in_array($k['key'], $this->idsIpsWhitelist, true) === false;
         });
-        if (!in_array($json, [null, false, 0, 0.0, '', '0', []], true)) {
+        if (in_array($json, [null, false, 0, 0.0, '', '0', []], true) === false) {
             return $resultArrayFiltered;
         } else {
             throw new \RuntimeException('Empty response from IDS, maybe wrong IDS username/password?');

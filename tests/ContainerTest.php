@@ -102,7 +102,7 @@ final class ContainerTest extends TestCase
             $container->getByType(\Nette\Application\Application::class);
             $container->getByType(\Nette\Security\User::class);
             $presenter = $container->getByType(\Nette\Application\IPresenterFactory::class)->createPresenter('Homepage');
-            if (!$presenter instanceof \Nette\Application\UI\Presenter) {
+            if (($presenter instanceof \Nette\Application\UI\Presenter) === false) {
                 throw new \LogicException('Homepage is not a UI presenter.');
             }
             $container->getByType(\Nette\Application\UI\TemplateFactory::class)->createTemplate($presenter);

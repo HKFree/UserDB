@@ -56,7 +56,6 @@ services:
 	- App\Router\RouterFactory
 	router: @App\Router\RouterFactory::createRouter(%urlPrefix%)
 	uzivatel: App\Model\Uzivatel
-	sloucenyUzivatel: App\Model\SloucenyUzivatel
 	uzivatelskeKonto: App\Model\UzivatelskeKonto
 	uzivatelTelevize: App\Model\UzivatelTelevize
 	uzivatelTelevizeAktivni: App\Model\UzivatelTelevizeAktivni

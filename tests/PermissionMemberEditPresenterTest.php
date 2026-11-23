@@ -52,7 +52,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         $request = fn () => $this->presenters->ui($s->actors[$actor]->id, 'Uzivatel', [
             'action' => 'edit', 'id' => $mode === 'forged' ? $s->member->id : $target->id,
         ], 'POST', $post);
-        if (!$allowed) {
+        if ($allowed === false) {
             $s->assertDenied($request);
             return;
         }
@@ -82,7 +82,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         $request = fn () => $this->presenters->ui($s->actors[$actor]->id, $presenter, [
             'action' => 'edit', 'id' => $s->member->id,
         ], 'POST', $post);
-        if (!$allowed) {
+        if ($allowed === false) {
             $s->assertDenied($request);
             return;
         }
@@ -101,7 +101,7 @@ final class PermissionMemberEditPresenterTest extends DatabaseTestCase
         $request = function () use ($s, $actor, $action): PresenterResult {
             return $this->presenters->ui($s->actors[$actor]->id, 'PaymentSchedule', ['action' => $action, 'id' => $s->member->id]);
         };
-        if (!$allowed) {
+        if ($allowed === false) {
             $s->assertDenied($request);
             return;
         }

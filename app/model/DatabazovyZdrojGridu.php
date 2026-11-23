@@ -13,7 +13,7 @@ final class DatabazovyZdrojGridu extends NetteDatabase
 {
     /** @param Selection<ActiveRow>|null $selection */
     protected function makeWhere(Condition $condition, ?Selection $selection = null): void {
-        // Textový filtr i jeho našeptávač. Filtr s vlastní obsluhou (setWhere) má seznam podmínek prázdný.
+        // Textový filtr. Filtr s vlastní obsluhou (setWhere) má seznam podmínek prázdný.
         if ($condition->getCondition() !== ['LIKE ?']) {
             parent::makeWhere($condition, $selection);
             return;

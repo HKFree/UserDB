@@ -137,6 +137,28 @@ final class UzivatelSearchDatabaseTest extends DatabaseTestCase
         }
     }
 
+    public function testTextOutsideThreeByteUtf8FindsNothingForEveryRole(): void {
+        // #306: the columns are three-byte utf8 and comparing them with such a character ended in a database error.
+        $searches = ['😀', '7.0.0.42😀', '7 123 456 789😀', '7search@example.invalid😀', '7.other@example.invalid😀', "\u{20000}", "\u{10FFFF}"];
+        foreach ([[], ['TECH'], ['VV'], ['KONTROLA'], ['EXTSUPPORT']] as $roles) {
+            foreach ($searches as $search) {
+                Assert::same([], $this->searchIds($search, $this->managerId, $roles), implode('', $roles) . ": $search");
+            }
+        }
+    }
+
+    public function testColumnCollationStillDecidesOtherCharacters(): void {
+        // Characterisation for #306: only text the columns cannot hold is cut off, the rest is compared as before.
+        foreach ([[], ['TECH']] as $roles) {
+            // The Czech collation of the columns ignores an invisible mark and takes a no-break space for a space.
+            Assert::same([42], $this->searchIds("\u{200E}7.0.0.42", $this->managerId, $roles), 'IP address behind a left-to-right mark');
+            Assert::same([42], $this->searchIds("7\u{A0}123\u{A0}456\u{A0}789", $this->managerId, $roles), 'phone with no-break spaces');
+            // It tells š from s, unlike the comparison of names.
+            Assert::same([], $this->searchIds('7šearch@example.invalid', $this->managerId, $roles), 'e-mail with a different letter');
+            Assert::same([], $this->searchIds("\u{FFFF}", $this->managerId, $roles), 'last character of three-byte utf8');
+        }
+    }
+
     public function testNonDigitInputsDoNotMatchNumericId(): void {
         foreach (['7e0', '7.0', '+7', '-7', ' 7', '7 '] as $search) {
             Assert::same([], $this->searchIds($search, $this->unassignedId), $search);

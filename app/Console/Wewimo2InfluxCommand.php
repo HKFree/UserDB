@@ -77,7 +77,7 @@ class Wewimo2InfluxCommand extends Command
      */
     private function addFloatField(array &$fields, string $dstField, array $station, string $srcField): void {
         $val = $station[$srcField] ?? null;
-        if (!is_null($val)) {
+        if (is_null($val) === false) {
             $fields[$dstField] = floatval($val);
         }
     }

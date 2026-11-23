@@ -32,7 +32,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         Services\CryptoSluzba $cryptosvc,
         Model\PovoleneSMTP $alowedSMTP,
         Model\DNat $dnat,
-        Model\SloucenyUzivatel $slUzivatel,
         Model\Smlouva $smlouva,
         Services\SmlouvaStavSluzba $smlouvaStavSluzba,
         Model\SpravceOblasti $prava,
@@ -55,7 +54,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             alowedSMTP: $alowedSMTP,
             dnat: $dnat,
             parameters: $parameters,
-            slUzivatel: $slUzivatel,
             smlouva: $smlouva,
             smlouvaStavSluzba: $smlouvaStavSluzba,
             prava: $prava,
@@ -79,7 +77,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->uzivatel = $uzivatel;
         $this->mailService = $mailsvc;
         $this->requestDruzstvoContract = $requestDruzstvoContract;
-        $this->cryptosvc = $cryptosvc;
     }
 
     public function actionMoneyActivate(): void {
@@ -202,7 +199,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     public function actionHandleSubscriberContract(): void {
         // TODO: Logování změn
 
-        if (!$this->maVyplnenyParametr('id')) {
+        if ($this->maVyplnenyParametr('id') === false) {
             $this->flashMessage('Žádné id.');
             $this->redirect('UzivatelList:listall');
         }
@@ -220,43 +217,5 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $this->flashMessage(sprintf('Nová smlouva číslo %u bude odeslána na e-mail %s.', $newId, $current_user->email));
 
         $this->redirect('Uzivatel:show', array('id' => $user_id));
-    }
-
-    public function actionSendUserEmail(): void {
-        $uid = $this->getParameter('id');
-        $variant = $this->getParameter('variant');
-        $uzivatel =  $this->uzivatel->find($uid);
-        if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
-        }
-
-        // generate auth code and encrypt it to DB if not already generated
-        if (in_array($uzivatel->oneclick_auth, [null, '', '0'], true)) {
-            $code_length = 32;
-            $oneclick_auth_code = substr(str_shuffle(str_repeat($x = '23456789abcdefghijmnopqrstuvwxyzABCDEFGHJMNPQRSTUVWXYZ', (int) ceil($code_length / strlen($x)))), 1, $code_length);
-            $oneclick_auth_code_encrypted = $this->cryptosvc->encrypt($oneclick_auth_code);
-            $this->uzivatel->update($uzivatel->id, [
-                'oneclick_auth' => $oneclick_auth_code_encrypted,
-            ]);
-        } else {
-            $oneclick_auth_code = $this->cryptosvc->decrypt($uzivatel->oneclick_auth);
-            $this->uzivatel->update($uzivatel->id, ['oneclick_auth_used_at' => null]);
-        }
-
-        $this->template->UID = $uid;
-        $this->template->oneclick_auth_code = $oneclick_auth_code;
-
-        switch ($variant) {
-            case 'Televize2026AnoNe':
-                $template = $this->mailService->addLinkGeneratorToTemplate($this->template);
-                $subject = "Služba SledovaniTV zdarma do 31.7.2026 v síti hkfree";
-                $template->setFile(__DIR__ . '/../templates/email/Televize2026AnoNe.latte');
-                $vysledek = $this->mailService->sendEmailFromTemplate($uzivatel, $subject, $template);
-                $this->oznamVysledekEmailu($vysledek, $uzivatel, sprintf('E-mail %s odeslán na %s.', $variant, implode(', ', $vysledek->adresy)));
-                break;
-            default:
-                $this->flashMessage(sprintf('Error: undefined UserEmail variant "%s", no action', $variant));
-        }
-        $this->redirect('Uzivatel:show', array('id' => $uid));
     }
 }

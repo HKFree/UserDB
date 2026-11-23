@@ -81,7 +81,7 @@ final class PermissionRegistrationPdfPresenterTest extends DatabaseTestCase
             $request = fn (): PresenterResult => $this->presenters->ui($actor->id, 'UzivatelActions', [
                 'action' => 'exportAndSendRegForm', 'id' => $member->id,
             ]);
-            if (!$allowed) {
+            if ($allowed === false) {
                 $this->scenario->assertDenied($request);
                 continue;
             }
@@ -168,7 +168,7 @@ final class PermissionRegistrationPdfPresenterTest extends DatabaseTestCase
     }
 
     private function pdfResponse(PresenterResult $result): PdfResponse {
-        if (!$result->response instanceof PdfResponse) {
+        if (($result->response instanceof PdfResponse) === false) {
             throw new \LogicException('Expected a registration PDF response.');
         }
         return $result->response;

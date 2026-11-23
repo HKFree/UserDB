@@ -2,7 +2,8 @@
 <h3>Kompletní seznam členů</h3>
 
 {if $search}
-  <p>Fulltextové vyhledávání: <code>{$search}</code></p>
+  <p>Fulltextové vyhledávání: <code>{$search}</code>
+    <a href="{link UzivatelList:listall}" class="btn btn-default btn-xs" role="button"><i class="fa fa-times" aria-hidden="true"></i> Zrušit hledání</a></p>
 
 {/if}
 &nbsp;&nbsp;
@@ -19,7 +20,7 @@
 <br><br>
 
 
-{control grid}
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Kompletní seznam členů">{control grid}</div>
 
 {if !$search}
 <ul>

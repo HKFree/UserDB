@@ -38,7 +38,6 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         Model\PovoleneSMTP $alowedSMTP,
         Model\DNat $dnat,
         Model\Parameters $parameters,
-        Model\SloucenyUzivatel $slUzivatel,
         Model\Smlouva $smlouva,
         Services\SmlouvaStavSluzba $smlouvaStavSluzba,
         Model\SpravceOblasti $prava,
@@ -61,7 +60,6 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             alowedSMTP: $alowedSMTP,
             dnat: $dnat,
             parameters: $parameters,
-            slUzivatel: $slUzivatel,
             smlouva: $smlouva,
             smlouvaStavSluzba: $smlouvaStavSluzba,
             prava: $prava,
@@ -90,7 +88,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
         $pohyb = $this->uzivatelskeKonto->findPohyb(array('PrichoziPlatba_id' => intval($id), 'Uzivatel_id NOT' => null));
         //\Tracy\Debugger::barDump($pohyb->Uzivatel);
         if ($pohyb !== null) {
-            if (!in_array($pohyb->Uzivatel_id, [null, 0], true)) {
+            if (in_array($pohyb->Uzivatel_id, [null, 0], true) === false) {
                 $uzivatel = $this->uzivatel->getUzivatel($pohyb->Uzivatel_id);
                 $this->template->canViewOrEdit = $uzivatel !== null && $this->ap->canViewOrEditAP($uzivatel->Ap_id, $this->getUser());
             } else {
@@ -160,12 +158,12 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             ->setDefaultValue('druzstvo')
             ->setWhere(function ($value, \Nette\Database\Table\Selection $connection) {
                 if ($value === 'spolek') {
-                    return ($connection->where('spolek', 1));
+                    return $connection->where('spolek', 1);
                 }
                 if ($value === 'druzstvo') {
-                    return ($connection->where('druzstvo', 1));
+                    return $connection->where('druzstvo', 1);
                 }
-                return ($connection);
+                return $connection;
             });
 
         $grid->addColumnText('castka', 'Částka')->setCustomRender(function ($item) {
@@ -180,7 +178,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
             if ($item->druzstvo) {
                 $c = $c . $spanDruzstvo;
             }
-            return ($c);
+            return $c;
         })->setSortable()->setFilterText();
 
         $grid->addColumnDate('datum_cas', 'Datum')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATETIME)->setSortable()->setFilterText();

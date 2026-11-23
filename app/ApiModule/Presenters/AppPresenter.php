@@ -52,11 +52,11 @@ class AppPresenter extends ApiPresenter
     }
 
     private function getFailedGetTokenAttempts(): int {
-        return ($this->aplikaceLog->getLogy()
+        return $this->aplikaceLog->getLogy()
             ->where('action', 'app.getToken.failed')
             ->where('ip', $this->httpRequest->remoteAddress)
             ->where('time > ?', new Nette\Utils\DateTime('now - 15 minutes'))
-            ->count());
+            ->count();
     }
 
     /** @param int|string|null $uid */
@@ -120,7 +120,7 @@ class AppPresenter extends ApiPresenter
      * @param string|null $token
      */
     private function verifyToken($uid, $token): void {
-        if ($uid === null || !$this->aplikaceToken->verifyToken($uid, $token)) {
+        if ($uid === null || $this->aplikaceToken->verifyToken($uid, $token) === false) {
             $this->aplikaceLog->log('app.verifyToken.failed', array($uid, $token));
             $this->sendResponse(new JsonResponse(['result' => 'Token invalid']));
         }

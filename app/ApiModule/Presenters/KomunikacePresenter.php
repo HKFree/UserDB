@@ -33,7 +33,7 @@ class KomunikacePresenter extends ApiPresenter
 
         parent::checkApID($u->Ap->id);
 
-        if (!$this->komunikace->maValidniCislo($u)) {
+        if ($this->komunikace->maValidniCislo($u) === false) {
             $this->sendResponse(new JsonResponse(['result' => 'User doesnt have valid number', 'resultNumeric' => -4, 'serverTime' => date("c")]));
         }
 
