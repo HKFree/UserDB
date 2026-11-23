@@ -136,7 +136,7 @@
     {if $canViewOrEdit}
         <h4>Platby
             &nbsp;
-            <a n:href="PaymentSchedule:sendPaymentScheduleEmail id=>$u->id" role="button" class="btn btn-primary btn-sm" id="btn-handle-sendPaymentScheduleEmail">
+            <a n:href="PaymentSchedule:sendPaymentScheduleEmail id=>$u->id" role="button" class="btn btn-primary btn-sm" id="btn-handle-sendPaymentScheduleEmail" n:attr="data-confirm => $dotazRozpisPlateb">
                 <b>@</b> Odeslat rozpis plateb e-mailem
             </a>
             <a n:href="PaymentSchedule:show id=>$u->id" class="btn btn-default btn-sm" role="button">
@@ -361,12 +361,10 @@
                 }
             })
 
-            $('#btn-handle-sendPaymentScheduleEmail').on('click', function() {
-                const c = confirm("Rozpis plateb bude odeslán na e-mail "+{$u->email}+".\n\nPokračovat?");
-                if (c) {
-                    // Ok
-                } else {
-                    // Cancel
+            // Bez data-confirm člen nemá platnou adresu a hlášku o tom ukáže server.
+            $('#btn-handle-sendPaymentScheduleEmail').on('click', function(event) {
+                const dotaz = $(this).attr('data-confirm');
+                if (dotaz !== undefined && !confirm(dotaz)) {
                     event.preventDefault();
                 }
             })

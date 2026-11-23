@@ -149,7 +149,7 @@ open the report with `npx playwright show-report ../../temp/e2e/report` from `te
 
 The scenarios in `tests/e2e/specs/` cover: every page of the menu for four roles, the search in the top bar,
 creating and editing a member with IP addresses, activation, reactivation and deactivation of internet, e-mail to
-one member and to a whole AP, editing an AP with the subnet overlap check, labels on the member detail, sorting and
+one member and to a whole AP, sending the payment schedule with its confirmation, editing an AP with the subnet overlap check, labels on the member detail, sorting and
 filters of the member list, proposing and approving an honorary membership, granting a role and transferring an
 unpaired payment. Each file names the demo records it changes in its first comment.
 

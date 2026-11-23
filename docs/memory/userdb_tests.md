@@ -206,3 +206,8 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
 - Select bez promptu s hodnotou mimo nabídku formulář odmítne sám (`SelectBox::isOk()`, hláška
   „Please select a valid option.“) a `onSuccess` se nezavolá: odpověď je 200 s formulářem, ne přesměrování.
   Ověřeno 23. 11. 2026 podvrženým `from=0` ve formuláři e-mailu členovi, Nette Forms z `composer.lock`.
+- Detail člena (`Uzivatel:show`) nejde celý načíst přes `Tester\DomQuery::fromHtml()`: stránka má duplicitní
+  id `btn-handle-subscriber-contract` a DomQuery skončí varováním. Vytáhnout regulárním výrazem jen potřebný
+  element. `DOMDocument::loadHTML()` (helper `values()` v `DemoDataPresenterTest`) zase v hodnotě atributu
+  sloučí konce řádků do mezery; text s `\n` (např. `data-confirm`) porovnávat ze syrového HTML.
+  Ověřeno 23. 11. 2026 u testů dotazu před odesláním rozpisu plateb (issue 317).

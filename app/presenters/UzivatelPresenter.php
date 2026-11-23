@@ -173,6 +173,19 @@ class UzivatelPresenter extends BasePresenter
         }
     }
 
+    /** Text dotazu před odesláním rozpisu plateb; null, když člen nemá platnou adresu a server odeslání rovnou odmítne. */
+    private function dotazPredOdeslanimRozpisu(Nette\Database\Table\ActiveRow $uzivatel): ?string {
+        $prijemci = $this->mailService->prijemciZpravyZeSablony($uzivatel);
+        if ($prijemci->odeslano() === false) {
+            return null;
+        }
+        $dotaz = sprintf('Rozpis plateb bude odeslán na %s %s.', count($prijemci->adresy) === 1 ? 'e-mail' : 'e-maily', implode(', ', $prijemci->adresy));
+        foreach ($prijemci->preskoceni as $prijemce) {
+            $dotaz .= sprintf("\n\n%s e-mail člena je neplatný, rozpis na něj neodejde.", $prijemce['druhaAdresa'] ? 'Sekundární' : 'Hlavní');
+        }
+        return $dotaz . "\n\nPokračovat?";
+    }
+
     public function renderShow(): void {
         if ($this->maVyplnenyParametr('id')) {
             $uid = $this->getParameter('id');
@@ -248,6 +261,7 @@ class UzivatelPresenter extends BasePresenter
                 }
 
                 $this->template->canViewOrEdit = $this->smiUpravitUzivatele($uzivatel);
+                $this->template->dotazRozpisPlateb = $this->template->canViewOrEdit ? $this->dotazPredOdeslanimRozpisu($uzivatel) : null;
                 $this->template->hasCC = $this->cestneClenstviUzivatele->getHasCC($uzivatel->id);
 
                 $this->template->activaceVisible = false;

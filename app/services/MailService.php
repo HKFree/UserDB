@@ -199,9 +199,21 @@ class MailService
         ];
     }
 
+    /** Adresy, na které by sendEmailFromTemplate() zprávu členovi poslala, a jeho přeskočené adresy; nic neodesílá. */
+    public function prijemciZpravyZeSablony(ActiveRow $uzivatel): VysledekOdeslaniEmailu {
+        $mail = new Message();
+        $preskoceni = $this->pridejObeAdresy($mail, $uzivatel);
+        return new VysledekOdeslaniEmailu($this->adresyPrijemcu($mail), array_values($preskoceni));
+    }
+
+    /** @return list<string> */
+    private function adresyPrijemcu(Message $mail): array {
+        return array_map('strval', array_keys($mail->getHeader('To') ?? []));
+    }
+
     /** @param array<string, PreskocenyPrijemce> $preskoceni */
     private function odesli(Message $mail, array $preskoceni): VysledekOdeslaniEmailu {
-        $adresy = array_map('strval', array_keys($mail->getHeader('To') ?? []));
+        $adresy = $this->adresyPrijemcu($mail);
         if ($adresy !== []) {
             $this->mailer->send($mail);
         }
