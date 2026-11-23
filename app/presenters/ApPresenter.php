@@ -286,13 +286,17 @@ class ApPresenter extends BasePresenter
         if (isset($data['subnet'])) {
             $formSubnets = array();
             foreach ($data['subnet'] as $subnet) {
-                if (!$this->subnet->validateSubnet($subnet['subnet'])) {
-                    $form->addError('Subnet ' . $subnet['subnet'] . ' není validní IPv4 subnet! Zadejte adresu sítě a masku jako celé číslo 0 až 32 bez mezer, například 10.107.70.0/24.');
+                // Validujeme to, co se uloží: textové pole Nette mezery na okrajích ořízne.
+                $zapisSubnetu = self::oriznoutRadek($subnet['subnet'] ?? null);
+                $zapisGateway = self::oriznoutRadek($subnet['gateway'] ?? null);
+
+                if (!$this->subnet->validateSubnet($zapisSubnetu)) {
+                    $form->addError('Subnet ' . $zapisSubnetu . ' není validní IPv4 subnet! Zadejte adresu sítě a masku jako celé číslo 0 až 32, například 10.107.70.0/24.');
                     return;
                 }
 
-                if ($this->ipAdresa->validateIP($subnet['gateway']) === false) {
-                    $form->addError('Gateway ' . $subnet['gateway'] . ' u subnetu ' . $subnet['subnet'] . ' není validní IPv4 adresa!');
+                if ($this->ipAdresa->validateIP($zapisGateway) === false) {
+                    $form->addError('Gateway ' . $zapisGateway . ' u subnetu ' . $zapisSubnetu . ' není validní IPv4 adresa!');
                     return;
                 }
 
@@ -302,22 +306,22 @@ class ApPresenter extends BasePresenter
                     $idAP = null;
                 }
 
-                $overlapping = $this->subnet->getOverlapingSubnet($subnet['subnet'], $idAP);
+                $overlapping = $this->subnet->getOverlapingSubnet($zapisSubnetu, $idAP);
                 if ($overlapping !== false) {
                     $overlappingReadible = implode(", ", $overlapping);
-                    $form->addError('Subnet ' . $subnet['subnet'] . ' se překrývá s již existujícím subnetem ' . $overlappingReadible . ' !');
+                    $form->addError('Subnet ' . $zapisSubnetu . ' se překrývá s již existujícím subnetem ' . $overlappingReadible . ' !');
                     return;
                 }
 
                 if (
-                    !$this->subnet->checkColision($subnet['subnet'], \App\Model\Subnet::ARP_PROXY_SUBNET)
+                    !$this->subnet->checkColision($zapisSubnetu, \App\Model\Subnet::ARP_PROXY_SUBNET)
                     && isset($subnet['arp_proxy'])
                 ) {
                     $form->addError('ARP Proxy může být zapnuté pouze u veřejných subnetů!');
                     return;
                 }
 
-                $formSubnets[] = $subnet['subnet'];
+                $formSubnets[] = $zapisSubnetu;
             }
 
             $formColisions = $this->subnet->checkColisions($formSubnets);
@@ -326,6 +330,14 @@ class ApPresenter extends BasePresenter
                 $form->addError('Subnety ' . $formColisionsReadible . ' v tomto formuláři se překrývají!');
             }
         }
+    }
+
+    /**
+     * Převede syrovou hodnotu z požadavku na text, který si z ní vezme jednořádkové pole formuláře
+     * (Nette\Forms\Form::DataLine): bez mezer a konců řádků na okrajích, chybějící nebo netextová hodnota je prázdná.
+     */
+    private static function oriznoutRadek(mixed $hodnota): string {
+        return is_scalar($hodnota) ? Nette\Utils\Strings::trim(strtr((string) $hodnota, "\r\n", '  ')) : '';
     }
 
     /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>, subnet: ArrayHash<ArrayHash<mixed>>, apiKlic: ArrayHash<ArrayHash<mixed>>} $values */

@@ -327,6 +327,11 @@ použitelnost ve stávajícím vzhledu, ne nový design.
   použít klávesnicí a informace nestojí jen na barvě.
 - **Texty** česky s diakritikou a stejnými slovy jako jinde v aplikaci.
   Chybová hláška říká, co se stalo a co má uživatel udělat.
+- **Vstup odpouští.** Uživatel nesmí po vložení ze schránky hledat mezeru,
+  kterou nevidí. Jednořádkové pole (`addText`) Nette o mezery a konce řádků
+  na okrajích ořízne samo; validuj proto hodnotu pole, tedy to, co se uloží.
+  Čteš-li syrová data požadavku (`getHttpData()`), ořízni je před validací
+  stejně jako Nette.
 - **Test.** Co se komu zobrazí (podmínka v šabloně, oprávnění), je chování
   a má presenter test. Čistě vzhledová úprava test nemá; nahrazuje ho
   prohlídka v prohlížeči, kterou uvedeš v Ověření.
