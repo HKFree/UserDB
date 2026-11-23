@@ -90,15 +90,18 @@ Ověřeno 23. 11. 2026 výpisem media queries z `www/css/bootstrap.min.css` a m�
 - Přibalený Bootstrap 3.2 je upravený build: zlom `sm` i rozbalení horní lišty jsou na 990 px,
   ne na 768 px; zlom `md` je na 992 px. Pod 990 px proto sloupce `col-sm-*` nemají šířku ani
   obtékání a nabídka je sbalená.
-- Postranní panel má šířku i sloupec obsahu levý okraj ze `screen.css` mimo media query, takže
-  panel stojí vedle obsahu při každé šířce okna. Mimo úvodní stránku ho na mobilním user agentu
-  skrývá `main.js`; odkaz „Skrýt/zobrazit seznam oblastí“ je vidět jen pod 990 px.
-- Šířku sloupce obsahu od 992 px určuje `.col-md-10` v procentech okna, okraj pro panel je
-  v pixelech. Kdo mění jedno, musí přepočítat `max-width` sloupce ve `screen.css`; hlídá to
-  `tests/screenshots/test/layout-width.test.mjs`.
+- Postranní panel stojí vedle obsahu od 990 px: šířku 230 px i stejně široký levý okraj obsahu
+  dává `screen.css` v media query. Pod 990 px je panel vysouvací a otevírá ho tlačítko Oblasti
+  v horní liště (`html.sidebar-open`); podle user agenta se už nic neskrývá.
+- Obsah (`.main`) nemá sloupec Bootstrapu a zabírá zbytek okna vedle panelu. Šířka panelu je
+  ve `screen.css` dvakrát (šířka `.sidebar` a okraj `.main`) a potřetí v
+  `tests/screenshots/test/layout-width.test.mjs`, který hlídá, že se stránka neposouvá do strany.
+  Ověřeno 23. 11. 2026 tímto testem: se šířkou `.main` 100 % a s přejmenovanou třídou
+  `sidebar-open` spadl.
 
-**Why:** Issue 315: stránky se při 992 až 1079 px posouvaly do strany a první verze testu
-počítala se zlomem 768 px ze standardního Bootstrapu.
+**Why:** Issue 315: stránky se ve staré kostře při 992 až 1079 px posouvaly do strany (sloupec
+`.col-md-10` v procentech vedle okraje v pixelech) a první verze testu počítala se zlomem 768 px
+ze standardního Bootstrapu.
 
 ## Prohlídka v prohlížeči
 
@@ -128,9 +131,10 @@ počítala se zlomem 768 px ze standardního Bootstrapu.
   (formulář e-mailu: 520 px při okně 375 px). Přetečení proto poznáš porovnáním
   `document.documentElement.scrollWidth` se zadanou šířkou okna, ne s `innerWidth`.
   Ověřeno 23. 11. 2026 u issue #303.
-- Levý okraj `.main` (místo pro postranní panel) na telefonu neruší CSS, ale `main.js` podle
-  user agenta. Zkušební stránka bez `main.js` nebo bez mobilního user agenta má proto obsah
-  o tento okraj užší než skutečná stránka (pole 165 px místo 345 px). Ověřeno tamtéž.
+- Levý okraj `.main` (místo pro postranní panel) ruší pod 990 px `screen.css` podle šířky okna,
+  ne `main.js` podle user agenta. Zkušební stránka musí dát obsahu značku z `@layout.latte`
+  (`<div class="main" id="obsah">`): se sloupci `col-md-*` staré kostry vyšla při okně 1280 px
+  široká 1297 px. Ověřeno 23. 11. 2026 testy `edit-form` a `message-form` v `tests/screenshots`.
 - Formuláři, který má tlačítko s třídou `default` (Uložit v editaci člena a AP), vloží `main.js`
   na začátek kopii toho tlačítka a odsune ji mimo obrazovku (`left: -2000px`), aby Enter ukládal.
   Měření „žádný prvek formuláře nepřesahuje okno“ proto omez na prvky uvnitř `table.form`, jinak ho
@@ -138,7 +142,8 @@ počítala se zlomem 768 px ze standardního Bootstrapu.
 - Třídu `ipform` nenese jen tabulka záznamu IP adresy ve `form.latte`, ale i `fieldset` na stránkách
   oprávnění a čestného členství (`UzivatelRightsCc/editrights.latte`, `editcc.latte`,
   `SpravaCc/schvalovanicc.latte`). Styl pro záznamy ve formuláři proto piš na `table.ipform`.
-  Ověřeno tamtéž; tyto tři stránky jsou na telefonu dál širší než okno (585 px při okně 375 px).
+  Ověřeno tamtéž. V nové kostře se schvalování čestného členství a oprávnění člena se záznamy
+  do okna 375 px vejdou; ověřeno 23. 11. 2026 měřením `scrollWidth` v emulaci Playwrightu.
 - Nette podle pravidel pole mění jeho typ: `addText()` s pravidlem `Form::Email` se vykreslí jako
   `type="email"`, s `Form::Integer` jako `type="number"`. Styl psaný jen pro `input[type="text"]` tak
   část polí mine (e-mail a PSČ v editaci člena). Ověřeno tamtéž ve vykresleném HTML.

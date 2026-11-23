@@ -11,7 +11,7 @@
             <table class="form">
                 <tr n:foreach="$group->getControls() as $field">
                     <th>{label $field /}{$field->required ? '<span class="red">*</span>'|noescape}</th>
-                    <td>{input $field} {inputError $field}</td>
+                    <td>{input $field} <span n:if="$field->getErrors()" class="text-danger">{inputError $field}</span></td>
                 </tr>
                 {if $group->getOption('dynamicContainer')}
                     {include 'dynamic.latte', recordTemplate => 'ipform.latte', component => $form[$group->getOption('dynamicContainer')]}

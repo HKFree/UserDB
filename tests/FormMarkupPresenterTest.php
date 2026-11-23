@@ -59,7 +59,7 @@ final class FormMarkupPresenterTest extends DatabaseTestCase
         $page = $this->presenters->ui($actor->id, 'Uzivatel', ['action' => 'edit', 'id' => $member->id]);
 
         Assert::same(200, $page->status);
-        Assert::match('~<form [^>]*id="frm-uzivatelForm"[^>]*>\s*<table class="form">~', $page->html);
+        Assert::match('~<form [^>]*id="frm-uzivatelForm"[^>]*>\s*<section class="form-section" [^>]*>\s*<h2 [^>]*>[^<]+</h2>\s*<table class="form">~', $page->html);
         $patterns = [
             'e-mail field' => '<tr>\s*<th><label for="frm-uzivatelForm-email">Email</label><span class="red">\*</span></th>\s*<td><input type="email" name="email" ',
             'date field' => '<tr>\s*<th><label for="frm-uzivatelForm-datum_narozeni">[^<]*</label></th>\s*<td><input type="date" name="datum_narozeni" ',

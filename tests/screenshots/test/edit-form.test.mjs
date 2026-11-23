@@ -218,11 +218,13 @@ describe('edit form on a phone', () => {
         for (const { name, field, label: labelBox } of labelled) {
             assert.ok(labelBox.right <= field.left, `label of ${name} ends at ${labelBox.right}, the field starts at ${field.left}`);
         }
-        assert.equal(labelled.find(({ name }) => name === 'jmeno').field.width, reference.width);
+        // screen.css gives a text field of a form at least 320 px; the layout for a phone must not stretch it further.
+        assert.ok(reference.width < 320, `the unstyled field is ${reference.width} px wide`);
+        assert.equal(labelled.find(({ name }) => name === 'jmeno').field.width, 320);
         for (const { name, size } of fontSizes) {
             assert.equal(size, reference.size, `the text of ${name}`);
         }
-        assert.deepEqual(records.map(({ width }) => width), [570, 570, 570]);
-        assert.equal(address.width, 100);
+        assert.deepEqual(records.map(({ width }) => width), [600, 600, 600]);
+        assert.equal(address.width, 130);
     });
 });

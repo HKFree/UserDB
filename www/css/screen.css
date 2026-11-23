@@ -2284,16 +2284,6 @@ html {
     touch-action: manipulation;
 }
 
-/* Merging two members: long option texts must not set the width of the page. */
-.merge-layout {
-    min-width: 640px;
-    table-layout: fixed;
-}
-
-.merge-layout select {
-    width: 100%;
-}
-
 /* Two filters side by side on a phone: tighter spacing, so that a value such as "spolek i družstvo" fits. */
 @media (max-width: 479px) {
     .grido .filter.outer .items > span {

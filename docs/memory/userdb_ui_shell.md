@@ -25,7 +25,7 @@ metadata:
 - V emulaci telefonu (Playwright s `isMobile`) roste `window.innerWidth` spolu s obsahem,
   takže rozdíl `scrollWidth - innerWidth` vyjde nula i u stránky širší než displej.
   Šířku stránky porovnávej s nastavenou šířkou okna (375). Ověřeno 22. 11. 2026: úprava
-  AP hlásila `innerWidth` 381 a slučování uživatelů 840 při okně 375 px.
+  AP hlásila `innerWidth` 381 při okně 375 px.
 - Textové pole má na dotykovém displeji a pod 990 px písmo 16 px a panel oblastí po
   ťuknutí nedává kurzor do filtru. Důvod je mimo kód: iOS Safari přiblíží stránku, když
   kurzor skončí v poli s menším písmem. Chování iOS nebylo ověřeno na zařízení, jen
