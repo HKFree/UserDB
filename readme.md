@@ -472,7 +472,8 @@ files with `UPDATE_SNAPSHOTS=1 npm test` from `tests/screenshots/`. These tests 
 
 The same `npm test` runs `test/copy-value.test.mjs`, a browser test of the application's own `www/js/main.js`:
 copying a device login and password from the IP address table (mouse selection, the copy button, keyboard and touch).
-`test/message-form.test.mjs` checks with the real `www/css/screen.css` that the e-mail and SMS forms fit into a phone screen.
+`test/message-form.test.mjs` and `test/edit-form.test.mjs` check with the real `www/css/screen.css` that the forms rendered by
+`app/templates/form.latte` fit into a phone screen: the e-mail and SMS forms and the edit forms with their nested records.
 
 ### Jobs to be run
 
