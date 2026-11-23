@@ -1,0 +1,22 @@
+{**
+ * Šablona všech tabulek Grido (App\Components\AppGrid): tlačítka Vyhledat a Resetovat jsou
+ * nahoře u filtrů. Výchozí šablona je kreslí až pod tabulkou, kde jsou u dlouhého výpisu
+ * mimo obrazovku, a výběr v rozbalovacím filtru se sám neodešle.
+ *}
+{extends $gridoTemplate}
+
+{block outerFilterWrapper}
+    {if $formFilters}{include parent}{/if}
+{/block}
+
+{block outerFilterControls}
+    <button n:name="search" class="btn btn-primary btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {$control->getTranslator()->translate('Grido.Search')}</button>
+    <button n:name="reset" class="btn btn-default btn-sm"><i class="fa fa-undo" aria-hidden="true"></i> {$control->getTranslator()->translate('Grido.Reset')}</button>
+{/block}
+
+{block search}{/block}
+
+{* Tabulce bez filtrů zůstává Resetovat pod tabulkou: ruší i řazení a počet položek na stránku. *}
+{block reset}
+    {if !$formFilters}{include parent}{/if}
+{/block}

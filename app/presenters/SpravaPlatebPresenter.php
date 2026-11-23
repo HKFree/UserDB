@@ -4,7 +4,7 @@ namespace App\Presenters;
 
 use Nette;
 use App\Model;
-use Grido\Grid;
+use App\Components\AppGrid;
 use Nette\Utils\Html;
 use Tracy\Debugger;
 
@@ -26,8 +26,7 @@ class SpravaPlatebPresenter extends SpravaPresenter
     }
 
     protected function createComponentOdchplatby(string $name): void {
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('op_export');
 
         $grid->setModel($this->odchoziPlatba->getOdchoziPlatby());
@@ -89,8 +88,7 @@ class SpravaPlatebPresenter extends SpravaPresenter
 
         $id = $this->getParameter('type');
 
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('payment_export');
 
         $prichoziPlatby = $this->prichoziPlatba->getPrichoziPlatby();

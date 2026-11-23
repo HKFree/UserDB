@@ -15,12 +15,22 @@ Ověřeno 22. 11. 2026 na lokálním webu ve Floxu, není-li uvedeno jinak.
   filtr, řazení i stránkování jsou běžné požadavky s novým načtením stránky a výběr
   v rozbalovacím filtru se sám neodešle. Ověřeno v prohlížeči: po změně `select` zůstala adresa
   i řádky beze změny, filtr se uplatnil až tlačítkem Vyhledat.
-- V seznamu členů se filtry kreslí nad tabulkou (`RENDER_OUTER`). Řádek filtrů v záhlaví
-  použije Grido jen u tabulky, která má akce a jejíž každý filtr patří některému sloupci
-  (`Grid::getFilterRenderType()`).
-- Vlastní šablona tabulky rozšiřuje výchozí přes `{extends $gridoTemplate}` a `setTemplateFile()`.
+- Tabulku zakládej přes `App\Components\AppGrid`, ne přímo `\Grido\Grid`; hlídá to
+  `GridFilterButtonsPresenterTest`. Třída nastaví češtinu, společnou šablonu
+  `templates/components/grid.latte` a filtry nad tabulku (`RENDER_OUTER`). Samo Grido by
+  tabulce, která má akce a jejíž každý filtr patří některému sloupci, kreslilo filtry do
+  záhlaví sloupců (`Grid::getFilterRenderType()`); blok `outerFilterControls` s tlačítky
+  Vyhledat a Resetovat se pak nevykreslí vůbec. Ověřeno 22. 11. 2026 testem Přehledu ČČ
+  bez vynucení.
+- Společná šablona rozšiřuje výchozí přes `{extends $gridoTemplate}` a `setTemplateFile()`.
   Proměnná `$t` (překlad) vzniká ve výchozí šabloně až v bloku `table`, v blocích nad tabulkou
   není; tam použít `$control->getTranslator()->translate()`.
+- Výchozí šablona kreslí rám filtrů i tabulce bez filtrů (prázdný šedý pruh, `min-height: 5em`
+  v `grido.css`) a tlačítko Vyhledat pod ní. Společná šablona proto rám bez filtrů vynechává
+  a takové tabulce nechává pod tabulkou jen Resetovat, které ruší i řazení a počet na stránku.
+- Počet položek na stránku se bez pluginu také sám neodešle a tlačítko Vyhledat ho neuplatní
+  (`handleFilter()` čte jen filtry). Ověřeno 22. 11. 2026 v prohlížeči na Stavech účtů
+  a na Odchozích platbách (po výběru 50 a tlačítku Vyhledat zůstalo 100 řádků); neopraveno.
 
 - Odkazy tabulky (řazení, stránka, export) i adresa jejího formuláře nesou jen persistentní
   parametry presenteru a parametry metody akce. Parametr čtený jen přes `getParameter()` se
