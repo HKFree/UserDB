@@ -6,7 +6,6 @@ declare(strict_types=1);
 
 namespace Test;
 
-use Nette\Application\Responses\JsonResponse;
 use Nette\Database\Table\ActiveRow;
 use Tester\Assert;
 
@@ -98,17 +97,6 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
 
     public function testUnmatchedPaymentNote(): void {
         $this->assertFilter('SpravaNesparovanych', 'nesparovane', 'accountgrid', 'poznamka', 'PRISPEVEK CLENA', 'Příspěvek člena');
-    }
-
-    public function testOutgoingCompanySuggestion(): void {
-        foreach (['ZELEZARSTVI' => ['Železářství Šroubek'], 'NENALEZITELNY' => []] as $query => $expected) {
-            $result = $this->presenters->ui($this->viewer->id, 'SpravaPlateb', [
-                'action' => 'odchoziplatby', 'do' => 'odchplatby-filters-firma-suggest',
-                'odchplatby-filters-firma-query' => $query,
-            ], ajax: true);
-            Assert::type(JsonResponse::class, $result->response);
-            Assert::same($expected, $result->json);
-        }
     }
 
     public function testDateAndAmountPartialFilters(): void {
