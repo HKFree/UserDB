@@ -131,12 +131,8 @@ else
 fi
 
 command -v flox >/dev/null || { echo 'Flox is required.' >&2; exit 1; }
-node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true)
-required_node=$(cat "$tools_dir/.nvmrc")
-if [ "$node_major" != "$required_node" ]; then
-    echo "Node $required_node is required (tests/screenshots/.nvmrc), found: ${node_major:-none}." >&2
-    exit 1
-fi
+# Node of the tools comes from the Flox environment of the checkout that holds this script.
+tools_node=(flox activate -d "$repository" -- node)
 
 prepare() {
     local directory=$1 label=$2
@@ -186,11 +182,11 @@ if [ -n "$base" ] && [ -z "$base_reason" ]; then
         echo "Base unavailable: $base_reason"
     fi
 fi
-launch "$repository" "$out/logs/head-capture.log" node "$tools_dir/capture.mjs" "$head_origin" head "$out"
+launch "$repository" "$out/logs/head-capture.log" "${tools_node[@]}" "$tools_dir/capture.mjs" "$head_origin" head "$out"
 wait_job "$launched_pid"
 if [ -z "$base_reason" ]; then
-    launch "$repository" "$out/logs/base-capture.log" node "$tools_dir/capture.mjs" "$base_origin" base "$out"
+    launch "$repository" "$out/logs/base-capture.log" "${tools_node[@]}" "$tools_dir/capture.mjs" "$base_origin" base "$out"
     wait_job "$launched_pid"
 fi
-node "$tools_dir/compare.mjs" "$out" "$head_sha" "$base_sha" "${base_reason:-}" > "$out/logs/summary.txt"
-node "$tools_dir/validate.mjs" "$out" "$head_sha"
+"${tools_node[@]}" "$tools_dir/compare.mjs" "$out" "$head_sha" "$base_sha" "${base_reason:-}" > "$out/logs/summary.txt"
+"${tools_node[@]}" "$tools_dir/validate.mjs" "$out" "$head_sha"

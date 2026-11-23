@@ -119,9 +119,8 @@ PHP extensions are included and frontend assets are already committed, so no Nod
 
 `tests/e2e/` holds Playwright Test scenarios of the main processes: they click through the application in
 Chromium the way a person does, across several pages and roles, including the JavaScript that the presenter
-tests cannot see. Install Flox, Composer dependencies and Node 26 (recorded in `tests/screenshots/.nvmrc`
-and shared with the [page screenshots](#screenshots-in-pull-requests); Node is separate from the Flox
-environment). From the repository root:
+tests cannot see. Install Flox and the Composer dependencies; Node 26 is part of the Flox environment and is
+shared with the [page screenshots](#screenshots-in-pull-requests). From the repository root:
 
 ```sh
 scripts/userdb_e2e.sh                                   # all tests
@@ -129,9 +128,9 @@ scripts/userdb_e2e.sh specs/smoke.spec.mjs              # one file
 scripts/userdb_e2e.sh -g "hledání" --headed             # any arguments of "playwright test"
 ```
 
-The script installs the npm packages and Chromium when `tests/e2e/package-lock.json` changed (on Linux run
-`npx playwright install --with-deps chromium` in `tests/e2e` once), activates Flox with its services and then,
-on every run:
+The script activates Flox with its services, installs the npm packages and Chromium when
+`tests/e2e/package-lock.json` changed (on Linux run `flox activate -- npx playwright install --with-deps chromium`
+in `tests/e2e` once) and then, on every run:
 
 1. rebuilds the database `userdb_e2e` (account `userdb_e2e` / `e2e-only`) from the migrations with the scenario
    demo data and without the volume data, and empties its e-mails, sessions and stored files under
@@ -166,8 +165,9 @@ the file as `test.fixme()` with a comment linking the issue, so that the fix onl
 
 [e2e.yml](.github/workflows/e2e.yml) runs the same script on every push and pull request, including pull requests
 from forks, since it needs no secret. A failed run keeps `temp/e2e/` and the Flox logs as the `e2e-failure`
-artifact for 14 days. `BrowserToolsVersionsTest` keeps the Playwright and Node versions of `tests/e2e` and
-`tests/screenshots` identical.
+artifact for 14 days. `BrowserToolsVersionsTest` keeps the Playwright version of `tests/e2e` and
+`tests/screenshots` identical, and the Node version of the Flox environment, of `tests/screenshots/.nvmrc` and
+of both packages.
 
 ### Worktrees with Orca
 
@@ -409,17 +409,12 @@ workflow. The image checkout uses a partial clone and a sparse checkout of the c
 
 #### Local capture
 
-Install Flox and Node 26 (also recorded in `tests/screenshots/.nvmrc`). Node is separate from the Flox
-environment. From the repository root:
+Install Flox; Node 26 is part of its environment. `tests/screenshots/.nvmrc` names the same version for the
+`publish` job, which runs without Flox. From the repository root:
 
 ```sh
-cd tests/screenshots
-nvm install
-nvm use
-npm ci
-npx playwright install chromium          # Linux: add --with-deps
-npm test
-cd ../..
+# Linux: playwright install --with-deps chromium
+flox activate -- bash -c 'cd tests/screenshots && npm ci && npx playwright install chromium && npm test'
 scripts/userdb_screenshots.sh local HEAD  # compare the current commit with itself
 scripts/userdb_screenshots.sh local       # compare HEAD with its merge-base with origin/master
 scripts/userdb_screenshots.sh local <base-commit> --head <head-commit>

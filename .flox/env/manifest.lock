@@ -30,6 +30,10 @@
         "pkg-group": "mariadb",
         "version": "10.11.19"
       },
+      "nodejs": {
+        "pkg-path": "nodejs_26",
+        "pkg-group": "nodejs"
+      },
       "pcov": {
         "pkg-path": "php82Extensions.pcov"
       },
@@ -434,6 +438,41 @@
       "priority": 5
     },
     {
+      "attr_path": "procps",
+      "broken": false,
+      "derivation": "/nix/store/550nvkpdqc2nzjsdwl6g4h44jv4q58hv-procps-4.0.7.drv",
+      "description": "Utilities that give information about processes using the /proc filesystem",
+      "install_id": "procps",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "name": "procps-4.0.7",
+      "pname": "procps",
+      "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+      "rev_count": 1124497,
+      "rev_date": "2026-11-19T10:51:41Z",
+      "scrape_date": "2026-11-21T06:43:09.481064Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.0.7",
+      "outputs_to_install": [
+        "man",
+        "out",
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/5i2w8kmhkaspcyv8nv3yr4wxxy82k8qq-procps-4.0.7-dev",
+        "doc": "/nix/store/ydkhk7v2g2frlfij1bdpv9bp07551hf1-procps-4.0.7-doc",
+        "man": "/nix/store/dy76ig2sl49xi2ih58lqhrshk2bkkpm3-procps-4.0.7-man",
+        "out": "/nix/store/aj08b694apkc1jay2akywym9ghlailf5-procps-4.0.7"
+      },
+      "system": "x86_64-linux",
+      "group": "procps",
+      "priority": 5
+    },
+    {
       "attr_path": "php82Packages.composer",
       "broken": false,
       "derivation": "/nix/store/6pxwjwb8bwcsd716f3s5xv0hax3d82ld-composer-2.10.3.drv",
@@ -614,38 +653,62 @@
       "priority": 5
     },
     {
-      "attr_path": "procps",
+      "attr_path": "nodejs_26",
       "broken": false,
-      "derivation": "/nix/store/550nvkpdqc2nzjsdwl6g4h44jv4q58hv-procps-4.0.7.drv",
-      "description": "Utilities that give information about processes using the /proc filesystem",
-      "install_id": "procps",
-      "license": "GPL-2.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
-      "name": "procps-4.0.7",
-      "pname": "procps",
-      "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
-      "rev_count": 1124497,
-      "rev_date": "2026-11-19T10:51:41Z",
-      "scrape_date": "2026-11-21T06:43:09.481064Z",
+      "derivation": "/nix/store/q8dk9pwxcm64brf1wkddrk058blfgx4h-nodejs-26.13.1.drv",
+      "description": "Event-driven I/O framework for the V8 JavaScript engine",
+      "install_id": "nodejs",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "name": "nodejs-26.13.1",
+      "pname": "nodejs_26",
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "rev_count": 1125864,
+      "rev_date": "2026-11-21T04:16:29Z",
+      "scrape_date": "2026-11-22T05:47:30.691657Z",
       "stabilities": [
         "unstable"
       ],
       "unfree": false,
-      "version": "4.0.7",
+      "version": "26.13.1",
       "outputs_to_install": [
-        "man",
-        "out",
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/a1w6d4q0cvrih7vnk3spf274c8ds438i-nodejs-26.13.1"
+      },
+      "system": "aarch64-darwin",
+      "group": "nodejs",
+      "priority": 5
+    },
+    {
+      "attr_path": "nodejs_26",
+      "broken": false,
+      "derivation": "/nix/store/4c1vj0srpsnbqqcxz05z07yss8q4gcc2-nodejs-26.13.1.drv",
+      "description": "Event-driven I/O framework for the V8 JavaScript engine",
+      "install_id": "nodejs",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "name": "nodejs-26.13.1",
+      "pname": "nodejs_26",
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "rev_count": 1125864,
+      "rev_date": "2026-11-21T04:16:29Z",
+      "scrape_date": "2026-11-22T06:41:47.915757Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "26.13.1",
+      "outputs_to_install": [
         "out",
         "out"
       ],
       "outputs": {
-        "dev": "/nix/store/5i2w8kmhkaspcyv8nv3yr4wxxy82k8qq-procps-4.0.7-dev",
-        "doc": "/nix/store/ydkhk7v2g2frlfij1bdpv9bp07551hf1-procps-4.0.7-doc",
-        "man": "/nix/store/dy76ig2sl49xi2ih58lqhrshk2bkkpm3-procps-4.0.7-man",
-        "out": "/nix/store/aj08b694apkc1jay2akywym9ghlailf5-procps-4.0.7"
+        "out": "/nix/store/d9i3p0ykvcz4f3jnpgjxmr7xa5yikibc-nodejs-26.13.1"
       },
       "system": "x86_64-linux",
-      "group": "procps",
+      "group": "nodejs",
       "priority": 5
     }
   ]

@@ -51,17 +51,16 @@ jobs:
         if: steps.tools.outputs.available == 'true'
         with:
           disable-metrics: true
+      # Only for a branch whose Flox environment has no Node yet; elsewhere Node of Flox comes first in PATH.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         if: steps.tools.outputs.available == 'true'
         with:
           node-version-file: head/tests/screenshots/.nvmrc
       - name: Install and test capture tools
         if: steps.tools.outputs.available == 'true'
-        working-directory: head/tests/screenshots
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
-          npm test
+        run: >-
+          flox activate -d head -- bash -c
+          'cd head/tests/screenshots && npm ci && npx playwright install --with-deps chromium && npm test'
       - name: Capture and compare
         if: steps.tools.outputs.available == 'true'
         run: head/scripts/userdb_screenshots.sh run --head head --base base --out output

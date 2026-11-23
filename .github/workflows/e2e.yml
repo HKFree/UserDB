@@ -20,18 +20,14 @@ jobs:
       - uses: flox/install-flox-action@5bb9eaaffbeaa699a8251a1ae21ecf4c8e0e37d4 # v2.7.0
         with:
           disable-metrics: true
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          # One Node version for the browser tests and the page screenshots.
-          node-version-file: tests/screenshots/.nvmrc
       - name: Install Composer dependencies
         run: flox activate -- composer install --no-interaction --prefer-dist --no-progress
       - name: Install Playwright
-        working-directory: tests/e2e
-        run: |
-          npm ci
-          # The tests run headless; the headless shell is a smaller download than the full browser.
-          npx playwright install --with-deps --only-shell chromium
+        # Node comes from the Flox environment, the same one for the browser tests and the page screenshots.
+        # The tests run headless; the headless shell is a smaller download than the full browser.
+        run: >-
+          flox activate -- bash -c
+          'cd tests/e2e && npm ci && npx playwright install --with-deps --only-shell chromium'
       - name: Run the browser tests
         run: scripts/userdb_e2e.sh
       - name: Check cleanup

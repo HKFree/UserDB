@@ -141,7 +141,9 @@ Review proběhne před odevzdáním zadavateli, i u malé změny a u dokumentace
 ## Příkazy
 
 Vývoj i testy běží v projektovém Flox prostředí (PHP 8.2, Composer, MariaDB,
-InfluxDB, LibreOffice). Před testováním ověř dostupnost Floxu pomocí `flox --version`.
+InfluxDB, LibreOffice, Node pro nástroje v `tests/e2e` a `tests/screenshots`). Co vývoj
+nebo testy potřebují spustit, přidej do Floxu, ne do návodu k ruční instalaci; Chromium si
+stahuje Playwright sám. Před testováním ověř dostupnost Floxu pomocí `flox --version`.
 Pokud není dostupný, nabídni uživateli návod k instalaci a tutoriál použití z
 [README](readme.md#tests-with-flox); v testování pokračuj po jeho zprovoznění.
 
@@ -159,7 +161,7 @@ Které řádky testy provedou, změří `flox activate -s -- scripts/userdb_test
 (report v `temp/coverage/coverage.html`). Práh pokrytí se nevynucuje.
 
 Hlavní postupy v prohlížeči (Playwright, `tests/e2e/`) pustí `scripts/userdb_e2e.sh`, sám
-si aktivuje Flox. Potřebuje Node ve verzi z `tests/screenshots/.nvmrc`. Každý běh postaví
+si aktivuje Flox, ze kterého bere i Node. Každý běh postaví
 vlastní databázi `userdb_e2e` a spustí nad ní vlastní web; vývojové databáze ani běžícího
 webu se nedotkne. CI ho pouští při každém pushi a PR. Lokálně ho pusť před commitem změny
 stránky, formuláře nebo JavaScriptu, kterými některý z těchto postupů prochází. Jeden soubor

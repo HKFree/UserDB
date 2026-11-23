@@ -19,11 +19,11 @@ další `flox activate` v tom worktree se zasekne bez výstupu. Log `.flox/log/s
 řádkem `Remaining processes: 1`. Pomohlo až ukončení zaseknutého `mariadbd` daného worktree
 (SIGTERM nestačil, SIGKILL ano); aktivace se pak sama dokončila.
 
-**Why:** Skript, který po vstupu do Floxu hned selže (chybí Node, chyba syntaxe), by po sobě nechal
-nepoužitelné prostředí a příčina není z chování vidět.
+**Why:** Skript, který po vstupu do Floxu hned selže (chybí závislosti Composeru, chyba syntaxe), by
+po sobě nechal nepoužitelné prostředí a příčina není z chování vidět.
 
 **How to apply:** `scripts/userdb_e2e.sh` proto vše, co může selhat okamžitě, kontroluje před vstupem
-do Floxu a uvnitř nejdřív počká na MariaDB. Totéž pořadí drž v každém novém skriptu, který služby
+do Floxu a uvnitř nejdřív počká na MariaDB; teprve potom instaluje balíčky npm. Totéž pořadí drž v každém novém skriptu, který služby
 startuje sám. Při ručním zkoušení drž služby jednou dlouhou aktivací (`flox activate -s -- sleep N`)
 a příkazy pouštěj vedle ní přes `flox activate --`.
 
@@ -93,6 +93,18 @@ podle AP a UID a jméno až na detailu.
 
 ## Node
 
-Nástroje v `tests/e2e` i `tests/screenshots` chtějí Node z `tests/screenshots/.nvmrc` a Flox ho
-nedodává. S jinou verzí skript skončí hned na začátku s hláškou; `nvm install` v `tests/screenshots`
-nainstaluje správnou.
+Node pro nástroje v `tests/e2e` i `tests/screenshots` dodává Flox (`nodejs_26` v `manifest.toml`), mimo Flox
+ho vývojář instalovat nemusí. Dvě místa ho přesto berou odjinud a obě záměrně:
+
+- Job `publish` ve workflow `pr-screenshots.yml` drží klíč k repozitáři obrázků a Flox neaktivuje:
+  aktivace by spustila hook `on-activate` z manifestu větve PR. Node mu dává `setup-node` podle
+  `tests/screenshots/.nvmrc`.
+- Job `capture` téhož workflow má `setup-node` jako zálohu. Workflow se u události `pull_request` bere ze
+  sloučení s `master`, ale job si stahuje přímo poslední commit větve; větev založená před přidáním Node do
+  Floxu ho proto v prostředí nemá a její skript volá `node` z `PATH`. V nové větvi je Node z Floxu v `PATH`
+  první (ověřeno lokálně 23. 11. 2026: v shellu Node 22, uvnitř `flox activate` 26).
+
+**How to apply:** Verzi Node měň na všech místech najednou: `manifest.toml`, `.nvmrc`, `engines` v obou
+`package.json`; shodu hlídá `BrowserToolsVersionsTest`. Node má v manifestu vlastní `pkg-group`: zamknutí tak
+přidalo jen jeho a ostatní balíčky zůstaly na svých revizích (ověřeno v diffu `manifest.lock`). Zálohu
+v jobu `capture` jde odstranit, až nebude otevřený žádný PR založený před touto změnou.

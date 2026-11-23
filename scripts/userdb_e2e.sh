@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Browser tests of the main processes (Playwright, tests/e2e) against a local web of this checkout:
 #   scripts/userdb_e2e.sh [arguments of "playwright test", e.g. specs/smoke.spec.mjs --headed]
-# Needs Flox, Composer dependencies and Node of tests/screenshots/.nvmrc. Every run rebuilds the database
+# Needs Flox, which also brings Node, and Composer dependencies. Every run rebuilds the database
 # userdb_e2e from the scenario demo data and starts its own web; the developer's database, web, sessions
 # and e-mails are never used.
 set -euo pipefail
@@ -18,33 +18,34 @@ tests_dir=$repository/tests/e2e
 out=$repository/temp/e2e
 lock=
 web_pidfile=$out/logs/web.pid
+# npm writes this file last; the script compares its time with package-lock.json.
+installed=$tests_dir/node_modules/.package-lock.json
+installing=
 
 fail() {
     echo "$1" >&2
     exit 1
 }
 
-check_node() {
-    local node_major required_node
-    node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true)
-    required_node=$(cat "$repository/tests/screenshots/.nvmrc")
-    if [ "$node_major" != "$required_node" ]; then
-        fail "Node $required_node is required (tests/screenshots/.nvmrc), found: ${node_major:-none}."
-    fi
-}
-
 # Installs what package-lock.json names, and its browser, whenever the lock file is newer than the installation.
+# As background jobs: a signal then stops a stalled download at once and the cleanup releases the lock.
 install_node_packages() {
-    if [ "$tests_dir/node_modules/.package-lock.json" -nt "$tests_dir/package-lock.json" ]; then
+    local step
+    if [ "$installed" -nt "$tests_dir/package-lock.json" ]; then
         return
     fi
     echo 'Installing Playwright...'
-    (cd "$tests_dir" && npm ci --no-audit --no-fund)
-    if ! (cd "$tests_dir" && npx playwright install chromium); then
-        # Without this the next run would find the packages current and never install the browser.
-        rm -f "$tests_dir/node_modules/.package-lock.json"
-        fail 'Chromium could not be installed.'
-    fi
+    installing=1
+    for step in 'npm ci --no-audit --no-fund' 'npx playwright install chromium'; do
+        # The step is a command line without quoting.
+        # shellcheck disable=SC2086
+        launch "$tests_dir" "$out/logs/install.log" $step
+        if ! wait_job "$launched_pid"; then
+            tail -n 20 "$out/logs/install.log" >&2
+            fail "\"$step\" failed. See $out/logs/install.log"
+        fi
+    done
+    installing=
 }
 
 wait_for_database() {
@@ -87,6 +88,8 @@ cleanup() {
     # Without the lock the web and its PID file belong to another run.
     if [ -n "$lock" ]; then
         stop_process_groups
+        # After an unfinished installation the next run would find the packages current and never install the browser.
+        [ -z "$installing" ] || rm -f "$installed"
         stop_detached_service "$web_pidfile" "$repository"
         wait_for_services
         pid=$(cat "$web_pidfile" 2>/dev/null)
@@ -107,8 +110,6 @@ if [ -z "${USERDB_E2E_IN_FLOX:-}" ]; then
     # Everything that can fail at once is checked before Flox starts MariaDB: an activation that ends
     # while the database is still starting can leave the service hanging.
     [ -f "$repository/vendor/autoload.php" ] || fail 'Composer dependencies are missing: run scripts/userdb_worktree.sh setup.'
-    check_node
-    install_node_packages
     USERDB_E2E_IN_FLOX=1 exec flox activate -s -d "$repository" -- bash "$scripts_dir/userdb_e2e.sh" "$@"
 fi
 
@@ -121,6 +122,8 @@ wait_for_database
 acquire_lock
 rm -rf "$out"
 mkdir -p "$out/logs"
+# With Node of Flox, and under the lock: two runs would install into one directory.
+install_node_packages
 
 echo 'Preparing the database userdb_e2e...'
 # A MariaDB started before the init file knew this database only gets it now; the statements are idempotent.
