@@ -1,7 +1,7 @@
 # UserDB: katalog demo dat
 
 Scénářová data se načítají migracemi `db/dummy-data/` v Dockeru, lokálním Floxu i na testovacích instancích.
-Obsahují 8 oblastí, 20 AP a 77 členů včetně původních 7. Nových 70 členů má v poznámce první řádek `DEMO: `.
+Obsahují 12 oblastí, 25 AP a 89 členů včetně původních 7. Nových 82 členů má v poznámce první řádek `DEMO: `.
 Jména, kontakty, adresy, přihlašovací údaje a platby jsou smyšlené. Datum scénářů se odvozuje od dne načtení.
 
 Flox a testovací instance navíc standardně přidávají objemová data. Při přípravě nové databáze je lze vynechat:
@@ -35,7 +35,7 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Ani jedno členství | 20023 Bezčlenství | Bez štítků, filtr včetně zrušených |
 | Smazané družstvo | 20024 Smazaný | AP 202, šedý řádek a štítek |
 | Neplatný e-mail | 20025 Neplatnýemail | AP 202, červená buňka, není v mailing listu |
-| Chybná syntaxe e-mailu a prázdný telefon | 20026 Chybnýemail | `chyba@@example.invalid`: editace a hromadný e-mail adresu odmítnou, odeslání e-mailu jen tomuto členovi skončí chybou aplikace; formulář SMS je bez tlačítka Odeslat |
+| Chybná syntaxe e-mailu a prázdný telefon | 20026 Chybnýemail | `chyba@@example.invalid`: editace a hromadný e-mail adresu odmítnou, stránka pro e-mail jen tomuto členovi místo formuláře napíše, že platnou adresu nemá; formulář SMS je bez tlačítka Odeslat |
 | Druhý e-mail, karta, GPG, narození, více řádků poznámky | 20027 Kontaktní | Detail, editace, globální i oblastní štítky, historie |
 | Přesná poloha | 20028 Přesnápoloha | `valid`, souřadnice a odkaz na mapu |
 | Přibližná poloha | 20029 Přibližnápoloha | `approx`, ikona v seznamu |
@@ -59,6 +59,8 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Druhý sloučený člen | 20060 Sloučenídruhý | Odkaz na 20058 |
 | Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, typy zařízení 1 až 12 |
 | Cizí subnet | 20062 Cizísubnet | Patří na AP 200, IP `203.0.113.20` leží v subnetu AP 213 |
+| Další cizí subnet | 20064 Smlouvabezpodpisů, 20065 Smlouvačekající | Patří na AP 201, IP `203.0.113.21` a `203.0.113.22` leží v subnetu AP 213; ZSO 20004 je proto smí upravit |
+| Různé obce a PSČ, dlouhá adresa | 20032 až 20037, 20064, 20065 | `/uzivatel-list/list/201?fullnotes=1`; řazení podle obce a podle PSČ dá jiné pořadí. Adresa člena 20033 je delší než 50 znaků a zkrácené zobrazení ji ořízne |
 | Bez IP i bez televize, právnická osoba s krátkým IČO | 20063 Bezadres | AP 200, prázdná tabulka adres; Demo Obec Nulová Lhota, IČO 00987654 (uloženo jako 987654) |
 
 Pohyb 2000120 člena 20044 má oba příznaky spolek/družstvo a je vidět v obou filtrech.
@@ -81,6 +83,9 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 |---|---|---|
 | Čekající návrh, navrhovatel 1 | 20045 Čestnéčekající | ČČ 20045, typ 0 |
 | Čekající návrh, navrhovatel 20002 | 20046 Čestnédruhýnávrh | ČČ 20046, typ 1 |
+| Čekající návrh, člen bez platné adresy | 20072 Čestnýbezadresy | ČČ 20072, typ 0, navrhovatel 1; po rozhodnutí dostane e-mail jen navrhovatel a schvalující upozornění na člena |
+| Čekající návrh, navrhovatel bez platné adresy | 20073 Čestnýodchybného | ČČ 20073, typ 1, navrhovatel 20070; e-mail dostane jen člen a schvalující upozornění na navrhovatele |
+| Čekající návrh, člen ani navrhovatel bez platné adresy | 20074 Čestnýbezoznámení | ČČ 20074, typ 2, navrhovatel 20070; žádný e-mail neodejde a upozornění jmenuje oba |
 | Schválené bez konce | 20047 Čestnébezkonce | ČČ 20047, typ 2; rozpis internetu za 0 Kč |
 | Schválené s koncem za rok | 20048 Čestnéomezené | ČČ 20048, typ 3 |
 | Prošlé před týdnem | 20049 Čestnéprošlé | ČČ 20049, typ 4 |
@@ -107,6 +112,10 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | Oblast s jediným AP | Oblast 200 Demo malá oblast, AP 200 Demo malé AP | `/ap/list/200` |
 | Oblast s více AP | Oblast 201 Demo rozvětvená oblast, AP 201 až 210 | `/ap/list/201` |
 | Shodný název oblasti a AP | Oblast 202 a AP 211 Demo shodný název | `/ap/show/211` |
+| Jediné AP s jiným názvem než oblast | Oblast 205 Demo Sokol, AP 218 Demo Libuše | Levé menu: Všechny oblasti i Moje oblasti persony 20002 ji řadí jako `Demo Libuše (218)` |
+| Dvě AP, jedno vypnuté | Oblast 206 Demo částečně vypnutá, AP 219 Demo zbylé AP a vypnuté 220 Demo odstavené AP | Levé menu: Všechny oblasti ji řadí názvem oblasti, Moje oblasti persony 20002 jako `Demo zbylé AP (219)` |
+| Jediné AP a to vypnuté | Oblast 207 Demo vypnutá oblast, AP 221 Demo jen vypnuté AP | Levé menu: Všechny oblasti ji řadí přeškrtnutou jako `Demo jen vypnuté AP (221)` |
+| Výběr AP ve formuláři člena | Persona 20002 | `/uzivatel/edit/20063`: pole Oblast - AP začíná jejími AP 218, 200 a 219, pak všechna AP podle popisku |
 | Technická oblast | Oblast -20 Demo technická oblast, AP 217 | `/ap/show/217`; některá API oblast vynechávají |
 | Bez správců | Oblast 203 Demo bez správců, AP 212 a 214 | `/ap/list/203` |
 | Pouze ZSO | Oblast 204 Demo pouze zástupce, AP 213, 215 a 216 | `/ap/list/204` |
@@ -121,7 +130,7 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | Soukromé ARP proxy, validační chyba | AP 208 Demo soukromé ARP | `/ap/edit/208`, subnet `10.220.2.0/24` |
 | Prázdná gateway | AP 209 Demo bez brány | `/ajax-api/get-ip-details?ip=10.220.3.20` |
 | AP bez členů | AP 214 Demo bez členů | `/uzivatel-list/list/214` |
-| Uživatelé mimo AP | AP 213 Demo cizí členové, člen 20062 | `/uzivatel-list/list/213`; ZSO 20004 smí člena 20062 upravit, i když patří do cizí oblasti |
+| Uživatelé mimo AP | AP 213 Demo cizí členové, členové 20062, 20064 a 20065 | `/uzivatel-list/list/213`; každý je z jiné obce. ZSO 20004 smí tyto členy upravit, i když patří do cizí oblasti |
 | AP IP, RouterBoard, všechna běžná nastavení | IP 20000, `192.0.2.1`, AP 200 | `/ap/show/200`, login/heslo `demo` / `demo-only` |
 | Dlouhé heslo se zvláštními znaky | IP 20007, `192.0.2.2`, AP 200 | `/ap/show/200`; 43 znaků včetně `&`, `<` a `>`, hodnota se nezalamuje. Delší heslo se zašifrované do sloupce `heslo` nevejde |
 | Heslo s mezerami | IP 20008, `192.0.2.3`, AP 200 | `/ap/show/200`; mezera na začátku i na konci a dvě uvnitř, do schránky se dostanou všechny |
@@ -131,6 +140,8 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | Login a heslo s diakritikou a jiným písmem | IP 20013, `192.0.2.8`, AP 200 | `/ap/show/200`; čeština, čínské znaky a cyrilice |
 | Login s tabulátorem, heslo s pevnou mezerou a neviditelným znakem | IP 20014, `192.0.2.9`, AP 200 | `/ap/show/200`; heslo `pevna mezera konec` má mezi slovy U+00A0 a U+200B, do schránky se dostanou oba |
 | Koncové zařízení a Ubiquiti | IP 20001 a 20002, AP 201 | `/ap/show/201` |
+| Sledování Smokepingem: AP IP s popisem, jen s hostname a bez obojího | IP 20000 na AP 200, IP 20004 a 20005 na AP 211 | `/ap/show/200`, `/ap/show/211`, ikona oka u adresy; `/api/smokeping` s klíčem `apikey200` / `demo-global-only` |
+| Sledování Smokepingem u člena | Členové 20027 (IP 20100) a 20018 (IP 20104) | `/uzivatel/show/20027`, `/uzivatel/show/20018`; v `/api/smokeping` pod AP 201 |
 | Wewimo odmítnuté připojení | AP 210 Demo Wewimo loopback, IP 20003 `127.0.0.1` | `/wewimo/show/210`, červené hlášení o nedostupném zařízení |
 | Čerstvé SSID, shoda MAC, odkaz na AP IP | Člen 20027, IP 20100 | `/uzivatel/show/20027` |
 | Staré SSID, LAST_IP, odkaz na členskou IP | Člen 20028, IP 20101 | `/uzivatel/show/20028`, ZASTARALÉ |
@@ -140,7 +151,7 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 Wewimo je zapnuté pouze na `127.0.0.1`. Ostatní adresy se při vykreslení přes RouterOS nekontaktují.
 WebFig, SSH, Winbox a Grafana jsou odkazy nebo tlačítka pro klienta; Winbox závisí také na operačním systému prohlížeče.
 Hesla IP jsou v otevřeném textu. Formulář Přešifrování je umí zašifrovat klíčem konkrétní instance.
-Příznak Smokeping nemá žádná IP adresa: `/api/smokeping` s ním skončí chybou `Filter 'toAscii' is not defined`.
+Příznak Smokeping mají AP IP 20000, 20004 a 20005 a členské IP 20100 a 20104; ostatní adresy v `/api/smokeping` nejsou.
 
 ## Persony
 
@@ -160,7 +171,7 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | 1 | Testovací | Původní SO-1 a VV |
 | 20000 | Technik | TECH |
 | 20001 | Kontrolor | KONTROLA |
-| 20002 | Malosprávce | SO-200, platný český formát telefonu |
+| 20002 | Malosprávce | SO-200, SO-205 a SO-206, platný český formát telefonu |
 | 20003 | Velkosprávce | SO-10000, vzniká pouze s objemem |
 | 20004 | Zástupce | ZSO-204, platný český formát telefonu; smí upravit cizího člena 20062 |
 | 20005 | Podpora | EXTSUPPORT |
@@ -174,6 +185,25 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | 20013 | Zahraničnítelefon | SO-201, nečeský telefon |
 | 20014 | Dnešníkonec | SO-201 s koncem v den načtení: role už neplatí; aktivní DRUŽSTEVNÍK |
 | 20015 | Systémový | Systémový ZSO-201, některé exporty ho vynechávají |
+| 20070 | Chybnýodesílatel | KONTROLA, vlastní e-mail `odesilatel@@example.invalid`: e-mail členovi (`/uzivatel-mail-sms/email/20018`) i celému AP (`/uzivatel-mail-sms/emailall/201`) nabídne jako odesílatele jen adresu oblasti; upozornění odkazuje na editaci vlastních údajů. Registrační e-mail odeslaný touto osobou u člena 20081 („Odeslat znovu aktivační link e-mailem“) členovi dojde, kopie přeskočí její neplatnou adresu i správce 20075 a stránka to oznámí |
+| 20071 | Odesílatelodjinud | ZSO technické oblasti -20 se stejně chybným e-mailem, patří na AP 201: u e-mailu členovi 20015 a AP 217 upozornění odkaz na editaci nemá, své údaje upravit nesmí |
+| 20075 | Chybnákopie | ZSO běžné oblasti 201, `spravce@@example.invalid`: jako osoba 20012 u člena 20081 klikni na „Odeslat znovu aktivační link e-mailem“. Kopie přeskočí správce 20075, ostatním správcům odejde; varování obsahuje jméno a UID |
+| 20076 | Bezplatnékopie | SO nové oblasti 208 a AP 222, obě adresy neplatné: jako tato osoba odešli registraci členovi 20077, člen ji dostane a kopie se neodešle. Založení plánovaného člena na AP 222 uloží člena a oznámí neodeslanou notifikaci |
+
+### Neplatné adresy při registraci a odeslání rozpisu plateb
+
+Všechny uvedené členy otevři na `/uzivatel/show/ID`. Aktivační tlačítko mají viditelné
+díky `regform_downloaded_password_sent = 0`. Členové 20078 a 20080 jsou pouze v družstvu,
+ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho adresy jsou neplatné.
+
+| Člen / AP | Adresy (`email`; `email2`) | Přihlášená osoba | Tlačítko a výsledek |
+|---|---|---|---|
+| 20081 Člensčástečnoukopií / 201 | `demo20081@example.invalid`; prázdný | 20012 Chybějícítelefon | „Odeslat znovu aktivační link e-mailem“: registrace odejde členovi, kopie přeskočí ZSO 20075 a ostatním správcům dojde |
+| 20077 Členbezkopie / 222 | `demo20077@example.invalid`; prázdný | 20076 Bezplatnékopie | „Odeslat znovu aktivační link e-mailem“: registrace odejde členovi, kopie nemá žádného příjemce; jedno upozornění na obě vlastní adresy |
+| 20078 Platnádruhá / 222 | `clen@@example.invalid`; `druha@example.invalid` | 1 Tester | „Odeslat znovu aktivační link e-mailem“: registrace do družstva odejde jen na sekundární e-mail, upozornění na přeskočené adresy |
+| 20078 Platnádruhá / 222 | `clen@@example.invalid`; `druha@example.invalid` | 20076 Bezplatnékopie | „Odeslat rozpis plateb e-mailem“: rozpis odejde jen na sekundární e-mail, upozornění na hlavní adresu |
+| 20079 Chybnádruhá / 222 | `demo20079@example.invalid`; `druha@@example.invalid` | 1 Tester | „Odeslat znovu aktivační link e-mailem“: registrace do spolku odejde na hlavní e-mail, upozornění označí sekundární e-mail |
+| 20080 Bezplatnéadresy / 222 | `bezadresy@@example.invalid`; prázdný | 20076 Bezplatnékopie | „Odeslat znovu aktivační link e-mailem“ i „Odeslat rozpis plateb e-mailem“: nic neodejde, hláška danger odkáže na editaci člena |
 
 ## Finance, správa a API
 
@@ -182,6 +212,7 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | Všech 12 typů příchozích plateb, banky 2010/800/9999 | `/sprava-plateb/platbycu`, platby 40000001 až 40000012, konto člena 20044 |
 | Nespárovaná bez VS / s chybným VS | `/sprava-nesparovanych/nesparovane`, platby 40000100 / 40000101 |
 | Převedená platba, mimo nespárovaný seznam | 40000102, dva pohyby bez člena se vyrovnají a platba skončí na 20044 |
+| Řazení nespárovaných podle bankovních údajů | `/sprava-nesparovanych/nesparovane`, platby 40000110 až 40000113: každý ze šesti sloupců je řadí jinak, 40000112 nemá SS, 40000111 info banky, 40000113 má dlouhé texty |
 | Platba bez pohybu | 40000103, vidět pouze v příchozích platbách |
 | Převod bez původního pohybu | 40000104, pohyb typu 10 a příjem typu 1 na 20044 |
 | Zaplacené / nezaplacené výdaje, oba subjekty, stránkování | `/sprava-plateb/odchoziplatby`, 120 řádků 20000 až 20119 |
@@ -203,6 +234,27 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | Limit chybných přihlášení | Šest `app.getToken.failed` pro `127.0.0.1`; limit platí 15 minut od načtení |
 
 Člen 20018 má známý SHA-256 hash hesla `demo-only`.
+
+### Hledání a textové filtry bez diakritiky
+
+Použij personu 1 (VV). Filtr odešli tlačítkem Vyhledat nad tabulkou. Každý filtr zkoušej zvlášť;
+`NENALEZITELNY` vrátí prázdnou tabulku.
+Filtr Obec je jen v režimu „Kompletní poznámky a adresy“; zapni ho přepínačem nad seznamem členů.
+Nová migrace `2026-11-23-150000-demo-hledani-bez-diakritiky.sql` doplňuje chybějící texty do stávajících
+syntetických řádků, jejich počty ani finanční hodnoty nemění.
+
+| Obrazovka / řádek | Filtr a příklad vstupu |
+|---|---|
+| Seznam členů, 20027 na AP 201 | Ulice `SMYSLENA 20027`, Obec `STEZERY` (Stěžery), Poznámka `TRETI RADEK` |
+| Odchozí platby, 20000 | Firma `ZELEZARSTVI SROUBEK`, Popis `RICNI`, Typ `MESICNI UHRADA`, Kategorie `SITOVE SLUZBY` |
+| Příchozí platby, 40000001 | Název účtu `SMYSLENY UCET`, Zpráva pro příjemce `PRICHOZI`, Identifikace `VSECHNYPOHYBY`, Info banky `PRICHOZI UHRADA` |
+| Konto člena 20044 | Účet Družstvo, Poznámka `PRIZNAKY` (pohyb 2000120) |
+| Nespárované platby, 40000100 | Poznámka `PRISPEVEK CLENA` (pohyb 2000300) |
+| Čestná členství, 20052 | Typ CC `DOCASNA AKTIVACE PRES SMS`, Jméno a příjmení `CESTNESMS`, AP `HLAVNI` |
+| Sloučení, 20058 | Sloučený uživatel `20059`, Sloučil `1`; oba sloupce obsahují číselná ID |
+
+Hledat lze i s diakritikou. V Čestných členstvích jsou i členové 20032 a 20033 bez typu čestného členství;
+filtr Typ CC je má přeskočit, ne skončit chybou.
 
 ## Platnost scénářů v čase
 
@@ -238,19 +290,19 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 
 | Tabulka / objekt | Scénáře | Objem |
 |---|---|---|
-| Oblast | -20, 200 až 204 | 10000 až 10099 |
-| Ap | 200 až 217 | 10000 až 10449 |
-| Uzivatel | 20000 až 20069 | 100000 až 113499 |
+| Oblast | -20, 200 až 208 | 10000 až 10099 |
+| Ap | 200 až 222 | 10000 až 10449 |
+| Uzivatel | 20000 až 20081 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
-| IPAdresa | 20000 až 20006, 20100 až 20105, 20200 až 20259 | 100000 až 126999 s mezerami |
-| SpravceOblasti | 20000 až 20024 s mezerami | 100000 |
+| IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
+| SpravceOblasti | 20000 až 20030 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
-| Čestné členství | 20045 až 20052 | žádné |
+| Čestné členství | 20045 až 20052, 20072 až 20074 | žádné |
 | Stitek | 21000 až 21004 | žádné |
 | SloucenyUzivatel | 20000 až 20001 | žádné |
 | Smlouva / PodpisSmlouvy | 200000 až 200006 / 200000 až 200007 | žádné |
 | UzivatelskeKonto | 2000000 až 2001107 s mezerami | 10000000 až 10323999, 11000000 až 11000549 |
-| PrichoziPlatba | 40000001 až 40000012, 40000100 až 40000104 | 50000000 až 50053999 |
+| PrichoziPlatba | 40000001 až 40000012, 40000100 až 40000104, 40000110 až 40000113 | 50000000 až 50053999 |
 | OdchoziPlatba | 20000 až 20119 | žádné |
 | BankovniUcet | 200 až 209 a původní 1, 2 | žádné |
 | StavBankovnihoUctu | 20003 až 20629 s mezerami | žádné |

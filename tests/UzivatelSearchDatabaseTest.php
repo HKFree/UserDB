@@ -79,6 +79,19 @@ final class UzivatelSearchDatabaseTest extends DatabaseTestCase
         ])->id;
     }
 
+    public function testExistingAccentInsensitivePersonSearchForEveryRole(): void {
+        // Characterisation: CONVERT already makes these searches accent-insensitive before #276.
+        $member = $this->fixtures->member($this->apId, [
+            'nick' => 'Žluťoučký', 'jmeno' => 'Štěpán', 'prijmeni' => 'Řeřicha', 'ulice_cp' => 'Dlouhá třída 12',
+        ]);
+        foreach (['SO', 'TECH', 'VV', 'KONTROLA', 'EXTSUPPORT'] as $role) {
+            foreach (['ZLUTOUCKY', 'STEPAN', 'RERICHA', 'STEPAN RERICHA', 'RERICHA STEPAN', 'DLOUHA TRIDA'] as $search) {
+                Assert::same([$member->id], $this->searchIds($search, $role === 'SO' ? $this->managerId : $this->unassignedId, [$role]), "$role: $search");
+            }
+            Assert::same([], $this->searchIds('NENALEZITELNY', $this->managerId, [$role]));
+        }
+    }
+
     public function testDigitEmailFindsOwnerWithGlobalRole(): void {
         foreach (['TECH', 'VV', 'KONTROLA', 'EXTSUPPORT'] as $role) {
             Assert::same([42], $this->searchIds('7search@example.invalid', $this->unassignedId, [$role]), $role);

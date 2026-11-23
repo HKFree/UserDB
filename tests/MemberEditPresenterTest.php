@@ -147,6 +147,11 @@ final class MemberEditPresenterTest extends DatabaseTestCase
             'IPv4' => [[], [], 'invalid', 'IP adresa 999.1.2.3 není validní IPv4 adresa!'],
             'occupied IP' => [[], [], 'occupied', 'IP adresa 10.107.240.2 již  v databázi existuje!'],
             'duplicate IP' => [[], [], 'duplicate', 'IP adresa 10.107.240.3 je v tomto formuláři vícekrát!'],
+            'IPv4 with whitespace' => [[], [], 'invalid padded', 'IP adresa 999.1.2.3 není validní IPv4 adresa!'],
+            'occupied IP with whitespace' => [[], [], 'occupied padded', 'IP adresa 10.107.240.2 již  v databázi existuje!'],
+            'duplicate IP with whitespace' => [[], [], 'duplicate padded', 'IP adresa 10.107.240.3 je v tomto formuláři vícekrát!'],
+            'subnet with whitespace' => [['ipsubnet' => ' 10.0.0.0/99 '], [], '', 'IP subnet není validní!'],
+            'range with whitespace inside' => [['iprange' => '10.0.0.1 - 10.0.0.2'], [], '', 'IP rozsah není validní!'],
         ];
     }
 
@@ -164,13 +169,14 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $this->fixtures->ipAddress($other->id, '10.107.240.2');
         $post = $this->post($changes);
         if ($ipCase !== '') {
-            $address = match ($ipCase) {
-                'invalid' => '999.1.2.3', 'occupied' => '10.107.240.2', 'duplicate' => '10.107.240.3',
+            $addresses = match ($ipCase) {
+                'invalid' => ['999.1.2.3'], 'occupied' => ['10.107.240.2'], 'duplicate' => ['10.107.240.3', '10.107.240.3'],
+                'invalid padded' => [' 999.1.2.3 '], 'occupied padded' => [' 10.107.240.2 '],
+                'duplicate padded' => ['10.107.240.3', "10.107.240.3\t"],
                 default => throw new \LogicException($ipCase),
             };
-            $post['ip']['n1'] = $this->ipPost(['ip_adresa' => $address]);
-            if ($ipCase === 'duplicate') {
-                $post['ip']['n2'] = $this->ipPost(['ip_adresa' => $address]);
+            foreach ($addresses as $index => $address) {
+                $post['ip']['n' . ($index + 1)] = $this->ipPost(['ip_adresa' => $address]);
             }
         }
         $before = $this->snapshot();
@@ -209,6 +215,33 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same($password, (string) $inputs[0]['value']);
     }
 
+    /** @return array<string, array{bool}> */
+    public function ipRowButtonCases(): array {
+        return ['existing member' => [false], 'new member' => [true]];
+    }
+
+    /** @dataProvider ipRowButtonCases */
+    public function testIpRowButtonsWorkOnIncompleteFormWithoutSaving(bool $newMember): void {
+        $first = $newMember ? '0' : (string) $this->fixtures->ipAddress($this->member->id, '10.107.244.1')->id;
+        $post = ['ip' => [$first => $this->ipPost(['id' => $newMember ? '' : $first, 'ip_adresa' => '10.107.244.1', 'hostname' => 'rozepsany-host'])]]
+            + ($newMember ? ['id' => ''] : [])
+            + $this->post(['jmeno' => 'Rozepsané', 'telefon' => '', 'ulice_cp' => '', 'mesto' => '', 'psc' => '']);
+        unset($post['save']);
+        $before = $this->snapshot();
+        $add = ['add' => '+ Přidat další IP'];
+
+        $second = $this->assertIpRowsWithoutSaving(['ip' => $post['ip'] + $add] + $post, ['10.107.244.1', ''], $before);
+        $post['ip'][$second] = $this->ipPost(['ip_adresa' => '10.107.244.2']);
+        $third = $this->assertIpRowsWithoutSaving(['ip' => $post['ip'] + $add] + $post, ['10.107.244.1', '10.107.244.2', ''], $before);
+        $post['ip'][$third] = $this->ipPost(['ip_adresa' => '10.107.244.3']);
+        $post['ip'][$second]['remove'] = '– Odstranit IP';
+        Assert::same($third, $this->assertIpRowsWithoutSaving($post, ['10.107.244.1', '10.107.244.3'], $before));
+        // The first row is stored in the database unless the member is new: removing it must not delete it yet.
+        unset($post['ip'][$second]);
+        $post['ip'][$first]['remove'] = '– Odstranit IP';
+        Assert::same($third, $this->assertIpRowsWithoutSaving($post, ['10.107.244.3'], $before));
+    }
+
     /** @return list<array{string}> */
     public function transferDirections(): array {
         return [['out'], ['in']];
@@ -223,6 +256,51 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $before = $this->snapshot();
         $result = $this->submit($post);
         $this->assertValidation($result, 'Seznam IP adres se mezitím změnil. Obnovte stránku a úpravu opakujte.');
+        Assert::same($before, $this->snapshot());
+    }
+
+    /** @return array<string, array{array<string, mixed>, list<string>}> */
+    public function paddedIpCases(): array {
+        return [
+            'address row' => [['ip' => ['n1' => $this->ipPost(['ip_adresa' => " 10.107.243.1\t"])]], ['10.107.243.1']],
+            'range' => [['iprange' => " 10.107.243.10-10.107.243.11\r\n"], ['10.107.243.10', '10.107.243.11']],
+            'subnet' => [['ipsubnet' => "\u{A0}10.107.243.32/30 "], ['10.107.243.32', '10.107.243.33', '10.107.243.34']],
+        ];
+    }
+
+    /**
+     * @dataProvider paddedIpCases
+     * @param array<string, mixed> $changes
+     * @param list<string> $expected
+     */
+    public function testWhitespaceAroundIpFieldsIsIgnored(array $changes, array $expected): void {
+        $result = $this->submit($this->post($changes));
+
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
+        Assert::same($expected, array_values($this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->order('ip_adresa')->fetchPairs('id', 'ip_adresa')));
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public function malformedIpRowCases(): array {
+        $withoutAddress = array_diff_key($this->ipPost([]), ['ip_adresa' => true]);
+        return [
+            'address missing' => [$withoutAddress],
+            'address sent as a list' => [$withoutAddress + ['ip_adresa' => ['10.107.243.1']]],
+        ];
+    }
+
+    /**
+     * A field the form would store as an empty string is reported the same way, not as a server error.
+     *
+     * @dataProvider malformedIpRowCases
+     * @param array<string, mixed> $row
+     */
+    public function testIpRowWithMissingOrNonTextAddressIsRejected(array $row): void {
+        $post = $this->post();
+        $post['ip']['n1'] = $row;
+        $before = $this->snapshot();
+
+        $this->assertValidation($this->submit($post), 'IP adresa  není validní IPv4 adresa!');
         Assert::same($before, $this->snapshot());
     }
 
@@ -338,7 +416,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
     }
 
     public function testBlankAndZeroBulkAddressesAreIgnored(): void {
-        foreach ([null, '', '0', []] as $input) {
+        foreach ([null, '', '0', [], ['10.107.243.0/30'], " \t"] as $input) {
             PermissionScenario::assertRedirect($this->submit($this->post(['ipsubnet' => $input, 'iprange' => $input])), 'uzivatel/show/' . $this->member->id);
             Assert::same(0, $this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->count('*'));
         }
@@ -548,6 +626,32 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same(1, preg_match('~>\\s*' . $escaped . '</(?:li|td)>~u', $result->html), $message);
         Assert::same(0, $this->database->table('Log')->count('*'));
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    /**
+     * A row button redraws the form as the user left it: no validation errors, nothing stored, nothing sent.
+     * @param array<string, mixed> $post
+     * @param list<string> $addresses expected addresses of the rendered IP rows, in order
+     * @param array<string, string> $before
+     * @return int key of the last rendered IP row
+     */
+    private function assertIpRowsWithoutSaving(array $post, array $addresses, array $before): int {
+        $result = $this->submit($post);
+        Assert::same(200, $result->status);
+        Assert::null($result->redirectUrl);
+        // An empty text input is rendered without the value attribute.
+        preg_match_all('~name="ip\[(\d+)\]\[ip_adresa\]"(?:[^>]*? value="([^"]*)")?~', $result->html, $rows);
+        Assert::same($addresses, $rows[2]);
+        // Match rendered error text, never the message embedded in data-nette-rules.
+        Assert::notContains('Zadejte telefon</td>', $result->html);
+        Assert::notContains('<ul class="error"', $result->html);
+        Assert::same(1, preg_match('~<input[^>]*name="jmeno"[^>]*value="Rozepsané"~u', $result->html));
+        Assert::same(1, preg_match('~<input(?:(?! value=)[^>])*name="telefon"(?:(?! value=)[^>])*>~', $result->html));
+        // The host name typed into the first row stays as long as that row does.
+        Assert::same(in_array('10.107.244.1', $addresses, true), str_contains($result->html, 'value="rozepsany-host"'));
+        Assert::same($before, $this->snapshot());
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+        return (int) end($rows[1]);
     }
 
     /** @return array<string, string> */

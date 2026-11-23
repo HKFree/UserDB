@@ -2,8 +2,16 @@
 
 <h3>Odeslání emailu <small>uživateli {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
 
-{if $canViewOrEdit}
+{if $canViewOrEdit && $emailPlatny}
+{include 'odesilatel.latte'}
+<div class="message-form">
 {include '../form.latte', form => emailForm}
+</div>
+{elseif $canViewOrEdit}
+<p class="alert alert-warning">
+    E-mail nejde odeslat, člen nemá platnou e-mailovou adresu.
+    Zadejte ji v <a n:href="Uzivatel:edit id => $u->id">editaci člena</a>.
+</p>
 {else}
 <p>Na tuto operaci nemáte oprávnění!</p>
 {/if}

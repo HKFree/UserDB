@@ -1,0 +1,9 @@
+{* Správce s neplatnou vlastní adresou: pole Odesílatel nabízí jen adresu oblasti. *}
+<p n:if="$odesilatelNeplatny" class="alert alert-warning">
+    Jako odesílatele jde zvolit jen adresu oblasti, vaše vlastní e-mailová adresa není platná.
+    {if $editaceOdesilatele !== null}
+        Opravte ji v <a n:href="Uzivatel:edit id => $editaceOdesilatele">editaci svých údajů</a>.
+    {else}
+        O její opravu požádejte správce své oblasti.
+    {/if}
+</p>

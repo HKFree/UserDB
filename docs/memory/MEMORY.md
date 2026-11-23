@@ -6,6 +6,7 @@
 - [Vývoj ve více worktrees](userdb_flox_worktrees.md) - izolace databází, běhových souborů a další závislosti lokálního vývoje.
 - [Worktrees v Orce](userdb_orca_worktrees.md) - chování orca.yaml při založení worktree a jak jeho změnu vyzkoušet.
 - [Testy](userdb_tests.md) - nástrahy testovacího kontejneru, testovací DB z migrací, spouštění presenterů a měření pokrytí.
+- [Testy v prohlížeči](userdb_e2e.md) - nástrahy Playwright testů hlavních postupů, předčasně ukončená aktivace Floxu a stránky závislé na odpojené službě.
 - [Regresní testy SMS](userdb_sms_tests.md) - bezpečné testování bez externí brány a nástrahy starého SMS senderu.
 - [Testy InfluxDB](userdb_influx_tests.md) - lokální server, přidělený port a ověření v1 API.
 - [Přihlašovací formulář testovacího serveru](userdb_testing_login.md) - nástrahy brány před testovacími instancemi a její lokální zkouška s Caddy.
@@ -14,5 +15,6 @@
 - [Náhledy stránek v PR](userdb_screenshots.md) - nestabilní časy demo dat, mobilní rozměry PNG a prostředí pro focení.
 - [Ověřování UI](userdb_ui_overeni.md) - nástrahy tabulek Grido, odkazů v layoutu a prohlídky stránek na telefonu.
 - [Výběr textu a schránka](userdb_clipboard.md) - nástrahy označování a kopírování hodnot z tabulek a testování bez systémové schránky.
-- [Nette Database a Grido](userdb_nette_database.md) - limit u related() načte celou historii, průchod tabulkou v callbacku Grida.
+- [Nette Database a Grido](userdb_nette_database.md) - limit u related() načte celou historii, průchod tabulkou v callbacku Grida, pořadí dotazu bez order() podle keše sloupců, řazení podle sloupce navázané tabulky.
+- [Formuláře s přidávanými řádky](userdb_form_replicator.md) - rozsah validace tlačítek Přidat a Odstranit, čtení hodnot v továrně řádku, nástrahy testů a prohlídky.
 - [GraphQL API](userdb_graphql.md) - nástrahy knihovny webonyx/graphql-php, limitů, záznamu o přístupu a testů hranice přístupu.

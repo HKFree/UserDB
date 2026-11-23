@@ -109,8 +109,19 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   v `ul.error li`. Hledat přesný vykreslený text, ne atribut `data-nette-rules`, který obsahuje zprávu i bez chyby.
   `DomQuery::fromHtml()` při duplicitním HTML `id` hlásí varování; pro kontrolu validační zprávy duplicitních
   IP proto test porovnává přímo vykreslený text mezi značkami.
-- `PaymentSchedule:sendPaymentScheduleEmail` čte CSS relativně k `www/`. Test dočasně mění pracovní adresář
-  a vrací ho v `finally`. Přesměrování po GET má 302, po POST 303.
+- Přeložené šablony v `temp/tests/cache` se obnoví jen tehdy, když je šablona novější než její překlad.
+  Vrátíš-li úpravu šablony, pustíš test a úpravu hned zase vrátíš (`git apply -R` a `git apply` kvůli
+  důkazu, že test bez opravy padá), může šablona dostat čas ve stejné sekundě jako překlad a testy pak
+  vykreslují starou verzi. Pomůže `touch` na dotčené šablony. Ověřeno 23. 11. 2026 u issue #303:
+  `MessageFormPresenterTest` padal nad opravenou šablonou, po `touch` prošel.
+- Nette Forms zapisuje `@` v hodnotě atributu jako `&#64;` (`value="clen&#64;example.invalid"`). Test, který
+  ve vykresleném formuláři hledá e-mail, proto porovnává s `html_entity_decode($html, ENT_QUOTES | ENT_HTML5)`.
+  Ověřeno 23. 11. 2026 na poli Příjemce formuláře e-mailu členovi, Nette Forms z `composer.lock`.
+- Tester pouští každý test s pracovním adresářem `tests/`, takže relativní cesta `../www/...` v aplikaci
+  v testu projde, i když lokální web (PHP server spuštěný z kořene repa) na ní spadne. Tak se schovávalo
+  čtení CSS v `PaymentSchedule:sendPaymentScheduleEmail`; ověřeno 23. 11. 2026 chybou 500 na lokálním webu
+  a testem, který před voláním akce přepne do `sys_get_temp_dir()`. Cestu k souboru v aplikaci odvozuj
+  od `__DIR__`. Přesměrování po GET má 302, po POST 303.
 - Hledání člena podle přezdívky pro DRUŽSTEVNÍK vrací prázdný seznam bez spravované oblasti. Pro ověření
   skrytých údajů na skutečně naplněném gridu lze hledat přesné UID; test ponechává i původní hledání přezdívky.
 - Samotný typ odpovědi `Grido\Components\Export` neověří CSV. Data se čtou a CSV vzniká až při `send()`;
@@ -154,6 +165,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   aktivaci Floxu. Totéž bylo pozorováno 21. 11. 2026 po okamžitém skončení aktivace kvůli syntaktické chybě
   pomocného skriptu, ještě před dokončením startu DB. Pomocný skript nejprve ověřit bez `-s`; stav služby
   lze zjistit přímo pomocí `flox services status -d .`, bez další aktivace.
+- Po dočasné úpravě šablony (zkouška, že test bez podmínky v šabloně padá) nastav obnovené šabloně
+  nový čas (`touch`). Úprava, běh testu a obnova v jednom příkazu nechaly v `temp/tests/cache`
+  zkompilovanou upravenou verzi a celá sada pak na obnovené šabloně selhala; po `touch` prošla.
+  Ověřeno 23. 11. 2026 na `UzivatelList/listall.latte`. Příčina je úsudek: Latte porovnává čas
+  souboru s časem cache na celé vteřiny.
 - Bez přístupu k unix socketu MariaDB (například v sandboxu bez sítě) databázové testy neproběhnou: připojení
   skončí „Operation not permitted“ po třicetisekundovém čekání. Bez databáze běží `ContainerTest`, `RouterTest`
   a čistě jednotkové testy.
@@ -177,3 +193,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   s kódem 404. Netypovaný parametr s výchozím `null` si `"00"` ponechá. Při charakterizačních
   testech rozlišovat raw vstup od hodnoty dostupné v presenteru. Ověřeno 21. 11. 2026 přes
   `PresenterRunner` na přepínači money, API monitoringu a AJAX request ID v Nette Application 3.2.6.
+- Latte pozná změněnou šablonu podle času souboru s přesností na sekundy. Vrátí-li se šablona do původního
+  stavu ve stejné sekundě, kdy ji test zkompiloval, zůstane v `temp/tests/cache` stará verze a test padá
+  nebo prochází podle ní. Po rychlé výměně šablon tam a zpět (ověření, že test bez opravy padá) počkat
+  sekundu a šablony označit `touch`. Ověřeno 23. 11. 2026 na `MessageFormPresenterTest`: po vrácení šablon
+  chybělo ve stránce upozornění, po `touch` test prošel.
+- Select bez promptu s hodnotou mimo nabídku formulář odmítne sám (`SelectBox::isOk()`, hláška
+  „Please select a valid option.“) a `onSuccess` se nezavolá: odpověď je 200 s formulářem, ne přesměrování.
+  Ověřeno 23. 11. 2026 podvrženým `from=0` ve formuláři e-mailu členovi, Nette Forms z `composer.lock`.

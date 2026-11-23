@@ -115,9 +115,16 @@ class UzivatelPresenter extends BasePresenter
 
     /** @param int|string $idUzivatele */
     public function sendSpolekNotificationEmail($idUzivatele): void {
+        $newUser = $this->uzivatel->getUzivatel($idUzivatele);
+        if ($newUser === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
         try {
-            $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
-            $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
+            $vysledek = $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
+            if ($vysledek->odeslano()) {
+                $this->flashMessage('E-mail s notifikací správcům byl odeslán.');
+            }
+            $this->upozorniNaPreskocenePrijemce($this->smiUpravitUzivatele($newUser), $vysledek->odeslano() ? '' : 'Notifikace správcům nebyla odeslána, žádný ze správců nemá platnou e-mailovou adresu.', $vysledek);
         } catch (Nette\Mail\SmtpException $e) {
             $this->flashMessage('Odeslání e-mailu s notifikací správcům se nezdařilo. '.$e->getMessage(), 'danger');
         }
@@ -138,10 +145,9 @@ class UzivatelPresenter extends BasePresenter
         }
 
         try {
-            $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
-            $this->mailService->sendSpolekConfirmationRequestCopy($newUser, $so);
-
-            $this->flashMessage('E-mail s žádostí o potvrzení e-mailu byl odeslán.');
+            $vysledek = $this->mailService->sendSpolekConfirmationRequest($newUser, $so, $link);
+            $kopie = $vysledek->odeslano() ? $this->mailService->sendSpolekConfirmationRequestCopy($newUser, $so) : null;
+            $this->oznamVysledekEmailu($vysledek, $newUser, 'E-mail s žádostí o potvrzení e-mailu byl odeslán.', $kopie);
         } catch (Nette\Mail\SmtpException $e) {
             $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení e-mailu se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
         }
@@ -162,10 +168,9 @@ class UzivatelPresenter extends BasePresenter
         }
 
         try {
-            $this->mailService->sendDruzstvoConfirmationRequest($newUser, $so, $link);
-            $this->mailService->sendDruzstvoConfirmationRequestCopy($newUser, $so);
-
-            $this->flashMessage('E-mail s žádostí o potvrzení registrace do družstva byl odeslán.');
+            $vysledek = $this->mailService->sendDruzstvoConfirmationRequest($newUser, $so, $link);
+            $kopie = $vysledek->odeslano() ? $this->mailService->sendDruzstvoConfirmationRequestCopy($newUser, $so) : null;
+            $this->oznamVysledekEmailu($vysledek, $newUser, 'E-mail s žádostí o potvrzení registrace do družstva byl odeslán.', $kopie);
         } catch (Nette\Mail\SmtpException $e) {
             $this->flashMessage('Odeslání e-mailu s žádostí o potvrzení registrace do družstva se nezdařilo! Napište userdb teamu o pomoc. '.$hash.$e->getMessage(), 'danger');
         }
@@ -412,7 +417,7 @@ class UzivatelPresenter extends BasePresenter
 
         $ips->addSubmit('add', '+ Přidat další IP')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(null)
+            ->setValidationScope([])
             ->addCreateOnClick(true, function (Container $replicator, Container $ip) {
                 $ip->setValues(array('internet' => 1));
                 //\Tracy\Debugger::barDump($ip);
@@ -499,13 +504,15 @@ class UzivatelPresenter extends BasePresenter
             }
         }
 
-        if (isset($data['ipsubnet']) && !in_array($data['ipsubnet'], ['', '0', 0, 0.0, false, []], true)) {
-            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $data['ipsubnet']) !== 1) {
+        $zapisSubnetu = self::oriznoutRadek($data['ipsubnet'] ?? null);
+        if ($zapisSubnetu !== '' && $zapisSubnetu !== '0') {
+            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $zapisSubnetu) !== 1) {
                 $form->addError('IP subnet není validní!');
             }
         }
-        if (isset($data['iprange']) && !in_array($data['iprange'], ['', '0', 0, 0.0, false, []], true)) {
-            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $data['iprange']) !== 1) {
+        $zapisRozsahu = self::oriznoutRadek($data['iprange'] ?? null);
+        if ($zapisRozsahu !== '' && $zapisRozsahu !== '0') {
+            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $zapisRozsahu) !== 1) {
                 $form->addError('IP rozsah není validní!');
             }
         }
@@ -513,16 +520,18 @@ class UzivatelPresenter extends BasePresenter
         if (isset($data['ip'])) {
             $formIPs = [];
             foreach ($data['ip'] as $ip) {
-                if ($this->ipAdresa->validateIP($ip['ip_adresa']) === false) {
-                    $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
+                $zapisIp = self::oriznoutRadek($ip['ip_adresa'] ?? null);
+
+                if ($this->ipAdresa->validateIP($zapisIp) === false) {
+                    $form->addError('IP adresa '.$zapisIp.' není validní IPv4 adresa!');
                 }
 
-                $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
+                $duplIp = $this->ipAdresa->getDuplicateIP($zapisIp, $ip['id']);
                 if (!in_array($duplIp, [null, '', '0'], true)) {
                     $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
                 }
 
-                $formIPs[] = $ip['ip_adresa'];
+                $formIPs[] = $zapisIp;
             }
 
             // Tohle prohledá duplikátní IP přímo v formuláři

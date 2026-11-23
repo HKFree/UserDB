@@ -3,9 +3,11 @@
 namespace App\ApiModule\Presenters;
 
 use App\Model;
+use Nette\Utils\Strings;
 
 /**
  * Uzivatel presenter.
+ * @property-read \Nette\Bridges\ApplicationLatte\Template $template
  */
 class SmokepingPresenter extends ApiPresenter
 {
@@ -54,6 +56,8 @@ class SmokepingPresenter extends ApiPresenter
         $this->template->aps_ips = $aps_ips;
         $this->template->users = $users;
         $this->template->users_ips = $users_ips;
+        // The template writes titles without diacritics; Latte 2 has no toAscii filter of its own.
+        $this->template->addFilter('toAscii', Strings::toAscii(...));
     }
 
     public function renderCheck(): void {

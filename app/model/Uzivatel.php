@@ -64,36 +64,24 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
     }
 
     /**
+     * Členové jiných AP, kteří mají IP adresu v některém z daných subnetů (tabulka „Uživatelé mimo AP“).
+     *
      * @param int|string $referentialApId
      * @param iterable<Nette\Database\Table\ActiveRow> $subnety
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
      */
     public function findUsersFromOtherAreasByAreaId($referentialApId, iterable $subnety): Nette\Database\Table\Selection {
-        $uids = array();
+        $zapisy = [];
         foreach ($subnety as $subnet) {
-            list($network, $cidr) = explode("/", $subnet->subnet);
-
-            $userids = $this->getConnection()->query("select DISTINCT U.*
-            from Uzivatel U
-            LEFT JOIN IPAdresa I on U.id=I.Uzivatel_id
-            LEFT JOIN Ap A on A.id=U.Ap_id
-            where A.id != ?
-            and (inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)
-            order by U.id", $referentialApId, (int) $cidr, $network)->fetchPairs('id', 'id');
-
-            if ($userids !== []) {
-                //\Tracy\Debugger::barDump($userids);
-                //\Tracy\Debugger::barDump(array_values($userids));
-                $uids = array_merge(array_values($userids), $uids);
-            }
+            $zapisy[] = $subnet->subnet;
         }
-        if ($uids !== []) {
-            //\Tracy\Debugger::barDump($uids);
-            //\Tracy\Debugger::barDump(array_values($userids));
-            return ($this->findBy(array('id' => $uids)));
-        }
+        $podminka = $this->podminkaIpVSubnetech($zapisy);
+        // Jeden průchod IP adres pro všechny subnety; podmínku nad výrazem index neurychlí.
+        $uids = $podminka === null ? [] : $this->getConnection()->query('SELECT DISTINCT U.id
+            FROM IPAdresa I JOIN Uzivatel U ON U.id = I.Uzivatel_id
+            WHERE U.Ap_id != ? AND ?', $referentialApId, $podminka)->fetchPairs('id', 'id');
 
-        return ($this->findBy(array('id' => 0)));
+        return $this->findBy(['id' => $uids === [] ? 0 : array_values($uids)]);
     }
 
     /**
@@ -140,7 +128,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         $podminky = [];
         $parametry = [];
         foreach ($subnety as $subnet) {
-            // Masku převádí PHP přes (int), stejně jako seznam „Uživatelé mimo AP“. SQL by nestandardní zápis četlo jinak.
+            // Masku převádí PHP přes (int). SQL by nestandardní zápis četlo jinak.
             list($network, $cidr) = explode("/", $subnet);
             $podminky[] = '(inet_aton(ip_adresa) & power(2, 32) - power(2, (32 - ?))) = inet_aton(?)';
             array_push($parametry, (int) $cidr, $network);
@@ -211,29 +199,32 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         }
 
         // IČO is stored as a number; LPAD restores the leading zeros of its eight-digit written form.
+        $podminky = [
+            'Uzivatel.telefon LIKE ?',
+            'Uzivatel.email LIKE ?',
+            'Uzivatel.email2 LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.nick') . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.jmeno') . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.prijmeni') . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec("CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni)") . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec("CONCAT(Uzivatel.prijmeni, ' ', Uzivatel.jmeno)") . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.ulice_cp') . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.firma_nazev') . ' LIKE ?',
+            "LPAD(Uzivatel.firma_ico, GREATEST(CHAR_LENGTH(Uzivatel.firma_ico), 8), '0') LIKE ?",
+        ];
+        $podminka = implode(' OR ', $podminky);
+        $hodnoty = array_fill(0, count($podminky), '%' . $search . '%');
         if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV') && !$Uzivatel->isInRole('KONTROLA') && !$Uzivatel->isInRole('EXTSUPPORT')) {
             $identity = $Uzivatel->getIdentity();
             if ($identity === null) {
                 return [];
             }
             $uid = $identity->getId();
-            $like = '%' . $search . '%';
             $secureMatchId = $this->getConnection()->queryArgs("SELECT Uzivatel.id FROM Uzivatel
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id
                                             JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
-                                            WHERE (
-                                            Uzivatel.telefon LIKE ?
-                                            OR Uzivatel.email LIKE ?
-                                            OR Uzivatel.email2 LIKE ?
-                                            OR CONVERT(Uzivatel.nick USING utf8) LIKE ?
-                                            OR CONVERT(Uzivatel.jmeno USING utf8) LIKE ?
-                                            OR CONVERT(Uzivatel.prijmeni USING utf8) LIKE ?
-                                            OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
-                                            OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
-                                            OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE ?
-                                            OR CONVERT(Uzivatel.firma_nazev USING utf8) LIKE ?
-                                            OR LPAD(Uzivatel.firma_ico, GREATEST(CHAR_LENGTH(Uzivatel.firma_ico), 8), '0') LIKE ?
-                                            ) AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...array_fill(0, 11, $like), $uid])->fetchPairs('id', 'id');
+                                            WHERE ($podminka)
+                                            AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...$hodnoty, $uid])->fetchPairs('id', 'id');
 
             if ($secureMatchId !== []) {
                 //\Tracy\Debugger::barDump($secureMatchId);
@@ -241,28 +232,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                 return ($this->findBy(array('id' => array_values($secureMatchId))));
             }
         } else {
-            return $this->findAll()->where(
-                "telefon LIKE ? OR email LIKE ? OR email2 LIKE ?
-            OR CONVERT(nick USING utf8) LIKE ?
-            OR CONVERT(jmeno USING utf8) LIKE ?
-            OR CONVERT(prijmeni USING utf8) LIKE ?
-            OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
-            OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
-            OR CONVERT(ulice_cp USING utf8) LIKE ?
-            OR CONVERT(firma_nazev USING utf8) LIKE ?
-            OR LPAD(firma_ico, GREATEST(CHAR_LENGTH(firma_ico), 8), '0') LIKE ?",
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%'
-            )->fetchAll();
+            return $this->findAll()->where($podminka, ...$hodnoty)->fetchAll();
         }
 
         return ($this->findBy(array('id' => 0)));

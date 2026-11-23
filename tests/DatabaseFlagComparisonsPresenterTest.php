@@ -167,19 +167,25 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
     /** @dataProvider representations */
     public function testPaymentEmailRequiresCooperativeMembership(bool $convert): void {
         $this->conversion($convert);
+        $result = $this->presenters->ui($this->actor->id, 'PaymentSchedule', ['action' => 'sendPaymentScheduleEmail', 'id' => $this->member->id]);
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id, 302);
+        Assert::count(1, $this->container->getByType(RecordingMailer::class)->messages);
+        $this->member->update(['druzstvo' => 0]);
+        Assert::exception(fn () => $this->presenters->ui($this->actor->id, 'PaymentSchedule', ['action' => 'sendPaymentScheduleEmail', 'id' => $this->member->id]), BadRequestException::class, 'Jen pro družstvo', 404);
+        Assert::count(1, $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testPaymentEmailDoesNotDependOnWorkingDirectory(): void {
         $directory = getcwd();
         Assert::true(is_string($directory));
-        chdir(__DIR__ . '/../www');
+        chdir(sys_get_temp_dir());
         try {
             $result = $this->presenters->ui($this->actor->id, 'PaymentSchedule', ['action' => 'sendPaymentScheduleEmail', 'id' => $this->member->id]);
-            PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id, 302);
-            Assert::count(1, $this->container->getByType(RecordingMailer::class)->messages);
-            $this->member->update(['druzstvo' => 0]);
-            Assert::exception(fn () => $this->presenters->ui($this->actor->id, 'PaymentSchedule', ['action' => 'sendPaymentScheduleEmail', 'id' => $this->member->id]), BadRequestException::class, 'Jen pro družstvo', 404);
-            Assert::count(1, $this->container->getByType(RecordingMailer::class)->messages);
         } finally {
             chdir($directory);
         }
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id, 302);
+        Assert::count(1, $this->container->getByType(RecordingMailer::class)->messages);
     }
 
     private function template(PresenterResult $result): Template {

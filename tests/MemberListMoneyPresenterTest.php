@@ -91,7 +91,7 @@ final class MemberListMoneyPresenterTest extends DatabaseTestCase
 
     /**
      * The page needs one movement per member. Loading the whole history ran out of memory on the list of all members.
-     * Only queries on member accounts are measured; the label column still runs its own queries for every row.
+     * Only queries on member accounts are measured; label queries are covered by MemberListLabelsPresenterTest.
      * @dataProvider loads
      */
     public function testLoadDoesNotGrowWithAccountHistory(string $action, bool $otherUsers, bool $export): void {

@@ -26,6 +26,9 @@ pcov.pkg-path = "php82Extensions.pcov"
 procps.pkg-path = "procps"
 procps.pkg-group = "procps"
 procps.systems = ["x86_64-linux"]
+# Node of the browser tools in tests/e2e and tests/screenshots; tests/screenshots/.nvmrc names the same major version.
+nodejs.pkg-path = "nodejs_26"
+nodejs.pkg-group = "nodejs"
 
 [options]
 systems = ["aarch64-darwin", "x86_64-linux"]

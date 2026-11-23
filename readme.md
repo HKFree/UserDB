@@ -77,7 +77,7 @@ PHPStan runs at **level 8** with the Nette extension and without a baseline. It 
 
 The [phpstan-strict-rules](https://github.com/phpstan/phpstan-strict-rules) extension is enabled as well, including `booleansInConditions`, which requires boolean expressions in conditions, and `disallowedLooseComparison`, which rejects `==` and `!=`. Use strict comparisons and normalize values according to their expected types. `disallowedShortTernary` is switched off for good: the short ternary stays allowed for default values such as `getenv('X') ?: 'default'`. The remaining groups keep the extension's defaults and must pass. This includes `disallowedEmpty`: use explicit comparisons for the expected type instead of `empty()`, preserving the meaning of zero and missing values.
 
-Methods that Kdyby Replicator adds at runtime are described in `phpstan/replicator.stub`. The `phpstan/tester.stub` file describes the type narrowing guaranteed by a successful `Tester\Assert::true()` call; assertion failures must throw or terminate the test. The only suppressed finding is one inline `@phpstan-ignore` in `pdfGenerator/www/ContractPdf.php`, where PHPStan's `proc_open` signature rejects a valid descriptor.
+Methods that Kdyby Replicator adds at runtime are described in `phpstan/replicator.stub`. The `phpstan/grido.stub` file gives the Nette Database data source of Grido the generic type of `Selection`, which the library's annotations leave out, so that `App\Model\DatabazovyZdrojGridu` can override it with full types. The `phpstan/tester.stub` file describes the type narrowing guaranteed by a successful `Tester\Assert::true()` call; assertion failures must throw or terminate the test. The only suppressed finding is one inline `@phpstan-ignore` in `pdfGenerator/www/ContractPdf.php`, where PHPStan's `proc_open` signature rejects a valid descriptor.
 
 **Code coverage:** `flox activate -s -- scripts/userdb_test_coverage.sh` runs the suite with PCOV and writes the line coverage of the PHP files in `app`, `pdfGenerator/www` and `www/digisign-webhook` to `temp/coverage/coverage.html`; Latte templates are not measured. Pass a path ending in `.xml` to get a Clover report instead. CI runs the same script after the tests, prints the percentage in the job summary and keeps the HTML report as the `coverage-report` artifact for 14 days. No threshold is enforced, and a failure of the coverage step or of the report upload does not fail the job: it shows as a warning annotation on the run.
 
@@ -109,11 +109,65 @@ building a fresh database; this does not remove existing volume data. Run setup 
 The demo guard test builds `userdb_demo_test` with its own `userdb_demo_test` / `demo-test-only` account;
 the ordinary `userdb_test` database still contains no dummy data.
 
-The `userdb_dev` / `dev-only` and `userdb_test` / `test-only` credentials are exclusively for these local databases. They cannot access each other's database. Local email is captured as `.eml` files under `.flox/cache/mail`; contract storage lives under `.flox/cache/storage`. Services stop when the last Flox activation exits; database data and keys remain. Inspect MariaDB with `flox services status` inside Flox and logs in `.flox/cache/logs/`.
+The `userdb_dev` / `dev-only`, `userdb_test` / `test-only` and `userdb_e2e` / `e2e-only` credentials are exclusively for these local databases. They cannot access each other's database. Local email is captured as `.eml` files under `.flox/cache/mail`; contract storage lives under `.flox/cache/storage`. Services stop when the last Flox activation exits; database data and keys remain. Inspect MariaDB with `flox services status` inside Flox and logs in `.flox/cache/logs/`.
 
 Contract previews work directly in the local application. Flox provides LibreOffice, zip/unzip and Poppler for PDF checks. The local bootstrap enables direct conversion without a separate HTTP service or PDF port. Each conversion uses a private directory and LibreOffice profile under `.flox/cache/pdf`, cleaned up on success or failure. Templates come from this worktree, and previews are marked `LOCAL TEST`. Font substitution can differ from production; the test checks content, not pixel-identical rendering. Outside this local bootstrap, the application continues to use `PDF_GENERATOR_URL`.
 
 PHP extensions are included and frontend assets are already committed, so no Node build is required. IDS, InfluxDB, SMS and network-check endpoints are disconnected in the local configuration, so their external data/functions are unavailable. SledovaniTV, accounting reports and Fio imports have separate Python/Perl workers and external credentials; they are not started by this local web setup. External signing and other real integrations are not part of the local PDF preview.
+
+### Browser tests with Playwright
+
+`tests/e2e/` holds Playwright Test scenarios of the main processes: they click through the application in
+Chromium the way a person does, across several pages and roles, including the JavaScript that the presenter
+tests cannot see. Install Flox and the Composer dependencies; Node 26 is part of the Flox environment and is
+shared with the [page screenshots](#screenshots-in-pull-requests). From the repository root:
+
+```sh
+scripts/userdb_e2e.sh                                   # all tests
+scripts/userdb_e2e.sh specs/smoke.spec.mjs              # one file
+scripts/userdb_e2e.sh -g "hledání" --headed             # any arguments of "playwright test"
+```
+
+The script activates Flox with its services, installs the npm packages and Chromium when
+`tests/e2e/package-lock.json` changed (on Linux run `flox activate -- npx playwright install --with-deps chromium`
+in `tests/e2e` once) and then, on every run:
+
+1. rebuilds the database `userdb_e2e` (account `userdb_e2e` / `e2e-only`) from the migrations with the scenario
+   demo data and without the volume data, and empties its e-mails, sessions and stored files under
+   `.flox/cache/e2e/`;
+2. starts its own web on a free port with `USERDB_LOCAL_INSTANCE=e2e`, which points the local bootstrap at that
+   database and those directories;
+3. runs `playwright test` in one worker and stops the web.
+
+The development database `userdb_dev`, a running development web and their e-mails are not used or changed.
+Only one run per worktree is possible at a time; a second one stops with a message. A MariaDB that was started
+before `scripts/userdb_mariadb_init.sql` knew `userdb_e2e` gets the database from the script, no restart is needed.
+The HTML report, traces and screenshots of failed tests and the logs of the setup and the web are in `temp/e2e/`;
+open the report with `npx playwright show-report ../../temp/e2e/report` from `tests/e2e`.
+
+The scenarios in `tests/e2e/specs/` cover: every page of the menu for four roles, the search in the top bar,
+creating and editing a member with IP addresses, activation, reactivation and deactivation of internet, e-mail to
+one member and to a whole AP, editing an AP with the subnet overlap check, labels on the member detail, sorting and
+filters of the member list, proposing and approving an honorary membership, granting a role, transferring an
+unpaired payment and merging members. Each file names the demo records it changes in its first comment.
+
+Tests import `test` and `expect` from `tests/e2e/fixtures.mjs`. It signs in a demo person through the persona
+cookie (`test.use({ persona: personas.so })`, `signInAs()` to switch during a test), reads the e-mails the web
+stored (`mailbox.received()`), and fails every test on an HTTP 5xx response, a Tracy error page, a browser console
+error, an uncaught JavaScript exception or a request outside the local web. Such requests are blocked: Chromium
+resolves no host names and Playwright aborts every request to another origin. A redirect to another origin given
+by its IP address is not blocked, it only fails the test. `specs/kontrola-chyb.spec.mjs` proves that the check
+fails a test. A test that provokes an error on purpose names it with `problems.allow()`. Tests share the database of the run, so each uses demo records of its
+own or data it creates; the tests are not retried. Shared page helpers are in `tests/e2e/helpers.mjs`.
+
+A test that finds a bug of the application does not fix it here: the bug gets its own issue and the test stays in
+the file as `test.fixme()` with a comment linking the issue, so that the fix only has to enable it.
+
+[e2e.yml](.github/workflows/e2e.yml) runs the same script on every push and pull request, including pull requests
+from forks, since it needs no secret. A failed run keeps `temp/e2e/` and the Flox logs as the `e2e-failure`
+artifact for 14 days. `BrowserToolsVersionsTest` keeps the Playwright version of `tests/e2e` and
+`tests/screenshots` identical, and the Node version of the Flox environment, of `tests/screenshots/.nvmrc` and
+of both packages.
 
 ### Worktrees with Orca
 
@@ -355,17 +409,12 @@ workflow. The image checkout uses a partial clone and a sparse checkout of the c
 
 #### Local capture
 
-Install Flox and Node 26 (also recorded in `tests/screenshots/.nvmrc`). Node is separate from the Flox
-environment. From the repository root:
+Install Flox; Node 26 is part of its environment. `tests/screenshots/.nvmrc` names the same version for the
+`publish` job, which runs without Flox. From the repository root:
 
 ```sh
-cd tests/screenshots
-nvm install
-nvm use
-npm ci
-npx playwright install chromium          # Linux: add --with-deps
-npm test
-cd ../..
+# Linux: playwright install --with-deps chromium
+flox activate -- bash -c 'cd tests/screenshots && npm ci && npx playwright install chromium && npm test'
 scripts/userdb_screenshots.sh local HEAD  # compare the current commit with itself
 scripts/userdb_screenshots.sh local       # compare HEAD with its merge-base with origin/master
 scripts/userdb_screenshots.sh local <base-commit> --head <head-commit>
@@ -423,6 +472,7 @@ files with `UPDATE_SNAPSHOTS=1 npm test` from `tests/screenshots/`. These tests 
 
 The same `npm test` runs `test/copy-value.test.mjs`, a browser test of the application's own `www/js/main.js`:
 copying a device login and password from the IP address table (mouse selection, the copy button, keyboard and touch).
+`test/message-form.test.mjs` checks with the real `www/css/screen.css` that the e-mail and SMS forms fit into a phone screen.
 
 ### Jobs to be run
 

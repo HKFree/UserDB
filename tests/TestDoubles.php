@@ -17,6 +17,7 @@ use Nette\Database\Structure;
 use Nette\Http\Session;
 use Nette\Mail\Mailer;
 use Nette\Mail\Message;
+use Nette\Mail\SendException;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\Security\UserStorage;
@@ -52,7 +53,14 @@ final class RecordingMailer implements Mailer
     /** @var list<Message> */
     public array $messages = [];
 
+    /** Set to make the next send() fail once, the way an unreachable mail server does. */
+    public ?SendException $failure = null;
+
     public function send(Message $mail): void {
+        if ($this->failure !== null) {
+            [$failure, $this->failure] = [$this->failure, null];
+            throw $failure;
+        }
         $this->messages[] = clone $mail;
     }
 }

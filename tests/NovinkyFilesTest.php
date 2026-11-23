@@ -21,15 +21,28 @@ final class NovinkyFilesTest extends TestCase
         return [
             'empty' => [[], null],
             'valid' => [['2026-11-22.md' => "## Novinky\n- #266 - Samostatná věta\n  Detail smí mít tečku.\n- Bez čísla"], null],
+            'valid slug and shared date' => [[
+                '2026-11-23.md' => "## Novinky\n- #266 - Jedna změna",
+                '2026-11-23-278-zrusit-slucovani.md' => "## Novinky\n- #278 - Další změna",
+            ], null],
             'hidden system file' => [['.DS_Store' => 'Text', '2026-11-22.md' => "## Novinky\n- Text"], null],
             'wrong name' => [['README.md' => 'Text'], 'README.md:1: Neplatný název souboru novinek.'],
             'invalid date' => [['2026-02-29.md' => 'Text'], '2026-02-29.md:1: Neplatný název souboru novinek.'],
+            'invalid slug' => [['2026-11-23-dve--pomlcky.md' => 'Text'], '2026-11-23-dve--pomlcky.md:1: Neplatný název souboru novinek.'],
             'grammar' => [['2026-11-22.md' => "## Novinky\nVolný text"], '2026-11-22.md:2: Neplatný řádek; očekává se nadpis, položka „- “ nebo odsazený detail.'],
             'period' => [['2026-11-22.md' => "## Novinky\r\n- #266 - Věta.  \r\n"], '2026-11-22.md:2: První řádek položky nesmí končit tečkou.'],
             'duplicate across files' => [[
                 '2026-11-21.md' => "## Novinky\n- #266 - Jedna změna",
                 '2026-11-22.md' => "## Opravy\n- #0266 - Tatáž změna",
             ], '2026-11-22.md:2: Číslo #266 už je v souboru 2026-11-21.md.'],
+            'duplicate across files of one day' => [[
+                '2026-11-23-b.md' => "## Opravy\n- #0266 - Tatáž změna",
+                '2026-11-23-a.md' => "## Novinky\n- #266 - Jedna změna",
+            ], '2026-11-23-b.md:2: Číslo #266 už je v souboru 2026-11-23-a.md.'],
+            'duplicate with and without slug' => [[
+                '2026-11-23.md' => "## Opravy\n- #0266 - Tatáž změna",
+                '2026-11-23-a.md' => "## Novinky\n- #266 - Jedna změna",
+            ], '2026-11-23.md:2: Číslo #266 už je v souboru 2026-11-23-a.md.'],
         ];
     }
 

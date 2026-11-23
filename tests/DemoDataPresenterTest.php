@@ -40,6 +40,8 @@ final class DemoDataPresenterTest extends TestCase
         // First of the page checks: the seeded login limit lasts 15 minutes from the load.
         $this->assertApi();
         $this->assertMemberPages();
+        $this->assertUnusableSenders();
+        $this->assertSkippedRegistrationRecipients();
         $this->assertNetworkPages();
         $this->assertAdministration();
         $this->assertVolume();
@@ -89,7 +91,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(6, $adapter->scenarioFiles);
+        Assert::same(13, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -163,8 +165,11 @@ final class DemoDataPresenterTest extends TestCase
     }
 
     private function assertScenarioSafety(): void {
-        Assert::same(70, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20069')->count('*'));
-        Assert::same(70, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20069 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
+        Assert::same(12, $this->database->table('Oblast')->count('*'));
+        Assert::same(25, $this->database->table('Ap')->count('*'));
+        Assert::same(89, $this->database->table('Uzivatel')->count('*'));
+        Assert::same(82, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->count('*'));
+        Assert::same(82, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
         Assert::same(60, $this->database->table('IPAdresa')->where('Uzivatel_id', 20061)->count('*'));
         foreach ([
             'SELECT COUNT(*) FROM Oblast o LEFT JOIN Ap a ON a.Oblast_id = o.id WHERE a.id IS NULL',
@@ -192,8 +197,99 @@ final class DemoDataPresenterTest extends TestCase
         Assert::same(36, $this->database->fetchField('SELECT COUNT(DISTINCT DATE_FORMAT(datum, ?)) FROM UzivatelskeKonto WHERE id BETWEEN 2001000 AND 2001107', '%Y-%m'));
     }
 
+    /** Both personas with an invalid own address are warned; only the one who may edit its own record gets the link. */
+    private function assertUnusableSenders(): void {
+        foreach ([20070 => [201, 20018, 201], 20071 => [-20, 20015, 217]] as $persona => [$area, $member, $ap]) {
+            foreach (['email' => $member, 'emailall' => $ap] as $action => $id) {
+                $page = $this->presenters->ui($persona, 'UzivatelMailSms', ['action' => $action, 'id' => $id]);
+                Assert::same(200, $page->status, "Persona $persona, $action");
+                Assert::contains('vaše vlastní e-mailová adresa není platná', $page->html);
+                Assert::same(['oblast' . $area . '@hkfree.org'], $this->values($page->html, '//select[@name="from"]/option'));
+                Assert::same($persona === 20070, str_contains($page->html, '/uzivatel/edit/' . $persona . '"'), "Persona $persona, $action");
+            }
+        }
+    }
+
+    private function assertSkippedRegistrationRecipients(): void {
+        $container = TestEnvironment::container($this->database);
+        $runner = new PresenterRunner($this->database, $container);
+        $mailer = $container->getByType(RecordingMailer::class);
+        $clearMessages = static function () use ($mailer): void {
+            $mailer->messages = [];
+        };
+        foreach (range(20075, 20081) as $id) {
+            $actor = in_array($id, [20075, 20081], true) ? 20012 : 20076;
+            $html = $runner->ui($actor, 'Uzivatel', ['action' => 'show', 'id' => $id])->html;
+            Assert::same(
+                ['/userdb/uzivatel-actions/send-reg-activation/' . $id],
+                $this->values($html, '//a[contains(@href,"/uzivatel-actions/send-reg-activation/")]/@href'),
+            );
+            if (in_array($id, [20078, 20080], true)) {
+                Assert::same(
+                    ['/userdb/payment-schedule/send-payment-schedule-email/' . $id],
+                    $this->values($html, '//a[contains(@href,"/payment-schedule/send-payment-schedule-email/")]/@href'),
+                );
+                $member = $this->database->table('Uzivatel')->get($id);
+                Assert::true($member instanceof \Nette\Database\Table\ActiveRow);
+                Assert::same(1, $member->druzstvo);
+                Assert::same(0, $member->spolek);
+                Assert::null($member->TypClenstvi_id);
+            }
+        }
+        $result = $runner->ui(20012, 'UzivatelActions', ['action' => 'sendRegActivation', 'id' => 20081]);
+        Assert::same(302, $result->status);
+        Assert::count(2, $mailer->messages);
+        Assert::same(['demo20081@example.invalid' => null], $mailer->messages[0]->getHeader('To'));
+        Assert::same(['info', 'warning'], $result->flashTypes);
+        Assert::contains('Demo Chybnákopie (UID 20075)', $result->flashes[1]);
+        Assert::hasKey('demo20012@example.invalid', $mailer->messages[1]->getHeader('To'));
+        Assert::hasKey('demo20013@example.invalid', $mailer->messages[1]->getHeader('To'));
+        Assert::hasNotKey('spravce@@example.invalid', $mailer->messages[1]->getHeader('To'));
+
+        $clearMessages();
+        $result = $runner->ui(20076, 'UzivatelActions', ['action' => 'sendRegActivation', 'id' => 20077]);
+        Assert::same(302, $result->status);
+        Assert::count(1, $mailer->messages);
+        Assert::same(['demo20077@example.invalid' => null], $mailer->messages[0]->getHeader('To'));
+        Assert::same(['info', 'warning'], $result->flashTypes);
+        Assert::same(
+            'Kopie e-mailu nebyla odeslána, žádný ze správců nemá platnou e-mailovou adresu. '
+                . 'Na neplatné e-mailové adresy zpráva neodešla: vaše vlastní, oba e-maily. '
+                . 'Opravte je v editaci dané osoby nebo o opravu požádejte správce její oblasti.',
+            $result->flashes[1],
+        );
+
+        foreach ([20078 => 'druha@example.invalid', 20079 => 'demo20079@example.invalid'] as $id => $address) {
+            $clearMessages();
+            $result = $runner->ui(1, 'UzivatelActions', ['action' => 'sendRegActivation', 'id' => $id]);
+            Assert::same(302, $result->status);
+            Assert::count(2, $mailer->messages);
+            Assert::same([$address => null], $mailer->messages[0]->getHeader('To'));
+            Assert::same(['info', 'warning'], $result->flashTypes);
+            Assert::contains('UID ' . $id, $result->flashes[1]);
+            Assert::contains($id === 20078 ? 'registraci do družstva' : 'registrace do spolku', $result->flashes[0]);
+        }
+
+        foreach ([['UzivatelActions', 'sendRegActivation', 20080], ['PaymentSchedule', 'sendPaymentScheduleEmail', 20078], ['PaymentSchedule', 'sendPaymentScheduleEmail', 20080]] as [$presenter, $action, $id]) {
+            $clearMessages();
+            $result = $runner->ui(20076, $presenter, ['action' => $action, 'id' => $id]);
+            Assert::same(302, $result->status);
+            Assert::contains('/uzivatel/show/' . $id, (string) $result->redirectUrl);
+            if ($id === 20078) {
+                Assert::count(1, $mailer->messages);
+                Assert::same(['druha@example.invalid' => null], $mailer->messages[0]->getHeader('To'));
+                Assert::same(['info', 'warning'], $result->flashTypes);
+            } else {
+                Assert::same([], $mailer->messages);
+                Assert::same(['danger'], $result->flashTypes);
+                Assert::same('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu. Zadejte ji v editaci člena.', strip_tags($result->flashes[0]));
+                Assert::same(['/userdb/uzivatel/edit/20080'], $this->values($result->flashes[0], '//a/@href'));
+            }
+        }
+    }
+
     private function assertMemberPages(): void {
-        foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20069')->order('id') as $member) {
+        foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->order('id') as $member) {
             $show = $this->page('Uzivatel', 'show', $member->id);
             Assert::contains('UID ' . $member->id . ' - Demo ' . $member->prijmeni, $this->text($show));
             $edit = $this->page('Uzivatel', 'edit', $member->id);
@@ -238,6 +334,15 @@ final class DemoDataPresenterTest extends TestCase
                 $this->page('UzivatelList', 'list', $ap->id, ['money' => $money]);
             }
         }
+        // Areas 205 to 207 are listed under an AP with another name and sorted by that name. All areas count
+        // every AP of an area, My areas only the active ones: area 206 has two APs, one of them switched off.
+        $menu = $this->presenters->ui(20002, 'Novinky')->html;
+        Assert::same(['Demo Libuše (218)', 'Demo malé AP (200)', 'Demo zbylé AP (219)'], $this->values($menu, '//li[starts-with(@id,"oblast-")]/a'));
+        $allAreas = $this->values($menu, '//ul[@id="oblastitree"]/li/a');
+        Assert::same(
+            ['Demo bez správců', 'Demo částečně vypnutá', 'Demo jen vypnuté AP (221)', 'Demo Libuše (218)', 'Demo malé AP (200)'],
+            array_slice($allAreas, (int) array_search('Demo bez správců', $allAreas, true), 5),
+        );
         $list = $this->page('UzivatelList', 'list', 202, ['grid-filter' => ['spolek_druzstvo' => 'all']]);
         foreach (['planovane', 'primarni', 'zrusene', 'invalidemail'] as $class) {
             Assert::true(count($this->values($list, '//tr[contains(@class,"' . $class . '")]')) > 0, $class);
@@ -247,9 +352,12 @@ final class DemoDataPresenterTest extends TestCase
         $money = $this->page('UzivatelList', 'list', 201, ['money' => 1]);
         Assert::true(count($this->values($money, '//tr[contains(@class,"preplatek")]')) > 0);
         Assert::true(count($this->values($money, '//tr[contains(@class,"neaktivni")]')) > 0);
-        Assert::contains('demo20062', $this->text($this->page('UzivatelList', 'list', 213)));
-        // ZSO 20004 may edit the foreign member 20062 only because of his address inside a subnet of AP 213.
-        Assert::contains('Editovat', $this->text($this->presenters->ui(20004, 'Uzivatel', ['action' => 'show', 'id' => 20062])->html));
+        $foreignMembers = $this->text($this->page('UzivatelList', 'list', 213));
+        foreach ([20062, 20064, 20065] as $foreign) {
+            Assert::contains('demo' . $foreign, $foreignMembers);
+            // ZSO 20004 may edit a foreign member only because of the member's address inside a subnet of AP 213.
+            Assert::contains('Editovat', $this->text($this->presenters->ui(20004, 'Uzivatel', ['action' => 'show', 'id' => $foreign])->html));
+        }
         Assert::notContains('Editovat', $this->text($this->presenters->ui(20004, 'Uzivatel', ['action' => 'show', 'id' => 20063])->html));
         // An area manager finds only the company of his own area, by its name and by its IČO.
         foreach ([[20012, 'společnost', [20031]], [20012, '00987654', []], [20002, 'lhota', [20063]], [20002, '00987654', [20063]], [20002, '9999999', []]] as [$manager, $search, $found]) {
@@ -321,6 +429,9 @@ final class DemoDataPresenterTest extends TestCase
         $unmatched = $this->page('SpravaNesparovanych', 'nesparovane');
         Assert::contains('/40000100', $unmatched);
         Assert::contains('/40000101', $unmatched);
+        foreach ([40000110, 40000111, 40000112, 40000113] as $id) {
+            Assert::contains('/' . $id, $unmatched);
+        }
         Assert::notContains('/40000102', $unmatched);
         Assert::notContains('/40000103', $unmatched);
         foreach ($this->database->table('Smlouva') as $contract) {
@@ -364,10 +475,23 @@ final class DemoDataPresenterTest extends TestCase
         $members = $this->presenters->api('Api:Hlasys', $credentials, ['action' => 'getClenySpolku']);
         Assert::same('demo20018', $members->json['clenove'][20018]);
         Assert::false(isset($members->json['clenove'][20015]));
-        $smoke = $this->presenters->api('Api:Smokeping', $credentials);
-        // The application's toAscii filter is missing. No smokeping flag may expose that error page.
-        Assert::same(0, $this->database->table('IPAdresa')->where('smokeping', 1)->count('*'));
-        Assert::same('+ userdb menu = userdb title = generovano z userdb', $this->text($smoke->html));
+        // Watched addresses: AP addresses with a description, with a hostname only and with neither, and two member addresses.
+        Assert::same([20000, 20004, 20005, 20100, 20104], $this->database->table('IPAdresa')->where('smokeping', 1)->order('id')->fetchPairs(null, 'id'));
+        $smoke = $this->text($this->presenters->api('Api:Smokeping', $credentials)->html);
+        foreach ([
+            '++ userdb-demo-mala-oblast-200 menu = Demo mala oblast - Demo male AP title = Demo mala oblast - Demo male AP',
+            'menu = Demo brana RouterBoard title = Demo brana RouterBoard host = 192.0.2.1',
+            // An AP named like its area gets a single title.
+            '++ userdb-demo-shodny-nazev-211 menu = Demo shodny nazev title = Demo shodny nazev',
+            'menu = demo-hostname title = demo-hostname host = 10.220.5.1',
+            'menu = AP-IP-20005 title = AP-IP-20005 host = 10.220.5.2',
+            '+++ userdb-demo-hlavni-ap-20027 menu = 20027-demo20027 title = 20027-demo20027',
+            'menu = Demo RouterBoard, priznaky DHCP, MAC a internet title = Demo RouterBoard, priznaky DHCP, MAC a internet host = 198.51.100.20',
+            'menu = Demo bez SSID title = Demo bez SSID host = 198.51.100.23',
+        ] as $section) {
+            Assert::contains($section, $smoke);
+        }
+        Assert::contains('IP je sledovaná ve smokepingu', $this->page('Ap', 'show', 211));
         $check = $this->presenters->api('Api:Smokeping', $credentials, ['action' => 'check']);
         Assert::match('~^[a-f0-9]{32}\s*$~', $check->html);
         $token = ['uid' => 20018, 'token' => 'demo-token-20018'];

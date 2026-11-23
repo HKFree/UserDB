@@ -48,6 +48,7 @@ final class UzivatelForeignSubnetDatabaseTest extends DatabaseTestCase
         $this->fixtures->ipAddress($this->foreignMember->id, $address);
 
         Assert::same($expected, $this->hasAddressIn([$this->area->id]));
+        Assert::same($expected, $this->isListedOutside($this->ap));
     }
 
     /** @return list<array{string, string, bool}> */
@@ -55,8 +56,10 @@ final class UzivatelForeignSubnetDatabaseTest extends DatabaseTestCase
         return [
             ['0.0.0.0/0', '10.107.1.1', true],
             ['10.107.253.7/32', '10.107.253.7', true], ['10.107.253.7/32', '10.107.253.6', false],
-            // The subnet form accepts any numeric prefix; the rule converts it with a PHP integer cast, here to 30.
+            // Rows saved before the subnet form required a plain integer prefix may hold any numeric one; the rule converts it with a PHP integer cast, here to 30.
             ['10.107.253.0/3e1', '10.107.253.3', true], ['10.107.253.0/3e1', '10.107.253.4', false],
+            // Only the PHP cast reads 24.9 as 24; with the raw value in SQL the mask is not a whole number of bits.
+            ['10.107.254.0/24.9', '10.107.254.1', true],
             ['0.0.0.0/3e1', '10.107.1.1', false],
             ['10.107.253.0/33', '10.107.253.0', false],
         ];
@@ -68,6 +71,7 @@ final class UzivatelForeignSubnetDatabaseTest extends DatabaseTestCase
         $this->fixtures->ipAddress($this->foreignMember->id, $address);
 
         Assert::same($expected, $this->hasAddressIn([$this->area->id]));
+        Assert::same($expected, $this->isListedOutside($this->neighbourAp));
     }
 
     public function testAnyOfTheMemberAddressesCounts(): void {
@@ -126,6 +130,12 @@ final class UzivatelForeignSubnetDatabaseTest extends DatabaseTestCase
         $batch = $this->users->najdiUzivateleNaApVSubnetechCizichAp($this->foreignAp->id, $areaIds);
         Assert::same($allowed, in_array($this->foreignMember->id, $batch, true));
         return $allowed;
+    }
+
+    /** The table "Uživatelé mimo AP" of the AP reads its subnets the same way as the rule. */
+    private function isListedOutside(ActiveRow $ap): bool {
+        $listed = $this->users->findUsersFromOtherAreasByAreaId($ap->id, $ap->related('Subnet.Ap_id'))->fetchPairs('id', 'id');
+        return isset($listed[$this->foreignMember->id]);
     }
 }
 

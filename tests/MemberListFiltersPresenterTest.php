@@ -6,6 +6,10 @@ namespace Test;
 
 use App\Model\StitekUzivatele;
 use Nette\Application\LinkGenerator;
+use Nette\Caching\Storages\MemoryStorage;
+use Nette\Database\Connection;
+use Nette\Database\Explorer;
+use Nette\Database\ResultSet;
 use Nette\Database\Table\ActiveRow;
 use Tester\Assert;
 
@@ -23,7 +27,7 @@ final class MemberListFiltersPresenterTest extends DatabaseTestCase
         $this->fixtures->role($this->viewer->id, 'VV');
     }
 
-    public function testSearchButtonIsInTheFilterBarAboveEveryMemberGrid(): void {
+    public function testSearchAndResetButtonsAreInTheFilterBarAboveEveryMemberGrid(): void {
         $pages = [
             'list' => ['frm-grid-form', 'frm-othersGrid-form'],
             'listall' => ['frm-grid-form'],
@@ -37,6 +41,8 @@ final class MemberListFiltersPresenterTest extends DatabaseTestCase
                 Assert::match('~<button[^>]*type="submit"[^>]*name="buttons\[search\]"[^>]*>.*Vyhledat\s*</button>~s', (string) $filterBar, "$action/$formId");
                 Assert::notContains('display:none', (string) $filterBar, "$action/$formId hides the button");
                 Assert::same(1, substr_count($form, 'name="buttons[search]"'), "$action/$formId repeats the button under the table");
+                Assert::match('~name="buttons\[search\]".*<button[^>]*type="submit"[^>]*name="buttons\[reset\]"[^>]*>.*Resetovat\s*</button>~s', (string) $filterBar, "$action/$formId");
+                Assert::same(1, substr_count($form, 'name="buttons[reset]"'), "$action/$formId repeats Reset under the table");
             }
         }
     }
@@ -55,6 +61,36 @@ final class MemberListFiltersPresenterTest extends DatabaseTestCase
             Assert::same([$labelled->id], $this->listedMembers($action, (int) $label->id, [$labelled->id, $other->id]), "$action with the label");
             Assert::same([$other->id], $this->listedMembers($action, -(int) $label->id, [$labelled->id, $other->id]), "$action without the label");
             Assert::same([$labelled->id, $other->id], $this->listedMembers($action, 0, [$labelled->id, $other->id]), "$action unfiltered");
+        }
+    }
+
+    public function testLabelFilterOffersLabelsByTextThenId(): void {
+        // Reading whole rows, the default of the tests, would make the repeated load the same query as the first one.
+        $this->useColumnCache();
+        // Insertion order, the index on area and text, and the alphabet all disagree; equal texts need two areas.
+        $firstArea = $this->fixtures->area();
+        $secondArea = $this->fixtures->area();
+        $prefix = $this->fixtures->name('Order');
+        $labels = [];
+        foreach ([[$secondArea, 'c'], [$secondArea, 'a'], [$firstArea, 'b'], [$firstArea, 'c']] as [$area, $suffix]) {
+            $labels[] = $this->fixtures->insert('Stitek', ['Oblast_id' => $area->id, 'text' => "$prefix $suffix", 'barva_pozadi' => '#006600', 'barva_popredi' => '#ffffff']);
+        }
+        $expected = [[$labels[1]->id, "$prefix a"], [$labels[2]->id, "$prefix b"], [$labels[0]->id, "$prefix c"], [$labels[3]->id, "$prefix c"]];
+
+        foreach (['list', 'listall'] as $action) {
+            // Twice from one call site: the repeated request selects only the columns the first one read.
+            foreach (['*', '`id`, `text`'] as $columns) {
+                $page = $this->memberListWithLabelQueries($action);
+                // The columns read are remembered when the selection of the request is destroyed.
+                gc_collect_cycles();
+                $options = $this->labelFilterOptions($page['html']);
+                $offered = array_values(array_filter($options, static fn (array $option): bool => $option[0] > 0));
+                $excluding = array_map(static fn (array $option): array => [-$option[0], 'NOT ' . $option[1]], $offered);
+                Assert::same([[0, '---'], ...$offered, ...$excluding], $options, "$action, $columns: blocks");
+                Assert::same($expected, array_values(array_filter($offered, static fn (array $option): bool => str_starts_with($option[1], $prefix))), "$action, $columns: order");
+                // The database returns equal texts by id even when the query does not ask for it; only the query shows the order is guaranteed.
+                Assert::same(["SELECT $columns FROM `Stitek` ORDER BY `text`, `id`"], $page['queries'], "$action, $columns: query");
+            }
         }
     }
 
@@ -109,6 +145,41 @@ final class MemberListFiltersPresenterTest extends DatabaseTestCase
             throw new \LogicException("Form $id is missing.");
         }
         return $match[0];
+    }
+
+    /** @return array{html: string, queries: list<string>} the page and the ordered selects of labels it sent */
+    private function memberListWithLabelQueries(string $action): array {
+        $queries = [];
+        $connection = $this->database->getConnection();
+        $listeners = $connection->onQuery;
+        $connection->onQuery[] = static function (Connection $connection, ResultSet|\Throwable $result) use (&$queries): void {
+            if ($result instanceof ResultSet && str_contains($result->getQueryString(), ' FROM `Stitek` ORDER BY ')) {
+                $queries[] = $result->getQueryString();
+            }
+        };
+        try {
+            $html = $this->memberList($action);
+        } finally {
+            $connection->onQuery = $listeners;
+        }
+        return ['html' => $html, 'queries' => $queries];
+    }
+
+    /** @return list<array{int, string}> the value and text of every option of the label filter */
+    private function labelFilterOptions(string $html): array {
+        $form = $this->form($html, 'frm-grid-form');
+        if (preg_match('~<select[^>]*name="filters\[stitek\]".*?</select>~s', $form, $select) !== 1) {
+            throw new \LogicException('The label filter is missing.');
+        }
+        preg_match_all('~<option value="(-?\d+)"[^>]*>([^<]*)</option>~', $select[0], $matches, PREG_SET_ORDER);
+        return array_map(static fn (array $match): array => [(int) $match[1], html_entity_decode($match[2])], $matches);
+    }
+
+    /** Tests read whole rows by default; this makes Nette Database remember the columns read at each call site. */
+    private function useColumnCache(): void {
+        $this->database = new Explorer($this->database->getConnection(), $this->database->getStructure(), $this->database->getConventions(), new MemoryStorage());
+        $this->container = TestEnvironment::container($this->database);
+        $this->presenters = new PresenterRunner($this->database, $this->container);
     }
 
     /**

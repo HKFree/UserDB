@@ -26,21 +26,11 @@ final class PosledniPohybyKonta
     public function posledni(ActiveRow $clen, array $typyPohybu): ?Row {
         $idClena = (int) $clen->id;
         if (!isset($this->clenove[$idClena])) {
-            $this->clenove = array_fill_keys($this->idRadku($clen), true);
+            $this->clenove = array_fill_keys(RadkyTabulky::id($clen), true);
             $this->pohyby = [];
         }
         $skupina = implode(',', $typyPohybu);
         $this->pohyby[$skupina] ??= $this->uzivatelskeKonto->getPosledniPohyby(array_keys($this->clenove), $typyPohybu);
         return $this->pohyby[$skupina][$idClena] ?? null;
-    }
-
-    /**
-     * Id všech řádků tabulky, ze které člen pochází: stránka seznamu nebo dávka exportu.
-     *
-     * @return list<int>
-     */
-    private function idRadku(ActiveRow $clen): array {
-        // Tabulku právě prochází Grido. Průchod touž instancí by ten jeho ukončil, proto kopie.
-        return array_map('intval', array_keys(iterator_to_array(clone $clen->getTable())));
     }
 }

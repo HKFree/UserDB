@@ -8,7 +8,7 @@ use App\Services;
 use Nette\Application\UI\Form;
 use Nette\Forms\Container;
 use Nette\Utils\Html;
-use Grido\Grid;
+use App\Components\AppGrid;
 use Tracy\Debugger;
 use Nette\Mail\Message;
 use Nette\Utils\Validators;
@@ -135,8 +135,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
 
         //\Tracy\Debugger::barDump($search);
 
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('account_export');
 
         $seznamTransakci = null;

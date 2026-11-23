@@ -171,7 +171,7 @@ class ApPresenter extends BasePresenter
 
         $ips->addSubmit('add', '+ Přidat další IP')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(null)
+            ->setValidationScope([])
             ->addCreateOnClick(true);
 
         $dataSubnet = $this->subnet;
@@ -186,13 +186,12 @@ class ApPresenter extends BasePresenter
 
         $subnets->addSubmit('add_subnet', '+ Přidat další Subnet')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(null)
+            ->setValidationScope([])
             ->addCreateOnClick(true);
 
         $dataApiKlice = $this->apiKlic;
-        $apiKlice = $form->addDynamic('apiKlic', function (Container $apiKlic) use ($dataApiKlice, $form) {
-            //var_dump($formValues);
-            $dataApiKlice->getEditForm($apiKlic, $form);
+        $apiKlice = $form->addDynamic('apiKlic', function (Container $apiKlic) use ($dataApiKlice) {
+            $dataApiKlice->getEditForm($apiKlic);
 
             $apiKlic->addSubmit('remove_apiklic', '– Odstranit API klíč')
                 ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
@@ -202,7 +201,7 @@ class ApPresenter extends BasePresenter
 
         $apiKlice->addSubmit('add_apiKlic', '+ Přidat další API klíč')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(null)
+            ->setValidationScope([])
             ->addCreateOnClick(true);
 
         $form->addSubmit('save', 'Uložit')
@@ -252,16 +251,18 @@ class ApPresenter extends BasePresenter
         if (isset($data['ip'])) {
             $formIPs = array();
             foreach ($data['ip'] as $ip) {
-                if ($this->ipAdresa->validateIP($ip['ip_adresa']) === false) {
-                    $form->addError('IP adresa ' . $ip['ip_adresa'] . ' není validní IPv4 adresa!');
+                $zapisIp = self::oriznoutRadek($ip['ip_adresa'] ?? null);
+
+                if ($this->ipAdresa->validateIP($zapisIp) === false) {
+                    $form->addError('IP adresa ' . $zapisIp . ' není validní IPv4 adresa!');
                 }
 
-                $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
+                $duplIp = $this->ipAdresa->getDuplicateIP($zapisIp, $ip['id']);
                 if (!in_array($duplIp, [null, '', '0'], true)) {
                     $form->addError('IP adresa ' . $duplIp . ' již  v databázi existuje!');
                 }
 
-                $formIPs[] = $ip['ip_adresa'];
+                $formIPs[] = $zapisIp;
             }
 
             // Tohle prohledá duplikátní IP přímo v formuláři
@@ -286,13 +287,16 @@ class ApPresenter extends BasePresenter
         if (isset($data['subnet'])) {
             $formSubnets = array();
             foreach ($data['subnet'] as $subnet) {
-                if (!$this->subnet->validateSubnet($subnet['subnet'])) {
-                    $form->addError('Subnet ' . $subnet['subnet'] . ' není validní IPv4 subnet!');
+                $zapisSubnetu = self::oriznoutRadek($subnet['subnet'] ?? null);
+                $zapisGateway = self::oriznoutRadek($subnet['gateway'] ?? null);
+
+                if (!$this->subnet->validateSubnet($zapisSubnetu)) {
+                    $form->addError('Subnet ' . $zapisSubnetu . ' není validní IPv4 subnet! Zadejte adresu sítě a masku jako celé číslo 0 až 32, například 10.107.70.0/24.');
                     return;
                 }
 
-                if ($this->ipAdresa->validateIP($subnet['gateway']) === false) {
-                    $form->addError('Gateway ' . $subnet['gateway'] . ' u subnetu ' . $subnet['subnet'] . ' není validní IPv4 adresa!');
+                if ($this->ipAdresa->validateIP($zapisGateway) === false) {
+                    $form->addError('Gateway ' . $zapisGateway . ' u subnetu ' . $zapisSubnetu . ' není validní IPv4 adresa!');
                     return;
                 }
 
@@ -302,22 +306,22 @@ class ApPresenter extends BasePresenter
                     $idAP = null;
                 }
 
-                $overlapping = $this->subnet->getOverlapingSubnet($subnet['subnet'], $idAP);
+                $overlapping = $this->subnet->getOverlapingSubnet($zapisSubnetu, $idAP);
                 if ($overlapping !== false) {
                     $overlappingReadible = implode(", ", $overlapping);
-                    $form->addError('Subnet ' . $subnet['subnet'] . ' se překrývá s již existujícím subnetem ' . $overlappingReadible . ' !');
+                    $form->addError('Subnet ' . $zapisSubnetu . ' se překrývá s již existujícím subnetem ' . $overlappingReadible . ' !');
                     return;
                 }
 
                 if (
-                    !$this->subnet->checkColision($subnet['subnet'], \App\Model\Subnet::ARP_PROXY_SUBNET)
+                    !$this->subnet->checkColision($zapisSubnetu, \App\Model\Subnet::ARP_PROXY_SUBNET)
                     && isset($subnet['arp_proxy'])
                 ) {
                     $form->addError('ARP Proxy může být zapnuté pouze u veřejných subnetů!');
                     return;
                 }
 
-                $formSubnets[] = $subnet['subnet'];
+                $formSubnets[] = $zapisSubnetu;
             }
 
             $formColisions = $this->subnet->checkColisions($formSubnets);

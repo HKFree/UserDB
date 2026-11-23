@@ -2,10 +2,13 @@
 
 namespace App\Presenters;
 
+use App\Components\AppGrid;
 use App\Model;
 use Nette\Application\UI\Form;
+use Nette\Database\Table\ActiveRow;
 use Nette\Forms\Container;
 use Nette\Mail\Message;
+use Nette\Mail\SendException;
 use Nette\Forms\Controls\SubmitButton;
 use Nette\Utils\ArrayHash;
 
@@ -33,8 +36,7 @@ class SpravaCcPresenter extends SpravaPresenter
     protected function createComponentGrid(string $name): void {
         $canViewOrEdit = $this->ap->canViewOrEditAll($this->getUser());
 
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('cc_export');
 
         if ($canViewOrEdit) {
@@ -157,22 +159,76 @@ class SpravaCcPresenter extends SpravaPresenter
                 $this->cestneClenstviUzivatele->update($pravoId, $pravo);
 
                 if ($starePravo->schvaleno !== $pravo->schvaleno && ($pravo->schvaleno === 1 || $pravo->schvaleno === 2)) {
-                    $stav = $pravo->schvaleno === 1 ? "schválena" : "zamítnuta";
-                    $platiOd = $pravo->plati_od->format('d.m.Y');
-                    $platiDo = $pravo->plati_do?->format('d.m.Y') ?? 'neomezeně';
-
-                    $mail = new Message();
-                    $mail->setFrom('UserDB <userdb@hkfree.org>')
-                        ->addTo($navrhovatel->email)
-                        ->addTo($schvaleny->email)
-                        ->setSubject('Žádost o čestné členství')
-                        ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $platiOd - $platiDo.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
-
-                    $this->mailer->send($mail);
+                    $this->oznamRozhodnuti($pravo, $navrhovatel, $schvaleny);
                 }
             }
         }
 
         $this->redirect('SpravaCc:schvalovanicc');
+    }
+
+    /**
+     * Rozhodnutí se dozví navrhovatel i člen. Komu oznámení nedošlo, to napíšeme schvalujícímu:
+     * neplatná adresa ani výpadek pošty nesmí zastavit zpracování dalších žádostí formuláře.
+     * @param ArrayHash<mixed> $pravo
+     */
+    private function oznamRozhodnuti(ArrayHash $pravo, ActiveRow $navrhovatel, ActiveRow $schvaleny): void {
+        $stav = $pravo->schvaleno === 1 ? 'schválena' : 'zamítnuta';
+        $adresy = [];
+        $bezAdresy = [];
+        foreach ([$navrhovatel, $schvaleny] as $osoba) {
+            if ($this->maPlatnyEmail($osoba)) {
+                $adresy[] = $osoba->email;
+            } else {
+                // Člen, který si žádost podal sám, je ve výpisu jednou, a to jako člen.
+                $bezAdresy[$osoba->id] = $osoba->id === $schvaleny->id
+                    ? 'sám člen'
+                    : "navrhovatel $osoba->jmeno $osoba->prijmeni [$osoba->id]";
+            }
+        }
+
+        if ($adresy !== []) {
+            try {
+                $this->mailer->send($this->zpravaORozhodnuti($pravo, $stav, $adresy));
+            } catch (SendException $e) {
+                $this->flashMessage(sprintf(
+                    '%s Oznámení e-mailem se nepodařilo odeslat, výsledek je potřeba sdělit jinak. Chyba: %s',
+                    $this->popisRozhodnuti($schvaleny, $stav),
+                    $e->getMessage(),
+                ), 'danger');
+            }
+        }
+
+        if ($bezAdresy !== []) {
+            $this->flashMessage(sprintf(
+                '%s Oznámení e-mailem nedostal %s: v UserDB %s platnou e-mailovou adresu. Výsledek je potřeba sdělit jinak.',
+                $this->popisRozhodnuti($schvaleny, $stav),
+                implode(' ani ', $bezAdresy),
+                count($bezAdresy) === 1 ? 'nemá' : 'nemají',
+            ), 'warning');
+        }
+    }
+
+    private function popisRozhodnuti(ActiveRow $schvaleny, string $stav): string {
+        return "Žádost o čestné členství pro člena $schvaleny->jmeno $schvaleny->prijmeni [$schvaleny->id] je $stav.";
+    }
+
+    /**
+     * @param ArrayHash<mixed> $pravo
+     * @param non-empty-list<string> $adresy
+     */
+    private function zpravaORozhodnuti(ArrayHash $pravo, string $stav, array $adresy): Message {
+        $platiOd = $pravo->plati_od->format('d.m.Y');
+        $platiDo = $pravo->plati_do?->format('d.m.Y') ?? 'neomezeně';
+
+        $mail = new Message();
+        $mail->setFrom('UserDB <userdb@hkfree.org>')
+            ->setSubject('Žádost o čestné členství')
+            ->setBody("Dobrý den,\nbyla $stav žádost o čestné členství na dobu $platiOd - $platiDo.\nID:$pravo->Uzivatel_id\nPoznámka: $pravo->poznamka\n\n");
+        foreach ($adresy as $adresa) {
+            $mail->addTo($adresa);
+        }
+
+        return $mail;
     }
 }

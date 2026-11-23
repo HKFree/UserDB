@@ -6,7 +6,7 @@ use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
-use Grido\Grid;
+use App\Components\AppGrid;
 use Nette\Utils\Strings;
 use Nette\Utils\Html;
 use Nette\Utils\ArrayHash;
@@ -35,8 +35,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
 
         //\Tracy\Debugger::barDump($search);
 
-        $grid = new \Grido\Grid($this, $name);
-        $grid->getTranslator()->setLang('cs');
+        $grid = new AppGrid($this, $name);
         $grid->setExport('account_export');
 
         $seznamTransakci = $this->uzivatelskeKonto->getSeznamNesparovanych();
@@ -71,9 +70,9 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
             if ($item->druzstvo) {
                 return $item->castka . $spanDruzstvo;
             }
-        })->setSortable()->setFilterText();
+        })->setSortable()->setFilterText()->setColumn('UzivatelskeKonto.castka');
 
-        $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText();
+        $grid->addColumnDate('datum', 'Datum')->setSortable()->setFilterText()->setColumn('UzivatelskeKonto.datum');
 
         $grid->addColumnText('TypPohybuNaUctu_id', 'Typ')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -98,7 +97,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->cislo_uctu)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->cislo_uctu)->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->cislo_uctu)->setColumn('PrichoziPlatba.cislo_uctu')->setSortable();
 
         $grid->addColumnText('vs', 'VS')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -107,7 +106,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->vs)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->vs)->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->vs)->setColumn('PrichoziPlatba.vs')->setSortable();
 
         $grid->addColumnText('ss', 'SS')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -116,7 +115,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->ss)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->ss)->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->ss)->setColumn('PrichoziPlatba.ss')->setSortable();
 
         $grid->addColumnText('nazev_uctu', 'Název účtu')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -125,7 +124,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->nazev_uctu)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->nazev_uctu)->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->nazev_uctu)->setColumn('PrichoziPlatba.nazev_uctu')->setSortable();
 
         $grid->addColumnText('zprava_prijemci', 'Zpráva')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -134,7 +133,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->zprava_prijemci)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->zprava_prijemci)->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->zprava_prijemci)->setColumn('PrichoziPlatba.zprava_prijemci')->setSortable();
 
         $grid->addColumnText('info_od_banky', 'Info banky')->setCustomRender(function ($item) {
             return Html::el('span')
@@ -143,7 +142,7 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
                     ->setText($item->PrichoziPlatba->info_od_banky)
                     ->data("toggle", "tooltip")
                     ->data("placement", "right");
-        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->info_od_banky)->setSortable();
+        })->setCustomRenderExport(static fn (ActiveRow $item): ?string => $item->PrichoziPlatba->info_od_banky)->setColumn('PrichoziPlatba.info_od_banky')->setSortable();
     }
 
     public function renderPrevod(): void {

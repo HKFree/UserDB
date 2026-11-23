@@ -98,6 +98,24 @@ final class NovinkyPresenterTest extends DatabaseTestCase
         Assert::same('https://github.com/HKFree/UserDB/issues/266', (string) $links[0]['href']);
     }
 
+    public function testSameDateHasOneReleaseHeadingAndMergedSections(): void {
+        file_put_contents($this->directory . '/2026-11-23-b.md', "## Novinky\n- Druhá novinka\n## Opravy\n- Druhá oprava");
+        file_put_contents($this->directory . '/2026-11-22-a.md', "## Novinky\n- Starší novinka");
+        file_put_contents($this->directory . '/2026-11-23.md', "## Novinky\n- Novinka bez slugu");
+        file_put_contents($this->directory . '/2026-11-23-a.md', "## Opravy\n- První oprava\n## Novinky\n- První novinka");
+        $result = $this->presenters->ui($this->reader(), 'Novinky');
+
+        Assert::same(200, $result->status);
+        $dom = DomQuery::fromHtml($result->html);
+        Assert::count(2, $dom->find('.novinky-vydani h2'));
+        Assert::same(['23. 11. 2026', '22. 11. 2026'], $this->texts($dom, '.novinky-vydani h2 time'));
+        $releases = $dom->find('.novinky-vydani');
+        Assert::count(2, $releases);
+        Assert::same(['Novinky', 'Opravy'], $this->texts($releases[0], 'h3'));
+        Assert::same(['Novinka bez slugu', 'První novinka', 'Druhá novinka', 'První oprava', 'Druhá oprava'], $this->texts($releases[0], '.novinky-polozka-text'));
+        Assert::same(['Starší novinka'], $this->texts($releases[1], '.novinky-polozka-text'));
+    }
+
     public function testToolsMenuLinksToNewsForLoginOnlyRole(): void {
         $result = $this->presenters->ui($this->reader(), 'Homepage');
         Assert::same(200, $result->status);

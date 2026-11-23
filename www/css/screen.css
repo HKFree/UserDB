@@ -333,6 +333,47 @@ pre.tracy-dump {
     padding-right: 10px;
 }
 
+/* E-mail a SMS členovi nebo celému AP: na telefonu popisek nad polem a pole nejvýš na šířku okna. */
+@media (max-width: 767px) {
+    .message-form .form,
+    .message-form .form tbody,
+    .message-form .form tr,
+    .message-form .form th,
+    .message-form .form td {
+        display: block;
+    }
+
+    .message-form .form th {
+        padding: 8px 0 2px;
+        text-align: left;
+    }
+
+    /* Řádek skrytého pole a tlačítka popisek nemá. */
+    .message-form .form th:empty {
+        display: none;
+    }
+
+    /* Na telefonu větší plocha pro prst. */
+    .message-form .form input[type="submit"] {
+        margin-top: 8px;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+
+    /* Písmo 16 px: menší by iOS po klepnutí do pole přiblížil a stránka by se zase posouvala do strany. */
+    .message-form .form input[type="text"],
+    .message-form .form select,
+    .message-form .form textarea {
+        max-width: 100%;
+        font-size: 16px;
+    }
+
+    .message-form .form input[type="text"],
+    .message-form .form textarea {
+        width: 100%;
+    }
+}
+
 .ipform,
 .subnetform,
 .apiklicform {
@@ -478,22 +519,17 @@ pre.tracy-dump {
     padding: 2px 4px !important;
 }
 
+/* Tabulky Grido: tlačítka Vyhledat a Resetovat hned za posledním filtrem, ve výšce polí, i když se filtry zalomí */
 .grido .filter.outer .items {
-    width: 70% !important;
+    display: contents;
 }
 
-/* Seznam členů: tlačítko Vyhledat hned za filtry, ve výšce jejich polí */
-.grido.grido-search-top .filter.outer .items {
-    width: auto !important;
-    max-width: 100%;
-}
-
-.grido.grido-search-top .filter.outer .buttons {
+.grido .filter.outer .buttons {
     float: left;
     padding: 22px 7px 7px;
 }
 
-.grido.grido-search-top .filter.outer .buttons .btn {
+.grido .filter.outer .buttons .btn {
     height: 23px;
 }
 

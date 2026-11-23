@@ -5,13 +5,17 @@ namespace App\Presenters;
 use App\Settings;
 use Nette;
 use App\Model;
+use App\Services\VysledekOdeslaniEmailu;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
+use Nette\Utils\Validators;
 use Tracy\Debugger;
 use Nette\Mail\IMailer;
 
 /**
  * Base presenter for all application presenters.
+ *
+ * @phpstan-import-type PreskocenyPrijemce from VysledekOdeslaniEmailu
  */
 abstract class BasePresenter extends Nette\Application\UI\Presenter
 {
@@ -56,12 +60,87 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         }
     }
 
+    /** Adresu hlídá jen editace člena; neplatnou z databáze odmítne Nette\Mail výjimkou. */
+    protected function maPlatnyEmail(ActiveRow $uzivatel): bool {
+        return is_string($uzivatel->email) && Validators::isEmail($uzivatel->email);
+    }
+
     /**
      * Zachovává význam prázdných parametrů: i 0 a "0" znamenají nezadanou hodnotu.
      * Neověřuje formát ani oprávnění; např. "00" je vyplněný parametr.
      */
     protected function maVyplnenyParametr(string $name): bool {
         return !in_array($this->getParameter($name), [null, false, 0, 0.0, '', '0', []], true);
+    }
+
+    protected function oznamVysledekEmailu(VysledekOdeslaniEmailu $vysledek, ActiveRow $uzivatel, string $uspech, ?VysledekOdeslaniEmailu $kopie = null): bool {
+        if (!$vysledek->odeslano()) {
+            $zprava = Nette\Utils\Html::el()->addText('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu. Zadejte ji v ');
+            if ($this->smiUpravitUzivatele($uzivatel)) {
+                $zprava->addHtml(Nette\Utils\Html::el('a')->href($this->link('Uzivatel:edit', ['id' => $uzivatel->id]))->setText('editaci člena'));
+            } else {
+                $zprava->addText('editaci člena');
+            }
+            $this->flashMessage($zprava->addText('.'), 'danger');
+            return false;
+        }
+        $this->flashMessage($uspech);
+        $uvod = $kopie !== null && !$kopie->odeslano() ? 'Kopie e-mailu nebyla odeslána, žádný ze správců nemá platnou e-mailovou adresu.' : '';
+        $this->upozorniNaPreskocenePrijemce($this->smiUpravitUzivatele($uzivatel), $uvod, ...($kopie === null ? [$vysledek] : [$vysledek, $kopie]));
+        return true;
+    }
+
+    protected function upozorniNaPreskocenePrijemce(bool $zobrazitJmena, string $uvod, VysledekOdeslaniEmailu ...$vysledky): void {
+        $polozky = $this->popisPreskocenychPrijemcu($zobrazitJmena, ...$vysledky);
+        if ($polozky !== []) {
+            $uvod .= ($uvod !== '' ? ' ' : '') . 'Na neplatné e-mailové adresy zpráva neodešla: '
+                . implode('; ', $polozky) . '. Opravte je v editaci dané osoby nebo o opravu požádejte správce její oblasti.';
+        }
+        if ($uvod !== '') {
+            $this->flashMessage($uvod, 'warning');
+        }
+    }
+
+    /**
+     * Jedna položka na osobu v pořadí prvního výskytu, s upřesněním, která z jejích adres je neplatná.
+     * @return list<string>
+     */
+    private function popisPreskocenychPrijemcu(bool $zobrazitJmena, VysledekOdeslaniEmailu ...$vysledky): array {
+        $prijemci = [];
+        foreach ($vysledky as $vysledek) {
+            foreach ($vysledek->preskoceni as $prijemce) {
+                $uid = $prijemce['uid'];
+                $prijemci[$uid] ??= ['kdo' => $this->oznaceniPrijemce($prijemce, $zobrazitJmena), 'hlavni' => false, 'sekundarni' => false];
+                $prijemci[$uid][$prijemce['druhaAdresa'] ? 'sekundarni' : 'hlavni'] = true;
+            }
+        }
+        $polozky = [];
+        foreach ($prijemci as $prijemce) {
+            $upresneni = $prijemce['sekundarni'] ? ($prijemce['hlavni'] ? ', oba e-maily' : ', sekundární e-mail') : '';
+            $polozky[] = $prijemce['kdo'] . $upresneni;
+        }
+        return $polozky;
+    }
+
+    /** @param PreskocenyPrijemce $prijemce */
+    private function oznaceniPrijemce(array $prijemce, bool $zobrazitJmena): string {
+        if ($prijemce['uid'] === $this->getIdentity()->getUid()) {
+            return 'vaše vlastní';
+        }
+        if (!$zobrazitJmena) {
+            return 'UID ' . $prijemce['uid'];
+        }
+        $jmeno = trim($prijemce['jmeno'] . ' ' . $prijemce['prijmeni']);
+        return ($jmeno !== '' ? $jmeno . ' ' : '') . '(UID ' . $prijemce['uid'] . ')';
+    }
+
+    /**
+     * Převede syrovou hodnotu z požadavku na text, který si z ní vezme jednořádkové pole formuláře
+     * (Nette\Forms\Form::DataLine): bez mezer a konců řádků na okrajích, chybějící nebo netextová hodnota je prázdná.
+     * Validace nad syrovými daty formuláře (getHttpData()) tak kontroluje to, co se uloží.
+     */
+    protected static function oriznoutRadek(mixed $hodnota): string {
+        return is_scalar($hodnota) ? Nette\Utils\Strings::trim(strtr((string) $hodnota, "\r\n", '  ')) : '';
     }
 
     /**
@@ -112,7 +191,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
         $this->template->demoPersonaUrl = $this->settings->demoPersonaUrl;
         $this->template->demoPersonaName = $this->settings->demoPersonaName;
-        $this->template->oblasti = $this->oblast->getSeznamOblasti();
+        $this->template->oblasti = $this->oblast->getSeznamOblastiProMenu();
 
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
         if (count($oblastiSpravce) > 0) {

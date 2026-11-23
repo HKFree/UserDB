@@ -62,6 +62,29 @@ class StitekUzivatele
     }
 
     /**
+     * @param list<int> $idClenu
+     * @return array<int, list<Nette\Database\Row>> štítky podle id člena, seřazené podle textu a při shodě podle id
+     */
+    public function getStitkyClenu(array $idClenu): array {
+        if ($idClenu === []) {
+            return [];
+        }
+        $radky = $this->database->query('
+            SELECT StitekUzivatele.Uzivatel_id, Stitek.id, Stitek.text,
+                Stitek.barva_pozadi, Stitek.barva_popredi, Stitek.poznamka, StitekUzivatele.kdy_vytvoreno
+            FROM StitekUzivatele
+            LEFT JOIN Stitek ON Stitek.id = StitekUzivatele.Stitek_id
+            WHERE StitekUzivatele.Uzivatel_id IN (?)
+            ORDER BY Stitek.text ASC, Stitek.id ASC
+        ', $idClenu);
+        $stitky = [];
+        while (($radek = $radky->fetch()) !== null) {
+            $stitky[(int) $radek->Uzivatel_id][] = $radek;
+        }
+        return $stitky;
+    }
+
+    /**
      * @param int|string $stitekId
      * @param int|string $userId
      */
