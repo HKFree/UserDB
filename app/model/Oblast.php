@@ -16,7 +16,7 @@ class Oblast extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getSeznamOblasti(): Nette\Database\Table\Selection {
-        return ($this->findAll()->order("jmeno"));
+        return $this->findAll()->order("jmeno");
     }
 
     /**
@@ -35,7 +35,7 @@ class Oblast extends Table
     /** @return array<int, string> */
     public function getSeznamOblastiBezAP(): array {
         $oblasti = $this->getSeznamOblasti();
-        return ($oblasti->fetchPairs('id', 'jmeno'));
+        return $oblasti->fetchPairs('id', 'jmeno');
     }
 
     /**
@@ -47,7 +47,7 @@ class Oblast extends Table
         if ($oblast === null) {
             return [];
         }
-        return ($oblast->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id', 'Uzivatel'));
+        return $oblast->related("SpravceOblasti.Oblast_id")->where('SpravceOblasti.od < NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do > NOW())')->fetchPairs('Uzivatel_id', 'Uzivatel');
     }
 
     /**
@@ -76,7 +76,7 @@ class Oblast extends Table
                 }
             }
         }
-        return ($aps);
+        return $aps;
     }
 
     /**
@@ -99,6 +99,6 @@ class Oblast extends Table
         foreach ($oblasti as $oblast) {
             $aps[$oblast->id] = $oblast->jmeno . ' (' . $oblast->id . ')';
         }
-        return ($aps);
+        return $aps;
     }
 }

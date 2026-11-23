@@ -333,7 +333,7 @@ class Wewimo
                             $relevantIpRecords = array_filter(
                                 $lastIpsByMac[$station['mac-address']],
                                 function ($row) use ($station) {
-                                    return ($row['ip_adresa'] !== $station['last-ip']);
+                                    return $row['ip_adresa'] !== $station['last-ip'];
                                 }
                             );
                             // k last-ips vygenerovat linky a nazvy (host/nick)

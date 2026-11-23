@@ -17,7 +17,10 @@ return (new PhpCsFixer\Config())
       'functions_opening_brace' => 'same_line'
     ],
     "statement_indentation" => true,
-    "no_extra_blank_lines" => true
+    "no_extra_blank_lines" => true,
+    'no_unneeded_control_parentheses' => [
+      'statements' => ['return', 'echo_print', 'continue', 'break', 'others']
+    ]
   ])
   ->setFinder($finder)
 ;

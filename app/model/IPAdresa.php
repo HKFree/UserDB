@@ -40,12 +40,12 @@ class IPAdresa extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getSeznamIPAdres(): Nette\Database\Table\Selection {
-        return ($this->findAll());
+        return $this->findAll();
     }
 
     /** @param array<array-key, mixed> $by */
     public function findIp(array $by): ?Nette\Database\Table\ActiveRow {
-        return ($this->findOneBy($by));
+        return $this->findOneBy($by);
     }
 
     /**
@@ -80,13 +80,13 @@ class IPAdresa extends Table
      * @return array<int, string|null> pole ipId=>ipAdresa
      */
     public function getIPzDB(array $ids) {
-        return ($this->getTable()->where("id", $ids)->fetchPairs("id", "ip_adresa"));
+        return $this->getTable()->where("id", $ids)->fetchPairs("id", "ip_adresa");
     }
 
     /** @param array<array-key, int|string> $ips */
     public function deleteIPAdresy(array $ips): int|true {
         if (count($ips) > 0) {
-            return ($this->delete(array('id' => $ips)));
+            return $this->delete(array('id' => $ips));
         } else {
             return true;
         }
@@ -94,7 +94,7 @@ class IPAdresa extends Table
 
     /** @param string|null $ip */
     public function validateIP($ip): string|false {
-        return (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
+        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
     }
 
     /** @param array<int, string> $typyZarizeni */
@@ -657,7 +657,7 @@ class IPAdresa extends Table
             return null;
         }
         if (!in_array($ip->Ap_id, [null, 0], true)) {
-            return ($ip->Ap_id);
+            return $ip->Ap_id;
         } else {
             return $ip->ref('Uzivatel', 'Uzivatel_id')?->Ap_id;
         }

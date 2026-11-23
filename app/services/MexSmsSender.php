@@ -38,7 +38,7 @@ class MexSmsSender
     }
 
     public function checkCzechNumber(string $number): bool {
-        return (strlen($this->formatCzechNumber($number, false)) > 0);
+        return strlen($this->formatCzechNumber($number, false)) > 0;
     }
 
     private function formatCzechNumber(string $number, bool $strict = true): string {
@@ -49,23 +49,23 @@ class MexSmsSender
 
         // match 777222555
         if (preg_match('/^\d{9}$/', $number_cleared) === 1) {
-            return ("00420" . $number_cleared);
+            return "00420" . $number_cleared;
         }
 
         // match +420777222555
         if (preg_match('/^\+420(\d{9})$/', $number_cleared, $matches) === 1) {
-            return ("00420" . $matches[1]);
+            return "00420" . $matches[1];
         }
 
         // match 420777222555 (not really valid)
         if (preg_match('/^420(\d{9})$/', $number_cleared, $matches) === 1) {
-            return ("00420" . $matches[1]);
+            return "00420" . $matches[1];
         }
 
         if ($strict) {
             throw new SmsSenderException("Zadané číslo (" . $number . ") neni validní pro odeslání SMS.");
         } else {
-            return ("");
+            return "";
         }
     }
 
@@ -100,7 +100,7 @@ class MexSmsSender
         }
 
         $rBody = (string) $r->getBody();
-        return (json_decode($rBody, true));
+        return json_decode($rBody, true);
     }
 
     private function login(): string {
@@ -119,10 +119,10 @@ class MexSmsSender
 
     /** @return mixed Cache result; freshly loaded tokens are validated by login(). */
     private function getToken() {
-        return ($this->cache->load("authToken", function (&$dependencies) {
+        return $this->cache->load("authToken", function (&$dependencies) {
             $dependencies[Cache::EXPIRE] = '50 minutes';
-            return ($this->login());
-        }));
+            return $this->login();
+        });
     }
 
     /** @param array<array-key, string> $bnumbers */

@@ -22,9 +22,9 @@ class AwegUser extends Table
         $r = $this->findOneBy(["hkfree_uid" => $uid]);
 
         if ($r !== null) {
-            return ($r);
+            return $r;
         } else {
-            return (false);
+            return false;
         }
     }
 }

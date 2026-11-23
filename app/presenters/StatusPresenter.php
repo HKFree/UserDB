@@ -22,13 +22,13 @@ class StatusPresenter extends BasePresenter
     /** @param int|float|numeric-string $i */
     public function formatujInterval($i): string {
         if ($i < 60) {
-            return ($i . " sekund");
+            return $i . " sekund";
         } elseif ($i < (60 * 60)) {
-            return (round($i / 60) . " minut");
+            return round($i / 60) . " minut";
         } elseif ($i < (60 * 60 * 24)) {
-            return (round($i / 3600) . " hodin");
+            return round($i / 3600) . " hodin";
         } else {
-            return (round($i / 3600 / 24) . " dny");
+            return round($i / 3600 / 24) . " dny";
         }
     }
 

@@ -19,18 +19,18 @@ class ApiKlic extends Table
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>
      */
     public function getApiKliceTable(array $by): Nette\Database\Table\Selection {
-        return ($this->findBy($by));
+        return $this->findBy($by);
     }
 
     /** @param int|string $id */
     public function getApiKlic($id): ?Nette\Database\Table\ActiveRow {
-        return ($this->find($id));
+        return $this->find($id);
     }
 
     /** @param array<array-key, int|string> $keys */
     public function deleteApiKlice(array $keys): int|true {
         if (count($keys) > 0) {
-            return ($this->delete(array('id' => $keys)));
+            return $this->delete(array('id' => $keys));
         } else {
             return true;
         }
@@ -66,7 +66,7 @@ class ApiKlic extends Table
     public function isNotExpired(?\DateTimeInterface $validTo): bool {
         if ($validTo !== null) {
             // valid to is not NULL, check validity
-            if ($validTo >= (\Nette\Utils\DateTime::from(date('d.m.Y').' 00:00:00'))) {
+            if ($validTo >= \Nette\Utils\DateTime::from(date('d.m.Y').' 00:00:00')) {
                 // OK
                 return true;
             } else {

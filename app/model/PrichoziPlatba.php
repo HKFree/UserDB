@@ -16,7 +16,7 @@ class PrichoziPlatba extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getPrichoziPlatby(): Nette\Database\Table\Selection {
-        return ($this->findAll());
+        return $this->findAll();
     }
 
     /** @param int|string|null $id */

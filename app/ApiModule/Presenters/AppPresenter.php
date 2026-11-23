@@ -52,11 +52,11 @@ class AppPresenter extends ApiPresenter
     }
 
     private function getFailedGetTokenAttempts(): int {
-        return ($this->aplikaceLog->getLogy()
+        return $this->aplikaceLog->getLogy()
             ->where('action', 'app.getToken.failed')
             ->where('ip', $this->httpRequest->remoteAddress)
             ->where('time > ?', new Nette\Utils\DateTime('now - 15 minutes'))
-            ->count());
+            ->count();
     }
 
     /** @param int|string|null $uid */

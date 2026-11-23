@@ -16,6 +16,6 @@ class TechnologiePripojeni extends Table
 
     /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow> */
     public function getTechnologiePripojeni(): Nette\Database\Table\Selection {
-        return ($this->findAll());
+        return $this->findAll();
     }
 }

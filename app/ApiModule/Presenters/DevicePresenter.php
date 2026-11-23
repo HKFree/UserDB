@@ -86,9 +86,9 @@ class DevicePresenter extends ApiPresenter
     private function getHeslo(\Nette\Database\Table\ActiveRow $ip): ?string {
         if ($ip->heslo_sifrovane === 1) {
             $decrypted = $this->cryptosvc->decrypt($ip->heslo);
-            return ($decrypted);
+            return $decrypted;
         } else {
-            return ($ip->heslo);
+            return $ip->heslo;
         }
     }
 }

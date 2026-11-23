@@ -116,7 +116,7 @@ class UpdateLocationsCommand extends Command
         $B = $B / pi() * 180; //if ($B<0) {$B='S'.-$B;} else {$B='N'.$B;};
         $L = $L / pi() * 180; //if ($L<0) {$L='W'.-$L;} else {$L='E'.$L;};
 
-        return (array("lat" => $B,"lon" => $L,"h" => $H));
+        return array("lat" => $B,"lon" => $L,"h" => $H);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int {

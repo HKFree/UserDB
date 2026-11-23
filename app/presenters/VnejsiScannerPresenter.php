@@ -49,7 +49,7 @@ class VnejsiScannerPresenter extends BasePresenter
             return strcmp($a['oblast'], $b['oblast']);
         });
 
-        return ($scan_detaily);
+        return $scan_detaily;
     }
 
     public function renderDefault(): void {

@@ -21,12 +21,12 @@ class AplikaceToken extends Table
      * @param int|string $uid
      */
     public function createAplikaceToken($uid): Nette\Database\Table\ActiveRow {
-        return ($this->insertRow(array(
+        return $this->insertRow(array(
             'token' => Random::generate(64),
             'Uzivatel_id' => $uid,
             'pouzit_poprve' => new Nette\Utils\DateTime(),
             'pouzit_naposledy' => new Nette\Utils\DateTime()
-        )));
+        ));
     }
 
     /**
@@ -37,9 +37,9 @@ class AplikaceToken extends Table
         $token = $this->findAll()->where('Uzivatel_id', $uid)->where('token', $token)->fetch();
         if ($token !== null) {
             $token->update(array('pouzit_naposledy' => new Nette\Utils\DateTime()));
-            return (true);
+            return true;
         } else {
-            return (false);
+            return false;
         }
     }
 

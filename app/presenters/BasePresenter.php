@@ -281,7 +281,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      * @return string
      */
     public function linker($destination, $args = []) {
-        return ($this->link($destination, $args));
+        return $this->link($destination, $args);
     }
 
     public function getIdentity(): Model\HkfIdentity {
