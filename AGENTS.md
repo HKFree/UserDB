@@ -220,7 +220,7 @@ codex plugin add nette@nette
 | `superpowers` z [obra/superpowers](https://github.com/obra/superpowers) | Claude Code, Codex | test napřed, systematické ladění, ověření před odevzdáním, příjem review |
 | `sous-chef` z [tomascupr/sous-chef](https://github.com/tomascupr/sous-chef) | Claude Code s Codex CLI | review Codexem (`taste`), předání implementace Codexu (`serve`, `fire`) |
 | `/code-review`, `/security-review` | Claude Code, vestavěné | review na nižším stupni; bezpečnostní průchod změn oprávnění a osobních údajů |
-| `playwright` z oficiálního marketplace | Claude Code | prohlídka stránky v prohlížeči mimo Orcu |
+| `playwright` z oficiálního marketplace | Claude Code | prohlídka stránky v prohlížeči, jen když Orca dostupná není |
 | `frontend-design` z oficiálního marketplace | Claude Code | návrh variant větší změny UI; vzhled aplikace má přednost před radami skillu |
 
 ```sh
@@ -343,6 +343,11 @@ použitelnost ve stávajícím vzhledu, ne nový design.
   kterého se `main.js` rozhoduje). V obou musí jít přečíst a ovládat; stránka se nesmí
   posouvat do strany, široká tabulka se posouvá ve vlastním rámu. Zkontroluj
   i konzoli prohlížeče a že stránka neskončila chybou Tracy.
+- **Prohlížeč Orcy.** Je-li Orca dostupná, prohlížej stránky výhradně ve
+  vestavěném prohlížeči Orcy (skill `orca-cli`), včetně screenshotů a emulace
+  telefonu. Hlavní prohlížeč vývojáře (Chrome a podobné) nepoužívej, ani když
+  ho má k agentovi připojený. Jiný prohlížečový nástroj použij, jen když Orca
+  dostupná není.
 - **Přístupnost.** Každé pole formuláře má popisek, ovládací prvky jdou
   použít klávesnicí a informace nestojí jen na barvě.
 - **Texty** česky s diakritikou a stejnými slovy jako jinde v aplikaci.
