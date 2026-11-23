@@ -9,7 +9,12 @@
 {if $canViewOrEdit}
 <a n:if="!$money" href="{link UzivatelList:listall search=>$search, money=>1}" class="btn btn-default btn-sm" role="button">Informace z money</a>
 {/if}
-<a n:if="$money" href="{link UzivatelList:listall search=>$search}" class="btn btn-default btn-sm" role="button">Bez informací z money</a>
+<a n:if="$money" href="{link UzivatelList:listall search=>$search, money=>0}" class="btn btn-default btn-sm" role="button">Bez informací z money</a>
+
+{if $vidiUdajeClenu}
+<a n:if="$fullnotes" href="{link UzivatelList:listall search=>$search, fullnotes=>false}" class="btn btn-default btn-sm active" role="button" title="Zobrazit zkrácené poznámky a adresy"><i class="glyphicon glyphicon-check"></i> Kompletní poznámky a adresy</a>
+<a n:if="!$fullnotes" href="{link UzivatelList:listall search=>$search, fullnotes=>true}" class="btn btn-default btn-sm" role="button" title="Zobrazit kompletní poznámky a adresy"><i class="glyphicon glyphicon-unchecked"></i> Kompletní poznámky a adresy</a>
+{/if}
 
 <br><br>
 

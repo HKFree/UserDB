@@ -59,6 +59,8 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Druhý sloučený člen | 20060 Sloučenídruhý | Odkaz na 20058 |
 | Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, typy zařízení 1 až 12 |
 | Cizí subnet | 20062 Cizísubnet | Patří na AP 200, IP `203.0.113.20` leží v subnetu AP 213 |
+| Další cizí subnet | 20064 Smlouvabezpodpisů, 20065 Smlouvačekající | Patří na AP 201, IP `203.0.113.21` a `203.0.113.22` leží v subnetu AP 213; ZSO 20004 je proto smí upravit |
+| Různé obce a PSČ, dlouhá adresa | 20032 až 20037, 20064, 20065 | `/uzivatel-list/list/201?fullnotes=1`; řazení podle obce a podle PSČ dá jiné pořadí. Adresa člena 20033 je delší než 50 znaků a zkrácené zobrazení ji ořízne |
 | Bez IP i bez televize, právnická osoba s krátkým IČO | 20063 Bezadres | AP 200, prázdná tabulka adres; Demo Obec Nulová Lhota, IČO 00987654 (uloženo jako 987654) |
 
 Pohyb 2000120 člena 20044 má oba příznaky spolek/družstvo a je vidět v obou filtrech.
@@ -121,7 +123,7 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | Soukromé ARP proxy, validační chyba | AP 208 Demo soukromé ARP | `/ap/edit/208`, subnet `10.220.2.0/24` |
 | Prázdná gateway | AP 209 Demo bez brány | `/ajax-api/get-ip-details?ip=10.220.3.20` |
 | AP bez členů | AP 214 Demo bez členů | `/uzivatel-list/list/214` |
-| Uživatelé mimo AP | AP 213 Demo cizí členové, člen 20062 | `/uzivatel-list/list/213`; ZSO 20004 smí člena 20062 upravit, i když patří do cizí oblasti |
+| Uživatelé mimo AP | AP 213 Demo cizí členové, členové 20062, 20064 a 20065 | `/uzivatel-list/list/213`; každý je z jiné obce. ZSO 20004 smí tyto členy upravit, i když patří do cizí oblasti |
 | AP IP, RouterBoard, všechna běžná nastavení | IP 20000, `192.0.2.1`, AP 200 | `/ap/show/200`, login/heslo `demo` / `demo-only` |
 | Dlouhé heslo se zvláštními znaky | IP 20007, `192.0.2.2`, AP 200 | `/ap/show/200`; 43 znaků včetně `&`, `<` a `>`, hodnota se nezalamuje. Delší heslo se zašifrované do sloupce `heslo` nevejde |
 | Heslo s mezerami | IP 20008, `192.0.2.3`, AP 200 | `/ap/show/200`; mezera na začátku i na konci a dvě uvnitř, do schránky se dostanou všechny |
@@ -245,7 +247,7 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 | Ap | 200 až 217 | 10000 až 10449 |
 | Uzivatel | 20000 až 20069 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
-| IPAdresa | 20000 až 20006, 20100 až 20105, 20200 až 20259 | 100000 až 126999 s mezerami |
+| IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
 | SpravceOblasti | 20000 až 20024 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
 | Čestné členství | 20045 až 20052 | žádné |
