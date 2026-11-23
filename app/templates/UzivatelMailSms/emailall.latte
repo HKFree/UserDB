@@ -4,9 +4,7 @@
 
 {if $canViewOrEdit}
 {include 'odesilatel.latte'}
-<div class="message-form">
 {include '../form.latte', form => emailallForm}
-</div>
 {else}
 <p>Na tuto operaci nemáte oprávnění!</p>
 {/if}

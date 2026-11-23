@@ -105,3 +105,14 @@ z něj. Stejný prefix zůstává v `main.js` (skrývání postranního panelu n
 - Levý okraj `.main` (místo pro postranní panel) na telefonu neruší CSS, ale `main.js` podle
   user agenta. Zkušební stránka bez `main.js` nebo bez mobilního user agenta má proto obsah
   o tento okraj užší než skutečná stránka (pole 165 px místo 345 px). Ověřeno tamtéž.
+- Formuláři, který má tlačítko s třídou `default` (Uložit v editaci člena a AP), vloží `main.js`
+  na začátek kopii toho tlačítka a odsune ji mimo obrazovku (`left: -2000px`), aby Enter ukládal.
+  Měření „žádný prvek formuláře nepřesahuje okno“ proto omez na prvky uvnitř `table.form`, jinak ho
+  kopie shodí. Ověřeno 23. 11. 2026 u issue #314.
+- Třídu `ipform` nenese jen tabulka záznamu IP adresy ve `form.latte`, ale i `fieldset` na stránkách
+  oprávnění a čestného členství (`UzivatelRightsCc/editrights.latte`, `editcc.latte`,
+  `SpravaCc/schvalovanicc.latte`). Styl pro záznamy ve formuláři proto piš na `table.ipform`.
+  Ověřeno tamtéž; tyto tři stránky jsou na telefonu dál širší než okno (585 px při okně 375 px).
+- Nette podle pravidel pole mění jeho typ: `addText()` s pravidlem `Form::Email` se vykreslí jako
+  `type="email"`, s `Form::Integer` jako `type="number"`. Styl psaný jen pro `input[type="text"]` tak
+  část polí mine (e-mail a PSČ v editaci člena). Ověřeno tamtéž ve vykresleném HTML.

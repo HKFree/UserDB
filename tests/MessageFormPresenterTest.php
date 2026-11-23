@@ -314,12 +314,12 @@ final class MessageFormPresenterTest extends DatabaseTestCase
     }
 
     /**
-     * www/css/screen.css fits these forms into a phone screen through the class of their wrapper;
+     * www/css/screen.css fits these forms into a phone screen by the table that app/templates/form.latte renders;
      * tests/screenshots/test/message-form.test.mjs checks the style on the same markup (issue #303).
      *
      * @dataProvider messageActions
      */
-    public function testMessageFormIsWrappedForNarrowScreens(string $action): void {
+    public function testMessageFormIsTheSharedFormTable(string $action): void {
         $area = $this->fixtures->area();
         $ap = $this->fixtures->ap($area->id);
         $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
@@ -330,7 +330,7 @@ final class MessageFormPresenterTest extends DatabaseTestCase
         $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => $action, 'id' => $id]);
 
         Assert::same(200, $page->status);
-        Assert::match('~<div class="message-form">\s*<form [^>]*id="frm-' . $action . 'Form"[^>]*>\s*<table class="form">~', $page->html);
+        Assert::match('~<form [^>]*id="frm-' . $action . 'Form"[^>]*>\s*<table class="form">\s*<tr>\s*<th></th>\s*<td><input type="hidden"~', $page->html);
     }
 
     /** @return array<string, string> option value => label of the sender choice */

@@ -4,9 +4,7 @@
 
 {if $canViewOrEdit && $emailPlatny}
 {include 'odesilatel.latte'}
-<div class="message-form">
 {include '../form.latte', form => emailForm}
-</div>
 {elseif $canViewOrEdit}
 <p class="alert alert-warning">
     E-mail nejde odeslat, člen nemá platnou e-mailovou adresu.
