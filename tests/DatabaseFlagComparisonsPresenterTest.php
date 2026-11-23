@@ -71,12 +71,6 @@ final class DatabaseFlagComparisonsPresenterTest extends DatabaseTestCase
             Assert::same($convert ? (bool) $deactivation : $deactivation, $stored->money_deaktivace);
             $detail = $this->template($this->presenters->ui($this->actor->id, 'Uzivatel', ['action' => 'show', 'id' => $this->member->id]));
             Assert::same($expected, [$detail->money_act, $detail->money_dis, $detail->activaceVisible, $detail->reactivaceVisible, $detail->deactivaceVisible]);
-            $merge = $this->template($this->presenters->ui($this->actor->id, 'SpravaSlucovani', [
-                'action' => 'slucovani', 'u1' => $this->member->id, 'u2' => $this->member->id,
-            ]));
-            Assert::same([$expected[0], $expected[1], $expected[0], $expected[1]], [
-                $merge->u1money_act, $merge->u1money_dis, $merge->u2money_act, $merge->u2money_dis,
-            ]);
             $before = $this->database->table('UzivatelskeKonto')->count('*');
             $result = $this->presenters->ui($this->actor->id, 'UzivatelActions', ['action' => 'moneyReactivate', 'id' => $this->member->id]);
             PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id, 302);

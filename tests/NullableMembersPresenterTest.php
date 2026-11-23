@@ -33,8 +33,6 @@ final class NullableMembersPresenterTest extends DatabaseTestCase
             'account' => ['UzivatelAccount', 'account', []],
             'contract preview' => ['UzivatelActions', 'handleSubscriberContractPreview', []],
             'message' => ['UzivatelActions', 'sendUserEmail', ['variant' => 'Televize2026AnoNe']],
-            'merge first member' => ['SpravaSlucovani', 'slucovani', ['u1' => '-1']],
-            'merge second member' => ['SpravaSlucovani', 'slucovani', ['u2' => '-1']],
         ];
     }
 
@@ -44,7 +42,7 @@ final class NullableMembersPresenterTest extends DatabaseTestCase
      */
     public function testMissingMemberIsRejectedBeforeSideEffects(string $presenter, string $action, array $parameters): void {
         $before = $this->snapshot();
-        $parameters += ['action' => $action, 'id' => '-1', 'u1' => $this->actor->id, 'u2' => $this->actor->id];
+        $parameters += ['action' => $action, 'id' => '-1'];
         Assert::exception(
             fn () => $this->presenters->ui($this->actor->id, $presenter, $parameters),
             BadRequestException::class,
@@ -79,7 +77,7 @@ final class NullableMembersPresenterTest extends DatabaseTestCase
     /** @return array<string, string> */
     private function snapshot(): array {
         $state = [];
-        foreach (['Uzivatel', 'IPAdresa', 'UzivatelskeKonto', 'UzivatelTelevizeAktivni', 'SloucenyUzivatel', 'Smlouva', 'CestneClenstviUzivatele', 'SpravceOblasti', 'Log'] as $table) {
+        foreach (['Uzivatel', 'IPAdresa', 'UzivatelskeKonto', 'UzivatelTelevizeAktivni', 'Smlouva', 'CestneClenstviUzivatele', 'SpravceOblasti', 'Log'] as $table) {
             $state[$table] = serialize(array_map(static fn (ActiveRow $row): array => $row->toArray(), $this->database->table($table)->fetchAll()));
         }
         return $state;

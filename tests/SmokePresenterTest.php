@@ -85,24 +85,6 @@ final class SmokePresenterTest extends DatabaseTestCase
         }
     }
 
-    public function testVvOnlyTool(): void {
-        $administrator = $this->fixtures->member($this->ap->id);
-        $this->fixtures->role($administrator->id, 'SO', $this->area->id);
-        $parameters = ['action' => 'slouceni'];
-        Assert::exception(
-            fn () => $this->presenters->ui($administrator->id, 'SpravaSlucovani', $parameters),
-            BadRequestException::class,
-            'Nemáte oprávnění.',
-            403,
-        );
-
-        $allowed = $this->presenters->ui($this->actor->id, 'SpravaSlucovani', $parameters);
-        Assert::same(TextResponse::class, $allowed->response::class);
-        Assert::same(200, $allowed->status);
-        Assert::contains('Přehled sloučených uživatelů', $allowed->html);
-        Assert::contains($this->actor->nick, $allowed->html);
-    }
-
     public function testMemberWithoutRoleIsRejected(): void {
         $member = $this->fixtures->member($this->ap->id);
         $server = $_SERVER;

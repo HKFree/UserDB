@@ -35,7 +35,6 @@ class UzivatelPresenter extends BasePresenter
     private Model\IPAdresa $ipAdresa;
     private Model\TypZarizeni $typZarizeni;
     private Model\Log $log;
-    private Model\SloucenyUzivatel $sloucenyUzivatel;
     private Model\Smlouva $smlouva;
     private SmlouvaStavSluzba $smlouvaStavSluzba;
     private Model\Parameters $parameters;
@@ -58,7 +57,6 @@ class UzivatelPresenter extends BasePresenter
         Model\PovoleneSMTP $alowedSMTP,
         Model\DNat $dnat,
         Model\Parameters $parameters,
-        Model\SloucenyUzivatel $slUzivatel,
         Model\Smlouva $smlouva,
         SmlouvaStavSluzba $smlouvaStavSluzba,
         Model\SpravceOblasti $prava,
@@ -88,7 +86,6 @@ class UzivatelPresenter extends BasePresenter
         $this->ipAdresa = $ipAdresa;
         $this->typZarizeni = $typZarizeni;
         $this->log = $log;
-        $this->sloucenyUzivatel = $slUzivatel;
         $this->smlouva = $smlouva;
         $this->smlouvaStavSluzba = $smlouvaStavSluzba;
         $this->parameters = $parameters;
@@ -233,20 +230,6 @@ class UzivatelPresenter extends BasePresenter
 
                 $stavUctuDph = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('spolek', 1)->where("datum>='2017-11-01'")->where('castka>0')->sum('castka') ?: 0;
                 $this->template->money_dph = $stavUctuDph;
-
-                if ($this->sloucenyUzivatel->getIsAlreadyMaster($uid)) {
-                    $this->flashMessage('Uživatel má pod sebou sloučené uživatele.');
-                    $this->template->slaves = $this->sloucenyUzivatel->getSlaves($uid);
-                } else {
-                    $this->template->slaves = null;
-                }
-                if ($this->sloucenyUzivatel->getIsAlreadySlave($uid)) {
-                    $this->flashMessage('Uživatel byl sloučen pod jiného uživatele.');
-                    $this->template->master = $this->sloucenyUzivatel->getMaster($uid);
-                    // \Tracy\Debugger::barDump($this->sloucenyUzivatel->getMaster($uid));
-                } else {
-                    $this->template->master = null;
-                }
 
                 $this->template->u = $uzivatel;
 

@@ -86,10 +86,9 @@ final class IpTransferDatabaseTest extends DatabaseTestCase
             ['otherAp', 'IP lze přesunout pouze mezi členy stejného AP.'],
             ['same', 'Vyberte jiného člena.'],
             ['missingTarget', 'Původní nebo nový člen neexistuje.'],
-            ['cancelled', 'Nový člen musí být nezrušený, nesystémový a nesloučený.'],
-            ['systemTarget', 'Nový člen musí být nezrušený, nesystémový a nesloučený.'],
-            ['mergedTarget', 'Nový člen musí být nezrušený, nesystémový a nesloučený.'],
-            ['systemSource', 'Nový člen musí být nezrušený, nesystémový a nesloučený.'],
+            ['cancelled', 'Nový člen musí být nezrušený a nesystémový.'],
+            ['systemTarget', 'Nový člen musí být nezrušený a nesystémový.'],
+            ['systemSource', 'Nový člen musí být nezrušený a nesystémový.'],
         ];
     }
 
@@ -113,12 +112,6 @@ final class IpTransferDatabaseTest extends DatabaseTestCase
             case 'cancelled': $this->target->update(['TypClenstvi_id' => 1]);
                 break;
             case 'systemTarget': $this->target->update(['systemovy' => 1]);
-                break;
-            case 'mergedTarget':
-                $this->fixtures->insert('SloucenyUzivatel', [
-                    'Uzivatel_id' => $this->scenario->member->id, 'slouceny_uzivatel' => $targetId,
-                    'datum_slouceni' => '2026-01-01', 'sloucil' => $this->scenario->actors['vv']->id,
-                ]);
                 break;
             case 'systemSource': $this->scenario->member->update(['systemovy' => 1]);
                 break;

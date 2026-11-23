@@ -68,7 +68,7 @@ The suite covers:
 - AP subnet rows with the ARP proxy rule, administration grid pages and TV service activation.
 - Member edit form validation, saves and audit logs, IP/password handling, registration and planned membership transitions.
 - Schema migrations, tag operations and constraints, account activation and ledger entries, and audit-log lookup of deleted IPs and subnets.
-- Subnet calculations and lookups, address lists for bulk adding, generated passwords and API keys, downloads, SSID rendering, QR generation and user merge balances.
+- Subnet calculations and lookups, address lists for bulk adding, generated passwords and API keys, downloads, SSID rendering and QR generation.
 - Local mail capture and contract PDF conversion, including Czech text, optional fields and cleanup.
 
 **Adding a test:** Name the file `*Test.php`, `*DatabaseTest.php` for database tests or `*PresenterTest.php` for presenter tests, and require `tests/bootstrap.php`. Nette Tester runs only `*Test.php` files; `TestNamingTest` fails for a file it would skip. Extend `Test\DatabaseTestCase` for database or presenter tests, create rows through `Test\Fixtures` and run presenters through `Test\PresenterRunner`.
@@ -148,8 +148,8 @@ open the report with `npx playwright show-report ../../temp/e2e/report` from `te
 The scenarios in `tests/e2e/specs/` cover: every page of the menu for four roles, the search in the top bar,
 creating and editing a member with IP addresses, activation, reactivation and deactivation of internet, e-mail to
 one member and to a whole AP, editing an AP with the subnet overlap check, labels on the member detail, sorting and
-filters of the member list, proposing and approving an honorary membership, granting a role, transferring an
-unpaired payment and merging members. Each file names the demo records it changes in its first comment.
+filters of the member list, proposing and approving an honorary membership, granting a role and transferring an
+unpaired payment. Each file names the demo records it changes in its first comment.
 
 Tests import `test` and `expect` from `tests/e2e/fixtures.mjs`. It signs in a demo person through the persona
 cookie (`test.use({ persona: personas.so })`, `signInAs()` to switch during a test), reads the e-mails the web

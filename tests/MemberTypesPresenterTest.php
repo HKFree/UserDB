@@ -107,31 +107,6 @@ final class MemberTypesPresenterTest extends DatabaseTestCase
         Assert::contains('*AM:' . number_format($monthly + 99.5, 2, '.', '') . '*CC:CZK*', $presenter->getTemplate()->spayd);
     }
 
-    public function testMergePreviewLeavesDataAndMergeTransfersIp(): void {
-        $other = $this->fixtures->member($this->member->Ap_id);
-        $ip = $this->fixtures->ipAddress($other->id, '192.0.2.42');
-        $post = [
-            '_do' => 'slucovaniForm-submit', 'Uzivatel_id' => (string) $this->member->id,
-            'slouceny_uzivatel' => (string) $other->id,
-        ];
-        $preview = $this->presenters->ui($this->actor->id, 'SpravaSlucovani', ['action' => 'slucovani'], 'POST', $post + ['nahled' => 'Náhled']);
-        Assert::same(303, $preview->status);
-        Assert::true($preview->redirectUrl !== null);
-        Assert::contains('u1=' . $this->member->id, $preview->redirectUrl);
-        Assert::contains('u2=' . $other->id, $preview->redirectUrl);
-        Assert::same(0, $this->database->table('SloucenyUzivatel')->count('*'));
-        Assert::same($other->id, $this->requireRow($this->database->table('IPAdresa')->get($ip->id))->Uzivatel_id);
-        Assert::same($other->TypClenstvi_id, $this->requireRow($this->database->table('Uzivatel')->get($other->id))->TypClenstvi_id);
-
-        $merged = $this->presenters->ui($this->actor->id, 'SpravaSlucovani', ['action' => 'slucovani'], 'POST', $post + ['slouceni' => 'Sloučit']);
-        PermissionScenario::assertRedirect($merged, 'uzivatel/edit/' . $this->member->id);
-        Assert::same($this->member->id, $this->requireRow($this->database->table('IPAdresa')->get($ip->id))->Uzivatel_id);
-        Assert::same(1, $this->requireRow($this->database->table('Uzivatel')->get($other->id))->TypClenstvi_id);
-        Assert::same(1, $this->database->table('SloucenyUzivatel')->where([
-            'Uzivatel_id' => $this->member->id, 'slouceny_uzivatel' => $other->id, 'sloucil' => $this->actor->id,
-        ])->count('*'));
-    }
-
     public function testContractRequestRejectsMissingMemberAndRecordsExistingOne(): void {
         foreach ([[], ['id' => '-1']] as $parameters) {
             $result = $this->presenters->ui($this->actor->id, 'UzivatelActions', ['action' => 'handleSubscriberContract'] + $parameters);

@@ -31,7 +31,6 @@ final class GridFilterButtonsPresenterTest extends DatabaseTestCase
             'member account' => ['UzivatelAccount', 'account', 'accountgrid', ['ucet' => 'spolek', 'castka' => '290']],
             'unmatched payments' => ['SpravaNesparovanych', 'nesparovane', 'accountgrid', ['poznamka' => 'bez VS']],
             'mailing list' => ['SpravaMailu', 'mailinglist', 'mailinglistGrid', ['email' => 'example.org']],
-            'merged members' => ['SpravaSlucovani', 'slouceni', 'slouceniGrid', ['sloucil' => '20058']],
             // The only grid with an action; Grido would draw its filters into the table header.
             'honorary memberships' => ['SpravaCc', 'prehledcc', 'grid', ['name' => 'Novák', 'ap' => 'Demo']],
         ];

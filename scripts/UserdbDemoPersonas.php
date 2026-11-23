@@ -23,7 +23,7 @@ final class UserdbDemoPersonas
         1 => ['name' => 'Tester Testovací', 'group' => 'vse', 'roles' => ['SO-1', 'VV'],
             'note' => 'Výchozí osoba. Role VV otevře každou stránku včetně schvalování a editace oprávnění.'],
         20000 => ['name' => 'Demo Technik', 'group' => 'vse', 'roles' => ['TECH'],
-            'note' => 'Upravuje všechny členy a AP a má část nástrojů správy. Sloučení, schvalování čestného členství a oprávnění zůstávají jen pro VV.'],
+            'note' => 'Upravuje všechny členy a AP a má část nástrojů správy. Schvalování čestného členství a oprávnění zůstávají jen pro VV.'],
         20001 => ['name' => 'Demo Kontrolor', 'group' => 'vse', 'roles' => ['KONTROLA'],
             'note' => 'Vidí a upravuje všechny členy a AP, nástroje správy ale nemá.'],
         20070 => ['name' => 'Demo Chybnýodesílatel', 'group' => 'vse', 'roles' => ['KONTROLA'],
