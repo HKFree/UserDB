@@ -147,6 +147,11 @@ final class MemberEditPresenterTest extends DatabaseTestCase
             'IPv4' => [[], [], 'invalid', 'IP adresa 999.1.2.3 není validní IPv4 adresa!'],
             'occupied IP' => [[], [], 'occupied', 'IP adresa 10.107.240.2 již  v databázi existuje!'],
             'duplicate IP' => [[], [], 'duplicate', 'IP adresa 10.107.240.3 je v tomto formuláři vícekrát!'],
+            'IPv4 with whitespace' => [[], [], 'invalid padded', 'IP adresa 999.1.2.3 není validní IPv4 adresa!'],
+            'occupied IP with whitespace' => [[], [], 'occupied padded', 'IP adresa 10.107.240.2 již  v databázi existuje!'],
+            'duplicate IP with whitespace' => [[], [], 'duplicate padded', 'IP adresa 10.107.240.3 je v tomto formuláři vícekrát!'],
+            'subnet with whitespace' => [['ipsubnet' => ' 10.0.0.0/99 '], [], '', 'IP subnet není validní!'],
+            'range with whitespace inside' => [['iprange' => '10.0.0.1 - 10.0.0.2'], [], '', 'IP rozsah není validní!'],
         ];
     }
 
@@ -164,13 +169,14 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $this->fixtures->ipAddress($other->id, '10.107.240.2');
         $post = $this->post($changes);
         if ($ipCase !== '') {
-            $address = match ($ipCase) {
-                'invalid' => '999.1.2.3', 'occupied' => '10.107.240.2', 'duplicate' => '10.107.240.3',
+            $addresses = match ($ipCase) {
+                'invalid' => ['999.1.2.3'], 'occupied' => ['10.107.240.2'], 'duplicate' => ['10.107.240.3', '10.107.240.3'],
+                'invalid padded' => [' 999.1.2.3 '], 'occupied padded' => [' 10.107.240.2 '],
+                'duplicate padded' => ['10.107.240.3', "10.107.240.3\t"],
                 default => throw new \LogicException($ipCase),
             };
-            $post['ip']['n1'] = $this->ipPost(['ip_adresa' => $address]);
-            if ($ipCase === 'duplicate') {
-                $post['ip']['n2'] = $this->ipPost(['ip_adresa' => $address]);
+            foreach ($addresses as $index => $address) {
+                $post['ip']['n' . ($index + 1)] = $this->ipPost(['ip_adresa' => $address]);
             }
         }
         $before = $this->snapshot();
@@ -223,6 +229,51 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $before = $this->snapshot();
         $result = $this->submit($post);
         $this->assertValidation($result, 'Seznam IP adres se mezitím změnil. Obnovte stránku a úpravu opakujte.');
+        Assert::same($before, $this->snapshot());
+    }
+
+    /** @return array<string, array{array<string, mixed>, list<string>}> */
+    public function paddedIpCases(): array {
+        return [
+            'address row' => [['ip' => ['n1' => $this->ipPost(['ip_adresa' => " 10.107.243.1\t"])]], ['10.107.243.1']],
+            'range' => [['iprange' => " 10.107.243.10-10.107.243.11\r\n"], ['10.107.243.10', '10.107.243.11']],
+            'subnet' => [['ipsubnet' => "\u{A0}10.107.243.32/30 "], ['10.107.243.32', '10.107.243.33', '10.107.243.34']],
+        ];
+    }
+
+    /**
+     * @dataProvider paddedIpCases
+     * @param array<string, mixed> $changes
+     * @param list<string> $expected
+     */
+    public function testWhitespaceAroundIpFieldsIsIgnored(array $changes, array $expected): void {
+        $result = $this->submit($this->post($changes));
+
+        PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $this->member->id);
+        Assert::same($expected, array_values($this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->order('ip_adresa')->fetchPairs('id', 'ip_adresa')));
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public function malformedIpRowCases(): array {
+        $withoutAddress = array_diff_key($this->ipPost([]), ['ip_adresa' => true]);
+        return [
+            'address missing' => [$withoutAddress],
+            'address sent as a list' => [$withoutAddress + ['ip_adresa' => ['10.107.243.1']]],
+        ];
+    }
+
+    /**
+     * A field the form would store as an empty string is reported the same way, not as a server error.
+     *
+     * @dataProvider malformedIpRowCases
+     * @param array<string, mixed> $row
+     */
+    public function testIpRowWithMissingOrNonTextAddressIsRejected(array $row): void {
+        $post = $this->post();
+        $post['ip']['n1'] = $row;
+        $before = $this->snapshot();
+
+        $this->assertValidation($this->submit($post), 'IP adresa  není validní IPv4 adresa!');
         Assert::same($before, $this->snapshot());
     }
 
@@ -338,7 +389,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
     }
 
     public function testBlankAndZeroBulkAddressesAreIgnored(): void {
-        foreach ([null, '', '0', []] as $input) {
+        foreach ([null, '', '0', [], ['10.107.243.0/30'], " \t"] as $input) {
             PermissionScenario::assertRedirect($this->submit($this->post(['ipsubnet' => $input, 'iprange' => $input])), 'uzivatel/show/' . $this->member->id);
             Assert::same(0, $this->database->table('IPAdresa')->where('Uzivatel_id', $this->member->id)->count('*'));
         }

@@ -499,13 +499,15 @@ class UzivatelPresenter extends BasePresenter
             }
         }
 
-        if (isset($data['ipsubnet']) && !in_array($data['ipsubnet'], ['', '0', 0, 0.0, false, []], true)) {
-            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $data['ipsubnet']) !== 1) {
+        $zapisSubnetu = self::oriznoutRadek($data['ipsubnet'] ?? null);
+        if ($zapisSubnetu !== '' && $zapisSubnetu !== '0') {
+            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$/i', $zapisSubnetu) !== 1) {
                 $form->addError('IP subnet není validní!');
             }
         }
-        if (isset($data['iprange']) && !in_array($data['iprange'], ['', '0', 0, 0.0, false, []], true)) {
-            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $data['iprange']) !== 1) {
+        $zapisRozsahu = self::oriznoutRadek($data['iprange'] ?? null);
+        if ($zapisRozsahu !== '' && $zapisRozsahu !== '0') {
+            if (preg_match('/^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/', $zapisRozsahu) !== 1) {
                 $form->addError('IP rozsah není validní!');
             }
         }
@@ -513,16 +515,18 @@ class UzivatelPresenter extends BasePresenter
         if (isset($data['ip'])) {
             $formIPs = [];
             foreach ($data['ip'] as $ip) {
-                if ($this->ipAdresa->validateIP($ip['ip_adresa']) === false) {
-                    $form->addError('IP adresa '.$ip['ip_adresa'].' není validní IPv4 adresa!');
+                $zapisIp = self::oriznoutRadek($ip['ip_adresa'] ?? null);
+
+                if ($this->ipAdresa->validateIP($zapisIp) === false) {
+                    $form->addError('IP adresa '.$zapisIp.' není validní IPv4 adresa!');
                 }
 
-                $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
+                $duplIp = $this->ipAdresa->getDuplicateIP($zapisIp, $ip['id']);
                 if (!in_array($duplIp, [null, '', '0'], true)) {
                     $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
                 }
 
-                $formIPs[] = $ip['ip_adresa'];
+                $formIPs[] = $zapisIp;
             }
 
             // Tohle prohledá duplikátní IP přímo v formuláři
