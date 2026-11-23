@@ -77,22 +77,64 @@ for (const width of [1280, 375]) {
                     await expect(items.first()).toBeVisible();
                     const bounds = await menu.evaluate(element => ({
                         menu: element.getBoundingClientRect().toJSON(),
+                        bar: document.querySelector('.navbar-fixed-top').getBoundingClientRect().bottom,
                         window: { width: window.innerWidth, height: window.innerHeight },
                     }));
-                    expect(bounds.menu.top).toBeGreaterThanOrEqual(0);
+                    // Celá nabídka je v okně a pod horní lištou.
+                    expect(bounds.menu.top).toBeGreaterThanOrEqual(bounds.bar);
+                    expect(bounds.menu.bottom).toBeLessThanOrEqual(bounds.window.height);
                     expect(bounds.menu.left).toBeGreaterThanOrEqual(0);
                     expect(bounds.menu.right).toBeLessThanOrEqual(bounds.window.width);
-                    // Nabídka delší než okno se posouvá sama; její první i poslední položka musí jít zobrazit.
+                    // Nabídka delší než její výška se posouvá sama; první i poslední položka musí jít zobrazit celá.
                     const option = menu.getByRole('menuitem', { name: 'Demo dlouhý název pro zobrazení štítku', exact: true });
+                    await expect(items.first()).toBeInViewport({ ratio: 1 });
                     await items.last().scrollIntoViewIfNeeded();
-                    await expect(items.last()).toBeInViewport();
+                    await expect(items.last()).toBeInViewport({ ratio: 1 });
                     await option.scrollIntoViewIfNeeded();
-                    await expect(option).toBeInViewport();
+                    await expect(option).toBeInViewport({ ratio: 1 });
                     await option.click();
                     await expect(label).toBeVisible();
                     await checkPageWidth(page, width);
                     await row.getByRole('button', { name: 'Odebrat štítek Demo dlouhý název pro zobrazení štítku', exact: true }).click();
                     await expect(label).toHaveCount(0);
+                });
+
+                test('nabídka štítků jde s tlačítkem při posunu stránky a zavře se, když tlačítko zajede pod lištu', async ({ page }) => {
+                    await page.goto('/uzivatel-list/list/201');
+                    const row = page.locator('#frm-grid-form tr').filter({ has: page.getByRole('link', { name: '20000', exact: true }) });
+                    const add = row.getByRole('button', { name: 'Přidat štítek', exact: true });
+                    await add.click();
+                    const menu = row.getByRole('menu', { name: 'Štítky k přidání', exact: true });
+                    await expect(menu).toBeVisible();
+                    const place = () => page.evaluate(() => {
+                        const open = document.querySelector('.grido .dropdown.open');
+                        if (!open) return null;
+                        return {
+                            button: open.querySelector('.dropdown-toggle').getBoundingClientRect().toJSON(),
+                            menu: open.querySelector('.dropdown-menu').getBoundingClientRect().toJSON(),
+                            bar: document.querySelector('.navbar-fixed-top').getBoundingClientRect().bottom,
+                        };
+                    });
+                    const before = await place();
+                    // Malý posun stránky: tlačítko zůstává pod lištou, nabídka se posune s ním.
+                    await page.evaluate(() => window.scrollBy(0, 20));
+                    await expect.poll(async () => (await place())?.button.top).toBeLessThan(before.button.top - 10);
+                    const moved = await place();
+                    expect(moved.menu.top - moved.button.bottom).toBeCloseTo(before.menu.top - before.button.bottom, 0);
+                    // Tlačítko zajede pod pevnou horní lištu (stále v okně): nabídka se zavře.
+                    await page.evaluate(({ button, bar }) => window.scrollBy(0, button.top + button.height - bar), moved);
+                    await expect(menu).toBeHidden();
+                });
+
+                test('posuvný rám seznamu je pojmenovaná oblast, kterou jde posouvat klávesnicí', async ({ page }) => {
+                    await page.setViewportSize({ width: 375, height: 900 });
+                    await page.goto('/uzivatel-list/list/201');
+                    const frame = page.getByRole('region', { name: 'Seznam členů AP', exact: true });
+                    await expect(frame).toHaveAttribute('tabindex', '0');
+                    await frame.focus();
+                    await page.keyboard.press('ArrowRight');
+                    await expect.poll(() => frame.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+                    await expect(page.getByRole('region', { name: 'Uživatelé mimo AP', exact: true })).toHaveCount(await page.locator('#frm-othersGrid-form.grid-wide').count());
                 });
             }
         });

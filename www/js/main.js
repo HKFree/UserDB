@@ -130,10 +130,19 @@ $(document).ready(function () {
 
 // Grid sirsi nez stranka dostane vlastni posuvnik; grid, ktery se vejde, zustava bez nej
 $(document).ready(function () {
+    // siroky grid je posuvny ram: jde na nej klavesnici a cteckam se ohlasi jmenem z data-grid-label obalu
     function markWideGrids() {
         $('form.grido').each(function () {
             var table = $(this).children('table')[0];
-            $(this).toggleClass('grid-wide', !!table && table.offsetWidth > this.clientWidth + 1);
+            var wide = !!table && table.offsetWidth > this.clientWidth + 1;
+            var label = $(this).closest('[data-grid-label]').attr('data-grid-label');
+            $(this).toggleClass('grid-wide', wide);
+            if (wide) {
+                $(this).attr('tabindex', '0');
+                if (label) $(this).attr({ role: 'region', 'aria-label': label });
+            } else {
+                $(this).removeAttr('tabindex role aria-label');
+            }
         });
     }
     markWideGrids();
@@ -151,14 +160,18 @@ $(document).ready(function () {
         var minTop = $('.navbar-fixed-top').outerHeight() + 8;
         menu.css({ position: 'fixed', left: left, right: 'auto', top: fitsBelow ? button.bottom : Math.max(minTop, button.top - menu.outerHeight()) });
     }
-    // tlacitko je videt, kdyz jeho stred lezi v okne i ve viditelne casti ramu gridu
+    // tlacitko je videt, kdyz jeho stred lezi pod horni listou, v okne a ve viditelne casti ramu gridu
+    // (stred, ne cely obdelnik: po posunu k tlacitku muze o zlomek pixelu presahovat okraj ramu)
     function gridToggleVisible(dropdown) {
         var button = $(dropdown).find('.dropdown-toggle')[0].getBoundingClientRect();
-        var frame = $(dropdown).closest('form.grido')[0].getBoundingClientRect();
+        var frameElement = $(dropdown).closest('form.grido')[0];
+        var frame = frameElement ? frameElement.getBoundingClientRect() : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+        var bar = $('.navbar-fixed-top')[0];
+        var top = Math.max(bar ? bar.getBoundingClientRect().bottom : 0, frame.top);
         var x = button.left + button.width / 2;
         var y = button.top + button.height / 2;
         return x >= Math.max(0, frame.left) && x <= Math.min(window.innerWidth, frame.right)
-            && y >= Math.max(0, frame.top) && y <= Math.min(window.innerHeight, frame.bottom);
+            && y >= top && y <= Math.min(window.innerHeight, frame.bottom);
     }
     $(document).on('shown.bs.dropdown', '.grido .dropdown', function () {
         placeGridMenu(this);

@@ -125,7 +125,8 @@ ze standardního Bootstrapu.
   a Playwrightu na `/uzivatel-list/listall?search=20022` při 1280 i 375 px.
 - Posun rámu nesmí takovou nabídku zavřít, jen přesunout: sloupec Štítky je v rámu poslední a po
   kliknutí prohlížeč rám ještě posune k zaměřenému tlačítku, a to až po otevření nabídky. Nabídka
-  se zavírá teprve, když tlačítko zmizí z viditelné části rámu. Ověřeno 23. 11. 2026 výpisem
+  se zavírá teprve, když střed tlačítka zmizí z viditelné části rámu nebo zajede pod pevnou
+  horní lištu (celý obdélník nestačí: po posunu k tlačítku přesahuje okraj rámu o zlomek pixelu). Ověřeno 23. 11. 2026 výpisem
   událostí `scroll` a `shown.bs.dropdown` v Playwrightu při 375 px; zavírání při každém posunu
   shodilo `clen-uid.spec.mjs`.
   **Why:** Samotná kontrola šířky stránky ani existence položek nabídky oříznutí ani zavření neodhalí.
