@@ -299,7 +299,9 @@ npx skills add stablyai/orca
   v `phpstan.neon` tam mají uvedený důvod; další skupinu kvůli nálezu
   nevypínej.
 - Styl hlídá php-cs-fixer (`.php-cs-fixer.dist.php`) a `.editorconfig`, syntaxi
-  šablon `latte-lint`.
+  šablon `latte-lint`. JavaScript v šablonách a vlastní soubory ve `www/js/`
+  fixer nevidí; `return(false);` a `return(true);` v nich hlídá
+  `ReturnParenthesesTest`.
 - V pojmenování se drž okolního kódu: česká jména podle tabulek (`Uzivatel`,
   `Oblast`), obsluhy formulářů `*FormSucceded` (zavedený název, nepřejmenovávej).
   Úpravy stylu a přejmenování nemíchej do věcné změny.
