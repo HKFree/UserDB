@@ -1,0 +1,125 @@
+{block content}
+
+{define prikaz $text, $vyzva, $popis}
+    <div class="winbox-prikaz">
+        <span class="winbox-vyzva" aria-hidden="true">{$vyzva}</span>
+        <code class="copy-value">{$text}</code>
+        <button type="button" class="btn btn-default btn-sm copy-value-button" title="{$popis}" aria-label="{$popis}" data-toggle="tooltip" data-placement="top" data-container="body"><span class="fa fa-copy" aria-hidden="true"></span> Kopírovat</button>
+    </div>
+{/define}
+
+{define zkouska}
+    <a href="{$zkusebniOdkaz|nocheck}" class="btn btn-default winbox-zkouska"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Otevřít zkušební odkaz</a>
+    <p class="winbox-poznamka">
+        Prohlížeč se zeptá, jestli odkaz otevřít v aplikaci Winbox URI Handler, povolte to.
+        Otevře se Winbox s adresou <code>192.0.2.1</code> v poli Connect To a počká na přihlášení.
+        Adresa je zkušební a nikam nevede. Když se nic nestane, spusťte příkaz z prvního kroku znovu
+        a přečtěte si, co vypíše.
+    </p>
+{/define}
+
+<div class="winbox-napoveda">
+    <h1 n:block="title">Otevírání Winboxu z prohlížeče</h1>
+
+    <p class="winbox-uvod">
+        Tlačítko <span class="btn btn-default btn-xs winbox-ukazka" aria-hidden="true"><span class="glyphicon glyphicon-cog"></span></span>
+        u IP adres RouterBoardů otevře Winbox s adresou zařízení, a máte-li k zařízení přístup, i s loginem a heslem.
+        Prohlížeč sám program spustit nesmí, proto na každém počítači jednou spusťte jeden příkaz, který nainstaluje
+        malého pomocníka. Ten odkaz <code>winbox:</code> předá Winboxu.
+    </p>
+    <ul class="winbox-fakta">
+        <li>Instalace nepotřebuje práva správce a zapisuje jen do vašeho uživatelského účtu. Nic se neupravuje ručně.</li>
+        <li>Funguje s Winboxem 4 i se starším Winboxem 3.</li>
+        <li>Pomocník přijme jen odkaz s adresou zařízení, loginem a heslem a nespustí nic jiného než Winbox. Odkaz <code>winbox:</code> může vyvolat i cizí stránka, proto se prohlížeč před otevřením ptá.</li>
+        <li>Heslo zařízení dostane Winbox při spuštění jako parametr, stejně jako u spuštění z příkazové řádky.</li>
+        <li>Pomocník je samostatný projekt HKFree <a href="{$repozitar}">winbox-uri-handler</a> na GitHubu, kde je i jeho zdrojový kód a podrobný popis (anglicky).</li>
+    </ul>
+
+    {var $zalozky = [
+        windows => ['fa-windows', 'Windows'],
+        macos => ['fa-apple', 'macOS'],
+        linux => ['fa-linux', 'Linux'],
+        android => ['fa-android', 'Android'],
+    ]}
+    <ul class="nav nav-tabs winbox-zalozky" role="tablist">
+        <li n:foreach="$zalozky as $id => [$ikona, $nazev]" role="presentation" n:class="$id === $system ? active">
+            <a href="#{$id}" id="zalozka-{$id}" role="tab" data-toggle="tab" aria-controls="{$id}" aria-selected="{$id === $system ? 'true' : 'false'}" tabindex="{$id === $system ? 0 : -1}"><span class="fa {$ikona}" aria-hidden="true"></span> {$nazev}</a>
+        </li>
+    </ul>
+
+    <div class="tab-content winbox-zalozky-obsah">
+        <section id="windows" role="tabpanel" aria-labelledby="zalozka-windows" n:class="tab-pane, $system === windows ? active">
+            <ol class="winbox-kroky">
+                <li>
+                    <h2>Vložte do PowerShellu</h2>
+                    <p>Otevřete PowerShell (nabídka Start, napište „PowerShell“), vložte příkaz a potvrďte Enterem.</p>
+                    {include prikaz $instalaceWindows, 'PS>', 'Kopírovat příkaz k instalaci'}
+                    <p class="winbox-poznamka">
+                        Instalátor najde <code>WinBox.exe</code> (případně <code>winbox64.exe</code>) sám, a když ho nenajde, nechá vás
+                        soubor vybrat. Jiný Winbox zvolíte, když na konec příkazu připíšete <code>-WinboxPath C:\cesta\WinBox.exe</code>.
+                        Starší návod z wiki zapisoval odkaz do registrů pro celý počítač; nový pomocník ho pro váš účet nahradí.
+                    </p>
+                </li>
+                <li>
+                    <h2>Vyzkoušejte</h2>
+                    {include zkouska}
+                </li>
+            </ol>
+            <h2 class="winbox-odinstalace">Odinstalace</h2>
+            {include prikaz $odinstalaceWindows, 'PS>', 'Kopírovat příkaz k odinstalaci'}
+        </section>
+
+        <section id="macos" role="tabpanel" aria-labelledby="zalozka-macos" n:class="tab-pane, $system === macos ? active">
+            <ol class="winbox-kroky">
+                <li>
+                    <h2>Vložte do Terminálu</h2>
+                    <p>Otevřete aplikaci Terminál, vložte příkaz a potvrďte Enterem.</p>
+                    {include prikaz $instalaceMacosLinux, '$', 'Kopírovat příkaz k instalaci'}
+                    <p class="winbox-poznamka">
+                        V <code>~/Applications</code> vznikne malá aplikace „Winbox URI Handler“, která odkazy předá Winboxu
+                        z <code>/Applications</code>. Jinde uložený Winbox zvolíte, když příkaz zakončíte
+                        <code>| bash -s -- /cesta/k/WinBox.app</code>.
+                    </p>
+                </li>
+                <li>
+                    <h2>Vyzkoušejte</h2>
+                    {include zkouska}
+                </li>
+            </ol>
+            <h2 class="winbox-odinstalace">Odinstalace</h2>
+            {include prikaz $odinstalaceMacosLinux, '$', 'Kopírovat příkaz k odinstalaci'}
+        </section>
+
+        <section id="linux" role="tabpanel" aria-labelledby="zalozka-linux" n:class="tab-pane, $system === linux ? active">
+            <ol class="winbox-kroky">
+                <li>
+                    <h2>Vložte do terminálu</h2>
+                    <p>Otevřete terminál, vložte příkaz a potvrďte Enterem.</p>
+                    {include prikaz $instalaceMacosLinux, '$', 'Kopírovat příkaz k instalaci'}
+                    <p class="winbox-poznamka">
+                        Instalátor hledá Winbox v <code>PATH</code>, ve staženém adresáři, v <code>/opt</code> a ve Flatpaku,
+                        a když ho nenajde, zeptá se na cestu. Potřebuje <code>xdg-mime</code> z balíčku xdg-utils. Jiný Winbox
+                        zvolíte, když příkaz zakončíte <code>| bash -s -- /cesta/k/WinBox</code>; Winbox 3 ve Wine zadejte cestou
+                        k <code>winbox64.exe</code>.
+                    </p>
+                </li>
+                <li>
+                    <h2>Vyzkoušejte</h2>
+                    {include zkouska}
+                </li>
+            </ol>
+            <h2 class="winbox-odinstalace">Odinstalace</h2>
+            {include prikaz $odinstalaceMacosLinux, '$', 'Kopírovat příkaz k odinstalaci'}
+        </section>
+
+        <section id="android" role="tabpanel" aria-labelledby="zalozka-android" n:class="tab-pane, $system === android ? active">
+            <p>
+                Na Androidu ukazuje UserDB místo Winboxu tlačítko s logem MikroTik. Otevírá odkaz ve tvaru
+                <code>winbox://IP/login/heslo</code> a jestli ho telefon předá některé aplikaci, záleží na aplikacích
+                v telefonu. Pomocník z této stránky je jen pro počítač.
+            </p>
+        </section>
+    </div>
+</div>
+
+{/block}

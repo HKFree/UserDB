@@ -139,7 +139,8 @@ tyto scénáře nevyžadují volání Digisignu.
 | AP IP, RouterBoard, všechna běžná nastavení | IP 20000, `192.0.2.1`, AP 200 | `/ap/show/200`, login/heslo `demo` / `demo-only` |
 | Dlouhé heslo se zvláštními znaky | IP 20007, `192.0.2.2`, AP 200 | `/ap/show/200`; 43 znaků včetně `&`, `<` a `>`, hodnota se nezalamuje. Delší heslo se zašifrované do sloupce `heslo` nevejde |
 | Heslo s mezerami | IP 20008, `192.0.2.3`, AP 200 | `/ap/show/200`; mezera na začátku i na konci a dvě uvnitř, do schránky se dostanou všechny |
-| Jen login, jen heslo | IP 20009 `192.0.2.4` a 20010 `192.0.2.5`, AP 200 | `/ap/show/200`; prázdná buňka je bez tlačítka pro kopírování |
+| Jen login, jen heslo | IP 20009 `192.0.2.4` a 20010 `192.0.2.5`, AP 200, RouterBoard | `/ap/show/200`; prázdná buňka je bez tlačítka pro kopírování. Odkaz Winboxu je `winbox:192.0.2.4;jenlogin` a `winbox:192.0.2.5`, heslo bez loginu se do něj nedává |
+| Heslo začínající pomlčkou, heslo s diakritikou | IP 20015 `192.0.2.10` a 20016 `192.0.2.11`, AP 200, RouterBoard | `/ap/show/200`; odkaz Winboxu je `winbox:192.0.2.10;admin` (heslo s pomlčkou se vynechá) a `winbox:192.0.2.11;spr%C3%A1vce;%C5%BElu%C5%A5ou%C4%8Dk%C3%BD-k%C5%AF%C5%88` |
 | Login a heslo s tečkami | IP 20011, `192.0.2.6`, AP 200 | `/ap/show/200`; tečka na začátku i na konci hesla, login s tečkou a zavináčem |
 | Login a heslo s uvozovkami, zpětnými lomítky a značkami | IP 20012, `192.0.2.7`, AP 200 | `/ap/show/200`; apostrof, uvozovky, `\n`, `$(id)`, `{$z}`, `%20` a značka `<b>` se zobrazí i zkopírují jako text |
 | Login a heslo s diakritikou a jiným písmem | IP 20013, `192.0.2.8`, AP 200 | `/ap/show/200`; čeština, čínské znaky a cyrilice |
@@ -154,7 +155,7 @@ tyto scénáře nevyžadují volání Digisignu.
 | Změny I/U/D a smazané síťové objekty | AP 201 a člen 20027 | Historie na detailech; log zmiňuje smazané IP 29997/29998 a subnet 29998 |
 
 Wewimo je zapnuté pouze na `127.0.0.1`. Ostatní adresy se při vykreslení přes RouterOS nekontaktují.
-WebFig, SSH, Winbox a Grafana jsou odkazy nebo tlačítka pro klienta; Winbox závisí také na operačním systému prohlížeče.
+WebFig, SSH, Winbox a Grafana jsou odkazy nebo tlačítka pro klienta. Tlačítko Winboxu vidí prohlížeč na počítači (Windows, macOS, Linux), Android dostane tlačítko aplikace MikroTik, iPhone a iPad žádné; user agent přepne emulace telefonu v prohlížeči. Návod k instalaci odkazu `winbox:` je na `/winbox/`.
 Hesla IP jsou v otevřeném textu. Formulář Přešifrování je umí zašifrovat klíčem konkrétní instance.
 Příznak Smokeping mají AP IP 20000, 20004 a 20005 a členské IP 20100 a 20104; ostatní adresy v `/api/smokeping` nejsou.
 

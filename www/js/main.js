@@ -73,24 +73,11 @@ $(document).ready(function () {
     $(document).on('click', '.wboxbutton', function (event) {
         event.preventDefault();
         var txt = $(this).attr('tag');
-        var urlHref = $(this).attr('href');
         if (!txt || txt == '') {
             return;
         }
 
         copyTextToClipboard(txt);
-
-        if (!urlHref || urlHref == '') {
-            return;
-        }
-        var win = window.open(urlHref, '_blank');
-        if (win) {
-            //Browser has allowed it to be opened
-            win.focus();
-        } else {
-            //Browser has blocked it
-            alert('Please allow popups for this website');
-        }
     });
 });
 
@@ -239,6 +226,30 @@ function showCopyResult(button, copied) {
     }, 2000));
 }
 /** KOPÍROVÁNÍ LOGINU A HESLA **/
+
+// Záložky Bootstrapu 3.2 nepřepínají aria-selected ani tabindex; čtečka obrazovky by hlásila záložku,
+// která už vybraná není, a Tab by vedl na každou záložku zvlášť.
+$(document).on('shown.bs.tab', '[role="tab"][data-toggle="tab"]', function (event) {
+    $(event.relatedTarget).attr({ 'aria-selected': 'false', tabindex: '-1' });
+    $(event.target).attr({ 'aria-selected': 'true', tabindex: '0' });
+});
+
+// Mezi záložkami se chodí šipkami, Home a End, Mezerník záložku otevře (vzor záložek WAI-ARIA).
+$(document).on('keydown', '[role="tab"][data-toggle="tab"]', function (event) {
+    var tabs = $(this).closest('[role="tablist"]').find('[role="tab"]');
+    var index = tabs.index(this);
+    var targets = { 35: tabs.length - 1, 36: 0, 37: index - 1, 39: index + 1 };
+    if (event.which === 32) {
+        event.preventDefault();
+        $(this).tab('show');
+        return;
+    }
+    if (!(event.which in targets)) {
+        return;
+    }
+    event.preventDefault();
+    tabs.eq((targets[event.which] + tabs.length) % tabs.length).tab('show').trigger('focus');
+});
 
 function openMikrotikWebfig(ip, username, password) {
     var theHTML = "<!doctype html><html>" +
