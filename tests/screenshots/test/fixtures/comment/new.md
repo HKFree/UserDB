@@ -1,7 +1,7 @@
 <!-- userdb-screenshots -->
 ### Náhledy stránek
 
-Commit `aaaaaaa` proti `bbbbbbb` (společný předek s `master`). Snímky jsou z GitHub runneru se základními demo daty bez objemu, ne z testovací instance. [Log běhu](https://github.com/HKFree/UserDB/actions/runs/123) · [Snímky v plném rozlišení](https://github.com/HKFree/UserDB/actions/runs/123/artifacts/456)
+Commit `aaaaaaa` proti `bbbbbbb` (předek s `master`), základní demo data. [Log běhu](https://github.com/HKFree/UserDB/actions/runs/123) · [Plné rozlišení](https://github.com/HKFree/UserDB/actions/runs/123/artifacts/456)
 
 **Změněno 0 z 2 snímků.**
 

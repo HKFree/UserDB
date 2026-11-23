@@ -19,7 +19,7 @@ function safeMeta(meta) {
 
 function links(meta) {
     return [meta.runUrl ? `[Log běhu](${meta.runUrl})` : '',
-        meta.artifactUrl ? `[Snímky v plném rozlišení](${meta.artifactUrl})` : ''].filter(Boolean).join(' · ');
+        meta.artifactUrl ? `[Plné rozlišení](${meta.artifactUrl})` : ''].filter(Boolean).join(' · ');
 }
 
 function imageUrl(file, urls, manifest) {
@@ -147,8 +147,7 @@ export function buildComment(manifest, urls, meta) {
     const changed = manifest.snapshots.filter(item => item.state === 'changed');
     const errors = manifest.snapshots.filter(item => ['error', 'base-error'].includes(item.state));
     const introduction = `Commit \`${manifest.head.sha.slice(0, 7)}\` proti \`${manifest.base.sha.slice(0, 7)}\` `
-        + `(společný předek s \`${safe.branch}\`). Snímky jsou z GitHub runneru se základními demo `
-        + `daty bez objemu, ne z testovací instance. ${links(safe)}`;
+        + `(předek s \`${safe.branch}\`), základní demo data. ${links(safe)}`;
     const lines = [marker, '### Náhledy stránek', '', introduction, '', summary(manifest, changed, errors)];
     if (errors.length) lines.push('', '#### Chyby', ...errors.map(errorLine));
     lines.push(...changesTable(changed, urls, manifest), ...allPagesTable(manifest, urls));

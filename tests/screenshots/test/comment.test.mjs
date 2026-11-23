@@ -74,3 +74,10 @@ test('previews are collapsed so that the comment does not push the discussion aw
     // GitHub renders a table inside <details> only when blank lines separate it from the tags.
     assert.equal(text.match(/\|\n\n<\/details>/g).length, 2);
 });
+
+test('the introduction is one short line', () => {
+    const intro = buildComment(manifest(), urls, meta).split('\n')[3];
+    assert.equal(intro, 'Commit `aaaaaaa` proti `bbbbbbb` (předek s `master`), základní demo data. '
+        + '[Log běhu](https://github.com/HKFree/UserDB/actions/runs/123) · '
+        + '[Plné rozlišení](https://github.com/HKFree/UserDB/actions/runs/123/artifacts/456)');
+});
