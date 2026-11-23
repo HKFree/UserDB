@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/UserdbLocalInstance.php';
 require_once __DIR__ . '/UserdbMigrationAdapter.php';
 require_once __DIR__ . '/UserdbDemoVolume.php';
 
@@ -9,7 +10,8 @@ $socket = getenv('USERDB_MARIADB_SOCKET');
 if (in_array($cache, [false, '', '0'], true) || in_array($socket, [false, '', '0'], true)) {
     throw new RuntimeException('Run: flox activate -s -- php scripts/userdb_dev_setup.php');
 }
-$connection = new Nette\Database\Connection("mysql:unix_socket=$socket;dbname=userdb_dev", 'userdb_dev', 'dev-only', ['lazy' => true]);
+$instance = UserdbLocalInstance::fromEnvironment();
+$connection = new Nette\Database\Connection($instance->dsn($socket), $instance->user(), $instance->password(), ['lazy' => true]);
 $deadline = microtime(true) + 30;
 while (true) {
     try {
@@ -17,7 +19,12 @@ while (true) {
         break;
     } catch (Nette\Database\ConnectionException $e) {
         if (microtime(true) >= $deadline) {
-            throw $e;
+            throw new RuntimeException(
+                'Cannot connect to ' . $instance->database() . '. Restart the Flox services if MariaDB was started before'
+                . ' scripts/userdb_mariadb_init.sql added this database; otherwise check .flox/cache/logs/mariadb.log.',
+                0,
+                $e,
+            );
         }
         usleep(100000);
     }
@@ -30,7 +37,16 @@ if ($dataDir === false || realpath($connection->fetchField('SELECT @@datadir')) 
 $adapter = new UserdbMigrationAdapter($connection);
 $driver = new Nextras\Migrations\Drivers\MySqlDriver($adapter);
 $runner = new Nextras\Migrations\Engine\Runner($driver, new Nextras\Migrations\Printers\Console());
-$runner->run(Nextras\Migrations\Engine\Runner::MODE_CONTINUE, new Nextras\Migrations\Configurations\DefaultConfiguration(__DIR__ . '/../db', $driver, true));
+if ($instance->isRebuiltOnSetup()) {
+    // Sessions, files and e-mails of the previous run belong to the database that is about to be dropped.
+    $runtime = $instance->runtimeDirectory($cache);
+    if ($runtime === $cache) {
+        throw new LogicException('A rebuilt instance must keep its files in a directory of its own.');
+    }
+    Nette\Utils\FileSystem::delete($runtime);
+}
+$mode = $instance->isRebuiltOnSetup() ? Nextras\Migrations\Engine\Runner::MODE_RESET : Nextras\Migrations\Engine\Runner::MODE_CONTINUE;
+$runner->run($mode, new Nextras\Migrations\Configurations\DefaultConfiguration(__DIR__ . '/../db', $driver, true));
 
 // Migrations change SQL mode, timezone and foreign-key checks. Use a fresh session for volume.
 $connection->disconnect();

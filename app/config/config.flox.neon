@@ -12,17 +12,18 @@ parameters:
     outerScannerURL: 'http://127.0.0.1:0/'
     maternaMexUrl: 'http://127.0.0.1:0/'
 
+# localInstance is the developer's database and files, or those of the browser tests (scripts/UserdbLocalInstance.php).
 database:
-    dsn: "mysql:unix_socket=%env.USERDB_MARIADB_SOCKET%;dbname=userdb_dev"
-    user: userdb_dev
-    password: dev-only
+    dsn: %localInstance.dsn%
+    user: %localInstance.user%
+    password: %localInstance.password%
 
 session:
     name: %env.USERDB_SESSION_NAME%
-    savePath: %env.FLOX_ENV_CACHE%/sessions
+    savePath: %localInstance.runtimeDir%/sessions
 
 services:
     authenticator: App\Model\Authenticator(%demoFakeUser%)
     settings: App\Settings(%demoFakeUser%, %demoPersonaUrl%, %demoPersonaName%)
-    mail.mailer: UserdbLocalMailer(%env.FLOX_ENV_CACHE%/mail)
+    mail.mailer: UserdbLocalMailer(%localInstance.runtimeDir%/mail)
     idsConnector: App\Model\IdsConnector('http://127.0.0.1:0/', 'local-only', 'local-only', '')

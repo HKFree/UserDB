@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/UserdbLocalInstance.php';
 require_once __DIR__ . '/UserdbLocalMailer.php';
 require_once __DIR__ . '/UserdbDemoPersonas.php';
 require_once __DIR__ . '/UserdbDemoPersonaPanel.php';
@@ -16,10 +17,12 @@ return (static function (): Nette\DI\Container {
     if (!is_file($keyFile)) {
         throw new RuntimeException('Initialize local development first: php scripts/userdb_dev_setup.php');
     }
+    $instance = UserdbLocalInstance::fromEnvironment();
+    $runtime = $instance->runtimeDirectory($cache);
     foreach (['sessions', 'storage', 'mail'] as $directory) {
-        Nette\Utils\FileSystem::createDir($cache . '/' . $directory);
+        Nette\Utils\FileSystem::createDir($runtime . '/' . $directory);
     }
-    putenv('FILE_STORAGE_PATH=' . $cache . '/storage');
+    putenv('FILE_STORAGE_PATH=' . $runtime . '/storage');
     putenv('AGREEMENT_NAME_PREFIX=LOCAL TEST');
     putenv('USERDB_LOCAL_PDF=1');
     putenv('CONTEXT_DOCUMENT_ROOT=' . $root . '/www');
@@ -44,6 +47,12 @@ return (static function (): Nette\DI\Container {
         'demoFakeUser' => $persona->fakeUser(),
         'demoPersonaUrl' => UserdbDemoPersonas::PATH,
         'demoPersonaName' => $persona->name(),
+        'localInstance' => [
+            'dsn' => $instance->dsn((string) getenv('USERDB_MARIADB_SOCKET')),
+            'user' => $instance->user(),
+            'password' => $instance->password(),
+            'runtimeDir' => $runtime,
+        ],
     ]);
     $configurator->addConfig($root . '/app/config/config.neon');
     $configurator->addConfig($root . '/app/config/config.flox.neon');
