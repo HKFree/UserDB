@@ -83,6 +83,23 @@ produkci končilo hláškou „Nepodařilo se připojit k serveru“ a nedalo se
 **How to apply:** Adresu vypiš v šabloně přes `{link}` do atributu `data-*` a v JavaScriptu ji čti
 z něj. Stejný prefix zůstává v `main.js` (skrývání postranního panelu na telefonu) a v `pinger.js`.
 
+## Rozvržení a zlomy šířky
+
+Ověřeno 23. 11. 2026 výpisem media queries z `www/css/bootstrap.min.css` a měřením v Chromiu.
+
+- Přibalený Bootstrap 3.2 je upravený build: zlom `sm` i rozbalení horní lišty jsou na 990 px,
+  ne na 768 px; zlom `md` je na 992 px. Pod 990 px proto sloupce `col-sm-*` nemají šířku ani
+  obtékání a nabídka je sbalená.
+- Postranní panel má šířku i sloupec obsahu levý okraj ze `screen.css` mimo media query, takže
+  panel stojí vedle obsahu při každé šířce okna. Mimo úvodní stránku ho na mobilním user agentu
+  skrývá `main.js`; odkaz „Skrýt/zobrazit seznam oblastí“ je vidět jen pod 990 px.
+- Šířku sloupce obsahu od 992 px určuje `.col-md-10` v procentech okna, okraj pro panel je
+  v pixelech. Kdo mění jedno, musí přepočítat `max-width` sloupce ve `screen.css`; hlídá to
+  `tests/screenshots/test/layout-width.test.mjs`.
+
+**Why:** Issue 315: stránky se při 992 až 1079 px posouvaly do strany a první verze testu
+počítala se zlomem 768 px ze standardního Bootstrapu.
+
 ## Prohlídka v prohlížeči
 
 - `orca set device` (Orca 1.4.268) mění jen user agent, šířku okna ne: `innerWidth` zůstala

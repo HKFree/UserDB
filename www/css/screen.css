@@ -121,6 +121,14 @@ h4,
     margin-left: 180px;
 }
 
+/* Od 992 px dává Bootstrap sloupci obsahu 83,33 % šířky okna. S pevným okrajem pro postranní
+   panel by do 1079 px přesahoval okno a stránka by se posouvala do strany. */
+@media (min-width: 992px) {
+    .col-md-offset-2 {
+        max-width: calc(100% - 180px);
+    }
+}
+
 @media (min-width: 1300px) {
 
     h4,
