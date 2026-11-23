@@ -1212,8 +1212,11 @@ ul.error {
     white-space: nowrap;
 }
 
+/* inline-flex: blokový flex by buňka svisle nevycentrovala jako ostatní sloupce. */
 .user-uid {
-    display: flex;
+    display: inline-flex;
+    width: 100%;
+    vertical-align: middle;
     align-items: center;
     gap: 4px;
     white-space: nowrap;
@@ -2002,6 +2005,9 @@ input[readonly],
 
     .graf-clenu-osa-y {
         width: 44px;
+    }
+}
+
 /* Otevírání Winboxu z prohlížeče */
 .winbox-napoveda {
     max-width: 820px;

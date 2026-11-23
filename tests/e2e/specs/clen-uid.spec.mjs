@@ -14,6 +14,13 @@ async function checkUid(page, form, uid, labels, editable, inactive = false) {
         return rect.top + rect.height / 2;
     }));
     expect(Math.max(...centers) - Math.min(...centers), `UID ${uid}: všechny prvky na jednom řádku`).toBeLessThan(4);
+    // UID je svisle uprostřed buňky jako ostatní sloupce.
+    const vertical = await cell.evaluate(td => {
+        const cellBox = td.getBoundingClientRect();
+        const content = td.querySelector('.user-uid').getBoundingClientRect();
+        return (content.top - cellBox.top) - (cellBox.bottom - content.bottom);
+    });
+    expect(Math.abs(vertical), `UID ${uid}: svisle uprostřed buňky`).toBeLessThan(3);
     if (editable) {
         // Tužka stojí na konci buňky, ne hned za štítky.
         const gap = await cell.evaluate(td => td.getBoundingClientRect().right - td.querySelector('.btn-in-table').getBoundingClientRect().right);
