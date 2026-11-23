@@ -181,7 +181,7 @@ class UzivatelPresenter extends BasePresenter
         }
         $dotaz = sprintf('Rozpis plateb bude odeslán na %s %s.', count($prijemci->adresy) === 1 ? 'e-mail' : 'e-maily', implode(', ', $prijemci->adresy));
         foreach ($prijemci->preskoceni as $prijemce) {
-            $dotaz .= sprintf("\n\n%s e-mail člena je neplatný, rozpis na něj neodejde.", $prijemce['druhaAdresa'] ? 'Sekundární' : 'Hlavní');
+            $dotaz .= sprintf("\n\n%s e-mail účastníka je neplatný, rozpis na něj neodejde.", $prijemce['druhaAdresa'] ? 'Sekundární' : 'Hlavní');
         }
         return $dotaz . "\n\nPokračovat?";
     }

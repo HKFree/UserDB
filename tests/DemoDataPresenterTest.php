@@ -345,7 +345,7 @@ final class DemoDataPresenterTest extends TestCase
         }
         foreach ([
             20021 => ['Rozpis plateb bude odeslán na e-maily demo20021@example.invalid, druha20021@example.invalid.'],
-            20078 => ['Rozpis plateb bude odeslán na e-mail druha@example.invalid.', 'Hlavní e-mail člena je neplatný, rozpis na něj neodejde.'],
+            20078 => ['Rozpis plateb bude odeslán na e-mail druha@example.invalid.', 'Hlavní e-mail účastníka je neplatný, rozpis na něj neodejde.'],
             20080 => [],
         ] as $id => $question) {
             $html = $runner->ui(1, 'Uzivatel', ['action' => 'show', 'id' => $id])->html;
