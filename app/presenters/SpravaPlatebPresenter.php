@@ -67,14 +67,14 @@ class SpravaPlatebPresenter extends SpravaPresenter
 
         $grid->addColumnDate('datum', 'Datum dokladu')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();
         $grid->getColumn('datum')->headerPrototype->style['width'] = '10%';
-        $grid->addColumnText('firma', 'Firma')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('popis', 'Popis')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnText('typ', 'Typ')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('firma', 'Firma')->setSortable()->setFilterText();
+        $grid->addColumnText('popis', 'Popis')->setSortable()->setFilterText();
+        $grid->addColumnText('typ', 'Typ')->setSortable()->setFilterText();
         $grid->getColumn('typ')->headerPrototype->style['width'] = '10%';
-        $grid->addColumnText('kategorie', 'Kategorie')->setSortable()->setFilterText()->setSuggestion();
-        $grid->addColumnNumber('castka', 'Částka', 2, ',', ' ')->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnText('kategorie', 'Kategorie')->setSortable()->setFilterText();
+        $grid->addColumnNumber('castka', 'Částka', 2, ',', ' ')->setSortable()->setFilterText();
         $grid->getColumn('castka')->headerPrototype->style['width'] = '10%';
-        $grid->addColumnDate('datum_platby', 'Datum platby')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText()->setSuggestion();
+        $grid->addColumnDate('datum_platby', 'Datum platby')->setDateFormat(\Grido\Components\Columns\Date::FORMAT_DATE)->setSortable()->setFilterText();
         $grid->getColumn('datum_platby')->headerPrototype->style['width'] = '10%';
     }
 
