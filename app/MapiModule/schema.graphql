@@ -14,7 +14,7 @@ type Ja {
   "Všechny platné role, i ty, které k tomuto API neopravňují."
   role: [Role!]!
 
-  "Oblasti, kde mám roli vázanou na oblast, podle jména."
+  "Oblasti, kde mám roli vázanou na oblast, v pořadí menu webu."
   oblasti: [Oblast!]!
 }
 

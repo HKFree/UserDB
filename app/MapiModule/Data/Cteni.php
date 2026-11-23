@@ -10,6 +10,16 @@ namespace App\MapiModule\Data;
  */
 final class Cteni
 {
+    /** Aktivní AP oblasti z vnějšího dotazu. */
+    private const AKTIVNI_AP_OBLASTI = 'FROM Ap WHERE Oblast_id = Oblast.id AND aktivni <> 0';
+
+    /**
+     * Pořadí oblastí jako v menu webu (Oblast::formatujOblastiSAP): oblast s jediným aktivním AP stojí
+     * pod názvem toho AP, ostatní pod svým názvem. Řadí databáze, aby zůstalo české abecední pořadí.
+     */
+    private const PORADI_OBLASTI = 'IF((SELECT COUNT(id) ' . self::AKTIVNI_AP_OBLASTI . ') = 1,'
+        . ' (SELECT MIN(jmeno) ' . self::AKTIVNI_AP_OBLASTI . '), Oblast.jmeno), Oblast.jmeno';
+
     public function __construct(
         private readonly CteciSpojeni $spojeni,
     ) {
@@ -49,7 +59,7 @@ final class Cteni
     /**
      * Oblasti i s jejich aktivními AP dvěma dotazy, ať je oblastí kolik chce.
      * @param list<int> $ids
-     * @return array<int, Oblast> podle id, v pořadí podle jména
+     * @return array<int, Oblast> podle id, v pořadí menu webu
      */
     private function oblasti(array $ids): array {
         if ($ids === []) {
@@ -60,7 +70,7 @@ final class Cteni
             $apPodleOblasti[(int) $radek['Oblast_id']][] = new Ap((int) $radek['id'], (string) $radek['jmeno']);
         }
         $oblasti = [];
-        foreach ($this->spojeni->vyber('SELECT id, jmeno FROM Oblast WHERE id IN (?) ORDER BY jmeno', $ids) as $radek) {
+        foreach ($this->spojeni->vyber('SELECT id, jmeno FROM Oblast WHERE id IN (?) ORDER BY ' . self::PORADI_OBLASTI, $ids) as $radek) {
             $id = (int) $radek['id'];
             $oblasti[$id] = new Oblast($id, (string) $radek['jmeno'], $apPodleOblasti[$id] ?? []);
         }

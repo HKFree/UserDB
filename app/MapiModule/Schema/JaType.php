@@ -32,7 +32,7 @@ final class JaType extends ObjectType
                 ],
                 'oblasti' => [
                     'type' => Type::nonNull(Type::listOf(Type::nonNull($oblast))),
-                    'description' => 'Oblasti, kde mám roli vázanou na oblast, podle jména.',
+                    'description' => 'Oblasti, kde mám roli vázanou na oblast, v pořadí menu webu.',
                     'resolve' => static fn (Ja $ja): array => $ja->oblasti,
                 ],
             ],

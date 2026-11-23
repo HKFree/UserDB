@@ -11,7 +11,7 @@ final readonly class Ja
         public string $nick,
         /** @var list<Role> */
         public array $role,
-        /** @var list<Oblast> oblasti, kde má přihlášený roli vázanou na oblast, podle jména */
+        /** @var list<Oblast> oblasti, kde má přihlášený roli vázanou na oblast, v pořadí menu webu */
         public array $oblasti,
     ) {
     }
