@@ -1,0 +1,26 @@
+<?php
+
+namespace Grido\Components\Filters {
+    class Condition
+    {
+    }
+}
+
+namespace Grido\DataSources {
+    use Grido\Components\Filters\Condition;
+    use Nette\Database\Table\ActiveRow;
+    use Nette\Database\Table\Selection;
+
+    // Grido annotates Selection without its generic type, so an override could not declare it either.
+    class NetteDatabase
+    {
+        /** @var Selection<ActiveRow> */
+        protected $selection;
+
+        /**
+         * @param Selection<ActiveRow>|null $selection
+         * @return void
+         */
+        protected function makeWhere(Condition $condition, ?Selection $selection = null) {}
+    }
+}

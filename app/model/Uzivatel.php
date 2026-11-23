@@ -199,29 +199,32 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
         }
 
         // IČO is stored as a number; LPAD restores the leading zeros of its eight-digit written form.
+        $podminky = [
+            'Uzivatel.telefon LIKE ?',
+            'Uzivatel.email LIKE ?',
+            'Uzivatel.email2 LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.nick') . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.jmeno') . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.prijmeni') . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec("CONCAT(Uzivatel.jmeno, ' ', Uzivatel.prijmeni)") . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec("CONCAT(Uzivatel.prijmeni, ' ', Uzivatel.jmeno)") . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.ulice_cp') . ' LIKE ?',
+            HledaniBezDiakritiky::sloupec('Uzivatel.firma_nazev') . ' LIKE ?',
+            "LPAD(Uzivatel.firma_ico, GREATEST(CHAR_LENGTH(Uzivatel.firma_ico), 8), '0') LIKE ?",
+        ];
+        $podminka = implode(' OR ', $podminky);
+        $hodnoty = array_fill(0, count($podminky), '%' . $search . '%');
         if (!$Uzivatel->isInRole('TECH') && !$Uzivatel->isInRole('VV') && !$Uzivatel->isInRole('KONTROLA') && !$Uzivatel->isInRole('EXTSUPPORT')) {
             $identity = $Uzivatel->getIdentity();
             if ($identity === null) {
                 return [];
             }
             $uid = $identity->getId();
-            $like = '%' . $search . '%';
             $secureMatchId = $this->getConnection()->queryArgs("SELECT Uzivatel.id FROM Uzivatel
                                             JOIN Ap ON Ap.id = Uzivatel.Ap_id
                                             JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
-                                            WHERE (
-                                            Uzivatel.telefon LIKE ?
-                                            OR Uzivatel.email LIKE ?
-                                            OR Uzivatel.email2 LIKE ?
-                                            OR CONVERT(Uzivatel.nick USING utf8) LIKE ?
-                                            OR CONVERT(Uzivatel.jmeno USING utf8) LIKE ?
-                                            OR CONVERT(Uzivatel.prijmeni USING utf8) LIKE ?
-                                            OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
-                                            OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
-                                            OR CONVERT(Uzivatel.ulice_cp USING utf8) LIKE ?
-                                            OR CONVERT(Uzivatel.firma_nazev USING utf8) LIKE ?
-                                            OR LPAD(Uzivatel.firma_ico, GREATEST(CHAR_LENGTH(Uzivatel.firma_ico), 8), '0') LIKE ?
-                                            ) AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...array_fill(0, 11, $like), $uid])->fetchPairs('id', 'id');
+                                            WHERE ($podminka)
+                                            AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...$hodnoty, $uid])->fetchPairs('id', 'id');
 
             if ($secureMatchId !== []) {
                 //\Tracy\Debugger::barDump($secureMatchId);
@@ -229,28 +232,7 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                 return ($this->findBy(array('id' => array_values($secureMatchId))));
             }
         } else {
-            return $this->findAll()->where(
-                "telefon LIKE ? OR email LIKE ? OR email2 LIKE ?
-            OR CONVERT(nick USING utf8) LIKE ?
-            OR CONVERT(jmeno USING utf8) LIKE ?
-            OR CONVERT(prijmeni USING utf8) LIKE ?
-            OR CONCAT(CONVERT(Uzivatel.jmeno USING utf8),' ',CONVERT(Uzivatel.prijmeni USING utf8)) LIKE ?
-            OR CONCAT(CONVERT(Uzivatel.prijmeni USING utf8),' ',CONVERT(Uzivatel.jmeno USING utf8)) LIKE ?
-            OR CONVERT(ulice_cp USING utf8) LIKE ?
-            OR CONVERT(firma_nazev USING utf8) LIKE ?
-            OR LPAD(firma_ico, GREATEST(CHAR_LENGTH(firma_ico), 8), '0') LIKE ?",
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%',
-                '%'.$search.'%'
-            )->fetchAll();
+            return $this->findAll()->where($podminka, ...$hodnoty)->fetchAll();
         }
 
         return ($this->findBy(array('id' => 0)));

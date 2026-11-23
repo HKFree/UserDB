@@ -5,6 +5,7 @@ includes:
 parameters:
     level: 8
     stubFiles:
+        - phpstan/grido.stub
         - phpstan/replicator.stub
         - phpstan/tester.stub
     phpVersion: 80200
