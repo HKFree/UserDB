@@ -115,7 +115,7 @@ final class MemberListFullNotesPresenterTest extends DatabaseTestCase
     public function testMoneySwitchKeepsTheMode(string $action): void {
         $page = $this->open($action, ['fullnotes' => 1]);
         foreach ([true, false] as $shown) {
-            $page = $this->pages->follow($this->pages->link($page, '//a[contains(normalize-space(.), "nformac") and contains(normalize-space(.), "z money")]/@href'));
+            $page = $this->pages->follow($this->pages->link($page, '//a[' . MemberListPages::hasClass('money-toggle') . ']/@href'));
             Assert::same($shown, $this->pages->texts($page, MemberListPages::form('grid') . '//th[contains(normalize-space(.), "Poslední platba")]') !== [], "Poslední platba in $action");
             Assert::true($this->showsTowns($page, 'grid'), "The money switch in $action left the mode.");
         }

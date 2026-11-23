@@ -4,7 +4,7 @@ test.use({ persona: personas.so });
 
 test('hledání v horní liště najde člena a vede na jeho detail', async ({ page }) => {
     await page.goto('/');
-    const search = page.getByPlaceholder('Hledat...');
+    const search = page.getByRole('combobox', { name: 'Hledat', exact: true });
     await search.fill('lhota');
     await search.press('Enter');
 

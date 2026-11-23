@@ -455,7 +455,7 @@ final class DemoDataPresenterTest extends TestCase
         // Areas 205 to 207 are listed under an AP with another name and sorted by that name. All areas count
         // every AP of an area, My areas only the active ones: area 206 has two APs, one of them switched off.
         $menu = $this->presenters->ui(20002, 'Novinky')->html;
-        Assert::same(['Demo Libuše (218)', 'Demo malé AP (200)', 'Demo zbylé AP (219)'], $this->values($menu, '//li[starts-with(@id,"oblast-")]/a'));
+        Assert::same(['Demo Libuše (218)', 'Demo malé AP (200)', 'Demo zbylé AP (219)'], $this->values($menu, '//ul[contains(concat(" ", normalize-space(@class), " "), " sidebar-mine ")]/li/a'));
         $allAreas = $this->values($menu, '//ul[@id="oblastitree"]/li/a');
         Assert::same(
             ['Demo bez správců', 'Demo částečně vypnutá', 'Demo jen vypnuté AP (221)', 'Demo Libuše (218)', 'Demo malé AP (200)'],

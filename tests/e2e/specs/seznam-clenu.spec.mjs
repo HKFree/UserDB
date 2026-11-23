@@ -35,7 +35,7 @@ test('seznam členů řadí, filtruje až po vyhledání a rozbalí údaje z mon
 
     await page.goto('/uzivatel-list/list/201');
     await expect(grid.getByRole('columnheader', { name: 'Stav účtu', exact: true })).toHaveCount(0);
-    await page.getByRole('button', { name: /Informace z money$/ }).click();
+    await page.getByRole('button', { name: /(?:^| )Platby a aktivace$/ }).click();
     await expect(grid.getByRole('columnheader', { name: 'Stav účtu', exact: true })).toBeVisible();
     await expect(grid.getByRole('columnheader', { name: 'Poslední aktivace', exact: true })).toBeVisible();
     await expect(grid.getByRole('columnheader', { name: 'Poslední platba', exact: true })).toBeVisible();

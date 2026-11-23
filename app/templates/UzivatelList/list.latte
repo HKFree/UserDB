@@ -27,8 +27,8 @@
 {/if}
 <a n:if="$money" href="{link UzivatelList:list id=>$ap->id, money=>0}" class="btn btn-default btn-sm active money-toggle" role="button" aria-pressed="true" title="Skrýt informace z money"><i class="fa fa-check-square-o" aria-hidden="true"></i> Platby a aktivace</a>
 
-<a n:if="$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>false}" class="btn btn-default btn-sm active" role="button" aria-pressed="true" title="Zobrazit zkrácené poznámky a adresy"><i class="fa fa-check-square-o" aria-hidden="true"></i> Celé poznámky a adresy</a>
-<a n:if="!$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>true}" class="btn btn-default btn-sm" role="button" aria-pressed="false" title="Zobrazit kompletní poznámky a adresy"><i class="fa fa-square-o" aria-hidden="true"></i> Celé poznámky a adresy</a>
+<a n:if="$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>false}" class="btn btn-default btn-sm active" role="button" aria-pressed="true" title="Zobrazit zkrácené poznámky a adresy"><i class="fa fa-check-square-o" aria-hidden="true"></i> Kompletní poznámky a adresy</a>
+<a n:if="!$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>true}" class="btn btn-default btn-sm" role="button" aria-pressed="false" title="Zobrazit kompletní poznámky a adresy"><i class="fa fa-square-o" aria-hidden="true"></i> Kompletní poznámky a adresy</a>
 {include memberDensity}
 </div>
 </div>

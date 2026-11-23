@@ -11,17 +11,15 @@ test('štítek se přidá a odebere přes AJAX a oba stavy přežijí obnovení 
     page.on('framenavigated', frame => {
         if (frame === page.mainFrame()) navigations++;
     });
-    await page.getByRole('button', { name: '+', exact: true }).click();
-    await page.getByRole('link', { name: 'Demo globální', exact: true }).click();
+    await page.getByRole('button', { name: 'Přidat štítek', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Demo globální', exact: true }).click();
     await expect(label).toBeVisible();
     expect(navigations).toBe(0);
     await page.reload();
     await expect(label).toBeVisible();
 
     navigations = 0;
-    // The remove control is a span with no accessible role or label.
-    await label.hover();
-    await label.locator('.badge-remove').click();
+    await label.getByRole('button', { name: 'Odebrat štítek Demo globální', exact: true }).click();
     await expect(label).toHaveCount(0);
     expect(navigations).toBe(0);
     await page.reload();

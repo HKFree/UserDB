@@ -16,6 +16,8 @@ require_once __DIR__ . '/bootstrap.php';
  */
 final class AreaMenuOrderPresenterTest extends DatabaseTestCase
 {
+    private const MY_AREAS = '//ul[contains(concat(" ", normalize-space(@class), " "), " sidebar-mine ")]';
+
     private string $prefix;
 
     /** @var array<string, ActiveRow> areas by the suffix of their name */
@@ -68,13 +70,14 @@ final class AreaMenuOrderPresenterTest extends DatabaseTestCase
         }
 
         // Only active APs count here: the area with one of its two APs switched off is listed under the other one.
+        $page = $this->page();
         Assert::same([
             $this->apLabel('Cidlina'),
-            $this->apLabel('Bor', 'Dvě AP'),
-            $this->apLabel('Ves', 'Dvě AP'),
+            $this->prefix . ' Dvě AP',
             $this->apLabel('Lhota'),
             $this->apLabel('Šonov'),
-        ], $this->ownTexts($this->page(), '//li[starts-with(@id,"oblast-")]/a'));
+        ], $this->ownTexts($page, self::MY_AREAS . '/li/a'));
+        Assert::same([$this->apLabel('Bor'), $this->apLabel('Ves')], $this->ownTexts($page, self::MY_AREAS . '/li/ul/li/a'));
     }
 
     public function testApLabelsDoNotDependOnTheOrderOfTheGivenAreas(): void {

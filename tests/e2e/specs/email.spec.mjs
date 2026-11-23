@@ -5,7 +5,7 @@ test.use({ persona: personas.soRozvetvena });
 
 test('e-mail z detailu dorazí jedinému členovi se zadaným předmětem a textem', async ({ page, mailbox }) => {
     await page.goto('/uzivatel/show/20028');
-    await page.getByRole('button', { name: /Odeslat E-mail$/ }).click();
+    await page.getByRole('button', { name: /(?:^| )E-mail$/ }).click();
     await expect(page.getByLabel('Příjemce', { exact: true })).toHaveValue('demo20028@example.invalid');
     await page.getByLabel('Předmět', { exact: true }).fill('E2E smyšlené oznámení členovi');
     await page.getByLabel('Text', { exact: true }).fill('Dobrý den, toto je test zprávy pro jednoho člena.');
@@ -22,7 +22,7 @@ test('e-mail z detailu dorazí jedinému členovi se zadaným předmětem a text
 
 test('hromadný e-mail AP dorazí aktivním členům bez syntakticky chybné adresy', async ({ page, mailbox }) => {
     await page.goto('/uzivatel-list/list/201');
-    await page.getByRole('button', { name: /Odeslat E-mail všem z AP$/ }).click();
+    await page.getByRole('button', { name: /(?:^| )E-mail všem$/ }).click();
     const recipients = (await page.getByLabel('Příjemce', { exact: true }).inputValue()).split(';').sort();
     expect(recipients).toContain('demo20018@example.invalid');
     for (const excluded of ['chyba@@example.invalid', 'demo20020@example.invalid', 'demo20023@example.invalid']) {
@@ -42,7 +42,7 @@ test('hromadný e-mail AP dorazí aktivním členům bez syntakticky chybné adr
 
 test('hromadný e-mail AP vynechá plánované, zrušené a smazané členy', async ({ page, mailbox }) => {
     await page.goto('/uzivatel-list/list/202');
-    await page.getByRole('button', { name: /Odeslat E-mail všem z AP$/ }).click();
+    await page.getByRole('button', { name: /(?:^| )E-mail všem$/ }).click();
     const recipients = (await page.getByLabel('Příjemce', { exact: true }).inputValue()).split(';').sort();
     expect(recipients).toContain('demo20017@example.invalid');
     // Members 20016 (planned), 20019 (cancelled) and 20024 (deleted) belong to this AP too.
@@ -61,7 +61,7 @@ test('hromadný e-mail AP vynechá plánované, zrušené a smazané členy', as
 // Issue #309: an address flagged in Uzivatel.email_invalid is left out and the manager sees whom.
 test('hromadný e-mail AP vynechá adresu označenou jako neplatnou', async ({ page, mailbox }) => {
     await page.goto('/uzivatel-list/list/202');
-    await page.getByRole('button', { name: /Odeslat E-mail všem z AP$/ }).click();
+    await page.getByRole('button', { name: /(?:^| )E-mail všem$/ }).click();
     const recipients = (await page.getByLabel('Příjemce', { exact: true }).inputValue()).split(';');
     expect(recipients).toContain('demo20017@example.invalid');
     // Member 20025 is an active member of this AP whose address is flagged as invalid.

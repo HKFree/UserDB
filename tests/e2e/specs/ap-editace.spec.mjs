@@ -28,7 +28,7 @@ test('nový subnet a IP adresa se po uložení zobrazí v detailu AP', async ({ 
 
 test('překryv subnetů dvou AP odmítne celý formulář bez uložení změn', async ({ page }) => {
     await page.goto('/ap/show/206');
-    const originalHeading = await page.getByRole('heading', { level: 3 }).innerText();
+    const originalHeading = await page.getByRole('heading', { level: 1 }).innerText();
     await page.getByRole('button', { name: /(?:^| )Editovat$/ }).click();
     await page.getByLabel('Jméno', { exact: true }).fill('E2E neuložený překryv');
     await page.getByLabel('Adresa (ulice a čp)', { exact: true }).fill('Smyšlená 206');
@@ -41,7 +41,7 @@ test('překryv subnetů dvou AP odmítne celý formulář bez uložení změn', 
     await expect(page.locator('.main')).toContainText(/Subnet 10\.220\.1\.128\/26 se překrývá s již existujícím subnetem/);
     await expect(page).toHaveURL(/\/ap\/edit\/206/);
     await page.goto('/ap/show/206');
-    await expect(page.getByRole('heading', { level: 3 })).toHaveText(originalHeading);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(originalHeading);
     await expect(page.locator('.main')).toContainText('10.220.1.0/24');
     await expect(page.locator('.main')).not.toContainText('10.220.1.128/26');
     await page.goto('/ap/show/212');
