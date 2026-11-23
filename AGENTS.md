@@ -57,6 +57,10 @@ výsledkem. Skill nebo plugin je jen pomůcka: když ho nemáš, splň pravidlo 
    - **Review druhým modelem:** kdo změnu psal, reviewer, stupeň, nálezy
      a jak dopadly.
    - **Neověřeno:** co jsi neověřil nebo nechal otevřené; když nic, napiš to.
+
+   Existuje-li k práci PR, zakonči každou odpověď v chatu odkazem na něj
+   (celá adresa na GitHubu), i když se odpověď týká jen dílčí otázky.
+   Zadavatel nemá PR dohledávat v konverzaci.
 6. **Publikování** až po výslovném schválení zadavatele, viz další oddíl.
 
 Předáš-li práci jinému agentovi, ručíš za ni dál: přečti celý diff a kontroly
