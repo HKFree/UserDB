@@ -1,7 +1,7 @@
 # UserDB: katalog demo dat
 
 Scénářová data se načítají migracemi `db/dummy-data/` v Dockeru, lokálním Floxu i na testovacích instancích.
-Obsahují 8 oblastí, 20 AP a 82 členů včetně původních 7. Nových 75 členů má v poznámce první řádek `DEMO: `.
+Obsahují 11 oblastí, 24 AP a 82 členů včetně původních 7. Nových 75 členů má v poznámce první řádek `DEMO: `.
 Jména, kontakty, adresy, přihlašovací údaje a platby jsou smyšlené. Datum scénářů se odvozuje od dne načtení.
 
 Flox a testovací instance navíc standardně přidávají objemová data. Při přípravě nové databáze je lze vynechat:
@@ -112,6 +112,10 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | Oblast s jediným AP | Oblast 200 Demo malá oblast, AP 200 Demo malé AP | `/ap/list/200` |
 | Oblast s více AP | Oblast 201 Demo rozvětvená oblast, AP 201 až 210 | `/ap/list/201` |
 | Shodný název oblasti a AP | Oblast 202 a AP 211 Demo shodný název | `/ap/show/211` |
+| Jediné AP s jiným názvem než oblast | Oblast 205 Demo Sokol, AP 218 Demo Libuše | Levé menu: Všechny oblasti i Moje oblasti persony 20002 ji řadí jako `Demo Libuše (218)` |
+| Dvě AP, jedno vypnuté | Oblast 206 Demo částečně vypnutá, AP 219 Demo zbylé AP a vypnuté 220 Demo odstavené AP | Levé menu: Všechny oblasti ji řadí názvem oblasti, Moje oblasti persony 20002 jako `Demo zbylé AP (219)` |
+| Jediné AP a to vypnuté | Oblast 207 Demo vypnutá oblast, AP 221 Demo jen vypnuté AP | Levé menu: Všechny oblasti ji řadí přeškrtnutou jako `Demo jen vypnuté AP (221)` |
+| Výběr AP ve formuláři člena | Persona 20002 | `/uzivatel/edit/20063`: pole Oblast - AP začíná jejími AP 218, 200 a 219, pak všechna AP podle popisku |
 | Technická oblast | Oblast -20 Demo technická oblast, AP 217 | `/ap/show/217`; některá API oblast vynechávají |
 | Bez správců | Oblast 203 Demo bez správců, AP 212 a 214 | `/ap/list/203` |
 | Pouze ZSO | Oblast 204 Demo pouze zástupce, AP 213, 215 a 216 | `/ap/list/204` |
@@ -167,7 +171,7 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | 1 | Testovací | Původní SO-1 a VV |
 | 20000 | Technik | TECH |
 | 20001 | Kontrolor | KONTROLA |
-| 20002 | Malosprávce | SO-200, platný český formát telefonu |
+| 20002 | Malosprávce | SO-200, SO-205 a SO-206, platný český formát telefonu |
 | 20003 | Velkosprávce | SO-10000, vzniká pouze s objemem |
 | 20004 | Zástupce | ZSO-204, platný český formát telefonu; smí upravit cizího člena 20062 |
 | 20005 | Podpora | EXTSUPPORT |
@@ -248,12 +252,12 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 
 | Tabulka / objekt | Scénáře | Objem |
 |---|---|---|
-| Oblast | -20, 200 až 204 | 10000 až 10099 |
-| Ap | 200 až 217 | 10000 až 10449 |
+| Oblast | -20, 200 až 207 | 10000 až 10099 |
+| Ap | 200 až 221 | 10000 až 10449 |
 | Uzivatel | 20000 až 20074 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
 | IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
-| SpravceOblasti | 20000 až 20026 s mezerami | 100000 |
+| SpravceOblasti | 20000 až 20028 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
 | Čestné členství | 20045 až 20052, 20072 až 20074 | žádné |
 | Stitek | 21000 až 21004 | žádné |

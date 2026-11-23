@@ -1,6 +1,6 @@
 ---
 name: UserDB Nette Database a Grido
-description: Nástrahy načítání souvisejících řádků v tabulkách Grido (limit u related(), průchod tabulkou v callbacku), pořadí řádků dotazu bez order() a řazení podle sloupce navázané tabulky.
+description: Nástrahy načítání souvisejících řádků v tabulkách Grido (limit u related(), průchod tabulkou v callbacku), pořadí řádků dotazu bez order(), řazení podle sloupce navázané tabulky a poddotaz v order().
 metadata:
   type: project
 ---
@@ -77,3 +77,19 @@ nespárovaných plateb.
 filtr fungují.
 **How to apply:** Při `setColumn()` s tečkou projdi filtry tabulky a porovnej jejich sloupce se schématem
 připojené tabulky. Test veď přes kombinaci řazení a filtru, ne každé zvlášť.
+
+## Poddotaz v `order()`
+
+Ověřeno 23. 11. 2026 nad Nette Database 3.2.4 testem `AreaMenuOrderPresenterTest` a zkouškou s kvalifikovaným
+sloupcem.
+
+- `Selection::order()` přijme výraz s korelovaným poddotazem, ale každý zápis `Tabulka.sloupec` v něm vyloží
+  jako spojení od hlavní tabulky. `(SELECT COUNT(*) FROM Ap WHERE Ap.Oblast_id = Oblast.id)` nad `Oblast` skončí
+  výjimkou `No reference found for $Oblast->Ap`. Alias vnořené tabulky vyzkoušený není.
+- Projde poddotaz, jehož vlastní sloupce jsou bez názvu tabulky a s tečkou je jen odkaz na hlavní tabulku:
+  `(SELECT COUNT(*) FROM Ap WHERE Oblast_id = Oblast.id)`. Viz `Oblast::razeniPodlePopisku()`.
+
+**Why:** Řazení podle hodnoty z jiné tabulky zůstává v databázi kvůli kolaci `utf8_czech_ci` (Ch, háčky),
+stejné jako u ostatních seznamů. Shoda řazení přes `Collator` v PHP s touto kolací ověřená není.
+**How to apply:** V poddotazu uvnitř `order()` nepiš název vnořené tabulky před sloupec. Jméno sloupce,
+které má i hlavní tabulka (`jmeno`), se v poddotazu vyhodnotí proti vnořené tabulce.

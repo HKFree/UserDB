@@ -90,7 +90,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(11, $adapter->scenarioFiles);
+        Assert::same(12, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -252,6 +252,15 @@ final class DemoDataPresenterTest extends TestCase
                 $this->page('UzivatelList', 'list', $ap->id, ['money' => $money]);
             }
         }
+        // Areas 205 to 207 are listed under an AP with another name and sorted by that name. All areas count
+        // every AP of an area, My areas only the active ones: area 206 has two APs, one of them switched off.
+        $menu = $this->presenters->ui(20002, 'Novinky')->html;
+        Assert::same(['Demo Libuše (218)', 'Demo malé AP (200)', 'Demo zbylé AP (219)'], $this->values($menu, '//li[starts-with(@id,"oblast-")]/a'));
+        $allAreas = $this->values($menu, '//ul[@id="oblastitree"]/li/a');
+        Assert::same(
+            ['Demo bez správců', 'Demo částečně vypnutá', 'Demo jen vypnuté AP (221)', 'Demo Libuše (218)', 'Demo malé AP (200)'],
+            array_slice($allAreas, (int) array_search('Demo bez správců', $allAreas, true), 5),
+        );
         $list = $this->page('UzivatelList', 'list', 202, ['grid-filter' => ['spolek_druzstvo' => 'all']]);
         foreach (['planovane', 'primarni', 'zrusene', 'invalidemail'] as $class) {
             Assert::true(count($this->values($list, '//tr[contains(@class,"' . $class . '")]')) > 0, $class);
