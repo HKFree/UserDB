@@ -90,7 +90,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(10, $adapter->scenarioFiles);
+        Assert::same(11, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -164,8 +164,8 @@ final class DemoDataPresenterTest extends TestCase
     }
 
     private function assertScenarioSafety(): void {
-        Assert::same(72, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20071')->count('*'));
-        Assert::same(72, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20071 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
+        Assert::same(75, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20074')->count('*'));
+        Assert::same(75, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20074 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
         Assert::same(60, $this->database->table('IPAdresa')->where('Uzivatel_id', 20061)->count('*'));
         foreach ([
             'SELECT COUNT(*) FROM Oblast o LEFT JOIN Ap a ON a.Oblast_id = o.id WHERE a.id IS NULL',
@@ -207,7 +207,7 @@ final class DemoDataPresenterTest extends TestCase
     }
 
     private function assertMemberPages(): void {
-        foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20071')->order('id') as $member) {
+        foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20074')->order('id') as $member) {
             $show = $this->page('Uzivatel', 'show', $member->id);
             Assert::contains('UID ' . $member->id . ' - Demo ' . $member->prijmeni, $this->text($show));
             $edit = $this->page('Uzivatel', 'edit', $member->id);

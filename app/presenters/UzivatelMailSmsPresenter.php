@@ -91,11 +91,6 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $this->ap->getAP($this->getParameter('id')) !== null && $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());
     }
 
-    /** Adresu hlídá jen editace člena; neplatnou z databáze odmítne Nette\Mail výjimkou. */
-    private function maPlatnyEmail(ActiveRow $uzivatel): bool {
-        return is_string($uzivatel->email) && Validators::isEmail($uzivatel->email);
-    }
-
     private function prihlasenySpravce(): ActiveRow {
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         if ($so === null) {

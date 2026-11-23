@@ -7,6 +7,7 @@ use Nette;
 use App\Model;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
+use Nette\Utils\Validators;
 use Tracy\Debugger;
 use Nette\Mail\IMailer;
 
@@ -54,6 +55,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
         } else {
             $this->getUser()->login("DBG", null);
         }
+    }
+
+    /** Adresu hlídá jen editace člena; neplatnou z databáze odmítne Nette\Mail výjimkou. */
+    protected function maPlatnyEmail(ActiveRow $uzivatel): bool {
+        return is_string($uzivatel->email) && Validators::isEmail($uzivatel->email);
     }
 
     /**
