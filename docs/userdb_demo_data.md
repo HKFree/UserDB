@@ -30,7 +30,7 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Řádný člen spolku | 20018 Řádný | AP 201 |
 | Zrušený spolek | 20019 Zrušený | AP 202, filtr včetně zrušených, šedý řádek |
 | Spolek bez typu | 20020 Beztypu | Detail uvádí `n/a` |
-| Pouze družstvo | 20021 Jendružstvo | Bez typu členství spolku |
+| Pouze družstvo | 20021 Jendružstvo | Bez typu členství spolku; hlavní i sekundární e-mail platný, dotaz před odesláním rozpisu plateb jmenuje oba |
 | Obě členství | 20022 Oběčlenství | Oba štítky právních vztahů |
 | Ani jedno členství | 20023 Bezčlenství | Bez štítků, filtr včetně zrušených |
 | Smazané družstvo | 20024 Smazaný | AP 202, šedý řádek a štítek |
@@ -198,9 +198,10 @@ ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho 
 | 20081 Člensčástečnoukopií / 201 | `demo20081@example.invalid`; prázdný | 20012 Chybějícítelefon | „Odeslat znovu aktivační link e-mailem“: registrace odejde členovi, kopie přeskočí ZSO 20075 a ostatním správcům dojde |
 | 20077 Členbezkopie / 222 | `demo20077@example.invalid`; prázdný | 20076 Bezplatnékopie | „Odeslat znovu aktivační link e-mailem“: registrace odejde členovi, kopie nemá žádného příjemce; jedno upozornění na obě vlastní adresy |
 | 20078 Platnádruhá / 222 | `clen@@example.invalid`; `druha@example.invalid` | 1 Tester | „Odeslat znovu aktivační link e-mailem“: registrace do družstva odejde jen na sekundární e-mail, upozornění na přeskočené adresy |
-| 20078 Platnádruhá / 222 | `clen@@example.invalid`; `druha@example.invalid` | 20076 Bezplatnékopie | „Odeslat rozpis plateb e-mailem“: rozpis odejde jen na sekundární e-mail, upozornění na hlavní adresu |
+| 20078 Platnádruhá / 222 | `clen@@example.invalid`; `druha@example.invalid` | 20076 Bezplatnékopie | „Odeslat rozpis plateb e-mailem“: dotaz jmenuje jen sekundární e-mail a upozorní na neplatný hlavní, rozpis odejde jen na sekundární e-mail, upozornění na hlavní adresu |
 | 20079 Chybnádruhá / 222 | `demo20079@example.invalid`; `druha@@example.invalid` | 1 Tester | „Odeslat znovu aktivační link e-mailem“: registrace do spolku odejde na hlavní e-mail, upozornění označí sekundární e-mail |
-| 20080 Bezplatnéadresy / 222 | `bezadresy@@example.invalid`; prázdný | 20076 Bezplatnékopie | „Odeslat znovu aktivační link e-mailem“ i „Odeslat rozpis plateb e-mailem“: nic neodejde, hláška danger odkáže na editaci člena |
+| 20080 Bezplatnéadresy / 222 | `bezadresy@@example.invalid`; prázdný | 20076 Bezplatnékopie | „Odeslat znovu aktivační link e-mailem“ i „Odeslat rozpis plateb e-mailem“: rozpis se nezeptá, nic neodejde a hláška danger odkáže na editaci člena |
+| 20021 Jendružstvo / 201 | `demo20021@example.invalid`; `druha20021@example.invalid` | 1 Tester | „Odeslat rozpis plateb e-mailem“: dotaz jmenuje obě adresy, rozpis odejde na obě |
 
 ## Finance, správa a API
 

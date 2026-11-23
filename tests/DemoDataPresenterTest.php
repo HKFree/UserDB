@@ -250,6 +250,18 @@ final class DemoDataPresenterTest extends TestCase
                 Assert::null($member->TypClenstvi_id);
             }
         }
+        foreach ([
+            20021 => ['Rozpis plateb bude odeslán na e-maily demo20021@example.invalid, druha20021@example.invalid.'],
+            20078 => ['Rozpis plateb bude odeslán na e-mail druha@example.invalid.', 'Hlavní e-mail člena je neplatný, rozpis na něj neodejde.'],
+            20080 => [],
+        ] as $id => $question) {
+            $html = $runner->ui(1, 'Uzivatel', ['action' => 'show', 'id' => $id])->html;
+            // values() přes libxml slučuje konce řádků v atributu, proto syrové HTML.
+            Assert::true(preg_match('~<a\b[^>]*\bid="btn-handle-sendPaymentScheduleEmail"[^>]*>~', $html, $button) === 1);
+            preg_match_all('~\bdata-confirm="([^"]*)"~', $button[0], $confirm);
+            Assert::same($question === [] ? [] : [implode("\n\n", [...$question, 'Pokračovat?'])], array_map('html_entity_decode', $confirm[1]));
+        }
+
         $result = $runner->ui(20012, 'UzivatelActions', ['action' => 'sendRegActivation', 'id' => 20081]);
         Assert::same(302, $result->status);
         Assert::count(2, $mailer->messages);
