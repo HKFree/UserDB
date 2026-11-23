@@ -15,6 +15,7 @@
     color-scheme: light;
     /* Výsledek pingu v seznamu členů (www/js/pinger.js). */
     --udb-bg-ping-ok: #e3f4e6;
+    --udb-text-9d9d9d: #9d9d9d;
     --udb-bg-ping-warn: #fdf1cf;
     --udb-bg-ping-down: #f9dedb;
     --udb-bg-03758f-a125: rgba(3, 117, 143, 0.125);
@@ -150,7 +151,10 @@
     --udb-dark-muted: #9aa3af;
     --udb-dark-link: #7fb3f0;
     --udb-dark-input: #15191f;
+    /* Rámeček ovládacích prvků: kontrast aspoň 3 : 1 proti stránce i výplni pole (WCAG 1.4.11). */
+    --udb-dark-control-border: #6b7480;
     --udb-bg-ping-ok: #16301f;
+    --udb-text-9d9d9d: #9d9d9d;
     --udb-bg-ping-warn: #33290f;
     --udb-bg-ping-down: #3a1a1d;
     --udb-bg-03758f-a125: rgba(46, 170, 199, 0.22);
@@ -188,9 +192,9 @@
     --udb-bg-f9f9f9: #1f1f1f;
     --udb-bg-fbe0e0: #331919;
     --udb-bg-fdecec: #2e1616;
-    --udb-bg-ffa100: #d98900;
+    --udb-bg-ffa100: #6b4500;
     --udb-bg-ffba52: #ffa61f;
-    --udb-bg-fffb7a: #fff941;
+    --udb-bg-fffb7a: #4d4712;
     --udb-bg-ffffff: #1c1c1c;
     --udb-bg-ffffff-a97: rgba(28, 28, 28, 0.97);
     --udb-text-000000: #ffffff;
@@ -233,9 +237,9 @@
     --udb-line-9dbfe3: #415366;
     --udb-line-9f61a2: #905693;
     --udb-line-c0c0c0: #545454;
-    --udb-line-c2c8cf: #4b4e52;
+    --udb-line-c2c8cf: #6b7480;
     --udb-line-c9302c: #b52b28;
-    --udb-line-c9ced4: #484b4e;
+    --udb-line-c9ced4: #5d6672;
     --udb-line-cc0000: #ff1a1a;
     --udb-line-cccccc: #4c4c4c;
     --udb-line-cfd5dc: #42464b;
@@ -394,7 +398,7 @@
 :root[data-theme="dark"] select,
 :root[data-theme="dark"] textarea {
     background-color: var(--udb-dark-input);
-    border-color: var(--udb-dark-border);
+    border-color: var(--udb-dark-control-border);
     color: var(--udb-dark-text);
 }
 
@@ -569,3 +573,28 @@
 :root[data-theme="dark"] .label-primary { background-color: #2a6aa8; }
 :root[data-theme="dark"] .label-info { background-color: #1f6f86; }
 :root[data-theme="dark"] .label-warning { background-color: #8a5a00; }
+
+/* Graf počtu uživatelů (Rickshaw): popisky os a mřížka na tmavém pozadí. */
+:root[data-theme="dark"] .rickshaw_graph .y_ticks text,
+:root[data-theme="dark"] .rickshaw_graph .x_ticks text {
+    fill: var(--udb-dark-text);
+    fill-opacity: 1;
+}
+
+:root[data-theme="dark"] .rickshaw_graph .x_tick .title {
+    color: var(--udb-dark-text);
+    opacity: 1;
+}
+
+:root[data-theme="dark"] .rickshaw_graph .x_tick,
+:root[data-theme="dark"] .rickshaw_graph .y_grid .tick,
+:root[data-theme="dark"] .rickshaw_graph .y_ticks path {
+    border-color: var(--udb-dark-border);
+    stroke: var(--udb-dark-border);
+}
+
+/* Přehled subnetu: barvy z bloku <style> v Subnet/overview.latte. */
+:root[data-theme="dark"] .fullsubnet {
+    background-color: #6b4500;
+    color: var(--udb-dark-text);
+}

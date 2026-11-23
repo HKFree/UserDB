@@ -50,14 +50,28 @@ $(document).ready(function () {
         if (darkScheme.addEventListener) darkScheme.addEventListener('change', onSchemeChange);
         else if (darkScheme.addListener) darkScheme.addListener(onSchemeChange);
     }
-    $(document).on('click', '.theme-option', function () {
-        var choice = $(this).attr('data-theme-choice');
+    function chooseTheme(option) {
+        var choice = option.attr('data-theme-choice');
         var path = (document.body.getAttribute('data-base-path') || '') + '/';
         document.cookie = 'userdb_theme=' + encodeURIComponent(choice) + '; path=' + path + '; max-age=31536000; SameSite=Lax';
         root.setAttribute('data-theme-choice', choice);
         applyTheme();
-        $('.theme-option').attr('aria-checked', 'false');
-        $(this).attr('aria-checked', 'true');
+        // skupina prepinacu: v poradi Tab je jen vybrana volba, mezi volbami se chodi sipkami
+        $('.theme-option').attr({ 'aria-checked': 'false', tabindex: '-1' });
+        option.attr({ 'aria-checked': 'true', tabindex: '0' });
+    }
+    $(document).on('click', '.theme-option', function () {
+        chooseTheme($(this));
+    });
+    $(document).on('keydown', '.theme-option', function (event) {
+        var step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+        if (!step) return;
+        event.preventDefault();
+        event.stopPropagation(); // sipky v nabidce jinak obsluhuje Bootstrap
+        var options = $('.theme-option');
+        var next = options.eq((options.index(this) + step + options.length) % options.length);
+        chooseTheme(next);
+        next.trigger('focus');
     });
 
     // bublina v body: v posuvnem ramu tabulky by ji okraj ramu orizl

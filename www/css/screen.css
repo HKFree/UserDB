@@ -3339,3 +3339,20 @@ html {
     box-shadow: inset 3px 0 0 var(--udb-line-2f8fd8);
     font-weight: 700;
 }
+
+/* Pod 768 px je nabídka účtu ve sbalené liště průhledná na tmavé liště: volby barvou jako ostatní položky lišty. */
+@media (max-width: 767px) {
+    .navbar-inverse .navbar-nav .open .dropdown-menu .theme-option {
+        color: var(--udb-text-9d9d9d);
+    }
+
+    .navbar-inverse .navbar-nav .open .dropdown-menu .theme-option:hover,
+    .navbar-inverse .navbar-nav .open .dropdown-menu .theme-option:focus {
+        background-color: transparent;
+        color: var(--udb-text-ffffff);
+    }
+
+    .navbar-inverse .navbar-nav .open .dropdown-menu .theme-option .fa {
+        color: inherit;
+    }
+}

@@ -31,12 +31,12 @@
         <script src="{$basePath}/js/markerclusterer.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/theme.css?v4">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v46">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/theme.css?v5">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v47">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v20"></script>
+        <script src="{$basePath}/js/main.js?v21"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
@@ -112,7 +112,7 @@
                     <li role="separator" class="divider"></li>
                     <li class="dropdown-header" id="theme-menu-label">Vzhled</li>
                     <li id="theme-menu" class="theme-menu" role="radiogroup" aria-labelledby="theme-menu-label">
-                        <button n:foreach="$vzhledVolby as $volba => $popisek" type="button" role="radio" class="theme-option" data-theme-choice="{$volba}" aria-checked="{$volba === $vzhledVolba ? 'true' : 'false'}"><i n:class="fa, $volba === light ? fa-sun-o : ($volba === dark ? fa-moon-o : fa-adjust)" aria-hidden="true"></i> {$popisek}</button>
+                        <button n:foreach="$vzhledVolby as $volba => $popisek" type="button" role="radio" class="theme-option" data-theme-choice="{$volba}" aria-checked="{$volba === $vzhledVolba ? 'true' : 'false'}" tabindex="{$volba === $vzhledVolba ? 0 : -1}"><i n:class="fa, $volba === light ? fa-sun-o : ($volba === dark ? fa-moon-o : fa-adjust)" aria-hidden="true"></i> {$popisek}</button>
                     </li>
                     <li role="separator" class="divider"></li>
                     <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
