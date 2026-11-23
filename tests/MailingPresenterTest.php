@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Test;
 
 use App\Services\CryptoSluzba;
+use Nette\Application\BadRequestException;
 use Nette\Database\Table\ActiveRow;
 use Tester\Assert;
 
@@ -63,6 +64,21 @@ final class MailingPresenterTest extends DatabaseTestCase
         Assert::true($label instanceof \Nette\Database\Table\ActiveRow);
         Assert::same('Odesláno:ZpoplatneniTelevize2026', $label->Stitek->text);
         Assert::same([], $this->container->getByType(RecordingContractRequest::class)->calls);
+    }
+
+    /** Zprávu podle varianty odesílá jen Mailing:sendUserEmail; stejnojmenná akce v UzivatelActions neexistuje. */
+    public function testMemberActionsHaveNoSendUserEmail(): void {
+        $before = serialize($this->requireRow($this->database->table('Uzivatel')->get($this->member->id))->toArray());
+        Assert::exception(
+            fn () => $this->presenters->ui($this->actor->id, 'UzivatelActions', [
+                'action' => 'sendUserEmail', 'variant' => 'Televize2026AnoNe', 'id' => (string) $this->member->id,
+            ]),
+            BadRequestException::class,
+            "Page not found. Missing template '%a%/app/templates/UzivatelActions/sendUserEmail.latte'.",
+            404,
+        );
+        Assert::same($before, serialize($this->requireRow($this->database->table('Uzivatel')->get($this->member->id))->toArray()));
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
     }
 }
 
