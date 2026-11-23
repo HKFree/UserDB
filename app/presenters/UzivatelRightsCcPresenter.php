@@ -137,13 +137,8 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
     }
 
     public function validateRightsForm(Form $form): void {
-        $data = $form->getHttpData();
-        if (!is_array($data)) {
-            throw new Nette\UnexpectedValueException('Data celého formuláře musí být pole.');
-        }
-
         // Validujeme jenom při uložení formuláře
-        if (!isset($data["save"])) {
+        if (!$this->odeslanoTlacitkemUlozit($form)) {
             return;
         }
 
@@ -167,6 +162,10 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
     /** @param ArrayHash<mixed>&object{rights: ArrayHash<ArrayHash<mixed>>} $values */
     public function uzivatelRightsFormSucceded(Form $form, ArrayHash $values): void {
         $this->vyzadujOpravneni($this->smiMenitPrava());
+
+        if (!$this->odeslanoTlacitkemUlozit($form)) {
+            return; // bez tlačítka Uložit neproběhly kontroly formuláře
+        }
 
         $log = array();
         $idUzivatele = $values->id;

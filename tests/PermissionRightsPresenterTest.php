@@ -201,6 +201,26 @@ final class PermissionRightsPresenterTest extends DatabaseTestCase
         ])->count('*'));
     }
 
+    public function testSubmitWithoutSaveButtonStoresNothing(): void {
+        $s = $this->scenario;
+        $right = $this->fixtures->role($s->member->id, 'SO', $s->area->id, until: null);
+        $row = ['id' => (string) $right->id, 'TypSpravceOblasti_id' => (string) $right->TypSpravceOblasti_id,
+            'Oblast_id' => (string) $s->area->id, 'od' => '2000-01-01', 'do' => '2098-12-31'];
+        $post = ['_do' => 'uzivatelRightsForm-submit', 'id' => (string) $s->member->id, 'rights' => [$right->id => $row]];
+        $submit = fn (array $post) => $this->presenters->ui($s->actors['vv']->id, 'UzivatelRightsCc', ['action' => 'editrights', 'id' => $s->member->id], 'POST', $post);
+        $before = $s->snapshot();
+
+        $result = $submit($post);
+
+        Assert::same(200, $result->status);
+        Assert::null($result->redirectUrl);
+        Assert::contains('id="frm-uzivatelRightsForm"', $result->html);
+        Assert::same($before, $s->snapshot());
+        // The same data is saved with the button, so only the missing button kept it from being stored.
+        PermissionScenario::assertRedirect($submit($post + ['save' => 'Uložit']), 'uzivatel/show/' . $s->member->id);
+        Assert::same('2098-12-31', $this->requireRow($this->database->table('SpravceOblasti')->get($right->id))->do?->format('Y-m-d'));
+    }
+
     public function testEditAfterRejectedRequestLogsOriginalRightWithColumnCache(): void {
         $s = $this->scenario;
         // Tests read whole rows by default; a cache storage makes Nette Database remember the columns read at each call site.

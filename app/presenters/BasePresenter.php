@@ -155,6 +155,16 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     /**
+     * Odeslaná data obsahují tlačítko Uložit (pole save). Vlastní kontroly formuláře i jeho uložení se ptají
+     * tady, aby se nedalo uložit bez kontrol. Jiné odeslání formulář jen znovu vykreslí, stejně jako přidání
+     * nebo odebrání řádku.
+     */
+    protected function odeslanoTlacitkemUlozit(Nette\Forms\Form $form): bool {
+        $data = $form->getHttpData();
+        return is_array($data) && isset($data['save']);
+    }
+
+    /**
      * Kdo smí upravovat člena (canViewOrEdit na detailu a editaci člena): EXTSUPPORT, správce AP člena
      * (AP::canViewOrEditAP) a SO/ZSO, v jehož subnetech má člen z jiné oblasti IP adresu.
      */
