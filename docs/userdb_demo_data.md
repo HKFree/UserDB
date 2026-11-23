@@ -192,16 +192,17 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 | 20015 | Systémový | Systémový ZSO-201, některé exporty ho vynechávají |
 | 20070 | Chybnýodesílatel | KONTROLA, vlastní e-mail `odesilatel@@example.invalid`: e-mail členovi (`/uzivatel-mail-sms/email/20018`) i celému AP (`/uzivatel-mail-sms/emailall/201`) nabídne jako odesílatele jen adresu oblasti; upozornění odkazuje na editaci vlastních údajů. Registrační e-mail odeslaný touto osobou u člena 20081 („Odeslat znovu aktivační link e-mailem“) členovi dojde, kopie přeskočí její neplatnou adresu i správce 20075 a stránka to oznámí |
 | 20071 | Odesílatelodjinud | ZSO technické oblasti -20 se stejně chybným e-mailem, patří na AP 201: u e-mailu členovi 20015 a AP 217 upozornění odkaz na editaci nemá, své údaje upravit nesmí |
-| 20075 | Chybnákopie | ZSO běžné oblasti 201, `spravce@@example.invalid`: jako osoba 20012 u člena 20081 klikni na „Odeslat znovu aktivační link e-mailem“. Kopie přeskočí správce 20075, ostatním správcům odejde; varování obsahuje jméno a UID |
+| 20075 | Chybnákopie | ZSO běžné oblasti 201, `spravce@@example.invalid`: jako osoba 20012 u člena 20081 zvol v nabídce Další „Odeslat znovu aktivační link e-mailem“. Kopie přeskočí správce 20075, ostatním správcům odejde; varování obsahuje jméno a UID |
 | 20076 | Bezplatnékopie | SO nové oblasti 208 a AP 222, obě adresy neplatné: jako tato osoba odešli registraci členovi 20077, člen ji dostane a kopie se neodešle. Založení plánovaného člena na AP 222 uloží člena a oznámí neodeslanou notifikaci |
 
 ### Neplatné adresy při registraci a odeslání rozpisu plateb
 
-Všechny uvedené členy otevři na `/uzivatel/show/ID`. Aktivační tlačítko mají viditelné
-díky `regform_downloaded_password_sent = 0`. Členové 20078 a 20080 jsou pouze v družstvu,
+Všechny uvedené členy otevři na `/uzivatel/show/ID`. Položku „Odeslat znovu aktivační link e-mailem“
+mají v nabídce Další díky `regform_downloaded_password_sent = 0`; rozpis plateb se posílá tlačítkem
+v panelu Platby. Členové 20078 a 20080 jsou pouze v družstvu,
 ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho adresy jsou neplatné.
 
-| Člen / AP | Adresy (`email`; `email2`) | Přihlášená osoba | Tlačítko a výsledek |
+| Člen / AP | Adresy (`email`; `email2`) | Přihlášená osoba | Akce a výsledek |
 |---|---|---|---|
 | 20081 Člensčástečnoukopií / 201 | `demo20081@example.invalid`; prázdný | 20012 Chybějícítelefon | „Odeslat znovu aktivační link e-mailem“: registrace odejde členovi, kopie přeskočí ZSO 20075 a ostatním správcům dojde |
 | 20077 Členbezkopie / 222 | `demo20077@example.invalid`; prázdný | 20076 Bezplatnékopie | „Odeslat znovu aktivační link e-mailem“: registrace odejde členovi, kopie nemá žádného příjemce; jedno upozornění na obě vlastní adresy |

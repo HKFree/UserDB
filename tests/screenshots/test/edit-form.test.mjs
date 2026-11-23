@@ -1,7 +1,8 @@
 // The forms that app/templates/form.latte renders must fit into a phone screen, including the records
 // of IP addresses, subnets and API keys nested in the edit forms of an AP and of a member (issue #314).
-// The form has the markup asserted in tests/FormMarkupPresenterTest.php; test/form-page.mjs serves it
-// with the real www/css/screen.css and www/js/main.js.
+// The edit form of a member is rendered in sections with a bar that saves it and has styles of its own,
+// so it is measured in its own markup below. Both forms have the markup asserted in
+// tests/FormMarkupPresenterTest.php; test/form-page.mjs serves them with the real www/css/screen.css and www/js/main.js.
 import test, { after, before, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
@@ -226,5 +227,145 @@ describe('edit form on a phone', () => {
         }
         assert.deepEqual(records.map(({ width }) => width), [600, 600, 600]);
         assert.equal(address.width, 130);
+    });
+});
+
+const memberId = field => `frm-uzivatelForm-${field}`;
+const memberRow = (field, text, control, mark = '') => `<tr><th><label for="${memberId(field)}">${text}</label>${mark}</th><td>${control} </td></tr>`;
+const section = (number, heading, rows) => `<section class="form-section" id="member-form-section-${number}" aria-labelledby="member-form-heading-${number}">
+    <h2 id="member-form-heading-${number}">${heading}</h2><table class="form">${rows}</table></section>`;
+const memberFields = ['Ap_id', 'email', 'psc', 'ZpusobPripojeni_id', 'poznamka', 'ipsubnet'];
+
+// The edit form of a member as the application renders it: sections with a table each, the bar that saves the form
+// after them and the list of the sections beside the form.
+const memberFixture = formPage(`<div class="member-form-layout">
+    <form class="member-form" action="/" method="post" id="frm-uzivatelForm">
+    ${section(1, 'Zařazení', memberRow('Ap_id', 'Oblast - AP', `<select name="Ap_id" id="${memberId('Ap_id')}">`
+        + '<option value="201" selected>Demo rozvětvená oblast - Demo hlavní AP (201)</option>'
+        + '<option value="219">Demo částečně vypnutá - Demo zbylé AP (219)</option></select>'))}
+    ${section(2, 'Kontakt a adresa',
+        memberRow('email', 'Email', `<input type="email" name="email" size="30" id="${memberId('email')}" required value="demo20027@example.invalid">`, required)
+        + memberRow('psc', 'Adresa (psč)', `<input type="number" name="psc" size="5" id="${memberId('psc')}" required value="50000">`, required)
+        + memberRow('ZpusobPripojeni_id', 'Způsob připojení', `<select name="ZpusobPripojeni_id" id="${memberId('ZpusobPripojeni_id')}" required>`
+            + '<option value="1" selected>Není připojen vlastním zařízením a/nebo nesplňuje podmínky.</option>'
+            + '<option value="2">Je připojen vlastním zařízením a splňuje podmínky akce "3 měsíce zdarma".</option></select>', required)
+        + memberRow('poznamka', 'Poznámka', `<textarea name="poznamka" cols="24" rows="10" id="${memberId('poznamka')}">Úplné údaje, síť a historie.</textarea>`))}
+    ${section(3, 'IP adresy',
+        memberRow('ipsubnet', 'Přidat všechny ip ze subnetu (x.y.z.w/c)', `<input type="text" name="ipsubnet" size="20" id="${memberId('ipsubnet')}">`)
+        + record(ipRecord) + addButton('ip[add]', '+ Přidat další IP'))}
+    <div class="form-save-bar">
+        <input type="submit" name="save" class="btn btn-success btn-white default btn-edit-save" value="Uložit">
+        <a href="/" class="btn btn-link">Zrušit</a>
+        <span class="form-status" role="status" aria-live="polite"></span>
+        <span class="required-note"><span class="red">*</span> povinné pole</span>
+    </div>
+    <input type="hidden" name="id" value="20027"><input type="hidden" name="_do" value="uzivatelForm-submit"></form>
+    <nav class="form-nav" aria-label="Části formuláře"><span>Části formuláře</span>
+        <a href="#member-form-section-1">Zařazení</a><a href="#member-form-section-2">Kontakt a adresa</a><a href="#member-form-section-3">IP adresy</a></nav>
+    </div>`);
+
+// Only what stands in a section or in the bar counts: main.js adds a copy of the save button to the form itself
+// and moves it off the screen.
+const memberGeometry = fields => {
+    const box = element => {
+        const { left, right, top, bottom } = element.getBoundingClientRect();
+        return { left, right, top, bottom, width: right - left, height: bottom - top };
+    };
+    const named = element => element.name || element.textContent.trim();
+    const parts = [...document.querySelectorAll('.member-form .form-section, .member-form .form-save-bar')];
+    const all = selector => parts.flatMap(part => [...part.querySelectorAll(selector)]);
+    const record = document.querySelector('.member-form .ipform');
+    return {
+        pageWidth: document.documentElement.scrollWidth,
+        windowHeight: window.innerHeight,
+        controls: all('input:not([type="hidden"]), select, textarea, a').map(element => ({ name: named(element), ...box(element) })),
+        fontSizes: all('input:not([type="hidden"]):not([type="checkbox"]):not([type="submit"]), select, textarea')
+            .map(element => ({ name: named(element), size: parseFloat(getComputedStyle(element).fontSize) })),
+        labelled: fields.map(name => ({
+            name,
+            field: box(document.getElementById(`frm-uzivatelForm-${name}`)),
+            label: box(document.querySelector(`label[for="frm-uzivatelForm-${name}"]`)),
+        })),
+        sections: parts.filter(part => part.matches('.form-section')).map(box),
+        record: { ...box(record), controls: [...record.querySelectorAll('input:not([type="hidden"]), select, a')].map(element => ({ name: named(element), ...box(element) })) },
+        saveBar: box(document.querySelector('.form-save-bar')),
+        save: box(document.querySelector('.form-save-bar input[name="save"]')),
+        navigationShown: getComputedStyle(document.querySelector('.form-nav')).display !== 'none',
+    };
+};
+
+describe('edit form of a member in sections on a phone', () => {
+    let server, browser;
+    before(async () => {
+        server = await serve(memberFixture);
+        browser = await chromium.launch();
+    });
+    after(async () => {
+        await browser?.close();
+        server?.close();
+    });
+
+    async function measure(t, device) {
+        const page = await open(t, browser, server.origin, device);
+        return page.evaluate(memberGeometry, memberFields);
+    }
+
+    for (const [name, device] of Object.entries({ 'a phone': phone, 'a small phone': smallPhone })) {
+        test(`the sections, the record and the bar that saves the form are no wider than the screen of ${name}`, async t => {
+            const { width } = device.viewport;
+            const { pageWidth, controls, sections, record: recordBox, saveBar } = await measure(t, device);
+            assert.equal(pageWidth, width);
+            assert.equal(sections.length, 3);
+            for (const part of [...sections, recordBox, saveBar]) {
+                assert.ok(part.left >= 0 && part.right <= width, `a part of the form reaches from ${part.left} to ${part.right}`);
+            }
+            for (const control of controls) {
+                assert.ok(control.left >= 0 && control.right <= width, `${control.name} reaches from ${control.left} to ${control.right}`);
+            }
+            for (const control of recordBox.controls) {
+                assert.ok(control.left >= recordBox.left && control.right <= recordBox.right,
+                    `${control.name} reaches from ${control.left} to ${control.right}, its record from ${recordBox.left} to ${recordBox.right}`);
+            }
+        });
+    }
+
+    test('on a phone each label stands above its field and the fields for text take the whole width', async t => {
+        const { labelled, navigationShown } = await measure(t, phone);
+        const [first] = labelled;
+        for (const { name, field, label: labelBox } of labelled) {
+            assert.ok(labelBox.bottom <= field.top, `label of ${name} ends at ${labelBox.bottom}, the field starts at ${field.top}`);
+            assert.equal(labelBox.left, first.label.left);
+            assert.equal(field.left, first.field.left);
+        }
+        const widths = ['email', 'psc', 'poznamka', 'ipsubnet'].map(name => labelled.find(item => item.name === name).field.width);
+        assert.deepEqual(widths, [widths[0], widths[0], widths[0], widths[0]]);
+        assert.ok(widths[0] > 300, `the fields are ${widths[0]} px wide`);
+        // The list of the sections would take the width the fields need.
+        assert.equal(navigationShown, false);
+    });
+
+    test('on a phone the text of every field is large enough for iOS not to zoom in', async t => {
+        const { fontSizes } = await measure(t, phone);
+        assert.ok(fontSizes.length >= memberFields.length);
+        for (const { name, size } of fontSizes) {
+            assert.ok(size >= 16, `the text of ${name} is ${size} px`);
+        }
+    });
+
+    test('on a phone the bar that saves the form stays on the screen and its button is high enough for a finger', async t => {
+        const { saveBar, save, windowHeight, sections } = await measure(t, phone);
+        // The form is longer than the screen, so the bar is on the screen only because it sticks to its bottom edge.
+        assert.ok(sections.at(-1).bottom > windowHeight, `the last section ends at ${sections.at(-1).bottom} px`);
+        assert.ok(saveBar.top >= 0 && saveBar.bottom <= windowHeight, `the bar reaches from ${saveBar.top} to ${saveBar.bottom}, the screen is ${windowHeight} px high`);
+        assert.ok(save.height >= 32, `the button is ${save.height} px high`);
+    });
+
+    test('on a desktop the labels stay left of the fields and the list of the sections stands beside the form', async t => {
+        const { pageWidth, labelled, navigationShown } = await measure(t, desktop);
+        assert.equal(pageWidth, desktop.viewport.width);
+        for (const { name, field, label: labelBox } of labelled) {
+            assert.ok(labelBox.right <= field.left, `label of ${name} ends at ${labelBox.right}, the field starts at ${field.left}`);
+        }
+        assert.equal(navigationShown, true);
     });
 });

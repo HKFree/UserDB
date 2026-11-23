@@ -199,6 +199,28 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         Assert::same($before, $s->snapshot());
     }
 
+    public function testServerErrorStandsRedAtItsFieldOfTheMemberForm(): void {
+        $s = $this->scenario;
+        $before = $s->snapshot();
+        $result = $this->presenters->ui($s->actors['vv']->id, 'Uzivatel', ['action' => 'edit', 'id' => $s->member->id], 'POST', [
+            '_do' => 'uzivatelForm-submit', 'id' => (string) $s->member->id, 'save' => 'Uložit',
+            'jmeno' => '', 'Ap_id' => (string) $s->ap->id, 'TypPravniFormyUzivatele_id' => '1',
+            'prijmeni' => $s->member->prijmeni, 'nick' => $s->member->nick,
+            'email' => $s->member->email, 'telefon' => $s->member->telefon,
+            'ulice_cp' => $s->member->ulice_cp, 'mesto' => $s->member->mesto, 'psc' => (string) $s->member->psc,
+            'druzstvo' => '1', 'spolek' => '0', 'smazano' => '0', 'TypClenstvi_id' => '-1',
+            'TechnologiePripojeni_id' => (string) $s->member->TechnologiePripojeni_id,
+            'ZpusobPripojeni_id' => (string) $s->member->ZpusobPripojeni_id,
+        ]);
+        $document = $this->document($result->html);
+        Assert::same(200, $result->status);
+        $errors = '//form[@id="frm-uzivatelForm"]//section[contains(@class,"form-section")]//td/span[@class="text-danger"]';
+        Assert::count(1, $this->elements($document, $errors));
+        Assert::same('Zadejte jméno', $this->text($document, $errors));
+        Assert::count(1, $this->elements($document, '//td[input[@name="jmeno"]]/span[@class="text-danger"]'));
+        Assert::same($before, $s->snapshot());
+    }
+
     public function testMemberPageTitlesRespectHeadingVisibility(): void {
         $s = $this->scenario;
         foreach (['ownSo', 'otherSo'] as $actor) {

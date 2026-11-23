@@ -48,6 +48,8 @@ hodnotu načtenou hned po přidání do řádku. Tak to dělá `ApiKlic::getEdit
   odebrání jako `ip[KLÍČ][remove]`. Nový řádek dostane klíč o jedna vyšší než nejvyšší odeslaný.
 - S JavaScriptem je tlačítko `save` na stránce dvakrát: `main.js` vkládá na začátek formuláře jeho
   kopii mimo obrazovku, aby Enter ukládal. V Playwrightu klikat na poslední z nich.
-- Formulář úpravy člena i AP je na telefonu široký 585 px: `.ip-subnet-form-add` má
-  `min-width: 570px`. Playwright s `isMobile` kvůli tomu stránku zmenší a `click()` skončí
-  na „intercepts pointer events“; stisk vyvolat přes `element.click()` v `evaluate`.
+- Formulář úpravy člena i AP se od nové kostry na telefon vejde (375 px, `.ip-subnet-form-add`
+  už nemá `min-width: 570px`), takže Playwright s `isMobile` stránku nezmenšuje. Ověřeno
+  23. 11. 2026 měřením `scrollWidth` a testem `tests/screenshots/test/edit-form.test.mjs`.
+  U jiné stránky širší než okno platí dál: `click()` skončí na „intercepts pointer events“
+  a stisk je potřeba vyvolat přes `element.click()` v `evaluate`.

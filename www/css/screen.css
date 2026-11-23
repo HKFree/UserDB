@@ -2176,10 +2176,6 @@ input[readonly],
         font-size: 18px;
     }
 
-    .grido .filter.outer .items {
-        width: 100% !important;
-    }
-
     /* Two filters per row; grido's 12em column is too narrow for a 16 px value. */
     .grido .filter.outer .items > span {
         width: 50%;
@@ -3146,8 +3142,11 @@ html {
     box-shadow: 0 0 0 3px rgba(201, 48, 44, .18);
 }
 
+/* An error the server returns at a field of the member form looks like the one the browser finds. */
 .field-error,
-.client-form-error {
+.client-form-error,
+.member-form table.form > tbody > tr > td > .text-danger {
+    display: block;
     margin: 3px 0 2px;
     color: #9a1c1c;
     font-size: 12px;
