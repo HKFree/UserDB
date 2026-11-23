@@ -284,7 +284,7 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
         Assert::same(200, $result->status);
         Assert::null($result->redirectUrl);
         // Match rendered error text, never the message embedded in data-nette-rules.
-        Assert::contains('Zadejte jméno oblasti</td>', $result->html);
+        Assert::contains('Zadejte jméno oblasti</span>', $result->html);
         Assert::contains('value="' . $key->klic . '"', $result->html);
         Assert::contains('value="Rozepsaný klíč"', $result->html);
         Assert::same($before, $this->snapshot());
@@ -321,7 +321,7 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
             }
         }
         // Match rendered error text, never the message embedded in data-nette-rules.
-        Assert::notContains('Zadejte ulici a čp</td>', $result->html);
+        Assert::notContains('Zadejte ulici a čp</span>', $result->html);
         Assert::notContains('<ul class="error"', $result->html);
         Assert::same(1, preg_match('~<input[^>]*name="jmeno"[^>]*value="Rozepsané AP"~u', $result->html));
         Assert::same($before, $this->snapshot());
