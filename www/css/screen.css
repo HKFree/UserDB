@@ -1,5 +1,5 @@
 body {
-    color: #222;
+    color: var(--udb-text-222222);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 13px;
     line-height: 1.45;
@@ -20,7 +20,7 @@ body {
 
 .ip-transfer-intro {
     margin-bottom: 24px;
-    color: #666;
+    color: var(--udb-text-666666);
 }
 
 .ip-transfer-details {
@@ -68,7 +68,7 @@ body {
     gap: 32px;
     margin-top: 32px;
     padding-top: 24px;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--udb-line-dddddd);
 }
 
 .ip-transfer-actions .btn {
@@ -105,7 +105,7 @@ body {
 }
 
 .main a:not(.btn) {
-    color: #2165ae;
+    color: var(--udb-text-2165ae);
 }
 
 .main h1,
@@ -146,7 +146,7 @@ body {
 
 /* The issue number behind a news item stays muted; links in the content are blue otherwise. */
 .main a.novinky-cislo {
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .main h1 small,
@@ -154,7 +154,7 @@ body {
 .main h3 small {
     font-size: 14px;
     font-weight: normal;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .main h2 .label {
@@ -172,7 +172,7 @@ body {
 .main h4 small {
     font-size: 12px;
     font-weight: normal;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .main .alert.h4 {
@@ -197,55 +197,6 @@ body {
 }
 
 /*
-h1 {
-	color: #3484D2;
-}
-
-#ajax-spinner {
-	margin: 15px 0 0 15px;
-	padding: 13px;
-	background: white url('../images/spinner.gif') no-repeat 50% 50%;
-	font-size: 0;
-	z-index: 123456;
-	display: none;
-}
-
-div.flash {
-	color: black;
-	background: #FFF9D7;
-	border: 1px solid #E2C822;
-	padding: 1em;
-	margin: 1em 0;
-}
-
-a[href^="#error:"] {
-	background: red;
-	color: white;
-}
-
-form th, form td {
-	vertical-align: top;
-	font-weight: normal;
-}
-
-form th {
-	text-align: right;
-}
-
-form .required label {
-	font-weight: bold;
-}
-
-form .error {
-	color: #D00;
-	font-weight: bold;
-}
-
-html.js .jshidden {
-	display: none;
-}
-*/
-/*
  * Base structure
  */
 
@@ -261,7 +212,7 @@ body {
 
 .sub-header {
     padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--udb-line-eeeeee);
 }
 
 /*
@@ -270,36 +221,36 @@ body {
  */
 .navbar-fixed-top {
     border: 0;
-    box-shadow: inset 0 -2px 0 #cc0000;
+    box-shadow: inset 0 -2px 0 var(--udb-shadow-cc0000);
 }
 
 .navbar-brand .brand-domain {
-    color: #666666;
+    color: var(--udb-text-666666);
 }
 
 .navbar-brand .brand-tld {
-    color: #cc0000;
+    color: var(--udb-text-cc0000);
 }
 
 .navbar-inverse .navbar-nav>li>a {
     font-size: 14px;
-    color: #c8c8c8;
+    color: var(--udb-text-c8c8c8);
 }
 
 .navbar-inverse .navbar-nav>.active>a,
 .navbar-inverse .navbar-nav>.active>a:hover,
 .navbar-inverse .navbar-nav>.active>a:focus {
     background-color: transparent;
-    box-shadow: inset 0 -3px 0 #cc0000;
+    box-shadow: inset 0 -3px 0 var(--udb-shadow-cc0000);
 }
 
 .navbar-inverse .navbar-nav>li.navbar-add>a {
-    color: #8fd58f;
+    color: var(--udb-text-8fd58f);
 }
 
 .navbar-inverse .navbar-nav>li.navbar-add>a:hover,
 .navbar-inverse .navbar-nav>li.navbar-add>a:focus {
-    color: #fff;
+    color: var(--udb-text-ffffff);
 }
 
 .navbar-search {
@@ -313,28 +264,28 @@ body {
 .navbar-search .form-control {
     width: 100%;
     padding-left: 32px;
-    background-color: #333;
-    border-color: #4a4a4a;
-    color: #fff;
+    background-color: var(--udb-bg-333333);
+    border-color: var(--udb-line-4a4a4a);
+    color: var(--udb-text-ffffff);
     box-shadow: none;
 }
 
 .navbar-search .form-control::placeholder {
-    color: #a4a9b0;
+    color: var(--udb-text-a4a9b0);
 }
 
 .navbar-search .form-control:focus {
-    background-color: #fff;
-    border-color: #5b9bd8;
-    color: #222;
-    box-shadow: 0 0 0 3px rgba(66, 139, 202, .35);
+    background-color: var(--udb-bg-ffffff);
+    border-color: var(--udb-line-5b9bd8);
+    color: var(--udb-text-222222);
+    box-shadow: 0 0 0 3px var(--udb-shadow-428bca-a35);
 }
 
 .navbar-search .fa-search {
     position: absolute;
     left: 26px;
     top: 10px;
-    color: #a4a9b0;
+    color: var(--udb-text-a4a9b0);
     pointer-events: none;
 }
 
@@ -342,16 +293,16 @@ body {
     float: left;
     margin: 8px 0 8px 10px;
     padding: 6px 11px;
-    background-color: #333;
-    border: 1px solid #555;
+    background-color: var(--udb-bg-333333);
+    border: 1px solid var(--udb-line-555555);
     border-radius: 4px;
-    color: #fff;
+    color: var(--udb-text-ffffff);
     font-size: 14px;
 }
 
 .sidebar-toggle:hover,
 .sidebar-toggle:focus {
-    background-color: #444;
+    background-color: var(--udb-bg-444444);
 }
 
 @media (max-width: 989px) {
@@ -459,8 +410,8 @@ body {
     overflow-x: hidden;
     overflow-y: auto;
     /* Scrollable contents if viewport is shorter than content. */
-    background-color: #f6f7f9;
-    border-right: 1px solid #e2e5e9;
+    background-color: var(--udb-bg-f6f7f9);
+    border-right: 1px solid var(--udb-line-e2e5e9);
 }
 
 .sidebar h4 {
@@ -468,12 +419,12 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .06em;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
     margin: 14px 16px 6px;
 }
 
 .sidebar h4 a {
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .sidebar-filter {
@@ -482,7 +433,7 @@ body {
 
 .sidebar-nomatch {
     padding: 6px 16px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 /* Sidebar navigation */
@@ -494,27 +445,27 @@ body {
     padding: 4px 12px 4px 16px;
     line-height: 1.35;
     font-size: 13px;
-    color: #1f2937;
+    color: var(--udb-text-1f2937);
 }
 
 .nav-sidebar li>a:hover,
 .nav-sidebar li>a:focus {
-    background-color: #e6ebf1;
+    background-color: var(--udb-bg-e6ebf1);
 }
 
 .nav-sidebar li.active>a,
 .nav-sidebar li.active>a:hover,
 .nav-sidebar li.active>a:focus {
-    background-color: #dbe7f4;
+    background-color: var(--udb-bg-dbe7f4);
     font-weight: 700;
-    box-shadow: inset 3px 0 0 #2165ae;
+    box-shadow: inset 3px 0 0 var(--udb-shadow-2165ae);
 }
 
 /* "Moje oblasti": the APs of an area sit under its name, indented like the branches of the tree below. */
 .sidebar-mine li li>a {
     padding-left: 30px;
     font-size: 12px;
-    color: #374151;
+    color: var(--udb-text-374151);
 }
 
 .sidebar .bonsai li {
@@ -528,7 +479,7 @@ body {
 .sidebar .bonsai li li>a {
     padding-left: 40px;
     font-size: 12px;
-    color: #374151;
+    color: var(--udb-text-374151);
 }
 
 .sidebar .bonsai li .thumb {
@@ -537,7 +488,7 @@ body {
     top: 2px;
     width: 16px;
     text-align: center;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
     font-size: 13px;
     z-index: 1;
 }
@@ -559,7 +510,7 @@ body {
     bottom: 0;
     left: 0;
     z-index: 1035;
-    background-color: rgba(0, 0, 0, .35);
+    background-color: var(--udb-bg-000000-a35);
 }
 
 /* Below 990 px the list of areas slides in over the page. */
@@ -577,7 +528,7 @@ body {
     .sidebar-open .sidebar {
         transform: none;
         visibility: visible;
-        box-shadow: 6px 0 24px rgba(0, 0, 0, .25);
+        box-shadow: 6px 0 24px var(--udb-shadow-000000-a25);
     }
 
     .sidebar-open .sidebar-backdrop {
@@ -650,7 +601,7 @@ table.form>tbody>tr>th {
     padding: 9px 14px 5px 0;
     vertical-align: top;
     font-weight: 600;
-    color: #333;
+    color: var(--udb-text-333333);
 }
 
 table.form>tbody>tr>td {
@@ -666,10 +617,10 @@ table.form>tbody>tr>td {
 .main textarea:not(.form-control) {
     max-width: 100%;
     padding: 4px 8px;
-    background-color: #fff;
-    border: 1px solid #c2c8cf;
+    background-color: var(--udb-bg-ffffff);
+    border: 1px solid var(--udb-line-c2c8cf);
     border-radius: 3px;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
+    box-shadow: inset 0 1px 1px var(--udb-shadow-000000-a05);
 }
 
 .main input[type="text"]:not(.form-control),
@@ -684,16 +635,16 @@ table.form>tbody>tr>td {
 .main input:not(.form-control):focus,
 .main select:not(.form-control):focus,
 .main textarea:not(.form-control):focus {
-    border-color: #5b9bd8;
+    border-color: var(--udb-line-5b9bd8);
     outline: 0;
-    box-shadow: 0 0 0 3px rgba(66, 139, 202, .25);
+    box-shadow: 0 0 0 3px var(--udb-shadow-428bca-a25);
 }
 
 .main input:disabled:not(.form-control),
 .main select:disabled:not(.form-control),
 .main textarea:disabled:not(.form-control) {
-    background-color: #e4e6e9;
-    color: #555;
+    background-color: var(--udb-bg-e4e6e9);
+    color: var(--udb-text-555555);
     cursor: not-allowed;
 }
 
@@ -745,11 +696,11 @@ table.form>tbody>tr>td>textarea {
 .apiklicform {
     margin: 5px 0;
     padding: 8px;
-    border: 1px solid #dcdfe3;
+    border: 1px solid var(--udb-line-dcdfe3);
     border-radius: 4px;
     width: 600px;
     max-width: 100%;
-    background-color: #f6f7f9;
+    background-color: var(--udb-bg-f6f7f9);
 }
 
 .ipform input[type="text"],
@@ -814,16 +765,16 @@ table.form>tbody>tr>td>textarea {
     max-width: 100%;
     height: 40px;
     border-radius: 4px;
-    background-color: #EDFFED;
-    color: black;
-    border-color: silver;
+    background-color: var(--udb-bg-edffed);
+    color: var(--udb-text-000000);
+    border-color: var(--udb-line-c0c0c0);
     border-style: dashed;
     margin-top: 15px;
     margin-bottom: 15px;
 }
 
 .ip-subnet-form-add:hover {
-    background-color: #CAF7CA;
+    background-color: var(--udb-bg-caf7ca);
 }
 
 /* Formuláře ze šablony form.latte na telefonu: popisek nad polem, pole nejvýš na šířku okna. */
@@ -944,28 +895,28 @@ table.form>tbody>tr>td>textarea {
 }
 
 .red {
-    color: #C22;
+    color: var(--udb-text-cc2222);
 }
 
 .cestne>td {
-    background-color: #e2f3dd !important;
+    background-color: var(--udb-bg-e2f3dd) !important;
 }
 
 .primarni>td {
-    background-color: #f5ebf3 !important;
+    background-color: var(--udb-bg-f5ebf3) !important;
 }
 
 .zrusene>td {
-    background-color: #ececec !important;
-    color: #6b6b6b !important;
+    background-color: var(--udb-bg-ececec) !important;
+    color: var(--udb-text-6b6b6b) !important;
 }
 
 .main .zrusene>td a {
-    color: #555 !important;
+    color: var(--udb-text-555555) !important;
 }
 
 .planovane>td {
-    background-color: #dcedfb !important;
+    background-color: var(--udb-bg-dcedfb) !important;
 }
 
 /* Bound to the named cells of the grid, so that adding a column cannot move the highlight. */
@@ -973,30 +924,30 @@ table.form>tbody>tr>td>textarea {
 .neaktivni>td.grid-cell-money_deaktivace,
 .neaktivni>td.grid-cell-lastp,
 .neaktivni>td.grid-cell-lasta {
-    background-color: #fbe0e0 !important;
-    color: #9a1c1c;
+    background-color: var(--udb-bg-fbe0e0) !important;
+    color: var(--udb-text-9a1c1c);
     font-weight: 600;
 }
 
 .preplatek>td.grid-cell-acc {
-    background-color: #f6dcf3 !important;
-    color: #86198f;
+    background-color: var(--udb-bg-f6dcf3) !important;
+    color: var(--udb-text-86198f);
     font-weight: 600;
 }
 
 .invalidemail>td.grid-cell-email {
-    background-color: #fbe0e0 !important;
+    background-color: var(--udb-bg-fbe0e0) !important;
 }
 
 .invalidemail>td.grid-cell-email::before {
     font-family: FontAwesome;
     content: "\f071";
-    color: #b42318;
+    color: var(--udb-text-b42318);
     margin-right: 5px;
 }
 
 .main .invalidemail>td.grid-cell-email a {
-    color: #9a1c1c;
+    color: var(--udb-text-9a1c1c);
 }
 
 .subnet>.popis {
@@ -1008,9 +959,9 @@ table.form>tbody>tr>td>textarea {
 }
 
 .error {
-    background-color: #f9e3e3;
-    color: #9a1c1c;
-    border: 1px solid #ebc4c4;
+    background-color: var(--udb-bg-f9e3e3);
+    color: var(--udb-text-9a1c1c);
+    border: 1px solid var(--udb-line-ebc4c4);
     border-radius: 3px;
 }
 
@@ -1027,11 +978,11 @@ ul.error {
 .table>tfoot>tr>td {
     padding: 5px 8px !important;
     line-height: 1.4;
-    border-top-color: #e6e8eb;
+    border-top-color: var(--udb-line-e6e8eb);
 }
 
 .table th {
-    color: #4b5563;
+    color: var(--udb-text-4b5563);
     font-weight: 600;
 }
 
@@ -1077,17 +1028,17 @@ ul.error {
 }
 
 .btn-default {
-    border-color: #c9ced4;
+    border-color: var(--udb-line-c9ced4);
 }
 
 .highlighted,
 .highlighted td {
-    background-color: #ffa100 !important;
+    background-color: var(--udb-bg-ffa100) !important;
 }
 
 .highlighted-fadeout,
 .highlighted-fadeout td {
-    background-color: rgb(255, 251, 122) !important;
+    background-color: var(--udb-bg-fffb7a) !important;
     -webkit-transition: background-color 1000ms linear;
     -moz-transition: background-color 1000ms linear;
     -o-transition: background-color 1000ms linear;
@@ -1105,7 +1056,7 @@ ul.error {
 }
 
 .btn-in-table:hover {
-    border-color: #ccc;
+    border-color: var(--udb-line-cccccc);
 }
 
 /* Tlačítka u IP adresy (editace, web, ping, Winbox s nápovědou, SSH) zůstanou v jedné řádce jako lišta. */
@@ -1139,7 +1090,7 @@ ul.error {
 .main .list-section > h2 {
     margin: 0 0 12px;
     padding-bottom: 6px;
-    border-bottom: 1px solid #e2e5e9;
+    border-bottom: 1px solid var(--udb-line-e2e5e9);
     font-size: 16px;
 }
 
@@ -1184,27 +1135,27 @@ ul.error {
 }
 
 .navbar-brand {
-    color: #FFFFFF !important;
+    color: var(--udb-text-ffffff) !important;
 }
 
 .navbar-brand:hover,
 .navbar-brand:focus {
-    color: #FFFFFF !important;
+    color: var(--udb-text-ffffff) !important;
     background-color: transparent;
 }
 
 .table>tbody>tr>td.fullsubnet {
-    background-color: #FFBA52;
+    background-color: var(--udb-bg-ffba52);
     text-align: center;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid var(--udb-line-000000);
 }
 
 .table>tbody>tr.subnet-ip-network-row>td {
-    border-top: 1px solid black;
+    border-top: 1px solid var(--udb-line-000000);
 }
 
 .table>tbody>tr.subnet-ip-broadcast-row>td {
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid var(--udb-line-000000);
 }
 
 .progress-inline {
@@ -1212,12 +1163,12 @@ ul.error {
 }
 
 .progress-wewimo {
-    background-color: #C00000;
+    background-color: var(--udb-bg-c00000);
     height: inherit;
 }
 
 .progress-wewimo .progress-bar {
-    background-color: #00a000;
+    background-color: var(--udb-bg-00a000);
     line-height: inherit;
     text-align: left;
     padding-left: 1em;
@@ -1252,23 +1203,23 @@ ul.error {
 }
 
 tbody>tr.wewimo-table-header>th {
-    color: white;
-    background-color: #666666 !important;
+    color: var(--udb-text-ffffff);
+    background-color: var(--udb-bg-666666) !important;
 }
 
 .fade-out-old {
-    color: #d0d0d0;
+    color: var(--udb-text-d0d0d0);
 }
 
 .manual-stripes-odd {
-    background-color: #f9f9f9;
+    background-color: var(--udb-bg-f9f9f9);
 }
 
 /* Grido's rules overrides */
 
 .grido table,
 .grido .filter.outer {
-    border-color: #dcdfe3;
+    border-color: var(--udb-line-dcdfe3);
     box-shadow: none;
 }
 
@@ -1279,24 +1230,24 @@ tbody>tr.wewimo-table-header>th {
 .grido thead th,
 .grido tfoot td,
 .grido .filter.outer {
-    background: #f6f7f9;
+    background: var(--udb-bg-f6f7f9);
     filter: none;
 }
 
 .grido thead th {
-    border-color: #dcdfe3 !important;
+    border-color: var(--udb-line-dcdfe3) !important;
     font-size: 11px;
     letter-spacing: .03em;
 }
 
 .grido thead th,
 .grido thead th span {
-    color: #4b5563;
+    color: var(--udb-text-4b5563);
 }
 
 .grido tbody tr td {
     padding: 3px 7px !important;
-    border-color: #e6e8eb;
+    border-color: var(--udb-line-e6e8eb);
     font-size: 12px;
     line-height: 1.35 !important;
 }
@@ -1316,10 +1267,10 @@ tbody>tr.wewimo-table-header>th {
     align-items: center;
     gap: 4px;
     padding: 1px 7px;
-    border: 1px solid #d5dae0;
+    border: 1px solid var(--udb-line-d5dae0);
     border-radius: 9px;
-    background-color: #f6f7f9;
-    color: #374151;
+    background-color: var(--udb-bg-f6f7f9);
+    color: var(--udb-text-374151);
     font-size: 11px;
     font-weight: 600;
     line-height: 16px;
@@ -1327,25 +1278,25 @@ tbody>tr.wewimo-table-header>th {
 }
 
 .conn-tech .fa {
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .conn-tech-unknown {
     border-style: dashed;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 /* Výsledek pingu IP adres (pinger.js): tlumené podbarvení buňky a proužek podle nejhoršího stavu. */
 .grid-cell-IPAdresa.ping-ok {
-    box-shadow: inset 3px 0 0 #3c9a52;
+    box-shadow: inset 3px 0 0 var(--udb-shadow-3c9a52);
 }
 
 .grid-cell-IPAdresa.ping-warn {
-    box-shadow: inset 3px 0 0 #d9a520;
+    box-shadow: inset 3px 0 0 var(--udb-shadow-d9a520);
 }
 
 .grid-cell-IPAdresa.ping-down {
-    box-shadow: inset 3px 0 0 #d9534f;
+    box-shadow: inset 3px 0 0 var(--udb-shadow-d9534f);
 }
 
 /* Tužka u UID v seznamu členů stojí na konci buňky jako na master. */
@@ -1368,18 +1319,18 @@ tbody>tr.wewimo-table-header>th {
 
 .grido .filter.outer label {
     font-size: 12px;
-    color: #4b5563;
+    color: var(--udb-text-4b5563);
 }
 
 .grido tfoot input[type="submit"] {
     padding: 4px 10px;
-    background-color: #fff;
-    border: 1px solid #c9ced4;
+    background-color: var(--udb-bg-ffffff);
+    border: 1px solid var(--udb-line-c9ced4);
     border-radius: 3px;
 }
 
 .grido tfoot input[type="submit"]:hover {
-    background-color: #eef1f4;
+    background-color: var(--udb-bg-eef1f4);
 }
 
 /* A grid wider than the page scrolls in its own frame; main.js sets the class when it does not fit. */
@@ -1396,7 +1347,7 @@ form.grido.grid-wide {
 
 form.grido.grid-wide:focus-visible,
 .user-list-scroll:focus-visible {
-    outline: 2px solid #5b9bd8;
+    outline: 2px solid var(--udb-line-5b9bd8);
     outline-offset: 2px;
 }
 
@@ -1410,7 +1361,7 @@ form.grido.grid-wide:focus-visible,
 
 input[readonly],
 .main input[readonly]:not(.form-control) {
-    background-color: #e4e6e9;
+    background-color: var(--udb-bg-e4e6e9);
 }
 
 .spacing-left {
@@ -1429,21 +1380,21 @@ input[readonly],
 }
 
 .label-druzstvo {
-    border-color: #03758f;
-    color: #03758f;
-    background-color: #03758f20;
+    border-color: var(--udb-line-03758f);
+    color: var(--udb-text-03758f);
+    background-color: var(--udb-bg-03758f-a125);
 }
 
 .label-spolek {
-    border-color: #9f61a2;
-    color: #9f61a2;
-    background-color: #9f61a220;
+    border-color: var(--udb-line-9f61a2);
+    color: var(--udb-text-9f61a2);
+    background-color: var(--udb-bg-9f61a2-a125);
 }
 
 .label-neaktivni {
-    border-color: #383838;
-    color: #383838;
-    background-color: #38383820;
+    border-color: var(--udb-line-383838);
+    color: var(--udb-text-383838);
+    background-color: var(--udb-bg-383838-a125);
     text-decoration: line-through;
 }
 
@@ -1476,7 +1427,7 @@ input[readonly],
 /* Hover efekt */
 .dropdown-menu>li>a.stitky-item:hover {
     /* Bez ztmavení: barvy štítku drží kontrast z BarvaStitku */
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 5px var(--udb-shadow-000000-a2);
     /* Jemný stín pro hover */
 }
 
@@ -1504,8 +1455,14 @@ input[readonly],
     margin: 1px;
 }
 
-/* Štítky: barvy pozadí, rámečku a písma dává atribut style z BarvaStitku, tady jen tloušťka rámečku. */
-.badge[style*="border-color"],
+/* Štítky: barvy pro světlý i tmavý vzhled spočítá BarvaStitku do vlastností v atributu style. */
+.badge[style*="--label-bg"],
+.dropdown-menu > li > a.stitky-item[style*="--label-bg"] {
+    border: 1px solid var(--label-line);
+    background-color: var(--label-bg);
+    color: var(--label-text);
+}
+
 .dropdown-menu > li > a.stitky-item {
     border: 1px solid transparent;
 }
@@ -1516,8 +1473,8 @@ input[readonly],
     right: 5px;
     transform: translateY(-50%);
     cursor: pointer;
-    color: #fff;
-    background-color: #dc3545;
+    color: var(--udb-text-ffffff);
+    background-color: var(--udb-bg-dc3545);
     border-radius: 50%;
     font-size: 12px;
     line-height: 1;
@@ -1593,7 +1550,7 @@ input[readonly],
 
 .novinky-detail {
     margin: 6px 0 0;
-    color: #555;
+    color: var(--udb-text-555555);
 }
 
 @media (max-width: 767px) {
@@ -2296,7 +2253,7 @@ html {
     gap: 10px 20px;
     margin: 0 0 16px;
     padding: 0 0 12px;
-    border-bottom: 1px solid #e2e5e9;
+    border-bottom: 1px solid var(--udb-line-e2e5e9);
 }
 
 .main .page-title {
@@ -2358,7 +2315,7 @@ html {
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .member-counts {
@@ -2380,7 +2337,7 @@ html {
     position: absolute;
     left: 10px;
     top: 9px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
     pointer-events: none;
 }
 
@@ -2407,11 +2364,11 @@ html {
     flex: 0 0 auto;
     min-width: 165px;
     font-size: 12px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .quick-filter-no-match .quick-filter-count {
-    color: #9a1c1c;
+    color: var(--udb-text-9a1c1c);
     font-weight: 600;
 }
 
@@ -2426,43 +2383,43 @@ html {
     align-items: center;
     margin: 10px 0 16px;
     font-size: 12px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .legend-chip {
     display: inline-block;
     padding: 2px 9px;
     border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, .1);
-    color: #222;
+    border: 1px solid var(--udb-line-000000-a1);
+    color: var(--udb-text-222222);
     cursor: default;
 }
 
 .legend-chip.planovane {
-    background: #dcedfb;
+    background: var(--udb-bg-dcedfb);
 }
 
 .legend-chip.primarni {
-    background: #f5ebf3;
+    background: var(--udb-bg-f5ebf3);
 }
 
 .legend-chip.cestne {
-    background: #e2f3dd;
+    background: var(--udb-bg-e2f3dd);
 }
 
 .legend-chip.zrusene {
-    background: #ececec;
-    color: #6b6b6b;
+    background: var(--udb-bg-ececec);
+    color: var(--udb-text-6b6b6b);
 }
 
 .legend-chip.legend-overpaid {
-    background: #f6dcf3;
-    color: #86198f;
+    background: var(--udb-bg-f6dcf3);
+    color: var(--udb-text-86198f);
 }
 
 .legend-chip.legend-inactive {
-    background: #fbe0e0;
-    color: #9a1c1c;
+    background: var(--udb-bg-fbe0e0);
+    color: var(--udb-text-9a1c1c);
 }
 
 /* State names are CSS content on the UID cell, retained after Grido AJAX refresh.
@@ -2472,28 +2429,28 @@ html {
     display: block;
     font-size: 10px;
     font-weight: 700;
-    color: #4b5563;
+    color: var(--udb-text-4b5563);
     white-space: pre-line;
 }
 
 .member-list tr.planovane {
     --member-state: "plánovaný";
-    --member-stripe: #2f8fd8;
+    --member-stripe: var(--udb-line-2f8fd8);
 }
 
 .member-list tr.primarni {
     --member-state: "primární";
-    --member-stripe: #b46aa9;
+    --member-stripe: var(--udb-line-b46aa9);
 }
 
 .member-list tr.cestne {
     --member-state: "čestný";
-    --member-stripe: #4aa63c;
+    --member-stripe: var(--udb-line-4aa63c);
 }
 
 .member-list tr.zrusene {
     --member-state: "zrušený";
-    --member-stripe: #8a8a8a;
+    --member-stripe: var(--udb-line-8a8a8a);
 }
 
 .member-list tr.neaktivni {
@@ -2520,30 +2477,30 @@ html {
 .member-list tr.neaktivni > td.grid-cell-lastp,
 .member-list tr.neaktivni > td.grid-cell-lasta,
 .member-list tr.invalidemail > td.grid-cell-email {
-    background-color: #fbe0e0 !important;
+    background-color: var(--udb-bg-fbe0e0) !important;
 }
 
 .member-list tr.preplatek > td.grid-cell-acc {
-    background-color: #f6dcf3 !important;
+    background-color: var(--udb-bg-f6dcf3) !important;
 }
 
 .member-list tr.planovane > td:first-child {
-    box-shadow: inset 4px 0 0 #2f8fd8;
-    background-color: #eef6fd !important;
+    box-shadow: inset 4px 0 0 var(--udb-shadow-2f8fd8);
+    background-color: var(--udb-bg-eef6fd) !important;
 }
 
 .member-list tr.primarni > td:first-child {
-    box-shadow: inset 4px 0 0 #b46aa9;
-    background-color: #f8f0f6 !important;
+    box-shadow: inset 4px 0 0 var(--udb-shadow-b46aa9);
+    background-color: var(--udb-bg-f8f0f6) !important;
 }
 
 .member-list tr.cestne > td:first-child {
-    box-shadow: inset 4px 0 0 #4aa63c;
-    background-color: #eef8eb !important;
+    box-shadow: inset 4px 0 0 var(--udb-shadow-4aa63c);
+    background-color: var(--udb-bg-eef8eb) !important;
 }
 
 .member-list tr.zrusene > td:first-child {
-    box-shadow: inset 4px 0 0 #8a8a8a;
+    box-shadow: inset 4px 0 0 var(--udb-shadow-8a8a8a);
 }
 
 .member-list form.grido.grid-wide th.grid-header-id,
@@ -2551,11 +2508,11 @@ html {
     position: sticky;
     left: 0;
     z-index: 5;
-    box-shadow: inset 4px 0 0 var(--member-stripe, transparent), inset -1px 0 0 #dcdfe3;
+    box-shadow: inset 4px 0 0 var(--member-stripe, transparent), inset -1px 0 0 var(--udb-shadow-dcdfe3);
 }
 
 .member-list form.grido.grid-wide td.grid-cell-id {
-    background-color: #fff;
+    background-color: var(--udb-bg-ffffff);
 }
 
 .member-list form.grido.grid-wide td.grid-cell-id:not(:first-child) {
@@ -2580,21 +2537,21 @@ html {
 /* Detail sections, two columns and the linked member summary. */
 .detail-panel {
     margin-bottom: 16px;
-    border-color: #dcdfe3;
+    border-color: var(--udb-line-dcdfe3);
     box-shadow: none;
     min-width: 0;
     scroll-margin-top: 110px;
 }
 
 .detail-panel:target {
-    border-color: #5b9bd8;
-    box-shadow: 0 0 0 3px rgba(66, 139, 202, .2);
+    border-color: var(--udb-line-5b9bd8);
+    box-shadow: 0 0 0 3px var(--udb-shadow-428bca-a2);
 }
 
 .detail-panel > .panel-heading {
     padding: 8px 12px;
-    background: #f6f7f9;
-    border-color: #dcdfe3;
+    background: var(--udb-bg-f6f7f9);
+    border-color: var(--udb-line-dcdfe3);
 }
 
 .detail-panel > .panel-heading h4 {
@@ -2681,7 +2638,7 @@ html {
 
 .section-empty {
     margin: 8px 0 4px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .fact-strip {
@@ -2696,18 +2653,18 @@ html {
     min-width: 130px;
     max-width: 230px;
     padding: 8px 12px;
-    border: 1px solid #e2e5e9;
+    border: 1px solid var(--udb-line-e2e5e9);
     border-radius: 4px;
-    background: #fff;
-    color: #1f2937;
+    background: var(--udb-bg-ffffff);
+    color: var(--udb-text-1f2937);
     text-decoration: none;
     overflow-wrap: anywhere;
 }
 
 .main a.fact-tile:hover,
 .main a.fact-tile:focus {
-    border-color: #9dbfe3;
-    background: #f7fafd;
+    border-color: var(--udb-line-9dbfe3);
+    background: var(--udb-bg-f7fafd);
 }
 
 .fact-tile > span {
@@ -2716,7 +2673,7 @@ html {
     font-weight: 700;
     letter-spacing: .05em;
     text-transform: uppercase;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .fact-tile > b {
@@ -2728,19 +2685,19 @@ html {
 .fact-tile > small {
     display: block;
     font-size: 11px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .main a.fact-ok {
-    border-left: 4px solid #3c9a3c;
+    border-left: 4px solid var(--udb-line-3c9a3c);
 }
 
 .main a.fact-warn {
-    border-left: 4px solid #d98a00;
+    border-left: 4px solid var(--udb-line-d98a00);
 }
 
 .main a.fact-bad {
-    border-left: 4px solid #c9302c;
+    border-left: 4px solid var(--udb-line-c9302c);
 }
 
 .fact-ok > b::before,
@@ -2755,19 +2712,19 @@ html {
 }
 
 .fact-ok > b::before {
-    background: #3c9a3c;
+    background: var(--udb-bg-3c9a3c);
 }
 
 .fact-warn > b::before {
-    background: #d98a00;
+    background: var(--udb-bg-d98a00);
 }
 
 .fact-bad > b::before {
-    background: #c9302c;
+    background: var(--udb-bg-c9302c);
 }
 
 .fact-bad > b {
-    color: #9a1c1c;
+    color: var(--udb-text-9a1c1c);
 }
 
 /* IP adresy v detailu člena: adresa má šířku nejdelší možné adresy, takže tlačítka pro zkopírování stojí pod sebou. */
@@ -2788,19 +2745,19 @@ html {
     border: 1px solid transparent;
     border-radius: 3px;
     background: none;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
     font-size: 12px;
 }
 
 .copy-button:hover,
 .copy-button:focus {
-    border-color: #c9ced4;
-    background: #fff;
-    color: #111;
+    border-color: var(--udb-line-c9ced4);
+    background: var(--udb-bg-ffffff);
+    color: var(--udb-text-111111);
 }
 
 .copy-button.copied {
-    color: #2f752f;
+    color: var(--udb-text-2f752f);
 }
 
 /* Labels: named controls, persistent remove buttons and assigned menu items. */
@@ -2894,7 +2851,7 @@ html {
 }
 
 .labels-empty {
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .user-labels-component .dropdown-toggle {
@@ -2938,12 +2895,12 @@ html {
 .labels-menu-hint {
     padding: 2px 4px 4px;
     font-size: 11px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .user-labels-component .label-error {
     flex-basis: 100%;
-    color: #9a1c1c;
+    color: var(--udb-text-9a1c1c);
 }
 
 @media (max-width: 1099px) {
@@ -2989,10 +2946,10 @@ html {
 .main .form-section h2 {
     margin: 0 0 8px;
     padding: 0 0 6px;
-    border-bottom: 1px solid #e2e5e9;
+    border-bottom: 1px solid var(--udb-line-e2e5e9);
     font-size: 15px;
     font-weight: 700;
-    color: #111;
+    color: var(--udb-text-111111);
 }
 
 .member-form table.form {
@@ -3033,8 +2990,8 @@ html {
     flex-wrap: wrap;
     gap: 8px;
     padding: 10px 0;
-    border-top: 1px solid #e2e5e9;
-    background: rgba(255, 255, 255, .97);
+    border-top: 1px solid var(--udb-line-e2e5e9);
+    background: var(--udb-bg-ffffff-a97);
 }
 
 .form-save-bar .btn-edit-save {
@@ -3045,7 +3002,7 @@ html {
 
 .form-status {
     font-weight: 600;
-    color: #8a5a00;
+    color: var(--udb-text-8a5a00);
 }
 
 .form-dirty .form-status:not(:empty)::before {
@@ -3053,7 +3010,7 @@ html {
 }
 
 .form-status.form-status-error {
-    color: #9a1c1c;
+    color: var(--udb-text-9a1c1c);
 }
 
 .form-status.form-status-error::before {
@@ -3067,8 +3024,8 @@ html {
     margin-left: 6px;
     padding: 1px 7px;
     border-radius: 9px;
-    background-color: #fdecec;
-    color: #9a1c1c;
+    background-color: var(--udb-bg-fdecec);
+    color: var(--udb-text-9a1c1c);
     font-size: 11px;
     font-weight: 600;
     line-height: 16px;
@@ -3079,15 +3036,15 @@ html {
 .main table.form > tbody > tr > td:not(:has(> .text-danger)) > input[required]:not([type="checkbox"]):not([type="radio"]):not(.field-invalid),
 .main table.form > tbody > tr > td:not(:has(> .text-danger)) > select[required]:not(.field-invalid),
 .main table.form > tbody > tr > td:not(:has(> .text-danger)) > textarea[required]:not(.field-invalid) {
-    border-left: 3px solid #e3a1a1;
+    border-left: 3px solid var(--udb-line-e3a1a1);
 }
 
 /* Pole, u kterého server vrátil chybu, má červený rámeček jako chyba z prohlížeče. */
 .main table.form > tbody > tr > td:has(> .text-danger) > input:not([type="checkbox"]):not([type="radio"]),
 .main table.form > tbody > tr > td:has(> .text-danger) > select,
 .main table.form > tbody > tr > td:has(> .text-danger) > textarea {
-    border-color: #c9302c;
-    box-shadow: 0 0 0 3px rgba(201, 48, 44, .18);
+    border-color: var(--udb-line-c9302c);
+    box-shadow: 0 0 0 3px var(--udb-shadow-c9302c-a18);
 }
 
 .form-nav {
@@ -3101,7 +3058,7 @@ html {
         top: 76px;
         flex: 0 0 150px;
         padding-left: 12px;
-        border-left: 2px solid #e2e5e9;
+        border-left: 2px solid var(--udb-line-e2e5e9);
     }
 
     .form-nav > span {
@@ -3111,7 +3068,7 @@ html {
         font-weight: 700;
         letter-spacing: .06em;
         text-transform: uppercase;
-        color: #6b7280;
+        color: var(--udb-text-6b7280);
     }
 
     .main .form-nav a:not(.btn) {
@@ -3119,19 +3076,19 @@ html {
         margin-left: -14px;
         padding: 3px 0 3px 12px;
         border-left: 2px solid transparent;
-        color: #4b5563;
+        color: var(--udb-text-4b5563);
         text-decoration: none;
     }
 
     .main .form-nav a:hover,
     .main .form-nav a:focus {
-        color: #111;
+        color: var(--udb-text-111111);
         text-decoration: underline;
     }
 
     .main .form-nav a.active {
-        border-left-color: #cc0000;
-        color: #111;
+        border-left-color: var(--udb-line-cc0000);
+        color: var(--udb-text-111111);
         font-weight: 700;
     }
 }
@@ -3145,8 +3102,8 @@ html {
 /* Client validation: messages supplement the existing server error output. */
 .field-invalid[aria-invalid="true"],
 .main .field-invalid[aria-invalid="true"]:not(.form-control) {
-    border-color: #c9302c;
-    box-shadow: 0 0 0 3px rgba(201, 48, 44, .18);
+    border-color: var(--udb-line-c9302c);
+    box-shadow: 0 0 0 3px var(--udb-shadow-c9302c-a18);
 }
 
 /* An error the server returns at a field of the member form looks like the one the browser finds. */
@@ -3155,7 +3112,7 @@ html {
 .member-form table.form > tbody > tr > td > .text-danger {
     display: block;
     margin: 3px 0 2px;
-    color: #9a1c1c;
+    color: var(--udb-text-9a1c1c);
     font-size: 12px;
     font-weight: 600;
     overflow-wrap: anywhere;
@@ -3170,22 +3127,22 @@ html {
     z-index: 1040;
     max-height: calc(100vh - 105px);
     overflow-y: auto;
-    border: 1px solid #cfd5dc;
+    border: 1px solid var(--udb-line-cfd5dc);
     border-radius: 4px;
-    background: #fff;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
-    color: #1f2937;
+    background: var(--udb-bg-ffffff);
+    box-shadow: 0 8px 24px var(--udb-shadow-000000-a18);
+    color: var(--udb-text-1f2937);
 }
 
 .search-hint,
 .search-help {
     padding: 8px 12px;
     font-size: 12px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .search-help {
-    border-top: 1px solid #eceef1;
+    border-top: 1px solid var(--udb-line-eceef1);
 }
 
 .navbar-search a.search-option {
@@ -3194,7 +3151,7 @@ html {
     align-items: baseline;
     gap: 2px 10px;
     padding: 8px 12px;
-    color: #1f2937;
+    color: var(--udb-text-1f2937);
     text-decoration: none;
     overflow-wrap: anywhere;
 }
@@ -3202,8 +3159,8 @@ html {
 .navbar-search a.search-option:hover,
 .navbar-search a.search-option:focus,
 .navbar-search a.search-option.active {
-    background: #eaf3fc;
-    color: #123f6d;
+    background: var(--udb-bg-eaf3fc);
+    color: var(--udb-text-123f6d);
     text-decoration: underline;
 }
 
@@ -3214,7 +3171,7 @@ html {
 
 .search-option-description {
     font-size: 11px;
-    color: #4b5563;
+    color: var(--udb-text-4b5563);
 }
 
 @media (min-width: 990px) {
@@ -3246,10 +3203,10 @@ html {
 
 .main a.home-area:not(.btn) {
     padding: 12px 14px;
-    border: 1px solid #d7dce2;
+    border: 1px solid var(--udb-line-d7dce2);
     border-radius: 4px;
-    background: #fff;
-    color: #1f2937;
+    background: var(--udb-bg-ffffff);
+    color: var(--udb-text-1f2937);
     font-weight: 600;
     text-decoration: none;
     overflow-wrap: anywhere;
@@ -3257,40 +3214,40 @@ html {
 
 .main a.home-area:hover,
 .main a.home-area:focus {
-    border-color: #428bca;
-    background: #f2f7fc;
+    border-color: var(--udb-line-428bca);
+    background: var(--udb-bg-f2f7fc);
     text-decoration: underline;
 }
 
 .home-area .fa {
     margin-right: 4px;
-    color: #2165ae;
+    color: var(--udb-text-2165ae);
 }
 
 .home-area small {
     display: block;
     margin-top: 4px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
     font-weight: 400;
 }
 
 .home-empty {
     padding: 14px;
-    border: 1px dashed #cfd5dc;
+    border: 1px dashed var(--udb-line-cfd5dc);
     border-radius: 4px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .home-tools {
     margin: 0;
     padding: 0;
-    border: 1px solid #e2e5e9;
+    border: 1px solid var(--udb-line-e2e5e9);
     border-radius: 4px;
     list-style: none;
 }
 
 .home-tools li + li {
-    border-top: 1px solid #eceef1;
+    border-top: 1px solid var(--udb-line-eceef1);
 }
 
 .main .home-tools a:not(.btn) {
@@ -3299,42 +3256,42 @@ html {
     align-items: center;
     gap: 10px;
     padding: 7px 12px;
-    color: #1f2937;
+    color: var(--udb-text-1f2937);
     text-decoration: none;
     overflow-wrap: anywhere;
 }
 
 .main .home-tools a:hover,
 .main .home-tools a:focus {
-    background: #f2f7fc;
+    background: var(--udb-bg-f2f7fc);
     text-decoration: underline;
 }
 
 .home-tools .fa {
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .home-tip {
     margin-top: 14px;
-    color: #6b7280;
+    color: var(--udb-text-6b7280);
 }
 
 .home-help {
     margin-top: 28px;
     padding-top: 18px;
-    border-top: 1px solid #e2e5e9;
+    border-top: 1px solid var(--udb-line-e2e5e9);
 }
 
 .home-help summary {
     display: list-item;
     list-style-position: inside;
     padding: 8px 0;
-    color: #2165ae;
+    color: var(--udb-text-2165ae);
     cursor: pointer;
 }
 
 .home-help summary:focus {
-    outline: 2px solid #428bca;
+    outline: 2px solid var(--udb-line-428bca);
     outline-offset: 2px;
 }
 
@@ -3348,4 +3305,37 @@ html {
     .home-grid {
         grid-template-columns: minmax(0, 1fr);
     }
+}
+
+/* Přepínač vzhledu v nabídce účtu: volby vypadají jako položky nabídky, vybraná je zvýrazněná. */
+.theme-menu {
+    padding: 0 0 4px;
+}
+
+.theme-option {
+    display: block;
+    width: 100%;
+    padding: 5px 20px;
+    border: 0;
+    background: none;
+    color: var(--udb-text-333333);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.theme-option .fa {
+    width: 16px;
+    margin-right: 4px;
+    color: var(--udb-text-6b7280);
+}
+
+.theme-option:hover,
+.theme-option:focus {
+    background-color: var(--udb-bg-f6f7f9);
+}
+
+/* Vybraná volba: tučně a s proužkem; žádný text navíc, ten by čtečka přidala ke jménu volby. */
+.theme-option[aria-checked="true"] {
+    box-shadow: inset 3px 0 0 var(--udb-line-2f8fd8);
+    font-weight: 700;
 }

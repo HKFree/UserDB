@@ -36,3 +36,23 @@ metadata:
 
 **How to apply:** Po změně `screen.css` nebo layoutu projdi i formuláře mimo upravovanou
 obrazovku a pusť celou sadu testů, ne jen testy měněné stránky.
+
+## Vzhled: proměnné a tmavý režim
+
+- `screen.css` bere barvy z `www/css/theme.css`. Stránka, která načte `screen.css` bez
+  `theme.css`, má barvy prázdné (průhledné pozadí, černé písmo). Hlídá to `AssetVersionsTest`
+  pro šablony; zkušební stránky v `tests/screenshots/test/` načítají `theme.css` také.
+- Obecné pravidlo pro tmavý režim nad elementem (`a`, `body`) zapisuj jako
+  `:where(:root[data-theme="dark"]) a`. S `:root[data-theme="dark"] a` má váhu 0,2,1 a přebije
+  vlastní barvy odkazů v liště a v postranním panelu. Ověřeno 23. 11. 2026 v prohlížeči.
+- Text uvnitř `::after` se počítá do přístupného jména prvku: zatržítko `✓` za vybranou volbou
+  změnilo jméno přepínače na „Tmavý ✓“ a test podle role a jména ho nenašel. Výběr proto ukazuje
+  tučné písmo a proužek. Ověřeno tamtéž.
+- Kontrast tmavého vzhledu jde změřit skriptem v Playwrightu: pro každý viditelný text barva písma
+  proti prvnímu neprůhlednému pozadí předků (s prolnutím poloprůhledných vrstev). Bootstrap má
+  bílé písmo na `btn-primary`, `btn-success` a `label-success` pod 4,5 : 1 už ve světlém vzhledu;
+  tmavý vzhled je proto přebarvuje. Ověřeno 23. 11. 2026 na 16 stránkách při 1280 px.
+
+**Why:** Všechno se projeví až na stránce v jednom ze vzhledů, ne v kódu.
+
+**How to apply:** Po změně barev pusť `tests/ThemeTokensTest.php` a projdi stránku v obou vzhledech.

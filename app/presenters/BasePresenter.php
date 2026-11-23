@@ -6,6 +6,7 @@ use App\Settings;
 use Nette;
 use App\Model;
 use App\Services\VysledekOdeslaniEmailu;
+use App\Services\Vzhled;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
 use Nette\Utils\Validators;
@@ -199,6 +200,10 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     protected function beforeRender() {
         parent::beforeRender();
 
+        $vzhledVolba = Vzhled::volba($this->getHttpRequest()->getCookie(Vzhled::COOKIE));
+        $this->template->vzhledVolba = $vzhledVolba;
+        $this->template->vzhled = Vzhled::vzhled($vzhledVolba);
+        $this->template->vzhledVolby = Vzhled::VOLBY;
         $this->template->demoPersonaUrl = $this->settings->demoPersonaUrl;
         $this->template->demoPersonaName = $this->settings->demoPersonaName;
         $this->template->oblasti = $this->oblast->getSeznamOblastiProMenu();

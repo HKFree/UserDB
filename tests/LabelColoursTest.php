@@ -42,18 +42,21 @@ final class LabelColoursTest extends TestCase
 
     /** @dataProvider storedColours */
     public function testTheTextIsReadableOnTheBackground(?string $background, ?string $text, string $hue): void {
-        $colours = BarvaStitku::barvy($background, $text);
-        foreach ($colours as $colour) {
-            Assert::match('~^#[0-9a-f]{6}$~', $colour);
+        foreach (['světlý' => BarvaStitku::barvy($background, $text), 'tmavý' => BarvaStitku::barvyTmave($background, $text)] as $look => $colours) {
+            foreach ($colours as $colour) {
+                Assert::match('~^#[0-9a-f]{6}$~', $colour);
+            }
+            Assert::true(BarvaStitku::kontrast($colours['text'], $colours['pozadi']) >= 4.5, "$look: text $colours[text] on $colours[pozadi]");
         }
-        Assert::true(BarvaStitku::kontrast($colours['text'], $colours['pozadi']) >= 4.5, "text $colours[text] on $colours[pozadi]");
-        // The background is light, so that a row of labels does not shout.
-        Assert::true(BarvaStitku::jas($colours['pozadi']) > 0.75, "background $colours[pozadi]");
+        // The light background is light and the dark one dark, so that a row of labels does not shout.
+        Assert::true(BarvaStitku::jas(BarvaStitku::barvy($background, $text)['pozadi']) > 0.75);
+        Assert::true(BarvaStitku::jas(BarvaStitku::barvyTmave($background, $text)['pozadi']) < 0.06);
     }
 
-    public function testStyleHasOnlyTheComputedColours(): void {
+    public function testStyleCarriesTheLightAndTheDarkColoursAsProperties(): void {
         Assert::same(
-            'background-color: #fdebe9; border-color: #f6a59c; color: #c72f1e;',
+            '--label-bg: #fdebe9; --label-line: #f6a59c; --label-text: #c72f1e; '
+            . '--label-bg-dark: #3f2324; --label-line-dark: #8c2c23; --label-text-dark: #ef695a;',
             BarvaStitku::styl('#eccfd1', '#ea3723'),
         );
         Assert::notContains('url', BarvaStitku::styl('red; background: url(x)', null));

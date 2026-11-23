@@ -36,6 +36,30 @@ $(document).ready(function () {
         }
     });
 
+    // Vzhled (svetly, tmavy, podle systemu): volba v cookie, prepnuti hned bez nacteni stranky.
+    // Server ji cte v BasePresenter, vzhled podle systemu rozhoduje skript v hlavicce @layout.latte.
+    var root = document.documentElement;
+    var darkScheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    function applyTheme() {
+        var choice = root.getAttribute('data-theme-choice') || 'light';
+        var dark = choice === 'dark' || (choice === 'auto' && darkScheme !== null && darkScheme.matches);
+        root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    }
+    if (darkScheme !== null) {
+        var onSchemeChange = function () { applyTheme(); };
+        if (darkScheme.addEventListener) darkScheme.addEventListener('change', onSchemeChange);
+        else if (darkScheme.addListener) darkScheme.addListener(onSchemeChange);
+    }
+    $(document).on('click', '.theme-option', function () {
+        var choice = $(this).attr('data-theme-choice');
+        var path = (document.body.getAttribute('data-base-path') || '') + '/';
+        document.cookie = 'userdb_theme=' + encodeURIComponent(choice) + '; path=' + path + '; max-age=31536000; SameSite=Lax';
+        root.setAttribute('data-theme-choice', choice);
+        applyTheme();
+        $('.theme-option').attr('aria-checked', 'false');
+        $(this).attr('aria-checked', 'true');
+    });
+
     // bublina v body: v posuvnem ramu tabulky by ji okraj ramu orizl
     $('[data-toggle="tooltip"]').tooltip({ container: 'body' });
 

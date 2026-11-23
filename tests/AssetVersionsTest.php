@@ -21,6 +21,8 @@ final class AssetVersionsTest extends TestCase
     /** Assets versioned by hand, each with templates known to load it. */
     private const VERSIONED_ASSETS = [
         'css/screen.css' => ['templates/@layout.latte', 'templates/SelfService/confirmEmail.latte'],
+        // screen.css takes its colours from theme.css, so every page that loads one loads the other.
+        'css/theme.css' => ['templates/@layout.latte', 'templates/SelfService/confirmEmail.latte'],
         'js/main.js' => ['templates/@layout.latte'],
         'js/graf-clenu.js' => ['templates/SpravaGrafu/usersgraph.latte'],
     ];

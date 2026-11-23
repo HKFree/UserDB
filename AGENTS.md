@@ -335,6 +335,12 @@ použitelnost ve stávajícím vzhledu, ne nový design.
   Výjimky: hodnota z dat (barva štítku) a stránka, která má fungovat i bez
   aplikace (`/demo-osoba`) a styl si nese sama. Nepřidávej knihovny, build ani zdroje z cizích serverů (CDN, fonty).
   Přibalené knihovny neaktualizuj jako součást jiné změny.
+- **Barvy jen jako proměnné.** Aplikace má světlý a tmavý vzhled (přepínač v nabídce účtu).
+  Ve `screen.css` nepiš barvu napevno, jen `var(--udb-…)`. Proměnnou definuj ve
+  `www/css/theme.css` dvakrát: v `:root` pro světlý a v `:root[data-theme="dark"]` pro tmavý
+  vzhled; jmenuje se podle role a světlé hodnoty (`--udb-text-6b7280`). Komponentu knihovny,
+  kterou začneš používat, doplň do oddílu „Knihovny v tmavém režimu“ v `theme.css`. Hlídá to
+  `tests/ThemeTokensTest.php`; tmavý vzhled si prohlédni stejně jako světlý (nabídka účtu, Vzhled).
 - **Větší změnu nejdřív navrhni.** Mění-li se rozvržení obrazovky nebo postup
   uživatele, předlož zadavateli dvě až tři varianty s rozdíly a počkej na
   výběr. Drobnou opravu dělej rovnou.

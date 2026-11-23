@@ -84,11 +84,12 @@ function removeLabelClass(index, className) {
 }
 
 function drawBar(elem, pings) {
-  // tlumene barvy (dostupna, ztraty, nedostupna); prouzek u leveho okraje podle nejhorsiho stavu dava screen.css
-  var colors = ["rgb(227, 244, 230)", "rgb(253, 241, 207)", "rgb(249, 222, 219)"];
-  
+  // tlumene barvy (dostupna, ztraty, nedostupna) jsou promenne z theme.css, takze se po prepnuti
+  // vzhledu prebarvi samy; prouzek u leveho okraje podle nejhorsiho stavu dava screen.css
+  var colors = ["var(--udb-bg-ping-ok)", "var(--udb-bg-ping-warn)", "var(--udb-bg-ping-down)"];
+
   var pings_total = pings[0] + pings[1] + pings[2];
-  
+
   if (pings_total == 0) {
     return(0);
   }
@@ -104,34 +105,19 @@ function drawBar(elem, pings) {
   var status = elem.children(".ping-status");
   if (status.length === 0) status = $('<span class="sr-only ping-status"></span>').appendTo(elem);
   status.text("Ping: " + words.join(", "));
-  
-  var can1 = document.createElement("canvas");
-  var size_w = parseFloat(elem.css("width")) + parseFloat(elem.css("padding-right")) + parseFloat(elem.css("padding-left"));
-  var size_h = parseFloat(elem.css("height")) + parseFloat(elem.css("padding-top")) + parseFloat(elem.css("padding-bottom"));
-  
-  can1.width = Math.ceil(size_w);
-  can1.height = Math.ceil(size_h);
-  
-  var ctx1 = can1.getContext('2d');
-  
+
+  // podil adres v kazdem stavu jako pruhy vedle sebe
+  var stops = [];
   var position = 0;
-  var i;
-  for (i=0; i < 3; i++) {
-    if(pings[i] == 0) {
-    	continue;
-    }
-  	position_new = Math.floor(pings[i] / pings_total * can1.width);
-    
-    ctx1.fillStyle = colors[i];
-  	ctx1.fillRect(position, 0, position + position_new, can1.height);
-    position = position + position_new;
+  for (var i = 0; i < 3; i++) {
+    if (pings[i] == 0) continue;
+    var next = position + pings[i] / pings_total * 100;
+    stops.push(colors[i] + " " + position + "% " + next + "%");
+    position = next;
   }
+  elem.css("background-image", "linear-gradient(to right, " + stops.join(", ") + ")");
+}
   
-  elem.css({
-    'background-image': "url(" + can1.toDataURL("image/png") + ")",
-    'background-size': "100% auto"
-  });
-}  
 
 function pingUserListCallback(resp) {
   if(pingFailed(resp)) {

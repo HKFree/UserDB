@@ -4,9 +4,11 @@
  *}
 
 <!DOCTYPE html>
-<html>
+<html lang="cs" data-theme="{$vzhled}" data-theme-choice="{$vzhledVolba}">
 <head>
 	<meta charset="utf-8">
+	{* Vzhled podle systému rozhodne prohlížeč ještě před vykreslením stránky, aby neblikla světlá. *}
+	<script>(function () { var root = document.documentElement; if (root.getAttribute('data-theme-choice') === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) root.setAttribute('data-theme', 'dark'); })();</script>
 
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -29,16 +31,17 @@
         <script src="{$basePath}/js/markerclusterer.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v43">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/theme.css?v4">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v46">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v19"></script>
+        <script src="{$basePath}/js/main.js?v20"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
 
-<body class="with-navbar" data-stitky-save-url="{link SpravaStitku:saveLabel id=>null}" data-stitky-delete-url="{link SpravaStitku:deleteLabel id=>null}">
+<body class="with-navbar" data-base-path="{$basePath}" data-stitky-save-url="{link SpravaStitku:saveLabel id=>null}" data-stitky-delete-url="{link SpravaStitku:deleteLabel id=>null}">
     {var $toolLinks = [
         'Status:default' => 'Status AP',
         'SpravaGrafu:usersgraph' => 'Graf počtu účastníků',
@@ -106,6 +109,11 @@
                 <ul class="dropdown-menu">
                     <li><a href="{link Uzivatel:show id=>$user->getIdentity()->getId()}">Můj profil</a></li>
                     <li n:if="$demoPersonaUrl"><a href="{$demoPersonaUrl}" title="Teď se díváš jako {$demoPersonaName}">Změnit osobu</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li class="dropdown-header" id="theme-menu-label">Vzhled</li>
+                    <li id="theme-menu" class="theme-menu" role="radiogroup" aria-labelledby="theme-menu-label">
+                        <button n:foreach="$vzhledVolby as $volba => $popisek" type="button" role="radio" class="theme-option" data-theme-choice="{$volba}" aria-checked="{$volba === $vzhledVolba ? 'true' : 'false'}"><i n:class="fa, $volba === light ? fa-sun-o : ($volba === dark ? fa-moon-o : fa-adjust)" aria-hidden="true"></i> {$popisek}</button>
+                    </li>
                     <li role="separator" class="divider"></li>
                     <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
                 </ul>

@@ -17,28 +17,64 @@ final class BarvaStitku
 
     private const PODIL_POZADI = 0.10;
     private const PODIL_RAMECKU = 0.45;
+    private const PODIL_POZADI_TMAVE = 0.18;
+    private const PODIL_RAMECKU_TMAVE = 0.55;
+    /** Povrch tmavého vzhledu (--udb-dark-surface ve www/css/theme.css). */
+    private const TMAVY_POVRCH = [26, 30, 36];
     private const MIN_KONTRAST = 4.5;
     /** Pozadí světlejší než tato světlost (HSL) odstín nenese, nese ho písmo. */
     private const BLEDE_POZADI = 0.85;
 
-    /** Atribut style štítku: jen spočítané barvy, nic z uložených hodnot. */
+    /**
+     * Atribut style štítku: barvy pro světlý i tmavý vzhled jako vlastnosti, které čte www/css/screen.css
+     * a theme.css. Jsou v něm jen spočítané barvy, nic z uložených hodnot.
+     */
     public static function styl(?string $pozadi, ?string $pismo): string {
-        $barvy = self::barvy($pozadi, $pismo);
-        return sprintf('background-color: %s; border-color: %s; color: %s;', $barvy['pozadi'], $barvy['ramecek'], $barvy['text']);
+        $svetle = self::barvy($pozadi, $pismo);
+        $tmave = self::barvyTmave($pozadi, $pismo);
+        return sprintf(
+            '--label-bg: %s; --label-line: %s; --label-text: %s; --label-bg-dark: %s; --label-line-dark: %s; --label-text-dark: %s;',
+            $svetle['pozadi'],
+            $svetle['ramecek'],
+            $svetle['text'],
+            $tmave['pozadi'],
+            $tmave['ramecek'],
+            $tmave['text'],
+        );
     }
 
     /** @return array{pozadi: string, ramecek: string, text: string} */
     public static function barvy(?string $pozadi, ?string $pismo): array {
-        $odstin = self::rgb(self::odstin($pozadi, $pismo));
-        $bila = [255, 255, 255];
-        $pozadiRgb = self::smichej($odstin, $bila, self::PODIL_POZADI);
+        return self::spocitej(self::rgb(self::odstin($pozadi, $pismo)), [255, 255, 255], [0, 0, 0], self::PODIL_POZADI, self::PODIL_RAMECKU);
+    }
+
+    /**
+     * Tmavý vzhled: tmavé pozadí s nádechem odstínu, světlé písmo téhož odstínu.
+     *
+     * @return array{pozadi: string, ramecek: string, text: string}
+     */
+    public static function barvyTmave(?string $pozadi, ?string $pismo): array {
+        return self::spocitej(self::rgb(self::odstin($pozadi, $pismo)), self::TMAVY_POVRCH, [255, 255, 255], self::PODIL_POZADI_TMAVE, self::PODIL_RAMECKU_TMAVE);
+    }
+
+    /**
+     * Pozadí a rámeček jsou odstín smíchaný s povrchem, písmo odstín, který se míchá s barvou
+     * pro kontrast (černou, ve tmavém vzhledu bílou), dokud nemá vůči pozadí kontrast 4,5 : 1.
+     *
+     * @param array{int, int, int} $odstin
+     * @param array{int, int, int} $povrch
+     * @param array{int, int, int} $kontrastni
+     * @return array{pozadi: string, ramecek: string, text: string}
+     */
+    private static function spocitej(array $odstin, array $povrch, array $kontrastni, float $podilPozadi, float $podilRamecku): array {
+        $pozadiRgb = self::smichej($odstin, $povrch, $podilPozadi);
         $text = $odstin;
-        for ($tma = 0.0; $tma <= 1.0 && self::kontrast(self::hex($text), self::hex($pozadiRgb)) < self::MIN_KONTRAST; $tma += 0.05) {
-            $text = self::smichej($odstin, [0, 0, 0], 1.0 - $tma);
+        for ($krok = 0.0; $krok <= 1.0 && self::kontrast(self::hex($text), self::hex($pozadiRgb)) < self::MIN_KONTRAST; $krok += 0.05) {
+            $text = self::smichej($odstin, $kontrastni, 1.0 - $krok);
         }
         return [
             'pozadi' => self::hex($pozadiRgb),
-            'ramecek' => self::hex(self::smichej($odstin, $bila, self::PODIL_RAMECKU)),
+            'ramecek' => self::hex(self::smichej($odstin, $povrch, $podilRamecku)),
             'text' => self::hex($text),
         ];
     }
