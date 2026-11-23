@@ -257,7 +257,7 @@ final class IpTransferPresenterTest extends DatabaseTestCase
         $listeners = $connection->onQuery;
         $changed = false;
         $connection->onQuery[] = static function (\Nette\Database\Connection $connection, \Nette\Database\ResultSet|\PDOException $result) use ($targetIp, &$changed): void {
-            if (!$changed && $result instanceof \Nette\Database\ResultSet && str_contains($result->getQueryString(), 'FROM Uzivatel WHERE id IN') && str_contains($result->getQueryString(), 'FOR UPDATE')) {
+            if ($changed === false && $result instanceof \Nette\Database\ResultSet && str_contains($result->getQueryString(), 'FROM Uzivatel WHERE id IN') && str_contains($result->getQueryString(), 'FOR UPDATE')) {
                 $changed = true;
                 $targetIp->update(['ip_adresa' => '192.0.2.20']);
             }

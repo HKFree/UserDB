@@ -121,7 +121,7 @@ abstract class Table
     /** @param iterable<string, mixed> $data */
     public function insertRow(iterable $data): Nette\Database\Table\ActiveRow {
         $row = $this->insert($data);
-        if (!$row instanceof Nette\Database\Table\ActiveRow) {
+        if (($row instanceof Nette\Database\Table\ActiveRow) === false) {
             throw new Nette\UnexpectedValueException('Vložení záznamu nevrátilo databázový řádek.');
         }
         return $row;

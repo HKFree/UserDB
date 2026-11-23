@@ -92,7 +92,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
         $other = array_merge($other, $this->membersWithLabels(true));
         $after = $this->queries($request);
         Assert::same(count($before), count($after), 'More members needed more SELECT queries.');
-        $tables = !$export && $action === 'list' ? 2 : 1;
+        $tables = $export === false && $action === 'list' ? 2 : 1;
         Assert::count($tables, $this->tableQueries($after, 'StitekUzivatele'));
 
         // Equal query counts must not hide a prematurely terminated iteration or a missing export row.
@@ -237,7 +237,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
         $parameters += $batch !== null ? ["$grid-sort" => ['id' => 'asc']] : [];
         $parameters += $labelFilter !== null ? ["$grid-filter" => ['stitek' => $labelFilter]] : [];
         $export = $this->presenters->ui($this->actor->id, 'UzivatelList', $parameters)->response;
-        if (!$export instanceof Export) {
+        if (($export instanceof Export) === false) {
             throw new \LogicException('Expected the export of the table.');
         }
         if ($batch !== null) {

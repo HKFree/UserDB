@@ -3,7 +3,7 @@
 // Router for PHP's development server. The application's production entry stays unchanged.
 $www = realpath(__DIR__ . '/../www');
 $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if (!is_string($requestPath)) {
+if (is_string($requestPath) === false) {
     http_response_code(400);
     return;
 }

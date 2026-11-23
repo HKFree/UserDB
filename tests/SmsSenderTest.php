@@ -33,7 +33,7 @@ namespace Test {
         }
 
         public function getAwegUser($uid): ActiveRow|false {
-            if (!$this->exists) {
+            if ($this->exists === false) {
                 return false;
             }
             return new class () extends ActiveRow {

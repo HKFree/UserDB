@@ -146,7 +146,7 @@ class IPAdresa extends Table
         $tr = $adresyTab->create('tr');
 
         $tr->create('th')->setText('IP');
-        if (!in_array($igwCheck, [null, false, 0, '', '0'], true)) {
+        if (in_array($igwCheck, [null, false, 0, '', '0'], true) === false) {
             $tr->create('th')->setText('IGW');
         }
         $tr->create('th')->setText(''); // action buttons
@@ -237,7 +237,7 @@ class IPAdresa extends Table
             $tr->setClass($subnetModeInfo['rowClass']);
         }
 
-        if (!in_array($subnetLink, [null, '', '0'], true)) {
+        if (in_array($subnetLink, [null, '', '0'], true) === false) {
             // IP jako link do subnets z beznych agend (uzivatel, AP)
             $tr->create('td')->create('a')->setHref($subnetLink)->setTarget('_blank')->setText($ipTitle);
         } else {
@@ -245,7 +245,7 @@ class IPAdresa extends Table
             $tr->create('td')->setText($ipTitle);
         }
 
-        if (!in_array($igwCheck, [null, false, 0, '', '0'], true) && $ip !== null) {
+        if (in_array($igwCheck, [null, false, 0, '', '0'], true) === false && $ip !== null) {
             $igw1resp = $this->file_get_contents_curl($this->igw1IpCheckerUrl.$ip->ip_adresa);
             if ($igw1resp !== false && strpos($igw1resp, $ip->ip_adresa.' 1') !== false) {
                 $attr = $tr->create('td');
@@ -467,7 +467,7 @@ class IPAdresa extends Table
                     $tr->create('td')->setColspan(2)->create('a')->setHref($subnetOwnerInfo['link'])->setText($subnetOwnerInfo['jmeno'] . ' (' . $subnetOwnerInfo['id'] . ')');
                 }
             } else {
-                if ($canViewCredentialsOrEdit && !in_array($editLink, [null, '', '0'], true)) {
+                if ($canViewCredentialsOrEdit && in_array($editLink, [null, '', '0'], true) === false) {
                     array_unshift(
                         $buttons,
                         Html::el('a')
@@ -486,7 +486,7 @@ class IPAdresa extends Table
                 $tr->create('td')->setText($ip->mac_adresa); // MAC
                 $tr->create('td')->setText((isset($ip->TypZarizeni->text)) ? $ip->TypZarizeni->text : ""); // typ zarizeni
                 $attr = $tr->create('td'); // atributy
-                if (!in_array($ip->internet, [0, false], true)) {
+                if (in_array($ip->internet, [0, false], true) === false) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-transfer')
                         ->setTitle('IP je povolená do internetu')
@@ -494,7 +494,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
 
-                if (!in_array($ip->smokeping, [0, false], true)) {
+                if (in_array($ip->smokeping, [0, false], true) === false) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-eye-open')
                         ->setTitle('IP je sledovaná ve smokepingu')
@@ -502,7 +502,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
 
-                if (!in_array($ip->dhcp, [0, false], true)) {
+                if (in_array($ip->dhcp, [0, false], true) === false) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-open')
                         ->setTitle('IP se exportuje do DHCP')
@@ -510,7 +510,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
 
-                if (!in_array($ip->mac_filter, [0, false], true)) {
+                if (in_array($ip->mac_filter, [0, false], true) === false) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-filter')
                         ->setTitle('IP exportuje do MAC filteru')
@@ -518,7 +518,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
 
-                if (!in_array($ip->wewimo, [0, false], true)) {
+                if (in_array($ip->wewimo, [0, false], true) === false) {
                     $attr->create('span')
                         ->setClass('glyphicon glyphicon-signal')
                         ->setTitle('Zobrazovat signály klientů ve Wewimo')
@@ -526,7 +526,7 @@ class IPAdresa extends Table
                     $attr->addHtml(' ');
                 }
                 // ssid
-                if (!in_array($wewimoLink, [null, '', '0'], true)) {
+                if (in_array($wewimoLink, [null, '', '0'], true) === false) {
                     // SSID jako link do wewimo
                     $wewimoTag = $tr->create('td')->create('a')
                         ->setHref($wewimoLink)
@@ -537,7 +537,7 @@ class IPAdresa extends Table
                     // leda se napr. smaze definice AP zarizeni, ale SSID zustane v zaznamu ulozeno
                     $wewimoTag = $tr->create('td');
                 }
-                if (!in_array($ip->w_ssid, [null, '', '0'], true)) {
+                if (in_array($ip->w_ssid, [null, '', '0'], true) === false) {
                     $tooOld =  (strtotime($ip->w_timestamp) < strtotime('-60 days'));
                     $addInfo = $tooOld ? ", ZASTARALÉ!" : "";
                     $wewimoTag->setText($ip->w_ssid)
@@ -656,7 +656,7 @@ class IPAdresa extends Table
         if ($ip === null) {
             return null;
         }
-        if (!in_array($ip->Ap_id, [null, 0], true)) {
+        if (in_array($ip->Ap_id, [null, 0], true) === false) {
             return $ip->Ap_id;
         } else {
             return $ip->ref('Uzivatel', 'Uzivatel_id')?->Ap_id;
@@ -679,7 +679,7 @@ class IPAdresa extends Table
         $arrayByMac = []; // asoc. array (key=mac) of arrays (records)
         foreach ($this->getTable()->where('w_client_mac', $macs)->fetchAll() as $row) {
             $key = $row['w_client_mac'];
-            if (!array_key_exists($key, $arrayByMac)) {
+            if (array_key_exists($key, $arrayByMac) === false) {
                 $arrayByMac[$key] = [];
             }
             $arrayByMac[$key][] = $row;

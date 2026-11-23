@@ -66,7 +66,7 @@ final class PermissionAdminToolsPresenterTest extends DatabaseTestCase
             $parameters['id'] = $payment->id;
         }
         $request = fn () => $this->presenters->ui($s->actors[$actor]->id, $presenter, $parameters, 'POST', ['_do' => $signal] + $post);
-        if (!$allowed) {
+        if ($allowed === false) {
             $s->assertDenied($request);
             return;
         }

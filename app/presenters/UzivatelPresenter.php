@@ -351,7 +351,7 @@ class UzivatelPresenter extends BasePresenter
         $form = new Form($this, 'uzivatelForm');
         $form->addHidden('id');
         $ipOtisk = $form->addHidden('ipOtisk');
-        if (!$this->getHttpRequest()->isMethod('POST')) {
+        if ($this->getHttpRequest()->isMethod('POST') === false) {
             $ipOtisk->setDefaultValue($this->presunIpSluzba->otiskIp((int) $this->getParameter('id')));
         }
         $form->addSelect('Ap_id', 'Oblast - AP', $aps);
@@ -418,7 +418,7 @@ class UzivatelPresenter extends BasePresenter
 
         // pokud editujeme, nacteme existujici ipadresy
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $values = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($values !== null) {
                 foreach ($values->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)') as $ip_id => $ip_data) {
@@ -440,12 +440,12 @@ class UzivatelPresenter extends BasePresenter
 
     public function validateUzivatelForm(Nette\Forms\Form $form): void {
         $data = $form->getHttpData();
-        if (!is_array($data)) {
+        if (is_array($data) === false) {
             throw new Nette\UnexpectedValueException('Data celého formuláře musí být pole.');
         }
 
         // Validujeme jenom při uložení formuláře
-        if (!$this->odeslanoTlacitkemUlozit($form)) {
+        if ($this->odeslanoTlacitkemUlozit($form) === false) {
             return;
         }
 
@@ -510,7 +510,7 @@ class UzivatelPresenter extends BasePresenter
                 }
 
                 $duplIp = $this->ipAdresa->getDuplicateIP($zapisIp, $ip['id']);
-                if (!in_array($duplIp, [null, '', '0'], true)) {
+                if (in_array($duplIp, [null, '', '0'], true) === false) {
                     $form->addError('IP adresa '.$duplIp.' již  v databázi existuje!');
                 }
 
@@ -554,23 +554,23 @@ class UzivatelPresenter extends BasePresenter
     /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>} $values */
     public function uzivatelFormSucceded(Form $form, ArrayHash $values): void {
         // upravuje se člen ze skrytého pole id; nového člena šablona dovolí založit každému
-        if (!in_array($values->id, [null, '', 0, '0'], true)) {
+        if (in_array($values->id, [null, '', 0, '0'], true) === false) {
             $uzivatel = $this->uzivatel->getUzivatel($values->id);
             $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
         }
 
-        if (!$this->odeslanoTlacitkemUlozit($form)) {
+        if ($this->odeslanoTlacitkemUlozit($form) === false) {
             return; // bez tlačítka Uložit neproběhly kontroly formuláře
         }
 
         $odeslanaId = [];
         foreach ($values->ip as $ip) {
-            if (!in_array($ip->id, [null, '', 0, '0'], true)) {
+            if (in_array($ip->id, [null, '', 0, '0'], true) === false) {
                 $odeslanaId[] = (int) $ip->id;
             }
         }
         try {
-            if (!in_array($values->id, [null, '', 0, '0'], true)) {
+            if (in_array($values->id, [null, '', 0, '0'], true) === false) {
                 $cil = $this->presunIpSluzba->priEditaci((int) $values->id, (string) $values->ipOtisk, $odeslanaId, function () use ($values): array {
                     $uzivatel = $this->uzivatel->getUzivatel($values->id);
                     $this->vyzadujOpravneni($uzivatel !== null && $this->smiUpravitUzivatele($uzivatel));
@@ -603,7 +603,7 @@ class UzivatelPresenter extends BasePresenter
         $ips = $values->ip;
         $existingIPs = [];
         foreach ($ips as $ip) {
-            if (!in_array($ip->id, [null, '', 0, '0'], true)) {
+            if (in_array($ip->id, [null, '', 0, '0'], true) === false) {
                 $oldip = $this->ipAdresa->getIPAdresa($ip->id);
                 if ($oldip === null) {
                     $this->error('IP adresa nebyla nalezena.');
@@ -693,7 +693,7 @@ class UzivatelPresenter extends BasePresenter
             }
 
             // pokud neni aktivni ani ve spolku ani v druzstvu
-            if (!Model\Uzivatel::jeAktivniClen($values->spolek, $values->TypClenstvi_id, $values->druzstvo, $values->smazano)) {
+            if (Model\Uzivatel::jeAktivniClen($values->spolek, $values->TypClenstvi_id, $values->druzstvo, $values->smazano) === false) {
                 $this->aplikaceToken->deleteTokensForUID($idUzivatele);
             }
 
@@ -873,7 +873,7 @@ class UzivatelPresenter extends BasePresenter
 
     /** @param int|string|null $id */
     public function actionIds($id): void {
-        if (!in_array($id, [null, 0, '', '0'], true)) {
+        if (in_array($id, [null, 0, '', '0'], true) === false) {
             if (($uzivatel = $this->uzivatel->getUzivatel($id)) !== null) {
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
                 $ips = array_values($ipAdresy->fetchPairs('id', 'ip_adresa'));

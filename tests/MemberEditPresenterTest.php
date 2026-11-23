@@ -594,7 +594,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         $ips = [];
         foreach ($this->database->table('IPAdresa')->where('Uzivatel_id', $m->id) as $ip) {
             $values = $ip->toArray();
-            if (!in_array($ip->heslo_sifrovane, [0, false], true)) {
+            if (in_array($ip->heslo_sifrovane, [0, false], true) === false) {
                 $values['heslo'] = $this->container->getByType(CryptoSluzba::class)->decrypt($ip->heslo);
             }
             $ips[$ip->id] = $this->ipPost($values);

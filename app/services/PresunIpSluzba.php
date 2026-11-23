@@ -39,7 +39,7 @@ final class PresunIpSluzba
             if ((int) $zdroj->Ap_id !== (int) $cil->Ap_id) {
                 throw new \DomainException('IP lze přesunout pouze mezi členy stejného AP.');
             }
-            if ((bool) $zdroj->systemovy || !$this->jePovolenyCil($cilId)) {
+            if ((bool) $zdroj->systemovy || $this->jePovolenyCil($cilId) === false) {
                 throw new \DomainException('Nový člen musí být nezrušený a nesystémový.');
             }
             $ip = $this->database->fetch('SELECT * FROM IPAdresa WHERE id = ? FOR UPDATE', $ipId);
@@ -90,7 +90,7 @@ final class PresunIpSluzba
             $adresy = $this->database->fetchAll('SELECT id FROM IPAdresa WHERE Uzivatel_id = ? ORDER BY id', $uid);
             $ids = array_map(static fn (Row $ip): int => (int) $ip->id, $adresy);
             $aktualniOtisk = hash('sha256', $uid . ':' . implode(',', $ids));
-            if (!hash_equals($aktualniOtisk, $otisk) || count(array_unique($odeslanaId)) !== count($odeslanaId)) {
+            if (hash_equals($aktualniOtisk, $otisk) === false || count(array_unique($odeslanaId)) !== count($odeslanaId)) {
                 throw new \DomainException(self::ZMENENE_IP);
             }
             return $ulozit();
@@ -109,7 +109,7 @@ final class PresunIpSluzba
      * @return T
      */
     private function atomicky(callable $operace): mixed {
-        if (!$this->database->getConnection()->getPdo()->inTransaction()) {
+        if ($this->database->getConnection()->getPdo()->inTransaction() === false) {
             return $this->database->transaction($operace);
         }
         // Při volání z existující transakce vlastníme jen tento savepoint, nikoli její commit.

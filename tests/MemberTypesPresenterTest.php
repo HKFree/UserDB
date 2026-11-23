@@ -88,7 +88,7 @@ final class MemberTypesPresenterTest extends DatabaseTestCase
 
     public function testPaymentSummaryIncludesOnlySubscribedTv(): void {
         $presenter = $this->container->getByType(IPresenterFactory::class)->createPresenter('Uzivatel');
-        if (!$presenter instanceof UzivatelPresenter) {
+        if (($presenter instanceof UzivatelPresenter) === false) {
             throw new \LogicException('Expected the member presenter.');
         }
         $presenter->loadState(['id' => (string) $this->member->id]);

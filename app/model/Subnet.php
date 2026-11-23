@@ -109,7 +109,7 @@ class Subnet extends Table
             $arpProxy = $tr->create('td')->create('span');
             $arpProxy->setTitle(Subnet::ARP_PROXY_DESCRIPTION)
                      ->addAttributes($tooltips);
-            if (!in_array($subnet->arp_proxy, [0, false], true)) {
+            if (in_array($subnet->arp_proxy, [0, false], true) === false) {
                 $arpProxy->setClass('label label-success');
                 $arpProxy->setText("zapnuto");
             } else {
@@ -143,7 +143,7 @@ class Subnet extends Table
 
         $subnet = $subnets->fetch();
         if ($subnet !== null) {
-            if (!in_array($subnet->arp_proxy, [0, false], true)) {
+            if (in_array($subnet->arp_proxy, [0, false], true) === false) {
                 $out = $this->parseSubnet(Subnet::ARP_PROXY_SUBNET);
                 $out["gateway"] = Subnet::ARP_PROXY_GW;
             } else {
@@ -176,7 +176,7 @@ class Subnet extends Table
      */
     public function parseSubnet($subnet) {
         list($network, $cidr) = explode("/", $subnet);
-        if (!is_numeric($cidr)) {
+        if (is_numeric($cidr) === false) {
             throw new Nette\InvalidArgumentException("Maska subnetu musí být číslo.");
         }
 
@@ -221,7 +221,7 @@ class Subnet extends Table
      */
     public function getOverlapingSubnet($s, $apId = null) {
         $posiblyColiding = $this->getPossiblyColiding($s);
-        if (!is_null($apId)) {
+        if (is_null($apId) === false) {
             $posiblyColiding = $posiblyColiding->where("Ap_id != ?", $apId);
         }
 
@@ -278,7 +278,7 @@ class Subnet extends Table
      * @return boolean false když subnety nekolidují,
      *                 true  když kolidují.
      */
-    public function checkColision($s1, $s2) {
+    public function checkColision($s1, $s2): bool {
         list($n1, $c1) = explode("/", $s1);
         list($n2, $c2) = explode("/", $s2);
 
@@ -360,7 +360,7 @@ class Subnet extends Table
      * @param string $subnet Validovaný subnet
      * @return boolean Výsledek validace
      */
-    public function validateSubnet($subnet) {
+    public function validateSubnet($subnet): bool {
         $disected_subnet = explode("/", $subnet);
 
         // Zkontrolujeme jestli máme přesně jedno lomítko

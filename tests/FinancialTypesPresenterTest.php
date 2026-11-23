@@ -63,7 +63,7 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
             $presenter->loadState(['id' => (string) $this->member->id]);
             $form = $presenter['televizeCenaForm'];
             $control = $form['cena'];
-            if (!$control instanceof \Nette\Forms\Controls\RadioList) {
+            if (($control instanceof \Nette\Forms\Controls\RadioList) === false) {
                 throw new \LogicException('Expected the television price radio list.');
             }
             $expected = (float) $price === 99.5 ? '99.5' : ((float) $price === 0.0 ? 0 : 100);
@@ -133,7 +133,7 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         }
         $result = $this->presenters->ui($this->actor->id, 'PaymentSchedule', ['action' => 'show', 'id' => (string) $this->member->id]);
         Assert::same(200, $result->status);
-        if (!$result->response instanceof TextResponse || !($template = $result->response->getSource()) instanceof Template) {
+        if (($result->response instanceof TextResponse) === false || (($template = $result->response->getSource()) instanceof Template) === false) {
             throw new \LogicException('Expected the payment schedule template.');
         }
         $internet = $honorary ? 0 : $this->container->getByType(Parameters::class)->getVyseClenskehoPrispevku();
@@ -170,7 +170,7 @@ final class FinancialTypesPresenterTest extends DatabaseTestCase
         ] + ($id === null ? [] : ['id' => $id]));
         PermissionScenario::assertRedirect($result, 'sprava/nastroje/' . $payment->id);
         $entries = array_values($this->database->table('UzivatelskeKonto')->where('PrichoziPlatba_id', $payment->id)->order('id')->fetchAll());
-        if (!$transfer) {
+        if ($transfer === false) {
             Assert::count(1, $entries);
             Assert::same($previous->id, $entries[0]->Uzivatel_id);
             Assert::same(1234.56, $entries[0]->castka);

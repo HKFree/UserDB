@@ -272,6 +272,7 @@ npx skills add stablyai/orca
 | `www/` | kořen webu; `www/digisign-webhook/` je samostatný skript mimo Nette |
 | `fio2userdb/`, `stvConnector/`, `ucetniReporty/`, `pdfGenerator/` | samostatné služby (Perl, Python, PHP) s vlastním Dockerfile |
 | `lib/phpqrcode/` | cizí knihovna, neupravuj ji |
+| `phpstan/` | stuby knihoven pro PHPStan a vlastní pravidla v `phpstan/Rules/` |
 | `specs/` | seznam bezpečnostních nálezů |
 
 ## Kód
@@ -298,6 +299,11 @@ npx skills add stablyai/orca
 - Zapnuté je i rozšíření `phpstan-strict-rules`. Skupiny pravidel vypnuté
   v `phpstan.neon` tam mají uvedený důvod; další skupinu kvůli nálezu
   nevypínej.
+- Negaci piš porovnáním `=== false`, ne vykřičníkem: `if ($vysledek->odeslano() === false)`,
+  `($x instanceof Y) === false`, `isset($x) === false`. Hlídá to vlastní pravidlo PHPStanu
+  `phpstan/Rules/NoBooleanNotRule.php`. Porovnání s `false` je správné jen u `bool`; u jiného
+  typu porovnej se skutečnou hodnotou (`=== null`, `=== ''`, `=== []`) nebo nejdřív doplň typ.
+  Šablon Latte se pravidlo netýká.
 - Styl hlídá php-cs-fixer (`.php-cs-fixer.dist.php`) a `.editorconfig`, syntaxi
   šablon `latte-lint`. JavaScript v šablonách a vlastní soubory ve `www/js/`
   fixer nevidí; `return(false);` a `return(true);` v nich hlídá

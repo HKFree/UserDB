@@ -72,13 +72,13 @@ final class NovinkyFilesTest extends TestCase
     }
 
     private function checkDirectory(string $directory): void {
-        if (!is_dir($directory)) {
+        if (is_dir($directory) === false) {
             return;
         }
         $files = [];
         foreach (new \DirectoryIterator($directory) as $file) {
             // Hidden files (.DS_Store) are git-ignored system files, not misnamed releases.
-            if (!$file->isFile() || str_starts_with($file->getFilename(), '.')) {
+            if ($file->isFile() === false || str_starts_with($file->getFilename(), '.')) {
                 continue;
             }
             $path = $file->getPathname();
@@ -95,7 +95,7 @@ final class NovinkyFilesTest extends TestCase
             $content = file_get_contents($path);
             Assert::true(is_string($content));
             foreach (explode("\n", str_replace("\r\n", "\n", $content)) as $index => $line) {
-                if (!str_starts_with($line, '- ')) {
+                if (str_starts_with($line, '- ') === false) {
                     continue;
                 }
                 $location = $path . ':' . ($index + 1);

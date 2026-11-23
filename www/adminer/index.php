@@ -1,7 +1,7 @@
 <?php
 
-if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) || !isset($_SERVER['REMOTE_ADDR']) ||
-    !in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'), true)) {
+if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) || isset($_SERVER['REMOTE_ADDR']) === false ||
+    in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'), true) === false) {
     header('HTTP/1.1 403 Forbidden');
     echo 'Adminer is available only from localhost';
     for ($i = 2e3; $i; $i--) {
@@ -12,7 +12,7 @@ if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) || !isset($_SERVER['REMOTE_ADDR']) |
 
 $root = __DIR__ . '/../../vendor/dg/adminer-custom';
 
-if (!is_file($root . '/index.php')) {
+if (is_file($root . '/index.php') === false) {
     echo "Install Adminer using `composer install`\n";
     exit(1);
 }

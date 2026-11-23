@@ -124,7 +124,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     /** Šablona správci vysvětlí, proč v poli Odesílatel chybí jeho vlastní adresa, a kde ji opravit. */
     private function predejStavOdesilatele(): void {
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-        $neplatny = $so !== null && !$this->maPlatnyEmail($so);
+        $neplatny = $so !== null && $this->maPlatnyEmail($so) === false;
         $this->template->odesilatelNeplatny = $neplatny;
         $this->template->editaceOdesilatele = $neplatny && $this->smiUpravitUzivatele($so) ? $so->id : null;
     }
@@ -159,7 +159,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'emailFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $form->setValues($user);
             $form->setDefaults(array(
                     'from' => array_key_first($odesilatele),
@@ -179,7 +179,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         if ($user === null) {
             $this->error('Uživatel nebyl nalezen.');
         }
-        if (!$this->maPlatnyEmail($user)) {
+        if ($this->maPlatnyEmail($user) === false) {
             // Stránka místo formuláře vypíše, že člen platnou adresu nemá.
             return;
         }
@@ -232,7 +232,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'emailallFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($ap !== null && !$submitujeSe) {
+        if ($ap !== null && $submitujeSe === false) {
             $form->setValues($ap);
             $form->setDefaults(array(
                     'from' => array_key_first($odesilatele),
@@ -319,13 +319,13 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $this->error('Uživatel nebyl nalezen.');
         }
 
-        if (!in_array($user->telefon ?? null, [null, '', '0'], true) && $user->telefon !== 'missing') {
+        if (in_array($user->telefon ?? null, [null, '', '0'], true) === false && $user->telefon !== 'missing') {
             $form->addSubmit('send', 'Odeslat')->setAttribute('class', 'btn btn-success btn-xs btn-white');
             $form->onSuccess[] = array($this, 'smsFormSucceded');
         }
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $form->setValues($user);
             $form->setDefaults(array(
                     'komu' => $user->telefon
@@ -365,7 +365,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $form->onSuccess[] = array($this, 'smsallFormSucceded');
 
         $submitujeSe = ($form->isAnchored() && $form->isSubmitted() !== false);
-        if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
+        if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $ap = $this->ap->getAP($this->getParameter('id'));
             if ($ap === null) {
                 $this->error('AP nebylo nalezeno.');
@@ -373,7 +373,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             $telefony = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'telefon');
             $validni = [];
             foreach ($telefony as $tl) {
-                if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
+                if (in_array($tl, [null, '', '0'], true) === false && $tl !== 'missing') {
                     $validni[] = $tl;
                 }
             }
@@ -400,7 +400,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $validni = [];
         foreach ($telefony as $uid => $tl) {
-            if (!in_array($tl, [null, '', '0'], true) && $tl !== 'missing') {
+            if (in_array($tl, [null, '', '0'], true) === false && $tl !== 'missing') {
                 $validni[] = $uid;
             }
         }

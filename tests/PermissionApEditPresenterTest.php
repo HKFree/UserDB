@@ -37,7 +37,7 @@ final class PermissionApEditPresenterTest extends DatabaseTestCase
             'ulice_cp' => 'Test street 1', 'mesto' => 'Test city', 'psc' => '50002', 'save' => 'Uložit',
         ];
         $request = fn () => $this->presenters->ui($s->actors[$actor]->id, 'Ap', ['action' => 'edit', 'id' => $mode === 'new' ? null : $s->ap->id], 'POST', $post);
-        if (!$allowed) {
+        if ($allowed === false) {
             $s->assertDenied($request);
             return;
         }

@@ -50,10 +50,10 @@ class ApiPresenter extends \Nette\Application\UI\Presenter
             return;
         }
 
-        if (!array_key_exists('PHP_AUTH_USER', $_SERVER)) {
+        if (array_key_exists('PHP_AUTH_USER', $_SERVER) === false) {
             $this->sendAuthRequired('Missing HTTP basic username');
             return;
-        } elseif (!array_key_exists('PHP_AUTH_PW', $_SERVER)) {
+        } elseif (array_key_exists('PHP_AUTH_PW', $_SERVER) === false) {
             $this->sendAuthRequired('Missing HTTP basic password');
             return;
         }

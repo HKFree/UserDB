@@ -83,7 +83,7 @@ final class SharedTypesPresenterTest extends DatabaseTestCase
         $ip = $this->fixtures->ipAddress($this->actor->id, '192.0.2.42', ['login' => 'fixture-login']);
         $result = $this->presenters->ui($this->actor->id, 'File', ['action' => 'downloadWinboxCmd', 'id' => (string) $ip->id]);
         Assert::type(FileResponse::class, $result->response);
-        if (!$result->response instanceof FileResponse) {
+        if (($result->response instanceof FileResponse) === false) {
             throw new \LogicException('Expected a file response.');
         }
         try {

@@ -164,7 +164,7 @@ final class TestEnvironment
             throw new \RuntimeException('FLOX_ENV_CACHE must belong to this checkout.');
         }
         if (realpath($connection->fetchField('SELECT @@datadir')) !== $expectedData
-            || !in_array($connection->fetchField('SELECT DATABASE()'), $allowDemo ? ['userdb_test', 'userdb_demo_test'] : ['userdb_test'], true)
+            || in_array($connection->fetchField('SELECT DATABASE()'), $allowDemo ? ['userdb_test', 'userdb_demo_test'] : ['userdb_test'], true) === false
         ) {
             throw new \RuntimeException('Refusing to write outside this checkout\'s test databases.');
         }
@@ -192,7 +192,7 @@ final class TestEnvironment
         }
         $completed = [];
         foreach ($connection->query('SELECT `group`, `file`, checksum, ready FROM migrations') as $row) {
-            if (!$row->ready) {
+            if (in_array($row->ready, [0, false], true)) {
                 return null;
             }
             $completed[$row->group . '/' . $row->file] = $row->checksum;

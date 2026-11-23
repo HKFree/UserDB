@@ -50,7 +50,7 @@ final class ExternalConditionsDatabaseTest extends DatabaseTestCase
             Assert::same($dead ? [Status::PROBLEM_MRTVA] : [], array_column($problems, 1));
             Assert::exception(fn () => $api->actionGetOblasti(), AbortException::class);
             $response = (new \ReflectionProperty(\Nette\Application\UI\Presenter::class, 'response'))->getValue($api);
-            if (!$response instanceof JsonResponse) {
+            if (($response instanceof JsonResponse) === false) {
                 throw new \LogicException('Expected the status JSON response.');
             }
             $result = $response->getPayload()[$area->id]['ap'][$ap->id];
@@ -84,7 +84,7 @@ final class ExternalConditionsDatabaseTest extends DatabaseTestCase
         $request = new Http\Request(new Http\UrlScript('http://localhost/'), method: 'DELETE', remoteAddress: '192.0.2.1', rawBodyCallback: static fn (): string => json_encode($data, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION));
         $container = TestEnvironment::container($this->database, $request, $this->container);
         $presenter = $container->getByType(IPresenterFactory::class)->createPresenter('SpravaStitku');
-        if (!$presenter instanceof SpravaStitkuPresenter) {
+        if (($presenter instanceof SpravaStitkuPresenter) === false) {
             throw new \LogicException('Expected the label presenter.');
         }
         ob_start();

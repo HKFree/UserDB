@@ -48,7 +48,7 @@ final class PresenterRunner
 
     /** @param (\Closure(Presenter): void)|null $preparePresenter */
     public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null, private ?\Closure $preparePresenter = null) {
-        if (!self::$shutdownRegistered) {
+        if (self::$shutdownRegistered === false) {
             self::$shutdownRegistered = true;
             register_shutdown_function(static function (): void {
                 if (self::$activeRequest !== null) {
@@ -131,7 +131,7 @@ final class PresenterRunner
             // A new container also replaces the user, session and request-bound Latte factory.
             $container = TestEnvironment::container($this->database, $request, $this->container, $this->novinkyAdresar);
             $presenter = $container->getByType(Application\IPresenterFactory::class)->createPresenter($name);
-            if (!$presenter instanceof Presenter) {
+            if (($presenter instanceof Presenter) === false) {
                 throw new \LogicException("$name is not a UI presenter.");
             }
             $presenter->autoCanonicalize = false;
