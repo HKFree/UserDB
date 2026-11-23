@@ -1227,21 +1227,6 @@ ul.error {
     margin-left: auto;
 }
 
-/* Posouvá se seznam, ne stránka. Odsazení ponechá místo pro původní stín Grida. */
-.user-list-scroll {
-    overflow-x: auto;
-    margin: -12px;
-    padding: 12px;
-}
-
-/* Nabídka štítků musí zvětšit rám i u jediného nebo posledního řádku. */
-.user-list-scroll .dropdown-menu {
-    position: relative;
-    top: auto;
-    left: auto;
-    float: none;
-}
-
 /* Login a heslo zařízení: hodnota i tlačítko zůstávají na jednom řádku, mezery se zobrazí tak, jak jsou uložené. */
 .copy-value-cell {
     white-space: nowrap;

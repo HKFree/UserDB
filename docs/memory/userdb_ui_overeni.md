@@ -119,14 +119,18 @@ ze standardního Bootstrapu.
   vlastní rám (`form.grido.grid-wide`, třídu nastavuje `main.js`). V emulaci Playwrightu porovnávej
   šířku dokumentu s nastavenou šířkou okna, ne s `innerWidth`, viz [kostra aplikace](userdb_ui_shell.md);
   pod `orca viewport` platí měření z předchozího bodu.
-- Posuvný rám kolem Grida ořízne absolutně umístěnou nabídku štítků, zvlášť u seznamu s jediným
-  členem. `overflow-x: auto` totiž současně vytvoří svislý posuv. Ověřeno 23. 11. 2026 v Orce
+- Posuvný rám kolem Grida (`overflow-x: auto`) ořízne absolutně umístěnou nabídku štítků, zvlášť
+  u seznamu s jediným členem, protože vytvoří i svislý posuv. V nové kostře proto `main.js` kreslí
+  otevřenou nabídku v gridu s `position: fixed` u jejího tlačítka. Ověřeno 23. 11. 2026 v Orce
   a Playwrightu na `/uzivatel-list/listall?search=20022` při 1280 i 375 px.
-  **Why:** Samotná kontrola šířky stránky ani existence položek nabídky oříznutí neodhalí.
-  **How to apply:** V posuvném rámu nech nabídku zabrat místo v řádku a ověř její první i poslední
-  položku. Nabídka musí zůstat pozicovaná (`relative`), jinak její `z-index` neplatí a na telefonu
-  kliknutí zachytí `dropdown-backdrop` Bootstrapu; potvrzeno padajícím E2E testem.
-  `clen-uid.spec.mjs` hlídá nabídku i šířku celé stránky vůči zadané šířce okna.
+- Posun rámu nesmí takovou nabídku zavřít, jen přesunout: sloupec Štítky je v rámu poslední a po
+  kliknutí prohlížeč rám ještě posune k zaměřenému tlačítku, a to až po otevření nabídky. Nabídka
+  se zavírá teprve, když tlačítko zmizí z viditelné části rámu. Ověřeno 23. 11. 2026 výpisem
+  událostí `scroll` a `shown.bs.dropdown` v Playwrightu při 375 px; zavírání při každém posunu
+  shodilo `clen-uid.spec.mjs`.
+  **Why:** Samotná kontrola šířky stránky ani existence položek nabídky oříznutí ani zavření neodhalí.
+  **How to apply:** Ověř první i poslední položku otevřené nabídky a klikni na tlačítko obyčejným
+  `click()`, ne až po ručním posunu rámu. `clen-uid.spec.mjs` hlídá nabídku i šířku celé stránky.
 - V kontextu Playwrightu s `isMobile` se stránce širší než okno zvětší i `innerWidth`
   (formulář e-mailu: 520 px při okně 375 px). Přetečení proto poznáš porovnáním
   `document.documentElement.scrollWidth` se zadanou šířkou okna, ne s `innerWidth`.

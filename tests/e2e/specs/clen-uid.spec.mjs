@@ -64,25 +64,34 @@ for (const width of [1280, 375]) {
             });
 
             if (editable) {
+                // Široký seznam se posouvá ve vlastním rámu (form.grido.grid-wide); nabídka štítků se kreslí přes jeho okraj.
                 test('posuvný rám neořízne nabídku štítků u posledního řádku', async ({ page }) => {
                     await page.goto('/uzivatel-list/listall?search=20022');
-                    const frame = page.getByRole('region', { name: 'Kompletní seznam členů', exact: true });
-                    const label = frame.locator('.user-labels .badge').filter({ hasText: 'Demo dlouhý název pro zobrazení štítku' });
+                    const row = page.locator('#frm-grid-form tr').filter({ has: page.getByRole('link', { name: '20022', exact: true }) });
+                    const label = row.locator('.user-labels .badge').filter({ hasText: 'Demo dlouhý název pro zobrazení štítku' });
                     await expect(label).toHaveCount(0);
-                    await frame.getByRole('button', { name: '+', exact: true }).click();
-                    const option = frame.getByRole('link', { name: 'Demo dlouhý název pro zobrazení štítku', exact: true });
-                    await option.scrollIntoViewIfNeeded();
-                    const bounds = await frame.evaluate(element => ({
-                        frame: element.getBoundingClientRect().toJSON(),
-                        menu: element.querySelector('.dropdown-menu').getBoundingClientRect().toJSON(),
+                    // Kliknutí posune rám k tlačítku; posun, který přijde až po otevření, nabídku nesmí zavřít.
+                    await row.getByRole('button', { name: 'Přidat štítek', exact: true }).click();
+                    const menu = row.getByRole('menu', { name: 'Štítky k přidání', exact: true });
+                    const items = menu.getByRole('menuitem');
+                    await expect(items.first()).toBeVisible();
+                    const bounds = await menu.evaluate(element => ({
+                        menu: element.getBoundingClientRect().toJSON(),
+                        window: { width: window.innerWidth, height: window.innerHeight },
                     }));
-                    expect(bounds.menu.top).toBeGreaterThanOrEqual(bounds.frame.top);
-                    expect(bounds.menu.bottom).toBeLessThanOrEqual(bounds.frame.bottom);
+                    expect(bounds.menu.top).toBeGreaterThanOrEqual(0);
+                    expect(bounds.menu.left).toBeGreaterThanOrEqual(0);
+                    expect(bounds.menu.right).toBeLessThanOrEqual(bounds.window.width);
+                    // Nabídka delší než okno se posouvá sama; její první i poslední položka musí jít zobrazit.
+                    const option = menu.getByRole('menuitem', { name: 'Demo dlouhý název pro zobrazení štítku', exact: true });
+                    await items.last().scrollIntoViewIfNeeded();
+                    await expect(items.last()).toBeInViewport();
+                    await option.scrollIntoViewIfNeeded();
+                    await expect(option).toBeInViewport();
                     await option.click();
                     await expect(label).toBeVisible();
                     await checkPageWidth(page, width);
-                    await label.hover();
-                    await label.locator('.badge-remove').click();
+                    await row.getByRole('button', { name: 'Odebrat štítek Demo dlouhý název pro zobrazení štítku', exact: true }).click();
                     await expect(label).toHaveCount(0);
                 });
             }

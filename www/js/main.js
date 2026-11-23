@@ -143,18 +143,34 @@ $(document).ready(function () {
     });
 
     // nabidka v gridu se kresli pres okraj ramu, jinak by ji posuvnik orizl
-    $(document).on('shown.bs.dropdown', '.grido .dropdown', function () {
-        var button = $(this).find('.dropdown-toggle')[0].getBoundingClientRect();
-        var menu = $(this).find('.dropdown-menu');
+    function placeGridMenu(dropdown) {
+        var button = $(dropdown).find('.dropdown-toggle')[0].getBoundingClientRect();
+        var menu = $(dropdown).find('.dropdown-menu');
         var left = Math.max(8, Math.min(button.left, window.innerWidth - menu.outerWidth() - 8));
         var fitsBelow = button.bottom + menu.outerHeight() <= window.innerHeight;
         var minTop = $('.navbar-fixed-top').outerHeight() + 8;
         menu.css({ position: 'fixed', left: left, right: 'auto', top: fitsBelow ? button.bottom : Math.max(minTop, button.top - menu.outerHeight()) });
+    }
+    // tlacitko je videt, kdyz jeho stred lezi v okne i ve viditelne casti ramu gridu
+    function gridToggleVisible(dropdown) {
+        var button = $(dropdown).find('.dropdown-toggle')[0].getBoundingClientRect();
+        var frame = $(dropdown).closest('form.grido')[0].getBoundingClientRect();
+        var x = button.left + button.width / 2;
+        var y = button.top + button.height / 2;
+        return x >= Math.max(0, frame.left) && x <= Math.min(window.innerWidth, frame.right)
+            && y >= Math.max(0, frame.top) && y <= Math.min(window.innerHeight, frame.bottom);
+    }
+    $(document).on('shown.bs.dropdown', '.grido .dropdown', function () {
+        placeGridMenu(this);
     });
-    // zachytava i vodorovny posun samotneho gridu; posun uvnitr nabidky ji nezavira
+    // posun stranky nebo ramu gridu nabidku presune s tlacitkem (i posun, kterym prohlizec
+    // ukaze prave zamerene tlacitko); zavre ji, az tlacitko zmizi z ramu. Posun uvnitr nabidky ji nechava.
     document.addEventListener('scroll', function (event) {
         if ($(event.target).closest('.dropdown-menu').length > 0) return;
-        $('.grido .dropdown.open .dropdown-toggle').dropdown('toggle');
+        $('.grido .dropdown.open').each(function () {
+            if (gridToggleVisible(this)) placeGridMenu(this);
+            else $(this).find('.dropdown-toggle').dropdown('toggle');
+        });
     }, true);
 });
 
