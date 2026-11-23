@@ -372,8 +372,8 @@ Done once by the administrator of the Coolify instance (written for Coolify 4.7)
    their own: Coolify has no setting for that.
 
 The health check is part of `Dockerfile.preview`, so the one of Coolify stays disabled. When it deploys
-`master`, Coolify still waits for the new container to become healthy only as long as the times on its
-health check page allow; raise *Retries* there to 60, a database takes longer to build on a busy server.
+`master`, Coolify waits for the new container to become healthy with the start period, interval and retries
+written in `Dockerfile.preview`, not with those on its own health check page.
 
 ### Screenshots in pull requests
 

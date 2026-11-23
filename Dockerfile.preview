@@ -36,7 +36,9 @@ RUN mkdir -p .flox/cache temp log \
 EXPOSE 8080
 
 # The form answers as soon as the web runs, which is after the database has been built from the demo data.
-HEALTHCHECK --interval=15s --timeout=5s --start-period=10m --retries=3 \
+# Coolify reads these values and waits the whole start period before its first look, so the start period is
+# short and the retries cover the build of the database (up to 10 minutes on a busy server).
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=60 \
     CMD curl --fail --silent --output /dev/null http://127.0.0.1:8080/testing-login
 
 CMD ["bash", "scripts/userdb_preview.sh"]

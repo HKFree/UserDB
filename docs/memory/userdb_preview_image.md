@@ -35,9 +35,10 @@ to, co z kódu není vidět. Ověřeno 23. 11. 2026 sestavením a během image n
 
 Coolify 4.7.6, přečteno ve zdrojácích téhož dne, na běžící instanci neověřeno:
 
-- Nasazení větve aplikace (`master`) je rolling update: na health check z Dockerfile čeká podle časů
-  z nastavení aplikace (*Start period*, *Interval*, *Retries*), i když je jeho vlastní health check vypnutý.
-  S výchozími hodnotami je to necelá minuta; když image do té doby není zdravý, nasazení neprojde.
+- Nasazení větve aplikace (`master`) je rolling update: na health check z Dockerfile čeká podle hodnot
+  z `HEALTHCHECK` v `Dockerfile.preview`, ne podle stránky health checku v Coolify (ověřeno 23. 11. 2026 na
+  prvním nasazení: s `--start-period=10m --retries=3` čekal celých 600 s a psal „Attempt 1 of 3“, přestože
+  v aplikaci bylo Retries 60). Start period proto krátká, čekání na databázi nesou pokusy.
 - Nasazení PR rolling update není (`rolling_update()`: „Pull request deployment, rolling update is not
   supported"): starý kontejner se zastaví dřív, než nový nastartuje, a na health check se nečeká. Náhled PR
   je tedy po každém pushi chvíli nedostupný.
