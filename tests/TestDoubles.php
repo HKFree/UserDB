@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Test;
 
+use App\MapiModule\Zaznam;
 use App\Model\HkfIdentity;
 use App\Services;
 use Nette\Caching\Cache;
@@ -20,6 +21,7 @@ use Nette\Mail\SendException;
 use Nette\Security\IIdentity;
 use Nette\Security\User;
 use Nette\Security\UserStorage;
+use Tracy\ILogger;
 
 final class OfflineConnection extends Connection
 {
@@ -108,6 +110,37 @@ final class RecordingContractRequest extends Services\RequestDruzstvoContract
     public function execute(int $userId): int {
         $this->calls[] = $userId;
         return count($this->calls);
+    }
+}
+
+final class RecordingMapiZaznam implements Zaznam
+{
+    /** @var list<array{?int, ?string, string}> */
+    public array $pristupy = [];
+    /** @var list<\Throwable> */
+    public array $vyjimky = [];
+    /** Set to make the access log fail, as an unwritable log directory would. */
+    public ?\Throwable $failure = null;
+
+    public function pristup(?int $uid, ?string $operace, string $vysledek): void {
+        if ($this->failure !== null) {
+            throw $this->failure;
+        }
+        $this->pristupy[] = [$uid, $operace, $vysledek];
+    }
+
+    public function vyjimka(\Throwable $vyjimka): void {
+        $this->vyjimky[] = $vyjimka;
+    }
+}
+
+final class RecordingLogger implements ILogger
+{
+    /** @var list<array{mixed, string}> */
+    public array $records = [];
+
+    public function log(mixed $value, string $level = self::INFO): void {
+        $this->records[] = [$value, $level];
     }
 }
 

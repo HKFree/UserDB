@@ -37,7 +37,7 @@ final class ContainerTest extends TestCase
             $classes[] = $presenter::class;
         }
         $loader = new RobotLoader();
-        $loader->addDirectory(__DIR__ . '/../app/presenters', __DIR__ . '/../app/ApiModule/Presenters');
+        $loader->addDirectory(__DIR__ . '/../app/presenters', __DIR__ . '/../app/ApiModule/Presenters', __DIR__ . '/../app/MapiModule/Presenters');
         $loader->rebuild();
         foreach (array_keys($loader->getIndexedClasses()) as $class) {
             if (str_starts_with($class, 'App\\') && str_ends_with($class, 'Presenter')) {

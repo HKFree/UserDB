@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Test;
 
+use App\MapiModule\Odpoved;
 use App\Router\RouterFactory;
 use Nette\Application;
 use Nette\Application\Responses\JsonResponse;
@@ -85,11 +86,32 @@ final class PresenterRunner
     }
 
     /**
+     * A request to /userdb/mapi/graphql. Without $uid nobody is signed in; headers are sent exactly as given.
+     * Read response headers from the returned App\MapiModule\Odpoved, the CLI does not send them.
+     * @param array<string, string> $headers
+     * @param array<string, object> $services services replaced for this request only
+     */
+    public function mapi(?int $uid, ?string $body, array $headers = [], string $method = 'POST', array $services = []): PresenterResult {
+        $server = [];
+        if ($uid !== null) {
+            $member = $this->database->table('Uzivatel')->get($uid);
+            $server = [
+                'HTTP_UID' => (string) $uid,
+                'HTTP_GIVENNAME' => $member->nick ?? 'Unknown test member',
+                'HTTP_INITIALS' => 'test-only',
+            ];
+        }
+        return $this->run('Mapi:Graphql', [], $method, [], false, $server, headers: $headers, body: $body, services: $services);
+    }
+
+    /**
      * @param array<string, mixed> $parameters
      * @param array<string, mixed> $post
      * @param array<string, string> $server
+     * @param array<string, string> $headers
+     * @param array<string, object> $services
      */
-    private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server): PresenterResult {
+    private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server, array $headers = [], ?string $body = null, array $services = []): PresenterResult {
         if (self::$activeRequest !== null) {
             throw new \LogicException('Nested presenter runs are not supported.');
         }
@@ -124,30 +146,30 @@ final class PresenterRunner
                 $requestUrl,
                 post: $post,
                 cookies: $sameSite ? ['_nss' => '1'] : [],
-                headers: ['Host' => 'localhost', 'User-Agent' => 'UserDB tests'] + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : []),
+                headers: $headers + ['Host' => 'localhost', 'User-Agent' => 'UserDB tests'] + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : []),
                 method: $method,
                 remoteAddress: '127.0.0.1',
+                rawBodyCallback: static fn (): ?string => $body,
             );
             // A new container also replaces the user, session and request-bound Latte factory.
-            $container = TestEnvironment::container($this->database, $request, $this->container, $this->novinkyAdresar);
+            $container = TestEnvironment::container($this->database, $request, $this->container, $this->novinkyAdresar, $services);
             $presenter = $container->getByType(Application\IPresenterFactory::class)->createPresenter($name);
-            if (($presenter instanceof Presenter) === false) {
-                throw new \LogicException("$name is not a UI presenter.");
-            }
-            $presenter->autoCanonicalize = false;
-            if ($this->preparePresenter !== null) {
-                ($this->preparePresenter)($presenter);
+            if ($presenter instanceof Presenter) {
+                $presenter->autoCanonicalize = false;
+                if ($this->preparePresenter !== null) {
+                    ($this->preparePresenter)($presenter);
+                }
             }
             ob_start();
             $response = $presenter->run(new Application\Request($name, $method, $parameters, $post));
             $httpResponse = $container->getByType(Http\Response::class);
-            if ($response instanceof TextResponse) {
+            if ($response instanceof TextResponse || $response instanceof Odpoved) {
                 $response->send($request, $httpResponse);
             }
             $html = (string) ob_get_contents();
             $flashes = [];
             $flashTypes = [];
-            if ($presenter->hasFlashSession()) {
+            if ($presenter instanceof Presenter && $presenter->hasFlashSession()) {
                 foreach ($presenter->getFlashSession() as $messages) {
                     foreach ($messages as $flash) {
                         $flashes[] = (string) $flash->message;
@@ -160,7 +182,11 @@ final class PresenterRunner
                 $html,
                 $response instanceof RedirectResponse ? $response->getCode() : $httpResponse->getCode(),
                 $response instanceof RedirectResponse ? $response->getUrl() : null,
-                $response instanceof JsonResponse ? $response->getPayload() : null,
+                match (true) {
+                    $response instanceof JsonResponse => $response->getPayload(),
+                    $response instanceof Odpoved => $response->telo,
+                    default => null,
+                },
                 $container->getByType(User::class)->getIdentity(),
                 $flashes,
                 $flashTypes,

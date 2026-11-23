@@ -20,6 +20,11 @@ parameters:
 	maternaMexUser: %env.MATERNA_MEX_USER%
 	maternaMexPass: %env.MATERNA_MEX_PASS%
 	withDummyData: false
+	mapi:
+		# Limity dotazu GraphQL. Hloubka 15 propustí standardní introspekční dotaz; skutečné omezení dělá složitost.
+		maxHloubkaDotazu: 15
+		# Prozatímní hodnota; konečnou určí nejtěžší dotaz SPA ve fázi 2 issue #264.
+		maxSlozitostDotazu: 100
 	debug:
 		fakeUser: false
 
@@ -112,6 +117,13 @@ services:
 	- App\Console\Wewimo2InfluxCommand
 	- App\Console\DigisignGenerovatUcastnickouSmlouvu
 	- App\Console\SendSMSCommand
+	# GraphQL API pro přihlášené (/userdb/mapi/graphql). Čtecí vrstva čte přes vlastní spojení: dnes hlavní
+	# spojení aplikace, omezený databázový účet se později zapojí jen tady.
+	mapiSpojeni: App\MapiModule\Data\CteciSpojeni(@database.default.connection)
+	mapiCteni: App\MapiModule\Data\Cteni
+	mapiSchema: App\MapiModule\Schema\SchemaFactory
+	mapiZpracovani: App\MapiModule\Graphql\Zpracovani(%mapi.maxHloubkaDotazu%, %mapi.maxSlozitostDotazu%)
+	mapiZaznam: App\MapiModule\TracyZaznam
 
 database:
 	dsn: "mysql:host=%env.USERDB_DB_HOST%;dbname=%env.USERDB_DB_NAME%"

@@ -41,6 +41,7 @@ services:
         create: Test\RecordingMexSmsSender
         arguments!: []
     requestDruzstvoContract: Test\RecordingContractRequest
+    mapiZaznam: Test\RecordingMapiZaznam
     idsConnector: App\Model\IdsConnector('http://127.0.0.1:0/', 'test-only', 'test-only', '')
     session.session: Test\MemorySession
     security.userStorage: Test\MemoryUserStorage
