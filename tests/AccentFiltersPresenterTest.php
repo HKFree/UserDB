@@ -136,7 +136,7 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
         $this->assertFilter('SpravaCc', 'prehledcc', 'grid', 'typcc', 'ZASTUPCE SPRAVCE OBLASTI', 'Zástupce správce oblasti');
     }
 
-    public function testArrayBackedMemberFiltersAfterGlobalSearchAlreadyIgnoreAccents(): void {
+    public function testMemberFiltersAfterGlobalSearchIgnoreAccents(): void {
         foreach (['TECH', 'VV', 'KONTROLA', 'EXTSUPPORT'] as $role) {
             $this->database->table('SpravceOblasti')->where('Uzivatel_id', $this->viewer->id)->update([
                 'TypSpravceOblasti_id' => $this->fixtures->lookup('TypSpravceOblasti', $role),

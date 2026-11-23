@@ -37,7 +37,8 @@ final class TestNamingTest extends TestCase
         $recognized = ['presenter' => [], 'database' => []];
         foreach ($this->files('*Test.php') as $file) {
             $source = $file === __FILE__ ? '' : (string) file_get_contents($file);
-            if (preg_match('~PresenterRunner|->presenters->~', $source) === 1) {
+            // The runner counts as well when the test hands it to a helper that runs the presenters for it.
+            if (preg_match('~PresenterRunner|->presenters\b~', $source) === 1) {
                 $recognized['presenter'][] = basename($file);
                 Assert::true(str_ends_with($file, 'PresenterTest.php'), "$file runs presenters; name it *PresenterTest.php.");
             } elseif (preg_match('~DatabaseTestCase|TestEnvironment::database\(~', $source) === 1) {

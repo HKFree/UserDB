@@ -7,8 +7,7 @@ use Nette\Database\Table\ActiveRow;
 final class RadkyTabulky
 {
     /**
-     * Id všech řádků tabulky, ze které řádek pochází: stránka seznamu, dávka exportu,
-     * při hledání všechny nalezené řádky.
+     * Id všech řádků tabulky, ze které řádek pochází: stránka seznamu nebo dávka exportu.
      *
      * @return list<int>
      */
