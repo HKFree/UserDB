@@ -86,7 +86,6 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
     public function sendingActions(): array {
         return [
             ['UzivatelActions', 'exportAndSendRegForm', null],
-            ['UzivatelActions', 'sendUserEmail', 'Televize2026AnoNe'],
             ['Mailing', 'sendUserEmail', 'ZpoplatneniTelevize2026'],
             ['PaymentSchedule', 'sendPaymentScheduleEmail', null],
         ];
@@ -107,7 +106,7 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
         if ($pdf) {
             $this->actor->update(['email' => 'sender@@example.invalid']);
         }
-        $result = $this->send($presenter, $action, $variant, provideLegacyTemplate: true);
+        $result = $this->send($presenter, $action, $variant);
         $this->assertRedirect($result);
         Assert::count(1, $this->messages());
         Assert::same([$pdf ? 'member@example.invalid' : 'second@example.invalid' => null], $this->messages()[0]->getHeader('To'));
@@ -293,19 +292,8 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
         );
     }
 
-    private function send(string $presenter, string $action, ?string $variant = null, bool $provideLegacyTemplate = false): PresenterResult {
-        $runner = $this->presenters;
-        if ($provideLegacyTemplate && $presenter === 'UzivatelActions' && $action === 'sendUserEmail') {
-            // This legacy action references a removed template. Exercise mail handling with local content.
-            $runner = new PresenterRunner($this->database, $this->container, preparePresenter: static function (\Nette\Application\UI\Presenter $presenter): void {
-                $template = $presenter->getTemplate();
-                Assert::true($template instanceof \Nette\Bridges\ApplicationLatte\Template);
-                $template->getLatte()->setLoader(new \Latte\Loaders\StringLoader([
-                    dirname(__DIR__) . '/app/presenters/../templates/email/Televize2026AnoNe.latte' => '<p>Testovací zpráva</p>',
-                ]));
-            });
-        }
-        return $runner->ui($this->actor->id, $presenter, ['action' => $action, 'id' => $this->member->id, 'variant' => $variant]);
+    private function send(string $presenter, string $action, ?string $variant = null): PresenterResult {
+        return $this->presenters->ui($this->actor->id, $presenter, ['action' => $action, 'id' => $this->member->id, 'variant' => $variant]);
     }
 
     private function assertRejected(PresenterResult $result, bool $editLink): void {

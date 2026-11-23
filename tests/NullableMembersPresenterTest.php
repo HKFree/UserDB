@@ -32,7 +32,7 @@ final class NullableMembersPresenterTest extends DatabaseTestCase
             'payment summary' => ['Uzivatel', 'paymentSummary', []],
             'account' => ['UzivatelAccount', 'account', []],
             'contract preview' => ['UzivatelActions', 'handleSubscriberContractPreview', []],
-            'message' => ['UzivatelActions', 'sendUserEmail', ['variant' => 'Televize2026AnoNe']],
+            'message' => ['Mailing', 'sendUserEmail', ['variant' => 'ZpoplatneniTelevize2026']],
         ];
     }
 
