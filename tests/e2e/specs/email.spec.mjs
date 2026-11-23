@@ -58,15 +58,16 @@ test('hromadný e-mail AP vynechá plánované, zrušené a smazané členy', as
     expect(mail.headers.bcc.split(/,\s*/).sort()).toEqual(recipients);
 });
 
-// Skipped until the application bug is fixed: https://github.com/HKFree/UserDB/issues/309
-// The bulk e-mail filters addresses by syntax only and ignores Uzivatel.email_invalid.
-test.fixme('hromadný e-mail AP vynechá adresu označenou jako neplatnou', async ({ page, mailbox }) => {
+// Issue #309: an address flagged in Uzivatel.email_invalid is left out and the manager sees whom.
+test('hromadný e-mail AP vynechá adresu označenou jako neplatnou', async ({ page, mailbox }) => {
     await page.goto('/uzivatel-list/list/202');
     await page.getByRole('button', { name: /Odeslat E-mail všem z AP$/ }).click();
     const recipients = (await page.getByLabel('Příjemce', { exact: true }).inputValue()).split(';');
     expect(recipients).toContain('demo20017@example.invalid');
     // Member 20025 is an active member of this AP whose address is flagged as invalid.
-    expect.soft(recipients).not.toContain('demo20025@example.invalid');
+    expect(recipients).not.toContain('demo20025@example.invalid');
+    await expect(page.locator('.alert-warning').filter({ hasText: 'označená jako neplatná' }).getByRole('link'))
+        .toHaveAttribute('href', /\/uzivatel\/show\/20025$/);
     await page.getByLabel('Předmět', { exact: true }).fill('E2E smyšlené oznámení bez neplatné adresy');
     await page.getByRole('button', { name: 'Odeslat', exact: true }).click();
     await expect(page).toHaveURL(/\/uzivatel-list\/list\/202(?:\?|$)/);

@@ -6,6 +6,7 @@ use App\Model;
 use App\Services;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
+use Nette\Database\Table\Selection;
 use Nette\Mail\Message;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Validators;
@@ -133,6 +134,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->u = $uzivatel;
         $this->template->emailPlatny = $uzivatel !== null && $this->maPlatnyEmail($uzivatel);
+        $this->template->emailOznacenyNeplatny = $uzivatel !== null && (int) $uzivatel->email_invalid === 1;
         $this->predejStavOdesilatele();
     }
 
@@ -196,8 +198,10 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     }
 
     public function renderEmailall(): void {
+        $ap = $this->ap->getAP($this->getParameter('id'));
         $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
-        $this->template->ap = $this->ap->getAP($this->getParameter('id'));
+        $this->template->ap = $ap;
+        $this->template->vyrazeniClenove = $ap === null ? [] : $this->clenoveApSOznacenouAdresou($ap);
         $this->predejStavOdesilatele();
     }
 
@@ -239,10 +243,31 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return $form;
     }
 
-    /** Platné adresy aktivních členů AP oddělené středníkem, jak je ukazuje pole Příjemce. */
+    /** Adresy oddělené středníkem, jak je ukazuje pole Příjemce. */
     private function adresyClenuAp(ActiveRow $ap): string {
-        $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
-        return join(';', array_filter($emaily, static fn (mixed $email): bool => Validators::isEmail($email)));
+        return join(';', $this->adresatiAp($ap));
+    }
+
+    /**
+     * Platné adresy aktivních členů AP. Adresu označenou jako neplatnou vynechá, stejně jako mailing list.
+     * @return list<string>
+     */
+    private function adresatiAp(ActiveRow $ap): array {
+        $emaily = $this->aktivniClenoveAp($ap)->where('email_invalid', 0)->fetchPairs('id', 'email');
+        return array_values(array_filter($emaily, static fn (mixed $email): bool => Validators::isEmail($email)));
+    }
+
+    /**
+     * Aktivní členové AP, kterým hromadný e-mail nepřijde, protože mají adresu označenou jako neplatnou.
+     * @return list<ActiveRow>
+     */
+    private function clenoveApSOznacenouAdresou(ActiveRow $ap): array {
+        return array_values($this->aktivniClenoveAp($ap)->where('email_invalid', 1)->order('id')->fetchAll());
+    }
+
+    /** @return Selection<ActiveRow> */
+    private function aktivniClenoveAp(ActiveRow $ap): Selection {
+        return $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN);
     }
 
     /** @param ArrayHash<mixed> $values */
@@ -254,18 +279,20 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         if ($ap === null) {
             $this->error('AP nebylo nalezeno.');
         }
-        $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
+        $adresati = $this->adresatiAp($ap);
+        if ($adresati === []) {
+            // Zprávu bez příjemců by SMTP server odmítl.
+            $form->addError('V AP není nikdo, komu by zpráva přišla: žádný aktivní člen nemá platnou e-mailovou adresu.');
+            return;
+        }
 
         $mail = new Message();
         $this->nastavOdesilatele($mail, $values->from, 'oblast'.$ap->Oblast_id.'@hkfree.org');
         $mail->setSubject($values->subject)
             ->setBody($values->message);
 
-        //TODO: check if mail is valid
-        foreach ($emaily as $email) {
-            if (Validators::isEmail($email)) {
-                $mail->addBcc($email);
-            }
+        foreach ($adresati as $email) {
+            $mail->addBcc($email);
         }
 
         $this->mailer->send($mail);

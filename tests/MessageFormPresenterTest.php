@@ -127,6 +127,134 @@ final class MessageFormPresenterTest extends DatabaseTestCase
         }
     }
 
+    /**
+     * A member whose address is flagged as invalid is left out of the AP mail,
+     * and the manager sees who the message will not reach (issue #309).
+     */
+    public function testApMailLeavesOutAndNamesMembersWithFlaggedAddress(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $valid = $this->fixtures->member($ap->id, self::COOPERATIVE);
+        $flagged = $this->fixtures->member($ap->id, self::COOPERATIVE + ['email_invalid' => 1, 'jmeno' => 'Žofie', 'prijmeni' => 'Odražená']);
+        $parameters = ['action' => 'emailall', 'id' => $ap->id];
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters);
+
+        Assert::same(200, $page->status);
+        Assert::same($valid->email, $this->fieldText($page->html, 'email'));
+        Assert::contains('označená jako neplatná', $page->html);
+        Assert::contains('/uzivatel/show/' . $flagged->id . '"', $page->html);
+        Assert::contains('Žofie Odražená', $page->html);
+        Assert::notContains('/uzivatel/show/' . $valid->id . '"', $page->html);
+
+        $sent = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters, 'POST', [
+            '_do' => 'emailallForm-submit', 'id' => (string) $ap->id, 'from' => '1',
+            'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+        ]);
+        PermissionScenario::assertRedirect($sent, 'uzivatel-list/list/' . $ap->id);
+        $messages = $this->container->getByType(RecordingMailer::class)->messages;
+        Assert::count(1, $messages);
+        Assert::same([$valid->email => null], $messages[0]->getHeader('Bcc'));
+    }
+
+    /** @return array<string, array{list<array<string, mixed>>}> */
+    public function noRecipientCases(): array {
+        return [
+            'empty AP' => [[]],
+            'only flagged address' => [[['email_invalid' => 1]]],
+            'only malformed address' => [[['email' => 'neplatny']]],
+        ];
+    }
+
+    /**
+     * With nobody left to receive it, the AP mail is not handed to the mailer,
+     * which would fail on a message without recipients; the form says why instead.
+     *
+     * @param list<array<string, mixed>> $members
+     * @dataProvider noRecipientCases
+     */
+    public function testApMailWithoutRecipientsExplainsInsteadOfSending(array $members): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        foreach ($members as $values) {
+            $this->fixtures->member($ap->id, self::COOPERATIVE + $values);
+        }
+
+        $result = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => 'emailall', 'id' => $ap->id], 'POST', [
+            '_do' => 'emailallForm-submit', 'id' => (string) $ap->id, 'from' => '1',
+            'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+        ]);
+
+        Assert::same(TextResponse::class, $result->response::class);
+        Assert::same(200, $result->status);
+        Assert::contains('V AP není nikdo, komu by zpráva přišla', $result->html);
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    public function testApMailWithoutFlaggedAddressHasNoNotice(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $this->fixtures->member($ap->id, self::COOPERATIVE);
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => 'emailall', 'id' => $ap->id]);
+
+        Assert::same(200, $page->status);
+        Assert::notContains('označená jako neplatná', $page->html);
+    }
+
+    /** Those without permission learn nothing about the members of the AP. */
+    public function testFlaggedMembersAreNotNamedWithoutPermission(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $flagged = $this->fixtures->member($ap->id, self::COOPERATIVE + ['email_invalid' => 1]);
+        $foreignArea = $this->fixtures->area();
+        $actor = $this->fixtures->member($this->fixtures->ap($foreignArea->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $foreignArea->id);
+
+        foreach (['emailall' => $ap->id, 'email' => $flagged->id] as $action => $id) {
+            $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', ['action' => $action, 'id' => $id]);
+            Assert::same(200, $page->status);
+            Assert::contains('Na tuto operaci nemáte oprávnění!', $page->html);
+            Assert::notContains('označená jako neplatná', $page->html);
+            Assert::notContains('/uzivatel/show/' . $flagged->id . '"', $page->html);
+        }
+    }
+
+    /**
+     * Writing to one member with a flagged address stays possible, the manager may be checking it,
+     * but the page warns that the message will likely not arrive (issue #309).
+     */
+    public function testSingleMailToFlaggedAddressWarnsButSends(): void {
+        $area = $this->fixtures->area();
+        $ap = $this->fixtures->ap($area->id);
+        $actor = $this->fixtures->member($this->fixtures->ap($area->id)->id, self::COOPERATIVE);
+        $this->fixtures->role($actor->id, 'SO', $area->id);
+        $member = $this->fixtures->member($ap->id, self::COOPERATIVE + ['email_invalid' => 1]);
+        $parameters = ['action' => 'email', 'id' => $member->id];
+
+        $page = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters);
+
+        Assert::same(200, $page->status);
+        Assert::contains('označená jako neplatná', $page->html);
+        Assert::contains('/uzivatel/edit/' . $member->id . '"', $page->html);
+        Assert::contains('name="send"', $page->html);
+
+        $sent = $this->presenters->ui($actor->id, 'UzivatelMailSms', $parameters, 'POST', [
+            '_do' => 'emailForm-submit', 'id' => (string) $member->id, 'from' => '1',
+            'subject' => 'Testovací zpráva', 'message' => 'Testovací text', 'send' => 'Odeslat',
+        ]);
+        PermissionScenario::assertRedirect($sent, 'uzivatel/show/' . $member->id);
+        $messages = $this->container->getByType(RecordingMailer::class)->messages;
+        Assert::count(1, $messages);
+        Assert::same([$member->email => null], $messages[0]->getHeader('To'));
+    }
+
     /** @return array<string, array{string}> */
     public function unusableAddressCases(): array {
         return ['doubled at sign' => ['chyba@@example.invalid'], 'no domain' => ['neplatny'], 'leading space' => [' clen@example.invalid'], 'empty' => ['']];
