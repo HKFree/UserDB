@@ -474,6 +474,9 @@ The same `npm test` runs `test/copy-value.test.mjs`, a browser test of the appli
 copying a device login and password from the IP address table (mouse selection, the copy button, keyboard and touch).
 `test/message-form.test.mjs` and `test/edit-form.test.mjs` check with the real `www/css/screen.css` that the forms rendered by
 `app/templates/form.latte` fit into a phone screen: the e-mail and SMS forms and the edit forms with their nested records.
+`test/layout-width.test.mjs` checks in a browser, against the application's `www/css/screen.css` and `www/js/main.js`,
+that the content column beside the sidebar fits the window at widths from 320 to 1700 px, also after the sidebar
+was hidden and shown again, so that pages do not scroll sideways.
 
 ### Jobs to be run
 
