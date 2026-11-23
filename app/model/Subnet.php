@@ -354,6 +354,9 @@ class Subnet extends Table
      * - 10.107.0.64/16 => false
      * - 10.107.0.64/26 => true
      *
+     * Maska musí být celé číslo 0 až 32 zapsané jen číslicemi (ne 024, +24, 24.0 ani 3e1),
+     * aby ji každé místo, které subnet čte, přečetlo stejně.
+     *
      * @param string $subnet Validovaný subnet
      * @return boolean Výsledek validace
      */
@@ -368,12 +371,12 @@ class Subnet extends Table
         list($network, $cidr) = $disected_subnet;
 
         // Zkontroluje validitu adresy sítě
-        if (filter_var($network, FILTER_VALIDATE_IP) === false) {
+        if (filter_var($network, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
             return (false);
         }
 
-        // Zkontroluje CIDR (0-32)
-        if (!is_numeric($cidr) || $cidr < 0 || $cidr > 32) {
+        $prefix = $this->parsePrefixLength($cidr);
+        if ($prefix === null) {
             return (false);
         }
 
@@ -384,13 +387,26 @@ class Subnet extends Table
 
         // Zkontrolujeme síť 0.0.0.0/0 (cokoliv jiného/0 zahodíme)
         // (hlavně protože % nemá rádo 2^32, musíme to vyfiltrovat tady)
-        if ((float) $cidr === 0.0) {
+        if ($prefix === 0) {
             return ($lnet === 0);
         }
 
         // Zkontroluje jestli opravdu jde o subnet a ne IP/maska
-        $lmask = pow(2, 32 - $cidr);
-        return (($lnet % $lmask) === 0);
+        return (($lnet % (1 << (32 - $prefix))) === 0);
+    }
+
+    /**
+     * Přečte masku (číslo za /) zapsanou jen číslicemi, bez úvodních nul, mezer a znamének
+     *
+     * @return int|null null, když zápis není celé číslo 0 až 32
+     */
+    private function parsePrefixLength(string $cidr): ?int {
+        if (preg_match('~^(?:0|[1-9][0-9]?)\z~', $cidr) !== 1) {
+            return null;
+        }
+
+        $prefix = (int) $cidr;
+        return $prefix <= 32 ? $prefix : null;
     }
 
     /**

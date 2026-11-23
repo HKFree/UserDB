@@ -31,8 +31,18 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
             'private subnet' => ['10.107.70.0/24', '10.107.70.1', false, null],
             'public subnet with ARP proxy' => ['89.248.241.0/24', '89.248.241.1', true, null],
             'private subnet with ARP proxy' => ['10.107.70.0/24', '10.107.70.1', true, 'ARP Proxy může být zapnuté pouze u veřejných subnetů!'],
-            'invalid subnet with ARP proxy' => ['10.107.70.0/33', '10.107.70.1', true, 'Subnet 10.107.70.0/33 není validní IPv4 subnet!'],
+            'invalid subnet with ARP proxy' => ['10.107.70.0/33', '10.107.70.1', true, self::invalidSubnet('10.107.70.0/33')],
+            'mask with leading zero' => ['10.107.70.0/024', '10.107.70.1', false, self::invalidSubnet('10.107.70.0/024')],
+            'mask in exponent notation' => ['10.107.70.0/3e1', '10.107.70.1', false, self::invalidSubnet('10.107.70.0/3e1')],
+            'mask with sign' => ['10.107.70.0/+24', '10.107.70.1', false, self::invalidSubnet('10.107.70.0/+24')],
+            'mask with space' => ['10.107.70.0/ 24', '10.107.70.1', false, self::invalidSubnet('10.107.70.0/ 24')],
+            'space after mask' => ['10.107.70.0/24 ', '10.107.70.1', false, self::invalidSubnet('10.107.70.0/24 ')],
+            'decimal mask' => ['10.107.70.0/24.0', '10.107.70.1', false, self::invalidSubnet('10.107.70.0/24.0')],
         ];
+    }
+
+    private static function invalidSubnet(string $subnet): string {
+        return 'Subnet ' . $subnet . ' není validní IPv4 subnet! Zadejte adresu sítě a masku jako celé číslo 0 až 32 bez mezer, například 10.107.70.0/24.';
     }
 
     /** @dataProvider subnetCases */

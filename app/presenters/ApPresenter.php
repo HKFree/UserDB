@@ -287,7 +287,7 @@ class ApPresenter extends BasePresenter
             $formSubnets = array();
             foreach ($data['subnet'] as $subnet) {
                 if (!$this->subnet->validateSubnet($subnet['subnet'])) {
-                    $form->addError('Subnet ' . $subnet['subnet'] . ' není validní IPv4 subnet!');
+                    $form->addError('Subnet ' . $subnet['subnet'] . ' není validní IPv4 subnet! Zadejte adresu sítě a masku jako celé číslo 0 až 32 bez mezer, například 10.107.70.0/24.');
                     return;
                 }
 

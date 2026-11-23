@@ -55,7 +55,7 @@ final class UzivatelForeignSubnetDatabaseTest extends DatabaseTestCase
         return [
             ['0.0.0.0/0', '10.107.1.1', true],
             ['10.107.253.7/32', '10.107.253.7', true], ['10.107.253.7/32', '10.107.253.6', false],
-            // The subnet form accepts any numeric prefix; the rule converts it with a PHP integer cast, here to 30.
+            // Rows saved before the subnet form required a plain integer prefix may hold any numeric one; the rule converts it with a PHP integer cast, here to 30.
             ['10.107.253.0/3e1', '10.107.253.3', true], ['10.107.253.0/3e1', '10.107.253.4', false],
             ['0.0.0.0/3e1', '10.107.1.1', false],
             ['10.107.253.0/33', '10.107.253.0', false],
