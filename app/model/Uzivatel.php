@@ -173,6 +173,9 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>|array<array-key, Nette\Database\Table\ActiveRow>
      */
     public function findUserByFulltext($search, Nette\Security\User $Uzivatel): Nette\Database\Table\Selection|array {
+        if (!TextProSloupceUtf8::lzePorovnat((string) $search)) {
+            return [];
+        }
         //mobil a email pouze pro ty co maji prava
         // Do not let MariaDB convert text such as "7name@example.org" to a numeric ID.
         $searchId = ctype_digit((string) $search) ? $search : null;
