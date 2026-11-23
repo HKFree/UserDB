@@ -171,7 +171,7 @@ class ApPresenter extends BasePresenter
 
         $ips->addSubmit('add', '+ Přidat další IP')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(null)
+            ->setValidationScope([])
             ->addCreateOnClick(true);
 
         $dataSubnet = $this->subnet;
@@ -186,13 +186,12 @@ class ApPresenter extends BasePresenter
 
         $subnets->addSubmit('add_subnet', '+ Přidat další Subnet')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(null)
+            ->setValidationScope([])
             ->addCreateOnClick(true);
 
         $dataApiKlice = $this->apiKlic;
-        $apiKlice = $form->addDynamic('apiKlic', function (Container $apiKlic) use ($dataApiKlice, $form) {
-            //var_dump($formValues);
-            $dataApiKlice->getEditForm($apiKlic, $form);
+        $apiKlice = $form->addDynamic('apiKlic', function (Container $apiKlic) use ($dataApiKlice) {
+            $dataApiKlice->getEditForm($apiKlic);
 
             $apiKlic->addSubmit('remove_apiklic', '– Odstranit API klíč')
                 ->setAttribute('class', 'btn btn-danger btn-xs btn-white')
@@ -202,7 +201,7 @@ class ApPresenter extends BasePresenter
 
         $apiKlice->addSubmit('add_apiKlic', '+ Přidat další API klíč')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(null)
+            ->setValidationScope([])
             ->addCreateOnClick(true);
 
         $form->addSubmit('save', 'Uložit')

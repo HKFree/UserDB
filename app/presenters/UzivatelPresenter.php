@@ -412,7 +412,7 @@ class UzivatelPresenter extends BasePresenter
 
         $ips->addSubmit('add', '+ Přidat další IP')
             ->setAttribute('class', 'btn btn-xs ip-subnet-form-add')
-            ->setValidationScope(null)
+            ->setValidationScope([])
             ->addCreateOnClick(true, function (Container $replicator, Container $ip) {
                 $ip->setValues(array('internet' => 1));
                 //\Tracy\Debugger::barDump($ip);
