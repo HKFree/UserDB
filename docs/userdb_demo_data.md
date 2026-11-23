@@ -220,11 +220,10 @@ Oprávnění člena: `/uzivatel-rights-cc/editrights/ID`. Persony mají aktivní
 
 ### Hledání a textové filtry bez diakritiky
 
-Použij personu 1 (VV). V seznamu členů filtr odešli tlačítkem Vyhledat, v ostatních tabulkách klávesou Enter
-v poli filtru. Každý filtr zkoušej zvlášť; `NENALEZITELNY` vrátí prázdnou tabulku.
-Filtr Obec je jen v režimu „Kompletní poznámky a adresy“ a odeslání filtru tento režim vypne. Obec proto zadej
-rovnou do adresy: `/uzivatel-list/list/201?fullnotes=1&grid-filter[mesto]=STEZERY`.
-Nová migrace `2026-11-23-130000-demo-hledani-bez-diakritiky.sql` doplňuje chybějící texty do stávajících
+Použij personu 1 (VV). Filtr odešli tlačítkem Vyhledat nad tabulkou. Každý filtr zkoušej zvlášť;
+`NENALEZITELNY` vrátí prázdnou tabulku.
+Filtr Obec je jen v režimu „Kompletní poznámky a adresy“; zapni ho přepínačem nad seznamem členů.
+Nová migrace `2026-11-23-150000-demo-hledani-bez-diakritiky.sql` doplňuje chybějící texty do stávajících
 syntetických řádků, jejich počty ani finanční hodnoty nemění.
 
 | Obrazovka / řádek | Filtr a příklad vstupu |
