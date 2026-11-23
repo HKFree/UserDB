@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use Nette;
-use Nette\Application\UI\Form;
 
 /**
  * @author pavkriz
@@ -41,16 +40,15 @@ class ApiKlic extends Table
         return substr(str_shuffle(str_repeat($x = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ', (int) ceil($length / strlen($x)))), 1, $length);
     }
 
-    public function getEditForm(Nette\Forms\Container &$container, Form $form): void {
+    public function getEditForm(Nette\Forms\Container &$container): void {
         $container->addHidden('id')->setAttribute('class', 'id');
         $klic = $container->addText('klic', 'Klíč', 20)->setAttribute('readonly', 'readonly')->setAttribute('class', 'klic');
         $container->addDate('plati_do', 'Platnost do');
         $container->addText('poznamka', 'Poznámka')->setAttribute('class', 'poznamka')->setAttribute('placeholder', 'Poznámka');
 
-        $vals = $form->getValues();
-        $klicValue = $vals['apiKlic'][$container->getName()]['klic'];
-        if (strlen($klicValue) <= 0) {
-            $klic->setValue($this->generateKey()); // generate key
+        // Hodnotu čteme přímo z pole: getValues() formuláře by tady spustilo validaci celého formuláře.
+        if ($klic->getValue() === '') {
+            $klic->setValue($this->generateKey());
         }
     }
 

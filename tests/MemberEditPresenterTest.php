@@ -215,6 +215,33 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same($password, (string) $inputs[0]['value']);
     }
 
+    /** @return array<string, array{bool}> */
+    public function ipRowButtonCases(): array {
+        return ['existing member' => [false], 'new member' => [true]];
+    }
+
+    /** @dataProvider ipRowButtonCases */
+    public function testIpRowButtonsWorkOnIncompleteFormWithoutSaving(bool $newMember): void {
+        $first = $newMember ? '0' : (string) $this->fixtures->ipAddress($this->member->id, '10.107.244.1')->id;
+        $post = ['ip' => [$first => $this->ipPost(['id' => $newMember ? '' : $first, 'ip_adresa' => '10.107.244.1', 'hostname' => 'rozepsany-host'])]]
+            + ($newMember ? ['id' => ''] : [])
+            + $this->post(['jmeno' => 'Rozepsané', 'telefon' => '', 'ulice_cp' => '', 'mesto' => '', 'psc' => '']);
+        unset($post['save']);
+        $before = $this->snapshot();
+        $add = ['add' => '+ Přidat další IP'];
+
+        $second = $this->assertIpRowsWithoutSaving(['ip' => $post['ip'] + $add] + $post, ['10.107.244.1', ''], $before);
+        $post['ip'][$second] = $this->ipPost(['ip_adresa' => '10.107.244.2']);
+        $third = $this->assertIpRowsWithoutSaving(['ip' => $post['ip'] + $add] + $post, ['10.107.244.1', '10.107.244.2', ''], $before);
+        $post['ip'][$third] = $this->ipPost(['ip_adresa' => '10.107.244.3']);
+        $post['ip'][$second]['remove'] = '– Odstranit IP';
+        Assert::same($third, $this->assertIpRowsWithoutSaving($post, ['10.107.244.1', '10.107.244.3'], $before));
+        // The first row is stored in the database unless the member is new: removing it must not delete it yet.
+        unset($post['ip'][$second]);
+        $post['ip'][$first]['remove'] = '– Odstranit IP';
+        Assert::same($third, $this->assertIpRowsWithoutSaving($post, ['10.107.244.3'], $before));
+    }
+
     /** @return list<array{string}> */
     public function transferDirections(): array {
         return [['out'], ['in']];
@@ -599,6 +626,32 @@ final class MemberEditPresenterTest extends DatabaseTestCase
         Assert::same(1, preg_match('~>\\s*' . $escaped . '</(?:li|td)>~u', $result->html), $message);
         Assert::same(0, $this->database->table('Log')->count('*'));
         Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+    }
+
+    /**
+     * A row button redraws the form as the user left it: no validation errors, nothing stored, nothing sent.
+     * @param array<string, mixed> $post
+     * @param list<string> $addresses expected addresses of the rendered IP rows, in order
+     * @param array<string, string> $before
+     * @return int key of the last rendered IP row
+     */
+    private function assertIpRowsWithoutSaving(array $post, array $addresses, array $before): int {
+        $result = $this->submit($post);
+        Assert::same(200, $result->status);
+        Assert::null($result->redirectUrl);
+        // An empty text input is rendered without the value attribute.
+        preg_match_all('~name="ip\[(\d+)\]\[ip_adresa\]"(?:[^>]*? value="([^"]*)")?~', $result->html, $rows);
+        Assert::same($addresses, $rows[2]);
+        // Match rendered error text, never the message embedded in data-nette-rules.
+        Assert::notContains('Zadejte telefon</td>', $result->html);
+        Assert::notContains('<ul class="error"', $result->html);
+        Assert::same(1, preg_match('~<input[^>]*name="jmeno"[^>]*value="Rozepsané"~u', $result->html));
+        Assert::same(1, preg_match('~<input(?:(?! value=)[^>])*name="telefon"(?:(?! value=)[^>])*>~', $result->html));
+        // The host name typed into the first row stays as long as that row does.
+        Assert::same(in_array('10.107.244.1', $addresses, true), str_contains($result->html, 'value="rozepsany-host"'));
+        Assert::same($before, $this->snapshot());
+        Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);
+        return (int) end($rows[1]);
     }
 
     /** @return array<string, string> */
