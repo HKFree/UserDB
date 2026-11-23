@@ -9,7 +9,7 @@ for (const width of [1280, 375]) {
             ...(width === 375 ? { userAgent: phone, isMobile: true, hasTouch: true } : {}),
         });
 
-        test('grafy aktivních členů se vejdou do okna a ukážou hodnoty měsíce', async ({ page }) => {
+        test('grafy aktivních účastníků se vejdou do okna a ukážou hodnoty měsíce', async ({ page }) => {
             await page.goto('/sprava-grafu/usersgraph?obdobi=vse');
             const grafy = page.locator('.graf-clenu[data-serie]');
             await expect(grafy).toHaveCount(2);

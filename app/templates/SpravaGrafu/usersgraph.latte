@@ -4,10 +4,10 @@
 
 {block content}
 
-<h3>Počet aktivních členů po měsících</h3>
+<h3>Počet aktivních účastníků po měsících</h3>
 
 <p class="graf-clenu-popis text-muted">
-    Člen se v měsíci počítá jednou, když měl aspoň jednu měsíční aktivaci: automatem, ručně od správce nebo částečnou.
+    Účastník se v měsíci počítá jednou, když měl aspoň jednu měsíční aktivaci: automatem, ručně od správce nebo částečnou.
     Vratky peněz a dočasná aktivace přes SMS se nepočítají.
 </p>
 
@@ -23,9 +23,9 @@
 {if $mesice === []}
     <div class="alert alert-info graf-clenu-prazdny">
         {if $obdobi === App\Model\ObdobiGrafuClenu::Vse}
-            Žádný člen zatím nemá měsíční aktivaci.
+            Žádný účastník zatím nemá měsíční aktivaci.
         {else}
-            Za vybrané období nemá měsíční aktivaci žádný člen. Zvolte delší období.
+            Za vybrané období nemá měsíční aktivaci žádný účastník. Zvolte delší období.
         {/if}
     </div>
 {else}
@@ -34,7 +34,7 @@
     {var $rozdil = $posledni->celkem() - $prvni->celkem()}
     <div class="graf-clenu-souhrn">
         <dl class="graf-clenu-celkem">
-            <dt>Aktivních členů za {$posledni->nazev()}</dt>
+            <dt>Aktivních účastníků za {$posledni->nazev()}</dt>
             <dd class="graf-clenu-cislo">{$posledni->celkem()|cislo}</dd>
             <dd n:if="$prvni !== $posledni" class="graf-clenu-zmena">
                 <span n:class="$rozdil > 0 ? 'text-success', $rozdil < 0 ? 'text-danger'">
@@ -59,10 +59,10 @@
         <div class="graf-clenu-grafy" data-mesice="{$grafJson}">
             <div class="graf-clenu-sekce">
                 <div class="graf-clenu-zahlavi">
-                    <h4>Všichni aktivní členové</h4>
+                    <h4>Všichni aktivní účastníci</h4>
                     {include legenda, zpusoby => $zpusoby}
                 </div>
-                <p class="graf-clenu-podtitul text-muted">Počet členů. Vrstvy jsou sečtené, horní hrana je celkový počet.</p>
+                <p class="graf-clenu-podtitul text-muted">Počet účastníků. Vrstvy jsou sečtené, horní hrana je celkový počet.</p>
                 {include graf, serie => 'automatem rucne castecne'}
             </div>
             <div class="graf-clenu-sekce">
@@ -72,7 +72,7 @@
                         {include legenda, zpusoby => array_diff_key($zpusoby, ['automatem' => true])}
                     {/if}
                 </div>
-                <p class="graf-clenu-podtitul text-muted">Počet členů. V horním grafu tvoří jen tenký pruh, tady mají vlastní měřítko.</p>
+                <p class="graf-clenu-podtitul text-muted">Počet účastníků. V horním grafu tvoří jen tenký pruh, tady mají vlastní měřítko.</p>
                 {if $jsouRucniAktivace}
                     {include graf, serie => 'rucne castecne'}
                 {else}
@@ -89,7 +89,7 @@
     <div id="graf-clenu-hodnoty" n:class="count($mesice) > 1 ? collapse">
         <div class="table-responsive">
             <table class="table table-condensed table-striped graf-clenu-tabulka">
-                <caption class="sr-only">Počet aktivních členů po měsících, od nejnovějšího</caption>
+                <caption class="sr-only">Počet aktivních účastníků po měsících, od nejnovějšího</caption>
                 <thead>
                     <tr>
                         <th scope="col">Měsíc</th>

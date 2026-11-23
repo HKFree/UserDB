@@ -32,7 +32,7 @@ final class SpravaGrafuPresenterTest extends DatabaseTestCase
     public function testWithoutActivationsShowsAMessageInsteadOfTheGraph(): void {
         $document = $this->page();
 
-        Assert::same(['Za vybrané období nemá měsíční aktivaci žádný člen. Zvolte delší období.'], $this->texts($document, '.graf-clenu-prazdny'));
+        Assert::same(['Za vybrané období nemá měsíční aktivaci žádný účastník. Zvolte delší období.'], $this->texts($document, '.graf-clenu-prazdny'));
         Assert::count(0, $document->find('.graf-clenu-grafy'));
         Assert::count(0, $document->find('.graf-clenu-souhrn'));
         Assert::count(0, $document->find('.graf-clenu-tabulka'));
@@ -42,7 +42,7 @@ final class SpravaGrafuPresenterTest extends DatabaseTestCase
     public function testWithoutAnyActivationTheMessageDoesNotOfferALongerPeriod(): void {
         $document = $this->page('vse');
 
-        Assert::same(['Žádný člen zatím nemá měsíční aktivaci.'], $this->texts($document, '.graf-clenu-prazdny'));
+        Assert::same(['Žádný účastník zatím nemá měsíční aktivaci.'], $this->texts($document, '.graf-clenu-prazdny'));
     }
 
     public function testShowsSummaryGraphDataAndTableOfMonths(): void {
@@ -55,7 +55,7 @@ final class SpravaGrafuPresenterTest extends DatabaseTestCase
 
         $document = $this->page();
 
-        Assert::same(['Aktivních členů za ' . $this->monthName(0)], $this->texts($document, '.graf-clenu-celkem dt'));
+        Assert::same(['Aktivních účastníků za ' . $this->monthName(0)], $this->texts($document, '.graf-clenu-celkem dt'));
         Assert::same(['4'], $this->texts($document, '.graf-clenu-cislo'));
         Assert::same(['Rozdíl +1 (+33,3 %) Za ' . $this->monthName(2) . ' to bylo 3.'], $this->texts($document, '.graf-clenu-zmena'));
         Assert::count(1, $document->find('.graf-clenu-zmena .text-success .fa-caret-up'));
@@ -75,7 +75,7 @@ final class SpravaGrafuPresenterTest extends DatabaseTestCase
         Assert::same(['Automatem', 'Ručně', 'Částečně', 'Ručně', 'Částečně'], $this->texts($document, '.graf-clenu-legenda li'));
         // The manual and partial activations are a few pixels high under thousands of automatic ones: a second graph
         // shows them on their own scale.
-        Assert::same(['Všichni aktivní členové', 'Ruční a částečné aktivace'], $this->texts($document, '.graf-clenu-grafy h4'));
+        Assert::same(['Všichni aktivní účastníci', 'Ruční a částečné aktivace'], $this->texts($document, '.graf-clenu-grafy h4'));
         Assert::same(['automatem rucne castecne', 'rucne castecne'], array_map(
             static fn (DomQuery $graph): string => (string) $graph['data-serie'],
             $document->find('.graf-clenu-grafy .graf-clenu[data-serie]'),
@@ -126,7 +126,7 @@ final class SpravaGrafuPresenterTest extends DatabaseTestCase
 
         $document = $this->page();
 
-        Assert::same(['Aktivních členů za ' . $this->monthName(0)], $this->texts($document, '.graf-clenu-celkem dt'));
+        Assert::same(['Aktivních účastníků za ' . $this->monthName(0)], $this->texts($document, '.graf-clenu-celkem dt'));
         Assert::same(['1'], $this->texts($document, '.graf-clenu-cislo'));
         Assert::count(0, $document->find('.graf-clenu-zmena'));
         Assert::same(['Automatem', '0', 'Ručně', '0', 'Částečně', '1'], $this->texts($document, '.graf-clenu-rozpad dt, .graf-clenu-rozpad dd'));
@@ -155,6 +155,21 @@ final class SpravaGrafuPresenterTest extends DatabaseTestCase
 
         Assert::same(['5 let'], $this->texts($document, '.graf-clenu-obdobi a.active'));
         Assert::count(14, $this->tableRows($document));
+    }
+
+    public function testPageSpeaksOfParticipants(): void {
+        $this->activation(self::MONTHLY_ACTIVATION, 1);
+        $this->activation(self::MANUAL_ACTIVATION, 0);
+
+        $document = $this->page();
+
+        Assert::same(['Počet aktivních účastníků po měsících'], $this->texts($document, 'h3'));
+        Assert::contains('Účastník se v měsíci počítá jednou', $this->texts($document, '.graf-clenu-popis')[0]);
+        Assert::same([
+            'Počet účastníků. Vrstvy jsou sečtené, horní hrana je celkový počet.',
+            'Počet účastníků. V horním grafu tvoří jen tenký pruh, tady mají vlastní měřítko.',
+        ], $this->texts($document, '.graf-clenu-podtitul'));
+        Assert::same(['Počet aktivních účastníků po měsících, od nejnovějšího'], $this->texts($document, '.graf-clenu-tabulka caption'));
     }
 
     public function testPeriodLinksMarkTheSelectedOne(): void {

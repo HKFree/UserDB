@@ -54,7 +54,7 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Kauce | 20042 Kauce | 500 Kč kauce, 790 Kč platba spolku |
 | Poslední platba NIKDY | 20043 Nikdyneplatil | Platba bez data |
 | Všech 17 pohybů a dlouhá poznámka | 20044 Všechnypohyby | Konto; pohyb s oběma příznaky, další bez obou příznaků |
-| Ruční aktivace od správce | 20090 Grafruční | Konto: 24 měsíců platba a aktivace typu 8; v grafu aktivních členů spodní graf |
+| Ruční aktivace od správce | 20090 Grafruční | Konto: 24 měsíců platba a aktivace typu 8; v grafu aktivních účastníků spodní graf |
 | Částečná aktivace automatem | 20091 Grafčástečný | Konto: každý třetí měsíc platba 145 Kč a aktivace typu 15 |
 | Pohyby, které aktivitu nezakládají | 20092 Grafnepočítaný | Konto: platba, vratka a dočasná aktivace přes SMS 70 měsíců zpět; graf ho nepočítá |
 | Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, typy zařízení 1 až 12 |
@@ -218,10 +218,10 @@ ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho 
 | Převod bez původního pohybu | 40000104, pohyb typu 10 a příjem typu 1 na 20044 |
 | Zaplacené / nezaplacené výdaje, oba subjekty, stránkování | `/sprava-plateb/odchoziplatby`, 120 řádků 20000 až 20119 |
 | Dvanáct účtů, stránkování | `/sprava-uctu/ucty`; každý má tři historické stavy, obrazovka ukazuje nejnovější |
-| Graf aktivních členů, osm let | `/sprava-grafu/usersgraph?obdobi=vse`, členové 20036 až 20038 (posledních 36 měsíců platba a aktivace, starší měsíce jen aktivace), dostupné i bez objemu; s objemem růst z 1 020 na 4 500 členů a plató za posledních 36 měsíců |
+| Graf aktivních účastníků, osm let | `/sprava-grafu/usersgraph?obdobi=vse`, členové 20036 až 20038 (posledních 36 měsíců platba a aktivace, starší měsíce jen aktivace), dostupné i bez objemu; s objemem růst z 1 020 na 4 500 účastníků a plató za posledních 36 měsíců |
 | Měsíc bez aktivací (výpadek automatu) | 70 měsíců zpět: graf spadne na nulu. Člen 20092 má v tom měsíci jen platbu, vratku (typ 7) a dočasnou aktivaci přes SMS (typ 5), graf ho nepočítá |
-| Ruční a částečné aktivace | Spodní graf: člen 20090 ruční aktivace (typ 8) posledních 24 měsíců, člen 20091 částečná (typ 15) každý třetí měsíc za 3 roky; s objemem každý měsíc asi 110 až 180 ručních a 35 až 45 částečných |
-| Televize nezdvojí člena | Člen 20036 má 40 měsíců zpět aktivaci automatem i televize (obě typ 4), graf ho v tom měsíci počítá jednou |
+| Ruční a částečné aktivace | Spodní graf: člen 20090 ruční aktivace (typ 8) posledních 24 měsíců, člen 20091 částečná (typ 15) každý třetí měsíc za 3 roky; s objemem každý měsíc asi 110 až 180 ručních a 40 až 46 částečných |
+| Televize nezdvojí účastníka | Člen 20036 má 40 měsíců zpět aktivaci automatem i televize (obě typ 4), graf ho v tom měsíci počítá jednou |
 | Prázdný graf | Jen s prázdnou databází nebo v testu: hláška místo grafu (`SpravaGrafuPresenterTest`) |
 | Přehled a schvalování ČČ | `/sprava-cc/prehledcc`, `/sprava-cc/schvalovanicc` |
 | Štítky bez barev, více řádků a stejný text ve dvou oblastech | `/sprava-stitku/`, štítky 21000 až 21004, členové 20002 a 20027 |
