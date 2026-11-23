@@ -11,7 +11,7 @@ import { desktop, formPage, open, phone, serve, smallPhone } from './form-page.m
 const id = field => `frm-apForm-${field}`;
 const row = (label, control) => `<tr><th>${label}</th><td>${control} </td></tr>`;
 const label = (field, text) => `<label for="${id(field)}">${text}</label>`;
-const required = '<span class="red">*</span>';
+const required = '<span class="required-badge">povinné</span>';
 const checkbox = (name, field, classes, text) => `<label for="${id(field)}">`
     + `<input type="checkbox" name="${name}" ${classes ? `class="${classes}" ` : ''}id="${id(field)}">${text}</label>`;
 const record = content => `<tr><td colspan="4">${content}</td></tr>`;
@@ -257,7 +257,6 @@ const memberFixture = formPage(`<div class="member-form-layout">
         <input type="submit" name="save" class="btn btn-success btn-white default btn-edit-save" value="Uložit">
         <a href="/" class="btn btn-link">Zrušit</a>
         <span class="form-status" role="status" aria-live="polite"></span>
-        <span class="required-note"><span class="red">*</span> povinné pole</span>
     </div>
     <input type="hidden" name="id" value="20027"><input type="hidden" name="_do" value="uzivatelForm-submit"></form>
     <nav class="form-nav" aria-label="Části formuláře"><span>Části formuláře</span>

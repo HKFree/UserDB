@@ -22,7 +22,7 @@ const fixture = formPage(`
         + '<option value="0" selected>Správce S Velmi Dlouhým Jménem &lt;spravce.s.dlouhou.adresou@example.hkfree.org&gt;</option>'
         + '<option value="1">oblast201@hkfree.org</option></select>')}
     ${row(label('email', 'Příjemce'), `<textarea name="email" cols="72" rows="20" id="frm-emailallForm-email" disabled>${recipients}</textarea>`)}
-    ${row(`${label('subject', 'Předmět')}<span class="red">*</span>`,
+    ${row(`${label('subject', 'Předmět')}<span class="required-badge">povinné</span>`,
         '<input type="text" name="subject" size="70" id="frm-emailallForm-subject" required value="Zpráva od správce sítě hkfree.org">')}
     ${row(label('message', 'Text'), '<textarea name="message" cols="72" rows="10" id="frm-emailallForm-message"></textarea>')}
     ${row('', '<input type="submit" name="send" class="btn btn-success btn-xs btn-white" value="Odeslat">')}

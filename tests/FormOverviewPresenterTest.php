@@ -77,7 +77,12 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         sort($actual);
         Assert::same($expected, $actual, 'Every member field, hidden control and dynamic IP control must render exactly once.');
         Assert::count(1, $this->elements($document, '//*[contains(@class,"form-save-bar")]//input[@name="save"]'));
-        Assert::contains('* povinné pole', $this->text($document, '//*[contains(@class,"form-save-bar")]'));
+        // Each required field carries its own badge, so the bar needs no legend.
+        Assert::notContains('povinné', $this->text($document, '//*[contains(@class,"form-save-bar")]'));
+        Assert::same(['povinné'], array_values(array_unique(array_map(
+            static fn (\DOMNode $node): string => trim($node->textContent),
+            $this->elements($document, '//label[@for="frm-uzivatelForm-jmeno"]/following-sibling::span[@class="required-badge"]'),
+        ))));
         Assert::count($editing ? 1 : 0, $this->elements($document, '//*[contains(@class,"form-save-bar")]/a'));
     }
 

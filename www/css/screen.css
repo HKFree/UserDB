@@ -3086,10 +3086,25 @@ html {
     content: "";
 }
 
-.required-note {
-    margin-left: auto;
-    font-size: 12px;
-    color: #6b7280;
+/* Povinné pole: štítek u popisku a proužek u pole, aby šlo poznat i bez čtení popisků. */
+.required-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 9px;
+    background-color: #fdecec;
+    color: #9a1c1c;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+    vertical-align: 1px;
+    white-space: nowrap;
+}
+
+.main table.form > tbody > tr > td > input[required]:not([type="checkbox"]):not([type="radio"]):not(.field-invalid),
+.main table.form > tbody > tr > td > select[required]:not(.field-invalid),
+.main table.form > tbody > tr > td > textarea[required]:not(.field-invalid) {
+    border-left: 3px solid #e3a1a1;
 }
 
 .form-nav {
