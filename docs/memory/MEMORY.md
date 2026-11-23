@@ -9,7 +9,8 @@
 - [Testy v prohlížeči](userdb_e2e.md) - nástrahy Playwright testů hlavních postupů, předčasně ukončená aktivace Floxu a stránky závislé na odpojené službě.
 - [Regresní testy SMS](userdb_sms_tests.md) - bezpečné testování bez externí brány a nástrahy starého SMS senderu.
 - [Testy InfluxDB](userdb_influx_tests.md) - lokální server, přidělený port a ověření v1 API.
-- [Přihlašovací formulář testovacího serveru](userdb_testing_login.md) - nástrahy brány před testovacími instancemi a její lokální zkouška s Caddy.
+- [Přihlašovací formulář náhledů PR](userdb_testing_login.md) - nástrahy formuláře před náhledy PR a jeho lokální zkouška.
+- [Image náhledu PR](userdb_preview_image.md) - nástrahy Dockerfile.preview (Flox v Dockeru, emulace, velikost) a chování Coolify.
 - [Demo data](userdb_demo_data.md) - nástrahy při psaní scénářových migrací a objemového kroku pro testovací instance.
 - [Registrační PDF](userdb_registration_pdf.md) - rozhodnutí o dokumentu pro členy spolku a odmítnutí ostatních vztahů.
 - [Náhledy stránek v PR](userdb_screenshots.md) - nestabilní časy demo dat, mobilní rozměry PNG a prostředí pro focení.

@@ -255,137 +255,133 @@ When something goes wrong, try to run `(cd /opt/UserDB.git; hooks/post-receive)`
 
 [git-hooks/post-receive.sample](git-hooks/post-receive.sample) is a copy of the hook on the production server as of 2026-11-21, with every secret value replaced by `a`. It builds the images of the web application, the PDF generator, the STV connector and the accounting reports, applies the database migrations and replaces the running containers.
 
-### Testing server
+### Pull request previews
 
-A shared testing server runs one instance for `master` and one for every open pull request from a branch of
-this repository, each under its own host name: `master.<domain>` and `pr-<number>.<domain>`. An instance runs
-the same way as the [local web with Flox](#local-web-database-and-pdf-with-flox): `config.flox.neon`, demo data,
-mail captured to files, and visitors signed in as member 1 by default. All instances sit behind a reverse proxy
-that lets in the HKFree network without a password and sends everyone else to a sign-in form; the maintainers
-have the password. One sign-in is valid for all instances for 30 days.
+[Coolify](https://coolify.io) runs a preview of `master` at `https://<domain>` and one of every open pull request
+from a branch of this repository at `https://<number>.<domain>`. A preview runs the same way as the
+[local web with Flox](#local-web-database-and-pdf-with-flox): `config.flox.neon`, demo data, mail captured to
+files, and visitors signed in as member 1 by default. Every preview answers behind a
+[sign-in form](#sign-in-form) that lets in the HKFree network without a password and asks everyone else for
+one; the maintainers have the password. One sign-in is valid for all previews for 30 days.
 
-Within an instance, `/demo-osoba` and the persona panel in the Tracy bar let each visitor choose a [demo persona](docs/userdb_demo_data.md#persony). This choice is confined to that instance and does not change the shared testing sign-in.
+Within a preview, `/demo-osoba` and the persona panel in the Tracy bar let each visitor choose a [demo persona](docs/userdb_demo_data.md#persony). This choice is confined to that preview and does not change the sign-in shared by the previews.
 
-Instances include the scenarios and production-sized synthetic volume described in the
-[demo data catalog](docs/userdb_demo_data.md). The setup step enables volume by default; setting
-`USERDB_DEMO_VOLUME=0` in its environment skips the generated volume while retaining the scenario migrations.
+Previews include the scenarios and production-sized synthetic volume described in the
+[demo data catalog](docs/userdb_demo_data.md). The setup step enables volume by default; the variable
+`USERDB_DEMO_VOLUME=0` of the application in Coolify skips the generated volume while retaining the scenario
+migrations.
 
-1. [deploy-testing.yml](.github/workflows/deploy-testing.yml) runs on a push to `master` and when a pull
-   request is opened, updated, reopened or closed. It connects to the server over SSH and sends one request:
-   deploy a commit as an instance, or remove the instance of a closed pull request. Nothing is built on the
-   GitHub runner. The run summary links the instance. In a pull request the workflow also keeps one comment
-   with the address of its instance and rewrites it after a deploy, a failed deploy and the removal of the
-   instance. The comment is not rewritten when another pull request takes the place of the instance.
-2. The connection uses `secrets.TESTING_SSH_KEY`, `vars.TESTING_SSH_HOST`, `vars.TESTING_SSH_USER` and the
-   server's host key in `vars.TESTING_SSH_KNOWN_HOSTS`; `vars.TESTING_DOMAIN` is the domain of the instances.
-   On the server the key can only run [scripts/userdb_testing_deploy.sh](scripts/userdb_testing_deploy.sh),
-   installed as `/usr/local/bin/userdb-testing-deploy`.
-3. The script accepts only a commit that is on a branch of this repository. It checks the commit out as a git
-   worktree in `/srv/userdb-testing/instances/<instance>`, installs the Composer dependencies, **deletes the
-   database of that instance and rebuilds it** from the migrations and demo data of the commit, and runs
-   MariaDB and the web as systemd user services of the deploy account. The web of `pr-<number>` listens on
-   `127.0.0.1:<10000 + number>`, the web of `master` on `127.0.0.1:10000`.
+1. Coolify learns about pushes and pull requests through its GitHub App. A push to `master` and the opening,
+   update or reopening of a pull request make it build [Dockerfile.preview](Dockerfile.preview) of that commit
+   and start the image as a container of its own; closing or merging the pull request removes its preview.
+   Coolify keeps one comment in the pull request with the address of the preview and the state of its build.
+2. The image holds the project's Flox environment, the Composer dependencies and the code of the commit. It is
+   not the production image: [Dockerfile](Dockerfile) and the deployment above know nothing about previews.
+3. The container runs [scripts/userdb_preview.sh](scripts/userdb_preview.sh): MariaDB, then
+   `scripts/userdb_dev_setup.php`, which builds the database from the migrations and demo data of the commit,
+   then the local web on port 8080 behind the sign-in form. MariaDB and the web, and with it the code of the
+   pull request that answers the requests, run under an unprivileged account; the build of the image and the
+   activation of Flox at the start of the container run as root of the container. The database is stored
+   inside the container, so **every deployment starts from a new database**.
 
 Things to know:
 
-- Data entered in an instance lasts until its next deployment. Captured mail, sessions and logs of the
-  instance stay.
-- The server keeps at most six pull request instances. A seventh replaces the one deployed longest ago;
-  re-run the last workflow run of a pull request to get its instance back.
-- An instance runs the head commit of the pull request, not its merge with `master`. A branch from before
-  the Flox setup of the local web (`scripts/userdb_dev_setup.php`) is refused until it is updated from
-  `master`.
-- GitHub does not run the workflow for a pull request that conflicts with `master`. Its instance stays as it
-  was, also after the pull request is closed, until the conflict is resolved or a newer instance replaces it.
-- A failed deployment stops the services of its instance; the run log shows the reason.
-- The domain of the instances has to resolve every `pr-<number>` name to the server. The current server
-  uses a wildcard DNS service for that, so a new instance needs no DNS change.
-- A pull request from a fork is never deployed, because its code would run on the server unreviewed. To test
-  it, a maintainer pushes its commits to a branch of this repository and opens a pull request from there.
-- A change of the script takes effect only after the new version is installed on the server by hand.
+- Data entered in a preview, its captured mail, sessions and logs last until its next deployment.
+- Coolify stops the preview of a pull request before it starts the new deployment, and the new one answers
+  only after its database has been built: a preview is down for a while after every push. Only the preview
+  of `master` keeps answering from the previous deployment until the new one is healthy.
+- A preview runs the head commit of the pull request, not its merge with `master`. A branch from before
+  `Dockerfile.preview` cannot be built until it is updated from `master`.
+- A pull request from a fork must never be deployed, because its code would run on the server unreviewed;
+  the setting *PR deployment access* below is what keeps Coolify from doing it. To test such a pull request,
+  a maintainer pushes its commits to a branch of this repository and opens a pull request from there.
+- `Dockerfile.preview` and the code come from the pull request. The domain, the variables and the limits are
+  set once in Coolify and are the same for all previews.
+- The server must not let the containers of previews reach anything that is not meant for testing:
+  `config.flox.neon` disconnects the external services it knows about, but for example the Wewimo reader
+  connects to whatever address is stored in the database.
 
-The server needs Flox, git, curl, the reverse proxy with the [sign-in form](#sign-in-form) and an unprivileged
-deploy account with lingering enabled (`loginctl enable-linger <account>`) that owns `/srv/userdb-testing`.
-The script is installed owned by root,
-and the deploy key is kept in a root-owned file that sshd reads for that account
-(`AuthorizedKeysFile /etc/ssh/authorized_keys/%u`), so that deployed code cannot change either:
+The same image runs on a developer machine with Docker; on Apple Silicon add `--platform linux/amd64` to both
+commands, the Flox environment has no ARM Linux packages:
 
-```
-command="/usr/local/bin/userdb-testing-deploy",restrict ssh-ed25519 <public key>
+```sh
+docker build -f Dockerfile.preview -t userdb-preview .
+docker run --rm -p 127.0.0.1:8080:8080 -e USERDB_TESTING_LOGIN_PASSWORD_HASH='<hash>' userdb-preview
 ```
 
-Deployed code runs as the deploy account, so the server must not let that account reach anything that is
-not meant for testing: `config.flox.neon` disconnects the external services it knows about, but for example
-the Wewimo reader connects to whatever address is stored in the database. On the current server a firewall
-rule rejects connections of the deploy account to private networks.
-
-The reverse proxy maps `pr-<number>.<domain>` to the port above and obtains a certificate for a host name
-only after the script has created `/srv/userdb-testing/deployed/<instance>`. It recognises the HKFree network
-by the address of the connecting client (the internal addresses and the public prefixes of HKFree), never by
-a forwarded header.
+The preview then answers at `http://localhost:8080/`; how to make the hash is shown [below](#sign-in-form).
 
 #### Sign-in form
 
-The form is a service of its own, [scripts/userdb_testing_login.php](scripts/userdb_testing_login.php) with
-[scripts/UserdbTestingLogin.php](scripts/UserdbTestingLogin.php), so that the code of a deployed pull request
-cannot switch it off. The reverse proxy serves `/testing-login` of every instance from the service and asks it
-about every other request from outside the HKFree network:
+The form is [scripts/UserdbTestingLogin.php](scripts/UserdbTestingLogin.php). The router of a preview,
+[scripts/userdb_preview_router.php](scripts/userdb_preview_router.php), asks it about every request before the
+application or a file of `www/` answers:
 
-- A visitor without the cookie of the form is redirected to the form and after signing in back to the page
-  asked for. A request other than GET or HEAD is refused with 403.
-- A request with the cookie reaches the instance unchanged, including its `Authorization` header; only the
-  cookie of the form is blanked on the way, so the code of a pull request never sees it. A client of the API
-  of an instance signs in first and sends the cookie along:
-  `curl --cookie-jar jar --data-urlencode "password=$PASSWORD" https://master.<domain>/testing-login`, then
-  `curl --cookie jar --user apikey<id>:<key> https://master.<domain>/api/...`.
+- A visitor from an open network comes in without signing in. The proxy of Coolify connects from a private
+  address and adds the address of its visitor to `X-Forwarded-For`; the form takes the last address there.
+  From a connection that comes from a public address it takes that address and ignores the header. Open
+  networks are therefore public ones only: a private address is where the proxy and the other containers of
+  the server connect from.
+- A visitor without the cookie of the form is redirected to `/testing-login` and after signing in back to the
+  page asked for. A request other than GET or HEAD is refused with 403.
+- A request with the cookie reaches the application unchanged, including its `Authorization` header. A client
+  of the API of a preview signs in first and sends the cookie along:
+  `curl --cookie-jar jar --data-urlencode "password=$PASSWORD" https://<domain>/testing-login`, then
+  `curl --cookie jar --user apikey<id>:<key> https://<domain>/api/...`.
 - `/testing-login` shows a signed-in visitor a button to sign out.
 - Five wrong passwords from one address block that address for up to 15 minutes.
 - The cookie is signed with the hash of the password, so a new password signs everyone out.
+- A preview whose form is not set up answers every request with 500 and logs the reason.
 
-The service needs PHP 8.2 or newer installed on the server itself, outside Flox, and nothing from Composer:
+The form is set up by variables of the application in Coolify:
+
+| Variable | Meaning |
+|---|---|
+| `USERDB_TESTING_LOGIN_PASSWORD_HASH` | bcrypt hash of the shared password, required |
+| `USERDB_TESTING_LOGIN_COOKIE_DOMAIN` | `<domain>`, so that one sign-in is valid for all previews; without it the cookie belongs to the visited host |
+| `USERDB_TESTING_LOGIN_OPEN_NETWORKS` | networks let in without signing in, as `address/prefix length` separated by commas; without it everyone signs in |
 
 ```sh
-install -D -m 644 -t /usr/local/lib/userdb-testing-login scripts/userdb_testing_login.php scripts/UserdbTestingLogin.php
-install -m 644 scripts/userdb_testing_login.service /etc/systemd/system/userdb-testing-login.service
 php -r 'echo password_hash(rtrim(fgets(STDIN), "\n"), PASSWORD_BCRYPT), "\n";'    # reads the password, prints its hash
-install -m 600 /dev/null /etc/userdb-testing-login.env                              # then fill in the two lines below
-systemctl enable --now userdb-testing-login
 ```
 
-```
-USERDB_TESTING_LOGIN_PASSWORD_HASH=<hash>
-USERDB_TESTING_LOGIN_COOKIE_DOMAIN=<domain>
-```
+The form removes its variables from the environment of every request before the application starts, because
+the Tracy bar of the local web shows the environment to every visitor. It is still part of the image, so the
+code of a pull request can read the hash and can leave the form out. That is acceptable because only branches
+of this repository are deployed: whoever can push here is trusted with the previews. The password guards
+demo data only; use it nowhere else.
 
-[The unit](scripts/userdb_testing_login.service) runs the service under an account of its own, so the deploy
-account cannot read the hash, and on a port below 1024, which the deploy account cannot take over while the
-service is down. In the Caddyfile of the reverse proxy the instances get:
+#### Setup in Coolify
 
-```
-@outside not remote_ip <networks of HKFree>
-handle /testing-login* {
-	reverse_proxy 127.0.0.1:981
-}
-handle {
-	forward_auth @outside 127.0.0.1:981 {
-		uri /verify
-	}
-	reverse_proxy <port of the instance> {
-		header_up Cookie "userdb_testing_login=[^;]*" "userdb_testing_login=-"
-	}
-}
-```
+Done once by the administrator of the Coolify instance (written for Coolify 4.7):
 
-A change of the service, like a change of the deploy script, takes effect only after the new version is
-installed on the server by hand and the service restarted.
+1. DNS: `<domain>` and `*.<domain>` resolve to the Coolify server.
+2. **Sources**: a GitHub App with *Pull request previews* enabled, installed in the organization for this
+   repository only.
+3. A new resource from the repository through that GitHub App: branch `master`, build pack **Dockerfile**,
+   Dockerfile location `/Dockerfile.preview`, exposed port `8080`, domain `https://<domain>`.
+4. **Environment Variables**: the variables of the sign-in form in both the production and the preview set,
+   each with *Runtime* only (*Build time*: not available during build) and *Interpolation*: literal, because
+   a hash contains `$`. In **Advanced**, set *Build arguments* to *Managed manually in Dockerfile*, so that
+   no variable ends up in the metadata of the image. Give the application no other secret: the Tracy bar
+   shows every other variable to the visitors.
+5. **Preview Deployments**: enabled, URL template `{{pr_id}}.{{domain}}`, *PR deployment access*:
+   *Repository members only*.
+6. **Resource Limits**: a memory limit, so that one preview cannot take the others down.
+7. On the server itself, a firewall rule that keeps the containers away from private networks other than
+   their own: Coolify has no setting for that.
+
+The health check is part of `Dockerfile.preview`, so the one of Coolify stays disabled. When it deploys
+`master`, Coolify still waits for the new container to become healthy only as long as the times on its
+health check page allow; raise *Retries* there to 60, a database takes longer to build on a busy server.
 
 ### Screenshots in pull requests
 
 [pr-screenshots.yml](.github/workflows/pr-screenshots.yml) captures seven pages at desktop (1440×900)
 and mobile (390×844, touch enabled) sizes when a pull request is opened, updated or reopened. It compares
 the PR commit with its merge-base with the target branch. Both versions run on the GitHub runner with
-separate Flox databases and basic demo data (`USERDB_DEMO_VOLUME=0`), signed in as member 1. The testing
-server is not involved. Fork and Dependabot pull requests are skipped. Branches that predate the screenshot
+separate Flox databases and basic demo data (`USERDB_DEMO_VOLUME=0`), signed in as member 1. The pull request
+previews on Coolify are not involved. Fork and Dependabot pull requests are skipped. Branches that predate the screenshot
 tools are also skipped until they include those tools.
 
 The workflow updates one Czech comment marked `<!-- userdb-screenshots -->`, with previews of every page

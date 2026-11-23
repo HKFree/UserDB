@@ -1,0 +1,42 @@
+# Image of a pull request preview on Coolify, see "Pull request previews" in readme.md.
+# It is not the production image (Dockerfile): a preview runs the local web of the project's Flox
+# environment with demo data, so PHP, MariaDB and LibreOffice come from .flox/ and are listed nowhere else.
+FROM debian:13-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && curl -fsSL https://get.flox.dev | sh \
+    && rm -rf /var/lib/apt/lists/* \
+    && printf 'sandbox = false\nfilter-syscalls = false\n' >> /etc/nix/nix.conf
+
+# Nix is installed without a daemon here, root works with its store directly. Its build sandbox is off as in
+# the official Flox image; without the system call filter the image also builds under emulation (Apple Silicon).
+ENV NIX_REMOTE=auto \
+    FLOX_DISABLE_METRICS=true \
+    COMPOSER_ALLOW_SUPERUSER=1
+
+# MariaDB and the code of the pull request run under this account, see scripts/userdb_preview.sh.
+RUN useradd --create-home userdb
+
+WORKDIR /srv/userdb
+
+# The packages of the environment are the largest layer and the same for nearly every pull request.
+COPY .flox/env.json .flox/env.json
+COPY .flox/env .flox/env
+RUN flox activate -- true
+
+# Without the tools of tests and static analysis: the web does not use them and they are a third of vendor/.
+COPY composer.json composer.lock ./
+RUN flox activate -- composer install --no-dev --no-interaction --prefer-dist --no-progress
+
+COPY . .
+RUN mkdir -p .flox/cache temp log \
+    && chown -R userdb:userdb .flox/cache temp log
+
+EXPOSE 8080
+
+# The form answers as soon as the web runs, which is after the database has been built from the demo data.
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10m --retries=3 \
+    CMD curl --fail --silent --output /dev/null http://127.0.0.1:8080/testing-login
+
+CMD ["bash", "scripts/userdb_preview.sh"]
