@@ -22,9 +22,9 @@ final class Vzhled
         self::PODLE_SYSTEMU => 'Podle systému',
     ];
 
-    /** Volba z cookie; neznámá hodnota i chybějící cookie znamenají světlý vzhled. */
+    /** Volba z cookie; neznámá hodnota i chybějící cookie znamenají vzhled podle systému. */
     public static function volba(mixed $cookie): string {
-        return is_string($cookie) && isset(self::VOLBY[$cookie]) ? $cookie : self::SVETLY;
+        return is_string($cookie) && isset(self::VOLBY[$cookie]) ? $cookie : self::PODLE_SYSTEMU;
     }
 
     /** Vzhled, který rozhodne server; „podle systému“ rozhodne až skript v prohlížeči, do té doby světlý. */

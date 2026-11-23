@@ -19,7 +19,8 @@ test('tmavý vzhled se zapne hned v nabídce účtu a vydrží obnovení stránk
     let navigations = 0;
     await page.goto('/uzivatel/show/20027');
     page.on('framenavigated', frame => { if (frame === page.mainFrame()) navigations++; });
-    expect(await look(page)).toEqual({ theme: 'light', choice: 'light', body: 'rgb(255, 255, 255)' });
+    // Bez uložené volby platí vzhled podle systému, tady světlý.
+    expect(await look(page)).toEqual({ theme: 'light', choice: 'auto', body: 'rgb(255, 255, 255)' });
 
     await choose(page, 'Tmavý');
     await expect.poll(async () => (await look(page)).theme).toBe('dark');
@@ -47,10 +48,13 @@ test('tmavý vzhled se zapne hned v nabídce účtu a vydrží obnovení stránk
     await expect.poll(async () => (await look(page)).body).toBe('rgb(255, 255, 255)');
 });
 
-test('vzhled podle systému sleduje nastavení systému i bez obnovení stránky', async ({ page }) => {
+test('vzhled podle systému je výchozí a sleduje nastavení systému i bez obnovení stránky', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/');
-    expect((await look(page)).theme).toBe('light');
+    // Bez uložené volby: tmavý systém, tmavý vzhled hned při načtení.
+    expect(await look(page)).toMatchObject({ theme: 'dark', choice: 'auto' });
+    await choose(page, 'Světlý');
+    await expect.poll(async () => (await look(page)).theme).toBe('light');
     await choose(page, 'Podle systému');
     await expect.poll(async () => (await look(page)).theme).toBe('dark');
 
@@ -98,10 +102,16 @@ test('volbu vzhledu jde změnit šipkami jako skupinu přepínačů', async ({ p
     await page.goto('/');
     await page.locator('.navbar-account .dropdown-toggle').click();
     const light = page.getByRole('radio', { name: 'Světlý', exact: true });
-    // Jen vybraná volba je v pořadí klávesy Tab.
-    await expect(light).toHaveAttribute('tabindex', '0');
-    await expect(page.getByRole('radio', { name: 'Tmavý', exact: true })).toHaveAttribute('tabindex', '-1');
-    await light.focus();
+    const system = page.getByRole('radio', { name: 'Podle systému', exact: true });
+    // Jen vybraná volba (výchozí Podle systému) je v pořadí klávesy Tab.
+    await expect(system).toHaveAttribute('tabindex', '0');
+    await expect(light).toHaveAttribute('tabindex', '-1');
+    await system.focus();
+    // Za poslední volbou šipka pokračuje první.
+    await page.keyboard.press('ArrowDown');
+    await expect(light).toBeFocused();
+    await expect(light).toHaveAttribute('aria-checked', 'true');
+    expect((await look(page)).theme).toBe('light');
     await page.keyboard.press('ArrowDown');
     await expect(page.getByRole('radio', { name: 'Tmavý', exact: true })).toBeFocused();
     await expect(page.getByRole('radio', { name: 'Tmavý', exact: true })).toHaveAttribute('aria-checked', 'true');

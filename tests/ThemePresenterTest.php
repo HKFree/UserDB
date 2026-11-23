@@ -17,11 +17,11 @@ final class ThemePresenterTest extends DatabaseTestCase
     /** @return array<string, array{array<string, string>, string, string}> cookies, data-theme, data-theme-choice */
     public function choices(): array {
         return [
-            'no cookie: light' => [[], 'light', 'light'],
+            'no cookie: the system setting' => [[], 'light', 'auto'],
             'light' => [['userdb_theme' => 'light'], 'light', 'light'],
             'dark' => [['userdb_theme' => 'dark'], 'dark', 'dark'],
             'system: light until the script decides' => [['userdb_theme' => 'auto'], 'light', 'auto'],
-            'unknown value: light' => [['userdb_theme' => '"><script>'], 'light', 'light'],
+            'unknown value: the system setting' => [['userdb_theme' => '"><script>'], 'light', 'auto'],
         ];
     }
 

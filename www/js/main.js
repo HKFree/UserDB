@@ -41,7 +41,7 @@ $(document).ready(function () {
     var root = document.documentElement;
     var darkScheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     function applyTheme() {
-        var choice = root.getAttribute('data-theme-choice') || 'light';
+        var choice = root.getAttribute('data-theme-choice') || 'auto';
         var dark = choice === 'dark' || (choice === 'auto' && darkScheme !== null && darkScheme.matches);
         root.setAttribute('data-theme', dark ? 'dark' : 'light');
     }
