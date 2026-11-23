@@ -185,3 +185,11 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   s kódem 404. Netypovaný parametr s výchozím `null` si `"00"` ponechá. Při charakterizačních
   testech rozlišovat raw vstup od hodnoty dostupné v presenteru. Ověřeno 21. 11. 2026 přes
   `PresenterRunner` na přepínači money, API monitoringu a AJAX request ID v Nette Application 3.2.6.
+- Latte pozná změněnou šablonu podle času souboru s přesností na sekundy. Vrátí-li se šablona do původního
+  stavu ve stejné sekundě, kdy ji test zkompiloval, zůstane v `temp/tests/cache` stará verze a test padá
+  nebo prochází podle ní. Po rychlé výměně šablon tam a zpět (ověření, že test bez opravy padá) počkat
+  sekundu a šablony označit `touch`. Ověřeno 23. 11. 2026 na `MessageFormPresenterTest`: po vrácení šablon
+  chybělo ve stránce upozornění, po `touch` test prošel.
+- Select bez promptu s hodnotou mimo nabídku formulář odmítne sám (`SelectBox::isOk()`, hláška
+  „Please select a valid option.“) a `onSuccess` se nezavolá: odpověď je 200 s formulářem, ne přesměrování.
+  Ověřeno 23. 11. 2026 podvrženým `from=0` ve formuláři e-mailu členovi, Nette Forms z `composer.lock`.

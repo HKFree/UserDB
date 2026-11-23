@@ -40,6 +40,7 @@ final class DemoDataPresenterTest extends TestCase
         // First of the page checks: the seeded login limit lasts 15 minutes from the load.
         $this->assertApi();
         $this->assertMemberPages();
+        $this->assertUnusableSenders();
         $this->assertNetworkPages();
         $this->assertAdministration();
         $this->assertVolume();
@@ -89,7 +90,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(9, $adapter->scenarioFiles);
+        Assert::same(10, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -163,8 +164,8 @@ final class DemoDataPresenterTest extends TestCase
     }
 
     private function assertScenarioSafety(): void {
-        Assert::same(70, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20069')->count('*'));
-        Assert::same(70, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20069 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
+        Assert::same(72, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20071')->count('*'));
+        Assert::same(72, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20071 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
         Assert::same(60, $this->database->table('IPAdresa')->where('Uzivatel_id', 20061)->count('*'));
         foreach ([
             'SELECT COUNT(*) FROM Oblast o LEFT JOIN Ap a ON a.Oblast_id = o.id WHERE a.id IS NULL',
@@ -192,8 +193,21 @@ final class DemoDataPresenterTest extends TestCase
         Assert::same(36, $this->database->fetchField('SELECT COUNT(DISTINCT DATE_FORMAT(datum, ?)) FROM UzivatelskeKonto WHERE id BETWEEN 2001000 AND 2001107', '%Y-%m'));
     }
 
+    /** Both personas with an invalid own address are warned; only the one who may edit its own record gets the link. */
+    private function assertUnusableSenders(): void {
+        foreach ([20070 => [201, 20018, 201], 20071 => [-20, 20015, 217]] as $persona => [$area, $member, $ap]) {
+            foreach (['email' => $member, 'emailall' => $ap] as $action => $id) {
+                $page = $this->presenters->ui($persona, 'UzivatelMailSms', ['action' => $action, 'id' => $id]);
+                Assert::same(200, $page->status, "Persona $persona, $action");
+                Assert::contains('vaše vlastní e-mailová adresa není platná', $page->html);
+                Assert::same(['oblast' . $area . '@hkfree.org'], $this->values($page->html, '//select[@name="from"]/option'));
+                Assert::same($persona === 20070, str_contains($page->html, '/uzivatel/edit/' . $persona . '"'), "Persona $persona, $action");
+            }
+        }
+    }
+
     private function assertMemberPages(): void {
-        foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20069')->order('id') as $member) {
+        foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20071')->order('id') as $member) {
             $show = $this->page('Uzivatel', 'show', $member->id);
             Assert::contains('UID ' . $member->id . ' - Demo ' . $member->prijmeni, $this->text($show));
             $edit = $this->page('Uzivatel', 'edit', $member->id);

@@ -17,6 +17,10 @@ use App\Services\SmsSenderException;
  */
 class UzivatelMailSmsPresenter extends UzivatelPresenter
 {
+    // Hodnoty pole Odesílatel ve formulářích e-mailu.
+    private const ODESILATEL_SPRAVCE = 0;
+    private const ODESILATEL_OBLAST = 1;
+
     private Model\Uzivatel $uzivatel;
     private Model\AP $ap;
     private Model\Komunikace $komunikace;
@@ -92,11 +96,51 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         return is_string($uzivatel->email) && Validators::isEmail($uzivatel->email);
     }
 
+    private function prihlasenySpravce(): ActiveRow {
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        if ($so === null) {
+            $this->error('Uživatel nebyl nalezen.');
+        }
+        return $so;
+    }
+
+    /**
+     * Nabídka pole Odesílatel. Vlastní adresu správce obsahuje, jen když je platná.
+     * @return array<int, string|null>
+     */
+    private function odesilatele(?string $adresaOblasti): array {
+        $so = $this->prihlasenySpravce();
+        $adresy = [self::ODESILATEL_OBLAST => $adresaOblasti];
+        if ($this->maPlatnyEmail($so)) {
+            $adresy = [self::ODESILATEL_SPRAVCE => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>'] + $adresy;
+        }
+        return $adresy;
+    }
+
+    /** Volbu mimo nabídku formulář odmítne, vlastní adresa správce sem proto dojde jen platná. */
+    private function nastavOdesilatele(Message $mail, int|string|null $volba, string $adresaOblasti): void {
+        if ($volba === self::ODESILATEL_SPRAVCE) {
+            $so = $this->prihlasenySpravce();
+            $mail->setFrom($so->email, $so->jmeno.' '.$so->prijmeni);
+        } else {
+            $mail->setFrom($adresaOblasti);
+        }
+    }
+
+    /** Šablona správci vysvětlí, proč v poli Odesílatel chybí jeho vlastní adresa, a kde ji opravit. */
+    private function predejStavOdesilatele(): void {
+        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
+        $neplatny = $so !== null && !$this->maPlatnyEmail($so);
+        $this->template->odesilatelNeplatny = $neplatny;
+        $this->template->editaceOdesilatele = $neplatny && $this->smiUpravitUzivatele($so) ? $so->id : null;
+    }
+
     public function renderEmail(): void {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
         $this->template->canViewOrEdit = $this->smiPsatClenovi();
         $this->template->u = $uzivatel;
         $this->template->emailPlatny = $uzivatel !== null && $this->maPlatnyEmail($uzivatel);
+        $this->predejStavOdesilatele();
     }
 
     protected function createComponentEmailForm(): Form {
@@ -107,11 +151,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         if ($user === null) {
             $this->error('Uživatel nebyl nalezen.');
         }
-        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-        if ($so === null) {
-            $this->error('Uživatel nebyl nalezen.');
-        }
-        $form->addSelect('from', 'Odesílatel', array(0 => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1 => 'oblast'.$user->Ap->Oblast_id.'@hkfree.org'))->setDefaultValue(0);
+        $odesilatele = $this->odesilatele('oblast'.$user->Ap->Oblast_id.'@hkfree.org');
+        $form->addSelect('from', 'Odesílatel', $odesilatele)->setDefaultValue(array_key_first($odesilatele));
 
         $form->addText('email', 'Příjemce', 70)->setDisabled(true);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
@@ -125,7 +166,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         if ($this->maVyplnenyParametr('id') && !$submitujeSe) {
             $form->setValues($user);
             $form->setDefaults(array(
-                    'from' => 0,
+                    'from' => array_key_first($odesilatele),
                     'subject' => 'Zpráva od správce sítě hkfree.org',
                 ));
         }
@@ -148,22 +189,10 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         }
 
         $mail = new Message();
-
-        if ($values->from === 0) {
-            $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-            if ($so === null) {
-                $this->error('Uživatel nebyl nalezen.');
-            }
-            $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-             ->addTo($user->email)
-             ->setSubject($values->subject)
-             ->setBody($values->message);
-        } else {
-            $mail->setFrom('oblast'.$user->Ap->Oblast_id.'@hkfree.org')
-              ->addTo($user->email)
-              ->setSubject($values->subject)
-              ->setBody($values->message);
-        }
+        $this->nastavOdesilatele($mail, $values->from, 'oblast'.$user->Ap->Oblast_id.'@hkfree.org');
+        $mail->addTo($user->email)
+            ->setSubject($values->subject)
+            ->setBody($values->message);
 
         $this->mailer->send($mail);
 
@@ -175,6 +204,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     public function renderEmailall(): void {
         $this->template->canViewOrEdit = $this->smiPsatCelemuAp();
         $this->template->ap = $this->ap->getAP($this->getParameter('id'));
+        $this->predejStavOdesilatele();
     }
 
     protected function createComponentEmailallForm(): Form {
@@ -190,11 +220,8 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
             }
             $oblastMail = 'oblast'.$ap->Oblast_id.'@hkfree.org';
         }
-        $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-        if ($so === null) {
-            $this->error('Uživatel nebyl nalezen.');
-        }
-        $form->addSelect('from', 'Odesílatel', array(0 => $so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>',1 => $oblastMail))->setDefaultValue(0);
+        $odesilatele = $this->odesilatele($oblastMail);
+        $form->addSelect('from', 'Odesílatel', $odesilatele)->setDefaultValue(array_key_first($odesilatele));
 
         $form->addTextArea('email', 'Příjemce', 72, 20)->setDisabled(true);
         $form->addText('subject', 'Předmět', 70)->setRequired('Zadejte předmět');
@@ -217,7 +244,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
             $form->setValues($ap);
             $form->setDefaults(array(
-                    'from' => 0,
+                    'from' => array_key_first($odesilatele),
                     'email' => $tolist,
                     'subject' => 'Zpráva od správce sítě hkfree.org',
                 ));
@@ -238,19 +265,9 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $emaily = $ap->related('Uzivatel.Ap_id')->where(Model\Uzivatel::AKTIVNI_CLEN)->fetchPairs('id', 'email');
 
         $mail = new Message();
-        if ($values->from === 0) {
-            $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
-            if ($so === null) {
-                $this->error('Uživatel nebyl nalezen.');
-            }
-            $mail->setFrom($so->jmeno.' '.$so->prijmeni.' <'.$so->email.'>')
-             ->setSubject($values->subject)
-             ->setBody($values->message);
-        } else {
-            $mail->setFrom('oblast'.$ap->Oblast_id.'@hkfree.org')
-              ->setSubject($values->subject)
-              ->setBody($values->message);
-        }
+        $this->nastavOdesilatele($mail, $values->from, 'oblast'.$ap->Oblast_id.'@hkfree.org');
+        $mail->setSubject($values->subject)
+            ->setBody($values->message);
 
         //TODO: check if mail is valid
         foreach ($emaily as $email) {

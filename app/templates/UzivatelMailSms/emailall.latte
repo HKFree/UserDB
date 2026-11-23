@@ -3,6 +3,7 @@
 <h3>Odeslání emailu <small>uživatelům AP {$ap->jmeno}</small></h3>
 
 {if $canViewOrEdit}
+{include 'odesilatel.latte'}
 {include '../form.latte', form => emailallForm}
 {else}
 <p>Na tuto operaci nemáte oprávnění!</p>

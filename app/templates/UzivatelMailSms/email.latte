@@ -3,6 +3,7 @@
 <h3>Odeslání emailu <small>uživateli {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
 
 {if $canViewOrEdit && $emailPlatny}
+{include 'odesilatel.latte'}
 {include '../form.latte', form => emailForm}
 {elseif $canViewOrEdit}
 <p class="alert alert-warning">
