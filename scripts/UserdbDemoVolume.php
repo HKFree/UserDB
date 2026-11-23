@@ -15,6 +15,27 @@ final class UserdbDemoVolume
     /** The AP with 600 active members, outside the big administrator's area. */
     public const CROWDED_AP = 10030;
     public const SUBNETS = self::BIG_AREA_SUBNETS + 6 + 419 * 3;
+    /** Movements of the 36 latest months and of the account history of member 100000. */
+    public const RECENT_MOVEMENTS = 324550;
+    /** The graph of active members reaches this many months back, eight years. */
+    public const OLDEST_MONTH = 95;
+    /** A month without any activation: the automat did not run and nobody activated a member by hand. */
+    public const AUTOMAT_OUTAGE_MONTH = 70;
+    /** Each month older than the latest 36 has this many active members fewer than the next one. */
+    private const GROWTH_PER_MONTH = 58;
+    /**
+     * Kind of the monthly activation of member u.seq in month m.seq: by hand (8) for about 110 to 180 of 4 500
+     * members, partial (15) for about 40, otherwise by the automat (4). The divisors change irregularly from month
+     * to month, so the graph shows no saw; the members change every month. The partial divisors are primes above
+     * the largest manual one: with a common factor all partial members of a month would already be manual.
+     */
+    private const ACTIVATION_TYPE = <<<'SQL'
+        CASE
+            WHEN MOD(u.seq + m.seq * 7 + 1, 25 + MOD(m.seq * m.seq * 7 + m.seq * 13, 17)) = 0 THEN 8
+            WHEN MOD(u.seq + m.seq * 3, ELT(1 + MOD(m.seq * m.seq + m.seq, 5), 97, 101, 103, 107, 109)) = 0 THEN 15
+            ELSE 4
+        END
+        SQL;
 
     public function __construct(private readonly Connection $connection) {
     }
@@ -39,6 +60,7 @@ final class UserdbDemoVolume
             $this->connection->transaction(function (): void {
                 $this->network();
                 $this->members();
+                $this->olderActivationHistory();
                 $this->accounts();
                 $this->history();
                 $this->administrator();
@@ -92,7 +114,7 @@ final class UserdbDemoVolume
                 'Objem', CONCAT('Objem člen ', LPAD(seq, 5, '0')), CONCAT('Objem', seq), '',
                 CONCAT('objem', seq, '@example.invalid'), CONCAT('Objem Smyšlená ', seq), 'Objem Město', 50000,
                 CONCAT('0001', LPAD(seq, 5, '0')),
-                CURDATE() - INTERVAL 5 YEAR, IF(seq < 4500, 3, 1), 1, 1,
+                CURDATE() - INTERVAL 8 YEAR, IF(seq < 4500, 3, 1), 1, 1,
                 1, 1, IF(seq < 4500, 0, 1), IF(seq < 4500, 1, 0),
                 'Objem syntetický člen pro měření výkonu a stránkování.'
             FROM seq_0_to_13499
@@ -118,6 +140,43 @@ final class UserdbDemoVolume
             SQL);
     }
 
+    /**
+     * Number of members with a monthly activation the given number of months ago: 4 500 in the latest 36 months,
+     * fewer and fewer before. The outage month has none, see AUTOMAT_OUTAGE_MONTH.
+     */
+    public static function activeMembers(int $monthsAgo): int {
+        return $monthsAgo < 36 ? 4500 : 4500 - ($monthsAgo - 35) * self::GROWTH_PER_MONTH;
+    }
+
+    /** Number of rows olderActivationHistory() inserts. */
+    public static function olderActivations(): int {
+        $rows = 0;
+        for ($monthsAgo = 36; $monthsAgo <= self::OLDEST_MONTH; $monthsAgo++) {
+            $rows += $monthsAgo === self::AUTOMAT_OUTAGE_MONTH ? 0 : self::activeMembers($monthsAgo);
+        }
+        return $rows;
+    }
+
+    /**
+     * Monthly activations older than the latest 36 months, for the graph of active members: the membership grows
+     * until the plateau of the latest months. Recorded for the association as before December 2024 and without
+     * an amount, so neither the balances nor the 622 movements of the cooperative account of member 100000 change.
+     * Their ids lie below the newer months: the detail and the lists pick the latest activation by id.
+     */
+    private function olderActivationHistory(): void {
+        $this->connection->query(sprintf(<<<'SQL'
+            INSERT INTO UzivatelskeKonto (id, Uzivatel_id, TypPohybuNaUctu_id, spolek, druzstvo, castka, datum,
+                datum_cas, poznamka, zmenu_provedl)
+            SELECT 9000000 + (? - m.seq) * 4500 + u.seq, 100000 + u.seq, %s, 1, 0, 0,
+                DATE_SUB(DATE_FORMAT(CURDATE(), '%%Y-%%m-01'), INTERVAL m.seq MONTH),
+                DATE_SUB(DATE_FORMAT(CURDATE(), '%%Y-%%m-01'), INTERVAL m.seq MONTH),
+                'Objem starší měsíční aktivace pro graf', 1
+            FROM seq_36_to_%d m JOIN seq_0_to_4499 u ON u.seq < 4500 - (m.seq - 35) * ?
+            WHERE m.seq <> ?
+            ORDER BY m.seq DESC, u.seq
+            SQL, self::ACTIVATION_TYPE, self::OLDEST_MONTH), self::OLDEST_MONTH, self::GROWTH_PER_MONTH, self::AUTOMAT_OUTAGE_MONTH);
+    }
+
     private function accounts(): void {
         // 4 500 active members, incoming bank records for the latest 12 months.
         $this->connection->query(<<<'SQL'
@@ -133,18 +192,18 @@ final class UserdbDemoVolume
         // Payment and charge for each of 36 months, including the current month. Newer months get higher
         // ids: the detail and the lists pick the latest payment and activation by id. Rows are inserted in
         // the order of their ids; in any other order the table takes ten times the space.
-        $this->connection->query(<<<'SQL'
+        $this->connection->query(sprintf(<<<'SQL'
             INSERT INTO UzivatelskeKonto (id, Uzivatel_id, PrichoziPlatba_id, TypPohybuNaUctu_id,
                 spolek, druzstvo, castka, datum, datum_cas, poznamka, zmenu_provedl)
             SELECT 10000000 + u.seq * 72 + (35 - m.seq) * 2 + k.seq, 100000 + u.seq,
                 IF(k.seq = 0 AND m.seq < 12, 50000000 + u.seq * 12 + 11 - m.seq, NULL),
-                IF(k.seq = 0, 1, 4), 0, 1, IF(k.seq = 0, 290, -290),
-                DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL m.seq MONTH),
-                DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL m.seq MONTH),
+                IF(k.seq = 0, 1, %s), 0, 1, IF(k.seq = 0, 290, -290),
+                DATE_SUB(DATE_FORMAT(CURDATE(), '%%Y-%%m-01'), INTERVAL m.seq MONTH),
+                DATE_SUB(DATE_FORMAT(CURDATE(), '%%Y-%%m-01'), INTERVAL m.seq MONTH),
                 IF(k.seq = 0, 'Objem měsíční platba', 'Objem měsíční aktivace'), 1
             FROM seq_0_to_4499 u CROSS JOIN seq_0_to_35 m CROSS JOIN seq_0_to_1 k
             ORDER BY u.seq, m.seq DESC, k.seq
-            SQL);
+            SQL, self::ACTIVATION_TYPE));
         // 622 movements in the default cooperative filter, with a net-zero extra history.
         $this->connection->query(<<<'SQL'
             INSERT INTO UzivatelskeKonto (id, Uzivatel_id, TypPohybuNaUctu_id, spolek, druzstvo,

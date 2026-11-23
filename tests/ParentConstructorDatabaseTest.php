@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Test;
 
 use App\Components\UserLabelsComponent;
+use App\Model\AktivniClenoveMesic;
 use App\Model\HkfIdentity;
 use App\Presenters\SpravaGrafuPresenter;
 use App\Presenters\SpravaPresenter;
@@ -128,18 +129,19 @@ final class ParentConstructorDatabaseTest extends DatabaseTestCase
 
     public function testGraphRetainsOwnDependencies(): void {
         $presenter = $this->presenter('SpravaGrafu', SpravaGrafuPresenter::class);
-        $presenter->renderUsersgraph();
-        Assert::same('[]', $presenter->getTemplate()->actdata);
+        $presenter->renderUsersgraph('vse');
+        Assert::same([], $presenter->getTemplate()->mesice);
         foreach ([4, 7] as $type) {
             $this->fixtures->insert('UzivatelskeKonto', [
                 'Uzivatel_id' => $this->member->id, 'TypPohybuNaUctu_id' => $type,
                 'castka' => -100, 'datum' => '2026-01-15', 'zmenu_provedl' => $this->actor->id,
             ]);
         }
-        $presenter->renderUsersgraph();
-        Assert::same([
-            ['x' => (new \DateTimeImmutable('2026-01-01'))->getTimestamp(), 'y' => 2],
-        ], json_decode($presenter->getTemplate()->actdata, true, flags: JSON_THROW_ON_ERROR));
+        $presenter->renderUsersgraph('vse');
+        // The refund (7) does not make the member active; the months after January up to now have no activation.
+        $months = $presenter->getTemplate()->mesice;
+        Assert::equal(new AktivniClenoveMesic(2026, 1, 1, 0, 0), $months[0]);
+        Assert::same(1, array_sum(array_map(static fn (AktivniClenoveMesic $month): int => $month->celkem(), $months)));
     }
 
     public function testTagEditorRetainsOwnDependencies(): void {

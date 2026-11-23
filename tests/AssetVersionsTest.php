@@ -22,6 +22,7 @@ final class AssetVersionsTest extends TestCase
     private const VERSIONED_ASSETS = [
         'css/screen.css' => ['templates/@layout.latte', 'templates/SelfService/confirmEmail.latte'],
         'js/main.js' => ['templates/@layout.latte'],
+        'js/graf-clenu.js' => ['templates/SpravaGrafu/usersgraph.latte'],
     ];
 
     public function testVersionedAssetIsNeverLoadedWithoutItsNumber(): void {

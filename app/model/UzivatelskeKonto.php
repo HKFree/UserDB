@@ -9,6 +9,11 @@ use Nette;
  */
 class UzivatelskeKonto extends Table
 {
+    /** Typy pohybů (TypPohybuNaUctu), kterými je člen v daném měsíci aktivní. */
+    public const AKTIVACE_AUTOMATEM = 4;
+    public const AKTIVACE_RUCNI = 8;
+    public const AKTIVACE_CASTECNA = 15;
+
     /**
     * @var string
     */
@@ -59,6 +64,39 @@ class UzivatelskeKonto extends Table
             $idUzivatelu,
             $typyPohybu
         )->fetchPairs('Uzivatel_id');
+    }
+
+    /**
+     * Počet členů s měsíční aktivací v každém měsíci, kdy nějaká byla. Člen se v měsíci počítá jednou: pod aktivací
+     * automatem, jinak ruční, jinak částečnou. Pohyb bez člena nebo bez data se nepočítá.
+     *
+     * @return list<Nette\Database\Row> vzestupně podle měsíce, sloupce rok, mesic, automatem, rucne a castecne
+     */
+    public function getAktivniClenovePoMesicich(?\DateTimeImmutable $od): array {
+        $podminky = [
+            'TypPohybuNaUctu_id' => [self::AKTIVACE_AUTOMATEM, self::AKTIVACE_RUCNI, self::AKTIVACE_CASTECNA],
+            'Uzivatel_id NOT' => null,
+            'datum NOT' => null,
+        ];
+        if ($od !== null) {
+            $podminky['datum >='] = $od;
+        }
+        // FIELD() vrací pořadí typu v seznamu, MIN() tak vybere první způsob aktivace člena v měsíci.
+        return array_values($this->getConnection()->query(
+            'SELECT rok, mesic, SUM(zpusob = 1) AS automatem, SUM(zpusob = 2) AS rucne, SUM(zpusob = 3) AS castecne
+            FROM (
+                SELECT YEAR(datum) AS rok, MONTH(datum) AS mesic, MIN(FIELD(TypPohybuNaUctu_id, ?, ?, ?)) AS zpusob
+                FROM UzivatelskeKonto
+                WHERE ?and
+                GROUP BY Uzivatel_id, rok, mesic
+            ) clenove
+            GROUP BY rok, mesic
+            ORDER BY rok, mesic',
+            self::AKTIVACE_AUTOMATEM,
+            self::AKTIVACE_RUCNI,
+            self::AKTIVACE_CASTECNA,
+            $podminky,
+        )->fetchAll());
     }
 
     /** @param array<array-key, mixed> $by */

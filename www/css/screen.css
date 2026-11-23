@@ -1105,3 +1105,367 @@ input[readonly] {
         padding: 16px;
     }
 }
+
+/*
+ * Graf počtu aktivních členů (Správa → Graf počtu uživatelů). Data nesou tenké barevné hrany nad světlým závojem,
+ * mřížka, osy, rámečky a texty jsou v neutrální šedé. Barvy způsobů aktivace (color) čte i graf-clenu.js.
+ * Pravidla pro prvky Rickshaw mají aspoň čtyři třídy: rickshaw.min.css se načítá až po screen.css.
+ */
+.graf-clenu-popis {
+    max-width: 75ch;
+    margin-bottom: 16px;
+    font-size: 12px;
+}
+
+.graf-clenu-nastroje {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-bottom: 16px;
+}
+
+.graf-clenu-nastroje-popisek {
+    font-size: 12px;
+    color: #666;
+}
+
+.graf-clenu-souhrn {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    max-width: 620px;
+    margin-bottom: 32px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.graf-clenu-souhrn dl {
+    margin: 0;
+    padding: 12px 16px;
+}
+
+.graf-clenu-souhrn dt {
+    font-weight: normal;
+    color: #666;
+}
+
+.graf-clenu-souhrn dd {
+    margin: 0;
+}
+
+.graf-clenu-celkem dt,
+.graf-clenu-zmena {
+    font-size: 12px;
+}
+
+.graf-clenu-cislo {
+    margin: 2px 0 4px;
+    font-size: 32px;
+    font-weight: bold;
+    line-height: 1.1;
+}
+
+.graf-clenu-srovnani {
+    display: block;
+    color: #666;
+}
+
+.graf-clenu-rozpad {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-content: center;
+    gap: 6px 24px;
+    font-size: 12px;
+    border-left: 1px solid #e5e5e5;
+}
+
+.graf-clenu-souhrn .graf-clenu-rozpad dt {
+    color: #333;
+}
+
+.graf-clenu-rozpad dd {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.graf-clenu-sekce + .graf-clenu-sekce {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #eee;
+}
+
+.graf-clenu-zahlavi {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 24px;
+}
+
+.graf-clenu-zahlavi h4 {
+    margin: 0;
+}
+
+.graf-clenu-podtitul {
+    max-width: 75ch;
+    margin: 4px 0;
+    font-size: 12px;
+}
+
+.graf-clenu-legenda {
+    margin: 0;
+    font-size: 12px;
+}
+
+.graf-clenu-legenda > li {
+    padding: 0 0 0 16px;
+}
+
+.graf-clenu-legenda > li:first-child {
+    padding-left: 0;
+}
+
+/* Klíč napodobuje značku v grafu: závoj s 2px hranou. */
+.graf-clenu-barva {
+    position: relative;
+    display: inline-block;
+    width: 14px;
+    height: 10px;
+    margin-right: 6px;
+    border-top: 2px solid currentColor;
+    vertical-align: -1px;
+}
+
+.graf-clenu-barva::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: currentColor;
+    opacity: 0.2;
+}
+
+.graf-clenu-barva-automatem {
+    color: #2a78d6;
+}
+
+.graf-clenu-barva-rucne {
+    color: #eb6834;
+}
+
+/* O stupeň tmavší než výchozí #1baf7a: hrana tak má proti bílé kontrast aspoň 3 : 1. */
+.graf-clenu-barva-castecne {
+    color: #18a571;
+}
+
+/* Místo pro horní popisek osy y, který přesahuje nad plochu. */
+.graf-clenu {
+    padding-top: 10px;
+    overflow: hidden;
+}
+
+.graf-clenu-telo {
+    position: relative;
+    padding: 0 24px 0 48px;
+}
+
+.graf-clenu-osa-y {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 48px;
+}
+
+/* Základna: jediná výraznější vodorovná čára. */
+.graf-clenu-plocha {
+    border-bottom: 1px solid #999;
+}
+
+.graf-clenu-plocha svg {
+    display: block;
+}
+
+/* Hrana na horní čáře mřížky a popisky 0 a maxima se nesmí oříznout. */
+.graf-clenu .rickshaw_graph svg,
+.graf-clenu-osa-y svg {
+    overflow: visible;
+}
+
+/* Plocha je jen světlý závoj, způsob aktivace nese 2px hrana v plné barvě. */
+.graf-clenu .graf-clenu-plocha path.area {
+    fill-opacity: 0.2;
+}
+
+.graf-clenu .graf-clenu-plocha path.line {
+    stroke-linejoin: round;
+}
+
+/* Kopie popisků uvnitř mřížky by po přetečení vylezly vlevo; nulu nahrazuje základna. */
+.graf-clenu .rickshaw_graph .y_grid text,
+.graf-clenu .rickshaw_graph .y_grid g[data-y-value="0"] .tick,
+.graf-clenu .rickshaw_graph .y_ticks path,
+.graf-clenu .rickshaw_graph .y_ticks line {
+    display: none;
+}
+
+.graf-clenu .rickshaw_graph .y_grid .tick {
+    stroke: #e5e5e5;
+    stroke-width: 1px;
+    stroke-dasharray: none;
+}
+
+.graf-clenu .rickshaw_graph .y_ticks text {
+    opacity: 1;
+    font-size: 11px;
+    fill: #666;
+}
+
+.graf-clenu .rickshaw_graph .detail {
+    background: rgba(0, 0, 0, 0.35);
+}
+
+/* Svislá čára měsíce se ukáže až s první bublinou. */
+.graf-clenu .rickshaw_graph .detail:empty {
+    display: none;
+}
+
+.graf-clenu-osa-x {
+    position: relative;
+    height: 26px;
+}
+
+.graf-clenu-popisek-x {
+    position: absolute;
+    top: 0;
+    padding-top: 8px;
+    font-size: 11px;
+    color: #666;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+/* Značka měsíce pod základnou místo svislé mřížky. */
+.graf-clenu-popisek-x::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 5px;
+    border-left: 1px solid #999;
+}
+
+.graf-clenu-bublina {
+    position: absolute;
+    top: 8px;
+    min-width: 150px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: nowrap;
+    color: #333;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.graf-clenu-bublina-mesic {
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+.graf-clenu-bublina-hodnoty {
+    display: grid;
+    grid-template-columns: auto auto;
+    column-gap: 16px;
+    color: #555;
+}
+
+.graf-clenu-bublina-cislo {
+    text-align: right;
+    font-weight: bold;
+    color: #222;
+    font-variant-numeric: tabular-nums;
+}
+
+.graf-clenu-bublina-hodnoty .graf-clenu-bublina-celkem {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid #e5e5e5;
+    color: #222;
+}
+
+/* V bublině čárový klíč, plochá dlaždice by na té hustotě byla zbytečně těžká. */
+.graf-clenu-bublina .graf-clenu-barva {
+    width: 12px;
+    height: 0;
+    vertical-align: middle;
+}
+
+.graf-clenu-bublina .graf-clenu-barva::before {
+    display: none;
+}
+
+.graf-clenu-bez-rucnich {
+    margin: 8px 0 0;
+    padding: 32px 16px;
+    text-align: center;
+    color: #666;
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+}
+
+.graf-clenu-prepinac-tabulky {
+    margin-top: 24px;
+}
+
+.graf-clenu-tabulka {
+    width: auto;
+    min-width: 50%;
+    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767px) {
+    .graf-clenu-souhrn {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .graf-clenu-rozpad {
+        border-top: 1px solid #e5e5e5;
+        border-left: 0;
+    }
+
+    .graf-clenu-cislo {
+        font-size: 28px;
+    }
+
+    .graf-clenu-obdobi {
+        display: flex;
+        width: 100%;
+    }
+
+    /* Větší plocha pro prst. */
+    .graf-clenu-obdobi > .btn,
+    .graf-clenu-prepinac-tabulky {
+        flex: 1 1 0;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .graf-clenu-prepinac-tabulky {
+        width: 100%;
+    }
+
+    .graf-clenu-telo {
+        padding-left: 44px;
+    }
+
+    .graf-clenu-osa-y {
+        width: 44px;
+    }
+}
