@@ -36,7 +36,8 @@ $(document).ready(function () {
         }
     });
 
-    $('[data-toggle="tooltip"]').tooltip();
+    // bublina v body: v posuvnem ramu tabulky by ji okraj ramu orizl
+    $('[data-toggle="tooltip"]').tooltip({ container: 'body' });
 
     $('[data-toggle="popover"]').popover();
 });

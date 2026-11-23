@@ -1,6 +1,6 @@
 function pingIPList(sojkaUrl) {
   var ipsList = [];
-  $("tr[id^=highlightable-ip] td a[href^='/userdb/subnet']").each(function() {
+  $("tr[id^=highlightable-ip] td a[href*='/subnet/detail/']").each(function() {
     ip = $(this).text();
 
     if(ip) {
@@ -29,7 +29,7 @@ function pingIPListCallback(resp) {
     return(1);
   }
 
-  $("tr[id^=highlightable-ip] td a[href^='/userdb/subnet']").each(function() {
+  $("tr[id^=highlightable-ip] td a[href*='/subnet/detail/']").each(function() {
     ip = $(this).text();
 
     if(ip) {
@@ -95,6 +95,15 @@ function drawBar(elem, pings) {
 
   elem.removeClass("ping-ok ping-warn ping-down")
     .addClass(pings[2] > 0 ? "ping-down" : (pings[1] > 0 ? "ping-warn" : "ping-ok"));
+
+  // stav i slovem, at nestoji jen na barve (ctecka, nerozlisovani barev)
+  var words = [];
+  if (pings[0] > 0) words.push(pings[0] + " dostupná");
+  if (pings[1] > 0) words.push(pings[1] + " ztráty");
+  if (pings[2] > 0) words.push(pings[2] + " nedostupná");
+  var status = elem.children(".ping-status");
+  if (status.length === 0) status = $('<span class="sr-only ping-status"></span>').appendTo(elem);
+  status.text("Ping: " + words.join(", "));
   
   var can1 = document.createElement("canvas");
   var size_w = parseFloat(elem.css("width")) + parseFloat(elem.css("padding-right")) + parseFloat(elem.css("padding-left"));
