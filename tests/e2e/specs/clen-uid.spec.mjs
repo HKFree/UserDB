@@ -175,7 +175,7 @@ for (const width of [1280, 375]) {
                 test('posuvný rám seznamu je pojmenovaná oblast, kterou jde posouvat klávesnicí', async ({ page }) => {
                     await page.setViewportSize({ width: 375, height: 900 });
                     await page.goto('/uzivatel-list/list/201');
-                    const frame = page.getByRole('region', { name: 'Seznam členů AP', exact: true });
+                    const frame = page.getByRole('region', { name: 'Seznam účastníků AP', exact: true });
                     await expect(frame).toHaveAttribute('tabindex', '0');
                     await frame.focus();
                     await page.keyboard.press('ArrowRight');
@@ -190,7 +190,7 @@ for (const width of [1280, 375]) {
                     expect(layout.formScroll).toBe(0);
                     expect(layout.formScrolls).toBe('visible');
                     expect(Math.abs(layout.cellLeft - layout.frameLeft)).toBeLessThan(16);
-                    await expect(page.getByRole('region', { name: 'Uživatelé mimo AP', exact: true })).toHaveCount(1);
+                    await expect(page.getByRole('region', { name: 'Účastníci mimo AP', exact: true })).toHaveCount(1);
                 });
             }
         });

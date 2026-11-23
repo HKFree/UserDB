@@ -119,7 +119,7 @@ final class PermissionRegistrationPdfPresenterTest extends DatabaseTestCase
             'action' => 'exportAndSendRegForm', 'id' => $s->member->id,
         ]);
         PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $s->member->id, 302);
-        Assert::same(['Uživatel není členem spolku, e-mail nebyl odeslán.'], $result->flashes);
+        Assert::same(['Účastník není členem spolku, e-mail nebyl odeslán.'], $result->flashes);
         Assert::same($before, $s->snapshot());
     }
 

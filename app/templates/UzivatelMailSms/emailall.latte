@@ -1,13 +1,13 @@
 {block content}
 
-<h3 n:block=title>Odeslání emailu <small>uživatelům AP {$ap->jmeno}</small></h3>
+<h3 n:block=title>Odeslání emailu <small>členům AP {$ap->jmeno}</small></h3>
 
 {if $canViewOrEdit}
 {include 'odesilatel.latte'}
 <p n:if="$vyrazeniClenove" class="alert alert-warning">
     Zpráva nepřijde členům, jejichž e-mailová adresa je označená jako neplatná:
     {foreach $vyrazeniClenove as $clen}<a n:href="Uzivatel:show id => $clen->id">{$clen->jmeno} {$clen->prijmeni} ({$clen->id})</a>{sep}, {/sep}{/foreach}.
-    Po opravě adresy v editaci člena jim zprávy zase budou chodit.
+    Po opravě adresy v editaci účastníka jim zprávy zase budou chodit.
 </p>
 {include '../form.latte', form => emailallForm}
 {else}

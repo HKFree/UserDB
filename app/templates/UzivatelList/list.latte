@@ -34,14 +34,14 @@
 </div>
 </div>
 
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam členů AP">{$tabulkaClenu|noescape}</div>
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam účastníků AP">{$tabulkaClenu|noescape}</div>
 
 {include memberStats}
 
 {include memberLegend}
 <section class="list-section">
-<h2>Uživatelé mimo AP</h2>
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Uživatelé mimo AP">{control othersGrid}</div>
+<h2>Účastníci mimo AP</h2>
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Účastníci mimo AP">{control othersGrid}</div>
 </section>
 </div>
 
@@ -55,9 +55,9 @@
     <li>Počet primárních členů: {$u_primarnich}</li>
     <li>Počet řádných členů: {$u_radnych}</li>
     <li>Počet čestných členů: {$u_cestnych}</li>
-    <li n:if="$money">Počet aktivních členů: {$u_aktivnich}</li>
-    <li>Počet všech členů: {$u_celkem}</li>
-    <li>Počet všech členů včetně zrušených: {$u_celkemz}</li>
+    <li n:if="$money">Počet aktivních účastníků: {$u_aktivnich}</li>
+    <li>Počet členů spolku: {$u_celkem}</li>
+    <li>Počet členů spolku včetně zrušených: {$u_celkemz}</li>
 </ul>
 {/define}
 
@@ -73,10 +73,10 @@
 {var $filtruje = (bool) array_filter($tabulka->filter, fn ($hodnota) => $hodnota !== '' && $hodnota !== null)}
 {* Při psaní filtruje prohlížeč jen nad úplným výsledkem: všechny řádky na stránce a bez hledání ze serveru,
    které by zbylé řádky už zúžilo podle jiného textu. Štítky a Zobrazit výsledek zužují stejně jako před psaním. *}
-<div class="member-filter" role="search" aria-label="Filtr členů"
+<div class="member-filter" role="search" aria-label="Filtr účastníků"
      data-live="{$pocet <= $tabulka->getPerPage() && (string) $hledat->getValue() === '' ? 'true' : 'false'}" data-applied="{$hledat->getValue()}">
     <div class="quick-filter">
-        <label class="sr-only" for="{$hledat->getHtmlId()}">Hledat ve členech</label>
+        <label class="sr-only" for="{$hledat->getHtmlId()}">Hledat mezi účastníky</label>
         <i class="fa fa-search" aria-hidden="true"></i>
         {$hledat->getControl()->addAttributes([form => $formId, type => search, class => 'form-control input-sm', placeholder => 'Hledat: UID, jméno, e-mail, telefon, IP, ulice, poznámka…', autocomplete => off])}
     </div>
@@ -106,9 +106,9 @@
     <span class="legend-chip planovane">Plánovaný člen</span>
     <span class="legend-chip primarni">Primární člen</span>
     <span class="legend-chip cestne">Čestný člen</span>
-    <span class="legend-chip zrusene">Zrušený člen</span>
-    <span class="legend-chip legend-overpaid" title="Vysoký přeplatek na účtu (vyřešte s uživatelem, nebo vyplňte mobilní kauci v detailu uživatele)" tabindex="0" data-toggle="tooltip">Vysoký přeplatek</span>
-    <span class="legend-chip legend-inactive" title="Neaktivní člen (v závislosti na poslední platbě a poslední aktivaci zvažte zrušení členství)" tabindex="0" data-toggle="tooltip">Neaktivní člen</span>
+    <span class="legend-chip zrusene">Zrušený účastník</span>
+    <span class="legend-chip legend-overpaid" title="Vysoký přeplatek na účtu (vyřešte s účastníkem, nebo vyplňte mobilní kauci v detailu účastníka)" tabindex="0" data-toggle="tooltip">Vysoký přeplatek</span>
+    <span class="legend-chip legend-inactive" title="Neaktivní účastník (v závislosti na poslední platbě a poslední aktivaci zvažte zrušení členství)" tabindex="0" data-toggle="tooltip">Neaktivní účastník</span>
 </div>
 {/define}
 

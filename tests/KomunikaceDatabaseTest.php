@@ -25,7 +25,7 @@ final class KomunikaceDatabaseTest extends DatabaseTestCase
             Assert::exception(
                 fn () => $model->posliSMS($recipients, 'Test'),
                 SmsSenderException::class,
-                'Žádný z vybraných uživatelů nemá platné české telefonní číslo.',
+                'Žádný z vybraných účastníků nemá platné české telefonní číslo.',
             );
             Assert::same([], $sender->calls);
         }

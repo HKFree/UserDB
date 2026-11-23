@@ -40,7 +40,7 @@ class UzivatelTelevizePresenter extends BasePresenter
         $uid = $this->getParameter('id');
         $uzivatel = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $this->template->u = $uzivatel;
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
@@ -66,7 +66,7 @@ class UzivatelTelevizePresenter extends BasePresenter
     private function cena($uid) {
         $uzivatel = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
         return $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();
@@ -93,7 +93,7 @@ class UzivatelTelevizePresenter extends BasePresenter
         $uid = $this->getParameter('id');
         $uzivatel = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $this->template->u = $uzivatel;
         $this->template->televize_cena = $this->cena($uid);

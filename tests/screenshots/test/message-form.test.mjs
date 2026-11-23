@@ -15,7 +15,7 @@ const label = (field, text) => `<label for="frm-emailallForm-${field}">${text}</
 // how wide the browser makes 72 columns on a desktop when no style of the form applies; its own style
 // only keeps it from widening the page on a phone.
 const fixture = formPage(`
-    <h3>Odeslání emailu <small>uživatelům AP Demo hlavní AP</small></h3>
+    <h3>Odeslání emailu <small>členům AP Demo hlavní AP</small></h3>
     <form action="/" method="post" id="frm-emailallForm"><table class="form">
     ${row('', '<input type="hidden" name="id" value="201">')}
     ${row(label('from', 'Odesílatel'), '<select name="from" id="frm-emailallForm-from">'

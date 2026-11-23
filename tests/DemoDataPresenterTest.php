@@ -401,7 +401,7 @@ final class DemoDataPresenterTest extends TestCase
             } else {
                 Assert::same([], $mailer->messages);
                 Assert::same(['danger'], $result->flashTypes);
-                Assert::same('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu. Zadejte ji v editaci člena.', strip_tags($result->flashes[0]));
+                Assert::same('E-mail nebyl odeslán, účastník nemá platnou e-mailovou adresu. Zadejte ji v editaci účastníka.', strip_tags($result->flashes[0]));
                 Assert::same(['/userdb/uzivatel/edit/20080'], $this->values($result->flashes[0], '//a/@href'));
             }
         }

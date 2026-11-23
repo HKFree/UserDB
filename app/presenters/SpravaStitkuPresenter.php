@@ -150,7 +150,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
         // Ověření, že uživatel existuje
         $user = $user_id !== null ? $this->uzivatel->getUzivatel($user_id) : null;
         if ($user === null) {
-            echo json_encode(['success' => false, 'message' => 'Uživatel nebyl nalezen.']);
+            echo json_encode(['success' => false, 'message' => 'Účastník nebyl nalezen.']);
             $this->terminate();
         }
 

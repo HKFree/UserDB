@@ -1,18 +1,18 @@
 {block content}
 
-<h3 n:block=title>Odeslání emailu <small>uživateli {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
+<h3 n:block=title>Odeslání emailu <small>účastníkovi {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
 
 {if $canViewOrEdit && $emailPlatny}
 {include 'odesilatel.latte'}
 <p n:if="$emailOznacenyNeplatny" class="alert alert-warning">
-    E-mailová adresa člena je označená jako neplatná, zpráva na ni nejspíš nedojde.
-    Ověřte ji u člena a opravte v <a n:href="Uzivatel:edit id => $u->id">editaci člena</a>.
+    E-mailová adresa účastníka je označená jako neplatná, zpráva na ni nejspíš nedojde.
+    Ověřte ji u účastníka a opravte v <a n:href="Uzivatel:edit id => $u->id">editaci účastníka</a>.
 </p>
 {include '../form.latte', form => emailForm}
 {elseif $canViewOrEdit}
 <p class="alert alert-warning">
-    E-mail nejde odeslat, člen nemá platnou e-mailovou adresu.
-    Zadejte ji v <a n:href="Uzivatel:edit id => $u->id">editaci člena</a>.
+    E-mail nejde odeslat, účastník nemá platnou e-mailovou adresu.
+    Zadejte ji v <a n:href="Uzivatel:edit id => $u->id">editaci účastníka</a>.
 </p>
 {else}
 <p>Na tuto operaci nemáte oprávnění!</p>

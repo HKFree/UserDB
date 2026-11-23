@@ -236,7 +236,7 @@ class LogTable extends UI\Control
                 if ($last !== null && $last['datum'] === $datum && $last['titulek'] === $titulek) {
                     $text = "";
                     if ($presun) {
-                        $text = "Přesun IP od člena ".$line->puvodni_hodnota." ke členovi ".$line->nova_hodnota.", ";
+                        $text = "Přesun IP od účastníka ".$line->puvodni_hodnota." k účastníkovi ".$line->nova_hodnota.", ";
                     } elseif ($line->akce === self::INSERT) {
                         $text = $sloupec." = ".$line->nova_hodnota.", ";
                     } elseif ($line->akce === self::DELETE && ($line->puvodni_hodnota ?? '') !== '') {
@@ -252,7 +252,7 @@ class LogTable extends UI\Control
 
                     $text = "";
                     if ($presun) {
-                        $text = "Přesun IP od člena ".$line->puvodni_hodnota." ke členovi ".$line->nova_hodnota.", ";
+                        $text = "Přesun IP od účastníka ".$line->puvodni_hodnota." k účastníkovi ".$line->nova_hodnota.", ";
                     } elseif ($line->akce === self::INSERT) {
                         $text = "Založení IP Adresy s parametry ".$sloupec." = ".$line->nova_hodnota.", ";
                     } elseif ($line->akce === self::DELETE) {

@@ -1,6 +1,6 @@
 {block content}
 <h3 n:block=title>Přehled plateb pro: {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick}) <small> - {$u->Ap->Oblast->jmeno} {$u->Ap->jmeno}</small></h3>
-<a href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět na uživatele</a>
+<a href="{link Uzivatel:show id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět na účastníka</a>
 
 <br><br>
 {if $canViewOrEdit}

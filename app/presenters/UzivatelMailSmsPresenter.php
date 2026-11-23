@@ -93,7 +93,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     private function prihlasenySpravce(): ActiveRow {
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         if ($so === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         return $so;
     }
@@ -144,7 +144,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
         if ($user === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $odesilatele = $this->odesilatele('oblast'.$user->Ap->Oblast_id.'@hkfree.org');
         $form->addSelect('from', 'Odesílatel', $odesilatele)->setDefaultValue(array_key_first($odesilatele));
@@ -177,7 +177,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
         if ($user === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         if ($this->maPlatnyEmail($user) === false) {
             // Stránka místo formuláře vypíše, že člen platnou adresu nemá.
@@ -316,7 +316,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
 
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
         if ($user === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
 
         if (in_array($user->telefon ?? null, [null, '', '0'], true) === false && $user->telefon !== 'missing') {
@@ -340,7 +340,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
         $this->vyzadujOpravneni($this->smiPsatClenovi());
         $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
         if ($user === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
 
         $this->sendSMSAndValidate([ $user->id ], $values->message);

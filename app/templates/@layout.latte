@@ -77,9 +77,9 @@
         <form n:name="searchForm" role="search">
           <i class="fa fa-search" aria-hidden="true"></i>
           <label n:name="search" class="sr-only">Hledat</label>
-          <input n:name="search" placeholder="Hledat člena, IP, číslo smlouvy…" autocomplete="off" aria-describedby="search-hint">
+          <input n:name="search" placeholder="Hledat účastníka, IP, číslo smlouvy…" autocomplete="off" aria-describedby="search-hint">
           <div class="search-suggestions" hidden>
-            <div class="search-hint" id="search-hint" role="status">Zadejte člena, číslo smlouvy, IP adresu, oblast, AP či nástroj.</div>
+            <div class="search-hint" id="search-hint" role="status">Zadejte účastníka, číslo smlouvy, IP adresu, oblast, AP či nástroj.</div>
             <div id="search-options" role="listbox" aria-label="Návrhy hledání"></div>
             <div class="search-help"><kbd>↑</kbd> <kbd>↓</kbd> výběr <kbd>Enter</kbd> otevřít <kbd>Esc</kbd> zavřít</div>
           </div>
@@ -101,7 +101,7 @@
                     {/foreach}
                 </ul>
             </li>
-            <li class="navbar-add"><a href="{link Uzivatel:edit id=>null}" title="Přidat uživatele"><i class="fa fa-plus" aria-hidden="true"></i> <span class="navbar-add-text">Přidat uživatele</span></a></li>
+            <li class="navbar-add"><a href="{link Uzivatel:edit id=>null}" title="Přidat účastníka"><i class="fa fa-plus" aria-hidden="true"></i> <span class="navbar-add-text">Přidat účastníka</span></a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right navbar-account">
             <li class="dropdown">

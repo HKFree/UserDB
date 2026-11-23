@@ -83,12 +83,12 @@ final class IpTransferDatabaseTest extends DatabaseTestCase
             ['missingIp', PresunIpSluzba::ZMENENY_VLASTNIK],
             ['apIp', PresunIpSluzba::ZMENENY_VLASTNIK],
             ['otherOwner', PresunIpSluzba::ZMENENY_VLASTNIK],
-            ['otherAp', 'IP lze přesunout pouze mezi členy stejného AP.'],
-            ['same', 'Vyberte jiného člena.'],
-            ['missingTarget', 'Původní nebo nový člen neexistuje.'],
-            ['cancelled', 'Nový člen musí být nezrušený a nesystémový.'],
-            ['systemTarget', 'Nový člen musí být nezrušený a nesystémový.'],
-            ['systemSource', 'Nový člen musí být nezrušený a nesystémový.'],
+            ['otherAp', 'IP lze přesunout pouze mezi účastníky stejného AP.'],
+            ['same', 'Vyberte jiného účastníka.'],
+            ['missingTarget', 'Původní nebo nový účastník neexistuje.'],
+            ['cancelled', 'Nový účastník musí být nezrušený a nesystémový.'],
+            ['systemTarget', 'Nový účastník musí být nezrušený a nesystémový.'],
+            ['systemSource', 'Nový účastník musí být nezrušený a nesystémový.'],
         ];
     }
 

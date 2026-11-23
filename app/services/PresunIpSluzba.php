@@ -12,7 +12,7 @@ use Nette\Database\Table\Selection;
 final class PresunIpSluzba
 {
     public const ZMENENE_IP = 'Seznam IP adres se mezitím změnil. Obnovte stránku a úpravu opakujte.';
-    public const ZMENENY_VLASTNIK = 'IP adresa již nepatří původnímu členovi. Obnovte stránku.';
+    public const ZMENENY_VLASTNIK = 'IP adresa již nepatří původnímu účastníkovi. Obnovte stránku.';
 
     public function __construct(private Explorer $database, private Log $log) {
     }
@@ -29,18 +29,18 @@ final class PresunIpSluzba
             $zdroj = $clenove[$zdrojId] ?? null;
             $cil = $clenove[$cilId] ?? null;
             if ($zdroj === null || $cil === null) {
-                throw new \DomainException('Původní nebo nový člen neexistuje.');
+                throw new \DomainException('Původní nebo nový účastník neexistuje.');
             }
             $overOpravneni($zdroj);
             $overOpravneni($cil);
             if ($zdrojId === $cilId) {
-                throw new \DomainException('Vyberte jiného člena.');
+                throw new \DomainException('Vyberte jiného účastníka.');
             }
             if ((int) $zdroj->Ap_id !== (int) $cil->Ap_id) {
-                throw new \DomainException('IP lze přesunout pouze mezi členy stejného AP.');
+                throw new \DomainException('IP lze přesunout pouze mezi účastníky stejného AP.');
             }
             if ((bool) $zdroj->systemovy || $this->jePovolenyCil($cilId) === false) {
-                throw new \DomainException('Nový člen musí být nezrušený a nesystémový.');
+                throw new \DomainException('Nový účastník musí být nezrušený a nesystémový.');
             }
             $ip = $this->database->fetch('SELECT * FROM IPAdresa WHERE id = ? FOR UPDATE', $ipId);
             if ($ip === null || (int) $ip->Uzivatel_id !== $zdrojId || $ip->Ap_id !== null) {

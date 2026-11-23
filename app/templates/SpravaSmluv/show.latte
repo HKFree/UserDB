@@ -4,7 +4,7 @@
 
 <div style="margin-top:3px;">
     <a href="{link Uzivatel:show id=>$smlouva->uzivatel->id}" class="btn btn-default btn-sm" role="button">
-        <i class="glyphicon glyphicon-chevron-left"></i> Na uživatele
+        <i class="glyphicon glyphicon-chevron-left"></i> Na účastníka
     </a>
     {if $smlouva->podepsany_dokument_path}
     <a href="{link SpravaSmluv:handleDownload id=>$smlouva->id}" class="btn btn-default btn-sm" role="button">
@@ -26,7 +26,7 @@
         </tr>
 
         <tr>
-            <th>Uživatel</th>
+            <th>Účastník</th>
             <td><a href="{link Uzivatel:show id=>$smlouva->Uzivatel->id}">{$smlouva->uzivatel->id} {$smlouva->uzivatel->firma_nazev} {$smlouva->uzivatel->jmeno} {$smlouva->uzivatel->prijmeni}</a></td>
         </tr>
 

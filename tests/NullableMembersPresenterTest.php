@@ -46,7 +46,7 @@ final class NullableMembersPresenterTest extends DatabaseTestCase
         Assert::exception(
             fn () => $this->presenters->ui($this->actor->id, $presenter, $parameters),
             BadRequestException::class,
-            'Uživatel nebyl nalezen.',
+            'Účastník nebyl nalezen.',
             404,
         );
         Assert::same($before, $this->snapshot());
@@ -85,7 +85,7 @@ final class NullableMembersPresenterTest extends DatabaseTestCase
 
     /** @return list<array{string, string}> */
     public function missingHonoraryCases(): array {
-        return [['id', 'Čestné členství nebylo nalezeno.'], ['zadost_podal', 'Uživatel nebyl nalezen.'], ['Uzivatel_id', 'Uživatel nebyl nalezen.']];
+        return [['id', 'Čestné členství nebylo nalezeno.'], ['zadost_podal', 'Účastník nebyl nalezen.'], ['Uzivatel_id', 'Účastník nebyl nalezen.']];
     }
 
     /** @dataProvider missingHonoraryCases */

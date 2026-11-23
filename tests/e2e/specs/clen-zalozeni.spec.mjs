@@ -6,7 +6,7 @@ test.use({ persona: personas.so });
 
 test('správce založí člena s IP adresou a dorazí registrační e-maily', async ({ page, mailbox }) => {
     await page.goto('/');
-    await page.getByRole('link', { name: 'Přidat uživatele', exact: true }).click();
+    await page.getByRole('link', { name: 'Přidat účastníka', exact: true }).click();
     await page.getByLabel('Oblast - AP', { exact: true }).selectOption('200');
     await page.getByLabel('Právní forma', { exact: true }).selectOption('1');
     await page.getByLabel('Jméno', { exact: true }).fill('Smyšlený');
