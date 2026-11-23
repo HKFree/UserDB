@@ -65,6 +65,15 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     /**
+     * Převede syrovou hodnotu z požadavku na text, který si z ní vezme jednořádkové pole formuláře
+     * (Nette\Forms\Form::DataLine): bez mezer a konců řádků na okrajích, chybějící nebo netextová hodnota je prázdná.
+     * Validace nad syrovými daty formuláře (getHttpData()) tak kontroluje to, co se uloží.
+     */
+    protected static function oriznoutRadek(mixed $hodnota): string {
+        return is_scalar($hodnota) ? Nette\Utils\Strings::trim(strtr((string) $hodnota, "\r\n", '  ')) : '';
+    }
+
+    /**
      * Obsluha formuláře nebo akce pokračuje jen s oprávněním, jinak 403.
      * Podmínka má být stejná, jakou dostává šablona: šablona formulář jen skryje, odeslat ho jde i bez ní.
      * @phpstan-assert true $smi

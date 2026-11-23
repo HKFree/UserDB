@@ -10,7 +10,7 @@ use Tester\Assert;
 require_once __DIR__ . '/bootstrap.php';
 
 /**
- * Subnet rows of the AP edit form: validation of the subnet and of the ARP proxy switch.
+ * Subnet and IP address rows of the AP edit form: validation of the subnet, of the ARP proxy switch and of the address.
  */
 final class ApSubnetFormPresenterTest extends DatabaseTestCase
 {
@@ -136,12 +136,53 @@ final class ApSubnetFormPresenterTest extends DatabaseTestCase
         Assert::count(0, $this->database->table('Subnet')->where('Ap_id', $this->ap->id)->fetchAll());
     }
 
+    public function testWhitespaceAroundIpAddressIsIgnored(): void {
+        $result = $this->submitRows('ip', ['n1' => ['id' => '', 'ip_adresa' => " 192.0.2.10\t"]]);
+
+        PermissionScenario::assertRedirect($result, 'ap/show/' . $this->ap->id);
+        Assert::same(['192.0.2.10'], array_values($this->database->table('IPAdresa')->where('Ap_id', $this->ap->id)->fetchPairs('id', 'ip_adresa')));
+    }
+
+    /** @return array<string, array{array<string, array<string, mixed>>, string}> */
+    public function rejectedIpCases(): array {
+        return [
+            'invalid address' => [['n1' => ['id' => '', 'ip_adresa' => ' 999.1.2.3 ']], 'IP adresa 999.1.2.3 není validní IPv4 adresa!'],
+            'address used elsewhere' => [['n1' => ['id' => '', 'ip_adresa' => ' 192.0.2.77 ']], 'IP adresa 192.0.2.77 již  v databázi existuje!'],
+            'address twice in the form' => [
+                ['n1' => ['id' => '', 'ip_adresa' => '192.0.2.10'], 'n2' => ['id' => '', 'ip_adresa' => "192.0.2.10\t"]],
+                'IP adresa 192.0.2.10 je v tomto formuláři vícekrát!',
+            ],
+            'address missing' => [['n1' => ['id' => '']], 'IP adresa  není validní IPv4 adresa!'],
+            'address sent as a list' => [['n1' => ['id' => '', 'ip_adresa' => ['192.0.2.10']]], 'IP adresa  není validní IPv4 adresa!'],
+        ];
+    }
+
+    /**
+     * @dataProvider rejectedIpCases
+     * @param array<string, array<string, mixed>> $rows
+     */
+    public function testIpAddressIsCheckedWithoutSurroundingWhitespace(array $rows, string $error): void {
+        $otherAp = $this->fixtures->ap($this->ap->Oblast_id);
+        $this->fixtures->insert('IPAdresa', ['Ap_id' => $otherAp->id, 'ip_adresa' => '192.0.2.77']);
+
+        $result = $this->submitRows('ip', $rows);
+
+        Assert::same(200, $result->status);
+        Assert::contains($error, $result->html);
+        Assert::count(0, $this->database->table('IPAdresa')->where('Ap_id', $this->ap->id)->fetchAll());
+    }
+
     /** @param array<string, array<string, mixed>> $rows */
     private function submitSubnetRows(array $rows): PresenterResult {
+        return $this->submitRows('subnet', $rows);
+    }
+
+    /** @param array<string, array<string, mixed>> $rows */
+    private function submitRows(string $container, array $rows): PresenterResult {
         return $this->presenters->ui($this->actor->id, 'Ap', ['action' => 'edit', 'id' => $this->ap->id], 'POST', [
             '_do' => 'apForm-submit', 'id' => (string) $this->ap->id, 'aktivni' => 'on', 'jmeno' => $this->ap->jmeno,
             'Oblast_id' => (string) $this->ap->Oblast_id, 'gps' => '50.209722,15.832778', 'ulice_cp' => 'Test street 1',
-            'mesto' => 'Test city', 'psc' => '50002', 'subnet' => $rows, 'save' => 'Uložit',
+            'mesto' => 'Test city', 'psc' => '50002', $container => $rows, 'save' => 'Uložit',
         ]);
     }
 

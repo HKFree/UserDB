@@ -252,16 +252,18 @@ class ApPresenter extends BasePresenter
         if (isset($data['ip'])) {
             $formIPs = array();
             foreach ($data['ip'] as $ip) {
-                if ($this->ipAdresa->validateIP($ip['ip_adresa']) === false) {
-                    $form->addError('IP adresa ' . $ip['ip_adresa'] . ' není validní IPv4 adresa!');
+                $zapisIp = self::oriznoutRadek($ip['ip_adresa'] ?? null);
+
+                if ($this->ipAdresa->validateIP($zapisIp) === false) {
+                    $form->addError('IP adresa ' . $zapisIp . ' není validní IPv4 adresa!');
                 }
 
-                $duplIp = $this->ipAdresa->getDuplicateIP($ip['ip_adresa'], $ip['id']);
+                $duplIp = $this->ipAdresa->getDuplicateIP($zapisIp, $ip['id']);
                 if (!in_array($duplIp, [null, '', '0'], true)) {
                     $form->addError('IP adresa ' . $duplIp . ' již  v databázi existuje!');
                 }
 
-                $formIPs[] = $ip['ip_adresa'];
+                $formIPs[] = $zapisIp;
             }
 
             // Tohle prohledá duplikátní IP přímo v formuláři
@@ -286,7 +288,6 @@ class ApPresenter extends BasePresenter
         if (isset($data['subnet'])) {
             $formSubnets = array();
             foreach ($data['subnet'] as $subnet) {
-                // Validujeme to, co se uloží: textové pole Nette mezery na okrajích ořízne.
                 $zapisSubnetu = self::oriznoutRadek($subnet['subnet'] ?? null);
                 $zapisGateway = self::oriznoutRadek($subnet['gateway'] ?? null);
 
@@ -330,14 +331,6 @@ class ApPresenter extends BasePresenter
                 $form->addError('Subnety ' . $formColisionsReadible . ' v tomto formuláři se překrývají!');
             }
         }
-    }
-
-    /**
-     * Převede syrovou hodnotu z požadavku na text, který si z ní vezme jednořádkové pole formuláře
-     * (Nette\Forms\Form::DataLine): bez mezer a konců řádků na okrajích, chybějící nebo netextová hodnota je prázdná.
-     */
-    private static function oriznoutRadek(mixed $hodnota): string {
-        return is_scalar($hodnota) ? Nette\Utils\Strings::trim(strtr((string) $hodnota, "\r\n", '  ')) : '';
     }
 
     /** @param ArrayHash<mixed>&object{ip: ArrayHash<ArrayHash<mixed>>, subnet: ArrayHash<ArrayHash<mixed>>, apiKlic: ArrayHash<ArrayHash<mixed>>} $values */
