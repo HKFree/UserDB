@@ -15,6 +15,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Tester\Assert;
 
 require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/ContractAuditTestHelpers.php';
 
 final class WorkerReachedPdfGeneration extends \RuntimeException
 {
@@ -73,6 +74,10 @@ final class WorkerTemplates
 
 final class WorkerEnvelopes
 {
+    public function discard(string $id): void {
+        WorkerDigiSign::$calls[] = 'discard:' . $id;
+    }
+
     public function get(string $id): Envelope {
         WorkerDigiSign::$calls[] = 'get';
         return new Envelope(['id' => $id, 'recipients' => WorkerDigiSign::$withRecipient ? [['id' => 'fixture-recipient']] : []]);
@@ -91,6 +96,26 @@ final class DigisignWorkerDatabaseTest extends DatabaseTestCase
         WorkerDigiSign::$calls = [];
         WorkerDigiSign::$withRecipient = true;
         WorkerPdfGenerator::$calls = [];
+    }
+
+    public function testCancellationLogsPreviousContractWithSystemAuthorWithoutSession(): void {
+        $new = $this->contract();
+        $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id, ['id' => 1]);
+        $old = $this->fixtures->insert('Smlouva', [
+            'uzivatel_id' => $new->uzivatel_id, 'typ' => 'ucastnicka', 'externi_id' => 'old-envelope',
+            'poznamka' => 'Původní poznámka',
+        ]);
+        $this->fixtures->insert('PodpisSmlouvy', ['Smlouva_id' => $old->id, 'smluvni_strana' => 'ucastnik', 'jmeno' => 'Fixture']);
+        Assert::exception(fn () => $this->runCommand($new), WorkerReachedPdfGeneration::class);
+        $updated = $this->requireRow($this->database->table('Smlouva')->get($old->id));
+        Assert::notNull($updated->kdy_ukonceno);
+        Assert::match("Původní poznámka\nSmlouva zrušena před podepsáním a nahrazena smlouvou č. " . $new->id . ' (ze dne %d%.%d%.%d% %d%:%d%)', $updated->poznamka);
+        ContractAuditTestHelpers::assertEntries($this->database, $old, 1, [
+            'kdy_ukonceno' => [null, $updated->kdy_ukonceno->format('Y-m-d H:i:s'), 'U'],
+            'poznamka' => ['Původní poznámka', $updated->poznamka, 'U'],
+        ]);
+        Assert::same(2, $this->database->table('Log')->count('*'));
+        Assert::contains('discard:old-envelope', WorkerDigiSign::$calls);
     }
 
     public function testMissingMemberDoesNotWriteOrCallExternalServices(): void {
@@ -138,6 +163,7 @@ final class DigisignWorkerDatabaseTest extends DatabaseTestCase
             $members ?? $this->container->getByType(Uzivatel::class),
             $this->container->getByType(Smlouva::class),
             $this->container->getByType(PodpisSmlouvy::class),
+            ContractAuditTestHelpers::logWithoutSession($this->database),
         );
         ob_start();
         try {

@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Model\Uzivatel;
 use App\Model\Smlouva;
 use App\Model\PodpisSmlouvy;
+use App\Model\Log;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,16 +26,19 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
     private Uzivatel $uzivatelModel;
     private Smlouva $smlouvaModel;
     private PodpisSmlouvy $podpisSmlouvyModel;
+    private Log $log;
 
     public function __construct(
         Uzivatel $uzivatelModel,
         Smlouva $smlouvaModel,
         PodpisSmlouvy $podpisSmlouvyModel,
+        Log $log,
     ) {
         parent::__construct();
         $this->uzivatelModel = $uzivatelModel;
         $this->smlouvaModel = $smlouvaModel;
         $this->podpisSmlouvyModel = $podpisSmlouvyModel;
+        $this->log = $log;
         $this->FILE_STORAGE_PATH = getenv('FILE_STORAGE_PATH') ?: '/tmp';
         $this->FILE_STORAGE_PATH .= '/ucastnickeSmlouvy';
         is_dir($this->FILE_STORAGE_PATH) || mkdir($this->FILE_STORAGE_PATH);
@@ -96,9 +100,9 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
 
         if ($chybejiciPodpis !== null && $chybejiciPodpis->smlouva->externi_id) {
             $zrusitSmlouvu = $chybejiciPodpis->smlouva;
+            $staraData = $zrusitSmlouvu->toArray();
 
             printf("Krok %u: zrušit předchozí nepodepsanou smlouvu %u (datum %s) externi_id=%s\n", ++$krok, $zrusitSmlouvu->id, $zrusitSmlouvu->kdy_vygenerovano, $zrusitSmlouvu->externi_id);
-            $zrusitSmlouvu->update(['kdy_ukonceno' => new \DateTime()]);
 
             $novaPoznamka = sprintf(
                 "%s%sSmlouva zrušena před podepsáním a nahrazena smlouvou č. %u (ze dne %s)",
@@ -107,7 +111,11 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
                 $smlouva_id,
                 (new \DateTime())->format('d.m.Y H:i'),
             );
-            $zrusitSmlouvu->update(['poznamka' => $novaPoznamka]);
+            $novaData = ['kdy_ukonceno' => new \DateTime(), 'poznamka' => $novaPoznamka];
+            $zrusitSmlouvu->update($novaData);
+            $entries = [];
+            $this->log->logujUpdate($staraData, $novaData, 'Smlouva[' . $zrusitSmlouvu->id . ']', $entries);
+            $this->log->loguj('Uzivatel', $staraData['uzivatel_id'], $entries, 1);
 
             $ENVELOPES->discard($zrusitSmlouvu->externi_id);
         }

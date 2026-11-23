@@ -86,7 +86,16 @@ class Log extends Table
             "heslo" => "heslo"
         );
 
-        $slovnik = array_merge($slovnikUzivatel, $slovnikIpAdresa);
+        $slovnikSmlouva = [
+            'typ' => 'typ',
+            'kdy_vygenerovano' => 'vygenerováno',
+            'kdy_ukonceno' => 'ukončeno',
+            'kdy_podepsano' => 'podepsáno',
+            'kdy_odmitnuto' => 'odmítnuto',
+            'podepsany_dokument_nazev' => 'podepsaný dokument',
+        ];
+
+        $slovnik = array_merge($slovnikSmlouva, $slovnikUzivatel, $slovnikIpAdresa);
 
         if (isset($slovnik[$jmeno])) {
             return $slovnik[$jmeno];

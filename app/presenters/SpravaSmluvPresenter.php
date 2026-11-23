@@ -12,11 +12,13 @@ class SpravaSmluvPresenter extends BasePresenter
 
     protected Model\Smlouva $smlouva;
     protected Model\PodpisSmlouvy $podpis;
+    private Model\Log $log;
 
-    public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis) {
+    public function __construct(Model\Smlouva $smlouva, Model\PodpisSmlouvy $podpis, Model\Log $log) {
         parent::__construct();
         $this->smlouva = $smlouva;
         $this->podpis = $podpis;
+        $this->log = $log;
     }
 
     // Zkontroluje ze jsme dostali ID a existuje smlouva s timto ID
@@ -77,8 +79,6 @@ class SpravaSmluvPresenter extends BasePresenter
     }
 
     public function actionCancelContract(): void {
-        // TODO: Logování změn
-
         $contract_id = $this->getParameter('id');
         $smlouva = $this->idAndContractExists($contract_id);
         $this->userCanChange($contract_id);
@@ -89,11 +89,14 @@ class SpravaSmluvPresenter extends BasePresenter
             $this->redirect('SpravaSmluv:show');
         }
 
-        $updated_row = $current_contract->update([
-            'kdy_ukonceno' => new DateTime()
-        ]);
+        $staraData = $current_contract->toArray();
+        $novaData = ['kdy_ukonceno' => new DateTime()];
+        $updated_row = $current_contract->update($novaData);
 
         if ($updated_row) {
+            $entries = [];
+            $this->log->logujUpdate($staraData, $novaData, 'Smlouva[' . $staraData['id'] . ']', $entries);
+            $this->log->loguj('Uzivatel', $staraData['uzivatel_id'], $entries);
             $this->flashMessage('Smlouva č. ' . $contract_id . ' vypovězena!');
         } else {
             $this->flashMessage('Chyba ve vypovezení smlouvy.', 'danger');
@@ -102,8 +105,6 @@ class SpravaSmluvPresenter extends BasePresenter
     }
 
     public function actionUpdateNote(): void {
-        // TODO: Logování změn
-
         $request = $this->getHttpRequest();
         $contract_id = $this->getParameter('id');
 
@@ -115,11 +116,14 @@ class SpravaSmluvPresenter extends BasePresenter
         $smlouva = $this->idAndContractExists($contract_id);
         $this->userCanChange($contract_id);
 
-        $updated_row = $smlouva->update([
-            'poznamka' => $request->getPost('interni-poznamka')
-        ]);
+        $staraData = $smlouva->toArray();
+        $novaData = ['poznamka' => $request->getPost('interni-poznamka')];
+        $updated_row = $smlouva->update($novaData);
 
         if ($updated_row) {
+            $entries = [];
+            $this->log->logujUpdate($staraData, $novaData, 'Smlouva[' . $staraData['id'] . ']', $entries);
+            $this->log->loguj('Uzivatel', $staraData['uzivatel_id'], $entries);
             $this->flashMessage('Poznámka uložena');
         } else {
             $this->flashMessage('Chyba při update poznámky.', 'danger');

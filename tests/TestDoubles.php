@@ -100,13 +100,16 @@ final class RecordingContractRequest extends Services\RequestDruzstvoContract
 {
     /** @var list<int> */
     public array $calls = [];
+    /** @var list<int|null> */
+    public array $authors = [];
 
     public function __construct() {
-        parent::__construct(new OfflineConnection());
+        parent::__construct(new OfflineConnection(), new \App\Model\Log(new OfflineDatabase(), new User(new MemoryUserStorage()), new \Nette\Http\Request(new \Nette\Http\UrlScript('http://localhost/'))));
     }
 
-    public function execute(int $userId): int {
+    public function execute(int $userId, ?int $autorId = null): int {
         $this->calls[] = $userId;
+        $this->authors[] = $autorId;
         return count($this->calls);
     }
 }

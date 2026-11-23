@@ -58,7 +58,8 @@ class SelfServicePresenter extends \Nette\Application\UI\Presenter
                     }
 
                     if (in_array($uzivatel->druzstvo, [0, false], true) === false) {
-                        $this->requestDruzstvoContract->execute($uzivatel->id);
+                        // Smlouvu si vyžádal člen odkazem z e-mailu, ne případně přihlášený správce.
+                        $this->requestDruzstvoContract->execute($uzivatel->id, $uzivatel->id);
                     }
                 }
 
