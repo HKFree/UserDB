@@ -107,21 +107,28 @@ function pixelPercentage(ratio) {
     return ratio > 0 && rounded === '0.0' ? 'méně než 0,1 % pixelů' : `${rounded.replace('.', ',')} % pixelů`;
 }
 
+// Collapsed, so that the previews do not push the discussion of the pull request off the screen.
+// GitHub renders a table inside <details> only when blank lines separate it from the tags.
+function collapsed(title, count, table) {
+    return ['', '<details>', `<summary>${title} (${count})</summary>`, '', ...table, '', '</details>'];
+}
+
 function changesTable(changed, urls, manifest) {
     if (!changed.length) return [];
-    const lines = ['', '#### Změny', '| Stránka | Před | Po | Rozdíl |', '|---|---|---|---|'];
+    const lines = ['| Stránka | Před | Po | Rozdíl |', '|---|---|---|---|'];
     for (const snapshot of changed) {
         const previews = [[snapshot.base, 'před'], [snapshot.head, 'po'], [snapshot.diff, 'rozdíl']]
             .map(([image, version]) => preview(image, 240, snapshot, version, urls, manifest));
         lines.push(`| \`${snapshot.path}\`<br>${viewportNames[snapshot.viewport]}, `
             + `${pixelPercentage(snapshot.diffRatio)}${annotation(snapshot)} | ${previews.join(' | ')} |`);
     }
-    return lines;
+    return collapsed('Změny', changed.length, lines);
 }
 
 function allPagesTable(manifest, urls) {
-    const lines = ['', '#### Všechny stránky', '| Stránka | Desktop | Mobil |', '|---|---|---|'];
-    for (const id of new Set(manifest.snapshots.map(item => item.id))) {
+    const lines = ['| Stránka | Desktop | Mobil |', '|---|---|---|'];
+    const ids = new Set(manifest.snapshots.map(item => item.id));
+    for (const id of ids) {
         const snapshots = manifest.snapshots.filter(item => item.id === id);
         const cells = ['desktop', 'mobile'].map(viewport => {
             const snapshot = snapshots.find(item => item.viewport === viewport);
@@ -131,7 +138,7 @@ function allPagesTable(manifest, urls) {
         });
         lines.push(`| \`${snapshots[0].path}\` | ${cells.join(' | ')} |`);
     }
-    return lines;
+    return collapsed('Všechny stránky', ids.size, lines);
 }
 
 export function buildComment(manifest, urls, meta) {

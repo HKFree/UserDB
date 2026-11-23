@@ -389,7 +389,8 @@ server is not involved. Fork and Dependabot pull requests are skipped. Branches 
 tools are also skipped until they include those tools.
 
 The workflow updates one Czech comment marked `<!-- userdb-screenshots -->`, with previews of every page
-and before/after/diff images for changes. A failed capture or publication replaces the previous comment with
+and before/after/diff images for changes. Both tables are collapsed, so that the comment does not push the
+discussion of the pull request away; the line above them says how many snapshots changed. A failed capture or publication replaces the previous comment with
 a failure message. Closed pull requests and outdated commits do not update the comment. Artifacts expire
 after 14 days; published images are retained in a separate public repository, including after the PR closes.
 Image URLs use the screenshot repository's commit SHA so each URL identifies an immutable version.

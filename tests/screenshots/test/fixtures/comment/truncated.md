@@ -5,7 +5,11 @@ Commit `aaaaaaa` proti `bbbbbbb` (společný předek s `master`). Snímky jsou z
 
 Beze změny proti `bbbbbbb`.
 
-#### Všechny stránky
+<details>
+<summary>Všechny stránky (1)</summary>
+
 | Stránka | Desktop | Mobil |
 |---|---|---|
 | `/` | <a href="https://raw.githubusercontent.com/HKFree/UserDB-screenshots/cccccccccccccccccccccccccccccccccccccccc/pr-42/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/head/homepage-desktop.png"><img src="https://raw.githubusercontent.com/HKFree/UserDB-screenshots/cccccccccccccccccccccccccccccccccccccccc/pr-42/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/head/homepage-desktop.png" width="320" alt="/ desktop"></a><br>oříznuto na 8000 px | <a href="https://raw.githubusercontent.com/HKFree/UserDB-screenshots/cccccccccccccccccccccccccccccccccccccccc/pr-42/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/head/homepage-mobile.png"><img src="https://raw.githubusercontent.com/HKFree/UserDB-screenshots/cccccccccccccccccccccccccccccccccccccccc/pr-42/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/head/homepage-mobile.png" width="120" alt="/ mobil"></a> |
+
+</details>
