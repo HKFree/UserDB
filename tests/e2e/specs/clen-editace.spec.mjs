@@ -35,7 +35,15 @@ test('úprava kontaktů a IP adres se projeví v detailu i historii člena', asy
     await expect(page.locator('.table-responsive')).not.toContainText('198.51.100.20');
     const history = page.locator('.logstable');
     await expect(history).toBeHidden();
-    await page.getByText('Změny (kliknutím rozbalíte)', { exact: true }).click();
+    const toggle = page.locator('details.log-panel > summary').filter({ hasText: 'Historie změn' });
+    await expect(toggle).toHaveCount(1);
+    // Rozbalí se klávesnicí i myší, bez vlastního skriptu (<details>).
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(history).toBeVisible();
+    await toggle.click();
+    await expect(history).toBeHidden();
+    await toggle.click();
     await expect(history).toBeVisible();
     await expect(history.getByRole('row').filter({ has: page.getByRole('cell', { name: 'email', exact: true }) })).toContainText('demo20027@example.invalid');
     await expect(history.getByRole('row').filter({ has: page.getByRole('cell', { name: 'email', exact: true }) })).toContainText('e2e-upraveny@example.invalid');

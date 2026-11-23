@@ -104,3 +104,16 @@ test.describe('kopírování IP adres', () => {
         expect(lefts.length, `tlačítka začínají na ${lefts.join(', ')} px`).toBe(1);
     });
 });
+
+test.describe('historie změn AP', () => {
+    test.use({ persona: personas.vv });
+
+    test('historie změn na detailu AP je zavřený oddíl s nadpisem, který se rozbalí', async ({ page }) => {
+        await page.goto('/ap/show/201');
+        const panel = page.locator('details.log-panel');
+        await expect(panel).not.toHaveAttribute('open', '');
+        await expect(panel.locator('.logstable')).toBeHidden();
+        await panel.locator('summary').filter({ hasText: 'Historie změn' }).click();
+        await expect(panel.locator('.logstable')).toBeVisible();
+    });
+});

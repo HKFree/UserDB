@@ -24,14 +24,14 @@ test('tmavý vzhled se zapne hned v nabídce účtu a vydrží obnovení stránk
     await choose(page, 'Tmavý');
     await expect.poll(async () => (await look(page)).theme).toBe('dark');
     expect(navigations).toBe(0);
-    expect((await look(page)).body).toBe('rgb(17, 20, 24)');
+    expect((await look(page)).body).toBe('rgb(15, 18, 22)');
     // The menu closes after the choice; the option keeps the mark.
     await expect(page.locator('.theme-option[data-theme-choice="dark"]')).toHaveAttribute('aria-checked', 'true');
     await expect(page.locator('.theme-option[aria-checked="true"]')).toHaveCount(1);
     expect((await page.context().cookies()).find(cookie => cookie.name === 'userdb_theme')?.value).toBe('dark');
 
     await page.reload();
-    expect(await look(page)).toEqual({ theme: 'dark', choice: 'dark', body: 'rgb(17, 20, 24)' });
+    expect(await look(page)).toEqual({ theme: 'dark', choice: 'dark', body: 'rgb(15, 18, 22)' });
     // Labels have a dark background with light text in their own hue.
     const label = page.locator('.user-labels .badge').filter({ hasText: 'Demo globální' });
     const colours = await label.evaluate(element => {
@@ -68,7 +68,7 @@ test('tisk zůstává světlý i v tmavém vzhledu', async ({ page }) => {
     await page.emulateMedia({ media: 'print' });
     // Tisk má jen černé písmo Bootstrapu, barvy vzhledu (theme.css platí jen pro obrazovku) se neuplatní.
     expect(await page.evaluate(() => getComputedStyle(document.body).color)).toBe('rgb(0, 0, 0)');
-    expect((await look(page)).body).not.toBe('rgb(17, 20, 24)');
+    expect((await look(page)).body).not.toBe('rgb(15, 18, 22)');
 });
 
 const contrast = (page, locator) => locator.evaluate(element => {

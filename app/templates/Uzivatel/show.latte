@@ -373,11 +373,6 @@
     {if $canViewOrEdit}
         <script>
             $(document).ready(function( $ ) {
-                $("#logsHeader").click(function(){
-                    $(".logstable").toggle();
-                    $(this).attr('aria-expanded', $('.logstable').is(':visible') ? 'true' : 'false');
-                });
-                $(".logstable").hide();
             });
 
             $('#btn-handle-subscriber-contract').on('click', function(event) {
@@ -399,12 +394,12 @@
             })
 
         </script>
-        <section class="panel panel-default detail-panel">
-        <div class="panel-heading"><h4><button type="button" class="btn btn-link logs-toggle" id="logsHeader" aria-expanded="false">Změny (kliknutím rozbalíte)</button></h4></div>
+        <details class="panel panel-default detail-panel log-panel">
+        <summary class="panel-heading"><h4>Historie změn</h4></summary>
         <div class="panel-body">
         {control logTable, $u->id}
         </div>
-        </section>
+        </details>
 
     {/if}
 

@@ -142,15 +142,17 @@
 :root[data-theme="dark"] {
     color-scheme: dark;
     /* Základ tmavého režimu pro knihovny. */
-    --udb-dark-page: #111418;
-    --udb-dark-surface: #1a1e24;
-    --udb-dark-surface-2: #222831;
-    --udb-dark-surface-3: #2c333d;
-    --udb-dark-border: #39414d;
+    --udb-dark-page: #0f1216;
+    --udb-dark-surface: #161a20;
+    --udb-dark-surface-2: #1c2128;
+    --udb-dark-surface-3: #252b34;
+    --udb-dark-border: #2c333d;
     --udb-dark-text: #e5e7eb;
     --udb-dark-muted: #9aa3af;
     --udb-dark-link: #7fb3f0;
-    --udb-dark-input: #15191f;
+    --udb-dark-input: #12161b;
+    /* Zvýraznění aktivní položky; červená značky na tmavém pozadí ruší, zůstává jen v logu. */
+    --udb-dark-accent: #5b9bd8;
     /* Rámeček ovládacích prvků: kontrast aspoň 3 : 1 proti stránce i výplni pole (WCAG 1.4.11). */
     --udb-dark-control-border: #6b7480;
     --udb-bg-ping-ok: #16301f;
@@ -271,7 +273,7 @@
     --udb-shadow-cc0000: #a30000;
     --udb-shadow-d9534f: #c32e2a;
     --udb-shadow-d9a520: #ae841a;
-    --udb-shadow-dcdfe3: #aab2bb;
+    --udb-shadow-dcdfe3: #3e4044;
     --udb-line-2f8fd8: #4ba3e6;
     --udb-line-4aa63c: #5cbf4d;
     --udb-line-8a8a8a: #8f8f8f;
@@ -452,9 +454,19 @@
     color: var(--udb-dark-text);
 }
 
-:root[data-theme="dark"] .nav > li > a:hover,
-:root[data-theme="dark"] .nav > li > a:focus {
+/* Mimo horní lištu: tam najetí jen zesvětlí text jako ve světlém vzhledu. */
+:root[data-theme="dark"] .nav:not(.navbar-nav) > li > a:hover,
+:root[data-theme="dark"] .nav:not(.navbar-nav) > li > a:focus {
     background-color: var(--udb-dark-surface-2);
+}
+
+:root[data-theme="dark"] .navbar-inverse .navbar-nav > li > a:hover,
+:root[data-theme="dark"] .navbar-inverse .navbar-nav > li > a:focus,
+:root[data-theme="dark"] .navbar-inverse .navbar-nav > .open > a,
+:root[data-theme="dark"] .navbar-inverse .navbar-nav > .open > a:hover,
+:root[data-theme="dark"] .navbar-inverse .navbar-nav > .open > a:focus {
+    background-color: transparent;
+    color: #ffffff;
 }
 
 :root[data-theme="dark"] .breadcrumb {
@@ -597,4 +609,48 @@
 :root[data-theme="dark"] .fullsubnet {
     background-color: #6b4500;
     color: var(--udb-dark-text);
+}
+
+/*
+ * Horní lišta a navigace v tmavém vzhledu: lišta v tónu stránky s jemnou linkou místo červené,
+ * aktivní položka a vybraná část formuláře modrým akcentem.
+ */
+:root[data-theme="dark"] .navbar-inverse {
+    background-color: #14181d;
+}
+
+:root[data-theme="dark"] .navbar-fixed-top {
+    box-shadow: inset 0 -1px 0 var(--udb-dark-border);
+}
+
+:root[data-theme="dark"] .navbar-inverse .navbar-nav > .active > a,
+:root[data-theme="dark"] .navbar-inverse .navbar-nav > .active > a:hover,
+:root[data-theme="dark"] .navbar-inverse .navbar-nav > .active > a:focus {
+    box-shadow: inset 0 -2px 0 var(--udb-dark-accent);
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] .navbar-brand .brand-tld {
+    color: #e5605a;
+}
+
+:root[data-theme="dark"] .navbar-search .form-control,
+:root[data-theme="dark"] .sidebar-toggle {
+    background-color: var(--udb-dark-surface-2);
+    border-color: var(--udb-dark-border);
+}
+
+:root[data-theme="dark"] .navbar-search .form-control:focus {
+    background-color: var(--udb-dark-input);
+    border-color: var(--udb-dark-accent);
+    color: var(--udb-dark-text);
+}
+
+:root[data-theme="dark"] .main .form-nav a.active {
+    border-left-color: var(--udb-dark-accent);
+}
+
+:root[data-theme="dark"] .sidebar {
+    background-color: #13161b;
+    border-right-color: var(--udb-dark-border);
 }

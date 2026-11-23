@@ -2568,11 +2568,44 @@ html {
     margin-left: auto;
 }
 
-.detail-panel > .panel-heading h4 .logs-toggle {
-    margin-left: 0;
-    padding: 0;
-    text-align: left;
-    white-space: normal;
+/* Historie změn: zavřený oddíl <details>; nadpis vlevo se šipkou, která ukazuje, že jde rozbalit. */
+.log-panel > summary {
+    display: block;
+    cursor: pointer;
+    list-style: none;
+}
+
+.log-panel > summary::-webkit-details-marker {
+    display: none;
+}
+
+.log-panel > summary h4::before {
+    content: "\f054";
+    display: inline-block;
+    width: 14px;
+    font-family: FontAwesome;
+    font-size: 11px;
+    font-weight: normal;
+    color: var(--udb-text-6b7280);
+    transition: transform .15s ease-out;
+}
+
+.log-panel[open] > summary h4::before {
+    transform: rotate(90deg);
+}
+
+.log-panel:not([open]) > summary {
+    border-bottom: 0;
+    border-radius: 3px;
+}
+
+.log-panel > summary:hover h4 {
+    text-decoration: underline;
+}
+
+.log-panel > summary:focus-visible {
+    outline: 2px solid var(--udb-line-5b9bd8);
+    outline-offset: -2px;
 }
 
 .detail-panel > .panel-body {

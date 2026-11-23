@@ -75,22 +75,12 @@
 </div>
 </section>
 
-<section class="panel panel-default detail-panel">
-<div class="panel-heading"><h4><button type="button" class="btn btn-link logs-toggle" id="logsHeader" aria-expanded="false">Změny (kliknutím rozbalíte)</button></h4></div>
+<details class="panel panel-default detail-panel log-panel">
+<summary class="panel-heading"><h4>Historie změn</h4></summary>
 <div class="panel-body">
-<script>
-  $(document).ready(function( $ ) {
-      $("#logsHeader").click(function(){
-          $(".logstable").toggle();
-          $(this).attr('aria-expanded', $('.logstable').is(':visible') ? 'true' : 'false');
-      });
-      $(".logstable").hide();
-  });
-
-</script>
 {control logTable, $ap->id, "ap"}
 </div>
-</section>
+</details>
 
 {/ifset}
 {/block}
