@@ -18,22 +18,37 @@ final class Novinky
         if (!is_dir($this->adresar)) {
             return [];
         }
-        $vydani = [];
+        $soubory = [];
         foreach (new DirectoryIterator($this->adresar) as $soubor) {
             if (!$soubor->isFile()) {
                 continue;
             }
             $datum = self::datumZeSouboru($soubor->getFilename());
             if ($datum !== null) {
-                $vydani[$soubor->getFilename()] = $this->nactiSoubor($soubor->getPathname(), $datum);
+                $soubory[$soubor->getBasename('.md')] = $this->nactiSoubor($soubor->getPathname(), $datum);
             }
+        }
+        // Bez přípony je soubor bez slugu první a kratší slug před svým rozšířením.
+        ksort($soubory, SORT_STRING);
+        $vydani = [];
+        foreach ($soubory as $cast) {
+            $den = $cast->datum->format('Y-m-d');
+            $vydani[$den] = isset($vydani[$den]) ? self::spojVydani($vydani[$den], $cast) : $cast;
         }
         krsort($vydani, SORT_STRING);
         return array_values($vydani);
     }
 
+    private static function spojVydani(VydaniNovinek $prvni, VydaniNovinek $dalsi): VydaniNovinek {
+        return new VydaniNovinek(
+            $prvni->datum,
+            array_merge($prvni->novinky, $dalsi->novinky),
+            array_merge($prvni->opravy, $dalsi->opravy),
+        );
+    }
+
     public static function datumZeSouboru(string $nazev): ?DateTimeImmutable {
-        if (preg_match('~^([0-9]{4})-([0-9]{2})-([0-9]{2})\.md\z~', $nazev, $casti) !== 1
+        if (preg_match('~^([0-9]{4})-([0-9]{2})-([0-9]{2})(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?\.md\z~', $nazev, $casti) !== 1
             || !checkdate((int) $casti[2], (int) $casti[3], (int) $casti[1])
         ) {
             return null;

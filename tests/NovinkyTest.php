@@ -60,7 +60,16 @@ final class NovinkyTest extends TestCase
     }
 
     public function testWrongNamesAndSubdirectoriesAreIgnored(): void {
-        foreach (['README.md', '2026-13-01.md', '2026-02-29.md', '2026-04-31.md', '0000-01-01.md', '2026-11-2.md', '2026-11-22.txt', '2026-11-22 kopie.md', '2026-11-22.md.bak'] as $name) {
+        foreach ([
+            'README.md', '2026-13-01.md', '2026-02-29.md', '2026-04-31.md', '0000-01-01.md',
+            '2026-11-2.md', '2026-11-22.txt', '2026-11-22 kopie.md', '2026-11-22.md.bak',
+            '2026-11-23-Zmena.md', '2026-11-23-nova_zmena.md', '2026-11-23-nova zmena.md',
+            '2026-11-23-.md', '2026-11-23-konec-.md', '2026-11-23-dve--pomlcky.md',
+            '2026-11-23-zmena.txt', '2026-11-23-zmena.MD', '2026-11-23-změna.md',
+            '2026-13-01-zmena.md', '2026-02-29-zmena.md', '2026-04-31-zmena.md',
+            '0000-01-01-zmena.md', '2026-11-2-zmena.md', "2026-11-23-zmena.md\n",
+        ] as $name) {
+            Assert::null(Novinky::datumZeSouboru($name), $name);
             file_put_contents($this->directory . '/' . $name, 'Neplatný obsah');
         }
         mkdir($this->directory . '/2026-11-21.md');
@@ -97,6 +106,64 @@ final class NovinkyTest extends TestCase
         Assert::equal([new Novinka(null, 'Text', 'Detail Pokračování Konec')], $items);
     }
 
+    public function testValidSlugsAndCalendarDates(): void {
+        foreach (['2024-02-29.md', '2024-02-29-278-zrusit-slucovani.md', '2024-02-29-a.md', '2024-02-29-0.md', '2024-02-29-a1-2b.md'] as $name) {
+            Assert::equal(new \DateTimeImmutable('2024-02-29 00:00:00'), Novinky::datumZeSouboru($name));
+        }
+    }
+
+    public function testTwoSlugFilesShareOneReleaseAndSection(): void {
+        file_put_contents($this->directory . '/2026-11-23-b.md', "## Novinky\n- Druhá novinka");
+        file_put_contents($this->directory . '/2026-11-23-a.md', "## Novinky\n- První novinka");
+        $releases = (new Novinky($this->directory))->nacti();
+
+        Assert::count(1, $releases);
+        Assert::same('2026-11-23', $releases[0]->datum->format('Y-m-d'));
+        Assert::equal([
+            new Novinka(null, 'První novinka', null),
+            new Novinka(null, 'Druhá novinka', null),
+        ], $releases[0]->novinky);
+        Assert::same([], $releases[0]->opravy);
+    }
+
+    public function testMergedFilesKeepLegacySlugAndLineOrder(): void {
+        foreach ([['a-1', '2', 'a', '', '10'], ['10', '', 'a', '2', 'a-1']] as $slugs) {
+            foreach ($slugs as $slug) {
+                $name = '2026-11-23' . ($slug === '' ? '' : '-' . $slug) . '.md';
+                $label = $slug === '' ? 'Bez slugu' : $slug;
+                file_put_contents($this->directory . '/' . $name, "## Opravy\n- Oprava $label\n- Další oprava $label\n## Novinky\n- Novinka $label\n  Detail $label\n- Další novinka $label");
+            }
+            file_put_contents($this->directory . '/2026-11-22-starsi.md', "## Opravy\n- Starší oprava");
+            file_put_contents($this->directory . '/2026-11-24-novejsi.md', "## Novinky\n- Novější novinka");
+            $releases = (new Novinky($this->directory))->nacti();
+
+            Assert::same(['2026-11-24', '2026-11-23', '2026-11-22'], array_map(static fn (VydaniNovinek $release): string => $release->datum->format('Y-m-d'), $releases));
+            Assert::equal([
+                new Novinka(null, 'Novinka Bez slugu', 'Detail Bez slugu'),
+                new Novinka(null, 'Další novinka Bez slugu', null),
+                new Novinka(null, 'Novinka 10', 'Detail 10'),
+                new Novinka(null, 'Další novinka 10', null),
+                new Novinka(null, 'Novinka 2', 'Detail 2'),
+                new Novinka(null, 'Další novinka 2', null),
+                new Novinka(null, 'Novinka a', 'Detail a'),
+                new Novinka(null, 'Další novinka a', null),
+                new Novinka(null, 'Novinka a-1', 'Detail a-1'),
+                new Novinka(null, 'Další novinka a-1', null),
+            ], $releases[1]->novinky);
+            Assert::same([
+                'Oprava Bez slugu', 'Další oprava Bez slugu', 'Oprava 10', 'Další oprava 10',
+                'Oprava 2', 'Další oprava 2', 'Oprava a', 'Další oprava a', 'Oprava a-1', 'Další oprava a-1',
+            ], array_map(static fn (Novinka $item): string => $item->text, $releases[1]->opravy));
+            Assert::equal([new Novinka(null, 'Novější novinka', null)], $releases[0]->novinky);
+            Assert::equal([new Novinka(null, 'Starší oprava', null)], $releases[2]->opravy);
+            foreach (new \DirectoryIterator($this->directory) as $file) {
+                if ($file->isFile()) {
+                    unlink($file->getPathname());
+                }
+            }
+        }
+    }
+
     /** @return array<string, array{string, int, string}> */
     public function invalidFiles(): array {
         return [
@@ -130,6 +197,15 @@ final class NovinkyTest extends TestCase
     /** @dataProvider invalidFiles */
     public function testGrammarErrorNamesFileAndLine(string $content, int $line, string $reason): void {
         $path = $this->directory . '/2026-11-22.md';
+        file_put_contents($path, $content);
+        Assert::exception(fn () => (new Novinky($this->directory))->nacti(), \UnexpectedValueException::class, "$path:$line: $reason");
+    }
+
+    /** @dataProvider invalidFiles */
+    public function testGrammarErrorInOneFileOfDayNamesThatFile(string $content, int $line, string $reason): void {
+        file_put_contents($this->directory . '/2026-11-23.md', "## Novinky\n- Platná novinka");
+        file_put_contents($this->directory . '/2026-11-23-a.md', "## Opravy\n- Platná oprava");
+        $path = $this->directory . '/2026-11-23-b.md';
         file_put_contents($path, $content);
         Assert::exception(fn () => (new Novinky($this->directory))->nacti(), \UnexpectedValueException::class, "$path:$line: $reason");
     }
