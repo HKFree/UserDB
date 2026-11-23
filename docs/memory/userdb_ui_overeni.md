@@ -112,9 +112,14 @@ počítala se zlomem 768 px ze standardního Bootstrapu.
   načtení stránky včetně přesměrování po odeslání formuláře: hlášku po uložení (flash) na
   telefonu uvidíš tak, že `orca viewport` pustíš znovu až po přesměrování, stránku nenačítej
   znovu, jinak hláška zmizí. Ověřeno 23. 11. 2026 na schvalování čestného členství.
-- Seznam členů AP se na telefonu posouvá do strany už v `master`: tabulka je širší než okno
-  a nemá vlastní rám (šířka dokumentu 994 px při okně 375 px). Šířku stránky proto porovnávej
-  se stavem před změnou, ne s šířkou okna.
+- Posuvný rám kolem Grida ořízne absolutně umístěnou nabídku štítků, zvlášť u seznamu s jediným
+  členem. `overflow-x: auto` totiž současně vytvoří svislý posuv. Ověřeno 23. 11. 2026 v Orce
+  a Playwrightu na `/uzivatel-list/listall?search=20022` při 1280 i 375 px.
+  **Why:** Samotná kontrola šířky stránky ani existence položek nabídky oříznutí neodhalí.
+  **How to apply:** V posuvném rámu nech nabídku zabrat místo v řádku a ověř její první i poslední
+  položku. Nabídka musí zůstat pozicovaná (`relative`), jinak její `z-index` neplatí a na telefonu
+  kliknutí zachytí `dropdown-backdrop` Bootstrapu; potvrzeno padajícím E2E testem.
+  `clen-uid.spec.mjs` hlídá nabídku i šířku celé stránky vůči zadané šířce okna.
 - V kontextu Playwrightu s `isMobile` se stránce širší než okno zvětší i `innerWidth`
   (formulář e-mailu: 520 px při okně 375 px). Přetečení proto poznáš porovnáním
   `document.documentElement.scrollWidth` se zadanou šířkou okna, ne s `innerWidth`.
