@@ -20,7 +20,7 @@
     {foreach $stitky as $stitek}
         <tr>
             <td><a n:href="SpravaStitku:edit id=>$stitek['id']" >
-                <span class="badge rounded-pill" style="background-color: {$stitek->barva_pozadi|noescape}; color: {$stitek->barva_popredi|noescape};" >
+                <span class="badge rounded-pill" style="{App\Services\BarvaStitku::styl($stitek->barva_pozadi, $stitek->barva_popredi)|noescape}" >
                     {$stitek['text']}</a>
                 </span>
             </td>

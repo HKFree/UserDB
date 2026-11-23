@@ -1521,7 +1521,7 @@ input[readonly],
 
 /* Hover efekt */
 .dropdown-menu>li>a.stitky-item:hover {
-    filter: brightness(85%);
+    filter: brightness(95%);
     /* Efekt ztmavení při hover */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
     /* Jemný stín pro hover */
@@ -1549,6 +1549,12 @@ input[readonly],
     display: inline-flex;
     align-items: center;
     margin: 1px;
+}
+
+/* Štítky: barvy pozadí, rámečku a písma dává atribut style z BarvaStitku, tady jen tloušťka rámečku. */
+.badge[style*="border-color"],
+.dropdown-menu > li > a.stitky-item {
+    border: 1px solid transparent;
 }
 
 .badge-remove {

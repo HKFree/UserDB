@@ -489,9 +489,9 @@ $(document).ready(function () {
                         return $(this).attr('data-stitek-id') === labelId;
                     }).closest('.badge').remove();
                     if (!removing) {
-                        var badge = $('<span class="badge"></span>').css({
-                            backgroundColor: response.barva_pozadi, color: response.barva_popredi
-                        }).append($('<span></span>').text(response.text));
+                        // barvy ve vzhledu aplikace spocital server (BarvaStitku), atribut je jen z nich
+                        var badge = $('<span class="badge"></span>').attr('style', response.styl)
+                            .append($('<span></span>').text(response.text));
                         $('<button type="button" class="badge-remove">&times;</button>')
                             .attr({ 'data-stitek-id': labelId, 'data-user-id': userId,
                                 'aria-label': 'Odebrat štítek ' + response.text, title: 'Odebrat štítek' })

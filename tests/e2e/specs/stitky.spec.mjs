@@ -15,8 +15,16 @@ test('štítek se přidá a odebere přes AJAX a oba stavy přežijí obnovení 
     await page.getByRole('menuitem', { name: 'Demo globální', exact: true }).click();
     await expect(label).toBeVisible();
     expect(navigations).toBe(0);
+    // Štítek přidaný skriptem má barvy ve vzhledu aplikace stejné jako štítek, který vykreslí server.
+    const colours = () => label.evaluate(element => {
+        const style = getComputedStyle(element);
+        return [style.backgroundColor, style.borderTopColor, style.borderTopWidth, style.color];
+    });
+    const added = await colours();
+    expect(added).toEqual(['rgb(230, 240, 230)', 'rgb(140, 186, 140)', '1px', 'rgb(0, 102, 0)']);
     await page.reload();
     await expect(label).toBeVisible();
+    expect(await colours()).toEqual(added);
 
     navigations = 0;
     await label.getByRole('button', { name: 'Odebrat štítek Demo globální', exact: true }).click();

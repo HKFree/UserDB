@@ -4,7 +4,7 @@
 <div class="user-labels-component" data-user-id="{$userId}">
     <div class="user-labels">
         {foreach $stitkyUzivatele as $stitekUzivatele}
-            <span class="badge position-relative" style="background-color: {$stitekUzivatele->barva_pozadi|noescape}; color: {$stitekUzivatele->barva_popredi|noescape};">
+            <span class="badge position-relative" style="{App\Services\BarvaStitku::styl($stitekUzivatele->barva_pozadi, $stitekUzivatele->barva_popredi)|noescape}">
                 <abbr title="{$stitekUzivatele->kdy_vytvoreno->format('d.m.Y H:i') . "\n\n" . $stitekUzivatele->poznamka}">
                     {$stitekUzivatele->text}
                 </abbr>
@@ -26,7 +26,7 @@
                        n:class="stitky-item, isset($assignedIds[$stitek->id]) ? label-assigned" data-id="{$stitek->id}"
                        aria-disabled="{isset($assignedIds[$stitek->id]) ? 'true' : 'false'}"
                        title="{isset($assignedIds[$stitek->id]) ? 'Člen tento štítek už má' : 'Přidat štítek'}"
-                       style="background-color: {$stitek->barva_pozadi|noescape}; color: {$stitek->barva_popredi|noescape};">
+                       style="{App\Services\BarvaStitku::styl($stitek->barva_pozadi, $stitek->barva_popredi)|noescape}">
                         {$stitek->text}
                     </a>
                 </li>

@@ -10,6 +10,7 @@ use Nette\Database\Connection;
 use Nette\Database\ResultSet;
 use Nette\Database\Table\ActiveRow;
 use Nette\Http;
+use App\Services\BarvaStitku;
 use Tester\Assert;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -185,7 +186,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
     }
 
     private static function colors(ActiveRow $label): string {
-        return "background-color: $label->barva_pozadi; color: $label->barva_popredi;";
+        return BarvaStitku::styl($label->barva_pozadi, $label->barva_popredi);
     }
 
     /** @return list<\DOMNode> */

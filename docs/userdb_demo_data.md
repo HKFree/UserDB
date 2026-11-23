@@ -231,6 +231,7 @@ ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho 
 | Prázdný graf | Jen s prázdnou databází nebo v testu: hláška místo grafu (`SpravaGrafuPresenterTest`) |
 | Přehled a schvalování ČČ | `/sprava-cc/prehledcc`, `/sprava-cc/schvalovanicc` |
 | Štítky bez barev, více řádků a stejný text ve dvou oblastech | `/sprava-stitku/`, štítky 21000 až 21004, členové 20002 a 20027 |
+| Štítky jako v provozu (stejné názvy, barvy a poznámky) | `/sprava-stitku/`; Neplatný e-mail a telefon, CPok, Mig2, TV-platit, TV-zrušit, TV-sleduje, Odesláno:ZpoplatneniTelevize2026 u členů 20000, 20001, 20003, 20005, 20006, 20012, 20013 a 20018 v `/uzivatel-list/list/201` |
 | Filtr seznamu členů podle štítku | `/uzivatel-list/list/201`, filtr „Hledej štítek“: „Demo globální“ najde člena 20027, „NOT Demo globální“ všechny ostatní, „LAN123“ nikoho |
 | Vyloučení z mailing listu | `/sprava-mailu/mailinglist`, členové 20015, 20016, 20019, 20024, 20025 |
 | Nástroje a formuláře | `/sprava/nastroje` |
@@ -308,7 +309,7 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 | SpravceOblasti | 20000 až 20030 s mezerami | 100000 |
 | ApiKlic | 200 až 204 | žádné |
 | Čestné členství | 20045 až 20052, 20072 až 20074 | žádné |
-| Stitek | 21000 až 21004 | žádné |
+| Stitek | 21000 až 21004, 21010 až 21013, 21017 | žádné |
 | Smlouva / PodpisSmlouvy | 200000 až 200006 / 200000 až 200007 | žádné |
 | UzivatelskeKonto | 2000000 až 2002402 s mezerami | 9000000 až 9269999 s mezerami, 10000000 až 10323999, 11000000 až 11000549 |
 | PrichoziPlatba | 40000001 až 40000012, 40000100 až 40000104, 40000110 až 40000113 | 50000000 až 50053999 |
