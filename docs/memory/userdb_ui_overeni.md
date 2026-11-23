@@ -45,9 +45,10 @@ Ověřeno 22. 11. 2026 na lokálním webu ve Floxu, není-li uvedeno jinak.
   v `@layout.latte` vedoucí na týž presenter.
 - Presenter test, který dá `grid-filter` rovnou do adresy, formulář filtrů i jeho adresu obejde:
   projde, i když filtr v prohlížeči použít nejde. Chování formuláře ověřuj odesláním formuláře.
-- Našeptávač (`setSuggestion()`) se v prohlížeči nespustí: potřebuje plugin `.grido()`
-  a knihovnu typeahead, která v repu není. Jeho obsluhu na serveru jde ověřit jen AJAX
-  požadavkem v presenter testu.
+- Našeptávač filtru (`setSuggestion()`) aplikace nepoužívá a samotné volání ho nezapne:
+  v prohlížeči potřebuje plugin `.grido()` a knihovnu typeahead, která v repu není. Volání
+  nastavuje poli i `autocomplete="off"`; bez něj nabízí prohlížeč dříve zadané hodnoty.
+  Ověřeno 23. 11. 2026 v prohlížeči a na atributech vykreslených polí.
 - Textový filtr nad `Selection` porovnává přes `App\Model\HledaniBezDiakritiky`; zdroj dat
   mu podstrčí `AppGrid::setModel()`. Samotné
   `sloupec COLLATE ...` nestačí: nad datem, částkou nebo číslem skončí chybou 1253, proto je
