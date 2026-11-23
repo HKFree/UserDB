@@ -84,3 +84,23 @@ test('formulář člena ukáže chybu u pole a po opravě ji zase skryje', async
     await expect(email).not.toHaveAttribute('aria-invalid', 'true');
     await expect(status).toHaveText('Neuložené změny');
 });
+
+test.describe('kopírování IP adres', () => {
+    test.use({ persona: personas.vv });
+
+    test('tlačítka pro zkopírování IP adresy stojí pod sebou i u různě dlouhých adres', async ({ page }) => {
+        await page.goto('/uzivatel/show/20061');
+        const buttons = page.locator('#member-ip').getByRole('button', { name: 'Zkopírovat IP adresu', exact: true });
+        await expect(buttons.first()).toBeVisible();
+        // 10.221.0.1 až 10.221.0.60: adresy s jednou i dvěma číslicemi na konci.
+        const places = await buttons.evaluateAll(elements => elements.map(element => {
+            const button = element.getBoundingClientRect();
+            const address = element.parentElement.querySelector('a').getBoundingClientRect();
+            return { left: Math.round(button.left), sameLine: button.top < address.bottom && button.bottom > address.top };
+        }));
+        expect(places.length).toBeGreaterThan(10);
+        expect(places.every(place => place.sameLine), 'tlačítko je na řádku s adresou').toBe(true);
+        const lefts = [...new Set(places.map(place => place.left))];
+        expect(lefts.length, `tlačítka začínají na ${lefts.join(', ')} px`).toBe(1);
+    });
+});

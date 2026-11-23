@@ -2453,11 +2453,11 @@ html {
     color: #9a1c1c;
 }
 
-/* State names are CSS content on the UID cell, retained after Grido AJAX refresh. */
+/* State names are CSS content on the UID cell, retained after Grido AJAX refresh.
+   A line of its own under the UID: the UID row fills the cell, so an inline word would overflow into the next cell. */
 .member-list tr[class*="grid-row-"] > td.grid-cell-id::after {
     content: var(--member-state, "") var(--member-inactive, "") var(--member-overpaid, "") var(--member-email, "");
-    display: inline-block;
-    margin-left: 5px;
+    display: block;
     font-size: 10px;
     font-weight: 700;
     color: #4b5563;
@@ -2756,6 +2756,17 @@ html {
 
 .fact-bad > b {
     color: #9a1c1c;
+}
+
+/* IP adresy v detailu člena: adresa má šířku nejdelší možné adresy, takže tlačítka pro zkopírování stojí pod sebou. */
+#member-ip tr[id^="highlightable-ip"] > td:first-child {
+    white-space: nowrap;
+}
+
+#member-ip tr[id^="highlightable-ip"] > td:first-child > a:first-child {
+    display: inline-block;
+    min-width: 15ch;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Copy buttons of the member detail. The class .copy-value belongs to the login and password values of the IP table. */

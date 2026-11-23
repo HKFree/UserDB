@@ -15,7 +15,9 @@ async function checkUid(page, form, uid, labels, editable, inactive = false) {
     }));
     expect(Math.max(...centers) - Math.min(...centers), `UID ${uid}: všechny prvky na jednom řádku`).toBeLessThan(4);
     // UID je svisle uprostřed buňky jako ostatní sloupce.
+    // Řádek se slovem stavu (zrušený, čestný…) má pod UID ještě jeden řádek, centrovaný je pak celý obsah.
     const vertical = await cell.evaluate(td => {
+        if (!['""', 'none'].includes(getComputedStyle(td, '::after').content)) return 0;
         const cellBox = td.getBoundingClientRect();
         const content = td.querySelector('.user-uid').getBoundingClientRect();
         return (content.top - cellBox.top) - (cellBox.bottom - content.bottom);
@@ -73,6 +75,20 @@ for (const width of [1280, 375]) {
                 await page.goto('/uzivatel-list/listall?search=20022');
                 await checkUid(page, '#frm-grid-form', 20022, ['Spolek', 'Družstvo'], editable);
                 await checkPageWidth(page, width);
+            });
+
+            test('stav člena slovem stojí pod UID uvnitř buňky', async ({ page }) => {
+                await page.goto('/uzivatel-list/list/201');
+                const cell = page.locator('#frm-grid-form tr.grid-row-20047 td.grid-cell-id');
+                const place = await cell.evaluate(td => {
+                    const box = td.getBoundingClientRect();
+                    const uid = td.querySelector('.user-uid').getBoundingClientRect();
+                    const style = getComputedStyle(td, '::after');
+                    return { word: style.content, display: style.display, fits: td.scrollWidth <= td.clientWidth + 1, uidBottom: uid.bottom, cellBottom: box.bottom };
+                });
+                expect(place.word).toBe('"čestný"');
+                expect(place.display).toBe('block');
+                expect(place.fits, 'slovo nepřetéká do vedlejšího sloupce').toBe(true);
             });
 
             if (editable) {
