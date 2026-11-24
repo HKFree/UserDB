@@ -236,7 +236,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
         $grid = $otherUsers ? 'othersGrid' : 'grid';
         $parameters = $this->parameters($action, $search, $money) + ['do' => "$grid-export-export"];
         $parameters += $batch !== null ? ["$grid-sort" => ['id' => 'asc']] : [];
-        $parameters += $labelFilter !== null ? ["$grid-filter" => ['stitek' => $labelFilter]] : [];
+        $parameters += $labelFilter !== null ? ["$grid-filter" => ['stitky' => (string) $labelFilter]] : [];
         $export = $this->presenters->ui($this->actor->id, 'UzivatelList', $parameters)->response;
         if (($export instanceof Export) === false) {
             throw new \LogicException('Expected the export of the table.');

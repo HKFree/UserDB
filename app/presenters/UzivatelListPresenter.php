@@ -59,6 +59,7 @@ class UzivatelListPresenter extends BasePresenter
 
         $this->template->money = $this->maVyplnenyParametr("money") && $this->template->canViewOrEdit; // přepínač jen s oprávněním
         $this->template->fullnotes = $this->fullnotes;
+        $this->template->cipyStitku = $this->tabulkaUzivatelu->cipyStitku($this->tabulka());
     }
 
     /**
@@ -89,10 +90,16 @@ class UzivatelListPresenter extends BasePresenter
         $this->template->vidiUdajeClenu = $vidiUdajeClenu;
         $this->template->fullnotes = $this->fullnotes;
         $this->template->search = $this->hledanyText;
+        $this->template->cipyStitku = $this->tabulkaUzivatelu->cipyStitku($this->tabulka());
     }
 
-    protected function createComponentGrid(string $name): void {
-        $this->tabulkaUzivatelu->getListOfUsersGrid(
+    /** Hlavní tabulka stránky; filtry nad ní kreslí šablona. */
+    private function tabulka(): \Grido\Grid {
+        return $this->getComponent('grid');
+    }
+
+    protected function createComponentGrid(string $name): \Grido\Grid {
+        return $this->tabulkaUzivatelu->getListOfUsersGrid(
             $this,
             $name,
             $this->getUser(),

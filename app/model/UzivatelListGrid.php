@@ -6,6 +6,8 @@ use App\Components\AppGrid;
 use Nette;
 use Nette\Database\Row;
 use Nette\Database\Table\ActiveRow;
+use Nette\Database\Table\Selection;
+use App\Services\BarvaStitku;
 use Nette\Utils\Strings;
 use Nette\Utils\Html;
 use Latte\Engine;
@@ -292,7 +294,8 @@ class UzivatelListGrid
             })->setSortable();
         }
 
-        $grid->setModel($seznamUzivatelu);
+        // Hledání, které databáze porovnat nemůže, nenajde nic; filtry ale potřebují dotaz, ne pole.
+        $grid->setModel(is_array($seznamUzivatelu) ? $this->uzivatel->findBy(['id' => 0]) : $seznamUzivatelu);
 
         $grid->setDefaultPerPage(500);
         $grid->setPerPageList(array(25, 50, 100, 250, 500, 1000));
@@ -322,31 +325,7 @@ class UzivatelListGrid
             $tz->setDefaultValue('active');
         }
 
-        $seznamStitku = $this->stitek->getSeznamStitku()->order('text, id')->fetchPairs("id", "text");
-        $seznamNotStitku = [];
-        foreach ($seznamStitku as $stitekId => $stitekText) {
-            $seznamNotStitku[-$stitekId] = "NOT " . $stitekText;
-        }
-
-        $stitkyKFiltrovani = [0 => "---"];
-        $stitkyKFiltrovani += $seznamStitku;
-        $stitkyKFiltrovani += $seznamNotStitku;
-
-        $grid->addFilterSelect('stitek', 'Hledej štítek', $stitkyKFiltrovani)
-            ->setWhere(function ($value, $connection) {
-                if ($value > 0) { // YES podmínka
-                    return $connection->where(":StitekUzivatele.Stitek_id = ?", $value);
-                } elseif ($value < 0) { // NOT podmínka
-                    // Pro NOT podmínku musíme filtrovat v joinu a to se dělá pomocí joinWhere
-                    return $connection
-                    ->joinWhere(':StitekUzivatele', ':StitekUzivatele.Stitek_id = ?', -$value)
-                    ->whereOr([
-                        ":StitekUzivatele.Stitek_id != ?" => -$value,
-                        ":StitekUzivatele.Stitek_id ?" => null,
-                    ]);
-                }
-                return $connection;
-            });
+        $this->pridejFiltrySeznamu($grid, $canViewOrEdit);
 
         if (in_array($money, [null, false, 0, '', '0'], true) === false && $canViewOrEdit) { // přepínač "Informace z money" ukazuje šablona jen s oprávněním
             $thisparams = $this->parameters;
@@ -436,9 +415,9 @@ class UzivatelListGrid
                     $el->setText($item->ulice_cp);
                     $this->addressNotice($el, $item);
                     return $el;
-                })->setSortable()->setFilterText();
-                $grid->addColumnText('mesto', 'Obec')->setSortable()->setFilterText();
-                $grid->addColumnText('psc', 'PSČ')->setSortable()->setFilterText();
+                })->setSortable();
+                $grid->addColumnText('mesto', 'Obec')->setSortable();
+                $grid->addColumnText('psc', 'PSČ')->setSortable();
             } else {
                 $grid->addColumnText('ulice_cp', 'Ulice')->setCustomRender(function ($item) {
                     $el = Html::el('span');
@@ -446,7 +425,7 @@ class UzivatelListGrid
                     $el->setText(Strings::truncate($item->ulice_cp ?? '', 50, $append = '…'));
                     $this->addressNotice($el, $item);
                     return $el;
-                })->setSortable()->setFilterText();
+                })->setSortable();
             }
 
             $grid->addColumnEmail('email', 'E-mail')->setSortable();
@@ -494,20 +473,69 @@ class UzivatelListGrid
             })->setSortable();
 
             if (in_array($fullnotes, [null, false, 0, '', '0'], true) === false) {
-                $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable()->setFilterText();
+                $grid->addColumnText('poznamka', 'Dlouhá poznámka')->setSortable();
             } else {
                 $grid->addColumnText('poznamka', 'Poznámka')->setCustomRender(function ($item) {
                     $el = Html::el('span');
                     $el->title = $item->poznamka;
                     $el->setText(Strings::truncate($item->poznamka ?? '', 20, $append = '…'));
                     return $el;
-                })->setSortable()->setFilterText();
+                })->setSortable();
             }
         }
 
         $this->pridejSloupecStitku($grid);
 
         return $grid;
+    }
+
+    /**
+     * Filtry, které šablona seznamu kreslí v jednom řádku nad tabulkou: hledaný text, štítky jako čipy
+     * (skryté pole s hodnotou "5,-7") a výběr štítku, který se k nim přidá.
+     */
+    private function pridejFiltrySeznamu(\Grido\Grid $grid, bool $udajeClenu): void {
+        $grid->addFilterText('hledat', 'Hledat')
+            ->setWhere(static fn (int|string $hodnota, Selection $clenove): Selection => FiltrSeznamuClenu::hledej($clenove, (string) $hodnota, $udajeClenu));
+        $grid->addFilterText('stitky', 'Štítky')
+            ->setWhere(static fn (int|string $hodnota, Selection $clenove): Selection => FiltrSeznamuClenu::stitky($clenove, (string) $hodnota));
+
+        $seznamStitku = $this->stitek->getSeznamStitku()->order('text, id')->fetchPairs('id', 'text');
+        $nemaStitek = [];
+        foreach ($seznamStitku as $stitekId => $text) {
+            $nemaStitek[-$stitekId] = $text;
+        }
+        $grid->addFilterSelect('pridatStitek', 'Přidat štítek', ['' => 'Přidat štítek…', 'Má štítek' => $seznamStitku, 'Nemá štítek' => $nemaStitek])
+            ->setWhere(static fn (int|string $hodnota, Selection $clenove): Selection => FiltrSeznamuClenu::stitky($clenove, (string) $hodnota));
+        // Šablona stránky kreslí filtry nad tabulkou v jednom řádku, tabulka svůj blok filtrů vynechá.
+        $sablona = $grid->getTemplate();
+        if ($sablona instanceof Nette\Bridges\ApplicationLatte\DefaultTemplate) {
+            $sablona->add('filtryMimoTabulku', true);
+        }
+    }
+
+    /**
+     * Štítky z filtru tabulky jako čipy nad ní: text, barvy štítku, zda ho člen má mít, a odkaz, který čip zruší.
+     * @return list<array{text: string, styl: string, ma: bool, zrusit: string}>
+     */
+    public function cipyStitku(\Grido\Grid $grid): array {
+        $hodnota = $grid->filter['stitky'] ?? '';
+        $vybrane = FiltrSeznamuClenu::stitkyZHodnoty(is_scalar($hodnota) ? (string) $hodnota : '');
+        $stitky = $this->stitek->getSeznamStitku()->where('id', array_map('abs', $vybrane))->fetchAll();
+        $cipy = [];
+        foreach ($vybrane as $stitekId) {
+            $stitek = $stitky[abs($stitekId)] ?? null;
+            if ($stitek === null) {
+                continue;
+            }
+            $zbyle = array_values(array_diff($vybrane, [$stitekId]));
+            $cipy[] = [
+                'text' => (string) $stitek->text,
+                'styl' => BarvaStitku::styl($stitek->barva_pozadi, $stitek->barva_popredi),
+                'ma' => $stitekId > 0,
+                'zrusit' => $grid->link('this', ['filter' => ['stitky' => implode(',', $zbyle)] + $grid->filter, 'page' => null]),
+            ];
+        }
+        return $cipy;
     }
 
     /** Štítky členů i nabídka všech štítků se načtou jednou na tabulku, ne pro každý řádek. */

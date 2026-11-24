@@ -232,7 +232,7 @@ ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho 
 | Přehled a schvalování ČČ | `/sprava-cc/prehledcc`, `/sprava-cc/schvalovanicc` |
 | Štítky bez barev, více řádků a stejný text ve dvou oblastech | `/sprava-stitku/`, štítky 21000 až 21004, členové 20002 a 20027 |
 | Štítky jako v provozu (stejné názvy, barvy a poznámky) | `/sprava-stitku/`; Neplatný e-mail a telefon, CPok, Mig2, TV-platit, TV-zrušit, TV-sleduje, Odesláno:ZpoplatneniTelevize2026 u členů 20000, 20001, 20003, 20005, 20006, 20012, 20013 a 20018 v `/uzivatel-list/list/201` |
-| Filtr seznamu členů podle štítku | `/uzivatel-list/list/201`, filtr „Hledej štítek“: „Demo globální“ najde člena 20027, „NOT Demo globální“ všechny ostatní, „LAN123“ nikoho |
+| Filtr seznamu členů podle štítku | `/uzivatel-list/list/201`, nabídka „Přidat štítek…“: „Demo globální“ pod Má štítek najde člena 20027, pod Nemá štítek všechny ostatní, „LAN123“ nikoho; „Neplatný e-mail“ a „Neplatný telefon“ najednou ukážou čipy obou štítků |
 | Vyloučení z mailing listu | `/sprava-mailu/mailinglist`, členové 20015, 20016, 20019, 20024, 20025 |
 | Nástroje a formuláře | `/sprava/nastroje` |
 | Globální API | HTTP Basic `apikey200` / `demo-global-only` |

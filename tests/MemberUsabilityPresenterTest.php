@@ -165,11 +165,11 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         $all = $this->document($this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'listall', 'money' => $money])->html);
         Assert::count(count($expected), $this->countsBelowTable($all));
         Assert::same($money === 1 ? 'true' : 'false', $this->elements($document, '//a[contains(@class,"money-toggle")]')[0]->getAttribute('aria-pressed'));
-        Assert::count(1, $this->elements($document, '//input[@id="member-quick-filter"]'));
+        Assert::count(1, $this->elements($document, '//input[@name="filters[hledat]"]'));
         $search = $this->document($this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'listall', 'search' => 'verejny-nick', 'money' => $money])->html);
         Assert::same('Kompletní seznam členů | HKFree UserDB', $this->text($search, '//title'));
         Assert::count(0, $this->elements($search, '//*[@class="member-counts"]'));
-        Assert::count(1, $this->elements($search, '//input[@id="member-quick-filter"]'));
+        Assert::count(1, $this->elements($search, '//input[@name="filters[hledat]"]'));
         Assert::count(1, $this->elements($search, '//*[@class="member-legend"]'));
     }
 

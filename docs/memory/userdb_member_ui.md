@@ -21,8 +21,15 @@ metadata:
 - Samotné načtení `grido.js` AJAX nezapíná. V tomto checkoutu se `.grido()` neinicializuje
   a kliknutí na řazení načte celou stránku. AJAX snippet lze ověřit přes `$.nette.ajax()`;
   jeho podporu nezaměňovat za chování běžného odkazu. Ověřeno 22. 11. 2026 čtením
-  inicializace a v prohlížeči. Rychlý filtr zůstává při obnově snippetu, při plné navigaci
-  se vyprázdní.
+  inicializace a v prohlížeči.
+- Řádek filtrů nad seznamem členů kreslí šablona stránky (`memberFilter` v `list.latte`), ne Grido.
+  Pole jsou mimo `<form>` tabulky a patří k němu atributem `form="frm-grid-form"`, takže filtr
+  nesou odkazy řazení, stránek i exportu jako `grid-filter[...]`. Grido svůj blok vynechá díky
+  proměnné šablony `filtryMimoTabulku`. Dvě pasti: `Grid::getCount()` zavolané před vykreslením
+  tabulky si zapamatuje počet bez filtrů a ukáže ho i pod tabulkou, proto se tabulka vykresluje
+  přes `{capture}` před řádkem filtrů. Hodnoty polí (`setDefaults`) Grido doplní až při použití
+  filtrů, tedy také až při vykreslení tabulky. Ověřeno 24. 11. 2026 v prohlížeči a presenter testy
+  `MemberListFiltersPresenterTest`.
 - Latte 2 nepřenáší lokální proměnnou vytvořenou přes `{var}` v layoutu automaticky
   do bloku `content` potomka. Sdílená data definovaná v layoutu předat jako argument
   `{include content, ...}`. Ověřeno 22. 11. 2026 presenter testem přehledu: bez

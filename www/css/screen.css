@@ -2322,15 +2322,23 @@ html {
     margin: 10px 0;
 }
 
-/* Takes the room the view switches leave, so both fit on one row from about 1280 px. */
+/* The member filter: search, Zobrazit, label chips and the buttons in one row, wrapping on a narrow screen. */
+.member-filter {
+    display: flex;
+    flex: 1 1 640px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    min-width: 0;
+}
+
 .quick-filter {
     position: relative;
     display: flex;
-    flex: 1 1 360px;
-    flex-wrap: wrap;
+    flex: 1 1 240px;
     align-items: center;
-    gap: 10px;
     min-width: 0;
+    max-width: 380px;
 }
 
 .quick-filter > .fa {
@@ -2342,27 +2350,100 @@ html {
 }
 
 .main .quick-filter input {
-    flex: 1 1 180px;
+    flex: 1 1 auto;
     width: auto;
     min-width: 0;
-    max-width: 340px;
     height: 30px;
     padding-left: 28px;
     text-overflow: ellipsis;
 }
 
-/* On a phone the quick filter takes a whole row; its hint would not fit beside the row count. */
+.member-filter .filter-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.member-filter .filter-field > label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: normal;
+    color: var(--udb-text-6b7280);
+}
+
+.main .member-filter select.form-control {
+    width: auto;
+    max-width: 220px;
+}
+
+/* The selects keep their text in the middle of the field; the padding of the form styles pushed it under the edge. */
+.main .member-filter select.form-control {
+    height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 @media (max-width: 767px) {
-    .main .quick-filter input {
+    .main .member-filter select.form-control {
+        height: 40px;
+    }
+}
+
+.label-chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.label-chips .label-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: left;
+}
+
+.label-chip-sign {
+    font-weight: 700;
+}
+
+/* A label the members must not have is struck through, so the sign is not the only difference. */
+.label-chip-not .label-chip-text {
+    text-decoration: line-through;
+}
+
+.main .label-chip a.label-chip-remove {
+    margin: 0 -3px 0 5px;
+    padding: 0 2px;
+    color: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.main .label-chip a.label-chip-remove:hover,
+.main .label-chip a.label-chip-remove:focus {
+    text-decoration: underline;
+}
+
+.main .member-filter .label-chip-add {
+    max-width: 180px;
+}
+
+/* On a phone the search takes a whole row. */
+@media (max-width: 767px) {
+    .quick-filter {
         flex-basis: 100%;
         max-width: none;
     }
 }
 
-/* A fixed room for the count, so the field beside it does not change width while typing. */
 .quick-filter-count {
     flex: 0 0 auto;
-    min-width: 165px;
     font-size: 12px;
     color: var(--udb-text-6b7280);
 }

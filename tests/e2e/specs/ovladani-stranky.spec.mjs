@@ -41,18 +41,34 @@ test('filtr v levém panelu nechá jen odpovídající oblasti a AP bez ohledu n
     await expect(shown).toHaveCount(all);
 });
 
-test('rychlý filtr skryje ostatní řádky a řádky jsou vždy kompaktní', async ({ page }) => {
+test('hledání v seznamu AP filtruje hned při psaní a Enter hledá na serveru; řádky jsou kompaktní', async ({ page }) => {
     await page.goto('/uzivatel-list/list/201');
     const list = page.locator('.member-list');
     const rows = list.locator('#grid tbody tr[class*="grid-row-"]');
     const loaded = await rows.count();
     expect(loaded).toBeGreaterThan(10);
-    await expect(list.locator('.quick-filter-count')).toHaveText(`${loaded} z ${loaded} načtených řádků`);
+    const count = list.locator('.quick-filter-count');
+    await expect(count).toHaveText(`Nalezeno: ${loaded}`);
 
-    await page.getByLabel('Rychlý filtr v načtených řádcích', { exact: true }).fill('demo20028@');
+    const search = page.getByLabel('Hledat ve členech', { exact: true });
+    await search.fill('demo20028@');
     await expect(rows.filter({ visible: true })).toHaveCount(1);
     await expect(rows.filter({ visible: true }).getByRole('link', { name: '20028', exact: true })).toBeVisible();
-    await expect(list.locator('.quick-filter-count')).toHaveText(`1 z ${loaded} načtených řádků`);
+    await expect(count).toHaveText(`1 z ${loaded} řádků, Enter hledá na serveru`);
+
+    await search.press('Enter');
+    await expect(page).toHaveURL(/grid-filter%5Bhledat%5D=demo20028%40/);
+    await expect(rows).toHaveCount(1);
+    await expect(count).toHaveText('Nalezeno: 1');
+    await expect(search).toHaveValue('demo20028@');
+    // Po hledání na serveru jsou načtené jen nalezené řádky; jiný text proto čeká na Enter.
+    await search.fill('demo20027@');
+    await expect(rows.filter({ visible: true })).toHaveCount(1);
+    await expect(count).toHaveText('Enter hledá ve všech členech');
+
+    await page.getByRole('button', { name: 'Zrušit filtry', exact: true }).click();
+    await expect(rows).toHaveCount(loaded);
+    await expect(search).toHaveValue('');
 
     // Technický seznam ukazuje co nejvíc řádků; přepínač hustoty už není.
     await expect(page.getByRole('button', { name: 'Kompaktní', exact: true })).toHaveCount(0);

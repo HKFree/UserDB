@@ -18,9 +18,11 @@
 
 </div>
 </div>
+{* Tabulka se vykreslí první: až potom zná počet po použití filtrů, který ukazuje řádek filtrů nad ní. *}
+{capture $tabulkaClenu}{control grid}{/capture}
 <div class="member-list">
 <div class="list-toolbar">
-{include memberQuickFilter}
+{include memberFilter}
 <div class="list-view"><span>Zobrazit navíc:</span>
 {if $canViewOrEdit}
 <a n:if="!$money" href="{link UzivatelList:list id=>$ap->id, money=>1}" class="btn btn-default btn-sm money-toggle" role="button" aria-pressed="false" title="Zobrazit informace z money"><i class="fa fa-square-o" aria-hidden="true"></i> Platby a aktivace</a>
@@ -32,7 +34,7 @@
 </div>
 </div>
 
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam členů AP">{control grid}</div>
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam členů AP">{$tabulkaClenu|noescape}</div>
 
 {include memberStats}
 
@@ -59,12 +61,43 @@
 </ul>
 {/define}
 
-{define memberQuickFilter}
-<div class="quick-filter">
-    <label class="sr-only" for="member-quick-filter">Rychlý filtr v načtených řádcích</label>
-    <i class="fa fa-filter" aria-hidden="true"></i>
-    <input id="member-quick-filter" type="search" class="form-control input-sm" placeholder="Rychlý filtr: jméno, e-mail, IP, poznámka…" autocomplete="off">
-    <span class="quick-filter-count" aria-live="polite"></span>
+{define memberFilter}
+{* Filtry tabulky grid v jednom řádku nad ní. Pole patří k formuláři tabulky atributem form, takže je nesou
+   i její odkazy: řazení, stránky a export. Hledání jde přes všechny stránky, ne jen přes načtenou. *}
+{var $tabulka = $control['grid']}
+{var $formular = $tabulka['form']}
+{var $formId = $formular->getElementPrototype()->id}
+{var $filtry = $formular['filters']}
+{var $hledat = $filtry['hledat']}
+{var $pocet = $tabulka->getCount()}
+{var $filtruje = (bool) array_filter($tabulka->filter, fn ($hodnota) => $hodnota !== '' && $hodnota !== null)}
+{* Při psaní filtruje prohlížeč jen nad úplným výsledkem: všechny řádky na stránce a bez hledání ze serveru,
+   které by zbylé řádky už zúžilo podle jiného textu. Štítky a Zobrazit výsledek zužují stejně jako před psaním. *}
+<div class="member-filter" role="search" aria-label="Filtr členů"
+     data-live="{$pocet <= $tabulka->getPerPage() && (string) $hledat->getValue() === '' ? 'true' : 'false'}" data-applied="{$hledat->getValue()}">
+    <div class="quick-filter">
+        <label class="sr-only" for="{$hledat->getHtmlId()}">Hledat ve členech</label>
+        <i class="fa fa-search" aria-hidden="true"></i>
+        {$hledat->getControl()->addAttributes([form => $formId, type => search, class => 'form-control input-sm', placeholder => 'Hledat: UID, jméno, e-mail, telefon, IP, ulice, poznámka…', autocomplete => off])}
+    </div>
+    <span class="filter-field">
+        <label for="{$filtry['spolek_druzstvo']->getHtmlId()}">Zobrazit</label>
+        {$filtry['spolek_druzstvo']->getControl()->addAttributes([form => $formId, class => 'form-control input-sm', data-submit-on-change => true])}
+    </span>
+    <div class="label-chips" role="group" aria-label="Filtr podle štítků">
+        <span n:foreach="$cipyStitku as $cip" n:class="badge, label-chip, $cip['ma'] ? label-chip-has : label-chip-not" style="{$cip['styl']|noescape}">
+            <span class="label-chip-sign" aria-hidden="true">{$cip['ma'] ? '+' : '−'}</span>
+            <span class="sr-only">{$cip['ma'] ? 'Má štítek' : 'Nemá štítek'}</span>
+            <span class="label-chip-text">{$cip['text']}</span>
+            <a href="{$cip['zrusit']}" class="label-chip-remove" aria-label="Zrušit filtr: {$cip['ma'] ? 'má' : 'nemá'} štítek {$cip['text']}" title="Zrušit filtr">&times;</a>
+        </span>
+        {$filtry['stitky']->getControl()->addAttributes([form => $formId, type => hidden])}
+        <label class="sr-only" for="{$filtry['pridatStitek']->getHtmlId()}">Přidat filtr podle štítku</label>
+        {$filtry['pridatStitek']->getControl()->addAttributes([form => $formId, class => 'form-control input-sm label-chip-add'])}
+    </div>
+    <button type="submit" form="{$formId}" name="buttons[search]" value="Vyhledat" class="btn btn-primary btn-sm"><i class="fa fa-search" aria-hidden="true"></i> Hledat</button>
+    <button n:if="$filtruje" type="submit" form="{$formId}" name="buttons[reset]" value="Resetovat" class="btn btn-default btn-sm"><i class="fa fa-times" aria-hidden="true"></i> Zrušit filtry</button>
+    <span class="quick-filter-count" aria-live="polite" data-total="Nalezeno: {$pocet}">Nalezeno: {$pocet}</span>
 </div>
 {/define}
 

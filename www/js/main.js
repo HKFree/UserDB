@@ -555,34 +555,62 @@ $(document).ready(function () {
     $(document).ajaxComplete(refreshLabels);
 });
 
-// Filtruje jen nactene radky hlavniho gridu. Ovladani zustava mimo AJAX snippet.
+// Filtr nad seznamem clenu. Hledani a stitky jdou na server (Enter, tlacitko Hledat, vyber v nabidce), takze plati
+// pro vsechny stranky tabulky. Kdyz jsou vsechny radky na jedne strance, filtruje se navic hned pri psani.
 $(document).ready(function () {
-    var list = $('.member-list');
-    var input = $('#member-quick-filter');
-    if (!list.length) return;
+    var filter = $('.member-filter');
+    if (!filter.length) return;
+    var input = filter.find('input[type="search"]');
+    var form = document.getElementById(input.attr('form'));
+    var count = filter.find('.quick-filter-count');
+    var live = filter.attr('data-live') === 'true';
+    var applied = filter.attr('data-applied') || '';
+    var normalize = function (text) {
+        return $.trim(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    };
+
+    function submit() {
+        var button = filter.find('button[name="buttons[search]"]')[0];
+        if (form.requestSubmit) form.requestSubmit(button); else button.click();
+    }
 
     function applyFilter() {
-        var needle = $.trim(input.val()).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        var rows = list.find('#grid tbody tr[class*="grid-row-"]');
+        var rows = $(form).find('tbody tr[class*="grid-row-"]');
+        var value = input.val();
+        // Radky uz vybral server; jeho hledani je presnejsi nez text bunek (zkracene poznamky, skryte sloupce).
+        if (!live || $.trim(value) === $.trim(applied)) {
+            rows.removeClass('quick-filter-hidden');
+            count.text($.trim(value) === $.trim(applied) ? count.attr('data-total') : 'Enter hledá ve všech členech');
+            filter.removeClass('quick-filter-no-match');
+            return;
+        }
+        var needle = normalize(value);
         var shown = 0;
         rows.each(function () {
             // Nabidka obsahuje vsechny stitky, do filtru patri jen hodnoty radku a prirazene stitky.
             var searchable = this.cloneNode(true);
             $(searchable).find('.dropdown, .labels-empty, button, script').remove();
-            var text = $(searchable).text().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            var matches = !needle || text.indexOf(needle) !== -1;
+            var matches = normalize($(searchable).text()).indexOf(needle) !== -1;
             $(this).toggleClass('quick-filter-hidden', !matches);
             if (matches) shown++;
         });
-        $('.quick-filter-count').text(shown + ' z ' + rows.length + ' načtených řádků');
-        $('.quick-filter').toggleClass('quick-filter-no-match', shown === 0 && needle !== '');
+        count.text(shown + ' z ' + rows.length + ' řádků, Enter hledá na serveru');
+        filter.toggleClass('quick-filter-no-match', shown === 0);
     }
 
     input.on('input', applyFilter);
-    applyFilter();
-    $(document).ajaxComplete(function () {
-        setTimeout(applyFilter, 0);
+    filter.on('change', 'select[data-submit-on-change]', submit);
+    filter.on('change', '.label-chip-add', function () {
+        var labels = filter.find('input[name="filters[stitky]"]');
+        var chosen = $(this).val();
+        if (!chosen) return;
+        var values = labels.val() ? labels.val().split(',') : [];
+        if (values.indexOf(chosen) === -1) values.push(chosen);
+        labels.val(values.join(','));
+        $(this).val('');
+        submit();
     });
+    applyFilter();
 });
 
 // Kopirovani IP doplnuje pouze autorizovanou tabulku, bez presouvani obsahu nebo skriptu.

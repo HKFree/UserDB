@@ -8,9 +8,11 @@
     <a href="{link UzivatelList:listall}" class="btn btn-default btn-xs" role="button"><i class="fa fa-times" aria-hidden="true"></i> Zrušit hledání</a></p>
 
 {/if}
+{* Tabulka se vykreslí první: až potom zná počet po použití filtrů, který ukazuje řádek filtrů nad ní. *}
+{capture $tabulkaClenu}{control grid}{/capture}
 <div class="member-list">
 <div class="list-toolbar">
-{include memberQuickFilter}
+{include memberFilter}
 <div class="list-view"><span>Zobrazit navíc:</span>
 {if $canViewOrEdit}
 <a n:if="!$money" href="{link UzivatelList:listall search=>$search, money=>1}" class="btn btn-default btn-sm money-toggle" role="button" aria-pressed="false"><i class="fa fa-square-o" aria-hidden="true"></i> Platby a aktivace</a>
@@ -24,7 +26,7 @@
 </div>
 </div>
 
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Kompletní seznam členů">{control grid}</div>
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Kompletní seznam členů">{$tabulkaClenu|noescape}</div>
 
 {if !$search}{include memberStats}{/if}
 

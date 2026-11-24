@@ -44,10 +44,7 @@ for (const width of [1280, 375]) {
             });
 
             test('UID se štítky i bez nich zůstává na jednom řádku', async ({ page }) => {
-                await page.goto('/uzivatel-list/list/201');
-                const form = page.locator('#frm-grid-form');
-                await form.getByLabel('Zobrazit', { exact: true }).selectOption('all');
-                await form.getByRole('button', { name: 'Vyhledat', exact: true }).click();
+                await page.goto('/uzivatel-list/list/201?grid-filter%5Bspolek_druzstvo%5D=all');
                 await checkUid(page, '#frm-grid-form', 20022, ['Spolek', 'Družstvo'], editable);
                 await checkUid(page, '#frm-grid-form', 20018, ['Spolek'], editable);
                 await checkUid(page, '#frm-grid-form', 20021, ['Družstvo'], editable);
@@ -56,10 +53,7 @@ for (const width of [1280, 375]) {
             });
 
             test('škrtnuté štítky zůstávají vedle UID', async ({ page }) => {
-                await page.goto('/uzivatel-list/list/202');
-                const form = page.locator('#frm-grid-form');
-                await form.getByLabel('Zobrazit', { exact: true }).selectOption('all');
-                await form.getByRole('button', { name: 'Vyhledat', exact: true }).click();
+                await page.goto('/uzivatel-list/list/202?grid-filter%5Bspolek_druzstvo%5D=all');
                 await checkUid(page, '#frm-grid-form', 20019, ['Spolek'], editable, true);
                 await checkUid(page, '#frm-grid-form', 20024, ['Družstvo'], editable, true);
                 await checkPageWidth(page, width);
