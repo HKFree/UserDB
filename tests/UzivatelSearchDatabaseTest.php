@@ -181,6 +181,50 @@ final class UzivatelSearchDatabaseTest extends DatabaseTestCase
         Assert::same($expected, $this->searchIds('0', $this->unassignedId, ['TECH']));
     }
 
+    public function testContractNumberRespectsMemberSearchPermissions(): void {
+        $invalidNumbers = ['87654', '876543x', '876543.0'];
+        $existingResults = array_map(fn (string $search): array => $this->searchIds($search), $invalidNumbers);
+        $contract = $this->fixtures->insert('Smlouva', [
+            'id' => 876543,
+            'uzivatel_id' => 42,
+            'typ' => 'ucastnicka',
+            'kdy_ukonceno' => '2025-01-01 00:00:00',
+        ]);
+        foreach (['TECH', 'VV', 'KONTROLA', 'EXTSUPPORT'] as $role) {
+            Assert::same([42], $this->searchIds((string) $contract->id, $this->unassignedId, [$role]), $role);
+        }
+        Assert::same([42], $this->searchIds((string) $contract->id));
+        foreach ($this->restrictedUserIds as $userId) {
+            Assert::same([], $this->searchIds((string) $contract->id, $userId));
+        }
+        foreach ($invalidNumbers as $index => $search) {
+            Assert::same($existingResults[$index], $this->searchIds($search));
+        }
+    }
+
+    public function testContractAndExactUidCanBothMatch(): void {
+        $this->fixtures->insert('Smlouva', ['id' => 7, 'uzivatel_id' => 42, 'typ' => 'spravcovska']);
+
+        Assert::same([7, 42], $this->searchIds('7'));
+        Assert::same([7], $this->searchIds('7', $this->unassignedId));
+    }
+
+    public function testContractAndUidPrefixCanBothMatch(): void {
+        $this->fixtures->insert('Smlouva', ['id' => 70, 'uzivatel_id' => 42, 'typ' => 'ucastnicka']);
+
+        Assert::same([42, 701], $this->searchIds('70'));
+        Assert::same([701], $this->searchIds('70', $this->unassignedId));
+    }
+
+    public function testContractAndCompanyIdCanBothMatch(): void {
+        $companyId = $this->companyMemberId(150002);
+        $this->fixtures->insert('Smlouva', ['id' => 150002, 'uzivatel_id' => 42, 'typ' => 'ucastnicka']);
+        $expected = [42, $companyId];
+        sort($expected);
+
+        Assert::same($expected, $this->searchIds('00150002'));
+    }
+
     public function testCompanyNamePartFindsMemberWithGlobalRole(): void {
         $memberId = $this->companyMemberId();
         foreach (['TECH', 'VV', 'KONTROLA', 'EXTSUPPORT'] as $role) {

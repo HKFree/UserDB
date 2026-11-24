@@ -172,19 +172,23 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
                                             Uzivatel.id = ?
                                             OR  IPAdresa.ip_adresa = ?
                                             ) LIMIT 1", $searchId, $search)->fetchField();
-        if ($completeMatchId !== null && $completeMatchId !== 0) {
-            return $this->findBy(array('id' => $completeMatchId));
+        if (($completeMatchId === null || $completeMatchId === 0) && $searchId !== null) {
+            $completeMatchId = $this->getConnection()->query(
+                'SELECT id FROM Uzivatel WHERE id LIKE ? LIMIT 1',
+                $search . '%',
+            )->fetchField();
         }
-        //\Tracy\Debugger::barDump($search);
-        if ($searchId !== null) {
-            $partialMatchId = $this->getConnection()->query("SELECT Uzivatel.id FROM Uzivatel
-                                            LEFT JOIN  IPAdresa ON Uzivatel.id = IPAdresa.Uzivatel_id
-                                            WHERE (
-                                            Uzivatel.id LIKE ?
-                                            ) LIMIT 1", $search . '%')->fetchField();
-            if ($partialMatchId !== null && $partialMatchId !== 0) {
-                return $this->findBy(array('id' => $partialMatchId));
+
+        $shodaSmlouvy = 'Uzivatel.id IN (SELECT uzivatel_id FROM Smlouva WHERE id = ?)';
+        if ($completeMatchId !== null && $completeMatchId !== 0) {
+            $vysledky = [$completeMatchId];
+            if ($searchId !== null) {
+                $vlastnik = $this->clenoveProVyhledavaniUdaju($Uzivatel)?->where($shodaSmlouvy, $searchId)->fetch();
+                if ($vlastnik !== null) {
+                    $vysledky[] = $vlastnik->id;
+                }
             }
+            return $this->findBy(['id' => $vysledky]);
         }
 
         // IČO is stored as a number; LPAD restores the leading zeros of its eight-digit written form.
@@ -201,30 +205,33 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             HledaniBezDiakritiky::sloupec('Uzivatel.firma_nazev') . ' LIKE ?',
             "LPAD(Uzivatel.firma_ico, GREATEST(CHAR_LENGTH(Uzivatel.firma_ico), 8), '0') LIKE ?",
         ];
-        $podminka = implode(' OR ', $podminky);
         $hodnoty = array_fill(0, count($podminky), '%' . $search . '%');
-        if ($Uzivatel->isInRole('TECH') === false && $Uzivatel->isInRole('VV') === false && $Uzivatel->isInRole('KONTROLA') === false && $Uzivatel->isInRole('EXTSUPPORT') === false) {
-            $identity = $Uzivatel->getIdentity();
-            if ($identity === null) {
-                return [];
-            }
-            $uid = $identity->getId();
-            $secureMatchId = $this->getConnection()->queryArgs("SELECT Uzivatel.id FROM Uzivatel
-                                            JOIN Ap ON Ap.id = Uzivatel.Ap_id
-                                            JOIN SpravceOblasti ON Ap.Oblast_id = SpravceOblasti.Oblast_id
-                                            WHERE ($podminka)
-                                            AND (SpravceOblasti.Uzivatel_id = ? AND SpravceOblasti.od<NOW() AND (SpravceOblasti.do IS NULL OR SpravceOblasti.do>NOW()))", [...$hodnoty, $uid])->fetchPairs('id', 'id');
+        if ($searchId !== null) {
+            $podminky[] = $shodaSmlouvy;
+            $hodnoty[] = $searchId;
+        }
+        return $this->clenoveProVyhledavaniUdaju($Uzivatel)?->where(implode(' OR ', $podminky), ...$hodnoty) ?? [];
+    }
 
-            if ($secureMatchId !== []) {
-                //\Tracy\Debugger::barDump($secureMatchId);
-                //\Tracy\Debugger::barDump(array_values($secureMatchId));
-                return $this->findBy(array('id' => array_values($secureMatchId)));
-            }
-        } else {
-            return $this->findAll()->where($podminka, ...$hodnoty);
+    /** @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>|null */
+    private function clenoveProVyhledavaniUdaju(Nette\Security\User $uzivatel): ?Nette\Database\Table\Selection {
+        if ($uzivatel->isInRole('TECH') || $uzivatel->isInRole('VV') || $uzivatel->isInRole('KONTROLA') || $uzivatel->isInRole('EXTSUPPORT')) {
+            return $this->findAll();
         }
 
-        return $this->findBy(array('id' => 0));
+        $identity = $uzivatel->getIdentity();
+        if ($identity === null) {
+            return null;
+        }
+        return $this->findAll()->where(
+            'Uzivatel.Ap_id IN (
+                SELECT id FROM Ap WHERE Oblast_id IN (
+                    SELECT Oblast_id FROM SpravceOblasti
+                    WHERE Uzivatel_id = ? AND od < NOW() AND (do IS NULL OR do > NOW())
+                )
+            )',
+            $identity->getId(),
+        );
     }
 
     /**

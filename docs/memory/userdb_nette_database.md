@@ -93,3 +93,17 @@ sloupcem.
 stejné jako u ostatních seznamů. Shoda řazení přes `Collator` v PHP s touto kolací ověřená není.
 **How to apply:** V poddotazu uvnitř `order()` nepiš název vnořené tabulky před sloupec. Jméno sloupce,
 které má i hlavní tabulka (`jmeno`), se v poddotazu vyhodnotí proti vnořené tabulce.
+
+## Selection jako argument `where()` v MariaDB
+
+Ověřeno 24. 11. 2026 v Nette Database 3.2.4 při úpravě globálního hledání
+a jeho databázových testech. `SqlBuilder::addCondition()` pro objekt
+`Selection` vygeneruje poddotaz pouze u ovladače s `SupportSubselect`.
+`MySqlDriver::isSupported()` tuto schopnost nehlásí, takže Nette nejdřív
+načte hodnoty do PHP a pak je předá v seznamu `IN`.
+
+**Why:** Složený filtr nad správci, oblastmi a AP tím může zatížit dalšími
+dotazy i vyhledávání, které údaje členů nepotřebuje.
+
+**How to apply:** Když se má poddotaz v MariaDB vyhodnotit v jediném SQL
+dotazu, zapiš jej do podmínky `where()` a hodnoty předej parametry.

@@ -141,6 +141,25 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
         Assert::same([$this->notFound], $this->listed($page));
     }
 
+    public function testContractSearchLinksToMemberOnlyWithinManagedAreas(): void {
+        $contract = $this->fixtures->insert('Smlouva', [
+            'uzivatel_id' => $this->inAnotherArea,
+            'typ' => 'ucastnicka',
+        ]);
+        $contractNumber = (string) $contract->id;
+        $detail = '/userdb/uzivatel/show/' . $this->inAnotherArea;
+
+        $page = $this->pages->search($this->searchResults(), $contractNumber);
+        Assert::same([$this->inAnotherArea], $this->rows($page));
+        Assert::contains($detail, $this->pages->texts($page, MemberListPages::form('grid') . '//tbody//a/@href'));
+
+        $manager = $this->fixtures->member($this->ap->id);
+        $this->fixtures->role($manager->id, 'SO', $this->ap->Oblast_id);
+        $pages = new MemberListPages($this->presenters, $manager->id);
+        $page = $pages->search($pages->page(['action' => 'listall']), $contractNumber);
+        Assert::same([], $this->rows($page));
+    }
+
     public function testAreaManagerFiltersOnlyMembersOfTheirAreas(): void {
         $manager = $this->fixtures->member($this->ap->id);
         $this->fixtures->role($manager->id, 'SO', $this->ap->Oblast_id);

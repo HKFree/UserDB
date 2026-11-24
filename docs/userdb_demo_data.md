@@ -74,6 +74,10 @@ Hledání podle firmy: pole Hledat nebo `/uzivatel-list/listall?search=...`. Čl
 Slovo `Smyšlená` má v ulici každý scénářový člen, k hledání firmy se nehodí. Správce oblasti najde jen firmu
 ve vlastní oblasti: 20012 první, 20002 druhou.
 
+Hledání podle smlouvy: jako Tester Testovací (1) zadej do horního pole Hledat celé číslo `200003`
+a stiskni Enter. Výsledky nabídnou člena Demo Smlouvaplatná (20067) s odkazem
+`/uzivatel/show/20067`. Jako Demo Malosprávce (20002) stejným dotazem nikoho nenajdeš.
+
 ## Čestné členství, televize a smlouvy
 
 ČČ: `/uzivatel-rights-cc/editcc/ID`, televize: `/uzivatel-televize/show/ID`,
