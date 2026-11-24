@@ -59,10 +59,17 @@ function pingIPListCallback(resp) {
 }
 
 function setIPPingerResult(element, glyphicon, label, text) {
-  baseSpan = element.parent().find("span.pinger");
+  // Na detailu člena drží adresa s tlačítkem pro zkopírování pohromadě (.ip-copy), štítek stojí až za nimi
+  // a odsazení mu dává screen.css, aby se mohl zalomit pod adresu.
+  var address = element.closest(".ip-copy");
+  if(address.length === 0) {
+    address = element;
+  }
+  baseSpan = address.parent().find("span.pinger");
 
   if(baseSpan.length === 0) {
-    baseSpan = element.after('&nbsp;&nbsp;<span class="label pinger"></span>').parent().find("span.pinger");
+    var gap = address.is(element) ? '&nbsp;&nbsp;' : '';
+    baseSpan = address.after(gap + '<span class="label pinger"></span>').parent().find("span.pinger");
     baseSpan.append('<span class="glyphicon" aria-hidden="true"></span>');
     baseSpan.append('<span class="pingertext">---</span>');
   } else {

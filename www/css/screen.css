@@ -1104,7 +1104,8 @@ ul.error {
     padding: 12px;
 }
 
-/* Login a heslo zařízení: hodnota i tlačítko zůstávají na jednom řádku, mezery se zobrazí tak, jak jsou uložené. */
+/* Login a heslo zařízení: hodnota i tlačítko zůstávají na jednom řádku, mezery se zobrazí tak, jak jsou uložené.
+   V detailu člena se dlouhá hodnota zalomí (#member-ip níže), aby se tabulka vešla bez posouvání. */
 .copy-value-cell {
     white-space: nowrap;
 }
@@ -1302,6 +1303,11 @@ tbody>tr.wewimo-table-header>th {
 /* Tužka u UID v seznamu členů stojí na konci buňky jako na master. */
 .grido td.grid-cell-id .user-uid > .btn-in-table {
     margin-left: auto;
+}
+
+/* Štítky Spolek a Družstvo ve sloupci Členství zůstávají vedle sebe. */
+.grido td.grid-cell-clenstvi {
+    white-space: nowrap;
 }
 
 .grido td.grid-cell-poznamka {
@@ -2753,15 +2759,52 @@ html {
     color: var(--udb-text-6b7280);
 }
 
-/* IP adresy v detailu člena: adresa má šířku nejdelší možné adresy, takže tlačítka pro zkopírování stojí pod sebou. */
-#member-ip tr[id^="highlightable-ip"] > td:first-child {
+#member-ip .ip-address {
+    display: inline-block;
+}
+
+/* Adresa s tlačítkem pro zkopírování (main.js) se nezalomí; štítek pingu za ní se zalomí pod ni, když se do buňky nevejde. */
+#member-ip .ip-copy {
+    display: inline-block;
+    margin-right: 6px;
     white-space: nowrap;
 }
 
-#member-ip tr[id^="highlightable-ip"] > td:first-child > a:first-child {
+#member-ip .ip-address > .pinger {
+    display: inline-block;
+}
+
+/* Lišta akcí stojí ve všech řádcích pod adresou a štítkem pingu, takže řádky vypadají stejně na každé šířce. */
+#member-ip .ip-akce {
+    margin-top: 4px;
+}
+
+/* Adresa má šířku nejdelší možné adresy, takže tlačítka pro zkopírování stojí pod sebou. */
+#member-ip .ip-address a {
     display: inline-block;
     min-width: 15ch;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Dlouhé hodnoty včetně SSID se dělí i bez mezery. Nadpisy sloupců se lámou mezi slovy. */
+.main #member-ip .table td,
+#member-ip .table th {
+    white-space: normal;
+}
+
+#member-ip .table td {
+    overflow-wrap: anywhere;
+}
+
+#member-ip .copy-value {
+    white-space: pre-wrap;
+}
+
+@media (max-width: 989px) {
+    #member-ip .table {
+        min-width: 900px;
+    }
 }
 
 /* Copy buttons of the member detail. The class .copy-value belongs to the login and password values of the IP table. */

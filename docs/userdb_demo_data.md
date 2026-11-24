@@ -57,7 +57,7 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Ruční aktivace od správce | 20090 Grafruční | Konto: 24 měsíců platba a aktivace typu 8; v grafu aktivních účastníků spodní graf |
 | Částečná aktivace automatem | 20091 Grafčástečný | Konto: každý třetí měsíc platba 145 Kč a aktivace typu 15 |
 | Pohyby, které aktivitu nezakládají | 20092 Grafnepočítaný | Konto: platba, vratka a dočasná aktivace přes SMS 70 měsíců zpět; graf ho nepočítá |
-| Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, typy zařízení 1 až 12 |
+| Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, prvních deset má dlouhé SSID, popis, login a heslo pro ověření šířky tabulky |
 | Cizí subnet | 20062 Cizísubnet | Patří na AP 200, IP `203.0.113.20` leží v subnetu AP 213 |
 | Další cizí subnet | 20064 Smlouvabezpodpisů, 20065 Smlouvačekající | Patří na AP 201, IP `203.0.113.21` a `203.0.113.22` leží v subnetu AP 213; ZSO 20004 je proto smí upravit |
 | Různé obce a PSČ, dlouhá adresa | 20032 až 20037, 20064, 20065 | `/uzivatel-list/list/201?fullnotes=1`; řazení podle obce a podle PSČ dá jiné pořadí. Adresa člena 20033 je delší než 50 znaků a zkrácené zobrazení ji ořízne |

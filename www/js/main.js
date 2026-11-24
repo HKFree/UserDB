@@ -615,11 +615,14 @@ $(document).ready(function () {
 
 // Kopirovani IP doplnuje pouze autorizovanou tabulku, bez presouvani obsahu nebo skriptu.
 $(document).ready(function () {
-    $('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] > td:first-child').each(function () {
-        var value = $.trim($(this).text());
+    $('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] .ip-address').each(function () {
+        var link = $(this).children('a');
+        var value = $.trim(link.length ? link.text() : $(this).text());
+        // Adresa a tlačítko drží pohromadě (.ip-copy); štítek pingu z pinger.js stojí až za nimi.
+        var copy = $(this).wrapInner('<span class="ip-copy"></span>').children('.ip-copy');
         $('<button type="button" class="copy-button"><i class="fa fa-clone" aria-hidden="true"></i></button>')
             .attr({ 'data-copy-value': value, title: 'Zkopírovat IP adresu', 'aria-label': 'Zkopírovat IP adresu' })
-            .appendTo(this);
+            .appendTo(copy);
     });
 
     var feedback = $('<span class="sr-only" role="status" aria-live="polite"></span>');
