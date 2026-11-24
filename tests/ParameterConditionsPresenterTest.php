@@ -58,19 +58,7 @@ final class ParameterConditionsPresenterTest extends DatabaseTestCase
             $result = $this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'list', 'id' => $id]);
             Assert::contains('Chyba, AP s tímto ID neexistuje.', $result->flashes);
             Assert::type(\Nette\Application\Responses\RedirectResponse::class, $result->response);
-            Assert::exception(
-                fn () => $this->presenters->ui($s->actors['vv']->id, 'File', ['action' => 'downloadWinboxCmd', 'id' => $id]),
-                BadRequestException::class,
-                'ID not found',
-                404,
-            );
         }
-        Assert::exception(
-            fn () => $this->presenters->ui($s->actors['vv']->id, 'File', ['action' => 'downloadWinboxCmd', 'id' => '00']),
-            BadRequestException::class,
-            'IP not found',
-            404,
-        );
         Assert::same($before, $s->snapshot());
     }
 

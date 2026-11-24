@@ -43,6 +43,8 @@ final class PresenterResult
  */
 final class PresenterRunner
 {
+    public const USER_AGENT = 'UserDB tests';
+
     private static ?string $activeRequest = null;
     private static bool $shutdownRegistered = false;
 
@@ -62,12 +64,13 @@ final class PresenterRunner
      * @param array<string, mixed> $parameters
      * @param array<string, mixed> $post
      */
-    public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true): PresenterResult {
+    public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true, string $userAgent = self::USER_AGENT): PresenterResult {
         $member = $this->database->table('Uzivatel')->get($uid);
         return $this->run($presenter, $parameters, $method, $post, $sameSite, [
             'HTTP_UID' => (string) $uid,
             'HTTP_GIVENNAME' => $member->nick ?? 'Unknown test member',
             'HTTP_INITIALS' => 'test-only',
+            'HTTP_USER_AGENT' => $userAgent,
         ]);
     }
 
@@ -114,7 +117,7 @@ final class PresenterRunner
             }
             $_SERVER = $server + [
                 'HTTP_HOST' => 'localhost',
-                'HTTP_USER_AGENT' => 'UserDB tests',
+                'HTTP_USER_AGENT' => self::USER_AGENT,
                 'REQUEST_METHOD' => $method,
                 'REQUEST_URI' => $requestUrl->getPath() . ($requestUrl->getQuery() !== '' ? '?' . $requestUrl->getQuery() : ''),
             ] + $_SERVER;
@@ -124,7 +127,7 @@ final class PresenterRunner
                 $requestUrl,
                 post: $post,
                 cookies: $sameSite ? ['_nss' => '1'] : [],
-                headers: ['Host' => 'localhost', 'User-Agent' => 'UserDB tests'] + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : []),
+                headers: ['Host' => 'localhost', 'User-Agent' => $server['HTTP_USER_AGENT'] ?? self::USER_AGENT] + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : []),
                 method: $method,
                 remoteAddress: '127.0.0.1',
             );

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Test;
 
-use Nette\Application\BadRequestException;
-use Nette\Application\Responses\FileResponse;
 use Nette\Database\Table\ActiveRow;
 use Tester\Assert;
 
@@ -63,44 +61,6 @@ final class SharedTypesPresenterTest extends DatabaseTestCase
         Assert::same(200, $page->status);
         Assert::contains('Fulltextové vyhledávání: <code>😀</code>', $page->html);
         Assert::contains('class="no-results">Žádné výsledky.</td>', $page->html);
-    }
-
-    public function testDownloadKeepsMissingIdsAndAreaPermission(): void {
-        foreach ([[], ['id' => '0']] as $parameters) {
-            Assert::exception(
-                fn () => $this->presenters->ui($this->actor->id, 'File', ['action' => 'downloadWinboxCmd'] + $parameters),
-                BadRequestException::class,
-                'ID not found',
-                404,
-            );
-        }
-        Assert::exception(
-            fn () => $this->presenters->ui($this->actor->id, 'File', ['action' => 'downloadWinboxCmd', 'id' => '-1']),
-            BadRequestException::class,
-            'IP not found',
-            404,
-        );
-        $ip = $this->fixtures->ipAddress($this->actor->id, '192.0.2.42', ['login' => 'fixture-login']);
-        $result = $this->presenters->ui($this->actor->id, 'File', ['action' => 'downloadWinboxCmd', 'id' => (string) $ip->id]);
-        Assert::type(FileResponse::class, $result->response);
-        if (($result->response instanceof FileResponse) === false) {
-            throw new \LogicException('Expected a file response.');
-        }
-        try {
-            Assert::same('winbox.bat', $result->response->getName());
-            Assert::same("winbox.exe 192.0.2.42 fixture-login\n", file_get_contents($result->response->getFile()));
-        } finally {
-            unlink($result->response->getFile());
-        }
-        $otherArea = $this->fixtures->area();
-        $other = $this->fixtures->member($this->fixtures->ap($otherArea->id)->id);
-        $this->fixtures->role($other->id, 'SO', $otherArea->id);
-        Assert::exception(
-            fn () => $this->presenters->ui($other->id, 'File', ['action' => 'downloadWinboxCmd', 'id' => (string) $ip->id]),
-            BadRequestException::class,
-            'IP not found',
-            404,
-        );
     }
 
     public function testMemberRedirectAcceptsMissingId(): void {

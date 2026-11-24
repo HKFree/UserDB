@@ -493,9 +493,13 @@ final class DemoDataPresenterTest extends TestCase
                 'demo', 'demo-only', 'admin', 'demo-43-znaku!Aa1#Bb2$Cc3%Dd4&Ee5<Ff6>Gg7=H', 'demo', 'demo only', 'jenlogin', 'jen-heslo',
                 'user.name@demo.example', '.tecky.na.zacatku.i.konci.', 'DEMO\\spravce', 'It\'s "x" \\n $(id) {$z} %20 <b>&amp;</b>\\',
                 'správce', 'Žluťoučký kůň 密码 пароль', 'a b', "pevna mezera\u{200b}konec",
+                'admin', '-demo-pomlcka', 'správce', 'žluťoučký-kůň',
             ],
             $this->values($credentials, '//td/span[@class="copy-value"]'),
         );
+        // Odkazy Winboxu z katalogu demo dat: heslo s pomlčkou na začátku se vynechá, diakritika se zakóduje.
+        Assert::contains('href="winbox:192.0.2.10;admin"', $credentials);
+        Assert::contains('href="winbox:192.0.2.11;spr%C3%A1vce;%C5%BElu%C5%A5ou%C4%8Dk%C3%BD-k%C5%AF%C5%88"', $credentials);
         Assert::contains('<span class="copy-value"> demo  only </span>', $credentials);
         // Markup in a password is shown as text, not interpreted.
         Assert::contains('<span class="copy-value">It\'s "x" \\n $(id) {$z} %20 &lt;b&gt;&amp;amp;&lt;/b&gt;\\</span>', $credentials);
@@ -503,7 +507,7 @@ final class DemoDataPresenterTest extends TestCase
         Assert::contains("<span class=\"copy-value\">a\tb</span>", $credentials);
         Assert::contains("<span class=\"copy-value\">pevna\u{a0}mezera\u{200b}konec</span>", $credentials);
         Assert::same(
-            array_merge(...array_fill(0, 8, ['Zkopírovat login', 'Zkopírovat heslo'])),
+            array_merge(...array_fill(0, 10, ['Zkopírovat login', 'Zkopírovat heslo'])),
             $this->values($credentials, '//td/span[@class="copy-value"]/following-sibling::button[@type="button"]/@aria-label'),
         );
         // On a phone the wide table scrolls in a frame of its own, not the whole page.

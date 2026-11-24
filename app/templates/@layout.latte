@@ -27,11 +27,11 @@
         <script src="{$basePath}/js/markerclusterer.js"></script>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v28">
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v30">
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v10"></script>
+        <script src="{$basePath}/js/main.js?v14"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
@@ -65,6 +65,7 @@
                     <li><a n:href="SpravaPlateb:odchoziplatby id=>null"><i class="glyphicon glyphicon-usd small"></i> Přehled odchozích plateb</a></li>
                     <li role="separator" class="divider"></li>
                     <li><a n:href="Sprava:nastroje id=>null">Pokročilé nástroje</a></li>
+                    <li><a n:href="Winbox:default id=>null">Otevírání Winboxu z prohlížeče</a></li>
                     <li role="separator" class="divider"></li>
                     <li><a n:href="Novinky:default id=>null">Novinky</a></li>
                 </ul>

@@ -174,7 +174,7 @@ class IPAdresa extends Table
      * @param  Nette\Utils\Html[] $buttons
      */
     private function addActionButtonsTd($tr, $buttons): void {
-        $td = $tr->create('td');
+        $td = $tr->create('td')->setClass('ip-akce');
         foreach ($buttons as $b) {
             $td->addHtml($b);
         }
@@ -199,6 +199,49 @@ class IPAdresa extends Table
             // Nápověda patří mimo tabulku: uvnitř buňky by se její text dostal do výběru a do schránky.
             ->addAttributes(['data-toggle' => 'tooltip', 'data-placement' => 'top', 'data-container' => 'body'])
             ->addHtml(Html::el('span')->setClass('fa fa-copy')->setAttribute('aria-hidden', 'true'));
+    }
+
+    /**
+     * Odkaz winbox:IP[;login[;heslo]] ve formátu handleru HKFree/winbox-uri-handler (viz jeho README). Každá část
+     * je zakódovaná zvlášť, aby středník, mezera ani % v hesle nerozbily rozdělení odkazu; handler části zase
+     * dekóduje. Bez loginu nemá heslo smysl. Login nebo heslo začínající pomlčkou by Winbox vzal jako přepínač
+     * a handler takový odkaz odmítne; vynechané Winbox nechá zadat ručně.
+     */
+    private static function winboxLink(string $address, string $login, string $password): string {
+        $parts = [$address];
+        if (self::isWinboxArgument($login)) {
+            $parts[] = $login;
+            if (self::isWinboxArgument($password)) {
+                $parts[] = $password;
+            }
+        }
+        return 'winbox:' . implode(';', array_map(self::encodeWinboxLinkPart(...), $parts));
+    }
+
+    private static function isWinboxArgument(string $value): bool {
+        return $value !== '' && str_starts_with($value, '-') === false;
+    }
+
+    /**
+     * Kóduje vše kromě znaků, které README handleru dovoluje nechat nezakódované (RFC 3986 bez středníku a dvojtečky,
+     * které oddělují části odkazu). Čitelné znaky běžných hesel tak zůstanou beze změny i pro starší handlery z wiki.
+     */
+    private static function encodeWinboxLinkPart(string $part): string {
+        return strtr(rawurlencode($part), [
+            '%21' => '!', '%24' => '$', '%26' => '&', '%27' => "'", '%28' => '(', '%29' => ')',
+            '%2A' => '*', '%2B' => '+', '%2C' => ',', '%3D' => '=', '%40' => '@',
+        ]);
+    }
+
+    /** @param array<string, string> $tooltips */
+    private static function winboxHelpLink(string $href, string $title, array $tooltips): Html {
+        return Html::el('a')
+            ->addHtml(Html::el('sup')->setText('?'))
+            ->setTarget('_blank')
+            ->setTitle($title)
+            ->setAttribute('aria-label', $title)
+            ->addAttributes($tooltips)
+            ->setHref($href);
     }
 
     public function file_get_contents_curl(string $url): string|false {
@@ -303,9 +346,11 @@ class IPAdresa extends Table
             // action buttons
             $buttons = array();
 
-            $userAgent = $_SERVER['HTTP_USER_AGENT'];
+            $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
             $isAndroid = (stripos($userAgent, 'android') !== false);
-            $isWindows = (stripos($userAgent, 'windows') !== false);
+            // Winbox běží na Windows, macOS a Linuxu; iPhone a iPad ho nemají.
+            $opensWinbox = $isAndroid === false && preg_match('/iPhone|iPad|iPod/i', $userAgent) !== 1;
+            $isRouterboard = isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1;
 
             // web button
             $typZarizeni = isset($ip->TypZarizeni->text) ? $ip->ref('TypZarizeni') : null;
@@ -351,49 +396,23 @@ class IPAdresa extends Table
                         ->setClass('glyphicon glyphicon-signal'));
                 $buttons[] = $signalGrafanaButton;
             }
-            // winbox button (windows)
-            if ($isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
-                $link = 'winbox:'.$ip->ip_adresa;
-                if ($canViewCredentialsOrEdit) {
-                    $link .= ';'.$ip->login.';'.$ip_password;
-                }
-                $winboxButton = Html::el('a')
-                    ->setHref($link)
-                    ->setTitle('Otevřít Mikrotik Winbox')
+            // winbox button (Windows, macOS, Linux): odkaz otevře handler HKFree/winbox-uri-handler, návod je na Winbox:default
+            if ($opensWinbox && $isRouterboard) {
+                $buttons[] = Html::el('a')
+                    ->setHref(self::winboxLink($ip->ip_adresa, $canViewCredentialsOrEdit ? ($ip->login ?? '') : '', $ip_password ?? ''))
+                    ->setTitle('Otevřít Winbox')
+                    ->setAttribute('aria-label', 'Otevřít Winbox')
                     ->addAttributes($tooltips)
                     ->setClass('btn btn-default btn-xs btn-in-table')
                     ->addHtml(Html::el('span')
-                        ->setClass('glyphicon glyphicon-cog')); // winbox button
-                $buttons[] = $winboxButton;
-                $buttons[] = Html::el('a')
-                                ->addHtml(Html::el('sup')->setText('?'))
-                                ->setTarget('_blank')
-                                ->setTitle('Jak zprovoznit otevření Winboxu z prohlížeče?')
-                                ->addAttributes($tooltips)
-                                ->setHref('http://wiki.hkfree.org/Winbox_URI');
-            }
-            // winbox cmd button
-            if ($linker !== null && $isWindows && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
-                $winboxButton = Html::el('span')
-                    ->setAttribute('href', $linker("File:downloadWinboxCmd", ['id' => $ip->id]))
-                    ->setTitle('Otevřít Mikrotik Winbox z CMD')
-                    ->addAttributes($tooltips)
-                    ->setClass('wboxbutton btn btn-default btn-xs btn-in-table')
-                    ->addHtml(Html::el('span')
-                        ->setClass('glyphicon glyphicon-download-alt')); // winbox button
-                if ($canViewCredentialsOrEdit) {
-                    $winboxButton->setAttribute('tag', $ip_password);
+                        ->setClass('glyphicon glyphicon-cog')
+                        ->setAttribute('aria-hidden', 'true'));
+                if ($linker !== null) {
+                    $buttons[] = self::winboxHelpLink($linker('Winbox:default', ['id' => null]), 'Jak zprovoznit otevírání Winboxu z prohlížeče?', $tooltips);
                 }
-                $buttons[] = $winboxButton;
-                $buttons[] = Html::el('a')
-                                ->addHtml(Html::el('sup')->setText('?'))
-                                ->setTarget('_blank')
-                                ->setTitle('Jak zprovoznit otevření Winboxu z CMD?')
-                                ->addAttributes($tooltips)
-                                ->setHref('http://wiki.hkfree.org/Winbox_CMD');
             }
             // winbox button (android)
-            if ($isAndroid && isset($ip->TypZarizeni->text) && preg_match('/routerboard/i', $ip->TypZarizeni->text) === 1) {
+            if ($isAndroid && $isRouterboard) {
                 $link = 'winbox://'.$ip->ip_adresa;
                 if ($canViewCredentialsOrEdit) {
                     $link .= '/'.$ip->login.'/'.$ip_password;
@@ -410,12 +429,9 @@ class IPAdresa extends Table
                         ->setClass('mikrotik-app-logo')
                     );
                 $buttons[] = $winboxButton;
-                $buttons[] = Html::el('a')
-                                ->addHtml(Html::el('sup')->setText('?'))
-                                ->setTarget('_blank')
-                                ->setTitle('Jak zprovoznit otevření MikroTik app na Androidu?')
-                                ->addAttributes($tooltips)
-                                ->setHref('http://wiki.hkfree.org/Winbox_URI');
+                if ($linker !== null) {
+                    $buttons[] = self::winboxHelpLink($linker('Winbox:default', ['id' => null, 'system' => 'android']), 'Co dělá tlačítko MikroTik app na Androidu?', $tooltips);
+                }
             }
 
             // ssh button

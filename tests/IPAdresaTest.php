@@ -92,6 +92,19 @@ Assert::notContains('copy-value', (string) $table);
 Assert::notContains('admin', (string) $table);
 Assert::notContains('tajne-heslo', (string) $table);
 
+// The action buttons have a cell of their own that keeps them on one line (#339);
+// tests/screenshots/test/ip-actions.test.mjs checks the layout with this class.
+$table = Html::el('table');
+$model->addIPTableRow(ipRow(), true, $table, editLink: '/ap/edit/1');
+Assert::contains('<td class="ip-akce"><a href="/ap/edit/1#ip192.0.2.1"', (string) $table);
+
+// A request without the User-Agent header still renders the row (#339).
+unset($_SERVER['HTTP_USER_AGENT']);
+$table = Html::el('table');
+$model->addIPTableRow(ipRow(), false, $table);
+Assert::contains('<td>Test IP</td></tr>', (string) $table);
+$_SERVER['HTTP_USER_AGENT'] = 'UserDB regression test';
+
 // Address lists for bulk adding. A subnet yields its addresses without the last one.
 Assert::same(['10.0.0.0', '10.0.0.1', '10.0.0.2'], $model->getListOfIPFromSubnet('10.0.0.0/30'));
 Assert::count(255, $model->getListOfIPFromSubnet('10.107.5.0/24'));
