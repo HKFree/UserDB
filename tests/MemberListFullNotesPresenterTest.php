@@ -66,7 +66,7 @@ final class MemberListFullNotesPresenterTest extends DatabaseTestCase
     public function testFilterKeepsTheMode(): void {
         [$adamov, $brno, $zlin] = array_map(static fn (ActiveRow $member): int => (int) $member->id, $this->members['grid']);
         foreach (['list', 'listall'] as $action) {
-            $page = $this->pages->submit($this->open($action, ['fullnotes' => 1]), 'grid', ['filters' => ['mesto' => 'Brno']]);
+            $page = $this->pages->submit($this->open($action, ['fullnotes' => 1]), 'grid', ['filters' => ['hledat' => 'Brno']]);
             Assert::same([$brno], $this->pages->listed($page, 'grid', [$adamov, $brno, $zlin]), $action);
             Assert::true($this->showsTowns($page, 'grid'), "Filtering in $action left the mode.");
         }
@@ -99,9 +99,9 @@ final class MemberListFullNotesPresenterTest extends DatabaseTestCase
         Assert::true($this->showsWholeNotes($full));
         Assert::same($action === 'list', $this->showsTowns($full, 'othersGrid'));
 
-        // Leaving the mode must not keep the sorting and the filter of columns that go away with it.
+        // Leaving the mode must not keep the sorting of columns that go away with it, nor the search.
         $full = $this->pages->follow($this->pages->sortLink($full, 'grid', 'mesto'));
-        $full = $this->pages->submit($full, 'grid', ['filters' => ['mesto' => 'Brno', 'psc' => '10002']]);
+        $full = $this->pages->submit($full, 'grid', ['filters' => ['hledat' => '10002']]);
         if ($action === 'list') {
             $full = $this->pages->follow($this->pages->sortLink($full, 'othersGrid', 'psc'));
         }
@@ -115,7 +115,7 @@ final class MemberListFullNotesPresenterTest extends DatabaseTestCase
     public function testMoneySwitchKeepsTheMode(string $action): void {
         $page = $this->open($action, ['fullnotes' => 1]);
         foreach ([true, false] as $shown) {
-            $page = $this->pages->follow($this->pages->link($page, '//a[contains(normalize-space(.), "nformac") and contains(normalize-space(.), "z money")]/@href'));
+            $page = $this->pages->follow($this->pages->link($page, '//a[' . MemberListPages::hasClass('money-toggle') . ']/@href'));
             Assert::same($shown, $this->pages->texts($page, MemberListPages::form('grid') . '//th[contains(normalize-space(.), "Poslední platba")]') !== [], "Poslední platba in $action");
             Assert::true($this->showsTowns($page, 'grid'), "The money switch in $action left the mode.");
         }

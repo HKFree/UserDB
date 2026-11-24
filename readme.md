@@ -101,7 +101,7 @@ php -S 127.0.0.1:0 -t www scripts/userdb_dev_router.php
 
 The OS assigns a free web port and PHP prints the URL. Repeat these commands in another worktree to run both simultaneously. The setup command applies existing migrations and demo data to `userdb_dev`; it can be repeated without resetting data. The local migration adapter replaces the historical production definer with the local account, without changing the migration files. The web uses `config.flox.neon` and the existing demo identity, preserving `config.local.neon`.
 
-Switch the signed-in demo person through the "Změnit osobu" link next to the sign-out link in the top bar, at `/demo-osoba`, or through the persona panel in the Tracy bar; without a selection it is member 1. The choice is stored in a cookie specific to this worktree, and the switching page works even if the application fails to start.
+Switch the signed-in demo person through "Změnit osobu" in the account menu at the end of the top bar, at `/demo-osoba`, or through the persona panel in the Tracy bar; without a selection it is member 1. The choice is stored in a cookie specific to this worktree, and the switching page works even if the application fails to start.
 
 The [demo data catalog](docs/userdb_demo_data.md) lists the members, APs, personas and pages for each scenario.
 Scenario migrations are also loaded by Docker development. Flox setup additionally generates 13,500 members
@@ -147,7 +147,9 @@ before `scripts/userdb_mariadb_init.sql` knew `userdb_e2e` gets the database fro
 The HTML report, traces and screenshots of failed tests and the logs of the setup and the web are in `temp/e2e/`;
 open the report with `npx playwright show-report ../../temp/e2e/report` from `tests/e2e`.
 
-The scenarios in `tests/e2e/specs/` cover: every page of the menu for four roles, the search in the top bar,
+The scenarios in `tests/e2e/specs/` cover: every page of the menu for four roles, the search in the top bar
+with its suggestions, the filter of areas in the sidebar, the quick filter and row density of the member list,
+the error shown at a field of the member form,
 creating and editing a member with IP addresses, activation, reactivation and deactivation of internet, e-mail to
 one member and to a whole AP, sending the payment schedule with its confirmation, editing an AP with the subnet overlap check, labels on the member detail, sorting and
 filters of the member list, proposing and approving an honorary membership, granting a role and transferring an
@@ -474,8 +476,8 @@ copying a device login and password from the IP address table (mouse selection, 
 `test/message-form.test.mjs` and `test/edit-form.test.mjs` check with the real `www/css/screen.css` that the forms rendered by
 `app/templates/form.latte` fit into a phone screen: the e-mail and SMS forms and the edit forms with their nested records.
 `test/layout-width.test.mjs` checks in a browser, against the application's `www/css/screen.css` and `www/js/main.js`,
-that the content column beside the sidebar fits the window at widths from 320 to 1700 px, also after the sidebar
-was hidden and shown again, so that pages do not scroll sideways.
+that the content fits the window at widths from 320 to 1700 px, so that pages do not scroll sideways: beside the
+list of areas from 990 px, and below that width also while the button in the top bar slides the list in and out.
 
 ### Jobs to be run
 
@@ -532,7 +534,7 @@ ALTER TABLE `migrations`
 ## Accessing API
 
 [Open swagger.yaml interactive docs](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/HKFree/UserDB/master/swagger.yaml) and try some operations.
-You'll need the credentials (click Authorize in interactive docs). Create credentials in UserDB: Oblast - Zobrazit podrobnosti AP - Editovat - API klíče.
+You'll need the credentials (click Authorize in interactive docs). Create credentials in UserDB: Oblast - AP - Podrobnosti AP - Editovat - API klíče.
 
 ## License
 

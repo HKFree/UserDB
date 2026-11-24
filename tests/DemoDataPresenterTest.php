@@ -410,7 +410,8 @@ final class DemoDataPresenterTest extends TestCase
     private function assertMemberPages(): void {
         foreach ($this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->order('id') as $member) {
             $show = $this->page('Uzivatel', 'show', $member->id);
-            Assert::contains('UID ' . $member->id . ' - Demo ' . $member->prijmeni, $this->text($show));
+            Assert::contains('Demo ' . $member->prijmeni, $this->values($show, '//h1')[0]);
+            Assert::contains('UID ' . $member->id, $this->values($show, '//h1')[0]);
             $edit = $this->page('Uzivatel', 'edit', $member->id);
             Assert::same([(string) $member->id], $this->values($edit, '//input[@name="id"]/@value'));
             Assert::same([$member->prijmeni], $this->values($edit, '//input[@name="prijmeni"]/@value'));
@@ -454,7 +455,7 @@ final class DemoDataPresenterTest extends TestCase
         // Areas 205 to 207 are listed under an AP with another name and sorted by that name. All areas count
         // every AP of an area, My areas only the active ones: area 206 has two APs, one of them switched off.
         $menu = $this->presenters->ui(20002, 'Novinky')->html;
-        Assert::same(['Demo Libuše (218)', 'Demo malé AP (200)', 'Demo zbylé AP (219)'], $this->values($menu, '//li[starts-with(@id,"oblast-")]/a'));
+        Assert::same(['Demo Libuše (218)', 'Demo malé AP (200)', 'Demo zbylé AP (219)'], $this->values($menu, '//ul[contains(concat(" ", normalize-space(@class), " "), " sidebar-mine ")]/li/a'));
         $allAreas = $this->values($menu, '//ul[@id="oblastitree"]/li/a');
         Assert::same(
             ['Demo bez správců', 'Demo částečně vypnutá', 'Demo jen vypnuté AP (221)', 'Demo Libuše (218)', 'Demo malé AP (200)'],

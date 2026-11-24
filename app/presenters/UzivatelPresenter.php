@@ -247,6 +247,7 @@ class UzivatelPresenter extends BasePresenter
                 $this->template->u = $uzivatel;
 
                 $ipAdresy = $uzivatel->related('IPAdresa.Uzivatel_id')->order('INET_ATON(ip_adresa)');
+                $this->template->ipCount = $ipAdresy->count();
 
                 $subnetLinks = $this->getSubnetLinksFromIPs($ipAdresy);
                 $wewimoLinks = $this->getWewimoLinksFromIPs($ipAdresy);
@@ -345,6 +346,8 @@ class UzivatelPresenter extends BasePresenter
         } else {
             $this->template->canViewOrEdit = true;
         }
+        // Heading and breadcrumb name the member as saved, not as typed into the unsaved form.
+        $this->template->member = $uzivatel;
     }
 
     protected function createComponentUzivatelForm(): Form {
@@ -448,6 +451,18 @@ class UzivatelPresenter extends BasePresenter
                 $form->setValues($values);
             }
         }
+
+        $form->addGroup('Zařazení', false)->add($form['Ap_id']);
+        $form->addGroup('Osoba', false)->add($form['TypPravniFormyUzivatele_id'], $form['firma_nazev'], $form['firma_ico'], $form['jmeno'], $form['prijmeni'], $form['datum_narozeni'], $form['nick'], $form['cislo_clenske_karty']);
+        $kontakt = $form->addGroup('Kontakt a adresa', false)->add($form['email'], $form['email2'], $form['telefon']);
+        if ($form->getComponent('publicPhone', false) !== null) {
+            $kontakt->add($form['publicPhone']);
+        }
+        $kontakt->add($form['ulice_cp'], $form['mesto'], $form['psc']);
+        $form->addGroup('Členství', false)->add($form['druzstvo'], $form['smazano'], $form['spolek'], $form['TypClenstvi_id'], $form['kauce_mobil']);
+        $form->addGroup('Připojení', false)->add($form['TechnologiePripojeni_id'], $form['ZpusobPripojeni_id']);
+        $form->addGroup('Poznámky', false)->add($form['poznamka'], $form['gpg']);
+        $form->addGroup('IP adresy', false)->add($form['ipsubnet'], $form['iprange'])->setOption('dynamicContainer', 'ip');
 
         return $form;
     }

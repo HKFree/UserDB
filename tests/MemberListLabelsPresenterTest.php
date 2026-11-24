@@ -10,6 +10,7 @@ use Nette\Database\Connection;
 use Nette\Database\ResultSet;
 use Nette\Database\Table\ActiveRow;
 use Nette\Http;
+use App\Services\BarvaStitku;
 use Tester\Assert;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -171,11 +172,11 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
         $cell = sprintf('//tr[%s]/td[%s]', self::hasClass("grid-row-$member->id"), self::hasClass('grid-cell-stitky'));
         Assert::count(1, $this->nodes($xpath, $cell));
         Assert::same([(string) $member->id], $this->texts($xpath, $cell . '/div/@data-user-id'));
-        $badges = $cell . '//div[' . self::hasClass('user-labels') . ']/span';
+        $badges = $cell . '//div[' . self::hasClass('user-labels') . ']/span[' . self::hasClass('badge') . ']';
         Assert::same(array_map(static fn (ActiveRow $label): string => $label->text, $labels), $this->texts($xpath, $badges . '/abbr'));
         Assert::same(array_map(self::colors(...), $labels), $this->texts($xpath, $badges . '/@style'));
-        Assert::same(array_map(static fn (ActiveRow $label): string => (string) $label->id, $labels), $this->texts($xpath, $badges . '/span/@data-stitek-id'));
-        Assert::same(array_fill(0, count($labels), (string) $member->id), $this->texts($xpath, $badges . '/span/@data-user-id'));
+        Assert::same(array_map(static fn (ActiveRow $label): string => (string) $label->id, $labels), $this->texts($xpath, $badges . '/button[' . self::hasClass('badge-remove') . ']/@data-stitek-id'));
+        Assert::same(array_fill(0, count($labels), (string) $member->id), $this->texts($xpath, $badges . '/button[' . self::hasClass('badge-remove') . ']/@data-user-id'));
         $titles = array_map(static fn (\DOMNode $node): string => $node->textContent, $this->nodes($xpath, $badges . '/abbr/@title'));
         Assert::same(array_map(static fn (ActiveRow $label): string => "06.05.2024 07:08\n\n" . $label->poznamka, $labels), $titles);
         $options = $cell . '//ul[' . self::hasClass('dropdown-menu') . ']/li/a';
@@ -185,7 +186,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
     }
 
     private static function colors(ActiveRow $label): string {
-        return "background-color: $label->barva_pozadi; color: $label->barva_popredi;";
+        return BarvaStitku::styl($label->barva_pozadi, $label->barva_popredi);
     }
 
     /** @return list<\DOMNode> */
@@ -235,7 +236,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
         $grid = $otherUsers ? 'othersGrid' : 'grid';
         $parameters = $this->parameters($action, $search, $money) + ['do' => "$grid-export-export"];
         $parameters += $batch !== null ? ["$grid-sort" => ['id' => 'asc']] : [];
-        $parameters += $labelFilter !== null ? ["$grid-filter" => ['stitek' => $labelFilter]] : [];
+        $parameters += $labelFilter !== null ? ["$grid-filter" => ['stitky' => (string) $labelFilter]] : [];
         $export = $this->presenters->ui($this->actor->id, 'UzivatelList', $parameters)->response;
         if (($export instanceof Export) === false) {
             throw new \LogicException('Expected the export of the table.');

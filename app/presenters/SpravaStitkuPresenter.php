@@ -4,6 +4,7 @@ namespace App\Presenters;
 
 use Nette;
 use App\Model;
+use App\Services\BarvaStitku;
 use Nette\Application\UI\Form;
 use Nette\Utils\DateTime;
 use Tracy\Debugger;
@@ -158,7 +159,7 @@ class SpravaStitkuPresenter extends SpravaPresenter
                 'Stitek_id' => $stitek_id,
                 'Uzivatel_id' => $user_id,
             ]);
-            echo json_encode(['success' => true, 'barva_popredi' => $stitek->barva_popredi, 'barva_pozadi' => $stitek->barva_pozadi, 'text' => $stitek->text]);
+            echo json_encode(['success' => true, 'barva_popredi' => $stitek->barva_popredi, 'barva_pozadi' => $stitek->barva_pozadi, 'styl' => BarvaStitku::styl($stitek->barva_pozadi, $stitek->barva_popredi), 'text' => $stitek->text]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Nepodarilo se ulozit stitek.', 'exception' => $e]);
         }

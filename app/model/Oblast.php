@@ -56,27 +56,59 @@ class Oblast extends Table
      * @return array<int, string>
      */
     public function formatujOblastiSAP($oblasti, bool $pouzeAktivni = true): array {
-        $idOblasti = array();
+        return $this->popiskyApVeSkupinach($this->seskupOblastiSAP($oblasti, $pouzeAktivni));
+    }
+
+    /**
+     * Oblasti s jejich AP seřazenými podle jména, v pořadí názvů, pod kterými se vypisují, bez ohledu
+     * na pořadí oblastí na vstupu. Oblast bez AP ve výsledku není; oblast zadaná vícekrát (správce
+     * s více rolemi v jedné oblasti) je v něm jednou.
+     *
+     * @param iterable<Nette\Database\Table\ActiveRow> $oblasti
+     * @return list<array{id: int, jmeno: string, aps: array<int, string>}>
+     */
+    public function seskupOblastiSAP(iterable $oblasti, bool $pouzeAktivni = true): array {
+        $idOblasti = [];
         foreach ($oblasti as $oblast) {
             $idOblasti[] = $oblast->id;
         }
+        if ($idOblasti === []) {
+            return [];
+        }
 
-        $aps = array();
+        $skupiny = [];
         foreach ($this->findAll()->where('id', $idOblasti)->order(self::razeniPodlePopisku($pouzeAktivni)) as $oblast) {
-            $apcka_oblasti = $oblast->related('Ap.Oblast_id');
+            $id = (int) $oblast->id;
+            $apcka = $oblast->related('Ap.Oblast_id');
             if ($pouzeAktivni) {
-                $apcka_oblasti = $apcka_oblasti->where('aktivni');
+                $apcka = $apcka->where('aktivni');
             }
-
-            foreach ($apcka_oblasti->order("jmeno") as $ap) {
-                if (count($apcka_oblasti) === 1) {
-                    $aps[$ap->id] = $ap->jmeno . ' (' . $ap->id . ')';
-                } else {
-                    $aps[$ap->id] = $oblast->jmeno . ' - ' . $ap->jmeno . ' (' . $ap->id . ')';
-                }
+            $aps = [];
+            foreach ($apcka->order('jmeno') as $ap) {
+                $aps[(int) $ap->id] = $ap->jmeno . ' (' . $ap->id . ')';
+            }
+            if ($aps !== []) {
+                $skupiny[] = ['id' => $id, 'jmeno' => (string) $oblast->jmeno, 'aps' => $aps];
             }
         }
-        return $aps;
+        return $skupiny;
+    }
+
+    /**
+     * Popisky AP pro výběr a přehled: AP z oblasti s více AP nese před jménem jméno oblasti.
+     *
+     * @param list<array{id: int, jmeno: string, aps: array<int, string>}> $skupiny
+     * @return array<int, string>
+     */
+    public function popiskyApVeSkupinach(array $skupiny): array {
+        $popisky = [];
+        foreach ($skupiny as $skupina) {
+            $predpona = count($skupina['aps']) === 1 ? '' : $skupina['jmeno'] . ' - ';
+            foreach ($skupina['aps'] as $id => $popisek) {
+                $popisky[$id] = $predpona . $popisek;
+            }
+        }
+        return $popisky;
     }
 
     /**

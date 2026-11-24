@@ -335,6 +335,12 @@ použitelnost ve stávajícím vzhledu, ne nový design.
   Výjimky: hodnota z dat (barva štítku) a stránka, která má fungovat i bez
   aplikace (`/demo-osoba`) a styl si nese sama. Nepřidávej knihovny, build ani zdroje z cizích serverů (CDN, fonty).
   Přibalené knihovny neaktualizuj jako součást jiné změny.
+- **Barvy jen jako proměnné.** Aplikace má světlý a tmavý vzhled (přepínač v nabídce účtu).
+  Ve `screen.css` nepiš barvu napevno, jen `var(--udb-…)`. Proměnnou definuj ve
+  `www/css/theme.css` dvakrát: v `:root` pro světlý a v `:root[data-theme="dark"]` pro tmavý
+  vzhled; jmenuje se podle role a světlé hodnoty (`--udb-text-6b7280`). Komponentu knihovny,
+  kterou začneš používat, doplň do oddílu „Knihovny v tmavém režimu“ v `theme.css`. Hlídá to
+  `tests/ThemeTokensTest.php`; tmavý vzhled si prohlédni stejně jako světlý (nabídka účtu, Vzhled).
 - **Větší změnu nejdřív navrhni.** Mění-li se rozvržení obrazovky nebo postup
   uživatele, předlož zadavateli dvě až tři varianty s rozdíly a počkej na
   výběr. Drobnou opravu dělej rovnou.
@@ -344,8 +350,8 @@ použitelnost ve stávajícím vzhledu, ne nový design.
   [katalog demo dat](docs/userdb_demo_data.md). Chybí-li pro některý stav
   data, doplň je do `db/dummy-data`, ať je má i náhled PR.
 - **Počítač i telefon.** Každou změnu si prohlédni v prohlížeči na šířce
-  1280 px a v emulaci telefonu (šířka 375 px a mobilní user agent, podle
-  kterého se `main.js` rozhoduje). V obou musí jít přečíst a ovládat; stránka se nesmí
+  1280 px a v emulaci telefonu (šířka 375 px, mobilní user agent a dotykové
+  ovládání, podle kterého se `main.js` rozhoduje). V obou musí jít přečíst a ovládat; stránka se nesmí
   posouvat do strany, široká tabulka se posouvá ve vlastním rámu. Zkontroluj
   i konzoli prohlížeče a že stránka neskončila chybou Tracy.
 - **Prohlížeč Orcy.** Je-li Orca dostupná, prohlížej stránky výhradně ve

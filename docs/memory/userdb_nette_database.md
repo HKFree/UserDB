@@ -8,7 +8,7 @@ metadata:
 # UserDB: nástrahy Nette Database v tabulkách Grido
 
 Ověřeno 22. 11. 2026 nad Nette Database 3.2.4 a o5/grido `dev-nette-3.2`, čtením `GroupedSelection::execute()`
-a měřením seznamu členů s „Informace z money“ nad objemovými demo daty.
+a měřením seznamu členů s „Informace z money“ (v nové kostře přepínač Platby a aktivace) nad objemovými demo daty.
 
 ## `related()` s `limit()` načte celou historii
 

@@ -1,15 +1,32 @@
-<div class="d-flex align-items-center user-labels-component" data-user-id="{$userId}">
+{* Grido renders this file with standalone Latte, without {link}; the routed URLs are on <body> in the layout. *}
+{var $assignedIds = []}
+{foreach $stitkyUzivatele as $assignedLabel}{do $assignedIds[$assignedLabel->id] = true}{/foreach}
+<div class="user-labels-component" data-user-id="{$userId}">
+    <div class="user-labels">
+        {foreach $stitkyUzivatele as $stitekUzivatele}
+            <span class="badge position-relative" style="{App\Services\BarvaStitku::styl($stitekUzivatele->barva_pozadi, $stitekUzivatele->barva_popredi)|noescape}">
+                <abbr title="{$stitekUzivatele->kdy_vytvoreno->format('d.m.Y H:i') . "\n\n" . $stitekUzivatele->poznamka}">
+                    {$stitekUzivatele->text}
+                </abbr>
+                <button type="button" class="badge-remove" data-stitek-id="{$stitekUzivatele->id}" data-user-id="{$userId}" aria-label="Odebrat štítek {$stitekUzivatele->text}" title="Odebrat štítek">&times;</button>
+            </span>
+        {/foreach}
+        <span class="labels-empty" n:if="!$stitkyUzivatele">žádné</span>
+    </div>
     <div class="dropdown me-2">
-        <button class="btn btn-default dropdown-toggle btn-sm" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            +
+        <button class="btn btn-default dropdown-toggle btn-sm" type="button" data-toggle="dropdown" aria-label="Přidat štítek" title="Přidat štítek" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-tag" aria-hidden="true"></i> <span class="label-add-text">Přidat štítek</span>
             <span class="caret"></span>
         </button>
-        <ul class="dropdown-menu" aria-labelledby="dropdownMenu">
+        <ul class="dropdown-menu" role="menu" aria-label="Štítky k přidání">
+            <li class="labels-menu-hint" role="presentation">Kliknutím štítek přidáte</li>
             {foreach $stitky as $stitek}
-                <li>
-                    <a href="#"
-                       class="stitky-item" data-id="{$stitek->id}"
-                       style="background-color: {$stitek->barva_pozadi|noescape}; color: {$stitek->barva_popredi|noescape};">
+                <li role="presentation">
+                    <a href="#" role="menuitem"
+                       n:class="stitky-item, isset($assignedIds[$stitek->id]) ? label-assigned" data-id="{$stitek->id}"
+                       aria-disabled="{isset($assignedIds[$stitek->id]) ? 'true' : 'false'}"
+                       title="{isset($assignedIds[$stitek->id]) ? 'Člen tento štítek už má' : 'Přidat štítek'}"
+                       style="{App\Services\BarvaStitku::styl($stitek->barva_pozadi, $stitek->barva_popredi)|noescape}">
                         {$stitek->text}
                     </a>
                 </li>
@@ -17,15 +34,4 @@
         </ul>
     </div>
 
-    <!-- Existující štítky uživatele -->
-    <div class="user-labels">
-        {foreach $stitkyUzivatele as $stitekUzivatele}
-            <span class="badge position-relative" style="background-color: {$stitekUzivatele->barva_pozadi|noescape}; color: {$stitekUzivatele->barva_popredi|noescape};">
-                <abbr title="{$stitekUzivatele->kdy_vytvoreno->format('d.m.Y H:i') . "\n\n" . $stitekUzivatele->poznamka}">
-                    {$stitekUzivatele->text}
-                </abbr>
-                <span class="badge-remove" data-stitek-id="{$stitekUzivatele->id}" data-user-id="{$userId}">&times;</span>
-        </span>
-        {/foreach}
-    </div>
 </div>

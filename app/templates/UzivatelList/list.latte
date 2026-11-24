@@ -1,26 +1,56 @@
+{block title}{$ap->jmeno} - členové AP{/block}
 {block content}
-<h3 n:ifset="$ap">oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno} <small>seznam uživatelů</small> </h3>
-<a href="{link Ap:list id=>$ap->Oblast->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zobrazit oblast</a>
-<a href="{link Ap:show id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-eye-open"></i> Zobrazit podrobnosti AP</a>
+<nav aria-label="Drobečková navigace">
+    <ol class="breadcrumb page-crumbs">
+        <li><a n:href="Homepage:default">Přehled</a></li>
+        <li><a n:href="Ap:list id=>$ap->Oblast->id">{$ap->Oblast->jmeno}</a></li>
+        <li class="active" aria-current="page">{$ap->jmeno}</li>
+    </ol>
+</nav>
+<div class="page-head">
+<h1 class="page-title">{$ap->jmeno} <small>členové AP</small></h1>
+<div class="page-actions">
+<a href="{link Ap:show id=>$ap->id}" class="btn btn-default" role="button"><i class="glyphicon glyphicon-eye-open"></i> Podrobnosti AP</a>
 <a href="{link Wewimo:show id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-signal"></i> Wewimo</a>
-<a href="{link UzivatelMailSms:emailall id=>$ap->id}" class="btn btn-default btn-sm" role="button"><b>@</b> Odeslat E-mail všem z AP</a>
-<a href="{link UzivatelMailSms:smsall id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-phone"></i> Odeslat SMS všem z AP</a>
+<a href="{link UzivatelMailSms:emailall id=>$ap->id}" class="btn btn-default" role="button"><i class="fa fa-envelope-o" aria-hidden="true"></i> E-mail všem</a>
+<a href="{link UzivatelMailSms:smsall id=>$ap->id}" class="btn btn-default" role="button"><i class="glyphicon glyphicon-phone"></i> SMS všem</a>
 <a href="{link Ap:ids id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="fa fa-bug"></i> Události z IDS</a>
 
-&nbsp;&nbsp;
+</div>
+</div>
+{* Tabulka se vykreslí první: až potom zná počet po použití filtrů, který ukazuje řádek filtrů nad ní. *}
+{capture $tabulkaClenu}{control grid}{/capture}
+<div class="member-list">
+<div class="list-toolbar">
+{include memberFilter}
+<div class="list-view"><span>Zobrazit navíc:</span>
 {if $canViewOrEdit}
-<a n:if="!$money" href="{link UzivatelList:list id=>$ap->id, money=>1}" class="btn btn-default btn-sm" role="button" title="Zobrazit informace z money"><i class="glyphicon glyphicon-unchecked"></i> Informace z money</a>
+<a n:if="!$money" href="{link UzivatelList:list id=>$ap->id, money=>1}" class="btn btn-default btn-sm money-toggle" role="button" aria-pressed="false" title="Zobrazit informace z money"><i class="fa fa-square-o" aria-hidden="true"></i> Platby a aktivace</a>
 {/if}
-<a n:if="$money" href="{link UzivatelList:list id=>$ap->id, money=>0}" class="btn btn-default btn-sm active" role="button" title="Skrýt informace z money"><i class="glyphicon glyphicon-check"></i> Informace z money</a>
+<a n:if="$money" href="{link UzivatelList:list id=>$ap->id, money=>0}" class="btn btn-default btn-sm active money-toggle" role="button" aria-pressed="true" title="Skrýt informace z money"><i class="fa fa-check-square-o" aria-hidden="true"></i> Platby a aktivace</a>
 
-<a n:if="$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>false}" class="btn btn-default btn-sm active" role="button" title="Zobrazit zkrácené poznámky a adresy"><i class="glyphicon glyphicon-check"></i> Kompletní poznámky a adresy</a>
-<a n:if="!$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>true}" class="btn btn-default btn-sm" role="button" title="Zobrazit kompletní poznámky a adresy"><i class="glyphicon glyphicon-unchecked"></i> Kompletní poznámky a adresy</a>
+<a n:if="$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>false}" class="btn btn-default btn-sm active" role="button" aria-pressed="true" title="Zobrazit zkrácené poznámky a adresy"><i class="fa fa-check-square-o" aria-hidden="true"></i> Kompletní poznámky a adresy</a>
+<a n:if="!$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>true}" class="btn btn-default btn-sm" role="button" aria-pressed="false" title="Zobrazit kompletní poznámky a adresy"><i class="fa fa-square-o" aria-hidden="true"></i> Kompletní poznámky a adresy</a>
+</div>
+</div>
 
-<br><br>
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam členů AP">{$tabulkaClenu|noescape}</div>
 
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam členů AP">{control grid}</div>
+{include memberStats}
 
-<ul>
+{include memberLegend}
+<section class="list-section">
+<h2>Uživatelé mimo AP</h2>
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Uživatelé mimo AP">{control othersGrid}</div>
+</section>
+</div>
+
+{import '../pinger.latte'}
+{include listPinger}
+{/block}
+
+{define memberStats}
+<ul class="member-counts">
     <li>Počet zrušených členů: {$u_zrusenych}</li>
     <li>Počet primárních členů: {$u_primarnich}</li>
     <li>Počet řádných členů: {$u_radnych}</li>
@@ -28,26 +58,57 @@
     <li n:if="$money">Počet aktivních členů: {$u_aktivnich}</li>
     <li>Počet všech členů: {$u_celkem}</li>
     <li>Počet všech členů včetně zrušených: {$u_celkemz}</li>
-</ul>   
+</ul>
+{/define}
 
-<br><br>
-<h4>Uživatelé mimo AP:</h4>
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Uživatelé mimo AP">{control othersGrid}</div>
+{define memberFilter}
+{* Filtry tabulky grid v jednom řádku nad ní. Pole patří k formuláři tabulky atributem form, takže je nesou
+   i její odkazy: řazení, stránky a export. Hledání jde přes všechny stránky, ne jen přes načtenou. *}
+{var $tabulka = $control['grid']}
+{var $formular = $tabulka['form']}
+{var $formId = $formular->getElementPrototype()->id}
+{var $filtry = $formular['filters']}
+{var $hledat = $filtry['hledat']}
+{var $pocet = $tabulka->getCount()}
+{var $filtruje = (bool) array_filter($tabulka->filter, fn ($hodnota) => $hodnota !== '' && $hodnota !== null)}
+{* Při psaní filtruje prohlížeč jen nad úplným výsledkem: všechny řádky na stránce a bez hledání ze serveru,
+   které by zbylé řádky už zúžilo podle jiného textu. Štítky a Zobrazit výsledek zužují stejně jako před psaním. *}
+<div class="member-filter" role="search" aria-label="Filtr členů"
+     data-live="{$pocet <= $tabulka->getPerPage() && (string) $hledat->getValue() === '' ? 'true' : 'false'}" data-applied="{$hledat->getValue()}">
+    <div class="quick-filter">
+        <label class="sr-only" for="{$hledat->getHtmlId()}">Hledat ve členech</label>
+        <i class="fa fa-search" aria-hidden="true"></i>
+        {$hledat->getControl()->addAttributes([form => $formId, type => search, class => 'form-control input-sm', placeholder => 'Hledat: UID, jméno, e-mail, telefon, IP, ulice, poznámka…', autocomplete => off])}
+    </div>
+    <span class="filter-field">
+        <label for="{$filtry['spolek_druzstvo']->getHtmlId()}">Zobrazit</label>
+        {$filtry['spolek_druzstvo']->getControl()->addAttributes([form => $formId, class => 'form-control input-sm', data-submit-on-change => true])}
+    </span>
+    <div class="label-chips" role="group" aria-label="Filtr podle štítků">
+        <span n:foreach="$cipyStitku as $cip" n:class="badge, label-chip, $cip['ma'] ? label-chip-has : label-chip-not" style="{$cip['styl']|noescape}">
+            <span class="label-chip-sign" aria-hidden="true">{$cip['ma'] ? '+' : '−'}</span>
+            <span class="sr-only">{$cip['ma'] ? 'Má štítek' : 'Nemá štítek'}</span>
+            <span class="label-chip-text">{$cip['text']}</span>
+            <a href="{$cip['zrusit']}" class="label-chip-remove" aria-label="Zrušit filtr: {$cip['ma'] ? 'má' : 'nemá'} štítek {$cip['text']}" title="Zrušit filtr">&times;</a>
+        </span>
+        {$filtry['stitky']->getControl()->addAttributes([form => $formId, type => hidden])}
+        <label class="sr-only" for="{$filtry['pridatStitek']->getHtmlId()}">Přidat filtr podle štítku</label>
+        {$filtry['pridatStitek']->getControl()->addAttributes([form => $formId, class => 'form-control input-sm label-chip-add'])}
+    </div>
+    <button type="submit" form="{$formId}" name="buttons[search]" value="Vyhledat" class="btn btn-primary btn-sm"><i class="fa fa-search" aria-hidden="true"></i> Hledat</button>
+    <button n:if="$filtruje" type="submit" form="{$formId}" name="buttons[reset]" value="Resetovat" class="btn btn-default btn-sm"><i class="fa fa-times" aria-hidden="true"></i> Zrušit filtry</button>
+    <span class="quick-filter-count" aria-live="polite" data-total="Nalezeno: {$pocet}">Nalezeno: {$pocet}</span>
+</div>
+{/define}
 
-<br><br>
-<p>Legenda:</p>
-<table class="legend">
-    <tr class="planovane"><td>Plánovaný člen</td></tr>
-    <tr class="primarni"><td>Primární člen</td></tr>
-    <tr class="cestne"><td>Čestný člen</td></tr>
-    <tr class="zrusene"><td>Zrušený člen</td></tr>
-    <tr style="background-color: #ff00ff !important;"><td>Vysoký přeplatek na účtu (vyřešte s uživatelem, nebo vyplňte mobilní kauci v detailu uživatele)</td></tr>
-    <tr style="background-color: #ff0000 !important;"><td>Neaktivní člen (v závislosti na poslední platbě a poslední aktivaci zvažte zrušení členství)</td></tr>
-</table>      
-    
-<br><br>
-
-{import '../pinger.latte'}
-{include listPinger}
-{/block}
+{define memberLegend}
+<div class="member-legend"><span>Legenda:</span>
+    <span class="legend-chip planovane">Plánovaný člen</span>
+    <span class="legend-chip primarni">Primární člen</span>
+    <span class="legend-chip cestne">Čestný člen</span>
+    <span class="legend-chip zrusene">Zrušený člen</span>
+    <span class="legend-chip legend-overpaid" title="Vysoký přeplatek na účtu (vyřešte s uživatelem, nebo vyplňte mobilní kauci v detailu uživatele)" tabindex="0" data-toggle="tooltip">Vysoký přeplatek</span>
+    <span class="legend-chip legend-inactive" title="Neaktivní člen (v závislosti na poslední platbě a poslední aktivaci zvažte zrušení členství)" tabindex="0" data-toggle="tooltip">Neaktivní člen</span>
+</div>
+{/define}
 

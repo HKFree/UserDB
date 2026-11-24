@@ -40,6 +40,7 @@ const fixture = tableRows => `<!DOCTYPE html><html><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/css/theme.css" rel="stylesheet">
     <link href="/css/screen.css" rel="stylesheet">
     <script src="/js/jquery.min.js"></script><script src="/js/jquery-ui.min.js"></script>
     <script src="/js/bootstrap.min.js"></script><script src="/js/jquery.bonsai.js"></script>
@@ -180,6 +181,16 @@ describe('copying device login and password', () => {
             assert.equal(await copySelection(page), longPassword);
         });
     }
+
+    // Only the button and an explicit copy write to the clipboard; another handler bound to the value must not.
+    test('a click on a value selects it and leaves the clipboard alone', async t => {
+        const page = await open(t);
+        const g = await page.evaluate(geometry, 1);
+        await page.mouse.click((g.password.left + g.password.right) / 2, g.password.middle);
+        await becomesSelected(page, longPassword);
+        await page.waitForTimeout(300);
+        assert.equal(await clipboard(page), sentinel);
+    });
 
     test('another click on a selected value keeps it selected', async t => {
         const page = await open(t);

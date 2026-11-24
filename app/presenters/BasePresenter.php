@@ -6,6 +6,7 @@ use App\Settings;
 use Nette;
 use App\Model;
 use App\Services\VysledekOdeslaniEmailu;
+use App\Services\Vzhled;
 use Nette\Application\UI\Form;
 use Nette\Database\Table\ActiveRow;
 use Nette\Utils\Validators;
@@ -199,21 +200,23 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     protected function beforeRender() {
         parent::beforeRender();
 
+        $vzhledVolba = Vzhled::volba($this->getHttpRequest()->getCookie(Vzhled::COOKIE));
+        $this->template->vzhledVolba = $vzhledVolba;
+        $this->template->vzhled = Vzhled::vzhled($vzhledVolba);
+        $this->template->vzhledVolby = Vzhled::VOLBY;
         $this->template->demoPersonaUrl = $this->settings->demoPersonaUrl;
         $this->template->demoPersonaName = $this->settings->demoPersonaName;
         $this->template->oblasti = $this->oblast->getSeznamOblastiProMenu();
 
         $oblastiSpravce = $this->spravceOblasti->getOblastiSpravce($this->getIdentity()->getUid());
-        if (count($oblastiSpravce) > 0) {
-            $this->template->mojeOblasti = $this->oblast->formatujOblastiSAP($oblastiSpravce);
-        } else {
-            $this->template->mojeOblasti = false;
-        }
+        $skupiny = $this->oblast->seskupOblastiSAP($oblastiSpravce);
+        $this->template->mojeOblastiSkupiny = $skupiny;
+        $this->template->mojeOblasti = count($oblastiSpravce) > 0 ? $this->oblast->popiskyApVeSkupinach($skupiny) : false;
     }
 
     protected function createComponentSearchForm(): Form {
         $form = new Form();
-        $form->getElementPrototype()->class('navbar-form navbar-right');
+        $form->getElementPrototype()->class('navbar-form navbar-search');
         $form->addText('search', 'Vyhledej:')->setAttribute('class', 'form-control')->setAttribute('placeholder', 'Hledat...');
         $form->addSubmit('send', 'Vyhledat');
 

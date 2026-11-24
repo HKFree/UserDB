@@ -7,7 +7,8 @@ test.use({ persona: personas.soRozvetvena });
 test('správce navrhne čestné členství a VV je schválí do přehledu platných členství', async ({ page, signInAs }) => {
     await page.goto('/uzivatel/show/20030');
     await expect(detailValue(page, 'Typ členství')).not.toContainText('platné čestné členství');
-    await page.getByRole('button', { name: /Editovat čestné členství$/ }).click();
+    await page.getByRole('button', { name: 'Další', exact: true }).click();
+    await page.getByRole('menuitem', { name: /Editovat čestné členství$/ }).click();
     await page.getByRole('button', { name: '+ Přidat další období ČČ', exact: true }).click();
     await page.getByLabel('Typ čestného členství', { exact: true }).selectOption('0');
     await fillLastWeek(page.getByLabel('Platnost od:', { exact: true }));

@@ -81,7 +81,7 @@ Zelený presenter test filtru neznamená, že filtr jde použít v prohlížeči
 **Why:** Přidání a odebrání štítku mělo adresu `/userdb/stitky/...` přímo v `main.js`, takže mimo
 produkci končilo hláškou „Nepodařilo se připojit k serveru“ a nedalo se vyzkoušet.
 **How to apply:** Adresu vypiš v šabloně přes `{link}` do atributu `data-*` a v JavaScriptu ji čti
-z něj. Stejný prefix zůstává v `main.js` (skrývání postranního panelu na telefonu) a v `pinger.js`.
+z něj. Stejný prefix zůstává v `pinger.js`; z `main.js` zmizel s novou kostrou aplikace.
 
 ## Rozvržení a zlomy šířky
 
@@ -90,15 +90,18 @@ Ověřeno 23. 11. 2026 výpisem media queries z `www/css/bootstrap.min.css` a m�
 - Přibalený Bootstrap 3.2 je upravený build: zlom `sm` i rozbalení horní lišty jsou na 990 px,
   ne na 768 px; zlom `md` je na 992 px. Pod 990 px proto sloupce `col-sm-*` nemají šířku ani
   obtékání a nabídka je sbalená.
-- Postranní panel má šířku i sloupec obsahu levý okraj ze `screen.css` mimo media query, takže
-  panel stojí vedle obsahu při každé šířce okna. Mimo úvodní stránku ho na mobilním user agentu
-  skrývá `main.js`; odkaz „Skrýt/zobrazit seznam oblastí“ je vidět jen pod 990 px.
-- Šířku sloupce obsahu od 992 px určuje `.col-md-10` v procentech okna, okraj pro panel je
-  v pixelech. Kdo mění jedno, musí přepočítat `max-width` sloupce ve `screen.css`; hlídá to
-  `tests/screenshots/test/layout-width.test.mjs`.
+- Postranní panel stojí vedle obsahu od 990 px: šířku 230 px i stejně široký levý okraj obsahu
+  dává `screen.css` v media query. Pod 990 px je panel vysouvací a otevírá ho tlačítko Oblasti
+  v horní liště (`html.sidebar-open`); podle user agenta se už nic neskrývá.
+- Obsah (`.main`) nemá sloupec Bootstrapu a zabírá zbytek okna vedle panelu. Šířka panelu je
+  ve `screen.css` dvakrát (šířka `.sidebar` a okraj `.main`) a potřetí v
+  `tests/screenshots/test/layout-width.test.mjs`, který hlídá, že se stránka neposouvá do strany.
+  Ověřeno 23. 11. 2026 tímto testem: se šířkou `.main` 100 % a s přejmenovanou třídou
+  `sidebar-open` spadl.
 
-**Why:** Issue 315: stránky se při 992 až 1079 px posouvaly do strany a první verze testu
-počítala se zlomem 768 px ze standardního Bootstrapu.
+**Why:** Issue 315: stránky se ve staré kostře při 992 až 1079 px posouvaly do strany (sloupec
+`.col-md-10` v procentech vedle okraje v pixelech) a první verze testu počítala se zlomem 768 px
+ze standardního Bootstrapu.
 
 ## Prohlídka v prohlížeči
 
@@ -112,21 +115,33 @@ počítala se zlomem 768 px ze standardního Bootstrapu.
   načtení stránky včetně přesměrování po odeslání formuláře: hlášku po uložení (flash) na
   telefonu uvidíš tak, že `orca viewport` pustíš znovu až po přesměrování, stránku nenačítej
   znovu, jinak hláška zmizí. Ověřeno 23. 11. 2026 na schvalování čestného členství.
-- Posuvný rám kolem Grida ořízne absolutně umístěnou nabídku štítků, zvlášť u seznamu s jediným
-  členem. `overflow-x: auto` totiž současně vytvoří svislý posuv. Ověřeno 23. 11. 2026 v Orce
+- Seznam členů AP se na telefonu do strany neposouvá: grid širší než stránka má od nové kostry
+  vlastní rám (`form.grido.grid-wide`, třídu nastavuje `main.js`). V emulaci Playwrightu porovnávej
+  šířku dokumentu s nastavenou šířkou okna, ne s `innerWidth`, viz [kostra aplikace](userdb_ui_shell.md);
+  pod `orca viewport` platí měření z předchozího bodu.
+- Posuvný rám kolem Grida (`overflow-x: auto`) ořízne absolutně umístěnou nabídku štítků, zvlášť
+  u seznamu s jediným členem, protože vytvoří i svislý posuv. V nové kostře proto `main.js` kreslí
+  otevřenou nabídku v gridu s `position: fixed` u jejího tlačítka. Posuvný je obal `.user-list-scroll`
+  v šabloně (pojmenovaná oblast s `tabindex="0"`), formulář Grida v něm se podruhé neposouvá; rám
+  tlačítka hledej přes `closest('.user-list-scroll')`, `closest()` se dvěma selektory vrátí bližší formulář. Ověřeno 23. 11. 2026 v Orce
   a Playwrightu na `/uzivatel-list/listall?search=20022` při 1280 i 375 px.
-  **Why:** Samotná kontrola šířky stránky ani existence položek nabídky oříznutí neodhalí.
-  **How to apply:** V posuvném rámu nech nabídku zabrat místo v řádku a ověř její první i poslední
-  položku. Nabídka musí zůstat pozicovaná (`relative`), jinak její `z-index` neplatí a na telefonu
-  kliknutí zachytí `dropdown-backdrop` Bootstrapu; potvrzeno padajícím E2E testem.
-  `clen-uid.spec.mjs` hlídá nabídku i šířku celé stránky vůči zadané šířce okna.
+- Posun rámu nesmí takovou nabídku zavřít, jen přesunout: sloupec Štítky je v rámu poslední a po
+  kliknutí prohlížeč rám ještě posune k zaměřenému tlačítku, a to až po otevření nabídky. Nabídka
+  se zavírá teprve, když střed tlačítka zmizí z viditelné části rámu nebo zajede pod pevnou
+  horní lištu (celý obdélník nestačí: po posunu k tlačítku přesahuje okraj rámu o zlomek pixelu). Ověřeno 23. 11. 2026 výpisem
+  událostí `scroll` a `shown.bs.dropdown` v Playwrightu při 375 px; zavírání při každém posunu
+  shodilo `clen-uid.spec.mjs`.
+  **Why:** Samotná kontrola šířky stránky ani existence položek nabídky oříznutí ani zavření neodhalí.
+  **How to apply:** Ověř první i poslední položku otevřené nabídky a klikni na tlačítko obyčejným
+  `click()`, ne až po ručním posunu rámu. `clen-uid.spec.mjs` hlídá nabídku i šířku celé stránky.
 - V kontextu Playwrightu s `isMobile` se stránce širší než okno zvětší i `innerWidth`
   (formulář e-mailu: 520 px při okně 375 px). Přetečení proto poznáš porovnáním
   `document.documentElement.scrollWidth` se zadanou šířkou okna, ne s `innerWidth`.
   Ověřeno 23. 11. 2026 u issue #303.
-- Levý okraj `.main` (místo pro postranní panel) na telefonu neruší CSS, ale `main.js` podle
-  user agenta. Zkušební stránka bez `main.js` nebo bez mobilního user agenta má proto obsah
-  o tento okraj užší než skutečná stránka (pole 165 px místo 345 px). Ověřeno tamtéž.
+- Levý okraj `.main` (místo pro postranní panel) ruší pod 990 px `screen.css` podle šířky okna,
+  ne `main.js` podle user agenta. Zkušební stránka musí dát obsahu značku z `@layout.latte`
+  (`<div class="main" id="obsah">`): se sloupci `col-md-*` staré kostry vyšla při okně 1280 px
+  široká 1297 px. Ověřeno 23. 11. 2026 testy `edit-form` a `message-form` v `tests/screenshots`.
 - Formuláři, který má tlačítko s třídou `default` (Uložit v editaci člena a AP), vloží `main.js`
   na začátek kopii toho tlačítka a odsune ji mimo obrazovku (`left: -2000px`), aby Enter ukládal.
   Měření „žádný prvek formuláře nepřesahuje okno“ proto omez na prvky uvnitř `table.form`, jinak ho
@@ -134,7 +149,8 @@ počítala se zlomem 768 px ze standardního Bootstrapu.
 - Třídu `ipform` nenese jen tabulka záznamu IP adresy ve `form.latte`, ale i `fieldset` na stránkách
   oprávnění a čestného členství (`UzivatelRightsCc/editrights.latte`, `editcc.latte`,
   `SpravaCc/schvalovanicc.latte`). Styl pro záznamy ve formuláři proto piš na `table.ipform`.
-  Ověřeno tamtéž; tyto tři stránky jsou na telefonu dál širší než okno (585 px při okně 375 px).
+  Ověřeno tamtéž. V nové kostře se schvalování čestného členství a oprávnění člena se záznamy
+  do okna 375 px vejdou; ověřeno 23. 11. 2026 měřením `scrollWidth` v emulaci Playwrightu.
 - Nette podle pravidel pole mění jeho typ: `addText()` s pravidlem `Form::Email` se vykreslí jako
   `type="email"`, s `Form::Integer` jako `type="number"`. Styl psaný jen pro `input[type="text"]` tak
   část polí mine (e-mail a PSČ v editaci člena). Ověřeno tamtéž ve vykresleném HTML.

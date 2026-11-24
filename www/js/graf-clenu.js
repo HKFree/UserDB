@@ -27,10 +27,6 @@ $(function () {
         return String(hodnota).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
     }
 
-    function barva(klic) {
-        return window.getComputedStyle(document.querySelector('.graf-clenu-barva-' + klic)).color;
-    }
-
     /** Popisky osy x: měsíce nebo roky tak daleko od sebe, aby se nepřekrývaly. */
     function osaX(sirkaPlochy) {
         var nejvicePopisku = Math.max(1, Math.floor(sirkaPlochy / NEJMENSI_ROZESTUP_POPISKU_X));
@@ -122,11 +118,11 @@ $(function () {
         var nizky = poradiLegendy.indexOf('automatem') === -1;
         // Rickshaw skládá první sérii dospod: malé vrstvy dole, horní hrana grafu je pak celkový počet.
         var serie = poradiLegendy.slice().reverse().map(function (klic) {
-            var barvaSerie = barva(klic);
             return {
                 name: NAZVY[klic],
-                color: barvaSerie,
-                stroke: barvaSerie,
+                className: 'graf-clenu-barva-' + klic,
+                color: 'currentColor',
+                stroke: 'currentColor',
                 data: mesice.map(function (mesic) { return { x: mesic.x, y: mesic[klic] }; })
             };
         });

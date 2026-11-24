@@ -1,6 +1,6 @@
 function pingIPList(sojkaUrl) {
   var ipsList = [];
-  $("tr[id^=highlightable-ip] td a[href^='/userdb/subnet']").each(function() {
+  $("tr[id^=highlightable-ip] td a[href*='/subnet/detail/']").each(function() {
     ip = $(this).text();
 
     if(ip) {
@@ -19,12 +19,17 @@ function pingIPList(sojkaUrl) {
 }
 
 
+// sluzba pingu odpovedela chybou (napr. neni dostupna): stav adres nezname, nic neoznacovat
+function pingFailed(resp) {
+  return !resp || resp.error === true;
+}
+
 function pingIPListCallback(resp) {
-  if(resp.length <= 0) {
+  if(pingFailed(resp) || resp.length <= 0) {
     return(1);
   }
 
-  $("tr[id^=highlightable-ip] td a[href^='/userdb/subnet']").each(function() {
+  $("tr[id^=highlightable-ip] td a[href*='/subnet/detail/']").each(function() {
     ip = $(this).text();
 
     if(ip) {
@@ -79,43 +84,45 @@ function removeLabelClass(index, className) {
 }
 
 function drawBar(elem, pings) {
-  var colors = ["rgb(150, 255, 150)", "rgb(255, 255, 150)", "rgb(255, 150, 150)"];
-  
+  // tlumene barvy (dostupna, ztraty, nedostupna) jsou promenne z theme.css, takze se po prepnuti
+  // vzhledu prebarvi samy; prouzek u leveho okraje podle nejhorsiho stavu dava screen.css
+  var colors = ["var(--udb-bg-ping-ok)", "var(--udb-bg-ping-warn)", "var(--udb-bg-ping-down)"];
+
   var pings_total = pings[0] + pings[1] + pings[2];
-  
+
   if (pings_total == 0) {
     return(0);
   }
-  
-  var can1 = document.createElement("canvas");
-  var size_w = parseFloat(elem.css("width")) + parseFloat(elem.css("padding-right")) + parseFloat(elem.css("padding-left"));
-  var size_h = parseFloat(elem.css("height")) + parseFloat(elem.css("padding-top")) + parseFloat(elem.css("padding-bottom"));
-  
-  can1.width = Math.ceil(size_w);
-  can1.height = Math.ceil(size_h);
-  
-  var ctx1 = can1.getContext('2d');
-  
+
+  elem.removeClass("ping-ok ping-warn ping-down")
+    .addClass(pings[2] > 0 ? "ping-down" : (pings[1] > 0 ? "ping-warn" : "ping-ok"));
+
+  // stav i slovem, at nestoji jen na barve (ctecka, nerozlisovani barev)
+  var words = [];
+  if (pings[0] > 0) words.push(pings[0] + " dostupná");
+  if (pings[1] > 0) words.push(pings[1] + " ztráty");
+  if (pings[2] > 0) words.push(pings[2] + " nedostupná");
+  var status = elem.children(".ping-status");
+  if (status.length === 0) status = $('<span class="sr-only ping-status"></span>').appendTo(elem);
+  status.text("Ping: " + words.join(", "));
+
+  // podil adres v kazdem stavu jako pruhy vedle sebe
+  var stops = [];
   var position = 0;
-  var i;
-  for (i=0; i < 3; i++) {
-    if(pings[i] == 0) {
-    	continue;
-    }
-  	position_new = Math.floor(pings[i] / pings_total * can1.width);
-    
-    ctx1.fillStyle = colors[i];
-  	ctx1.fillRect(position, 0, position + position_new, can1.height);
-    position = position + position_new;
+  for (var i = 0; i < 3; i++) {
+    if (pings[i] == 0) continue;
+    var next = position + pings[i] / pings_total * 100;
+    stops.push(colors[i] + " " + position + "% " + next + "%");
+    position = next;
   }
+  elem.css("background-image", "linear-gradient(to right, " + stops.join(", ") + ")");
+}
   
-  elem.css({
-    'background-image': "url(" + can1.toDataURL("image/png") + ")",
-    'background-size': "100% auto"
-  });
-}  
 
 function pingUserListCallback(resp) {
+  if(pingFailed(resp)) {
+    return;
+  }
   $(".grid-cell-IPAdresa span").each(function() {
     ips = $( this ).attr('title');
   

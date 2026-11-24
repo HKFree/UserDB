@@ -1,5 +1,5 @@
-// A page for the tests of forms on a phone. It loads the real www/css/screen.css and www/js/main.js,
-// which frees the left margin of the page for a mobile user agent, as the layout of the application does.
+// A page for the tests of forms on a phone. It loads the real www/css/screen.css and www/js/main.js;
+// screen.css keeps the left margin of the content for the sidebar only in a window of 990 px and wider.
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
@@ -20,11 +20,12 @@ export const desktop = { viewport: { width: 1280, height: 800 } };
 export const formPage = content => `<!DOCTYPE html><html><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/theme.css" rel="stylesheet">
     <link href="/css/screen.css" rel="stylesheet">
     <script src="/js/jquery.min.js"></script><script src="/js/jquery-ui.min.js"></script>
     <script src="/js/bootstrap.min.js"></script><script src="/js/jquery.bonsai.js"></script>
     <script src="/js/main.js"></script></head><body><div class="container-fluid"><div class="row">
-    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">${content}</div></div></div></body></html>`;
+    <div class="main" id="obsah">${content}</div></div></div></body></html>`;
 
 // Serves the page at / and the files of www/ next to it. Returns the address and a function that stops the server.
 export async function serve(html) {

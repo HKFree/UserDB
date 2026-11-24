@@ -52,7 +52,7 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
         $page = $this->searchResults();
         Assert::same($this->sorted($this->inSearchedStreet, $this->inAnotherStreet, $this->inAnotherArea, $this->cancelled), $this->listed($page));
 
-        $page = $this->pages->submit($page, 'grid', ['filters' => ['ulice_cp' => 'Hledaná']]);
+        $page = $this->pages->submit($page, 'grid', ['filters' => ['hledat' => 'Hledaná']]);
         Assert::same($this->sorted($this->inSearchedStreet, $this->inAnotherArea), $this->listed($page));
         Assert::same([self::SEARCHED], $this->pages->texts($page, self::SEARCH_HEADING));
     }
@@ -64,8 +64,8 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
         }
         $expected = [
             'only current members' => [['spolek_druzstvo' => 'active'], [$this->inSearchedStreet, $this->inAnotherStreet, $this->inAnotherArea]],
-            'with the label' => [['stitek' => (string) $label->id], [$this->inAnotherStreet]],
-            'without the label' => [['stitek' => (string) -$label->id], [$this->inSearchedStreet, $this->inAnotherArea, $this->cancelled]],
+            'with the label' => [['stitky' => (string) $label->id], [$this->inAnotherStreet]],
+            'without the label' => [['stitky' => (string) -$label->id], [$this->inSearchedStreet, $this->inAnotherArea, $this->cancelled]],
         ];
         foreach ($expected as $case => [$filters, $members]) {
             $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => $filters]);
@@ -99,13 +99,13 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
     }
 
     public function testExportHoldsOnlyTheSearchResults(): void {
-        $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => ['ulice_cp' => 'Hledaná']]);
+        $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => ['hledat' => 'Hledaná']]);
         $exported = array_map(static fn (array $row): int => (int) $row['UID'], $this->pages->export($this->pages->exportLink($page, 'grid')));
         Assert::same($this->sorted($this->inSearchedStreet, $this->inAnotherArea), $this->sorted(...$exported));
     }
 
     public function testResetClearsTheFilterAndKeepsTheSearch(): void {
-        $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => ['ulice_cp' => 'Hledaná']]);
+        $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => ['hledat' => 'Hledaná']]);
         $page = $this->pages->submit($page, 'grid', [], 'reset');
         Assert::same($this->sorted($this->inSearchedStreet, $this->inAnotherStreet, $this->inAnotherArea, $this->cancelled), $this->listed($page));
         Assert::same([self::SEARCHED], $this->pages->texts($page, self::SEARCH_HEADING));
@@ -118,7 +118,7 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
 
     /** @dataProvider linksLeavingTheSearch */
     public function testSearchCanBeLeft(string $link): void {
-        $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => ['ulice_cp' => 'Hledaná']]);
+        $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => ['hledat' => 'Hledaná']]);
         $page = $this->pages->follow($this->pages->link($page, $link));
         Assert::same([], $this->pages->texts($page, self::SEARCH_HEADING));
         Assert::same([], $this->pages->texts($page, self::STOP_SEARCH));
@@ -135,7 +135,7 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
     }
 
     public function testNewSearchReplacesTheOldOneAndItsFilter(): void {
-        $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => ['ulice_cp' => 'Jiná']]);
+        $page = $this->pages->submit($this->searchResults(), 'grid', ['filters' => ['hledat' => 'Jiná']]);
         $page = $this->pages->search($page, 'Hledaná 5');
         Assert::same(['Hledaná 5'], $this->pages->texts($page, self::SEARCH_HEADING));
         Assert::same([$this->notFound], $this->listed($page));
@@ -151,7 +151,7 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
         Assert::same($own, $this->listed($page));
         $page = $pages->follow($pages->sortLink($page, 'grid', 'id'));
         Assert::same($own, $this->listedInOrder($page));
-        // The list of all members shows a manager of an area no addresses, so it offers them no text filter either.
+        // The list of all members shows a manager of an area no addresses; the choice of members still filters.
         $current = $this->sorted($this->inSearchedStreet, $this->inAnotherStreet);
         $page = $pages->submit($page, 'grid', ['filters' => ['spolek_druzstvo' => 'active']]);
         Assert::same($current, $this->listed($page));
@@ -160,13 +160,13 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
     }
 
     public function testFilterKeepsASearchTheDatabaseCannotCompareEmpty(): void {
-        // Such a search skips the database and hands the table an empty array instead of a query.
+        // Such a search skips the database for the search itself; the table gets a query that finds nobody.
         $page = $this->pages->page(['action' => 'listall', 'search' => '😀']);
-        $page = $this->pages->submit($page, 'grid', ['filters' => ['spolek_druzstvo' => 'active', 'ulice_cp' => 'Hledaná']]);
+        $page = $this->pages->submit($page, 'grid', ['filters' => ['spolek_druzstvo' => 'active', 'hledat' => 'Hledaná']]);
         Assert::same([], $this->rows($page));
         Assert::same(['😀'], $this->pages->texts($page, self::SEARCH_HEADING));
         // The table took the filter over; a submission it ignored would leave the field empty.
-        Assert::same(['Hledaná'], $this->pages->texts($page, MemberListPages::form('grid') . '//input[@name="filters[ulice_cp]"]/@value'));
+        Assert::same(['Hledaná'], $this->pages->texts($page, '//input[@name="filters[hledat]"][@form="frm-grid-form"]/@value'));
     }
 
     public function testSearchedTextMustBeText(): void {

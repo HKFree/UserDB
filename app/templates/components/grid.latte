@@ -5,8 +5,9 @@
  *}
 {extends $gridoTemplate}
 
+{* Seznam členů kreslí filtry sám nad tabulkou (filtryMimoTabulku), jejich pole patří k formuláři přes atribut form. *}
 {block outerFilterWrapper}
-    {if $formFilters}{include parent}{/if}
+    {if $formFilters && !isset($filtryMimoTabulku)}{include parent}{/if}
 {/block}
 
 {block outerFilterControls}

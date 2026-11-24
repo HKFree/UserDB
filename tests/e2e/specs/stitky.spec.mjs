@@ -11,17 +11,32 @@ test('štítek se přidá a odebere přes AJAX a oba stavy přežijí obnovení 
     page.on('framenavigated', frame => {
         if (frame === page.mainFrame()) navigations++;
     });
-    await page.getByRole('button', { name: '+', exact: true }).click();
-    await page.getByRole('link', { name: 'Demo globální', exact: true }).click();
+    await page.getByRole('button', { name: 'Přidat štítek', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Demo globální', exact: true }).click();
     await expect(label).toBeVisible();
     expect(navigations).toBe(0);
+    // Štítek přidaný skriptem má barvy ve vzhledu aplikace stejné jako štítek, který vykreslí server.
+    const colours = () => label.evaluate(element => {
+        const style = getComputedStyle(element);
+        return [style.backgroundColor, style.borderTopColor, style.borderTopWidth, style.color];
+    });
+    const added = await colours();
+    expect(added).toEqual(['rgb(230, 240, 230)', 'rgb(140, 186, 140)', '1px', 'rgb(0, 102, 0)']);
     await page.reload();
     await expect(label).toBeVisible();
+    expect(await colours()).toEqual(added);
+    // Křížek pro odebrání má barvu písma štítku bez průsvitnosti, aby měl stejný kontrast.
+    const remove = label.getByRole('button', { name: 'Odebrat štítek Demo globální', exact: true });
+    expect(await remove.evaluate(element => [getComputedStyle(element).opacity, getComputedStyle(element).color])).toEqual(['1', added[3]]);
+    // Najetí myší na štítek v nabídce nemění jeho barvy, jen přidá stín.
+    await page.getByRole('button', { name: 'Přidat štítek', exact: true }).click();
+    const item = page.getByRole('menuitem', { name: 'Demo oblastní', exact: true });
+    await item.hover();
+    expect(await item.evaluate(element => getComputedStyle(element).filter)).toBe('none');
+    await page.keyboard.press('Escape');
 
     navigations = 0;
-    // The remove control is a span with no accessible role or label.
-    await label.hover();
-    await label.locator('.badge-remove').click();
+    await label.getByRole('button', { name: 'Odebrat štítek Demo globální', exact: true }).click();
     await expect(label).toHaveCount(0);
     expect(navigations).toBe(0);
     await page.reload();

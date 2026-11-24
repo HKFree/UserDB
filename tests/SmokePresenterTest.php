@@ -41,12 +41,24 @@ final class SmokePresenterTest extends DatabaseTestCase
         Assert::contains($this->ap->jmeno, $home->html);
         Assert::contains('Odhlášení', $home->html);
         Assert::notContains('demo-osoba', $home->html);
+        // The shell: menu in one group, account menu, areas filter and the current page marked.
+        foreach (['/uzivatel-list/listall"', '/sprava/mapa"', '/uzivatel/edit"', '/sprava/logout"', '/uzivatel/show/' . $this->actor->id . '"', 'id="sidebar-filter-input"', 'id="navareas"'] as $expected) {
+            Assert::contains($expected, $home->html);
+        }
+        Assert::match('~<a href="[^"]*" aria-current="page">Přehled</a>~', $home->html);
+        // The areas tree is set up right after its markup, so a large page does not show it unmarked while it loads.
+        // The call is direct, not deferred to document ready, and main.js is loaded before it.
+        Assert::match('~<script src="[^"]*/js/main\.js\?v\d+"></script>.*id="oblastitree"~s', $home->html);
+        Assert::match('~id="oblastitree".*<script>if \(window\.userdbSidebarTree\) userdbSidebarTree\(\);</script>.*id="obsah"~s', $home->html);
+        Assert::contains('<title>Přehled | HKFree UserDB</title>', $home->html);
 
         $member = $this->fixtures->member($this->ap->id);
         $detail = $this->presenters->ui($this->actor->id, 'Uzivatel', ['action' => 'show', 'id' => $member->id]);
         Assert::same(TextResponse::class, $detail->response::class);
         Assert::same(200, $detail->status);
         Assert::contains('UID ' . $member->id, $detail->html);
+        // The member detail marks its AP in the areas tree as soon as the breadcrumb with the AP link is there.
+        Assert::match('~page-crumbs.*/uzivatel-list/list/' . $this->ap->id . '".*<script>if \(window\.userdbSidebarTree\) userdbSidebarTree\(\);</script>.*page-head~s', $detail->html);
         Assert::contains($member->jmeno . ' ' . $member->prijmeni, $detail->html);
         Assert::contains($member->email, $detail->html);
     }

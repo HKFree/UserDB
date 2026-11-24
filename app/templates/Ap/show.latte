@@ -1,12 +1,25 @@
+{block title}{ifset $ap}{$ap->jmeno} - přístupový bod{else}Přístupový bod{/ifset}{/block}
 {block content}
 {ifset $ap}
 
-<h3><s n:tag-if="!$ap->aktivni">oblast {$ap->Oblast->jmeno}, AP {$ap->jmeno}</s> {if $ap->gps}<small>GPS: {$ap->gps} <a href="http://mapa.hkfree.org/?lat={$ap->gps|replace:',','&lon='}">hkfree mapa</a> <a href="http://maps.google.com/maps?q={$ap->gps|replace:',','+'}">google mapa</a></small>{/if}</h3>
+<nav aria-label="Drobečková navigace">
+    <ol class="breadcrumb page-crumbs">
+        <li><a n:href="Homepage:default">Přehled</a></li>
+        <li><a n:href="Ap:list id=>$ap->Oblast->id">{$ap->Oblast->jmeno}</a></li>
+        <li class="active" aria-current="page">{$ap->jmeno}</li>
+    </ol>
+</nav>
+<div class="page-head">
+<h1 class="page-title"><s n:tag-if="!$ap->aktivni">{$ap->jmeno}</s> <small>přístupový bod</small> {if $ap->gps}<small class="ap-gps">GPS: {$ap->gps} <a href="http://mapa.hkfree.org/?lat={$ap->gps|replace:',','&lon='}">hkfree mapa</a> <a href="http://maps.google.com/maps?q={$ap->gps|replace:',','+'}">google mapa</a></small>{/if}</h1>
+<div class="page-actions">
 {if $canViewOrEdit}
-<a href="{link Ap:edit id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
+<a href="{link Ap:edit id=>$ap->id}" class="btn btn-primary" role="button"><i class="glyphicon glyphicon-pencil icon-pencil"></i> Editovat</a>
 {/if}
 <a href="{link UzivatelList:list id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-user"></i> Zobrazit uživatele</a>
-<br><br>
+</div>
+</div>
+{* Odkaz na seznam clenu AP uz je v hlavicce: levy panel se zvyrazni hned, ne az po nacteni cele stranky. *}
+<script>if (window.userdbSidebarTree) userdbSidebarTree();</script>
 <span n:if="$ap->ulice_cp"><b>Adresa AP:</b> {$ap->ulice_cp}, {$ap->mesto}, {$ap->psc}<br><br></span>
 
 <pre>
@@ -14,22 +27,35 @@
 </pre>
 <br>
 
-<h4>Přehledy subnetů použitých na AP</h4>
+<section class="panel panel-default detail-panel">
+<div class="panel-heading"><h4>Přehledy subnetů použitých na AP</h4></div>
+<div class="panel-body">
 {foreach $csubnety as $cs}
     <p><a href="{link Subnet:overview id=>$cs}" class="btn btn-default btn-sm" role="button"> Zobrazit subnety {$cs}</a> <a href="{link Subnet:detail id=>$cs}" class="btn btn-default btn-sm" role="button"> Zobrazit ip {$cs}</a></p>
 {/foreach}
-<br>
+</div>
+</section>
 
-<h4>IP Adresy <small>na AP</small></h4>
+<section class="panel panel-default detail-panel">
+<div class="panel-heading"><h4>IP Adresy <small>na AP</small></h4></div>
+<div class="panel-body">
 <div class="table-responsive">{$adresy}</div>
+</div>
+</section>
 
 {import '../pinger.latte'}
 {include ipPinger}
 
-<h4>Subnety <small>na AP</small></h4>
+<section class="panel panel-default detail-panel">
+<div class="panel-heading"><h4>Subnety <small>na AP</small></h4></div>
+<div class="panel-body">
 {$subnety}
+</div>
+</section>
 
-    <h4>API klíče <small>pro přístup k datům na AP přes REST API, postup viz <a href="https://github.com/HKFree/UserDB#accessing-api">GitHub</a></small></h4>
+<section class="panel panel-default detail-panel">
+<div class="panel-heading"><h4>API klíče <small>pro přístup k datům na AP přes REST API, postup viz <a href="https://github.com/HKFree/UserDB#accessing-api">GitHub</a></small></h4></div>
+<div class="panel-body">
 <table class="table table-striped">
     <tr>
         <th>Uživatelské jméno</th>
@@ -46,18 +72,15 @@
     </tr>
 {/foreach}
 </table>
+</div>
+</section>
 
-<h4><a id="logsHeader">Změny (kliknutím rozbalíte)</a></h4>
-<script>
-  $(document).ready(function( $ ) {
-      $("#logsHeader").click(function(){
-          $(".logstable").toggle();
-      });
-      $(".logstable").hide();
-  });
-
-</script>
+<details class="panel panel-default detail-panel log-panel">
+<summary class="panel-heading"><span class="log-title">Historie změn</span></summary>
+<div class="panel-body">
 {control logTable, $ap->id, "ap"}
+</div>
+</details>
 
 {/ifset}
 {/block}

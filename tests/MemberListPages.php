@@ -156,7 +156,10 @@ final class MemberListPages
     /** @return array<array-key, mixed> the names and values of the fields a browser sends with the form */
     private function fields(string $html, string $form): array {
         $pairs = [];
-        foreach ($this->nodes($html, $form . '//input[not(@type="submit")] | ' . $form . '//select') as $field) {
+        // Fields outside the form belong to it by their form attribute, as the filter row above the member list does.
+        $id = (string) preg_replace('~^//form\[@id="([^"]+)"\]$~', '$1', $form);
+        $outside = sprintf(' | //input[@form="%1$s"][not(@type="submit")] | //select[@form="%1$s"]', $id);
+        foreach ($this->nodes($html, $form . '//input[not(@type="submit")] | ' . $form . '//select' . $outside) as $field) {
             if (($field instanceof \DOMElement) === false) {
                 throw new \LogicException('A form field is not an element.');
             }

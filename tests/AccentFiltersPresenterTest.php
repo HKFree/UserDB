@@ -48,15 +48,15 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
     }
 
     public function testMemberStreet(): void {
-        $this->assertFilter('UzivatelList', 'listall', 'grid', 'ulice_cp', 'DLOUHA TRIDA', 'Dlouhá třída 12');
+        $this->assertFilter('UzivatelList', 'listall', 'grid', 'hledat', 'DLOUHA TRIDA', 'Dlouhá třída 12', 'ulice_cp');
     }
 
     public function testMemberTown(): void {
-        $this->assertFilter('UzivatelList', 'listall', 'grid', 'mesto', 'STEZERY', 'Stěžery');
+        $this->assertFilter('UzivatelList', 'listall', 'grid', 'hledat', 'STEZERY', 'Stěžery', 'mesto');
     }
 
     public function testMemberNote(): void {
-        $this->assertFilter('UzivatelList', 'listall', 'grid', 'poznamka', 'ZLUTOUCKY KUN', 'Žluťoučký kůň');
+        $this->assertFilter('UzivatelList', 'listall', 'grid', 'hledat', 'ZLUTOUCKY KUN', 'Žluťoučký kůň', 'poznamka');
     }
 
     public function testOutgoingCompany(): void {
@@ -146,7 +146,7 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
                 ['mesto', 'STEZERY', 'Stěžery'],
                 ['poznamka', 'ZLUTOUCKY KUN', 'Žluťoučký kůň'],
             ] as [$column, $query, $value]) {
-                $this->assertFilter('UzivatelList', 'listall', 'grid', $column, $query, $value, parameters: ['search' => 'HLEDANY']);
+                $this->assertFilter('UzivatelList', 'listall', 'grid', 'hledat', $query, $value, $column, ['search' => 'HLEDANY']);
             }
         }
     }
@@ -155,18 +155,18 @@ final class AccentFiltersPresenterTest extends DatabaseTestCase
         $this->member->update(['mesto' => 'Čáslav']);
         $this->fixtures->member($this->ap->id, ['ulice_cp' => 'Dlouhá třída 12', 'mesto' => 'Cidlina', 'spolek' => 1]);
         $result = $this->presenters->ui($this->viewer->id, 'UzivatelList', [
-            'action' => 'listall', 'fullnotes' => 1, 'grid-filter' => ['ulice_cp' => 'DLOUHA TRIDA'], 'grid-sort' => ['mesto' => 'asc'],
+            'action' => 'listall', 'fullnotes' => 1, 'grid-filter' => ['hledat' => 'DLOUHA TRIDA'], 'grid-sort' => ['mesto' => 'asc'],
         ]);
         Assert::same(['Cidlina', 'Čáslav'], $this->cells($result, 'grid', 'mesto'));
     }
 
     public function testAccentedInputAlsoMatchesUnaccentedTown(): void {
         $this->member->update(['mesto' => 'Stezery']);
-        $this->assertFilter('UzivatelList', 'listall', 'grid', 'mesto', 'STĚŽERY', 'Stezery');
+        $this->assertFilter('UzivatelList', 'listall', 'grid', 'hledat', 'STĚŽERY', 'Stezery', 'mesto');
     }
 
     public function testLikeWildcardsKeepTheirMeaning(): void {
-        $this->assertFilter('UzivatelList', 'listall', 'grid', 'mesto', 'ST_Z%RY', 'Stěžery');
+        $this->assertFilter('UzivatelList', 'listall', 'grid', 'hledat', 'ST_Z%RY', 'Stěžery', 'mesto');
     }
 
     private function honoraryMembership(): void {

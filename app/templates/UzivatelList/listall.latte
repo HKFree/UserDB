@@ -1,3 +1,5 @@
+{import 'list.latte'}
+{block title}Kompletní seznam členů{/block}
 {block content}
 <h3>Kompletní seznam členů</h3>
 
@@ -6,33 +8,30 @@
     <a href="{link UzivatelList:listall}" class="btn btn-default btn-xs" role="button"><i class="fa fa-times" aria-hidden="true"></i> Zrušit hledání</a></p>
 
 {/if}
-&nbsp;&nbsp;
+{* Tabulka se vykreslí první: až potom zná počet po použití filtrů, který ukazuje řádek filtrů nad ní. *}
+{capture $tabulkaClenu}{control grid}{/capture}
+<div class="member-list">
+<div class="list-toolbar">
+{include memberFilter}
+<div class="list-view"><span>Zobrazit navíc:</span>
 {if $canViewOrEdit}
-<a n:if="!$money" href="{link UzivatelList:listall search=>$search, money=>1}" class="btn btn-default btn-sm" role="button">Informace z money</a>
+<a n:if="!$money" href="{link UzivatelList:listall search=>$search, money=>1}" class="btn btn-default btn-sm money-toggle" role="button" aria-pressed="false"><i class="fa fa-square-o" aria-hidden="true"></i> Platby a aktivace</a>
 {/if}
-<a n:if="$money" href="{link UzivatelList:listall search=>$search, money=>0}" class="btn btn-default btn-sm" role="button">Bez informací z money</a>
+<a n:if="$money" href="{link UzivatelList:listall search=>$search, money=>0}" class="btn btn-default btn-sm active money-toggle" role="button" aria-pressed="true" title="Bez informací z money"><i class="fa fa-check-square-o" aria-hidden="true"></i> Platby a aktivace</a>
 
 {if $vidiUdajeClenu}
-<a n:if="$fullnotes" href="{link UzivatelList:listall search=>$search, fullnotes=>false}" class="btn btn-default btn-sm active" role="button" title="Zobrazit zkrácené poznámky a adresy"><i class="glyphicon glyphicon-check"></i> Kompletní poznámky a adresy</a>
-<a n:if="!$fullnotes" href="{link UzivatelList:listall search=>$search, fullnotes=>true}" class="btn btn-default btn-sm" role="button" title="Zobrazit kompletní poznámky a adresy"><i class="glyphicon glyphicon-unchecked"></i> Kompletní poznámky a adresy</a>
+<a n:if="$fullnotes" href="{link UzivatelList:listall search=>$search, fullnotes=>false}" class="btn btn-default btn-sm active" role="button" aria-pressed="true" title="Zobrazit zkrácené poznámky a adresy"><i class="fa fa-check-square-o" aria-hidden="true"></i> Kompletní poznámky a adresy</a>
+<a n:if="!$fullnotes" href="{link UzivatelList:listall search=>$search, fullnotes=>true}" class="btn btn-default btn-sm" role="button" aria-pressed="false" title="Zobrazit kompletní poznámky a adresy"><i class="fa fa-square-o" aria-hidden="true"></i> Kompletní poznámky a adresy</a>
 {/if}
+</div>
+</div>
 
-<br><br>
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Kompletní seznam členů">{$tabulkaClenu|noescape}</div>
 
+{if !$search}{include memberStats}{/if}
 
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Kompletní seznam členů">{control grid}</div>
-
-{if !$search}
-<ul>
-    <li>Počet zrušených členů: {$u_zrusenych}</li>
-    <li>Počet primárních členů: {$u_primarnich}</li>
-    <li>Počet řádných členů: {$u_radnych}</li>
-    <li>Počet čestných členů: {$u_cestnych}</li>
-    <li n:if="$money">Počet aktivních členů: {$u_aktivnich}</li>
-    <li>Počet všech členů: {$u_celkem}</li>
-    <li>Počet všech členů včetně zrušených: {$u_celkemz}</li>
-</ul>
-{/if}
+{include memberLegend}
+</div>
 
 {import '../pinger.latte'}
 {include listPinger}

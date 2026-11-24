@@ -49,7 +49,7 @@ final class PresenterRunner
     private static bool $shutdownRegistered = false;
 
     /** @param (\Closure(Presenter): void)|null $preparePresenter */
-    public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null, private ?\Closure $preparePresenter = null) {
+    public function __construct(private Explorer $database, private Container $container, private ?string $novinkyAdresar = null, private ?\Closure $preparePresenter = null, private string $urlPrefix = '/userdb') {
         if (self::$shutdownRegistered === false) {
             self::$shutdownRegistered = true;
             register_shutdown_function(static function (): void {
@@ -63,15 +63,16 @@ final class PresenterRunner
     /**
      * @param array<string, mixed> $parameters
      * @param array<string, mixed> $post
+     * @param array<string, string> $cookies
      */
-    public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true, string $userAgent = self::USER_AGENT): PresenterResult {
+    public function ui(int $uid, string $presenter, array $parameters = [], string $method = 'GET', array $post = [], bool $sameSite = true, array $cookies = [], string $userAgent = self::USER_AGENT): PresenterResult {
         $member = $this->database->table('Uzivatel')->get($uid);
         return $this->run($presenter, $parameters, $method, $post, $sameSite, [
             'HTTP_UID' => (string) $uid,
             'HTTP_GIVENNAME' => $member->nick ?? 'Unknown test member',
             'HTTP_INITIALS' => 'test-only',
             'HTTP_USER_AGENT' => $userAgent,
-        ]);
+        ], $cookies);
     }
 
     /**
@@ -91,14 +92,15 @@ final class PresenterRunner
      * @param array<string, mixed> $parameters
      * @param array<string, mixed> $post
      * @param array<string, string> $server
+     * @param array<string, string> $cookies
      */
-    private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server): PresenterResult {
+    private function run(string $name, array $parameters, string $method, array $post, bool $sameSite, array $server, array $cookies = []): PresenterResult {
         if (self::$activeRequest !== null) {
             throw new \LogicException('Nested presenter runs are not supported.');
         }
         $parameters += ['action' => 'default'];
         $method = strtoupper($method);
-        $url = (new RouterFactory())->createRouter('/userdb')->constructUrl(
+        $url = (new RouterFactory())->createRouter($this->urlPrefix)->constructUrl(
             ['presenter' => $name] + $parameters,
             new Http\UrlScript('http://localhost/'),
         );
@@ -126,13 +128,15 @@ final class PresenterRunner
             $request = new Http\Request(
                 $requestUrl,
                 post: $post,
-                cookies: $sameSite ? ['_nss' => '1'] : [],
+                cookies: $cookies + ($sameSite ? ['_nss' => '1'] : []),
                 headers: ['Host' => 'localhost', 'User-Agent' => $server['HTTP_USER_AGENT'] ?? self::USER_AGENT] + (isset($server['HTTP_AUTHORIZATION']) ? ['Authorization' => $server['HTTP_AUTHORIZATION']] : []),
                 method: $method,
                 remoteAddress: '127.0.0.1',
             );
             // A new container also replaces the user, session and request-bound Latte factory.
             $container = TestEnvironment::container($this->database, $request, $this->container, $this->novinkyAdresar);
+            $container->removeService('router');
+            $container->addService('router', (new RouterFactory())->createRouter($this->urlPrefix));
             $presenter = $container->getByType(Application\IPresenterFactory::class)->createPresenter($name);
             if (($presenter instanceof Presenter) === false) {
                 throw new \LogicException("$name is not a UI presenter.");

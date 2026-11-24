@@ -1,6 +1,6 @@
 {block content}
 
-<h3>Editace skupin a oprávnění <small>uživatel {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
+<h3 n:block=title>Editace skupin a oprávnění <small>uživatel {if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} {/if}({$u->nick})</small></h3>
 {if $canViewOrEdit}
 {form uzivatelRightsForm}
     <fieldset n:foreach="$form['rights']->getContainers() as $right" class="ipform">

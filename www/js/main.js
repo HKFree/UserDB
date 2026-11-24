@@ -7,23 +7,75 @@ $(document).ready(function () {
 
     $(".datepicker").datepicker({ dateFormat: "dd.mm.yy" });
 
-    $("#navareas").click(function () {
-        $(".sidebar").toggle();
-        // Okraj pro zobrazený panel určuje screen.css podle šířky okna.
-        if ($(".sidebar").is(":visible")) $(".main").css({ marginLeft: "" });
-        else $(".main").css({ marginLeft: "0px" });
-        $(".navbar-toggle").click();
-    });
-    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-        // na mobilu
-        if (!window.location.href.endsWith('/userdb/') && !window.location.href.endsWith('/userdb')) {
-            // a neni to uvodni "landing page", tak skryt levou navigacni listu s oblastmi
-            $(".sidebar").hide();
-            $(".main").css({ marginLeft: "0px" });
+    // na uzkem displeji je seznam oblasti vysouvaci panel (viz .sidebar-open v screen.css)
+    var sidebarToggle = $("#navareas");
+    function setSidebarOpen(open, focusFilter) {
+        $("html").toggleClass("sidebar-open", open);
+        sidebarToggle.attr("aria-expanded", open ? "true" : "false");
+        if (open) {
+            // otevrene menu by zustalo pod panelem
+            $(".navbar-collapse.in").collapse("hide");
+            if (focusFilter) {
+                $("#sidebar-filter-input").focus();
+            }
         }
     }
+    sidebarToggle.click(function (event) {
+        // po tuknuti prstem by kurzor v poli vysunul klavesnici pres seznam oblasti;
+        // event.detail je 0, kdyz tlacitko stiskla klavesnice
+        var focusFilter = event.detail === 0 || !window.matchMedia("(pointer: coarse)").matches;
+        setSidebarOpen(!$("html").hasClass("sidebar-open"), focusFilter);
+    });
+    $(".sidebar-backdrop").click(function () {
+        setSidebarOpen(false);
+    });
+    $(document).keydown(function (event) {
+        if (event.key === "Escape" && $("html").hasClass("sidebar-open")) {
+            setSidebarOpen(false);
+            sidebarToggle.focus();
+        }
+    });
 
-    $('[data-toggle="tooltip"]').tooltip();
+    // Vzhled (svetly, tmavy, podle systemu): volba v cookie, prepnuti hned bez nacteni stranky.
+    // Server ji cte v BasePresenter, vzhled podle systemu rozhoduje skript v hlavicce @layout.latte.
+    var root = document.documentElement;
+    var darkScheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    function applyTheme() {
+        var choice = root.getAttribute('data-theme-choice') || 'auto';
+        var dark = choice === 'dark' || (choice === 'auto' && darkScheme !== null && darkScheme.matches);
+        root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    }
+    if (darkScheme !== null) {
+        var onSchemeChange = function () { applyTheme(); };
+        if (darkScheme.addEventListener) darkScheme.addEventListener('change', onSchemeChange);
+        else if (darkScheme.addListener) darkScheme.addListener(onSchemeChange);
+    }
+    function chooseTheme(option) {
+        var choice = option.attr('data-theme-choice');
+        var path = (document.body.getAttribute('data-base-path') || '') + '/';
+        document.cookie = 'userdb_theme=' + encodeURIComponent(choice) + '; path=' + path + '; max-age=31536000; SameSite=Lax';
+        root.setAttribute('data-theme-choice', choice);
+        applyTheme();
+        // skupina prepinacu: v poradi Tab je jen vybrana volba, mezi volbami se chodi sipkami
+        $('.theme-option').attr({ 'aria-checked': 'false', tabindex: '-1' });
+        option.attr({ 'aria-checked': 'true', tabindex: '0' });
+    }
+    $(document).on('click', '.theme-option', function () {
+        chooseTheme($(this));
+    });
+    $(document).on('keydown', '.theme-option', function (event) {
+        var step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+        if (!step) return;
+        event.preventDefault();
+        event.stopPropagation(); // sipky v nabidce jinak obsluhuje Bootstrap
+        var options = $('.theme-option');
+        var next = options.eq((options.index(this) + step + options.length) % options.length);
+        chooseTheme(next);
+        next.trigger('focus');
+    });
+
+    // bublina v body: v posuvnem ramu tabulky by ji okraj ramu orizl
+    $('[data-toggle="tooltip"]').tooltip({ container: 'body' });
 
     $('[data-toggle="popover"]').popover();
 });
@@ -44,9 +96,132 @@ $(document).ready(function () {
     });
 });
 
-// INICIALIZATOR pro JSTREE
+// Strom oblasti v levem panelu: sbaleni vetvi, zvyrazneni prave otevrene oblasti nebo AP a rozbaleni jeji vetve.
+// Vola se hned za levym panelem (viz @layout.latte), aby velka stranka neukazovala nezvyrazneny rozbaleny
+// strom, dokud se nenacte cela. Detail clena, uprava clena a detail AP patri k AP, na jehoz seznam clenu
+// odkazuji v hlavicce stranky; jejich sablony proto volaji znovu hned za hlavickou. Volani po nacteni je pojistka.
+window.userdbSidebarTree = function () {
+    // opakovane volani bonsai() strom znovu nezaklada
+    var tree = $('#oblastitree').bonsai().data('bonsai');
+    var current = window.location.pathname;
+    var related = $('.page-crumbs a, .page-actions a').filter(function () {
+        return /\/uzivatel-list\/list\/\d+$/.test(this.pathname);
+    }).map(function () {
+        return this.pathname;
+    }).get();
+    $('.sidebar .nav-sidebar a').each(function () {
+        if (this.pathname !== current && related.indexOf(this.pathname) === -1) return;
+        if (this.pathname === current) $(this).attr('aria-current', 'page');
+        var item = $(this).parent();
+        if (item.hasClass('active')) return;
+        item.addClass('active');
+        // vetve v "Moje oblasti" jsou rozbalene porad a ke stromu nepatri
+        var branch = item.closest('#oblastitree li.has-children');
+        if (tree && branch.length > 0) tree.expand(branch);
+    });
+};
+$(document).ready(window.userdbSidebarTree);
+
+// Filtr oblasti a AP v levem panelu, bez ohledu na diakritiku a velikost pismen
 $(document).ready(function () {
-    $('#oblastitree').bonsai();
+    var input = $('#sidebar-filter-input');
+    var sidebar = $('.sidebar');
+    var areas = sidebar.find('ul.nav-sidebar > li');
+
+    function fold(text) {
+        return $.trim(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    input.on('input', function () {
+        var needle = fold(input.val());
+        var found = false;
+        areas.each(function () {
+            var area = $(this);
+            var areaText = fold(area.children('a').text());
+            var areaMatches = areaText.indexOf(needle) !== -1;
+            var shown = areaMatches;
+            area.find('li').each(function () {
+                // AP se najde i pod zapisem "Oblast - AP", jak se dosud v seznamu vypisovalo
+                var apText = fold($(this).text());
+                var matches = areaMatches || apText.indexOf(needle) !== -1 || (areaText + ' - ' + apText).indexOf(needle) !== -1;
+                $(this).toggleClass('sidebar-hidden', !matches);
+                shown = shown || matches;
+            });
+            area.toggleClass('sidebar-hidden', !shown);
+            found = found || shown;
+        });
+        sidebar.toggleClass('sidebar-filtering', needle !== '');
+        $('#sidebar-nomatch').prop('hidden', found);
+    });
+});
+
+// Siroka tabulka se posouva ve vlastnim ramu, aby se do strany neposouvala cela stranka.
+// Presun nativnim DOM, protoze jQuery by pri presunu znovu spustilo skripty uvnitr tabulky.
+$(document).ready(function () {
+    $('.main table.table').each(function () {
+        if ($(this).closest('.grido, table.form, .table-scroll').length > 0 || $(this).parent().closest('table').length > 0) return;
+        var frame = document.createElement('div');
+        frame.className = 'table-scroll';
+        this.parentNode.insertBefore(frame, this);
+        frame.appendChild(this);
+    });
+});
+
+// Grid sirsi nez stranka dostane vlastni posuvnik; grid, ktery se vejde, zustava bez nej
+$(document).ready(function () {
+    // siroky grid se posouva ve vlastnim ramu; seznamy clenu maji ram uz v sablone (.user-list-scroll),
+    // ostatnim gridum je ramem sam formular a jde na nej klavesnici
+    function markWideGrids() {
+        $('form.grido').each(function () {
+            var table = $(this).children('table')[0];
+            var wide = !!table && table.offsetWidth > this.clientWidth + 1;
+            var ownFrame = $(this).closest('.user-list-scroll').length === 0;
+            $(this).toggleClass('grid-wide', wide);
+            if (wide && ownFrame) $(this).attr('tabindex', '0');
+            else $(this).removeAttr('tabindex');
+        });
+    }
+    markWideGrids();
+    $(window).on('resize', markWideGrids);
+    $(document).ajaxComplete(function () {
+        setTimeout(markWideGrids, 0);
+    });
+
+    // nabidka v gridu se kresli pres okraj ramu, jinak by ji posuvnik orizl
+    function placeGridMenu(dropdown) {
+        var button = $(dropdown).find('.dropdown-toggle')[0].getBoundingClientRect();
+        var menu = $(dropdown).find('.dropdown-menu');
+        var left = Math.max(8, Math.min(button.left, window.innerWidth - menu.outerWidth() - 8));
+        var fitsBelow = button.bottom + menu.outerHeight() <= window.innerHeight;
+        var minTop = $('.navbar-fixed-top').outerHeight() + 8;
+        menu.css({ position: 'fixed', left: left, right: 'auto', top: fitsBelow ? button.bottom : Math.max(minTop, button.top - menu.outerHeight()) });
+    }
+    // tlacitko je videt, kdyz jeho stred lezi pod horni listou, v okne a ve viditelne casti ramu gridu
+    // (stred, ne cely obdelnik: po posunu k tlacitku muze o zlomek pixelu presahovat okraj ramu)
+    function gridToggleVisible(dropdown) {
+        var button = $(dropdown).find('.dropdown-toggle')[0].getBoundingClientRect();
+        // ram je obal seznamu clenu, jinde formular gridu (closest() by vratil blizsi formular)
+        var frameElement = $(dropdown).closest('.user-list-scroll')[0] || $(dropdown).closest('form.grido')[0];
+        var frame = frameElement ? frameElement.getBoundingClientRect() : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+        var bar = $('.navbar-fixed-top')[0];
+        var top = Math.max(bar ? bar.getBoundingClientRect().bottom : 0, frame.top);
+        var x = button.left + button.width / 2;
+        var y = button.top + button.height / 2;
+        return x >= Math.max(0, frame.left) && x <= Math.min(window.innerWidth, frame.right)
+            && y >= top && y <= Math.min(window.innerHeight, frame.bottom);
+    }
+    $(document).on('shown.bs.dropdown', '.grido .dropdown', function () {
+        placeGridMenu(this);
+    });
+    // posun stranky nebo ramu gridu nabidku presune s tlacitkem (i posun, kterym prohlizec
+    // ukaze prave zamerene tlacitko); zavre ji, az tlacitko zmizi z ramu. Posun uvnitr nabidky ji nechava.
+    document.addEventListener('scroll', function (event) {
+        if ($(event.target).closest('.dropdown-menu').length > 0) return;
+        $('.grido .dropdown.open').each(function () {
+            if (gridToggleVisible(this)) placeGridMenu(this);
+            else $(this).find('.dropdown-toggle').dropdown('toggle');
+        });
+    }, true);
 });
 
 // Scroll na objekt odkazovany ve fragmentu (napr. "#ip10.107.12.1")
@@ -274,76 +449,449 @@ function showMessage(message, type = 'success') {
 }
 
 
+// Delegovane udalosti funguji i po obnoveni gridu pres AJAX.
 $(document).ready(function () {
-    $('.user-labels').on('click', '.badge-remove', function (e) {
-        e.preventDefault();
+    var pendingLabels = {};
 
-        const stitekId = $(this).data('stitek-id');
-        const userId = $(this).data('user-id');
-        const badge = $(this).closest('.badge');
+    // Bootstrap 3.2 stav aria-expanded sam neaktualizuje.
+    $('.navbar-collapse').on('shown.bs.collapse hidden.bs.collapse', function (event) {
+        $('.navbar-toggle').attr('aria-expanded', event.type === 'shown' ? 'true' : 'false');
+    });
+    $(document).on('shown.bs.dropdown hidden.bs.dropdown', '.dropdown, .btn-group', function (event) {
+        $(this).find('.dropdown-toggle').attr('aria-expanded', event.type === 'shown' ? 'true' : 'false');
+    });
 
-        // AJAX DELETE požadavek
+    function components(userId) {
+        return $('.user-labels-component').filter(function () {
+            return $(this).attr('data-user-id') === userId;
+        });
+    }
+
+    function refreshLabels() {
+        $('.user-labels-component').each(function () {
+            var component = $(this);
+            var labels = component.find('.user-labels');
+            labels.find('.labels-empty').remove();
+            if (!labels.find('.badge').length) {
+                labels.append($('<span class="labels-empty"></span>').text('žádné'));
+            }
+            component.find('.stitky-item').each(function () {
+                var item = $(this);
+                var assigned = labels.find('.badge-remove').filter(function () {
+                    return $(this).attr('data-stitek-id') === item.attr('data-id');
+                }).length > 0;
+                item.toggleClass('label-assigned', assigned)
+                    .attr('aria-disabled', assigned ? 'true' : 'false')
+                    .attr('title', assigned ? 'Člen tento štítek už má' : 'Přidat štítek');
+            });
+        });
+    }
+
+    function labelError(userId, message) {
+        components(userId).each(function () {
+            $(this).find('.label-error').remove();
+            $('<span class="label-error" role="alert"></span>').text(message).appendTo(this);
+        });
+    }
+
+    $(document).on('click', '.user-labels-component .badge-remove, .user-labels-component .stitky-item', function (event) {
+        event.preventDefault();
+        var control = $(this);
+        var component = control.closest('.user-labels-component');
+        var userId = component.attr('data-user-id');
+        var removing = control.hasClass('badge-remove');
+        var labelId = control.attr(removing ? 'data-stitek-id' : 'data-id');
+        var key = userId + ':' + labelId;
+        if (pendingLabels[key] || (!removing && control.attr('aria-disabled') === 'true')) return;
+
+        var url = $('body').data(removing ? 'stitky-delete-url' : 'stitky-save-url');
+        if (!url) {
+            labelError(userId, 'Chybí adresa pro úpravu štítků. Obnovte stránku.');
+            return;
+        }
+        pendingLabels[key] = true;
+        components(userId).find('.label-error').remove();
+        var data = { stitek_id: labelId, user_id: userId };
         $.ajax({
-            url: $('body').data('stitky-delete-url'),
-            type: 'DELETE',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                stitek_id: stitekId,
-                user_id: userId
-            }),
+            url: url,
+            type: removing ? 'DELETE' : 'POST',
+            contentType: removing ? 'application/json' : 'application/x-www-form-urlencoded; charset=UTF-8',
+            data: removing ? JSON.stringify(data) : data,
             success: function (response) {
-                if (response.success) {
-                    badge.fadeOut(300, function () {
-                        $(this).remove(); // Odstranění badge
-                    });
-                } else {
-                    console.error('Nepodařilo se odstranit štítek: ' + response.message);
+                if (!response.success) {
+                    labelError(userId, 'Štítek se nepodařilo změnit. Zkuste to znovu.');
+                    return;
+                }
+                components(userId).each(function () {
+                    var labels = $(this).find('.user-labels');
+                    labels.find('.badge-remove').filter(function () {
+                        return $(this).attr('data-stitek-id') === labelId;
+                    }).closest('.badge').remove();
+                    if (!removing) {
+                        // barvy ve vzhledu aplikace spocital server (BarvaStitku), atribut je jen z nich
+                        var badge = $('<span class="badge"></span>').attr('style', response.styl)
+                            .append($('<span></span>').text(response.text));
+                        $('<button type="button" class="badge-remove">&times;</button>')
+                            .attr({ 'data-stitek-id': labelId, 'data-user-id': userId,
+                                'aria-label': 'Odebrat štítek ' + response.text, title: 'Odebrat štítek' })
+                            .appendTo(badge);
+                        labels.append(badge);
+                    }
+                });
+                refreshLabels();
+                if (document.activeElement === document.body || control.is(':focus')) {
+                    component.find('.dropdown-toggle').focus();
                 }
             },
             error: function () {
-                console.error('Chyba při komunikaci se serverem.');
+                labelError(userId, 'Nepodařilo se připojit k serveru. Zkuste to znovu.');
+            },
+            complete: function () {
+                delete pendingLabels[key];
             }
         });
     });
-    $('.stitky-item').on('click', function (e) {
-        e.preventDefault(); // Zabráníme reloadu stránky
+    refreshLabels();
+    $(document).ajaxComplete(refreshLabels);
+});
 
-        const stitekId = $(this).data('id'); // Získáme ID štítku
-        const userId = $(this).closest('.dropdown').parent().data('user-id'); // Získáme user_id z dropdown boxu
+// Filtr nad seznamem clenu. Hledani a stitky jdou na server (Enter, tlacitko Hledat, vyber v nabidce), takze plati
+// pro vsechny stranky tabulky. Kdyz jsou vsechny radky na jedne strance, filtruje se navic hned pri psani.
+$(document).ready(function () {
+    var filter = $('.member-filter');
+    if (!filter.length) return;
+    var input = filter.find('input[type="search"]');
+    var form = document.getElementById(input.attr('form'));
+    var count = filter.find('.quick-filter-count');
+    var live = filter.attr('data-live') === 'true';
+    var applied = filter.attr('data-applied') || '';
+    var normalize = function (text) {
+        return $.trim(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    };
 
-        const existing = $(`.user-labels-component[data-user-id=${userId}] .user-labels .badge .badge-remove[data-stitek-id=${stitekId}]`);
-        if (existing.length > 0) return;
+    function submit() {
+        var button = filter.find('button[name="buttons[search]"]')[0];
+        if (form.requestSubmit) form.requestSubmit(button); else button.click();
+    }
 
-        // Odeslání AJAX požadavku
-        $.ajax({
-            url: $('body').data('stitky-save-url'),
-            type: 'POST',
-            data: {
-                stitek_id: stitekId,
-                user_id: userId
-            },
-            success: function (response) {
-                if (response.success) {
-                    // uloženo -> zobrazit novej štítek (stejně jako v UserLabelComponents.latte)
-                    const newLabel = `<span class="badge" style="background-color: ${response.barva_pozadi}; color: ${response.barva_popredi};">
-                            ${response.text}
-                            <span class="badge-remove" data-stitek-id="${stitekId}" data-user-id="${userId}">&times;</span>
-                        </span>`;
-                    $(newLabel).hide().appendTo(`.user-labels-component[data-user-id=${userId}] .user-labels`).fadeIn(300);
-                    console.log('Štítek byl úspěšně uložen!', 'success');
-                } else {
-                    alert('Došlo k chybě: ' + response.message, 'danger');
-                    console.error('Došlo k chybě: ' + response.message, 'danger');
-                }
-            },
-            error: function () {
-                alert('Nepodařilo se připojit k serveru.', 'danger');
-                console.error('Nepodařilo se připojit k serveru.', 'danger');
-            }
+    function applyFilter() {
+        var rows = $(form).find('tbody tr[class*="grid-row-"]');
+        var value = input.val();
+        // Radky uz vybral server; jeho hledani je presnejsi nez text bunek (zkracene poznamky, skryte sloupce).
+        if (!live || $.trim(value) === $.trim(applied)) {
+            rows.removeClass('quick-filter-hidden');
+            count.text($.trim(value) === $.trim(applied) ? count.attr('data-total') : 'Enter hledá ve všech členech');
+            filter.removeClass('quick-filter-no-match');
+            return;
+        }
+        var needle = normalize(value);
+        var shown = 0;
+        rows.each(function () {
+            // Nabidka obsahuje vsechny stitky, do filtru patri jen hodnoty radku a prirazene stitky.
+            var searchable = this.cloneNode(true);
+            $(searchable).find('.dropdown, .labels-empty, button, script').remove();
+            var matches = normalize($(searchable).text()).indexOf(needle) !== -1;
+            $(this).toggleClass('quick-filter-hidden', !matches);
+            if (matches) shown++;
         });
+        count.text(shown + ' z ' + rows.length + ' řádků, Enter hledá na serveru');
+        filter.toggleClass('quick-filter-no-match', shown === 0);
+    }
+
+    input.on('input', applyFilter);
+    filter.on('change', 'select[data-submit-on-change]', submit);
+    filter.on('change', '.label-chip-add', function () {
+        var labels = filter.find('input[name="filters[stitky]"]');
+        var chosen = $(this).val();
+        if (!chosen) return;
+        var values = labels.val() ? labels.val().split(',') : [];
+        if (values.indexOf(chosen) === -1) values.push(chosen);
+        labels.val(values.join(','));
+        $(this).val('');
+        submit();
+    });
+    applyFilter();
+});
+
+// Kopirovani IP doplnuje pouze autorizovanou tabulku, bez presouvani obsahu nebo skriptu.
+$(document).ready(function () {
+    $('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] > td:first-child').each(function () {
+        var value = $.trim($(this).text());
+        $('<button type="button" class="copy-button"><i class="fa fa-clone" aria-hidden="true"></i></button>')
+            .attr({ 'data-copy-value': value, title: 'Zkopírovat IP adresu', 'aria-label': 'Zkopírovat IP adresu' })
+            .appendTo(this);
+    });
+
+    var feedback = $('<span class="sr-only" role="status" aria-live="polite"></span>');
+    if ($('.copy-button').length) feedback.appendTo('.main');
+    $(document).on('click', '.copy-button', function () {
+        var button = $(this);
+        var value = button.attr('data-copy-value');
+        function done(success) {
+            feedback.text(success ? 'Zkopírováno.' : 'Kopírování se nezdařilo. Označte a zkopírujte hodnotu ručně.');
+            button.toggleClass('copied', success);
+            button.find('i').attr('class', success ? 'fa fa-check' : 'fa fa-exclamation-circle');
+            setTimeout(function () {
+                button.removeClass('copied').find('i').attr('class', 'fa fa-clone');
+            }, 1300);
+        }
+        function fallback() {
+            done(copyTextToClipboard(value));
+            button.focus();
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(value).then(function () { done(true); }, fallback);
+        } else {
+            fallback();
+        }
     });
 });
 
+// Validace vsech formularu: zpravy u poli, bez zmeny serverovych chyb.
+$(document).ready(function () {
+    var errorSequence = 0;
 
+    function updateStatus(form) {
+        var count = $(form).find('.field-error-message').length;
+        var message = $(form).hasClass('form-dirty') ? 'Neuložené změny' : '';
+        if (count > 0) {
+            message = 'Formulář obsahuje chyby (' + count + '). Před uložením je opravte.';
+        }
+        $(form).find('.form-status').text(message).toggleClass('form-status-error', count > 0);
+    }
 
-/** STITKY **/
+    function clearError(record) {
+        record.fields.each(function () {
+            var field = $(this);
+            var description = (field.attr('aria-describedby') || '').split(/\s+/).filter(function (id) {
+                return id && id !== record.id;
+            });
+            if (description.length) field.attr('aria-describedby', description.join(' '));
+            else field.removeAttr('aria-describedby');
+            var previous = field.data('client-error-previous-invalid');
+            if (previous === undefined) field.removeAttr('aria-invalid');
+            else field.attr('aria-invalid', previous);
+            field.removeClass('field-invalid').removeData('client-error').removeData('client-error-previous-invalid');
+        });
+        record.note.remove();
+    }
+
+    if (window.Nette) {
+        // netteForms.js se nacita az za main.js, proto az po DOM ready.
+        Nette.showFormErrors = function (form, errors) {
+            $(form).find('.field-invalid').each(function () {
+                var record = $(this).data('client-error');
+                if (record) clearError(record);
+            });
+            $(form).children('.client-form-error').remove();
+            var first = null;
+            errors.forEach(function (error) {
+                var field = error.element;
+                if (!field || field === form) {
+                    $('<div class="client-form-error field-error-message" role="alert"></div>').text(error.message).prependTo(form);
+                    return;
+                }
+                var record = $(field).data('client-error');
+                if (!record) {
+                    var fields = $(field);
+                    if (field.type === 'radio') {
+                        fields = $(form.elements).filter(function () { return this.type === 'radio' && this.name === field.name; });
+                    }
+                    var id = 'form-field-error-' + (++errorSequence);
+                    var note = $('<div class="field-error" role="alert"></div>').attr('id', id);
+                    var anchor = fields.last();
+                    if (anchor.parent().is('label')) anchor = anchor.parent();
+                    note.insertAfter(anchor);
+                    record = { fields: fields, note: note, id: id };
+                    fields.each(function () {
+                        var control = $(this);
+                        control.data('client-error-previous-invalid', control.attr('aria-invalid'));
+                        control.data('client-error', record).addClass('field-invalid').attr({
+                            'aria-invalid': 'true',
+                            'aria-describedby': $.trim((control.attr('aria-describedby') || '') + ' ' + id)
+                        });
+                    });
+                    if (!first) first = fields.filter(':visible:not(:disabled)')[0];
+                }
+                $('<div class="field-error-message"></div>').text(error.message).appendTo(record.note);
+            });
+            updateStatus(form);
+            if (first) {
+                first.focus();
+                first.scrollIntoView({ block: 'center' });
+            }
+        };
+    }
+
+    $(document).on('input change', 'input, select, textarea', function () {
+        var record = $(this).data('client-error');
+        if (record) {
+            clearError(record);
+            updateStatus(this.form);
+        }
+    });
+
+    // Seskupeny formular clena: neulozene zmeny a navigace mezi oddily.
+    var form = document.querySelector('form.member-form');
+    if (!form) return;
+    var leaving = false;
+    $(form).on('input change', function () {
+        $(form).addClass('form-dirty');
+        updateStatus(form);
+    });
+    updateStatus(form);
+    // Na window uz probehla validace Nette i obsluhy formulare.
+    window.addEventListener('submit', function (event) {
+        if (event.target === form && !event.defaultPrevented) leaving = true;
+    });
+    window.addEventListener('pageshow', function () { leaving = false; });
+    window.addEventListener('beforeunload', function (event) {
+        if ($(form).hasClass('form-dirty') && !leaving) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    var sections = $(form).find('.form-section');
+    var links = $('.form-nav a');
+    var waiting = false;
+    function highlightSection() {
+        var current = 0;
+        var top = Math.max(150, $('.navbar-fixed-top').outerHeight() + 40);
+        sections.each(function (index) {
+            if (this.getBoundingClientRect().top <= top) current = index;
+        });
+        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+            current = sections.length - 1;
+        }
+        links.each(function (index) {
+            $(this).toggleClass('active', index === current);
+            if (index === current) $(this).attr('aria-current', 'location');
+            else $(this).removeAttr('aria-current');
+        });
+        waiting = false;
+    }
+    $(window).on('scroll resize', function () {
+        if (!waiting) {
+            waiting = true;
+            window.requestAnimationFrame(highlightSection);
+        }
+    });
+    highlightSection();
+});
+
+// Hledani nabizi pouze odkazy, ktere uz prihlaseny uzivatel vidi v navigaci.
+$(document).ready(function () {
+    var form = $('.navbar-search');
+    var input = form.find('input[name="search"]');
+    var panel = form.find('.search-suggestions');
+    var options = $('#search-options');
+    if (!input.length || !panel.length) return;
+    var index = [];
+    var seen = {};
+    var active = -1;
+
+    function fold(value) {
+        return $.trim(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // area: jmeno oblasti, pod kterou AP v levem panelu stoji; AP se najde i pod zapisem "Oblast - AP"
+    function add(link, description, area) {
+        var href = link.getAttribute('href');
+        var text = $.trim(link.textContent);
+        if (!href) return;
+        var foldedWithArea = area ? fold(area + ' - ' + text) : '';
+        var known = seen[href];
+        if (known) {
+            // Jedine aktivni AP oblasti stoji v Mych oblastech samo, ve Vsech oblastech pod svou oblasti.
+            if (foldedWithArea && !known.foldedWithArea) {
+                known.foldedWithArea = foldedWithArea;
+                known.description = description;
+            }
+            return;
+        }
+        seen[href] = { href: href, text: text, description: description, folded: fold(text), foldedWithArea: foldedWithArea };
+        index.push(seen[href]);
+    }
+
+    $('.sidebar ul.nav-sidebar > li').each(function () {
+        var link = $(this).children('a')[0];
+        if (!link) return;
+        var children = $(this).find('ul a');
+        add(link, children.length ? 'oblast' : 'AP');
+        children.each(function () { add(this, 'AP · ' + $.trim(link.textContent), $.trim(link.textContent)); });
+    });
+    $('#navbar-tools a').each(function () { add(this, 'nástroj'); });
+    input.attr({ role: 'combobox', 'aria-autocomplete': 'list', 'aria-controls': 'search-options', 'aria-expanded': 'false' });
+
+    function close() {
+        panel.prop('hidden', true);
+        input.attr('aria-expanded', 'false').removeAttr('aria-activedescendant');
+        active = -1;
+    }
+
+    function render() {
+        var needle = fold(input.val());
+        options.empty();
+        active = -1;
+        input.removeAttr('aria-activedescendant');
+        form.find('.search-hint').text(needle ? 'Enter vyhledá člena nebo IP adresu.' : 'Zadejte člena nebo IP, oblast, AP či nástroj.');
+        if (needle) {
+            var starts = [];
+            var contains = [];
+            index.forEach(function (item) {
+                var at = item.folded.indexOf(needle);
+                if (at === 0) starts.push(item);
+                else if (at > 0 || item.foldedWithArea.indexOf(needle) !== -1) contains.push(item);
+            });
+            starts.concat(contains).slice(0, 9).forEach(function (item, i) {
+                $('<a class="search-option" role="option" tabindex="-1" aria-selected="false"></a>')
+                    .attr({ href: item.href, id: 'search-option-' + i })
+                    .append($('<span class="search-option-text"></span>').text(item.text))
+                    .append($('<span class="search-option-description"></span>').text(item.description))
+                    .appendTo(options);
+            });
+        }
+        panel.prop('hidden', false);
+        var hasOptions = options.children().length > 0;
+        input.attr('aria-expanded', hasOptions ? 'true' : 'false');
+        form.find('.search-help').prop('hidden', !hasOptions);
+        if (needle && !hasOptions) {
+            form.find('.search-hint').text('Oblast, AP ani nástroj nenalezen. Enter vyhledá člena nebo IP adresu.');
+        }
+    }
+
+    input.on('focus input', render).on('blur', function () {
+        // Kliknuti na navrh musi dobehnout pred skrytim nabidky.
+        setTimeout(function () { if (!form[0].contains(document.activeElement)) close(); }, 150);
+    }).on('keydown', function (event) {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            close();
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (panel.prop('hidden')) render();
+            var rows = options.children();
+            if (!rows.length) return;
+            active = active < 0 ? (event.key === 'ArrowDown' ? 0 : rows.length - 1)
+                : (active + (event.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length;
+            rows.removeClass('active').attr('aria-selected', 'false');
+            rows.eq(active).addClass('active').attr('aria-selected', 'true');
+            input.attr('aria-activedescendant', rows[active].id);
+            rows[active].scrollIntoView({ block: 'nearest' });
+        } else if (event.key === 'Enter' && active >= 0 && !panel.prop('hidden')) {
+            event.preventDefault();
+            window.location.href = options.children().eq(active).attr('href');
+        }
+    });
+    panel.on('mousedown', 'a', function (event) { event.preventDefault(); });
+    $(document).on('click', function (event) {
+        if (!form[0].contains(event.target)) close();
+    }).on('keydown', function (event) {
+        if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey
+            && !$(event.target).is('input, textarea, select') && !event.target.isContentEditable) {
+            event.preventDefault();
+            input.focus().select();
+        }
+    });
+});

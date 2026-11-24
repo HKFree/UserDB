@@ -67,3 +67,33 @@ test('přepínač období zkrátí grafy i tabulku na posledních 12 měsíců',
     // Twelve months back up to the current one.
     await expect(tabulka.locator('tbody tr')).toHaveCount(13);
 });
+
+test('změna vzhledu přebarví legendu i datové řady grafu bez načtení stránky', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/sprava-grafu/usersgraph?obdobi=vse');
+    const legenda = page.locator('.graf-clenu-legenda').first();
+    const graf = page.locator('.graf-clenu[data-serie]').first();
+    const barvyLegendy = () => legenda.locator('.graf-clenu-barva').evaluateAll(
+        znacky => znacky.map(znacka => getComputedStyle(znacka).color),
+    );
+    async function overBarvyGrafu(barvy) {
+        const tahy = await graf.locator('path.line').evaluateAll(
+            cary => cary.map(cara => getComputedStyle(cara).stroke),
+        );
+        const vyplne = await graf.locator('path.area').evaluateAll(
+            plochy => plochy.map(plocha => getComputedStyle(plocha).fill),
+        );
+        expect(tahy).toEqual(barvy);
+        expect(vyplne).toEqual(barvy);
+    }
+
+    await expect(graf.locator('path.line')).toHaveCount(3);
+    const svetleBarvy = await barvyLegendy();
+    await overBarvyGrafu(svetleBarvy);
+
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    const tmaveBarvy = await barvyLegendy();
+    expect(tmaveBarvy).not.toEqual(svetleBarvy);
+    await overBarvyGrafu(tmaveBarvy);
+});
