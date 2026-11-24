@@ -2753,15 +2753,58 @@ html {
     color: var(--udb-text-6b7280);
 }
 
-/* IP adresy v detailu člena: adresa má šířku nejdelší možné adresy, takže tlačítka pro zkopírování stojí pod sebou. */
-#member-ip tr[id^="highlightable-ip"] > td:first-child {
+/* Adresa se stavem pingu a lišta akcí se mohou vejít vedle sebe jen na široké obrazovce. */
+#member-ip .ip-address {
+    display: inline-block;
     white-space: nowrap;
 }
 
-#member-ip tr[id^="highlightable-ip"] > td:first-child > a:first-child {
+/* Na užším desktopu se štítek pingu může zalomit na další řádek nad akcemi. */
+#member-ip .ip-address:has(> .pinger) {
+    white-space: normal;
+}
+
+#member-ip .ip-address > .pinger {
+    display: inline-block;
+}
+
+#member-ip .ip-akce {
+    margin-top: 4px;
+}
+
+@media (min-width: 1601px) {
+    #member-ip .ip-akce {
+        display: inline-block;
+        margin: 0 0 0 4px;
+    }
+}
+
+/* Adresa má šířku nejdelší možné adresy, takže tlačítka pro zkopírování stojí pod sebou. */
+#member-ip .ip-address > a {
     display: inline-block;
     min-width: 15ch;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Dlouhé hodnoty včetně SSID se dělí i bez mezery. Nadpisy sloupců se lámou mezi slovy. */
+.main #member-ip .table td,
+#member-ip .table th {
+    white-space: normal;
+}
+
+#member-ip .table td {
+    overflow-wrap: anywhere;
+}
+
+#member-ip .copy-value {
+    white-space: pre-wrap;
+}
+
+@media (max-width: 989px) {
+    #member-ip .table {
+        min-width: 900px;
+    }
 }
 
 /* Copy buttons of the member detail. The class .copy-value belongs to the login and password values of the IP table. */

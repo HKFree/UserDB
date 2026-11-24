@@ -615,8 +615,9 @@ $(document).ready(function () {
 
 // Kopirovani IP doplnuje pouze autorizovanou tabulku, bez presouvani obsahu nebo skriptu.
 $(document).ready(function () {
-    $('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] > td:first-child').each(function () {
-        var value = $.trim($(this).text());
+    $('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] .ip-address').each(function () {
+        var link = $(this).children('a');
+        var value = $.trim(link.length ? link.text() : $(this).text());
         $('<button type="button" class="copy-button"><i class="fa fa-clone" aria-hidden="true"></i></button>')
             .attr({ 'data-copy-value': value, title: 'Zkopírovat IP adresu', 'aria-label': 'Zkopírovat IP adresu' })
             .appendTo(this);

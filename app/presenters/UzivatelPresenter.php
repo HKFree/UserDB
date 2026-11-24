@@ -253,7 +253,16 @@ class UzivatelPresenter extends BasePresenter
                 $wewimoLinks = $this->getWewimoLinksFromIPs($ipAdresy);
 
                 $uzivatelEditLink = $this->link('Uzivatel:edit', ['id' => $uid]);
-                $this->template->adresy = $this->ipAdresa->getIPTable($ipAdresy, true, $subnetLinks, $wewimoLinks, $uzivatelEditLink, $this->getParameter('igw', false), [$this, 'linker']);
+                $this->template->adresy = $this->ipAdresa->getIPTable(
+                    $ipAdresy,
+                    true,
+                    $subnetLinks,
+                    $wewimoLinks,
+                    $uzivatelEditLink,
+                    $this->getParameter('igw', false),
+                    [$this, 'linker'],
+                    combineIpActions: true,
+                );
 
                 if ($ipAdresy->count() > 0) {
                     $this->template->adresyline = join(', ', array_values($ipAdresy->fetchPairs('id', 'ip_adresa')));

@@ -127,29 +127,31 @@ class IPAdresa extends Table
      * @param bool|int|string|null $igwCheck
      * @param (callable(string, array<string, mixed>): string)|null $linker
      */
-    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink = null, $igwCheck = false, $linker = null): Html {
+    public function getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $editLink = null, $igwCheck = false, $linker = null, bool $combineIpActions = false): Html {
         $adresyTab = Html::el('table')->setClass('table table-striped');
 
-        $this->addIPTableHeader($adresyTab, $canViewCredentialsOrEdit, false, $igwCheck);
+        $this->addIPTableHeader($adresyTab, $canViewCredentialsOrEdit, false, $igwCheck, $combineIpActions);
 
         foreach ($ips as $ip) {
             $subnetLink = $subnetLinks[$ip->ip_adresa];
             $wewimoLink = $wewimoLinks[$ip->ip_adresa];
-            $this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $wewimoLink, $editLink, $igwCheck, $linker);
+            $this->addIPTableRow($ip, $canViewCredentialsOrEdit, $adresyTab, null, $subnetLink, $wewimoLink, $editLink, $igwCheck, $linker, $combineIpActions);
         }
 
         return $adresyTab;
     }
 
     /** @param bool|int|string|null $igwCheck */
-    public function addIPTableHeader(Html $adresyTab, bool $canViewCredentialsOrEdit = false, bool $subnetMode = false, $igwCheck = false): void {
+    public function addIPTableHeader(Html $adresyTab, bool $canViewCredentialsOrEdit = false, bool $subnetMode = false, $igwCheck = false, bool $combineIpActions = false): void {
         $tr = $adresyTab->create('tr');
 
         $tr->create('th')->setText('IP');
         if (in_array($igwCheck, [null, false, 0, '', '0'], true) === false) {
             $tr->create('th')->setText('IGW');
         }
-        $tr->create('th')->setText(''); // action buttons
+        if ($combineIpActions === false) {
+            $tr->create('th')->setText(''); // action buttons
+        }
         if ($subnetMode) {
             $tr->create('th')->setText('UID');
             $tr->create('th')->setText('Nick');
@@ -169,14 +171,11 @@ class IPAdresa extends Table
         }
     }
 
-    /**
-     * @param Nette\Utils\Html $tr
-     * @param  Nette\Utils\Html[] $buttons
-     */
-    private function addActionButtonsTd($tr, $buttons): void {
-        $td = $tr->create('td')->setClass('ip-akce');
+    /** @param list<Html> $buttons */
+    private function addActionButtons(Html $container, array $buttons): void {
+        $container->setClass('ip-akce');
         foreach ($buttons as $b) {
-            $td->addHtml($b);
+            $container->addHtml($b);
         }
     }
 
@@ -267,7 +266,7 @@ class IPAdresa extends Table
      * @param bool|int|string|null $igwCheck
      * @param (callable(string, array<string, mixed>): string)|null $linker
      */
-    public function addIPTableRow(?Nette\Database\Table\ActiveRow $ip, bool $canViewCredentialsOrEdit, Html $adresyTab, ?array $subnetModeInfo = null, ?string $subnetLink = null, ?string $wewimoLink = null, ?string $editLink = null, $igwCheck = false, $linker = null): Html {
+    public function addIPTableRow(?Nette\Database\Table\ActiveRow $ip, bool $canViewCredentialsOrEdit, Html $adresyTab, ?array $subnetModeInfo = null, ?string $subnetLink = null, ?string $wewimoLink = null, ?string $editLink = null, $igwCheck = false, $linker = null, bool $combineIpActions = false): Html {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
         $isSubnetMode = $subnetModeInfo !== null && $subnetModeInfo !== [];
@@ -280,12 +279,14 @@ class IPAdresa extends Table
             $tr->setClass($subnetModeInfo['rowClass']);
         }
 
+        $ipCell = $tr->create('td');
+        $address = $combineIpActions ? $ipCell->create('span')->setClass('ip-address') : $ipCell;
         if (in_array($subnetLink, [null, '', '0'], true) === false) {
             // IP jako link do subnets z beznych agend (uzivatel, AP)
-            $tr->create('td')->create('a')->setHref($subnetLink)->setTarget('_blank')->setText($ipTitle);
+            $address->create('a')->setHref($subnetLink)->setTarget('_blank')->setText($ipTitle);
         } else {
             // zobrazit IP jen jako text
-            $tr->create('td')->setText($ipTitle);
+            $address->setText($ipTitle);
         }
 
         if (in_array($igwCheck, [null, false, 0, '', '0'], true) === false && $ip !== null) {
@@ -462,7 +463,7 @@ class IPAdresa extends Table
                                     ->setClass('glyphicon glyphicon-pencil'))
                         ); // edit button
                     } // jinak nema edit button
-                    $this->addActionButtonsTd($tr, $buttons);
+                    $this->addActionButtons($tr->create('td'), $buttons);
                     $tr->create('td')->create('a')->setHref($subnetOwnerInfo['link'])->setText($subnetOwnerInfo['id']); // UID
                     $tr->create('td')->setText($subnetOwnerInfo['nick']); // nick
                 } elseif ($subnetOwnerInfo['type'] === 'Ap') {
@@ -478,7 +479,7 @@ class IPAdresa extends Table
                                 ->setClass('glyphicon glyphicon-pencil'))
                         ); // edit button
                     } // jinak nema edit button
-                    $this->addActionButtonsTd($tr, $buttons);
+                    $this->addActionButtons($tr->create('td'), $buttons);
                     // nazev AP + cislo (pres 2 bunky, aby se to nepletlo s UID+nick)
                     $tr->create('td')->setColspan(2)->create('a')->setHref($subnetOwnerInfo['link'])->setText($subnetOwnerInfo['jmeno'] . ' (' . $subnetOwnerInfo['id'] . ')');
                 }
@@ -495,7 +496,7 @@ class IPAdresa extends Table
                             ->setClass('glyphicon glyphicon-pencil'))
                     ); // edit button
                 }
-                $this->addActionButtonsTd($tr, $buttons);
+                $this->addActionButtons($combineIpActions ? $ipCell->create('div') : $tr->create('td'), $buttons);
             }
             if ($subnetOwnerInfo === null || $subnetOwnerInfo['canViewOrEdit']) {
                 $tr->create('td')->setText($ip->hostname); // hostname
