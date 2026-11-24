@@ -116,7 +116,7 @@ window.userdbSidebarTree = function () {
         if (item.hasClass('active')) return;
         item.addClass('active');
         // vetve v "Moje oblasti" jsou rozbalene porad a ke stromu nepatri
-        var branch = item.parent().closest('#oblastitree li');
+        var branch = item.closest('#oblastitree li.has-children');
         if (tree && branch.length > 0) tree.expand(branch);
     });
 };

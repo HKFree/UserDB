@@ -41,6 +41,26 @@ test('filtr v levém panelu nechá jen odpovídající oblasti a AP bez ohledu n
     await expect(shown).toHaveCount(all);
 });
 
+test('kliknutí na název oblasti otevře její přehled a rozbalí její AP', async ({ page }) => {
+    await page.goto('/');
+    const strom = page.locator('#oblastitree');
+    const odkaz = strom.getByRole('link', { name: 'Demo rozvětvená oblast', exact: true });
+    const oblast = strom.locator('> li').filter({
+        has: page.getByRole('link', { name: 'Demo rozvětvená oblast', exact: true }),
+    });
+    await expect(oblast).toHaveClass(/\bcollapsed\b/);
+
+    const prehled = new URL(await odkaz.getAttribute('href'), page.url());
+    await odkaz.click();
+    await expect(page).toHaveURL(prehled.href);
+    await expect(odkaz).toHaveAttribute('aria-current', 'page');
+    await expect(oblast).toHaveClass(/\bexpanded\b/);
+    await expect(oblast.getByRole('link', { name: 'Demo hlavní AP (201)', exact: true })).toBeInViewport();
+
+    await oblast.locator('> .thumb').click();
+    await expect(oblast).toHaveClass(/\bcollapsed\b/);
+});
+
 test('hledání v seznamu AP filtruje hned při psaní a Enter hledá na serveru; řádky jsou kompaktní', async ({ page }) => {
     await page.goto('/uzivatel-list/list/201');
     const list = page.locator('.member-list');
