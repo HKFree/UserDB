@@ -145,7 +145,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         Assert::same('Otevírání Winboxu z prohlížeče', $menu['/userdb/winbox/'] ?? null);
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/uzivatel-list/listall"]'));
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/sprava/mapa"]'));
-        Assert::count(1, $this->elements($document, '//form[@role="search"]//input[@placeholder="Člen, IP, číslo smlouvy…"]'));
+        Assert::count(1, $this->elements($document, '//form[@role="search"]//input[@placeholder="Hledat člena, IP, číslo smlouvy…"]'));
     }
 
     public function testSearchHintIsAssociatedWithInput(): void {
