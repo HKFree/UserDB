@@ -54,6 +54,9 @@ V seznamu AP zapni finanční režim parametrem `?money=1`. Plánované, zrušen
 | Kauce | 20042 Kauce | 500 Kč kauce, 790 Kč platba spolku |
 | Poslední platba NIKDY | 20043 Nikdyneplatil | Platba bez data |
 | Všech 17 pohybů a dlouhá poznámka | 20044 Všechnypohyby | Konto; pohyb s oběma příznaky, další bez obou příznaků |
+| Ruční aktivace od správce | 20090 Grafruční | Konto: 24 měsíců platba a aktivace typu 8; v grafu aktivních účastníků spodní graf |
+| Částečná aktivace automatem | 20091 Grafčástečný | Konto: každý třetí měsíc platba 145 Kč a aktivace typu 15 |
+| Pohyby, které aktivitu nezakládají | 20092 Grafnepočítaný | Konto: platba, vratka a dočasná aktivace přes SMS 70 měsíců zpět; graf ho nepočítá |
 | Dlouhý seznam IP | 20061 Šedesátadres | 60 IP adres, typy zařízení 1 až 12 |
 | Cizí subnet | 20062 Cizísubnet | Patří na AP 200, IP `203.0.113.20` leží v subnetu AP 213 |
 | Další cizí subnet | 20064 Smlouvabezpodpisů, 20065 Smlouvačekající | Patří na AP 201, IP `203.0.113.21` a `203.0.113.22` leží v subnetu AP 213; ZSO 20004 je proto smí upravit |
@@ -215,7 +218,11 @@ ostatní ve spolku. Oblast 208 / AP 222 má jediného správce 20076, obě jeho 
 | Převod bez původního pohybu | 40000104, pohyb typu 10 a příjem typu 1 na 20044 |
 | Zaplacené / nezaplacené výdaje, oba subjekty, stránkování | `/sprava-plateb/odchoziplatby`, 120 řádků 20000 až 20119 |
 | Dvanáct účtů, stránkování | `/sprava-uctu/ucty`; každý má tři historické stavy, obrazovka ukazuje nejnovější |
-| Aktivace za posledních 36 měsíců | `/sprava-grafu/usersgraph`, členové 20036 až 20038 (každý měsíc platba a aktivace), dostupné i bez objemu |
+| Graf aktivních účastníků, osm let | `/sprava-grafu/usersgraph?obdobi=vse`, členové 20036 až 20038 (posledních 36 měsíců platba a aktivace, starší měsíce jen aktivace), dostupné i bez objemu; s objemem růst z 1 020 na 4 500 účastníků a plató za posledních 36 měsíců |
+| Měsíc bez aktivací (výpadek automatu) | 70 měsíců zpět: graf spadne na nulu. Člen 20092 má v tom měsíci jen platbu, vratku (typ 7) a dočasnou aktivaci přes SMS (typ 5), graf ho nepočítá |
+| Ruční a částečné aktivace | Spodní graf: člen 20090 ruční aktivace (typ 8) posledních 24 měsíců, člen 20091 částečná (typ 15) každý třetí měsíc za 3 roky; s objemem každý měsíc asi 110 až 180 ručních a 40 až 46 částečných |
+| Televize nezdvojí účastníka | Člen 20036 má 40 měsíců zpět aktivaci automatem i televize (obě typ 4), graf ho v tom měsíci počítá jednou |
+| Prázdný graf | Jen s prázdnou databází nebo v testu: hláška místo grafu (`SpravaGrafuPresenterTest`) |
 | Přehled a schvalování ČČ | `/sprava-cc/prehledcc`, `/sprava-cc/schvalovanicc` |
 | Štítky bez barev, více řádků a stejný text ve dvou oblastech | `/sprava-stitku/`, štítky 21000 až 21004, členové 20002 a 20027 |
 | Filtr seznamu členů podle štítku | `/uzivatel-list/list/201`, filtr „Hledej štítek“: „Demo globální“ najde člena 20027, „NOT Demo globální“ všechny ostatní, „LAN123“ nikoho |
@@ -272,8 +279,9 @@ a novým `userdb_dev_setup.php`.
 ## Objem a rozsahy ID
 
 Objem přidává 100 oblastí, 450 AP, 1473 subnetů, 4500 aktivních a 9000 zrušených členů, 18000 IP adres,
-324550 pohybů, 54000 příchozích plateb a 100000 změn. Jména začínají `Objem`.
-Pohyby pokrývají 36 měsíců včetně aktuálního; bankovní protějšky existují za posledních 12 měsíců.
+485940 pohybů, 54000 příchozích plateb a 100000 změn. Jména začínají `Objem`.
+Platby a aktivace pokrývají 36 měsíců včetně aktuálního; bankovní protějšky existují za posledních 12 měsíců.
+Starší aktivace pro graf sahají 95 měsíců zpět, bez částky a na kontě spolku; měsíc 70 zpět nemá žádnou.
 Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého člena.
 
 | Co chceš vidět | Kde |
@@ -288,7 +296,7 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 |---|---|---|
 | Oblast | -20, 200 až 208 | 10000 až 10099 |
 | Ap | 200 až 222 | 10000 až 10449 |
-| Uzivatel | 20000 až 20057, 20061 až 20081 | 100000 až 113499 |
+| Uzivatel | 20000 až 20057, 20061 až 20081, 20090 až 20092 | 100000 až 113499 |
 | Subnet | 20000 až 20015 | 100000 až 103594 s mezerami |
 | IPAdresa | 20000 až 20014, 20100 až 20107, 20200 až 20259 | 100000 až 126999 s mezerami |
 | SpravceOblasti | 20000 až 20030 s mezerami | 100000 |
@@ -296,7 +304,7 @@ Každá objemová IP adresa leží právě v jednom subnetu, a to na AP svého �
 | Čestné členství | 20045 až 20052, 20072 až 20074 | žádné |
 | Stitek | 21000 až 21004 | žádné |
 | Smlouva / PodpisSmlouvy | 200000 až 200006 / 200000 až 200007 | žádné |
-| UzivatelskeKonto | 2000000 až 2001107 s mezerami | 10000000 až 10323999, 11000000 až 11000549 |
+| UzivatelskeKonto | 2000000 až 2002402 s mezerami | 9000000 až 9269999 s mezerami, 10000000 až 10323999, 11000000 až 11000549 |
 | PrichoziPlatba | 40000001 až 40000012, 40000100 až 40000104, 40000110 až 40000113 | 50000000 až 50053999 |
 | OdchoziPlatba | 20000 až 20119 | žádné |
 | BankovniUcet | 200 až 209 a původní 1, 2 | žádné |

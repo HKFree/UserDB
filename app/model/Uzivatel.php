@@ -154,20 +154,6 @@ WHERE S.od < NOW() AND (S.do IS NULL OR S.do > NOW()) AND U.systemovy = 0 AND U.
             where U.id = ?', $oblastIds, $uzivatelId)->fetchPairs('id', 'subnet'));
     }
 
-    /** @return list<Nette\Database\Row> */
-    public function getNumberOfActivations(): array {
-        $activationsCount = $this->getConnection()->query("SELECT COUNT(id) as users
-        , MONTH(datum) as month
-        , YEAR(datum) as year
-            FROM UzivatelskeKonto
-            WHERE (
-            TypPohybuNaUctu_id = 4
-            OR TypPohybuNaUctu_id = 7
-            ) GROUP BY YEAR(datum) ASC, MONTH(datum) ASC")->fetchAll();
-
-        return array_values($activationsCount);
-    }
-
     /**
      * @param int|string $search
      * @return Nette\Database\Table\Selection<Nette\Database\Table\ActiveRow>|array<array-key, Nette\Database\Table\ActiveRow>

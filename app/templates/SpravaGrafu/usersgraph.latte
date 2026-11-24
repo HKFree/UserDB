@@ -1,66 +1,140 @@
+{block head}
+<link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/rickshaw.min.css">
+{/block}
+
 {block content}
 
-<h3>Graf počtu aktivních uživatelů</h3>
+<h3>Počet aktivních účastníků po měsících</h3>
 
-<style>
-#chart_container {
-    position: relative;
-    margin-top: 20px;
-}
-#chart {
-	position: relative;
-	left: 40px;
-	display: block;
-}
-#y_axis {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 40px;
-}
-.rickshaw_graph .x_tick .title {
-    bottom: -24px;
-    left: -18px;
-}
+<p class="graf-clenu-popis text-muted">
+    Účastník se v měsíci počítá jednou, když měl aspoň jednu měsíční aktivaci: automatem, ručně od správce nebo částečnou.
+    Vratky peněz a dočasná aktivace přes SMS se nepočítají.
+</p>
 
-svg.rickshaw_graph {
-    height: 480px;
-}
-</style>
-
-<div id="chart_container">
-    <div id="y_axis"></div>
-    <div id="chart"></div>
+<div class="graf-clenu-nastroje">
+    <span id="graf-clenu-obdobi-nazev" class="graf-clenu-nastroje-popisek">Období</span>
+    <div class="btn-group graf-clenu-obdobi" role="group" aria-labelledby="graf-clenu-obdobi-nazev">
+        <a n:foreach="$vsechnaObdobi as $volba" n:href="this, obdobi => $volba->value"
+            n:class="btn, btn-sm, $volba === $obdobi ? 'btn-primary active' : 'btn-default'"
+            n:attr="aria-current => $volba === $obdobi ? 'page'">{$volba->popisek()}</a>
+    </div>
 </div>
 
-<script>
-var graph = new Rickshaw.Graph( {
-    element: document.getElementById("chart"),
-    width: 1024,
-    height: 400,
-    series: [ {
-        data: {$actdata|noescape},
-        color: 'steelblue'
-    } ]
-} );
+{if $mesice === []}
+    <div class="alert alert-info graf-clenu-prazdny">
+        {if $obdobi === App\Model\ObdobiGrafuClenu::Vse}
+            Žádný účastník zatím nemá měsíční aktivaci.
+        {else}
+            Za vybrané období nemá měsíční aktivaci žádný účastník. Zvolte delší období.
+        {/if}
+    </div>
+{else}
+    {var $prvni = $mesice[0]}
+    {var $posledni = $mesice[count($mesice) - 1]}
+    {var $rozdil = $posledni->celkem() - $prvni->celkem()}
+    <div class="graf-clenu-souhrn">
+        <dl class="graf-clenu-celkem">
+            <dt>Aktivních účastníků za {$posledni->nazev()}</dt>
+            <dd class="graf-clenu-cislo">{$posledni->celkem()|cislo}</dd>
+            <dd n:if="$prvni !== $posledni" class="graf-clenu-zmena">
+                <span n:class="$rozdil > 0 ? 'text-success', $rozdil < 0 ? 'text-danger'">
+                    <span n:class="fa, $rozdil > 0 ? 'fa-caret-up', $rozdil < 0 ? 'fa-caret-down', $rozdil === 0 ? 'fa-minus'" aria-hidden="true"></span>
+                    <span class="sr-only">Rozdíl</span>
+                    {if $rozdil > 0}+{/if}{$rozdil|cislo} ({if $rozdil > 0}+{/if}{$rozdil / $prvni->celkem() * 100|cislo:1}&nbsp;%)
+                </span>
+                <span class="graf-clenu-srovnani">Za {$prvni->nazev()} to bylo {$prvni->celkem()|cislo}.</span>
+            </dd>
+        </dl>
+        <dl class="graf-clenu-rozpad">
+            {foreach $zpusoby as $klic => $nazev}
+                <dt><span class="graf-clenu-barva graf-clenu-barva-{$klic}" aria-hidden="true"></span>{$nazev}</dt>
+                <dd>{$posledni->$klic|cislo}</dd>
+            {/foreach}
+        </dl>
+    </div>
 
-var x_axis = new Rickshaw.Graph.Axis.Time({
-    graph: graph
-});
+    {* Z jediného měsíce graf nic nenakreslí, souhrn a tabulka řeknou vše. *}
+    {if count($mesice) > 1}
+        {* Grafy kreslí skript graf-clenu.js. Čtečky obrazovky čtou stejné hodnoty z tabulky pod grafy. *}
+        <div class="graf-clenu-grafy" data-mesice="{$grafJson}">
+            <div class="graf-clenu-sekce">
+                <div class="graf-clenu-zahlavi">
+                    <h4>Všichni aktivní účastníci</h4>
+                    {include legenda, zpusoby => $zpusoby}
+                </div>
+                <p class="graf-clenu-podtitul text-muted">Počet účastníků. Vrstvy jsou sečtené, horní hrana je celkový počet.</p>
+                {include graf, serie => 'automatem rucne castecne'}
+            </div>
+            <div class="graf-clenu-sekce">
+                <div class="graf-clenu-zahlavi">
+                    <h4>Ruční a částečné aktivace</h4>
+                    {if $jsouRucniAktivace}
+                        {include legenda, zpusoby => array_diff_key($zpusoby, ['automatem' => true])}
+                    {/if}
+                </div>
+                <p class="graf-clenu-podtitul text-muted">Počet účastníků. V horním grafu tvoří jen tenký pruh, tady mají vlastní měřítko.</p>
+                {if $jsouRucniAktivace}
+                    {include graf, serie => 'rucne castecne'}
+                {else}
+                    <p class="graf-clenu-bez-rucnich">V tomto období nebyla žádná ruční ani částečná aktivace.</p>
+                {/if}
+            </div>
+        </div>
 
-var format = function(d) {
-    return d;
-}
+        <button type="button" class="btn btn-default btn-sm graf-clenu-prepinac-tabulky" data-toggle="collapse"
+            data-target="#graf-clenu-hodnoty" aria-expanded="false" aria-controls="graf-clenu-hodnoty">
+            <span class="fa fa-table" aria-hidden="true"></span> Hodnoty v tabulce
+        </button>
+    {/if}
+    <div id="graf-clenu-hodnoty" n:class="count($mesice) > 1 ? collapse">
+        <div class="table-responsive">
+            <table class="table table-condensed table-striped graf-clenu-tabulka">
+                <caption class="sr-only">Počet aktivních účastníků po měsících, od nejnovějšího</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Měsíc</th>
+                        <th scope="col" class="text-right">Automatem</th>
+                        <th scope="col" class="text-right">Ručně</th>
+                        <th scope="col" class="text-right">Částečně</th>
+                        <th scope="col" class="text-right">Celkem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr n:foreach="array_reverse($mesice) as $mesic">
+                        <td>{$mesic->nazev()}</td>
+                        <td class="text-right">{$mesic->automatem|cislo}</td>
+                        <td class="text-right">{$mesic->rucne|cislo}</td>
+                        <td class="text-right">{$mesic->castecne|cislo}</td>
+                        <td class="text-right"><strong>{$mesic->celkem()|cislo}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{/if}
 
-var y_axis = new Rickshaw.Graph.Axis.Y({
-    graph: graph,
-    orientation: 'left',
-    tickFormat: format,
-    element: document.getElementById('y_axis'),
-});
+{/block}
 
-graph.render();
+{define legenda}
+    <ul class="list-inline graf-clenu-legenda" aria-label="Způsoby aktivace v grafu">
+        <li n:foreach="$zpusoby as $klic => $nazev"><span class="graf-clenu-barva graf-clenu-barva-{$klic}" aria-hidden="true"></span>{$nazev}</li>
+    </ul>
+{/define}
 
-</script>
+{define graf}
+    <div class="graf-clenu" data-serie="{$serie}" aria-hidden="true">
+        <div class="graf-clenu-telo">
+            <div class="graf-clenu-osa-y"></div>
+            <div class="graf-clenu-plocha"></div>
+            <div class="graf-clenu-osa-x"></div>
+        </div>
+    </div>
+{/define}
 
+{block scripts}
+{include parent}
+<script src="{$basePath}/js/d3.min.js"></script>
+<script src="{$basePath}/js/d3.layout.min.js"></script>
+<script src="{$basePath}/js/rickshaw.min.js"></script>
+<script src="{$basePath}/js/graf-clenu.js?v1"></script>
 {/block}

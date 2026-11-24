@@ -18,3 +18,4 @@
 - [Výběr textu a schránka](userdb_clipboard.md) - nástrahy označování a kopírování hodnot z tabulek a testování bez systémové schránky.
 - [Nette Database a Grido](userdb_nette_database.md) - limit u related() načte celou historii, průchod tabulkou v callbacku Grida, pořadí dotazu bez order() podle keše sloupců, řazení podle sloupce navázané tabulky.
 - [Formuláře s přidávanými řádky](userdb_form_replicator.md) - rozsah validace tlačítek Přidat a Odstranit, čtení hodnot v továrně řádku, nástrahy testů a prohlídky.
+- [Grafy a aktivace členů](userdb_grafy.md) - pasti Rickshaw a d3 2.5, dotyk v grafech, typy pohybů při počítání aktivních členů.

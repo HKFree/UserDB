@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Test;
 
+use App\Model\AktivniClenoveMesic;
+use App\Model\GrafAktivnichClenu;
 use Nette\Database\Connection;
 use Nette\Database\Explorer;
 use Nette\Database\Structure;
@@ -26,6 +28,7 @@ final class DemoDataPresenterTest extends TestCase
 {
     private Explorer $database;
     private PresenterRunner $presenters;
+    private GrafAktivnichClenu $graph;
     private string $seededOn;
 
     public function testDemoMigrationsPagesAndVolume(): void {
@@ -35,6 +38,7 @@ final class DemoDataPresenterTest extends TestCase
         $this->database = $this->buildDatabase();
         $container = TestEnvironment::container($this->database);
         $this->presenters = new PresenterRunner($this->database, $container);
+        $this->graph = $container->getByType(GrafAktivnichClenu::class);
         $this->assertReferences();
         $this->assertRemovedMembers();
         $this->assertScenarioSafety();
@@ -45,6 +49,7 @@ final class DemoDataPresenterTest extends TestCase
         $this->assertSkippedRegistrationRecipients();
         $this->assertNetworkPages();
         $this->assertAdministration();
+        $this->assertActiveMembersGraph();
         $this->assertVolume();
         Assert::same([], $container->getByType(RecordingMailer::class)->messages);
         Assert::same([], $container->getByType(RecordingMexSmsSender::class)->calls);
@@ -92,7 +97,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(14, $adapter->scenarioFiles);
+        Assert::same(15, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -178,10 +183,81 @@ final class DemoDataPresenterTest extends TestCase
         Assert::same(0, $this->database->table('Log')->where('tabulka', 'Uzivatel')->where('tabulka_id', [20058, 20059, 20060])->count('*'));
     }
 
+    /**
+     * Graph of active members without the volume: eight years of three members, a month without activations
+     * that holds only a refund and an SMS activation, a TV activation that must not count its member twice,
+     * and members activated by hand and partially.
+     */
+    private function assertActiveMembersGraph(): void {
+        $months = $this->graphMonths();
+        $this->assertMonthsUpToToday($months, 95);
+        Assert::equal($this->expectedMonth(95, 3), $months[$this->monthKey(95)]);
+        Assert::equal($this->expectedMonth(70, 0), $months[$this->monthKey(70)]);
+        Assert::equal($this->expectedMonth(40, 3), $months[$this->monthKey(40)]);
+        Assert::same(1, $this->database->table('UzivatelskeKonto')->where('Uzivatel_id = 20036 AND poznamka LIKE ?', '%Televize%')->count('*'));
+        Assert::same([1, 5, 7], array_values($this->database->table('UzivatelskeKonto')->where('Uzivatel_id', 20092)->order('TypPohybuNaUctu_id')->fetchPairs('id', 'TypPohybuNaUctu_id')));
+        for ($ago = 0; $ago < 24; $ago++) {
+            Assert::true($months[$this->monthKey($ago)]->rucne >= 1, "manual activation $ago months ago");
+        }
+        for ($ago = 0; $ago < 36; $ago += 3) {
+            Assert::true($months[$this->monthKey($ago)]->castecne >= 1, "partial activation $ago months ago");
+        }
+        $page = $this->text($this->page('SpravaGrafu', 'usersgraph', null, ['obdobi' => 'vse']));
+        Assert::contains('Ruční a částečné aktivace', $page);
+        Assert::notContains('nebyla žádná ruční ani částečná aktivace', $page);
+    }
+
+    /** @return array<string, AktivniClenoveMesic> the whole history by "year-month" */
+    private function graphMonths(): array {
+        $months = [];
+        foreach ($this->graph->mesice(null, new \DateTimeImmutable($this->seededOn)) as $month) {
+            $months[$month->rok . '-' . $month->mesic] = $month;
+        }
+        return $months;
+    }
+
+    /**
+     * The graph runs from the oldest seeded month to the current month in Prague. In the first hours of a Prague
+     * month the loaders, which work in UTC, still saw the previous one: the graph then ends with an empty month.
+     *
+     * @param array<string, AktivniClenoveMesic> $months
+     */
+    private function assertMonthsUpToToday(array $months, int $oldestAgo): void {
+        $prague = (new \DateTimeImmutable($this->seededOn))->format('Y-n');
+        if ($prague === $this->monthKey(0)) {
+            Assert::count($oldestAgo + 1, $months);
+            return;
+        }
+        Assert::count($oldestAgo + 2, $months);
+        Assert::same(0, $months[$prague]->celkem());
+    }
+
+    /** The month the given number of months before the one the loaders saw as current; they work in UTC. */
+    private function monthAgo(int $ago): \Nette\Database\Row {
+        $row = $this->database->fetch(
+            "SELECT YEAR(m) AS rok, MONTH(m) AS mesic FROM (SELECT DATE_FORMAT(UTC_DATE(), '%Y-%m-01') - INTERVAL ? MONTH AS m) t",
+            $ago,
+        );
+        if ($row === null) {
+            throw new \LogicException('No month.');
+        }
+        return $row;
+    }
+
+    private function expectedMonth(int $ago, int $automatic, int $manual = 0, int $partial = 0): AktivniClenoveMesic {
+        $month = $this->monthAgo($ago);
+        return new AktivniClenoveMesic((int) $month->rok, (int) $month->mesic, $automatic, $manual, $partial);
+    }
+
+    private function monthKey(int $ago): string {
+        $month = $this->monthAgo($ago);
+        return $month->rok . '-' . $month->mesic;
+    }
+
     private function assertScenarioSafety(): void {
         Assert::same(12, $this->database->table('Oblast')->count('*'));
         Assert::same(25, $this->database->table('Ap')->count('*'));
-        Assert::same(86, $this->database->table('Uzivatel')->count('*'));
+        Assert::same(89, $this->database->table('Uzivatel')->count('*'));
         Assert::same(79, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->count('*'));
         Assert::same(79, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
         Assert::same(60, $this->database->table('IPAdresa')->where('Uzivatel_id', 20061)->count('*'));
@@ -548,7 +624,7 @@ final class DemoDataPresenterTest extends TestCase
         Assert::exception(fn () => $loader->apply(), \Nette\Database\UniqueConstraintViolationException::class);
         Assert::same(0, $this->database->table('Oblast')->where('id >= 10000')->count('*'));
         Assert::same(0, $this->database->table('Uzivatel')->where('id >= 100000')->count('*'));
-        Assert::same(0, $this->database->table('UzivatelskeKonto')->where('id >= 10000000')->count('*'));
+        Assert::same(0, $this->database->table('UzivatelskeKonto')->where('id >= 9000000')->count('*'));
         Assert::same(0, $this->database->table('Log')->where('puvodni_hodnota LIKE ?', 'Objem před %')->count('*'));
         $this->database->table('SpravceOblasti')->where('id', 100000)->delete();
         // Change log rows written by the application take ids from the same sequence; the volume must not need a fixed range.
@@ -557,7 +633,7 @@ final class DemoDataPresenterTest extends TestCase
             'tabulka' => 'Uzivatel', 'tabulka_id' => 20018, 'sloupec' => 'Uzivatel.poznamka', 'akce' => 'U',
         ]);
         Assert::true($loader->apply());
-        $expected = ['Oblast' => 100, 'Ap' => 450, 'Subnet' => \UserdbDemoVolume::SUBNETS, 'Uzivatel' => 13500, 'IPAdresa' => 18000, 'UzivatelskeKonto' => 324550, 'PrichoziPlatba' => 54000];
+        $expected = ['Oblast' => 100, 'Ap' => 450, 'Subnet' => \UserdbDemoVolume::SUBNETS, 'Uzivatel' => 13500, 'IPAdresa' => 18000, 'UzivatelskeKonto' => \UserdbDemoVolume::RECENT_MOVEMENTS, 'PrichoziPlatba' => 54000];
         $starts = ['Oblast' => 10000, 'Ap' => 10000, 'Subnet' => 100000, 'Uzivatel' => 100000, 'IPAdresa' => 100000, 'UzivatelskeKonto' => 10000000, 'PrichoziPlatba' => 50000000];
         foreach ($expected as $table => $count) {
             Assert::same($count, $this->database->table($table)->where('id >= ?', $starts[$table])->count('*'), $table);
@@ -569,6 +645,7 @@ final class DemoDataPresenterTest extends TestCase
         // The latest payment and activation are picked by id: the newest month (the loader works in UTC) must have the highest id.
         Assert::same($this->database->fetchField("SELECT DATE_FORMAT(UTC_DATE(), '%Y-%m-01')"), $this->database->table('UzivatelskeKonto')->where('Uzivatel_id = 100700 AND TypPohybuNaUctu_id = 4')->order('id DESC')->fetch()?->datum->format('Y-m-d'));
         Assert::same(622, $this->database->table('UzivatelskeKonto')->where('Uzivatel_id = 100000 AND druzstvo = 1')->count('*'));
+        $this->assertVolumeGraph();
         Assert::same(3000, $this->database->table('Log')->where('tabulka = ? AND tabulka_id = 100000', 'Uzivatel')->count('*'));
         Assert::same(30, $this->database->table('Ap')->where('Oblast_id', 10000)->count('*'));
         Assert::same(\UserdbDemoVolume::BIG_AREA_SUBNETS, $this->database->table('Subnet')->where('Ap.Oblast_id', 10000)->count('*'));
@@ -603,6 +680,30 @@ final class DemoDataPresenterTest extends TestCase
         $this->assertPersonaRoles();
         $this->page('UzivatelList', 'list', \UserdbDemoVolume::CROWDED_AP);
         $this->page('UzivatelAccount', 'account', 100000);
+    }
+
+    /**
+     * The volume adds the older history of the graph below its 36 months: growth up to the plateau, a month
+     * without any activation and a few manual and partial activations in every other month.
+     */
+    private function assertVolumeGraph(): void {
+        Assert::same(\UserdbDemoVolume::olderActivations(), $this->database->table('UzivatelskeKonto')->where('id BETWEEN 9000000 AND 9999999')->count('*'));
+        $months = $this->graphMonths();
+        $this->assertMonthsUpToToday($months, \UserdbDemoVolume::OLDEST_MONTH);
+        Assert::equal($this->expectedMonth(\UserdbDemoVolume::AUTOMAT_OUTAGE_MONTH, 0), $months[$this->monthKey(\UserdbDemoVolume::AUTOMAT_OUTAGE_MONTH)]);
+        // The three demo members of the migrations on top of the volume.
+        Assert::same(\UserdbDemoVolume::activeMembers(40) + 3, $months[$this->monthKey(40)]->celkem());
+        Assert::true(\UserdbDemoVolume::activeMembers(\UserdbDemoVolume::OLDEST_MONTH) < \UserdbDemoVolume::activeMembers(40));
+        Assert::same(4500, \UserdbDemoVolume::activeMembers(0));
+        for ($ago = 0; $ago <= \UserdbDemoVolume::OLDEST_MONTH; $ago++) {
+            if ($ago === \UserdbDemoVolume::AUTOMAT_OUTAGE_MONTH) {
+                continue;
+            }
+            $month = $months[$this->monthKey($ago)];
+            Assert::true($month->rucne >= 20 && $month->castecne >= 5, "manual and partial activations $ago months ago");
+        }
+        // The member opened by the big administrator keeps its monthly activation by the automat in the latest month.
+        Assert::same(4, $this->database->table('UzivatelskeKonto')->where('Uzivatel_id = 100700 AND TypPohybuNaUctu_id IN (4, 8, 15)')->order('id DESC')->fetch()?->TypPohybuNaUctu_id);
     }
 
     /** The switching page describes every persona by the roles the demo data really give it. */
