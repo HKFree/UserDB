@@ -1958,10 +1958,10 @@ input[readonly],
 .winbox-zalozky-obsah {
     margin-bottom: 32px;
     padding: 24px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--udb-line-dddddd);
     border-top: none;
     border-radius: 0 0 4px 4px;
-    background: #fff;
+    background: var(--udb-bg-ffffff);
 }
 
 .winbox-kroky {
@@ -1992,8 +1992,8 @@ input[readonly],
     margin: 12px 0 0;
     padding: 12px 12px 12px 16px;
     border-radius: 6px;
-    background: #23272e;
-    color: #e6e6e6;
+    background: var(--udb-bg-23272e);
+    color: var(--udb-text-e6e6e6);
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
     font-size: 13px;
     line-height: 1.6;
@@ -2001,7 +2001,7 @@ input[readonly],
 
 .winbox-vyzva {
     flex: none;
-    color: #8b949e;
+    color: var(--udb-text-8b949e);
     user-select: none;
 }
 
@@ -2028,7 +2028,7 @@ input[readonly],
 
 .winbox-poznamka {
     margin: 12px 0 0;
-    color: #555;
+    color: var(--udb-text-555555);
 }
 
 @media (max-width: 767px) {

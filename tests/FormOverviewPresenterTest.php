@@ -140,8 +140,9 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         $document = $this->home($actor);
         $menu = $this->links($document, '//*[@id="navbar-tools"]//a');
         $home = $this->links($document, '//*[contains(@class,"home-tools")]//a[@data-tool]');
-        Assert::count(9, $menu);
+        Assert::count(10, $menu);
         Assert::same($menu, $home);
+        Assert::same('Otevírání Winboxu z prohlížeče', $menu['/userdb/winbox/'] ?? null);
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/uzivatel-list/listall"]'));
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/sprava/mapa"]'));
         Assert::count(1, $this->elements($document, '//form[@role="search"]//input[@placeholder="Hledat člena, IP, oblast, AP…"]'));
