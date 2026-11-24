@@ -2,11 +2,11 @@ import { test, expect, personas } from '../fixtures.mjs';
 
 const phone = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
 
-async function checkUid(page, form, uid, labels, editable, inactive = false) {
+async function checkUid(page, form, uid, editable) {
     const cell = page.locator(`${form} td.grid-cell-id`).filter({ has: page.getByRole('link', { name: String(uid), exact: true }) });
     await expect(cell).toBeVisible();
-    await expect(cell.locator('.label')).toHaveText(labels);
-    await expect(cell.locator('.label-neaktivni')).toHaveCount(inactive ? 1 : 0);
+    // Štítky členství mají vlastní sloupec, lepivý sloupec UID zůstane úzký.
+    await expect(cell.locator('.label')).toHaveCount(0);
     await expect(cell.getByTitle('Editovat', { exact: true })).toHaveCount(editable ? 1 : 0);
     if (editable) await expect(cell.getByTitle('Editovat', { exact: true })).toHaveAttribute('href', `/uzivatel/edit/${uid}`);
     const centers = await cell.locator('a, .label').evaluateAll(elements => elements.map(element => {
@@ -30,6 +30,20 @@ async function checkUid(page, form, uid, labels, editable, inactive = false) {
     }
 }
 
+/** Štítky Spolek a Družstvo stojí v nelepivém sloupci Členství hned za UID. */
+async function checkMembership(page, form, uid, labels, inactive = false) {
+    const headers = page.locator(`${form} thead tr`).first().locator('th');
+    const uidColumn = await headers.evaluateAll(cells => cells.findIndex(cell => cell.classList.contains('grid-header-id')));
+    expect(uidColumn, 'sloupec UID').toBeGreaterThanOrEqual(0);
+    await expect(headers.nth(uidColumn + 1)).toHaveText('Členství');
+
+    const row = page.locator(`${form} tbody tr`).filter({ has: page.getByRole('link', { name: String(uid), exact: true }) });
+    const cell = row.locator('td.grid-cell-clenstvi');
+    await expect(cell.locator('.label')).toHaveText(labels);
+    await expect(cell.locator('.label-neaktivni')).toHaveCount(inactive ? 1 : 0);
+    expect(await cell.evaluate(td => getComputedStyle(td).position), `UID ${uid}: sloupec Členství se posouvá s tabulkou`).not.toBe('sticky');
+}
+
 async function checkPageWidth(page, width) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth), 'stránka se neposouvá do strany').toBeLessThanOrEqual(width);
 }
@@ -43,31 +57,37 @@ for (const width of [1280, 375]) {
                 persona: editable ? personas.vv : personas.so,
             });
 
-            test('UID se štítky i bez nich zůstává na jednom řádku', async ({ page }) => {
+            test('UID zůstává na jednom řádku a štítky členství mají vlastní sloupec', async ({ page }) => {
                 await page.goto('/uzivatel-list/list/201?grid-filter%5Bspolek_druzstvo%5D=all');
-                await checkUid(page, '#frm-grid-form', 20022, ['Spolek', 'Družstvo'], editable);
-                await checkUid(page, '#frm-grid-form', 20018, ['Spolek'], editable);
-                await checkUid(page, '#frm-grid-form', 20021, ['Družstvo'], editable);
-                await checkUid(page, '#frm-grid-form', 20023, [], editable);
+                for (const [uid, labels] of [[20022, ['Spolek', 'Družstvo']], [20018, ['Spolek']], [20021, ['Družstvo']], [20023, []]]) {
+                    await checkUid(page, '#frm-grid-form', uid, editable);
+                    await checkMembership(page, '#frm-grid-form', uid, labels);
+                }
+                // Na telefonu nechá lepivý sloupec UID místo pro ostatní sloupce.
+                const uidWidth = await page.locator('#frm-grid-form td.grid-cell-id').first().evaluate(td => td.getBoundingClientRect().width);
+                expect(uidWidth, 'šířka lepivého sloupce UID').toBeLessThan(100);
                 await checkPageWidth(page, width);
             });
 
-            test('škrtnuté štítky zůstávají vedle UID', async ({ page }) => {
+            test('škrtnuté štítky jsou ve sloupci Členství', async ({ page }) => {
                 await page.goto('/uzivatel-list/list/202?grid-filter%5Bspolek_druzstvo%5D=all');
-                await checkUid(page, '#frm-grid-form', 20019, ['Spolek'], editable, true);
-                await checkUid(page, '#frm-grid-form', 20024, ['Družstvo'], editable, true);
+                await checkUid(page, '#frm-grid-form', 20019, editable);
+                await checkMembership(page, '#frm-grid-form', 20019, ['Spolek'], true);
+                await checkUid(page, '#frm-grid-form', 20024, editable);
+                await checkMembership(page, '#frm-grid-form', 20024, ['Družstvo'], true);
                 await checkPageWidth(page, width);
             });
 
             test('tužka u členů mimo AP zůstává vedle UID', async ({ page }) => {
                 await page.goto('/uzivatel-list/list/213');
-                for (const uid of [20062, 20064, 20065]) await checkUid(page, '#frm-othersGrid-form', uid, [], editable);
+                for (const uid of [20062, 20064, 20065]) await checkUid(page, '#frm-othersGrid-form', uid, editable);
                 await checkPageWidth(page, width);
             });
 
             test('stejné zobrazení má i kompletní seznam členů', async ({ page }) => {
                 await page.goto('/uzivatel-list/listall?search=20022');
-                await checkUid(page, '#frm-grid-form', 20022, ['Spolek', 'Družstvo'], editable);
+                await checkUid(page, '#frm-grid-form', 20022, editable);
+                await checkMembership(page, '#frm-grid-form', 20022, ['Spolek', 'Družstvo']);
                 await checkPageWidth(page, width);
             });
 

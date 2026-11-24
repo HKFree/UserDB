@@ -98,6 +98,19 @@ $table = Html::el('table');
 $model->addIPTableRow(ipRow(), true, $table, editLink: '/ap/edit/1');
 Assert::contains('<td class="ip-akce"><a href="/ap/edit/1#ip192.0.2.1"', (string) $table);
 
+// Member detail (#356): the address and the action buttons share the first cell and the header has no column
+// for the buttons. www/js/main.js wraps the address in span.ip-address with its copy button.
+$table = Html::el('table');
+$model->addIPTableHeader($table, true, combineIpActions: true);
+$model->addIPTableRow(ipRow(), true, $table, subnetLink: '/subnet/1', editLink: '/uzivatel/edit/1', combineIpActions: true);
+Assert::contains('<tr><th>IP</th><th>Hostname</th>', (string) $table);
+Assert::contains(
+    '<td><span class="ip-address"><a href="/subnet/1" target="_blank">192.0.2.1</a></span>'
+    . '<div class="ip-akce"><a href="/uzivatel/edit/1#ip192.0.2.1"',
+    (string) $table,
+);
+Assert::notContains('<td class="ip-akce">', (string) $table);
+
 // A request without the User-Agent header still renders the row (#339).
 unset($_SERVER['HTTP_USER_AGENT']);
 $table = Html::el('table');

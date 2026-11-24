@@ -378,20 +378,6 @@ class UzivatelListGrid
             ->title($item->id)
             ->setText($item->id);
 
-            $spanSpolek = Html::el('span')->setText('Spolek')->setClass('label');
-            $spanSpolek->addClass($item->TypClenstvi_id !== 1 ? "label-spolek" : "label-neaktivni");
-
-            $spanDruzstvo = Html::el('span')->setText('Družstvo')->setClass('label');
-            $spanDruzstvo->addClass(in_array($item->smazano, [0, false], true) ? "label-druzstvo" : "label-neaktivni");
-
-            if ($item->spolek) {
-                $uidLink .= $spanSpolek;
-            }
-
-            if ($item->druzstvo) {
-                $uidLink .= $spanDruzstvo;
-            }
-
             if ($canViewOrEdit) {
                 // edit button
                 $anchor = Html::el('a')
@@ -404,6 +390,7 @@ class UzivatelListGrid
 
             return Html::el('span')->setClass('user-uid')->setHtml($uidLink);
         })->setSortable();
+        $this->pridejSloupecClenstvi($grid);
 
         if ($canViewOrEdit) {
             $grid->addColumnText('jmeno', 'Jméno a příjmení (nick)')->setCustomRender(function ($item) {
@@ -539,6 +526,41 @@ class UzivatelListGrid
     }
 
     /** Štítky členů i nabídka všech štítků se načtou jednou na tabulku, ne pro každý řádek. */
+    /** Štítky Spolek a Družstvo stojí ve vlastním sloupci, aby lepivý sloupec UID zůstal na telefonu úzký. */
+    private function pridejSloupecClenstvi(\Grido\Grid $grid): void {
+        $grid->addColumnText('clenstvi', 'Členství')->setCustomRender(function (ActiveRow $item): Html {
+            $stitky = Html::el('span');
+            foreach ($this->clenstvi($item) as $poradi => [$nazev, $trida, $ukonceno]) {
+                if ($poradi > 0) {
+                    $stitky->addText(' ');
+                }
+                $stitky->create('span')->setClass(['label', $ukonceno === null ? $trida : 'label-neaktivni'])->setText($nazev);
+            }
+            return $stitky;
+        })->setCustomRenderExport(function (ActiveRow $item): string {
+            $texty = [];
+            foreach ($this->clenstvi($item) as [$nazev, , $ukonceno]) {
+                $texty[] = $ukonceno === null ? $nazev : "$nazev ($ukonceno)";
+            }
+            return implode(', ', $texty);
+        });
+    }
+
+    /**
+     * Právní vztahy člena ke spolku a k družstvu.
+     * @return list<array{string, string, ?string}> název, třída štítku a slovo pro ukončený vztah (null, když trvá)
+     */
+    private function clenstvi(ActiveRow $item): array {
+        $clenstvi = [];
+        if (in_array($item->spolek, [0, false], true) === false) {
+            $clenstvi[] = ['Spolek', 'label-spolek', $item->TypClenstvi_id === 1 ? 'zrušeno' : null];
+        }
+        if (in_array($item->druzstvo, [0, false], true) === false) {
+            $clenstvi[] = ['Družstvo', 'label-druzstvo', in_array($item->smazano, [0, false], true) ? null : 'smazáno'];
+        }
+        return $clenstvi;
+    }
+
     private function pridejSloupecStitku(\Grido\Grid $grid): void {
         $stitkyClenu = new StitkyClenu($this->stitekUzivatele);
         $latte = new Engine();
