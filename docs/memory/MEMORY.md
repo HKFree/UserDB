@@ -18,7 +18,7 @@
 - [Náhledy stránek v PR](userdb_screenshots.md) - nestabilní časy demo dat, mobilní rozměry PNG a prostředí pro focení.
 - [Ověřování UI](userdb_ui_overeni.md) - nástrahy tabulek Grido, odkazů v layoutu a prohlídky stránek na telefonu.
 - [Výběr textu a schránka](userdb_clipboard.md) - nástrahy označování a kopírování hodnot z tabulek a testování bez systémové schránky.
-- [Nette Database a Grido](userdb_nette_database.md) - limit u related() načte celou historii, průchod tabulkou v callbacku Grida, pořadí dotazu bez order() podle keše sloupců, řazení podle sloupce navázané tabulky.
+- [Nette Database a Grido](userdb_nette_database.md) - limit u related() načte celou historii, průchod tabulkou v callbacku Grida, pořadí dotazu bez order() podle keše sloupců, řazení podle sloupce navázané tabulky, vyhodnocení argumentu `Selection` ve `where()` v MariaDB.
 - [Formuláře s přidávanými řádky](userdb_form_replicator.md) - rozsah validace tlačítek Přidat a Odstranit, čtení hodnot v továrně řádku, nástrahy testů a prohlídky.
 - [Grafy a aktivace členů](userdb_grafy.md) - pasti Rickshaw a d3 2.5, dotyk v grafech, typy pohybů při počítání aktivních členů.
 - [Winbox](userdb_winbox.md) - handler odkazu winbox: je v HKFree/winbox-uri-handler, co umí Winbox 4 sám, jak tlačítko vyzkoušet.

@@ -790,6 +790,9 @@ $(document).ready(function () {
     var panel = form.find('.search-suggestions');
     var options = $('#search-options');
     if (!input.length || !panel.length) return;
+    var hint = panel.find('.search-hint');
+    var emptyHint = hint.text();
+    var submitHint = 'Enter vyhledá člena i podle čísla smlouvy nebo IP adresy.';
     var index = [];
     var seen = {};
     var active = -1;
@@ -838,7 +841,6 @@ $(document).ready(function () {
         options.empty();
         active = -1;
         input.removeAttr('aria-activedescendant');
-        form.find('.search-hint').text(needle ? 'Enter vyhledá člena nebo IP adresu.' : 'Zadejte člena nebo IP, oblast, AP či nástroj.');
         if (needle) {
             var starts = [];
             var contains = [];
@@ -859,9 +861,9 @@ $(document).ready(function () {
         var hasOptions = options.children().length > 0;
         input.attr('aria-expanded', hasOptions ? 'true' : 'false');
         form.find('.search-help').prop('hidden', !hasOptions);
-        if (needle && !hasOptions) {
-            form.find('.search-hint').text('Oblast, AP ani nástroj nenalezen. Enter vyhledá člena nebo IP adresu.');
-        }
+        var message = needle ? submitHint : emptyHint;
+        if (needle && !hasOptions) message = 'Oblast, AP ani nástroj nenalezen. ' + submitHint;
+        hint.text(message);
     }
 
     input.on('focus input', render).on('blur', function () {

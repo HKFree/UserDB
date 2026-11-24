@@ -145,13 +145,13 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         Assert::same('Otevírání Winboxu z prohlížeče', $menu['/userdb/winbox/'] ?? null);
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/uzivatel-list/listall"]'));
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/sprava/mapa"]'));
-        Assert::count(1, $this->elements($document, '//form[@role="search"]//input[@placeholder="Hledat člena, IP, oblast, AP…"]'));
+        Assert::count(1, $this->elements($document, '//form[@role="search"]//input[@placeholder="Člen, IP, číslo smlouvy…"]'));
     }
 
     public function testSearchHintIsAssociatedWithInput(): void {
         $document = $this->home('ownSo');
         Assert::count(1, $this->elements($document, '//form[@role="search"]//input[@aria-describedby="search-hint"]'));
-        Assert::count(1, $this->elements($document, '//*[@id="search-hint" and @role="status"]'));
+        Assert::contains('číslo smlouvy', $this->text($document, '//*[@id="search-hint" and @role="status"]'));
     }
 
     public function testDeniedEditDoesNotDiscloseMember(): void {

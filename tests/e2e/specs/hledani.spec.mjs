@@ -23,7 +23,11 @@ test('celé číslo smlouvy v horní liště najde jejího člena', async ({ pag
     await signInAs(personas.vv);
     await page.goto('/');
     const search = page.getByRole('combobox', { name: 'Hledat', exact: true });
+    const hint = page.locator('#search-hint');
+    await search.focus();
+    await expect(hint).toContainText('číslo smlouvy');
     await search.fill(' 200003 ');
+    await expect(hint).toContainText('podle čísla smlouvy');
     await search.press('Enter');
 
     await expect(page).toHaveURL(/\/uzivatel-list\/listall\?search=200003/);
@@ -40,6 +44,7 @@ test('napovídání najde AP pod zápisem s oblastí, i když ho Moje oblasti vy
     await page.getByRole('combobox', { name: 'Hledat', exact: true }).fill('Demo částečně vypnutá - Demo zbylé');
     const option = page.getByRole('option', { name: /Demo zbylé AP \(219\)/ });
     await expect(option).toHaveCount(1);
+    await expect(page.locator('#search-hint')).toContainText('podle čísla smlouvy');
     await expect(option).toContainText('AP · Demo částečně vypnutá');
     await expect(option).toHaveAttribute('href', '/uzivatel-list/list/219');
 });
