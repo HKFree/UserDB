@@ -9,7 +9,7 @@ use Nette\Database\Table\ActiveRow;
 
 /**
  * @property-read \Nette\Bridges\ApplicationLatte\Template $template
- * @phpstan-type ParsedColumn array{typ: 1|4, sloupec: string}|array{typ: 2, sloupec: string, ipId: numeric-string}|array{typ: 3, sloupec: string, pravoId: numeric-string}|array{typ: 5, sloupec: string, subnetId: numeric-string}
+ * @phpstan-type ParsedColumn array{typ: 1|4, sloupec: string}|array{typ: 2, sloupec: string, ipId: numeric-string}|array{typ: 3, sloupec: string, pravoId: numeric-string}|array{typ: 5, sloupec: string, subnetId: numeric-string}|array{typ: 6, sloupec: string, smlouvaId: numeric-string}
  */
 class LogTable extends UI\Control
 {
@@ -23,6 +23,7 @@ class LogTable extends UI\Control
     public const PRAVO = 3;
     public const AP = 4;
     public const SUBNET = 5;
+    public const SMLOUVA = 6;
 
     public const INSERT = "I";
     public const UPDATE = "U";
@@ -45,7 +46,7 @@ class LogTable extends UI\Control
      * @param string $sloupec IPAdresa.sloupec z DB
      * @return ParsedColumn|array{} Empty array when not matched.
      */
-    private function parseSloupec($sloupec): array {
+    private function parseSloupec(string $sloupec): array {
         $out = [];
         if (preg_match("/^uzivatel\.(.+)/i", $sloupec, $matches) === 1) {
             $out["typ"] = self::UZIVATEL;
@@ -65,6 +66,10 @@ class LogTable extends UI\Control
             $out["typ"] = self::SUBNET;
             $out["subnetId"] = $matches[1];
             $out["sloupec"] = $matches[2];
+        } elseif (preg_match('/^smlouva\[(\d+)\]\.(.+)/i', $sloupec, $matches) === 1) {
+            $out['typ'] = self::SMLOUVA;
+            $out['smlouvaId'] = $matches[1];
+            $out['sloupec'] = $matches[2];
         }
         return $out;
     }
@@ -164,6 +169,10 @@ class LogTable extends UI\Control
         }
     }
 
+    private function hodnotaNeboPomlcky(?string $hodnota): string {
+        return ($hodnota ?? '') === '' ? '----' : $hodnota;
+    }
+
     /** @param iterable<ActiveRow> $logy */
     private function tableProcessLines(Html &$table, iterable $logy): void {
         $ipVsechny = $this->getIPMapping($logy);
@@ -189,6 +198,29 @@ class LogTable extends UI\Control
             } elseif ($rozparsovano["typ"] === self::AP) {
                 $tr = $this->tableGetLineBegin($table, $line);
                 $this->tableGetLineEndSimple($tr, $line, $rozparsovano);
+            } elseif ($rozparsovano['typ'] === self::SMLOUVA) {
+                if (in_array(strtolower($rozparsovano['sloupec']), ['uzivatel_id', 'podepsany_dokument_path', 'podepsany_dokument_content_type'], true)) {
+                    continue;
+                }
+                $sloupec = $this->log->translateJmeno($rozparsovano['sloupec']);
+                if ($line->akce === self::INSERT) {
+                    $text = $sloupec . ' = ' . $line->nova_hodnota . ', ';
+                    $zacatek = 'Založení smlouvy s parametry ';
+                } elseif ($line->akce === self::UPDATE) {
+                    $text = $sloupec . ' z ' . $this->hodnotaNeboPomlcky($line->puvodni_hodnota) . ' na ' . $this->hodnotaNeboPomlcky($line->nova_hodnota) . ', ';
+                    $zacatek = 'Změna ';
+                } else {
+                    continue;
+                }
+                $datum = (string) $line->datum;
+                $titulek = 'Smlouva č. ' . $rozparsovano['smlouvaId'];
+                if ($last !== null && $last['datum'] === $datum && $last['titulek'] === $titulek) {
+                    $last['bunka']->setText($last['bunka']->getText() . $text);
+                } else {
+                    $tr = $this->tableGetLineBegin($table, $line);
+                    $tr->create('td')->setText($titulek);
+                    $last = ['datum' => $datum, 'titulek' => $titulek, 'bunka' => $tr->create('td')->setText($zacatek . $text)->setColspan(2)];
+                }
             } elseif ($rozparsovano["typ"] === self::IPADRESA) {
                 $id = $rozparsovano["ipId"];
                 $sloupec = $rozparsovano["sloupec"];

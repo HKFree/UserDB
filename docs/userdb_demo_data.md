@@ -104,6 +104,11 @@ rozpis: `/payment-schedule/show/ID`, smlouva: `/sprava-smluv/show/ID`.
 | Platná smlouva, chybějící soubor | 20067 Smlouvaplatná | Smlouva 200003, šablona a parametry; Stáhnout ohlásí chybějící soubor |
 | Ukončená a nahrazená smlouva | 20068 Smlouvaukončená | 200004 ukončená před týdnem, poznámka odkazuje na 200006 |
 | Správcovská smlouva | 20069 Smlouvasprávce | Smlouva 200005, podepsaná |
+| Historie všech změn smluv | 20067 Smlouvaplatná | `/uzivatel/show/20067`, rozbalit „Změny“: založení, dlouhá změněná poznámka a ukončení 200010, odmítnutí 200011 členem, expirace 200012 systémovým uživatelem 1 a podpis 200003 členem. Správce 20012 je autorem založení a webových změn; cesta k dokumentu ani MIME typ se nezobrazí |
+
+Historii smluv prohlédni jako Tester (1) nebo správce oblasti (20012). Člen 20064 má smlouvu bez
+auditních záznamů pro prázdný stav historie. Podepsaná smlouva 200003 dál nemá skutečný PDF soubor;
+tyto scénáře nevyžadují volání Digisignu.
 
 ## Síť
 

@@ -11,6 +11,39 @@ require_once __DIR__ . '/bootstrap.php';
 
 final class LogTablePresenterTest extends DatabaseTestCase
 {
+    public function testContractHistoryGroupsInsertAndUpdateAndHidesInternalFields(): void {
+        $member = $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id);
+        $this->fixtures->role($member->id, 'VV');
+        foreach ([
+            ['Smlouva[123].typ', null, 'ucastnicka', 'I', '2020-01-01 00:00:00'],
+            ['Smlouva[123].kdy_vygenerovano', null, '2020-01-01 00:00:00', 'I', '2020-01-01 00:00:00'],
+            ['Smlouva[123].poznamka', 'Původní', '<b>Nová</b>', 'U', '2020-01-02 00:00:00'],
+            ['Smlouva[123].kdy_ukonceno', null, '2020-01-02 00:00:00', 'U', '2020-01-02 00:00:00'],
+            ['sMlOuVa[124].kdy_podepsano', null, '2020-01-03 00:00:00', 'U', '2020-01-03 00:00:00'],
+            ['sMlOuVa[124].podepsany_dokument_nazev', null, 'smlouva.pdf', 'U', '2020-01-03 00:00:00'],
+            ['Smlouva[125].kdy_odmitnuto', null, '2020-01-03 00:00:00', 'U', '2020-01-03 00:00:00'],
+            ['Smlouva[123].Uzivatel_id', null, '123456789', 'I', '2020-01-04 00:00:00'],
+            ['Smlouva[123].podepsany_dokument_path', '/old/server/path', '/new/server/path', 'U', '2020-01-04 00:00:00'],
+            ['Smlouva[123].podepsany_dokument_content_type', null, 'application/pdf', 'U', '2020-01-04 00:00:00'],
+        ] as [$column, $old, $new, $action, $date]) {
+            $this->fixtures->insert('Log', [
+                'Uzivatel_id' => $member->id, 'tabulka' => 'Uzivatel', 'tabulka_id' => $member->id,
+                'sloupec' => $column, 'puvodni_hodnota' => $old, 'nova_hodnota' => $new,
+                'datum' => $date, 'ip_adresa' => '127.0.0.1', 'akce' => $action,
+            ]);
+        }
+        $result = $this->presenters->ui($member->id, 'Uzivatel', ['action' => 'show', 'id' => $member->id]);
+        Assert::same(200, $result->status);
+        Assert::same([
+            ['Kdy', 'Kdo', 'Co', 'Z', 'Na'],
+            ['2020-01-03 00:00:00', $member->nick, 'Smlouva č. 125', 'Změna odmítnuto z ---- na 2020-01-03 00:00:00, '],
+            ['2020-01-03 00:00:00', $member->nick, 'Smlouva č. 124', 'Změna podepsaný dokument z ---- na smlouva.pdf, podepsáno z ---- na 2020-01-03 00:00:00, '],
+            ['2020-01-02 00:00:00', $member->nick, 'Smlouva č. 123', 'Změna poznámka z Původní na <b>Nová</b>, ukončeno z ---- na 2020-01-02 00:00:00, '],
+            ['2020-01-01 00:00:00', $member->nick, 'Smlouva č. 123', 'Založení smlouvy s parametry typ = ucastnicka, vygenerováno = 2020-01-01 00:00:00, '],
+        ], $this->logRows($result->html));
+        Assert::notContains('<b>Nová</b>', $result->html);
+    }
+
     public function testMemberLogKeepsNullsAndHidesPasswords(): void {
         $area = $this->fixtures->area();
         $member = $this->fixtures->member($this->fixtures->ap($area->id)->id);

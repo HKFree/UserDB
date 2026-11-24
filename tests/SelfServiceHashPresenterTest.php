@@ -70,6 +70,7 @@ final class SelfServiceHashPresenterTest extends TestCase
                 Assert::true($presenter->getTemplate()->stav);
                 Assert::same([['regform_downloaded_password_sent' => 1]], $member->updates);
                 Assert::same([42], $container->getByType(RecordingContractRequest::class)->calls);
+                Assert::same([42], $container->getByType(RecordingContractRequest::class)->authors);
             } else {
                 Assert::false($presenter->getTemplate()->stav);
                 Assert::same([], $member->updates);

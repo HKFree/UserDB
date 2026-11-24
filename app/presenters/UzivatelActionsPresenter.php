@@ -197,8 +197,6 @@ class UzivatelActionsPresenter extends UzivatelPresenter
     }
 
     public function actionHandleSubscriberContract(): void {
-        // TODO: Logování změn
-
         if ($this->maVyplnenyParametr('id') === false) {
             $this->flashMessage('Žádné id.');
             $this->redirect('UzivatelList:listall');

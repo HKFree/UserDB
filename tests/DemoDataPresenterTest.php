@@ -42,6 +42,7 @@ final class DemoDataPresenterTest extends TestCase
         $this->assertReferences();
         $this->assertRemovedMembers();
         $this->assertScenarioSafety();
+        $this->assertContractHistory();
         // First of the page checks: the seeded login limit lasts 15 minutes from the load.
         $this->assertApi();
         $this->assertMemberPages();
@@ -53,6 +54,22 @@ final class DemoDataPresenterTest extends TestCase
         $this->assertVolume();
         Assert::same([], $container->getByType(RecordingMailer::class)->messages);
         Assert::same([], $container->getByType(RecordingMexSmsSender::class)->calls);
+    }
+
+    private function assertContractHistory(): void {
+        $history = $this->database->table('Log')->where('tabulka', 'Uzivatel')->where('tabulka_id', 20067)->where('sloupec LIKE ?', 'Smlouva[%');
+        Assert::same(17, $history->count('*'));
+        Assert::same(20067, $this->database->table('Log')->where('sloupec', 'Smlouva[200003].kdy_podepsano')->fetchField('Uzivatel_id'));
+        Assert::same(20067, $this->database->table('Log')->where('sloupec', 'Smlouva[200011].kdy_odmitnuto')->fetchField('Uzivatel_id'));
+        Assert::same(1, $this->database->table('Log')->where('sloupec', 'Smlouva[200012].poznamka')->where('akce', 'U')->fetchField('Uzivatel_id'));
+        $html = $this->page('Uzivatel', 'show', 20067);
+        Assert::true(preg_match('~<table class="table table-striped logstable">.*?</table>~s', $html, $matches) === 1);
+        $text = $this->text($matches[0]);
+        foreach (['Založení smlouvy s parametry', 'Změna poznámka', 'ukončeno', 'podepsáno', 'odmítnuto', 'VYPRŠEL ČAS', 'Smlouva č. 200003'] as $expected) {
+            Assert::contains($expected, $text);
+        }
+        Assert::notContains('demo-neexistujici/', $matches[0]);
+        Assert::notContains('application/pdf', $matches[0]);
     }
 
     private function buildDatabase(): Explorer {

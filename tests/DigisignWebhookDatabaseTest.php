@@ -8,6 +8,7 @@ use Nette\DI\Container;
 use Tester\Assert;
 
 require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/ContractAuditTestHelpers.php';
 
 // The standalone entry point constructs both dependencies itself. Replace them before autoloading it.
 final class WebhookBootstrap
@@ -76,6 +77,7 @@ final class WebhookEnvelopes
     public ?string $declineReason = null;
     public bool $withRecipient = true;
     public bool $withDocument = true;
+    public bool $failDownload = false;
     public ?string $sentAt = '2026-01-01 12:00:00';
     public ?string $declinedAt = '2026-01-01 12:00:00';
     public ?string $expiredAt = null;
@@ -103,6 +105,9 @@ final class WebhookEnvelopes
 
     public function download(string $id): self {
         $this->calls[] = 'download:' . $id;
+        if ($this->failDownload) {
+            throw new \RuntimeException('Test download failed.');
+        }
         return $this;
     }
 
@@ -121,10 +126,93 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
     protected function setUp(): void {
         parent::setUp();
         $this->container = TestEnvironment::container($this->database, new \Nette\Http\Request(new \Nette\Http\UrlScript('http://localhost/'), remoteAddress: '192.0.2.1'));
+        foreach ($this->container->findByType(\App\Model\Log::class) as $name) {
+            $this->container->removeService($name);
+            $this->container->addService($name, ContractAuditTestHelpers::logWithoutSession($this->database));
+        }
+        $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id, ['id' => 1]);
         WebhookBootstrap::$container = $this->container;
         WebhookDigiSign::$envelopes = new WebhookEnvelopes();
         require_once __DIR__ . '/../www/digisign-webhook/WebhookReceiver.php';
         $GLOBALS['container'] = $this->container;
+    }
+
+    public function testCompletedLogsSignatureAndDocumentWithoutSessionAndSkipsUnchangedValues(): void {
+        [$member, $contract, $signature] = $this->contractFixture(null);
+        $contract->update([
+            'podepsany_dokument_nazev' => 'old.pdf', 'podepsany_dokument_path' => '/old/old.pdf',
+            'podepsany_dokument_content_type' => 'application/octet-stream',
+        ]);
+        $signature->update(['kdy_podepsano' => '2025-12-31 10:00:00']);
+        $expected = [
+            'kdy_podepsano' => ['2025-12-31 10:00:00', '2026-01-01 12:00:00', 'U'],
+            'podepsany_dokument_nazev' => ['old.pdf', 'fixture.pdf', 'U'],
+            'podepsany_dokument_content_type' => ['application/octet-stream', 'application/pdf', 'U'],
+            'podepsany_dokument_path' => ['/old/old.pdf', getenv('FILE_STORAGE_PATH') . '/ucastnickeSmlouvy/fixture.pdf', 'U'],
+        ];
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $this->processHook($contract, 'envelopeCompleted');
+            ContractAuditTestHelpers::assertEntries($this->database, $contract, $member->id, $expected);
+            Assert::same(4, $this->database->table('Log')->count('*'));
+        }
+    }
+
+    public function testFailedDownloadStillAuditsSignatureAndRetryLogsOnlyDocument(): void {
+        [$member, $contract, $signature] = $this->contractFixture(null);
+        WebhookDigiSign::$envelopes->failDownload = true;
+        Assert::exception(fn () => $this->processHook($contract, 'envelopeCompleted'), \RuntimeException::class, 'Test download failed.');
+        Assert::notNull($this->requireRow($this->database->table('PodpisSmlouvy')->get($signature->id))->kdy_podepsano);
+        Assert::null($this->requireRow($this->database->table('Smlouva')->get($contract->id))->podepsany_dokument_path);
+        $expected = ['kdy_podepsano' => [null, '2026-01-01 12:00:00', 'U']];
+        ContractAuditTestHelpers::assertEntries($this->database, $contract, $member->id, $expected);
+
+        WebhookDigiSign::$envelopes->failDownload = false;
+        $this->processHook($contract, 'envelopeCompleted');
+        ContractAuditTestHelpers::assertEntries($this->database, $contract, $member->id, $expected + [
+            'podepsany_dokument_nazev' => [null, 'fixture.pdf', 'U'],
+            'podepsany_dokument_content_type' => [null, 'application/pdf', 'U'],
+            'podepsany_dokument_path' => [null, getenv('FILE_STORAGE_PATH') . '/ucastnickeSmlouvy/fixture.pdf', 'U'],
+        ]);
+        Assert::same(4, $this->database->table('Log')->count('*'));
+    }
+
+    /** @return list<array{?string}> */
+    public function auditDeclineReasons(): array {
+        return [[null], ['Nesouhlasím s podmínkami']];
+    }
+
+    /** @dataProvider auditDeclineReasons */
+    public function testDeclinedLogsSignatureAndChangedNoteWithoutSession(?string $reason): void {
+        [$member, $contract] = $this->contractFixture('Původní poznámka');
+        WebhookDigiSign::$envelopes->status = 'declined';
+        WebhookDigiSign::$envelopes->declineReason = $reason;
+        $this->processHook($contract, 'envelopeDeclined');
+        $expected = ['kdy_odmitnuto' => [null, '2026-01-01 12:00:00', 'U']];
+        if ($reason !== null) {
+            $expected['poznamka'] = ['Původní poznámka', "Původní poznámka\nSmlouva ODMÍTNUTA 01.01.2026 12:00 s důvodem: " . $reason, 'U'];
+        }
+        ContractAuditTestHelpers::assertEntries($this->database, $contract, $member->id, $expected);
+        Assert::same(count($expected), $this->database->table('Log')->count('*'));
+    }
+
+    public function testExpiredLogsNoteWithSystemAuthorWithoutSession(): void {
+        [, $contract] = $this->contractFixture('Původní poznámka');
+        WebhookDigiSign::$envelopes->status = 'expired';
+        $this->processHook($contract, 'envelopeExpired');
+        ContractAuditTestHelpers::assertEntries($this->database, $contract, 1, [
+            'poznamka' => ['Původní poznámka', "Původní poznámka\nVYPRŠEL ČAS na podpis 01.01.2026 12:00", 'U'],
+        ]);
+        Assert::same(1, $this->database->table('Log')->count('*'));
+    }
+
+    public function testSentLogsNoteWithSystemAuthorWithoutSession(): void {
+        [, $contract] = $this->contractFixture('Původní poznámka');
+        WebhookDigiSign::$envelopes->status = 'sent';
+        $this->processHook($contract, 'envelopeSent');
+        ContractAuditTestHelpers::assertEntries($this->database, $contract, 1, [
+            'poznamka' => ['Původní poznámka', "Původní poznámka\nSmlouva odeslána 01.01.2026 12:00 na adresu recipient@example.invalid.", 'U'],
+        ]);
+        Assert::same(1, $this->database->table('Log')->count('*'));
     }
 
     public function testOtherEntityNamesDoNotProcessEnvelope(): void {
@@ -334,6 +422,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
             $this->container->getByType(\App\Model\Uzivatel::class),
             $this->container->getByType(\App\Model\Smlouva::class),
             $this->container->getByType(\App\Model\PodpisSmlouvy::class),
+            $this->container->getByType(\App\Model\Log::class),
         );
         ob_start();
         try {
