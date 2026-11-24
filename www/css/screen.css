@@ -1562,7 +1562,7 @@ input[readonly],
 
 /*
  * Graf počtu aktivních členů (Správa → Graf počtu uživatelů). Data nesou tenké barevné hrany nad světlým závojem,
- * mřížka, osy, rámečky a texty jsou v neutrální šedé. Barvy způsobů aktivace (color) čte i graf-clenu.js.
+ * mřížka, osy, rámečky a texty jsou v neutrální šedé. Legenda i datové řady mají stejné třídy pro barvy.
  * Pravidla pro prvky Rickshaw mají aspoň čtyři třídy: rickshaw.min.css se načítá až po screen.css.
  */
 .graf-clenu-popis {
@@ -1581,7 +1581,7 @@ input[readonly],
 
 .graf-clenu-nastroje-popisek {
     font-size: 12px;
-    color: #666;
+    color: var(--udb-text-666666);
 }
 
 .graf-clenu-souhrn {
@@ -1589,7 +1589,7 @@ input[readonly],
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
     max-width: 620px;
     margin-bottom: 32px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--udb-line-dddddd);
     border-radius: 4px;
 }
 
@@ -1600,7 +1600,7 @@ input[readonly],
 
 .graf-clenu-souhrn dt {
     font-weight: normal;
-    color: #666;
+    color: var(--udb-text-666666);
 }
 
 .graf-clenu-souhrn dd {
@@ -1621,7 +1621,7 @@ input[readonly],
 
 .graf-clenu-srovnani {
     display: block;
-    color: #666;
+    color: var(--udb-text-666666);
 }
 
 .graf-clenu-rozpad {
@@ -1630,11 +1630,11 @@ input[readonly],
     align-content: center;
     gap: 6px 24px;
     font-size: 12px;
-    border-left: 1px solid #e5e5e5;
+    border-left: 1px solid var(--udb-line-e5e5e5);
 }
 
 .graf-clenu-souhrn .graf-clenu-rozpad dt {
-    color: #333;
+    color: var(--udb-text-333333);
 }
 
 .graf-clenu-rozpad dd {
@@ -1645,7 +1645,7 @@ input[readonly],
 .graf-clenu-sekce + .graf-clenu-sekce {
     margin-top: 32px;
     padding-top: 24px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--udb-line-eeeeee);
 }
 
 .graf-clenu-zahlavi {
@@ -1702,16 +1702,16 @@ input[readonly],
 }
 
 .graf-clenu-barva-automatem {
-    color: #2a78d6;
+    color: var(--udb-text-2a78d6);
 }
 
 .graf-clenu-barva-rucne {
-    color: #eb6834;
+    color: var(--udb-text-eb6834);
 }
 
 /* O stupeň tmavší než výchozí #1baf7a: hrana tak má proti bílé kontrast aspoň 3 : 1. */
 .graf-clenu-barva-castecne {
-    color: #18a571;
+    color: var(--udb-text-18a571);
 }
 
 /* Místo pro horní popisek osy y, který přesahuje nad plochu. */
@@ -1734,7 +1734,7 @@ input[readonly],
 
 /* Základna: jediná výraznější vodorovná čára. */
 .graf-clenu-plocha {
-    border-bottom: 1px solid #999;
+    border-bottom: 1px solid var(--udb-line-999999);
 }
 
 .graf-clenu-plocha svg {
@@ -1765,7 +1765,7 @@ input[readonly],
 }
 
 .graf-clenu .rickshaw_graph .y_grid .tick {
-    stroke: #e5e5e5;
+    stroke: var(--udb-line-e5e5e5);
     stroke-width: 1px;
     stroke-dasharray: none;
 }
@@ -1773,11 +1773,11 @@ input[readonly],
 .graf-clenu .rickshaw_graph .y_ticks text {
     opacity: 1;
     font-size: 11px;
-    fill: #666;
+    fill: var(--udb-text-666666);
 }
 
 .graf-clenu .rickshaw_graph .detail {
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--udb-bg-graf-kurzor);
 }
 
 /* Svislá čára měsíce se ukáže až s první bublinou. */
@@ -1795,7 +1795,7 @@ input[readonly],
     top: 0;
     padding-top: 8px;
     font-size: 11px;
-    color: #666;
+    color: var(--udb-text-666666);
     white-space: nowrap;
     transform: translateX(-50%);
 }
@@ -1807,7 +1807,7 @@ input[readonly],
     top: 0;
     left: 50%;
     height: 5px;
-    border-left: 1px solid #999;
+    border-left: 1px solid var(--udb-line-999999);
 }
 
 .graf-clenu-bublina {
@@ -1818,11 +1818,11 @@ input[readonly],
     font-size: 12px;
     line-height: 1.5;
     white-space: nowrap;
-    color: #333;
-    background: #fff;
-    border: 1px solid #ddd;
+    color: var(--udb-text-333333);
+    background: var(--udb-bg-ffffff);
+    border: 1px solid var(--udb-line-dddddd);
     border-radius: 4px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 1px 4px var(--udb-shadow-000000-a12);
 }
 
 .graf-clenu-bublina-mesic {
@@ -1834,21 +1834,21 @@ input[readonly],
     display: grid;
     grid-template-columns: auto auto;
     column-gap: 16px;
-    color: #555;
+    color: var(--udb-text-555555);
 }
 
 .graf-clenu-bublina-cislo {
     text-align: right;
     font-weight: bold;
-    color: #222;
+    color: var(--udb-text-222222);
     font-variant-numeric: tabular-nums;
 }
 
 .graf-clenu-bublina-hodnoty .graf-clenu-bublina-celkem {
     margin-top: 4px;
     padding-top: 4px;
-    border-top: 1px solid #e5e5e5;
-    color: #222;
+    border-top: 1px solid var(--udb-line-e5e5e5);
+    color: var(--udb-text-222222);
 }
 
 /* V bublině čárový klíč, plochá dlaždice by na té hustotě byla zbytečně těžká. */
@@ -1866,9 +1866,9 @@ input[readonly],
     margin: 8px 0 0;
     padding: 32px 16px;
     text-align: center;
-    color: #666;
-    background: #fafafa;
-    border: 1px solid #e5e5e5;
+    color: var(--udb-text-666666);
+    background: var(--udb-bg-fafafa);
+    border: 1px solid var(--udb-line-e5e5e5);
     border-radius: 4px;
 }
 
@@ -1889,7 +1889,7 @@ input[readonly],
     }
 
     .graf-clenu-rozpad {
-        border-top: 1px solid #e5e5e5;
+        border-top: 1px solid var(--udb-line-e5e5e5);
         border-left: 0;
     }
 
@@ -2137,15 +2137,6 @@ input[readonly],
         max-width: 100%;
         white-space: normal;
     }
-}
-
-/* The user graph has a fixed width; it scrolls in place instead of widening the page. */
-#chart_container {
-    max-width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    /* Room for the time axis labels, which rickshaw draws below the chart box. */
-    padding-bottom: 45px;
 }
 
 /* IDS events arrive by AJAX after main.js has framed the other tables. */

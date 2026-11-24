@@ -130,6 +130,14 @@
     --udb-line-4aa63c: #4aa63c;
     --udb-line-8a8a8a: #8a8a8a;
     --udb-line-b46aa9: #b46aa9;
+    --udb-bg-fafafa: #fafafa;
+    --udb-text-2a78d6: #2a78d6;
+    --udb-text-eb6834: #eb6834;
+    --udb-text-18a571: #18a571;
+    --udb-line-e5e5e5: #e5e5e5;
+    --udb-line-999999: #999999;
+    --udb-bg-graf-kurzor: rgba(0, 0, 0, 0.35);
+    --udb-shadow-000000-a12: rgba(0, 0, 0, 0.12);
 }
 
 :root[data-theme="dark"] {
@@ -264,6 +272,14 @@
     --udb-line-4aa63c: #5cbf4d;
     --udb-line-8a8a8a: #8f8f8f;
     --udb-line-b46aa9: #c98bc0;
+    --udb-bg-fafafa: #161a20;
+    --udb-text-2a78d6: #6dabf2;
+    --udb-text-eb6834: #ff936d;
+    --udb-text-18a571: #54cf9e;
+    --udb-line-e5e5e5: #323943;
+    --udb-line-999999: #78828f;
+    --udb-bg-graf-kurzor: rgba(255, 255, 255, 0.35);
+    --udb-shadow-000000-a12: rgba(0, 0, 0, 0.50);
 }
 
 /*
@@ -571,25 +587,6 @@
 :root[data-theme="dark"] .label-primary { background-color: #2a6aa8; }
 :root[data-theme="dark"] .label-info { background-color: #1f6f86; }
 :root[data-theme="dark"] .label-warning { background-color: #8a5a00; }
-
-/* Graf počtu uživatelů (Rickshaw): popisky os a mřížka na tmavém pozadí. */
-:root[data-theme="dark"] .rickshaw_graph .y_ticks text,
-:root[data-theme="dark"] .rickshaw_graph .x_ticks text {
-    fill: var(--udb-dark-text);
-    fill-opacity: 1;
-}
-
-:root[data-theme="dark"] .rickshaw_graph .x_tick .title {
-    color: var(--udb-dark-text);
-    opacity: 1;
-}
-
-:root[data-theme="dark"] .rickshaw_graph .x_tick,
-:root[data-theme="dark"] .rickshaw_graph .y_grid .tick,
-:root[data-theme="dark"] .rickshaw_graph .y_ticks path {
-    border-color: var(--udb-dark-border);
-    stroke: var(--udb-dark-border);
-}
 
 /* Přehled subnetu: barvy z bloku <style> v Subnet/overview.latte. */
 :root[data-theme="dark"] .fullsubnet {
