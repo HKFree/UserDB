@@ -29,7 +29,6 @@
 
 <a n:if="$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>false}" class="btn btn-default btn-sm active" role="button" aria-pressed="true" title="Zobrazit zkrácené poznámky a adresy"><i class="fa fa-check-square-o" aria-hidden="true"></i> Kompletní poznámky a adresy</a>
 <a n:if="!$fullnotes" href="{link UzivatelList:list id=>$ap->id, fullnotes=>true}" class="btn btn-default btn-sm" role="button" aria-pressed="false" title="Zobrazit kompletní poznámky a adresy"><i class="fa fa-square-o" aria-hidden="true"></i> Kompletní poznámky a adresy</a>
-{include memberDensity}
 </div>
 </div>
 
@@ -58,14 +57,6 @@
     <li>Počet všech členů: {$u_celkem}</li>
     <li>Počet všech členů včetně zrušených: {$u_celkemz}</li>
 </ul>
-{/define}
-
-{define memberDensity}
-<span>Řádky:</span>
-<span class="btn-group row-density" role="group" aria-label="Hustota řádků">
-    <button type="button" class="btn btn-default btn-sm active" data-compact="0" aria-pressed="true">Pohodlné</button>
-    <button type="button" class="btn btn-default btn-sm" data-compact="1" aria-pressed="false">Kompaktní</button>
-</span>
 {/define}
 
 {define memberQuickFilter}

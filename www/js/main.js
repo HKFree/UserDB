@@ -560,12 +560,6 @@ $(document).ready(function () {
     var list = $('.member-list');
     var input = $('#member-quick-filter');
     if (!list.length) return;
-    var compact = false;
-    try {
-        compact = localStorage.getItem('userdb_rows_compact') === 'true';
-    } catch (error) {
-        // Nastaveni je volitelne, napr. v soukromem rezimu muze byt uloziste nedostupne.
-    }
 
     function applyFilter() {
         var needle = $.trim(input.val()).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -584,32 +578,10 @@ $(document).ready(function () {
         $('.quick-filter').toggleClass('quick-filter-no-match', shown === 0 && needle !== '');
     }
 
-    function applyDensity() {
-        list.toggleClass('rows-compact', compact);
-        list.find('.row-density button').each(function () {
-            var active = ($(this).attr('data-compact') === '1') === compact;
-            $(this).toggleClass('active', active).attr('aria-pressed', active ? 'true' : 'false');
-        });
-        $(window).trigger('resize');
-    }
-
     input.on('input', applyFilter);
-    list.on('click', '.row-density button', function () {
-        compact = $(this).attr('data-compact') === '1';
-        try {
-            localStorage.setItem('userdb_rows_compact', compact ? 'true' : 'false');
-        } catch (error) {
-            // Zmena funguje i bez zapamatovani.
-        }
-        applyDensity();
-    });
     applyFilter();
-    applyDensity();
     $(document).ajaxComplete(function () {
-        setTimeout(function () {
-            applyFilter();
-            applyDensity();
-        }, 0);
+        setTimeout(applyFilter, 0);
     });
 });
 

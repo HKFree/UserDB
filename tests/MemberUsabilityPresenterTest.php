@@ -81,9 +81,8 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         Assert::same('SoukroméJméno SoukroméPříjmení | HKFree UserDB', $this->text($document, '//title'));
         Assert::contains('SoukroméJméno SoukroméPříjmení', $this->text($document, '//h1'));
         Assert::same('SoukroméJméno SoukroméPříjmení', $this->text($document, '//ol[contains(@class,"page-crumbs")]/li[last()]'));
-        $tiles = $this->elements($document, '//*[@class="fact-strip"]/a');
-        Assert::same(['#member-internet', '#member-payments', '#member-payments', '#member-tv', '#member-contracts', '#member-ip'], array_map(static fn (DOMElement $tile): string => $tile->getAttribute('href'), $tiles));
-        Assert::same('group', $this->elements($document, '//*[@class="fact-strip"]')[0]->getAttribute('role'));
+        // The detail shows the state in its sections; a summary strip above them would only repeat it.
+        Assert::count(0, $this->elements($document, '//*[contains(@class,"fact-strip")]'));
         Assert::count(1, $this->elements($document, '//*[contains(@class,"page-actions")]//ul[@role="menu"]'));
         Assert::count(4, $this->elements($document, '//button[@data-copy-value]'));
         // The class copy-value is taken by the login and password values of the IP table and their handlers.

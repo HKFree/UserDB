@@ -2519,18 +2519,18 @@ html {
     --member-stripe: transparent;
 }
 
-.member-list.rows-compact .grido tbody tr td {
+.member-list .grido tbody tr td {
     padding: 1px 5px !important;
     font-size: 11px;
     line-height: 1.3 !important;
 }
 
-.member-list.rows-compact .grido thead th {
+.member-list .grido thead th {
     padding: 4px 5px;
     font-size: 10px;
 }
 
-.member-list.rows-compact .grido td.grid-cell-id .label {
+.member-list .grido td.grid-cell-id .label {
     font-size: 9px;
 }
 
@@ -2679,92 +2679,6 @@ html {
 .section-empty {
     margin: 8px 0 4px;
     color: var(--udb-text-6b7280);
-}
-
-.fact-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.main a.fact-tile {
-    flex: 1 1 130px;
-    min-width: 130px;
-    max-width: 230px;
-    padding: 8px 12px;
-    border: 1px solid var(--udb-line-e2e5e9);
-    border-radius: 4px;
-    background: var(--udb-bg-ffffff);
-    color: var(--udb-text-1f2937);
-    text-decoration: none;
-    overflow-wrap: anywhere;
-}
-
-.main a.fact-tile:hover,
-.main a.fact-tile:focus {
-    border-color: var(--udb-line-9dbfe3);
-    background: var(--udb-bg-f7fafd);
-}
-
-.fact-tile > span {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .05em;
-    text-transform: uppercase;
-    color: var(--udb-text-6b7280);
-}
-
-.fact-tile > b {
-    display: block;
-    font-size: 16px;
-    line-height: 1.35;
-}
-
-.fact-tile > small {
-    display: block;
-    font-size: 11px;
-    color: var(--udb-text-6b7280);
-}
-
-.main a.fact-ok {
-    border-left: 4px solid var(--udb-line-3c9a3c);
-}
-
-.main a.fact-warn {
-    border-left: 4px solid var(--udb-line-d98a00);
-}
-
-.main a.fact-bad {
-    border-left: 4px solid var(--udb-line-c9302c);
-}
-
-.fact-ok > b::before,
-.fact-warn > b::before,
-.fact-bad > b::before {
-    content: "";
-    display: inline-block;
-    width: 9px;
-    height: 9px;
-    margin-right: 6px;
-    border-radius: 50%;
-}
-
-.fact-ok > b::before {
-    background: var(--udb-bg-3c9a3c);
-}
-
-.fact-warn > b::before {
-    background: var(--udb-bg-d98a00);
-}
-
-.fact-bad > b::before {
-    background: var(--udb-bg-c9302c);
-}
-
-.fact-bad > b {
-    color: var(--udb-text-9a1c1c);
 }
 
 /* IP adresy v detailu člena: adresa má šířku nejdelší možné adresy, takže tlačítka pro zkopírování stojí pod sebou. */

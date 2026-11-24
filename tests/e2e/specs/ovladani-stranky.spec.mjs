@@ -41,7 +41,7 @@ test('filtr v levém panelu nechá jen odpovídající oblasti a AP bez ohledu n
     await expect(shown).toHaveCount(all);
 });
 
-test('rychlý filtr skryje ostatní řádky a hustota řádků přežije obnovení stránky', async ({ page }) => {
+test('rychlý filtr skryje ostatní řádky a řádky jsou vždy kompaktní', async ({ page }) => {
     await page.goto('/uzivatel-list/list/201');
     const list = page.locator('.member-list');
     const rows = list.locator('#grid tbody tr[class*="grid-row-"]');
@@ -54,15 +54,10 @@ test('rychlý filtr skryje ostatní řádky a hustota řádků přežije obnoven
     await expect(rows.filter({ visible: true }).getByRole('link', { name: '20028', exact: true })).toBeVisible();
     await expect(list.locator('.quick-filter-count')).toHaveText(`1 z ${loaded} načtených řádků`);
 
-    const compact = page.getByRole('button', { name: 'Kompaktní', exact: true });
-    await expect(compact).toHaveAttribute('aria-pressed', 'false');
-    await compact.click();
-    await expect(compact).toHaveAttribute('aria-pressed', 'true');
-    await expect(list).toHaveClass(/(?:^| )rows-compact(?: |$)/);
-    await page.reload();
-    await expect(compact).toHaveAttribute('aria-pressed', 'true');
-    await expect(list).toHaveClass(/(?:^| )rows-compact(?: |$)/);
-    await expect(rows.filter({ visible: true })).toHaveCount(loaded);
+    // Technický seznam ukazuje co nejvíc řádků; přepínač hustoty už není.
+    await expect(page.getByRole('button', { name: 'Kompaktní', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Pohodlné', exact: true })).toHaveCount(0);
+    expect(await rows.first().locator('td').nth(1).evaluate(cell => getComputedStyle(cell).fontSize)).toBe('11px');
 });
 
 test('formulář člena ukáže chybu u pole a po opravě ji zase skryje', async ({ page }) => {

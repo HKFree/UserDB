@@ -22,7 +22,7 @@ metadata:
   a kliknutí na řazení načte celou stránku. AJAX snippet lze ověřit přes `$.nette.ajax()`;
   jeho podporu nezaměňovat za chování běžného odkazu. Ověřeno 22. 11. 2026 čtením
   inicializace a v prohlížeči. Rychlý filtr zůstává při obnově snippetu, při plné navigaci
-  se vyprázdní; hustota řádků se zachová v obou případech.
+  se vyprázdní.
 - Latte 2 nepřenáší lokální proměnnou vytvořenou přes `{var}` v layoutu automaticky
   do bloku `content` potomka. Sdílená data definovaná v layoutu předat jako argument
   `{include content, ...}`. Ověřeno 22. 11. 2026 presenter testem přehledu: bez
