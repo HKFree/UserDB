@@ -482,7 +482,7 @@ $(document).ready(function () {
                 }).length > 0;
                 item.toggleClass('label-assigned', assigned)
                     .attr('aria-disabled', assigned ? 'true' : 'false')
-                    .attr('title', assigned ? 'Člen tento štítek už má' : 'Přidat štítek');
+                    .attr('title', assigned ? 'Účastník tento štítek už má' : 'Přidat štítek');
             });
         });
     }
@@ -580,7 +580,7 @@ $(document).ready(function () {
         // Radky uz vybral server; jeho hledani je presnejsi nez text bunek (zkracene poznamky, skryte sloupce).
         if (!live || $.trim(value) === $.trim(applied)) {
             rows.removeClass('quick-filter-hidden');
-            count.text($.trim(value) === $.trim(applied) ? count.attr('data-total') : 'Enter hledá ve všech členech');
+            count.text($.trim(value) === $.trim(applied) ? count.attr('data-total') : 'Enter hledá ve všech účastnících');
             filter.removeClass('quick-filter-no-match');
             return;
         }
@@ -792,7 +792,7 @@ $(document).ready(function () {
     if (!input.length || !panel.length) return;
     var hint = panel.find('.search-hint');
     var emptyHint = hint.text();
-    var submitHint = 'Enter vyhledá člena i podle čísla smlouvy nebo IP adresy.';
+    var submitHint = 'Enter vyhledá účastníka i podle čísla smlouvy nebo IP adresy.';
     var index = [];
     var seen = {};
     var active = -1;

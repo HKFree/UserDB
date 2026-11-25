@@ -1,4 +1,4 @@
-{block title}{$ap->jmeno} - členové AP{/block}
+{block title}{$ap->jmeno} - účastníci AP{/block}
 {block content}
 <nav aria-label="Drobečková navigace">
     <ol class="breadcrumb page-crumbs">
@@ -8,7 +8,7 @@
     </ol>
 </nav>
 <div class="page-head">
-<h1 class="page-title">{$ap->jmeno} <small>členové AP</small></h1>
+<h1 class="page-title">{$ap->jmeno} <small>účastníci AP</small></h1>
 <div class="page-actions">
 <a href="{link Ap:show id=>$ap->id}" class="btn btn-default" role="button"><i class="glyphicon glyphicon-eye-open"></i> Podrobnosti AP</a>
 <a href="{link Wewimo:show id=>$ap->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-signal"></i> Wewimo</a>

@@ -138,7 +138,7 @@ class UzivatelPresenter extends BasePresenter
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         if ($so === null) {
-            $this->error('Účastník nebyl nalezen.');
+            $this->error('Přihlášený uživatel nebyl nalezen.');
         }
 
         try {
@@ -161,7 +161,7 @@ class UzivatelPresenter extends BasePresenter
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         if ($so === null) {
-            $this->error('Účastník nebyl nalezen.');
+            $this->error('Přihlášený uživatel nebyl nalezen.');
         }
 
         try {

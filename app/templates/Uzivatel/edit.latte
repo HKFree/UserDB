@@ -1,4 +1,4 @@
-{block title}{if $canViewOrEdit}{if $member}Úprava člena {$member->jmeno} {$member->prijmeni} UID {$member->id}{else}Nový člen{/if}{else}Úprava člena{/if}{/block}
+{block title}{if $canViewOrEdit}{if $member}Úprava účastníka {$member->jmeno} {$member->prijmeni} UID {$member->id}{else}Nový účastník{/if}{else}Úprava účastníka{/if}{/block}
 {block content}
 
 {if $canViewOrEdit}
@@ -12,14 +12,14 @@
             <li><a n:href="Uzivatel:show id=>$member->id">{$member->jmeno} {$member->prijmeni}</a></li>
             <li class="active" aria-current="page">Úprava</li>
         {else}
-            <li class="active" aria-current="page">Nový člen</li>
+            <li class="active" aria-current="page">Nový účastník</li>
         {/if}
     </ol>
 </nav>
 {* Odkaz na seznam clenu AP uz je v hlavicce: levy panel se zvyrazni hned, ne az po nacteni cele stranky. *}
 <script>if (window.userdbSidebarTree) userdbSidebarTree();</script>
 <div class="page-head">
-    <h1 class="page-title">{if $member}Úprava člena {$member->jmeno} {$member->prijmeni} <small>UID {$member->id}</small>{else}Nový člen{/if}</h1>
+    <h1 class="page-title">{if $member}Úprava účastníka {$member->jmeno} {$member->prijmeni} <small>UID {$member->id}</small>{else}Nový účastník{/if}</h1>
     <div class="page-actions" n:if="$member">
         <a n:href="Uzivatel:show id=>$member->id" class="btn btn-default"><i class="fa fa-arrow-left" aria-hidden="true"></i> Zpět na detail</a>
     </div>

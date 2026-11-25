@@ -11,7 +11,7 @@
             <div class="home-areas">
                 <a n:foreach="$mojeOblasti as $areaId => $areaName" n:href="UzivatelList:list id=>$areaId" class="home-area">
                     <i class="fa fa-wifi" aria-hidden="true"></i> {$areaName}
-                    <small>členové AP</small>
+                    <small>účastníci AP</small>
                 </a>
             </div>
         {else}
@@ -22,7 +22,7 @@
         <section aria-labelledby="home-tools-title">
             <h2 id="home-tools-title">Nástroje</h2>
             <ul class="home-tools">
-                <li n:if="$oblasti"><a n:href="UzivatelList:listall id=>null">Všichni členové <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+                <li n:if="$oblasti"><a n:href="UzivatelList:listall id=>null">Všichni účastníci <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
                 <li><a n:href="Sprava:mapa id=>null">Mapa <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
                 {foreach $toolLinks as $destination => $label}
                     <li n:if="$label !== null"><a href="{link $destination id=>null}" data-tool>{$label} <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>

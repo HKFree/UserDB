@@ -129,7 +129,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
                 if ($so === null) {
-                    $this->error('Účastník nebyl nalezen.');
+                    $this->error('Přihlášený uživatel nebyl nalezen.');
                 }
 
                 $link = $this->link('//SelfService:confirmEmail', $hash);

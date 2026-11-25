@@ -36,7 +36,7 @@
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v29"></script>
+        <script src="{$basePath}/js/main.js?v30"></script>
 	{block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
@@ -87,7 +87,7 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-menu">
             <li n:class="$presenter->isLinkCurrent('Homepage:*') ? active"><a href="{link Homepage:default id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('Homepage:*') ? page">Přehled</a></li>
-            <li n:if="$oblasti" n:class="$presenter->isLinkCurrent('UzivatelList:listall') ? active"><a href="{link UzivatelList:listall id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('UzivatelList:listall') ? page">Členové</a></li>
+            <li n:if="$oblasti" n:class="$presenter->isLinkCurrent('UzivatelList:listall') ? active"><a href="{link UzivatelList:listall id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('UzivatelList:listall') ? page">Účastníci</a></li>
             <li n:class="$presenter->isLinkCurrent('Sprava:mapa') ? active"><a href="{link Sprava:mapa id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('Sprava:mapa') ? page">Mapa</a></li>
             <li n:class="dropdown, $toolsCurrent ? active">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Nástroje <span class="caret"></span></a>

@@ -93,7 +93,7 @@ class UzivatelMailSmsPresenter extends UzivatelPresenter
     private function prihlasenySpravce(): ActiveRow {
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         if ($so === null) {
-            $this->error('Účastník nebyl nalezen.');
+            $this->error('Přihlášený uživatel nebyl nalezen.');
         }
         return $so;
     }

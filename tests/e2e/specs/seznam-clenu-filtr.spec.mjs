@@ -10,9 +10,9 @@ test('kompletní seznam najde člena hledáním na serveru, i když není na prv
     // 25 na stránku a od nejnovějších, takže demo člen 20028 na první stránce není.
     await page.goto('/uzivatel-list/listall?grid-perPage=25&grid-sort%5Bid%5D=desc');
     await expect(rowsOf(page).filter({ has: page.getByRole('link', { name: '20028', exact: true }) })).toHaveCount(0);
-    const search = page.getByLabel('Hledat ve členech', { exact: true });
+    const search = page.getByLabel('Hledat mezi účastníky', { exact: true });
     await search.fill('demo20028@');
-    await expect(page.locator('.quick-filter-count')).toHaveText('Enter hledá ve všech členech');
+    await expect(page.locator('.quick-filter-count')).toHaveText('Enter hledá ve všech účastnících');
     await search.press('Enter');
     await expect(rowsOf(page)).toHaveCount(1);
     await expect(rowsOf(page).getByRole('link', { name: '20028', exact: true })).toBeVisible();
