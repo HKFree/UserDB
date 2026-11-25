@@ -58,7 +58,7 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
 
     /** @return list<array{string, int|null, string}> */
     public function missingPageCases(): array {
-        return [['Uzivatel', 99999999, 'Člen'], ['Uzivatel', null, 'Člen'], ['Ap', 99999999, 'Přístupový bod']];
+        return [['Uzivatel', 99999999, 'Účastník'], ['Uzivatel', null, 'Účastník'], ['Ap', 99999999, 'Přístupový bod']];
     }
 
     /** @dataProvider missingPageCases */
@@ -154,20 +154,22 @@ final class MemberUsabilityPresenterTest extends DatabaseTestCase
         $document = $this->document($result->html);
         $expected = ['Počet zrušených členů: 1', 'Počet primárních členů: 1', 'Počet řádných členů: 2', 'Počet čestných členů: 0'];
         if ($money === 1) {
-            $expected[] = 'Počet aktivních členů: 1';
+            $expected[] = 'Počet aktivních účastníků: 1';
         }
-        $expected[] = 'Počet všech členů: 3';
-        $expected[] = 'Počet všech členů včetně zrušených: 4';
+        $expected[] = 'Počet členů spolku: 3';
+        $expected[] = 'Počet členů spolku včetně zrušených: 4';
         Assert::same($expected, $this->countsBelowTable($document));
+        Assert::same($s->ap->jmeno . ' - účastníci AP | HKFree UserDB', $this->text($document, '//title'));
+        Assert::count(1, $this->elements($document, '//a[contains(@href,"/uzivatel-list/listall") and normalize-space(.)="Účastníci"]'));
         // Users outside the AP are a section with its own heading, not a panel in the list.
-        Assert::count(1, $this->elements($document, '//section[@class="list-section"]/h2[normalize-space(.)="Uživatelé mimo AP"]'));
+        Assert::count(1, $this->elements($document, '//section[@class="list-section"]/h2[normalize-space(.)="Účastníci mimo AP"]'));
         Assert::count(0, $this->elements($document, '//*[contains(@class,"panel")]//*[@id="frm-othersGrid-form"]'));
         $all = $this->document($this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'listall', 'money' => $money])->html);
         Assert::count(count($expected), $this->countsBelowTable($all));
         Assert::same($money === 1 ? 'true' : 'false', $this->elements($document, '//a[contains(@class,"money-toggle")]')[0]->getAttribute('aria-pressed'));
         Assert::count(1, $this->elements($document, '//input[@name="filters[hledat]"]'));
         $search = $this->document($this->presenters->ui($s->actors['vv']->id, 'UzivatelList', ['action' => 'listall', 'search' => 'verejny-nick', 'money' => $money])->html);
-        Assert::same('Kompletní seznam členů | HKFree UserDB', $this->text($search, '//title'));
+        Assert::same('Kompletní seznam účastníků | HKFree UserDB', $this->text($search, '//title'));
         Assert::count(0, $this->elements($search, '//*[@class="member-counts"]'));
         Assert::count(1, $this->elements($search, '//input[@name="filters[hledat]"]'));
         Assert::count(1, $this->elements($search, '//*[@class="member-legend"]'));

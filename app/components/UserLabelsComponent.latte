@@ -25,7 +25,7 @@
                     <a href="#" role="menuitem"
                        n:class="stitky-item, isset($assignedIds[$stitek->id]) ? label-assigned" data-id="{$stitek->id}"
                        aria-disabled="{isset($assignedIds[$stitek->id]) ? 'true' : 'false'}"
-                       title="{isset($assignedIds[$stitek->id]) ? 'Člen tento štítek už má' : 'Přidat štítek'}"
+                       title="{isset($assignedIds[$stitek->id]) ? 'Účastník tento štítek už má' : 'Přidat štítek'}"
                        style="{App\Services\BarvaStitku::styl($stitek->barva_pozadi, $stitek->barva_popredi)|noescape}">
                         {$stitek->text}
                     </a>

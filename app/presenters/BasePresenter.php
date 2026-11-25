@@ -76,11 +76,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 
     protected function oznamVysledekEmailu(VysledekOdeslaniEmailu $vysledek, ActiveRow $uzivatel, string $uspech, ?VysledekOdeslaniEmailu $kopie = null): bool {
         if ($vysledek->odeslano() === false) {
-            $zprava = Nette\Utils\Html::el()->addText('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu. Zadejte ji v ');
+            $zprava = Nette\Utils\Html::el()->addText('E-mail nebyl odeslán, účastník nemá platnou e-mailovou adresu. Zadejte ji v ');
             if ($this->smiUpravitUzivatele($uzivatel)) {
-                $zprava->addHtml(Nette\Utils\Html::el('a')->href($this->link('Uzivatel:edit', ['id' => $uzivatel->id]))->setText('editaci člena'));
+                $zprava->addHtml(Nette\Utils\Html::el('a')->href($this->link('Uzivatel:edit', ['id' => $uzivatel->id]))->setText('editaci účastníka'));
             } else {
-                $zprava->addText('editaci člena');
+                $zprava->addText('editaci účastníka');
             }
             $this->flashMessage($zprava->addText('.'), 'danger');
             return false;
@@ -166,7 +166,7 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
     }
 
     /**
-     * Kdo smí upravovat člena (canViewOrEdit na detailu a editaci člena): EXTSUPPORT, správce AP člena
+     * Kdo smí upravovat člena (canViewOrEdit na detailu a editaci účastníka): EXTSUPPORT, správce AP člena
      * (AP::canViewOrEditAP) a SO/ZSO, v jehož subnetech má člen z jiné oblasti IP adresu.
      */
     protected function smiUpravitUzivatele(ActiveRow|Nette\Database\Row $uzivatel): bool {

@@ -107,7 +107,7 @@ function process_digisign_webhook(mixed $hook): void {
             }
             $uzivatel = $UzivatelModel->find($smlouva->uzivatel_id);
             if ($uzivatel === null) {
-                throw new RuntimeException('Člen smlouvy nebyl nalezen.');
+                throw new RuntimeException('Účastník smlouvy nebyl nalezen.');
             }
             $tags = [];
             if ($uzivatel->datum_narozeni === null) {

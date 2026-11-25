@@ -1,7 +1,7 @@
 {block content}
 <div class="ip-transfer">
-    <h1 n:block="title">Přesun IP k jinému členovi</h1>
-    <p class="text-muted ip-transfer-intro">Předání zařízení novému členovi v rámci stejného AP.</p>
+    <h1 n:block="title">Přesun IP k jinému účastníkovi</h1>
+    <p class="text-muted ip-transfer-intro">Předání zařízení novému účastníkovi v rámci stejného AP.</p>
 
     {form presunIpForm}
         <div class="alert alert-danger" role="alert" n:if="$form->hasErrors()">
@@ -11,7 +11,7 @@
             <div class="panel-heading"><h2 class="panel-title" id="ip-transfer-summary">Údaje o přesunu</h2></div>
             <div class="panel-body">
                 <dl class="ip-transfer-details">
-                    <dt>Původní člen</dt>
+                    <dt>Původní účastník</dt>
                     <dd><a n:href="Uzivatel:show id => $presunZdroj->id">{$presunZdroj->id} - {$presunZdroj->nick}</a></dd>
                     {if $presunIp}
                         <dt>IP adresa</dt><dd><strong>{$presunIp->ip_adresa}</strong></dd>
@@ -31,7 +31,7 @@
                 </section>
                 <section>
                     <h2>Co zůstává beze změny</h2>
-                    <p>Členství, smlouvy, kredit a dluhy obou členů. Původního člena případně zrušte samostatně.</p>
+                    <p>Členství, smlouvy, kredit a dluhy obou účastníků. Původního účastníka případně zrušte samostatně.</p>
                 </section>
             </div>
         {/if}
@@ -40,12 +40,12 @@
             <div class="form-group ip-transfer-target">
                 {label cil /}
                 {input cil class => 'form-control', aria-describedby => 'ip-transfer-help'}
-                <p class="help-block" id="ip-transfer-help">Vyberte člena, který zařízení přebírá. Nabídka obsahuje vhodné členy stejného AP, které smíte upravovat.</p>
+                <p class="help-block" id="ip-transfer-help">Vyberte účastníka, který zařízení přebírá. Nabídka obsahuje vhodné účastníky stejného AP, které smíte upravovat.</p>
             </div>
         {/if}
         <div class="ip-transfer-actions">
             {if $presunIp && $form['cil']->items !== []}{input potvrdit}{/if}
-            <a n:href="Uzivatel:edit id => $presunZdroj->id" class="btn btn-default">Zpět na editaci člena</a>
+            <a n:href="Uzivatel:edit id => $presunZdroj->id" class="btn btn-default">Zpět na editaci účastníka</a>
         </div>
     {/form}
 </div>

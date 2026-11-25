@@ -345,7 +345,7 @@ final class DemoDataPresenterTest extends TestCase
         }
         foreach ([
             20021 => ['Rozpis plateb bude odeslán na e-maily demo20021@example.invalid, druha20021@example.invalid.'],
-            20078 => ['Rozpis plateb bude odeslán na e-mail druha@example.invalid.', 'Hlavní e-mail člena je neplatný, rozpis na něj neodejde.'],
+            20078 => ['Rozpis plateb bude odeslán na e-mail druha@example.invalid.', 'Hlavní e-mail účastníka je neplatný, rozpis na něj neodejde.'],
             20080 => [],
         ] as $id => $question) {
             $html = $runner->ui(1, 'Uzivatel', ['action' => 'show', 'id' => $id])->html;
@@ -401,7 +401,7 @@ final class DemoDataPresenterTest extends TestCase
             } else {
                 Assert::same([], $mailer->messages);
                 Assert::same(['danger'], $result->flashTypes);
-                Assert::same('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu. Zadejte ji v editaci člena.', strip_tags($result->flashes[0]));
+                Assert::same('E-mail nebyl odeslán, účastník nemá platnou e-mailovou adresu. Zadejte ji v editaci účastníka.', strip_tags($result->flashes[0]));
                 Assert::same(['/userdb/uzivatel/edit/20080'], $this->values($result->flashes[0], '//a/@href'));
             }
         }

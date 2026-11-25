@@ -15,7 +15,7 @@ use DigitalCz\DigiSign\DigiSign;
 
 #[AsCommand(
     name: 'app:digisign_generovat_ucastnickou_smlouvu',
-    description: 'Digisign API. Vytvoření tzv. obálky a odeslání smlouvy k podpisu pro připojence hkfree.org.'
+    description: 'Digisign API. Vytvoření tzv. obálky a odeslání smlouvy k podpisu pro účastníky hkfree.org.'
 )]
 class DigisignGenerovatUcastnickouSmlouvu extends Command
 {
@@ -66,7 +66,7 @@ class DigisignGenerovatUcastnickouSmlouvu extends Command
 
         $uzivatel = $this->uzivatelModel->find($smlouva->uzivatel_id);
         if ($uzivatel === null) {
-            throw new \RuntimeException('Člen smlouvy nebyl nalezen.');
+            throw new \RuntimeException('Účastník smlouvy nebyl nalezen.');
         }
 
         $parametry = \App\Services\GeneratorSmlouvy::parametryUcastnickeSmlouvy($uzivatel, $smlouva_id);

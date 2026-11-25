@@ -17,7 +17,7 @@ test('seznam členů řadí, hledá, filtruje podle štítků a rozbalí údaje 
     await expect(ids).toHaveText([...ascending].reverse().map(String));
 
     // Hledání se použije až Enterem; při psaní se jen skrývají načtené řádky.
-    const search = page.getByLabel('Hledat ve členech', { exact: true });
+    const search = page.getByLabel('Hledat mezi účastníky', { exact: true });
     await search.fill('Smyšlená 20028');
     await search.press('Enter');
     await page.waitForURL(/grid-filter%5Bhledat%5D=/);

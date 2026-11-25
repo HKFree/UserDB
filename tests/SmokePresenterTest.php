@@ -82,7 +82,7 @@ final class SmokePresenterTest extends DatabaseTestCase
             default => null,
         };
         $expected = match ($presenter) {
-            'Ap' => [$this->ap->jmeno, $this->area->jmeno, 'Zobrazit uživatele'],
+            'Ap' => [$this->ap->jmeno, $this->area->jmeno, 'Zobrazit účastníky'],
             'UzivatelList' => [$this->ap->jmeno, $member->nick, $member->email],
             'Sprava' => [$this->actor->nick, 'Nástroje pro správu', 'Schvalování čestného členství'],
             // Nette writes @ in attribute values as a character reference.

@@ -37,7 +37,7 @@ test('rozpis plateb: dotaz upozorní na neplatný hlavní e-mail a rozpis odejde
     await page.goto('/uzivatel/show/20078');
     expect(await clickSend(page, true)).toBe(
         'Rozpis plateb bude odeslán na e-mail druha@example.invalid.\n\n'
-            + 'Hlavní e-mail člena je neplatný, rozpis na něj neodejde.\n\nPokračovat?',
+            + 'Hlavní e-mail účastníka je neplatný, rozpis na něj neodejde.\n\nPokračovat?',
     );
     await expect(page.locator('.alert-warning')).toContainText('UID 20078');
     await expect.poll(async () => (await mailbox.received()).length).toBe(1);
@@ -48,7 +48,7 @@ test('rozpis plateb: člen bez platné adresy dostane hlášku s odkazem na edit
     await page.goto('/uzivatel/show/20080');
     expect(await clickSend(page, true)).toBeNull();
     const alert = page.locator('.alert-danger');
-    await expect(alert).toContainText('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu.');
-    await expect(alert.getByRole('link', { name: 'editaci člena' })).toHaveAttribute('href', /\/uzivatel\/edit\/20080$/);
+    await expect(alert).toContainText('E-mail nebyl odeslán, účastník nemá platnou e-mailovou adresu.');
+    await expect(alert.getByRole('link', { name: 'editaci účastníka' })).toHaveAttribute('href', /\/uzivatel\/edit\/20080$/);
     expect(await mailbox.received()).toEqual([]);
 });

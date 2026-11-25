@@ -358,7 +358,7 @@ final class MemberEditPresenterTest extends DatabaseTestCase
             'ip' => [$ip->id => $this->ipPost(['id' => $ip->id, 'ip_adresa' => $ip->ip_adresa])],
         ]);
         $before = $this->snapshot();
-        $this->assertValidation($this->submit($post), 'Nový člen nemůže převzít existující IP přes běžnou editaci.');
+        $this->assertValidation($this->submit($post), 'Nový účastník nemůže převzít existující IP přes běžnou editaci.');
         Assert::same($before, $this->snapshot());
     }
 
@@ -443,8 +443,8 @@ final class MemberEditPresenterTest extends DatabaseTestCase
     public function newValidationCases(): array {
         return [
             [['datum_narozeni' => ''], 'Právní vztah k družstvu vyžaduje zadání data narození.'],
-            [['smazano' => '1'], 'Nelze založit uživatele s atributem Smazáno.'],
-            [['spolek' => '1', 'TypClenstvi_id' => '3'], 'Založení nového uživatele NEPODPORUJE právní vztahy k družstvu a ke spolku najednou, založte uživatele jen s jedním právním vztahem.'],
+            [['smazano' => '1'], 'Nelze založit účastníka s atributem Smazáno.'],
+            [['spolek' => '1', 'TypClenstvi_id' => '3'], 'Založení nového účastníka NEPODPORUJE právní vztahy k družstvu a ke spolku najednou, založte účastníka jen s jedním právním vztahem.'],
         ];
     }
 

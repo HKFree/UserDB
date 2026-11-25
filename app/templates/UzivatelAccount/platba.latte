@@ -7,7 +7,7 @@
     <a href="{link UzivatelAccount:account id=>$u->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-arrow-up"></i> Zpět na přehled plateb</a>
 
     {if $canTransfer}
-    <a href="{link SpravaNesparovanych:prevod id=>$p->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Převést jinému uživateli (chybná platba)</a>
+    <a href="{link SpravaNesparovanych:prevod id=>$p->id}" class="btn btn-default btn-sm" role="button"><i class="glyphicon glyphicon-usd"></i> Převést jinému účastníkovi (chybná platba)</a>
     {/if}
     {/ifset}
 
@@ -31,7 +31,7 @@
         <tr n:if="$p->kod_cilove_banky == 2010"><th>Cílová banka</th><td>FIO</td></tr>
         <tr n:if="$p->kod_cilove_banky == 800"><th>Cílová banka</th><td>ČS</td></tr>
         <tr><th>Zpráva příjemci</th><td>{$p->zprava_prijemci}</td></tr>
-        <tr><th>Identifikace uživatele</th><td>{$p->identifikace_uzivatele}</td></tr>
+        <tr><th>Identifikace</th><td>{$p->identifikace_uzivatele}</td></tr>
         <tr><th>Info od banky</th><td>{$p->info_od_banky}</td></tr>
         <tr><td colspan="2">&nbsp;</td></tr>
     </table>

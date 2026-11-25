@@ -160,12 +160,12 @@ class SpravaNesparovanychPresenter extends SpravaPresenter
         $form->addText('PrichoziPlatba_ss', 'Příchozí SS', 70)->setDisabled(true);
         $form->addText('castka', 'Příchozí částka k převodu', 70)->setDisabled(true);
 
-        $form->addText('Uzivatel_prev', 'ID původního uživatele', 50)->setDisabled(true);
+        $form->addText('Uzivatel_prev', 'ID původního účastníka', 50)->setDisabled(true);
 
         $form->addCheckbox('spolek', 'Spolková platba')->setDisabled(true);
         $form->addCheckbox('druzstvo', 'Družstevní platba')->setDisabled(true);
 
-        $form->addText('Uzivatel_id', 'ID správného uživatele', 50)->setRequired('Zadejte UID cílového uživatele');
+        $form->addText('Uzivatel_id', 'ID správného účastníka', 50)->setRequired('Zadejte UID cílového účastníka');
         $form->addTextArea('poznamka', 'Poznámka', 72, 10);
 
         $form->addSubmit('send', 'Převést')->setAttribute('class', 'btn btn-success btn-xs btn-white');

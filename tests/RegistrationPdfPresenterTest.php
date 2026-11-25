@@ -132,7 +132,7 @@ final class RegistrationPdfPresenterTest extends DatabaseTestCase
         foreach (['exportPdf', 'exportAndSendRegForm'] as $action) {
             $result = $this->presenters->ui($actor->id, 'UzivatelActions', ['action' => $action, 'id' => $member->id]);
             PermissionScenario::assertRedirect($result, 'uzivatel/show/' . $member->id, 302);
-            $expected = $association === 0 && $action === 'exportAndSendRegForm' ? 'Uživatel není členem spolku, e-mail nebyl odeslán.' : $message;
+            $expected = $association === 0 && $action === 'exportAndSendRegForm' ? 'Účastník není členem spolku, e-mail nebyl odeslán.' : $message;
             Assert::same([$expected], $result->flashes);
             Assert::same($before, serialize($this->requireRow($this->database->table('Uzivatel')->get($member->id))->toArray()));
             Assert::same([], $this->container->getByType(RecordingMailer::class)->messages);

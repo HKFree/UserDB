@@ -114,7 +114,7 @@ class UzivatelPresenter extends BasePresenter
     public function sendSpolekNotificationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         if ($newUser === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         try {
             $vysledek = $this->mailService->sendPlannedUserNotificationEmail($idUzivatele, $this->getIdentity()->getUid());
@@ -131,14 +131,14 @@ class UzivatelPresenter extends BasePresenter
     public function sendSpolekRegistrationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         if ($newUser === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = 'https://moje.hkfree.org/uzivatel/confirm/'.$hash;
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         if ($so === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Přihlášený uživatel nebyl nalezen.');
         }
 
         try {
@@ -154,14 +154,14 @@ class UzivatelPresenter extends BasePresenter
     public function sendDruzstvoRegistrationEmail($idUzivatele): void {
         $newUser = $this->uzivatel->getUzivatel($idUzivatele);
         if ($newUser === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $hash = base64_encode($idUzivatele.'-'.md5($this->parameters->salt . $newUser->zalozen));
         $link = $this->link('//SelfService:confirmEmail', $hash);
 
         $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
         if ($so === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Přihlášený uživatel nebyl nalezen.');
         }
 
         try {
@@ -181,7 +181,7 @@ class UzivatelPresenter extends BasePresenter
         }
         $dotaz = sprintf('Rozpis plateb bude odeslán na %s %s.', count($prijemci->adresy) === 1 ? 'e-mail' : 'e-maily', implode(', ', $prijemci->adresy));
         foreach ($prijemci->preskoceni as $prijemce) {
-            $dotaz .= sprintf("\n\n%s e-mail člena je neplatný, rozpis na něj neodejde.", $prijemce['druhaAdresa'] ? 'Sekundární' : 'Hlavní');
+            $dotaz .= sprintf("\n\n%s e-mail účastníka je neplatný, rozpis na něj neodejde.", $prijemce['druhaAdresa'] ? 'Sekundární' : 'Hlavní');
         }
         return $dotaz . "\n\nPokračovat?";
     }
@@ -304,7 +304,7 @@ class UzivatelPresenter extends BasePresenter
         $uid = $this->getParameter('id');
         $uzivatel = $this->uzivatel->getUzivatel($uid);
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $stavUctu = $uzivatel->related('UzivatelskeKonto.Uzivatel_id')->where('druzstvo', 1)->sum('castka');
 
@@ -505,11 +505,11 @@ class UzivatelPresenter extends BasePresenter
             }
 
             if ($data['smazano'] !== '0') {
-                $form->addError('Nelze založit uživatele s atributem Smazáno.');
+                $form->addError('Nelze založit účastníka s atributem Smazáno.');
             }
 
             if ($data['spolek'] === '1' && $data['druzstvo'] === '1') {
-                $form->addError('Založení nového uživatele NEPODPORUJE právní vztahy k družstvu a ke spolku najednou, založte uživatele jen s jedním právním vztahem.');
+                $form->addError('Založení nového účastníka NEPODPORUJE právní vztahy k družstvu a ke spolku najednou, založte účastníka jen s jedním právním vztahem.');
             }
         }
 
@@ -616,7 +616,7 @@ class UzivatelPresenter extends BasePresenter
                 });
             } else {
                 if ($odeslanaId !== []) {
-                    throw new \DomainException('Nový člen nemůže převzít existující IP přes běžnou editaci.');
+                    throw new \DomainException('Nový účastník nemůže převzít existující IP přes běžnou editaci.');
                 }
                 $cil = $this->ulozUzivatele($values, null);
             }
@@ -720,7 +720,7 @@ class UzivatelPresenter extends BasePresenter
         } else {
             $olduzivatel = $this->uzivatel->getUzivatel($idUzivatele);
             if ($olduzivatel === null) {
-                $this->error('Uživatel nebyl nalezen.');
+                $this->error('Účastník nebyl nalezen.');
             }
             // Snímek před uložením: líně načítaný řádek by se po update() při čtení chybějícího sloupce načetl celý znovu, už s novými hodnotami.
             $puvodniUzivatel = $olduzivatel->toArray();
@@ -880,11 +880,11 @@ class UzivatelPresenter extends BasePresenter
                 . ((bool) $clen->money_aktivni ? '' : ' (účet není aktivní)');
         }
         $form = new Form();
-        $form->addSelect('cil', 'Nový člen', $moznosti)->setPrompt('Vyberte člena stejného AP')->setRequired('Vyberte nového člena.');
+        $form->addSelect('cil', 'Nový účastník', $moznosti)->setPrompt('Vyberte účastníka stejného AP')->setRequired('Vyberte nového účastníka.');
         $form->addSubmit('potvrdit', 'Přesunout IP')->setHtmlAttribute('class', 'btn btn-primary');
         $form->onSuccess[] = [$this, 'presunIpFormSucceded'];
         if ($moznosti === []) {
-            $form->addError('Na tomto AP není jiný vhodný člen, kterého smíte upravovat.');
+            $form->addError('Na tomto AP není jiný vhodný účastník, kterého smíte upravovat.');
         }
         return $form;
     }
@@ -905,7 +905,7 @@ class UzivatelPresenter extends BasePresenter
             $form->addError($e->getMessage());
             return;
         }
-        $this->flashMessage('IP adresa byla přesunuta. Členství a účty obou členů zůstaly beze změny.');
+        $this->flashMessage('IP adresa byla přesunuta. Členství a účty obou účastníků zůstaly beze změny.');
         $this->redirect('Uzivatel:show', ['id' => (int) $values->cil]);
     }
 

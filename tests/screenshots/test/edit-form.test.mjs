@@ -39,7 +39,7 @@ const ipRecord = `<table class="ipform" id="highlightable-ip198.51.100.1">
         <input type="text" name="ip[20001][popis]" class="popis ip" placeholder="Popis" id="${id('ip-20001-popis')}" value="Demo koncové zařízení">
         ${checkbox('ip[20001][wewimo]', 'ip-20001-wewimo', 'wewimo ip', 'Wewimo')}
         ${removeButton('ip[20001][remove]', '– Odstranit IP')}
-        <a href="/" class="btn btn-default btn-xs" title="Před přesunem uložte rozpracované změny člena.">Přesunout IP k jinému členovi</a>
+        <a href="/" class="btn btn-default btn-xs" title="Před přesunem uložte rozpracované změny účastníka.">Přesunout IP k jinému účastníkovi</a>
     </td></tr>
     <tr><td><div data-toggle="tooltip" data-placement="top" title="Pokud brána a maska neodpovídají realitě, upravte subnety své oblasti.">
         <span class="ip details" data-reqid="1"><a href="#" target="_blank" class="subnetlink">Subnets</a> &nbsp;|&nbsp;

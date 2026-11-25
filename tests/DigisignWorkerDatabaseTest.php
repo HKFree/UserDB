@@ -130,7 +130,7 @@ final class DigisignWorkerDatabaseTest extends DatabaseTestCase
                 return null;
             }
         };
-        Assert::exception(fn () => $this->runCommand($contract, $members), \RuntimeException::class, 'Člen smlouvy nebyl nalezen.');
+        Assert::exception(fn () => $this->runCommand($contract, $members), \RuntimeException::class, 'Účastník smlouvy nebyl nalezen.');
         Assert::same($before, serialize($this->requireRow($this->database->table('Smlouva')->get($contract->id))->toArray()));
         Assert::same([], WorkerDigiSign::$calls);
         Assert::same([], WorkerPdfGenerator::$calls);

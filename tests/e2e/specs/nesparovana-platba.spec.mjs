@@ -11,7 +11,7 @@ test('převod nespárované platby odstraní položku ze seznamu a připíše č
     await payment.getByRole('link', { name: 'Převést', exact: true }).click();
     await expect(page.getByLabel('ID příchozí platby', { exact: true })).toHaveValue('40000100');
     await expect(page.getByLabel('Příchozí částka k převodu', { exact: true })).toHaveValue('290');
-    await page.getByLabel('ID správného uživatele', { exact: true }).fill('20039');
+    await page.getByLabel('ID správného účastníka', { exact: true }).fill('20039');
     await page.getByLabel('Poznámka', { exact: true }).fill('E2E smyšlené přiřazení platby');
     await page.getByRole('button', { name: 'Převést', exact: true }).click();
     await expect(page).toHaveURL(/\/sprava\/nastroje\/40000100(?:\?|$)/);

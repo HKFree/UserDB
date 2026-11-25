@@ -70,7 +70,7 @@ test('hledání v seznamu AP filtruje hned při psaní a Enter hledá na serveru
     const count = list.locator('.quick-filter-count');
     await expect(count).toHaveText(`Nalezeno: ${loaded}`);
 
-    const search = page.getByLabel('Hledat ve členech', { exact: true });
+    const search = page.getByLabel('Hledat mezi účastníky', { exact: true });
     await search.fill('demo20028@');
     await expect(rows.filter({ visible: true })).toHaveCount(1);
     await expect(rows.filter({ visible: true }).getByRole('link', { name: '20028', exact: true })).toBeVisible();
@@ -84,7 +84,7 @@ test('hledání v seznamu AP filtruje hned při psaní a Enter hledá na serveru
     // Po hledání na serveru jsou načtené jen nalezené řádky; jiný text proto čeká na Enter.
     await search.fill('demo20027@');
     await expect(rows.filter({ visible: true })).toHaveCount(1);
-    await expect(count).toHaveText('Enter hledá ve všech členech');
+    await expect(count).toHaveText('Enter hledá ve všech účastnících');
 
     await page.getByRole('button', { name: 'Zrušit filtry', exact: true }).click();
     await expect(rows).toHaveCount(loaded);

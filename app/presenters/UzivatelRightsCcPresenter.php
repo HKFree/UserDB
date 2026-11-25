@@ -123,7 +123,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($user === null) {
-                $this->error('Uživatel nebyl nalezen.');
+                $this->error('Účastník nebyl nalezen.');
             }
             foreach ($user->related("SpravceOblasti.Uzivatel_id") as $rights_id => $rights_data) {
                 $rights->createOne($rights_id)->setValues($rights_data);
@@ -276,7 +276,7 @@ class UzivatelRightsCcPresenter extends UzivatelPresenter
         if ($this->maVyplnenyParametr('id') && $submitujeSe === false) {
             $user = $this->uzivatel->getUzivatel($this->getParameter('id'));
             if ($user === null) {
-                $this->error('Uživatel nebyl nalezen.');
+                $this->error('Účastník nebyl nalezen.');
             }
             foreach ($user->related("CestneClenstviUzivatele.Uzivatel_id") as $rights_id => $rights_data) {
                 $rights->createOne($rights_id)->setValues($rights_data);

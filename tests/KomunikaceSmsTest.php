@@ -90,7 +90,7 @@ trait SmsFlashMessages
 
 class KomunikaceSmsTest extends TestCase
 {
-    private const NO_NUMBER = 'Žádný z vybraných uživatelů nemá platné české telefonní číslo.';
+    private const NO_NUMBER = 'Žádný z vybraných účastníků nemá platné české telefonní číslo.';
 
     public function testInvalidNumbersDoNotCallGateway(): void {
         foreach (['neplatné', '+421 901 234 567', '12345', '', 'missing'] as $number) {

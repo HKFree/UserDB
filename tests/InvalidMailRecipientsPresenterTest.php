@@ -194,7 +194,7 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
         $dom = DomQuery::fromHtml($flash[0]);
         $links = $dom->find('.alert-danger a');
         Assert::count(1, $links);
-        Assert::same('editaci člena', (string) $links[0]);
+        Assert::same('editaci účastníka', (string) $links[0]);
         Assert::contains('/uzivatel/edit/' . $this->member->id, (string) $links[0]['href']);
     }
 
@@ -301,11 +301,11 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
         Assert::same([], $this->messages());
         Assert::same(['danger'], $result->flashTypes);
         Assert::count(1, $result->flashes);
-        Assert::same('E-mail nebyl odeslán, člen nemá platnou e-mailovou adresu. Zadejte ji v editaci člena.', strip_tags($result->flashes[0]));
+        Assert::same('E-mail nebyl odeslán, účastník nemá platnou e-mailovou adresu. Zadejte ji v editaci účastníka.', strip_tags($result->flashes[0]));
         $links = DomQuery::fromHtml('<div>' . $result->flashes[0] . '</div>')->find('a');
         Assert::count($editLink ? 1 : 0, $links);
         if ($editLink) {
-            Assert::same('editaci člena', (string) $links[0]);
+            Assert::same('editaci účastníka', (string) $links[0]);
             Assert::contains('/uzivatel/edit/' . $this->member->id, (string) $links[0]['href']);
         }
     }

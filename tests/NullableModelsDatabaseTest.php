@@ -140,7 +140,7 @@ final class NullableModelsDatabaseTest extends DatabaseTestCase
     public function testMissingSmsRecipientDoesNotSendToOtherRecipients(): void {
         $member = $this->fixtures->member($this->fixtures->ap($this->fixtures->area()->id)->id);
         $communication = $this->container->getByType(Komunikace::class);
-        Assert::exception(fn () => $communication->posliSMS([$member->id, 0], 'Test'), SmsSenderException::class, 'Uživatel pro odeslání SMS nebyl nalezen.');
+        Assert::exception(fn () => $communication->posliSMS([$member->id, 0], 'Test'), SmsSenderException::class, 'Účastník pro odeslání SMS nebyl nalezen.');
         Assert::same([], $this->container->getByType(RecordingMexSmsSender::class)->calls);
     }
 

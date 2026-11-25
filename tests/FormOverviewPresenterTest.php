@@ -97,7 +97,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
     private function assertMemberHeadingAndTitle(bool $editing): void {
         $member = $this->scenario->member;
         $document = $this->memberEdit($editing);
-        $heading = $editing ? 'Úprava člena ' . $member->jmeno . ' ' . $member->prijmeni . ' UID ' . $member->id : 'Nový člen';
+        $heading = $editing ? 'Úprava účastníka ' . $member->jmeno . ' ' . $member->prijmeni . ' UID ' . $member->id : 'Nový účastník';
         Assert::same($heading, $this->text($document, '//h1'));
         Assert::same($heading . ' | HKFree UserDB', $this->text($document, '//title'));
         Assert::same('Přehled', $this->text($document, '//ol[contains(@class,"page-crumbs")]/li[1]'));
@@ -120,6 +120,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         Assert::count($hasAreas ? 1 : 0, $cards);
         if ($hasAreas) {
             Assert::contains($this->scenario->ap->jmeno, $cards[0]->textContent);
+            Assert::contains('účastníci AP', $cards[0]->textContent);
             Assert::same('/userdb/uzivatel-list/list/' . $this->scenario->ap->id, $cards[0]->getAttribute('href'));
         } else {
             Assert::contains('Nespravujete žádnou oblast.', $this->text($document, '//section[@aria-labelledby="home-areas-title"]//*[contains(@class,"home-empty")]'));
@@ -145,7 +146,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         Assert::same('Otevírání Winboxu z prohlížeče', $menu['/userdb/winbox/'] ?? null);
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/uzivatel-list/listall"]'));
         Assert::count(1, $this->elements($document, '//*[contains(@class,"home-tools")]//a[@href="/userdb/sprava/mapa"]'));
-        Assert::count(1, $this->elements($document, '//form[@role="search"]//input[@placeholder="Hledat člena, IP, číslo smlouvy…"]'));
+        Assert::count(1, $this->elements($document, '//form[@role="search"]//input[@placeholder="Hledat účastníka, IP, číslo smlouvy…"]'));
     }
 
     public function testSearchHintIsAssociatedWithInput(): void {
@@ -157,7 +158,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
     public function testDeniedEditDoesNotDiscloseMember(): void {
         $s = $this->scenario;
         $document = $this->document($this->presenters->ui($s->actors['otherSo']->id, 'Uzivatel', ['action' => 'edit', 'id' => $s->member->id])->html);
-        Assert::same('Úprava člena | HKFree UserDB', $this->text($document, '//title'));
+        Assert::same('Úprava účastníka | HKFree UserDB', $this->text($document, '//title'));
         Assert::count(0, $this->elements($document, '//form[@id="frm-uzivatelForm"]'));
         Assert::notContains($s->member->jmeno, $this->text($document, '//*[@id="obsah"]'));
         Assert::notContains($s->member->prijmeni, $this->text($document, '//title'));
@@ -174,8 +175,8 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
         $s = $this->scenario;
         $ip = $this->fixtures->ipAddress($s->member->id, '10.107.99.12');
         $document = $this->document($this->presenters->ui($s->actors['vv']->id, 'Uzivatel', ['action' => 'presunIp', 'id' => $s->member->id, 'ipId' => $ip->id])->html);
-        Assert::same('Přesun IP k jinému členovi | HKFree UserDB', $this->text($document, '//title'));
-        Assert::same('Přesun IP k jinému členovi', $this->text($document, '//*[@id="obsah"]//h1'));
+        Assert::same('Přesun IP k jinému účastníkovi | HKFree UserDB', $this->text($document, '//title'));
+        Assert::same('Přesun IP k jinému účastníkovi', $this->text($document, '//*[@id="obsah"]//h1'));
     }
 
     public function testAddingIpKeepsUnsavedState(): void {

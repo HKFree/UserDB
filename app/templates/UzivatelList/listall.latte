@@ -1,7 +1,7 @@
 {import 'list.latte'}
-{block title}Kompletní seznam členů{/block}
+{block title}Kompletní seznam účastníků{/block}
 {block content}
-<h3>Kompletní seznam členů</h3>
+<h3>Kompletní seznam účastníků</h3>
 
 {if $search}
   <p>Fulltextové vyhledávání: <code>{$search}</code>
@@ -26,7 +26,7 @@
 </div>
 </div>
 
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Kompletní seznam členů">{$tabulkaClenu|noescape}</div>
+<div class="user-list-scroll" tabindex="0" role="region" aria-label="Kompletní seznam účastníků">{$tabulkaClenu|noescape}</div>
 
 {if !$search}{include memberStats}{/if}
 

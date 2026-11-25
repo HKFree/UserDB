@@ -26,7 +26,7 @@ class Komunikace
         foreach ($uzivateleID as $uid) {
             $u = $this->uzivatel->getUzivatel($uid);
             if ($u === null) {
-                throw new SmsSenderException('Uživatel pro odeslání SMS nebyl nalezen.');
+                throw new SmsSenderException('Účastník pro odeslání SMS nebyl nalezen.');
             }
             if ($this->smsSender->checkCzechNumber($u->telefon)) {
                 $cisla[] = $u->telefon;
@@ -34,7 +34,7 @@ class Komunikace
         }
 
         if ($cisla === []) {
-            throw new SmsSenderException('Žádný z vybraných uživatelů nemá platné české telefonní číslo.');
+            throw new SmsSenderException('Žádný z vybraných účastníků nemá platné české telefonní číslo.');
         }
 
         $this->smsSender->sendSMS($cisla, $zprava);

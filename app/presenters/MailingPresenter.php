@@ -95,7 +95,7 @@ class MailingPresenter extends UzivatelPresenter
         $uid = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($uid);
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
 
@@ -128,7 +128,7 @@ class MailingPresenter extends UzivatelPresenter
         $variant = $this->getParameter('variant');
         $uzivatel =  $this->uzivatel->find($uid);
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
 
         $subject = $this->loadTemplateAndSubject($variant);

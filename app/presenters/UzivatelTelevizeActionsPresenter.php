@@ -84,7 +84,7 @@ class UzivatelTelevizeActionsPresenter extends UzivatelPresenter
     private function cena($uid) {
         $uzivatel = $uid !== null ? $this->uzivatel->getUzivatel($uid) : null;
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
         $televizeRow = $uzivatel->related('UzivatelTelevize.id')->fetch();
         return $televizeRow !== null ? $televizeRow->cena : $this->parameters->getCenaSledovaniTV();

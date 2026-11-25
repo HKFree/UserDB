@@ -1,4 +1,4 @@
-{block title}{ifset $u}{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni}{else}{$u->nick}{/if}{else}Člen{/ifset}{/block}
+{block title}{ifset $u}{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni}{else}{$u->nick}{/if}{else}Účastník{/ifset}{/block}
 {block content}
 {ifset $u}
 
@@ -25,7 +25,7 @@
     {/if}
     <div n:if="$canViewOrEdit || $u->regform_downloaded_password_sent==0" class="btn-group">
     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Další <span class="caret"></span></button>
-    <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-label="Další akce člena">
+    <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-label="Další akce účastníka">
     {if $canViewOrEdit}
         <li role="presentation"><a n:href="UzivatelRightsCc:editrights id=>$u->id" role="menuitem"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a></li>
         <li n:if="$u->spolek" role="presentation"><a n:href="UzivatelRightsCc:editcc id=>$u->id" role="menuitem"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a></li>
@@ -42,7 +42,7 @@
     </div>
     </div>
 
-    <section class="member-labels" aria-label="Štítky člena">
+    <section class="member-labels" aria-label="Štítky účastníka">
             <b>Štítky:</b>
             {control userLabels userId => $u->id}
     </section>
@@ -317,7 +317,7 @@
                 }
             })
             $('#btn-televize-aktivovat').on('click', function(event) {
-                if (!confirm("Aktivace služby SledovaniTV během 15 minut.\nZ uživatelského účtu bude strženo {$televize_cena} Kč.\n\nPokračovat?")) {
+                if (!confirm("Aktivace služby SledovaniTV během 15 minut.\nZ účtu účastníka bude strženo {$televize_cena} Kč.\n\nPokračovat?")) {
                     event.preventDefault();
                 }
             })
@@ -366,7 +366,7 @@
             });
 
             $('#btn-handle-subscriber-contract').on('click', function(event) {
-                const c = confirm("Nová účastnická smloua bude odeslána k podpisu na e-mail "+{$u->email}+".\n\n(e-mail dorazí během 2 minut)\n\nPokračovat?");
+                const c = confirm("Nová účastnická smlouva bude odeslána k podpisu na e-mail "+{$u->email}+".\n\n(e-mail dorazí během 2 minut)\n\nPokračovat?");
                 if (c) {
                     // Ok
                 } else {

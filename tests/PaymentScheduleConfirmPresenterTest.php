@@ -36,11 +36,11 @@ final class PaymentScheduleConfirmPresenterTest extends DatabaseTestCase
             ],
             [
                 'member@@example.invalid', 'second@example.invalid', ['second@example.invalid'],
-                "Rozpis plateb bude odeslán na e-mail second@example.invalid.\n\nHlavní e-mail člena je neplatný, rozpis na něj neodejde." . $pokracovat,
+                "Rozpis plateb bude odeslán na e-mail second@example.invalid.\n\nHlavní e-mail účastníka je neplatný, rozpis na něj neodejde." . $pokracovat,
             ],
             [
                 'member@example.invalid', 'second@@example.invalid', ['member@example.invalid'],
-                "Rozpis plateb bude odeslán na e-mail member@example.invalid.\n\nSekundární e-mail člena je neplatný, rozpis na něj neodejde." . $pokracovat,
+                "Rozpis plateb bude odeslán na e-mail member@example.invalid.\n\nSekundární e-mail účastníka je neplatný, rozpis na něj neodejde." . $pokracovat,
             ],
         ];
     }

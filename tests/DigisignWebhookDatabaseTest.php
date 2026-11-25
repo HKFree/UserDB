@@ -238,7 +238,7 @@ final class DigisignWebhookDatabaseTest extends DatabaseTestCase
             ['Completed', 'document', 'DigiSign nevrátil podepsaný dokument.'],
             ['Completed', 'recipient', 'DigiSign nevrátil příjemce obálky.'],
             ['Completed', 'signature', 'Podpis účastníka nebyl nalezen.'],
-            ['Completed', 'member', 'Člen smlouvy nebyl nalezen.'],
+            ['Completed', 'member', 'Účastník smlouvy nebyl nalezen.'],
             ['Declined', 'recipient', 'DigiSign nevrátil příjemce obálky.'],
             ['Declined', 'declinedAt', 'DigiSign nevrátil čas odmítnutí obálky.'],
             ['Declined', 'signature', 'Podpis účastníka nebyl nalezen.'],

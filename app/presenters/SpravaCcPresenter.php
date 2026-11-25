@@ -141,7 +141,7 @@ class SpravaCcPresenter extends SpravaPresenter
             $navrhovatel = $this->uzivatel->getUzivatel($pravo->zadost_podal);
             $schvaleny = $this->uzivatel->getUzivatel($pravo->Uzivatel_id);
             if ($navrhovatel === null || $schvaleny === null) {
-                $this->error('Uživatel nebyl nalezen.');
+                $this->error('Účastník nebyl nalezen.');
             }
             $podklady[$key] = [$starePravo, $navrhovatel, $schvaleny];
         }

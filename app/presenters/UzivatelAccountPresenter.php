@@ -114,7 +114,7 @@ class UzivatelAccountPresenter extends UzivatelPresenter
     public function renderAccount(): void {
         $uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'));
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
 
         $this->template->canViewOrEdit = $this->smiVidetPlatby();

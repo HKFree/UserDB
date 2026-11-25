@@ -68,7 +68,7 @@ final class IpTransferPresenterTest extends DatabaseTestCase
             Assert::same((string) $this->target->id, $log->nova_hodnota);
             Assert::same($s->actors['ownSo']->id, $log->Uzivatel_id);
             $page = $this->presenters->ui($s->actors['ownSo']->id, 'Uzivatel', ['action' => 'show', 'id' => $uid]);
-            Assert::contains('Přesun IP od člena ' . $s->member->id . ' ke členovi ' . $this->target->id, $page->html);
+            Assert::contains('Přesun IP od účastníka ' . $s->member->id . ' k účastníkovi ' . $this->target->id, $page->html);
         }
         Assert::same(['result' => 'OK', 'Uzivatel_id' => $this->target->id], $this->presenters->api('Api:Uzivatel', $credentials, ['action' => 'getUzivatelbyIP', 'id' => $this->ip->ip_adresa])->json);
         Assert::notSame($hashBefore, $this->presenters->api('Api:Smokeping', $credentials, ['action' => 'check'])->html);
@@ -155,7 +155,7 @@ final class IpTransferPresenterTest extends DatabaseTestCase
         $this->submit();
         $before = $this->scenario->snapshot();
         $result = $this->submit();
-        Assert::contains('IP adresa již nepatří původnímu členovi. Obnovte stránku.', $result->html);
+        Assert::contains('IP adresa již nepatří původnímu účastníkovi. Obnovte stránku.', $result->html);
         Assert::same($before, $this->scenario->snapshot());
     }
 
@@ -175,7 +175,7 @@ final class IpTransferPresenterTest extends DatabaseTestCase
         $s = $this->scenario;
         $this->database->table('Uzivatel')->where('id != ?', $s->member->id)->update(['systemovy' => 1]);
         $page = $this->presenters->ui($s->actors['ownSo']->id, 'Uzivatel', $this->parameters());
-        Assert::contains('Na tomto AP není jiný vhodný člen, kterého smíte upravovat.', $page->html);
+        Assert::contains('Na tomto AP není jiný vhodný účastník, kterého smíte upravovat.', $page->html);
         $dom = DomQuery::fromHtml($page->html);
         Assert::count(0, $dom->find('select[name="cil"]'));
         Assert::count(0, $dom->find('input[type="submit"][name="potvrdit"]'));

@@ -129,7 +129,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
                 //\Tracy\Debugger::barDump($link);exit();
                 $so = $this->uzivatel->getUzivatel($this->getIdentity()->getUid());
                 if ($so === null) {
-                    $this->error('Uživatel nebyl nalezen.');
+                    $this->error('Přihlášený uživatel nebyl nalezen.');
                 }
 
                 $link = $this->link('//SelfService:confirmEmail', $hash);
@@ -156,7 +156,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
             if (($uzivatel = $this->uzivatel->getUzivatel($this->getParameter('id'))) !== null) {
                 $this->vyzadujOpravneni($this->smiUpravitUzivatele($uzivatel));
                 if ((int) $uzivatel->spolek === 0) {
-                    $this->flashMessage('Uživatel není členem spolku, e-mail nebyl odeslán.');
+                    $this->flashMessage('Účastník není členem spolku, e-mail nebyl odeslán.');
 
                     $this->redirect('Uzivatel:show', array('id' => $uzivatel->id));
                 } else {
@@ -185,7 +185,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $user_id = $this->getParameter('id');
         $uzivatel =  $this->uzivatel->find($user_id);
         if ($uzivatel === null) {
-            $this->error('Uživatel nebyl nalezen.');
+            $this->error('Účastník nebyl nalezen.');
         }
 
         $pdfData = \App\Services\GeneratorSmlouvy::nahledUcastnickeSmlouvy($uzivatel);
@@ -206,7 +206,7 @@ class UzivatelActionsPresenter extends UzivatelPresenter
         $current_user = $this->uzivatel->find($user_id);
 
         if ($current_user === null) {
-            $this->flashMessage('Žádný uživatel s tímto id.');
+            $this->flashMessage('Žádný účastník s tímto ID.');
             $this->redirect('UzivatelList:listall');
         }
 

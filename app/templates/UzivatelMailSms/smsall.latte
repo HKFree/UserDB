@@ -1,6 +1,6 @@
 {block content}
 
-<h3 n:block=title>Odeslání sms <small>uživatelům AP {$ap->jmeno}</small></h3>
+<h3 n:block=title>Odeslání sms <small>členům AP {$ap->jmeno}</small></h3>
 
 {if $canViewOrEdit}
 {include '../form.latte', form => smsallForm}

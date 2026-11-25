@@ -160,7 +160,7 @@ final class PermissionGridExportsPresenterTest extends DatabaseTestCase
             unset($parameters['search']);
             $result = $this->presenters->ui($s->actors[$actor]->id, 'UzivatelList', $parameters);
         }
-        Assert::same($statistics, str_contains($result->html, 'Počet aktivních členů'));
+        Assert::same($statistics, str_contains($result->html, 'Počet aktivních účastníků'));
         if ($actor === 'support') {
             Assert::contains('Bez informací z money', $result->html);
         }
