@@ -224,6 +224,60 @@ $(document).ready(function () {
     }, true);
 });
 
+// Pomocný vodorovný posuvník, dokud je spodní okraj seznamu členů AP mimo okno.
+$(document).ready(function () {
+    var frame = document.querySelector('.user-list-scroll-with-bar');
+    if (!frame) return;
+    var bar = document.querySelector('.user-list-scrollbar');
+    var mouse = window.matchMedia('(any-hover: hover) and (any-pointer: fine)');
+
+    function updateVisibility() {
+        var bounds = frame.getBoundingClientRect();
+        var viewportBottom = document.documentElement.clientHeight;
+        bar.hidden = !mouse.matches || Number(bar.max) === 0
+            || bounds.top >= viewportBottom || bounds.bottom <= viewportBottom;
+    }
+
+    function syncFromFrame() {
+        if (bar.valueAsNumber !== frame.scrollLeft) bar.valueAsNumber = frame.scrollLeft;
+    }
+
+    function resizeBar() {
+        var width = frame.clientWidth;
+        var contentWidth = frame.scrollWidth;
+        bar.max = contentWidth - width;
+        if (contentWidth > width) {
+            var bounds = frame.getBoundingClientRect();
+            var nativeScrollbarHeight = frame.offsetHeight - frame.clientHeight;
+            var thumbWidth = Math.max(24, Math.round(width * width / contentWidth));
+            bar.style.left = bounds.left + 'px';
+            bar.style.width = width + 'px';
+            bar.style.setProperty('--user-list-scroll-thumb-width', thumbWidth + 'px');
+            bar.style.setProperty('--user-list-scrollbar-height', Math.max(14, nativeScrollbarHeight) + 'px');
+            syncFromFrame();
+        }
+        updateVisibility();
+    }
+
+    frame.addEventListener('scroll', syncFromFrame);
+    bar.addEventListener('input', function () {
+        frame.scrollLeft = bar.valueAsNumber;
+    });
+    // Po tažení mají šipky a Page Down opět posouvat stránku.
+    window.addEventListener('pointerup', function () {
+        if (document.activeElement === bar) bar.blur();
+    });
+    window.addEventListener('scroll', updateVisibility, { passive: true });
+    window.addEventListener('resize', resizeBar);
+    mouse.addEventListener('change', updateVisibility);
+
+    // Živé hledání a údaje doplněné do buněk mohou změnit velikost tabulky bez změny velikosti okna.
+    var observer = new ResizeObserver(resizeBar);
+    observer.observe(frame);
+    var table = frame.querySelector('table');
+    if (table) observer.observe(table);
+});
+
 // Scroll na objekt odkazovany ve fragmentu (napr. "#ip10.107.12.1")
 // a zvyrazneni objektu (id musi byt napr. 'highlightable-ip10.107.12.1')
 $(document).ready(function () {

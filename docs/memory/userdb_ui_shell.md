@@ -22,6 +22,10 @@ metadata:
   z definice formuláře, a pamatuj na stav `:disabled`. Ověřeno 22. 11. 2026 čtením
   pravidel a měřením v prohlížeči na formuláři e-mailu členovi: s `min-height` má pole
   zprávy výšku 198 px podle svého `rows`, zakázané pole příjemce je šedé.
+- Bootstrap nastavuje `input[type="range"]` na `display: block`, takže u tohoto
+  pole přebije obecné `[hidden]`. Ověřeno 25. 11. 2026 v Playwrightu: atribut
+  `hidden` byl nastavený a posuvník přesto zůstal viditelný. U takového pole
+  použij vlastní selektor třídy s `[hidden]` a ověř skutečnou viditelnost.
 - V emulaci telefonu (Playwright s `isMobile`) roste `window.innerWidth` spolu s obsahem,
   takže rozdíl `scrollWidth - innerWidth` vyjde nula i u stránky širší než displej.
   Šířku stránky porovnávej s nastavenou šířkou okna (375). Ověřeno 22. 11. 2026: úprava
