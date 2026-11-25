@@ -21,8 +21,9 @@ nad detailem AP 200 z demo dat, při opravě kopírování loginu a hesla zaří
   nic, ve Firefoxu neoznačí nic ani tažení zprava doleva uvnitř prvku a dvojklik.
 - Tažení, které začne na prvku `<button>`, žádný výběr nezaloží. Tažení, které nad tlačítkem skončí, ve
   Firefoxu výběr neprodlouží: zůstane na poslední pozici myši nad textem a konec hodnoty chybí.
-- Nápověda Bootstrapu (tooltip) se vkládá hned za svůj prvek. V buňce tabulky se tak její text dostane do
-  výběru a do schránky, dokud prvek nemá `data-container="body"`.
+- Nápověda (tooltip) z `main.js` je prvek s atributem `popover` vložený na konec `<body>` a kreslený
+  v horní vrstvě. Do výběru v tabulce se nedostane a rám tabulky ji neořízne. Text bere z `title`, který
+  přesune do `data-tip`, aby se neukazovala i systémová bublina.
 - Chromium u zalomeného textu umístí začátek výběru na začátek hodnoty, když tažení začne 1 px před koncem
   posledního řádku. Dělá to i původní značkování, není to chyba aplikace.
 - Kde výběr tažený ze sousední buňky začíná, se liší: Firefox a WebKit ho ukotví na konec textu sousední
@@ -31,9 +32,8 @@ nad detailem AP 200 z demo dat, při opravě kopírování loginu a hesla zaří
   označené, říká jen průnik rozsahů (`selectedPartOf()` v `main.js`).
 - Chromium a WebKit ruší výběr při kliknutí na označený text až po obsluze události `click`. Výběr nastavený
   přímo v obsluze tak druhé kliknutí zase zruší; nastavuje se proto přes `setTimeout(..., 0)`.
-- `.table-responsive` má v přibaleném Bootstrapu 3.2 účinek jen pod 768 px: na počítači nic neořízne, na
-  telefonu ořízne nápovědy prvního řádku, které se vkládají do buňky. Tabulku IP na detailu člena a AP
-  navíc `main.js` balí do `.table-scroll`, který přesah ořezává na každé šířce.
+- `.table-responsive` (vlastní pravidlo ve `screen.css`) posouvá tabulku vodorovně při každé šířce. Tabulku IP
+  na detailu člena a AP navíc `main.js` balí do `.table-scroll`, který přesah ořezává na každé šířce.
 - Pevnou mezeru (U+00A0) vrací Firefox z `Selection.toString()` jako obyčejnou a Chromium ji jako obyčejnou
   zapíše do schránky, když kopíruje samo. Přesná zůstane jen hodnota, kterou do schránky vloží `main.js`;
   výběr s hodnotou proto porovnává bez bílých znaků (`withoutWhitespace()`). Ověřeno 22. 11. 2026 nad hesly

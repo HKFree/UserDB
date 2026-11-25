@@ -139,7 +139,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
 
     private function assertHomeAndNavbarTools(string $actor): void {
         $document = $this->home($actor);
-        $menu = $this->links($document, '//*[@id="navbar-tools"]//a');
+        $menu = $this->links($document, '//*[@id="menu-nastroje"]//a');
         $home = $this->links($document, '//*[contains(@class,"home-tools")]//a[@data-tool]');
         Assert::count(10, $menu);
         Assert::same($menu, $home);

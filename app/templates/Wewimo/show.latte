@@ -74,7 +74,7 @@
                             <th>OS</th>
                             <th>Last IP</th>
                             <th>Last IP host</th>
-                            <th><a href="#" title="Zobrazit všude další IP (podle Last-IP)" style="color: #C2E7FF" data-last-ips-toggle="{$wewimoOneDevice['ip']},{$interfaceName}" onClick="return toggleLastIps({$wewimoOneDevice['ip']},{$interfaceName})"><i class="fa fa-plus-square" aria-hidden="true"></i></a></th>
+                            <th><a href="#" title="Zobrazit všude další IP (podle Last-IP)" data-last-ips-toggle="{$wewimoOneDevice['ip']},{$interfaceName}" onClick="return toggleLastIps({$wewimoOneDevice['ip']},{$interfaceName})"><i class="fa fa-plus-square" aria-hidden="true"></i></a></th>
                         </tr>
                         {foreach $interface['stations'] as $row}
                             {var $stationsIterator = $iterator}
@@ -89,10 +89,7 @@
                                         href="{$row['xx-grafana-link']}"
                                         target="_blank"
                                         class="btn btn-default btn-xs btn-in-table"
-                                        title=""
-                                        data-toggle="tooltip"
-                                        data-placement="top"
-                                        data-original-title="Otevřít graf signálu"><span class="glyphicon glyphicon-signal"></span></a>
+                                        title="Otevřít graf signálu"><span class="glyphicon glyphicon-signal"></span></a>
                                 </td>
                                 <td>{$row['xx-mac-host']}</td>
                                 <td>{$row['radio-name']}</td>
@@ -203,135 +200,156 @@
 </p>
 
 <script>
+// Další IP podle Last-IP: řádky s nimi mají data-last-ips-id (rozhraní) a data-last-ips-mac (stanice),
+// přepínače [+] a [-] data-last-ips-toggle (rozhraní), data-last-ips-mac-toggle (stanice)
+// a data-last-ips-permac-toggle (všechny stanice rozhraní).
+
+/** Prvky, jejichž atribut má přesně danou hodnotu (hodnota obsahuje IP, rozhraní a MAC, do selektoru ji nedáváme). */
+function wewimoPodleAtributu(atribut, hodnota) {
+    return [...document.querySelectorAll('[' + atribut + ']')].filter((prvek) => prvek.getAttribute(atribut) === hodnota);
+}
+
+function wewimoJeSkryty(radek) {
+    return radek.style.display === 'none';
+}
 
 function hideUselessToggleLastIps() {
-    $('[data-last-ips-toggle]').each(function() {
-        var rbIpIfacePair = $(this).data('last-ips-toggle');
-        console.log('hideUselessToggleLastIps testing', rbIpIfacePair, $('[data-last-ips-id="'+rbIpIfacePair+'"]').length);
-        if ($('[data-last-ips-id="'+rbIpIfacePair+'"]').length == 0) {
+    document.querySelectorAll('[data-last-ips-toggle]').forEach((prepinac) => {
+        const rbIpIfacePair = prepinac.dataset.lastIpsToggle;
+        const radky = wewimoPodleAtributu('data-last-ips-id', rbIpIfacePair);
+        console.log('hideUselessToggleLastIps testing', rbIpIfacePair, radky.length);
+        if (radky.length === 0) {
             // no hidden rows with more last-ips exists, hide [+] toggle
-            $(this).hide();
+            prepinac.style.display = 'none';
         }
     });
 }
 
-function setToggle(toggleLink, plus) {
-    if (plus) {
-        $(toggleLink).find('i').attr('class', 'fa fa-plus-square');
-    } else {
-        $(toggleLink).find('i').attr('class', 'fa fa-minus-square');
-    }
+function setToggle(prepinace, plus) {
+    prepinace.forEach((prepinac) => {
+        prepinac.querySelectorAll('i').forEach((ikona) => {
+            ikona.className = plus ? 'fa fa-plus-square' : 'fa fa-minus-square';
+        });
+    });
 }
 
 function toggleLastIps(rbIp, rbInterface, stationMac) {
     console.log("toggleLastIps", rbIp, rbInterface, stationMac);
-    var ifaceSelector = '[data-last-ips-id="'+rbIp+','+rbInterface+'"]';
-    var ifaceToggleSelector = '[data-last-ips-toggle="'+rbIp+','+rbInterface+'"]';
-    var ipsSelector = stationMac ? '[data-last-ips-mac="'+rbIp+','+rbInterface+','+stationMac+'"]' : ifaceSelector;
-    console.log("ipsSelector", ipsSelector);
+    const iface = rbIp + ',' + rbInterface;
+    const station = iface + ',' + stationMac;
+    const ifaceRows = wewimoPodleAtributu('data-last-ips-id', iface);
+    const ifaceToggles = wewimoPodleAtributu('data-last-ips-toggle', iface);
+    const rows = stationMac ? wewimoPodleAtributu('data-last-ips-mac', station) : ifaceRows;
     // test if all (iface-related or station-related) IPs are visible
-    var allVisible = true;
-    $(ipsSelector).each(function() {
-        if ($(this).is(':hidden')) allVisible = false;
-    });
-    if (allVisible) {
+    if (rows.some(wewimoJeSkryty) === false) {
         // hide all
-        $(ipsSelector).hide();
+        rows.forEach((radek) => { radek.style.display = 'none'; });
         if (stationMac) {
             // particular station's IPs hidden
             // switch station toggle to [+]
-            var stationToggleSelector = '[data-last-ips-mac-toggle="'+rbIp+','+rbInterface+','+stationMac+'"]';
-            setToggle(stationToggleSelector, true);
+            setToggle(wewimoPodleAtributu('data-last-ips-mac-toggle', station), true);
             // we are sure that some (this) station-related IPs are hidden,
             // switch iface toggle to [+]
-            setToggle(ifaceToggleSelector, true);
+            setToggle(ifaceToggles, true);
         } else {
             // all stations' IPs hidden
             // switch all iface-related toggles to [+]
-            setToggle(ifaceToggleSelector, true);
-            setToggle('[data-last-ips-permac-toggle="'+rbIp+','+rbInterface+'"]', true);
+            setToggle(ifaceToggles, true);
+            setToggle(wewimoPodleAtributu('data-last-ips-permac-toggle', iface), true);
         }
     } else {
         // show all
-        $(ipsSelector).show();
+        rows.forEach((radek) => { radek.style.display = ''; });
         if (stationMac) {
             // particular station's IPs shown
             // switch station toggle to [-]
-            var stationToggleSelector = '[data-last-ips-mac-toggle="'+rbIp+','+rbInterface+','+stationMac+'"]';
-            setToggle(stationToggleSelector, false);
-            // test if all iface-related IPs are visible
-            var ifaceAllVisible = true;
-            $(ifaceSelector).each(function() {
-                if ($(this).is(':hidden')) ifaceAllVisible = false;
-            });
-            // if all visible, switch iface toggle to [-], else [+]
-            setToggle(ifaceToggleSelector, !ifaceAllVisible);
+            setToggle(wewimoPodleAtributu('data-last-ips-mac-toggle', station), false);
+            // if all iface-related IPs are visible, switch iface toggle to [-], else [+]
+            setToggle(ifaceToggles, ifaceRows.some(wewimoJeSkryty));
         } else {
             // all stations' IPs shown
             // switch all iface-related toggles to [-]
-            setToggle(ifaceToggleSelector, false);
-            setToggle('[data-last-ips-permac-toggle="'+rbIp+','+rbInterface+'"]', false);
+            setToggle(ifaceToggles, false);
+            setToggle(wewimoPodleAtributu('data-last-ips-permac-toggle', iface), false);
         }
     }
     return false; // do not follow the dummy link
 }
 
-$(function(){
-    $.nette.init();
-
+// Automatická aktualizace: každé zařízení (tbody.oneDevice) se načítá zvlášť, další dotaz na tutéž IP
+// odejde až po dokončení předchozího. Odpověď je payload Nette se snippety podle id prvku.
+{
     hideUselessToggleLastIps();
 
-    var refreshDelay = 1000;
+    const refreshDelay = 1000;
+    const refresh = document.getElementById('refresh');
+    const timerByIp = new Map();
+    const requestByIp = new Map();
 
-    var timerByIp = {};
-    var requestByIp = {};
-
-    $("#refresh").change(function() {
-        if(this.checked) {
-            // prave zaskrtnut checkbox, nastartovat automaticke aktualizovani pres AJAX
-            $(".oneDevice").each(function() {
-                var ip = $(this).data('ip');
-                refreshIp(ip);
+    const applyPayload = (payload) => {
+        if (payload.redirect) {
+            window.location.href = payload.redirect;
+            return;
+        }
+        if (payload.snippets) {
+            Object.entries(payload.snippets).forEach(([id, html]) => {
+                const snippet = document.getElementById(id);
+                if (snippet !== null) {
+                    snippet.innerHTML = html;
+                }
             });
+        }
+    };
+
+    const refreshIp = (ip) => {
+        console.log('request starting', ip);
+        const controller = new AbortController();
+        requestByIp.set(ip, controller);
+        fetch('?do=update&ip=' + encodeURIComponent(ip), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            signal: controller.signal,
+        })
+            .then((response) => {
+                if (response.ok === false) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            })
+            .then(applyPayload)
+            .catch((error) => {
+                if (controller.signal.aborted === false) {
+                    console.warn('Wewimo: aktualizace', ip, 'selhala', error);
+                }
+            })
+            .finally(() => {
+                hideUselessToggleLastIps();
+                const aborted = controller.signal.aborted;
+                console.log('request completed', ip, aborted ? 'abort' : 'done');
+                // pokud je jeste zaskrtnut checkbox, (s odkladem) zahajit dalsi aktualizaci
+                if (aborted === false && refresh.checked) {
+                    timerByIp.set(ip, setTimeout(() => refreshIp(ip), refreshDelay));
+                    console.log('timer scheduled', ip, timerByIp.get(ip));
+                }
+            });
+    };
+
+    refresh.addEventListener('change', () => {
+        if (refresh.checked) {
+            // prave zaskrtnut checkbox, nastartovat automaticke aktualizovani
+            document.querySelectorAll('.oneDevice').forEach((zarizeni) => refreshIp(zarizeni.dataset.ip));
         } else {
-            // prave odskrtnut checkbox, zrusit vsechny bezici casovace a rozjete AJAXy
-            $.each(timerByIp, function( ip, timer ) {
+            // prave odskrtnut checkbox, zrusit vsechny bezici casovace a rozjete pozadavky
+            timerByIp.forEach((timer, ip) => {
                 clearTimeout(timer);
                 console.log('clearing timer', ip, timer);
             });
-            $.each(requestByIp, function( ip, xhr ) {
-                console.log('aborting xhr', ip, xhr);
-                xhr.abort();
+            requestByIp.forEach((controller, ip) => {
+                console.log('aborting request', ip);
+                controller.abort();
             });
         }
     });
-
-
-    function refreshIp(ip) {
-        console.log('xhr starting', ip);
-        requestByIp[ip] = $.nette.ajax({
-            url: "?do=update&ip="+ip,
-            complete: function (jqXHR, textStatus) {
-                hideUselessToggleLastIps();
-                console.log('xhr completed', ip, textStatus);
-                if (textStatus !== 'abort') {
-                    // pokud je jeste zaskrtnut checkbox, (s odkladem) zahajit dalsi aktualizaci
-                    if ($("#refresh").prop('checked')) {
-                        timerByIp[ip] = setTimeout(function() {
-                            refreshIp(ip);
-                        }, refreshDelay);
-                        console.log('timer scheduled', ip, timerByIp[ip]);
-                    }
-                }
-            },
-            // zakazat cancel predchoziho pozadavku (chceme posilat paralelne pozadavky na ruzne IP),
-            // aby nesly dva pozadavky na jednu IP zaroven je zajisteno tim, ze novy pozadavek na tutez IP
-            // se posila az po complete predchoziho pozadavku na danou IP
-            off: ['unique']
-        });
-    }
-});
-
+}
 </script>
 
 

@@ -57,10 +57,10 @@ final class AreaMenuOrderPresenterTest extends DatabaseTestCase
             $this->apLabel('Chlum'),
             $this->prefix . ' Ivanov',
             $this->apLabel('Šonov'),
-        ], $this->ownTexts($page, '//ul[@id="oblastitree"]/li/a'));
+        ], $this->ownTexts($page, '//ul[@id="oblastitree"]/li/a | //ul[@id="oblastitree"]/li/details/summary/a'));
         Assert::same(
             [$this->apLabel('Lhota'), $this->apLabel('Zrušené'), $this->apLabel('Bor'), $this->apLabel('Ves')],
-            $this->ownTexts($page, '//ul[@id="oblastitree"]/li/ul/li/a'),
+            $this->ownTexts($page, '//ul[@id="oblastitree"]/li/details/ul/li/a'),
         );
     }
 

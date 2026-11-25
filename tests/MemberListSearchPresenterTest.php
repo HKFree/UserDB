@@ -127,7 +127,7 @@ final class MemberListSearchPresenterTest extends DatabaseTestCase
     }
 
     public function testLinksToMembersOfAnApDoNotCarryTheSearch(): void {
-        $links = $this->pages->texts($this->searchResults(), '//div[' . MemberListPages::hasClass('sidebar') . ']//a/@href');
+        $links = $this->pages->texts($this->searchResults(), '//aside[' . MemberListPages::hasClass('sidebar') . ']//a/@href');
         Assert::contains('/userdb/uzivatel-list/list/' . $this->ap->id, $links);
         foreach ($links as $link) {
             Assert::notContains('search', $link);

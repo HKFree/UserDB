@@ -69,13 +69,14 @@ test('v rozbaleném rozvržení se zobrazí všechny sloupce tabulky IP', async 
 
     for (const width of [1600, 1280, 990]) {
         await page.setViewportSize({ width, height: 900 });
-        await expect(page.locator('.navbar-toggle')).toBeHidden();
+        // The brand in the top bar shows only in the narrow layout, where the sidebar slides in.
+        await expect(page.locator('.topbar-brand')).toBeHidden();
         const overflow = await frame.evaluate(element => element.scrollWidth - element.clientWidth);
         expect(overflow, `přetečení tabulky IP při šířce ${width} px`).toBe(0);
     }
 
     const address = row.getByRole('link', { name: '10.221.0.1', exact: true });
-    const edit = addressCell.locator('a[title="Editovat"], a[data-original-title="Editovat"]');
+    const edit = addressCell.locator('a[title="Editovat"], a[data-tip="Editovat"]');
     await expect(edit).toBeVisible();
     const actionTop = (await edit.boundingBox()).y;
     const pingBox = await ping.boundingBox();
@@ -95,7 +96,7 @@ test.describe('tabulka IP na telefonu', () => {
 
     test('tabulka se posouvá ve vlastním rámu a heslo je dostupné', async ({ page }) => {
         await page.goto(detail);
-        await expect(page.locator('.navbar-toggle')).toBeVisible();
+        await expect(page.locator('.topbar-brand')).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 
         const frame = page.locator('#member-ip .table-scroll');

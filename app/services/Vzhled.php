@@ -6,7 +6,7 @@ namespace App\Services;
 
 /**
  * Vzhled aplikace (světlý, tmavý, podle systému). Volbu si pamatuje prohlížeč v cookie,
- * do databáze se nic neukládá. Barvy vzhledů jsou ve www/css/theme.css.
+ * do databáze se nic neukládá. Barvy vzhledů jsou tokeny ve www/css/screen.css.
  */
 final class Vzhled
 {

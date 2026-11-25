@@ -16,8 +16,6 @@
         {/if}
     </ol>
 </nav>
-{* Odkaz na seznam clenu AP uz je v hlavicce: levy panel se zvyrazni hned, ne az po nacteni cele stranky. *}
-<script>if (window.userdbSidebarTree) userdbSidebarTree();</script>
 <div class="page-head">
     <h1 class="page-title">{if $member}Úprava účastníka {$member->jmeno} {$member->prijmeni} <small>UID {$member->id}</small>{else}Nový účastník{/if}</h1>
     <div class="page-actions" n:if="$member">
@@ -32,84 +30,78 @@
     </nav>
 </div>
 <script>
-    $( document ).ready(function() {
-        $(".ip_adresa.ip").keyup(ipClickCallback);
-        $(".ip_adresa.ip").click(ipClickCallback);
-
-        $(".ip_adresa.ip").each(ipStartCallback);
-
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-
-    function ipClickCallback(e) {
-        ipRefresh(e.target);
-    }
-
-    function ipStartCallback() {
-        ipRefresh(this);
-    }
-
-    function ipRefresh(t) {
-        var target = $(t);
-        var ip = target.val();
-        var tbody = t.parentNode.parentNode.parentNode;
-        var detailsspan = $(tbody).find(".ip.details");
-
-        var editsubnet = $(tbody).find(".ip.editsubnet");
-        var apid = $("#frm-uzivatelForm-Ap_id").val();
-        editsubnet.find("a").attr("href", {link Ap:show , id => null} + "/" + apid);
-        editsubnet.show();
-
-        if(!ipValidate(ip)) {
-            var errorsspan = $(tbody).find(".ip.errors");
-            errorsspan.show();
-            detailsspan.hide();
-
-            errorsspan.text("Neplatná IP adresa");
-            return false;
-        }
-
-        var reqid = detailsspan.data("reqid") + 1;
-        detailsspan.data("reqid", reqid);
-
-        $.ajax({
-            type: "GET",
-            url: {link AjaxApi:GetIpDetails , id => null},
-            data: { ip: ip, reqid: reqid, apid: apid },
-            success: ipAjaxCallback.bind(tbody),
-            dataType: "json"
-        });
-    }
-
-    function ipAjaxCallback(d) {
-        var detailsspan = $(this).find(".ip.details");
-        var errorsspan = $(this).find(".ip.errors");
-
-        if(detailsspan.data("reqid") != d.reqid){
-            // data jdouci moc pozde zahodime
-            return false;
-        }
-
-        if(d.error) {
-            errorsspan.text(d.error);
-
-            errorsspan.show();
-            detailsspan.hide();
-        } else {
-            detailsspan.find(".subnet").text(d.subnet);
-            detailsspan.find(".gateway").text(d.gateway);
-            detailsspan.find(".mask").text(d.mask);
-            detailsspan.find(".subnetlink").attr('href', d.subnetLink);
-
-            errorsspan.hide();
-            detailsspan.show();
-        }
-    }
-
-    function ipValidate(ip)
+    // Pod každou IP adresou formuláře se ukáže její podsíť, maska a brána, u neplatné adresy chyba.
+    // Odpověď na starší dotaz, která dorazí po novějším, se zahodí (data-reqid).
     {
-        var rx = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        return(rx.test(ip));
+        const ipValidate = (ip) => /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip);
+
+        const show = (prvek) => { prvek.style.display = ''; };
+        const hide = (prvek) => { prvek.style.display = 'none'; };
+
+        const ipAjaxCallback = (tbody, d) => {
+            const details = tbody.querySelector('.ip.details');
+            const errors = tbody.querySelector('.ip.errors');
+
+            if (details.dataset.reqid !== String(d.reqid)) {
+                // data jdouci moc pozde zahodime
+                return;
+            }
+
+            if (d.error) {
+                errors.textContent = d.error;
+                show(errors);
+                hide(details);
+            } else {
+                details.querySelector('.subnet').textContent = d.subnet;
+                details.querySelector('.gateway').textContent = d.gateway;
+                details.querySelector('.mask').textContent = d.mask;
+                details.querySelector('.subnetlink').setAttribute('href', d.subnetLink);
+                hide(errors);
+                show(details);
+            }
+        };
+
+        const ipRefresh = (input) => {
+            const ip = input.value;
+            const tbody = input.closest('tbody');
+            const details = tbody.querySelector('.ip.details');
+
+            const editSubnet = tbody.querySelector('.ip.editsubnet');
+            const apid = document.getElementById('frm-uzivatelForm-Ap_id')?.value ?? '';
+            editSubnet.querySelectorAll('a').forEach((odkaz) => odkaz.setAttribute('href', {link Ap:show , id => null} + "/" + apid));
+            show(editSubnet);
+
+            if (ipValidate(ip) === false) {
+                const errors = tbody.querySelector('.ip.errors');
+                show(errors);
+                hide(details);
+                errors.textContent = "Neplatná IP adresa";
+                return;
+            }
+
+            const reqid = String(Number(details.dataset.reqid) + 1);
+            details.dataset.reqid = reqid;
+
+            const url = new URL({link AjaxApi:GetIpDetails , id => null}, window.location.href);
+            url.searchParams.set('ip', ip);
+            url.searchParams.set('reqid', reqid);
+            url.searchParams.set('apid', apid);
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then((response) => {
+                    if (response.ok === false) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then((d) => ipAjaxCallback(tbody, d))
+                .catch((error) => console.warn('Údaje o IP adrese se nepodařilo načíst:', error));
+        };
+
+        document.querySelectorAll('.ip_adresa.ip').forEach((input) => {
+            input.addEventListener('keyup', () => ipRefresh(input));
+            input.addEventListener('click', () => ipRefresh(input));
+            ipRefresh(input);
+        });
     }
 </script>
 

@@ -171,7 +171,7 @@ final class SpravaGrafuPresenterTest extends DatabaseTestCase
         ], $this->texts($document, '.graf-clenu-podtitul'));
         Assert::same(['Počet aktivních účastníků po měsících, od nejnovějšího'], $this->texts($document, '.graf-clenu-tabulka caption'));
         // The menu item leading here uses the same term.
-        Assert::same(['Graf počtu účastníků'], $this->texts($document, '.navbar a[href$="/sprava-grafu/usersgraph"]'));
+        Assert::same(['Graf počtu účastníků'], $this->texts($document, '#menu-nastroje a[href$="/sprava-grafu/usersgraph"]'));
     }
 
     public function testPeriodLinksMarkTheSelectedOne(): void {

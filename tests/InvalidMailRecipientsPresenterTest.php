@@ -190,7 +190,7 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
         $result = $runner->ui($this->actor->id, 'Uzivatel', ['action' => 'show', 'id' => $this->member->id]);
         Assert::same([], $this->messages());
         Assert::same(['danger'], $result->flashTypes);
-        Assert::true(preg_match('~<div class="h4 alert alert-danger">(.*?)</div>~s', $result->html, $flash) === 1);
+        Assert::true(preg_match('~<div class="alert alert-danger flash" role="status">(.*?)</div>~s', $result->html, $flash) === 1);
         $dom = DomQuery::fromHtml($flash[0]);
         $links = $dom->find('.alert-danger a');
         Assert::count(1, $links);
@@ -284,7 +284,7 @@ final class InvalidMailRecipientsPresenterTest extends DatabaseTestCase
         });
         $result = $runner->ui($this->actor->id, 'Uzivatel', ['action' => 'show', 'id' => $this->member->id]);
         Assert::same(['info', 'warning'], $result->flashTypes);
-        Assert::true(preg_match('~<div class="h4 alert alert-warning">(.*?)</div>~s', $result->html, $flash) === 1);
+        Assert::true(preg_match('~<div class="alert alert-warning flash" role="status">(.*?)</div>~s', $result->html, $flash) === 1);
         Assert::same(
             'Na neplatné e-mailové adresy zpráva neodešla: &lt;b&gt;Žofie&lt;/b&gt; Správcová (UID ' . $bad->id
                 . '). Opravte je v editaci dané osoby nebo o opravu požádejte správce její oblasti.',

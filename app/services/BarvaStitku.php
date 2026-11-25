@@ -19,15 +19,15 @@ final class BarvaStitku
     private const PODIL_RAMECKU = 0.45;
     private const PODIL_POZADI_TMAVE = 0.18;
     private const PODIL_RAMECKU_TMAVE = 0.55;
-    /** Povrch tmavého vzhledu (--udb-dark-surface ve www/css/theme.css). */
+    /** Povrch tmavého vzhledu, ze kterého se míchá pozadí štítku (blízký --card tmavého vzhledu ve www/css/screen.css). */
     private const TMAVY_POVRCH = [26, 30, 36];
     private const MIN_KONTRAST = 4.5;
     /** Pozadí světlejší než tato světlost (HSL) odstín nenese, nese ho písmo. */
     private const BLEDE_POZADI = 0.85;
 
     /**
-     * Atribut style štítku: barvy pro světlý i tmavý vzhled jako vlastnosti, které čte www/css/screen.css
-     * a theme.css. Jsou v něm jen spočítané barvy, nic z uložených hodnot.
+     * Atribut style štítku: barvy pro světlý i tmavý vzhled jako vlastnosti, které čte www/css/screen.css.
+     * Jsou v něm jen spočítané barvy, nic z uložených hodnot.
      */
     public static function styl(?string $pozadi, ?string $pismo): string {
         $svetle = self::barvy($pozadi, $pismo);

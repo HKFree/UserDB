@@ -10,7 +10,7 @@ const password = 'demo-43-znaku!Aa1#Bb2$Cc3%Dd4&Ee5<Ff6>Gg7=H';
 
 const panel = page => page.locator('section').filter({ has: page.getByRole('heading', { name: 'IP Adresy na AP' }) });
 const deviceRow = page => panel(page).locator(`tr[id="highlightable-ip${ip}"]`);
-const action = (row, title) => row.locator(`a[title="${title}"], a[data-original-title="${title}"]`);
+const action = (row, title) => row.locator(`a[title="${title}"], a[data-tip="${title}"]`);
 
 async function delayPing(page) {
     const { promise, resolve } = Promise.withResolvers();
@@ -47,7 +47,8 @@ async function checkWidths(page, widths, mobile, withPing) {
     for (const width of widths) {
         await page.setViewportSize({ width, height: mobile ? 812 : 900 });
         const label = `${width} px ${state}`;
-        const navToggle = page.locator('.navbar-toggle');
+        // The brand in the top bar shows only in the narrow layout, where the sidebar slides in.
+        const navToggle = page.locator('.topbar-brand');
         if (mobile) await expect(navToggle).toBeVisible();
         else await expect(navToggle).toBeHidden();
 

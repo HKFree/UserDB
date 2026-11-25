@@ -1,414 +1,1010 @@
-$(document).ready(function () {
-    $(".datepicker").change(function () {
-        if ($(this).val().indexOf("00:00:00") > -1) $(this).val($(this).val().replace(" 00:00:00", ""));
-    });
-    $(".datepicker").change();
-    $(".datepicker").off("change");
+/*
+ * UserDB: chování společné všem stránkám. Bez knihoven, jen standardní API prohlížeče.
+ * Načítá se s atributem defer: běží po načtení HTML, ještě před událostí DOMContentLoaded.
+ */
 
-    $(".datepicker").datepicker({ dateFormat: "dd.mm.yy" });
+/** Text bez diakritiky a velikosti písmen, pro hledání v názvech. */
+function fold(text) {
+    return text.trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
 
-    // na uzkem displeji je seznam oblasti vysouvaci panel (viz .sidebar-open v screen.css)
-    var sidebarToggle = $("#navareas");
-    function setSidebarOpen(open, focusFilter) {
-        $("html").toggleClass("sidebar-open", open);
-        sidebarToggle.attr("aria-expanded", open ? "true" : "false");
-        if (open) {
-            // otevrene menu by zustalo pod panelem
-            $(".navbar-collapse.in").collapse("hide");
-            if (focusFilter) {
-                $("#sidebar-filter-input").focus();
+/** Cesta adresy bez lomítka na konci, pro porovnání odkazů. */
+function pathOf(href) {
+    return new URL(href, window.location.href).pathname.replace(/\/$/, '');
+}
+
+/** Prvek je vidět (má rozměr a nestojí ve skrytém předkovi). */
+function isShown(element) {
+    return element.getClientRects().length > 0;
+}
+
+/* ------------------------------------------------------------ postranní panel */
+
+const narrowLayout = window.matchMedia('(max-width: 989px)');
+
+function sidebarIsVisible() {
+    const state = document.documentElement.dataset.sidebar;
+    return narrowLayout.matches ? state === 'open' : state !== 'hidden';
+}
+
+function setSidebar(visible, { focusFilter = false } = {}) {
+    const root = document.documentElement;
+    if (narrowLayout.matches) {
+        if (visible) {
+            root.dataset.sidebar = 'open';
+        } else {
+            delete root.dataset.sidebar;
+        }
+    } else {
+        if (visible) {
+            delete root.dataset.sidebar;
+        } else {
+            root.dataset.sidebar = 'hidden';
+        }
+        localStorage.setItem('userdb-sidebar', visible ? 'shown' : 'hidden');
+    }
+    document.querySelectorAll('.sidebar-toggle').forEach(button => button.setAttribute('aria-expanded', String(visible)));
+    syncDrawer(focusFilter);
+}
+
+// Vysouvací panel na telefonu stojí ve stránce před obsahem. Dokud je otevřený, zbytek stránky je inert:
+// klávesnice zůstane v panelu a obsah pod překryvem nejde ovládat. Závoj vedle panelu inert není, ťuknutím
+// na něj se panel zavře. Po zavření se fokus vrátí na tlačítko.
+const drawerInert = new Set();
+
+function syncDrawer(focusFilter = false) {
+    const sidebar = document.querySelector('.app-sidebar');
+    if (sidebar === null) {
+        return;
+    }
+    const open = narrowLayout.matches && sidebarIsVisible();
+    if (open && drawerInert.size === 0) {
+        for (const element of document.body.children) {
+            if (element !== sidebar && element.matches('.sidebar-backdrop') === false && element.inert === false) {
+                element.inert = true;
+                drawerInert.add(element);
             }
         }
+        // Kurzor do filtru jen po otevření klávesnicí nebo myší: po ťuknutí prstem by vysunutá klávesnice
+        // zakryla seznam oblastí.
+        const filter = sidebar.querySelector('[data-sidebar-filter]');
+        if (focusFilter && filter !== null) {
+            filter.focus({ preventScroll: true });
+        } else {
+            sidebar.tabIndex = -1;
+            sidebar.focus({ preventScroll: true });
+        }
+    } else if (open === false && drawerInert.size > 0) {
+        drawerInert.forEach(element => { element.inert = false; });
+        drawerInert.clear();
+        if (sidebar.contains(document.activeElement) || document.activeElement === document.body) {
+            document.querySelector('.sidebar-toggle')?.focus({ preventScroll: true });
+        }
     }
-    sidebarToggle.click(function (event) {
-        // po tuknuti prstem by kurzor v poli vysunul klavesnici pres seznam oblasti;
-        // event.detail je 0, kdyz tlacitko stiskla klavesnice
-        var focusFilter = event.detail === 0 || !window.matchMedia("(pointer: coarse)").matches;
-        setSidebarOpen(!$("html").hasClass("sidebar-open"), focusFilter);
+}
+
+function initSidebar() {
+    const sidebar = document.querySelector('.app-sidebar');
+    if (sidebar === null) {
+        return;
+    }
+
+    // Ve vysouvacím panelu na telefonu nezůstává skrytí z počítače; po změně šířky okna se stav srovná.
+    const syncToLayout = () => {
+        const root = document.documentElement;
+        if (narrowLayout.matches && root.dataset.sidebar === 'hidden') {
+            delete root.dataset.sidebar;
+        }
+        if (narrowLayout.matches === false) {
+            // Skrytí uložené na počítači; skript v hlavičce @layout.latte ho nastavuje už před vykreslením.
+            if (localStorage.getItem('userdb-sidebar') === 'hidden') {
+                root.dataset.sidebar = 'hidden';
+            } else if (root.dataset.sidebar === 'open') {
+                delete root.dataset.sidebar;
+            }
+        }
+        document.querySelectorAll('.sidebar-toggle').forEach(button => button.setAttribute('aria-expanded', String(sidebarIsVisible())));
+        syncDrawer();
+    };
+    syncToLayout();
+    narrowLayout.addEventListener('change', syncToLayout);
+
+    document.querySelectorAll('.sidebar-toggle').forEach(button => {
+        button.addEventListener('click', event => {
+            // event.detail je 0, když tlačítko stiskla klávesnice
+            const focusFilter = event.detail === 0 || window.matchMedia('(pointer: coarse)').matches === false;
+            setSidebar(sidebarIsVisible() === false, { focusFilter });
+        });
     });
-    $(".sidebar-backdrop").click(function () {
-        setSidebarOpen(false);
-    });
-    $(document).keydown(function (event) {
-        if (event.key === "Escape" && $("html").hasClass("sidebar-open")) {
-            setSidebarOpen(false);
-            sidebarToggle.focus();
+    document.querySelector('.sidebar-backdrop')?.addEventListener('click', () => setSidebar(false));
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && narrowLayout.matches && sidebarIsVisible() && document.querySelector('.menu:popover-open') === null) {
+            setSidebar(false);
+            document.querySelector('.sidebar-toggle')?.focus();
+        }
+        // Ctrl+B (na Macu Cmd+B) skryje a zobrazí postranní panel, stejně jako v aplikacích na shadcn/ui.
+        // V textovém poli patří zkratka poli (na Macu Ctrl+B posune kurzor o znak zpět).
+        if (event.key.toLowerCase() === 'b' && (event.ctrlKey || event.metaKey) && event.altKey === false && event.shiftKey === false
+            && event.target.closest?.('input, textarea, select, [contenteditable="true"]') === null) {
+            event.preventDefault();
+            setSidebar(sidebarIsVisible() === false);
         }
     });
 
-    // Vzhled (svetly, tmavy, podle systemu): volba v cookie, prepnuti hned bez nacteni stranky.
-    // Server ji cte v BasePresenter, vzhled podle systemu rozhoduje skript v hlavicce @layout.latte.
-    var root = document.documentElement;
-    var darkScheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-    function applyTheme() {
-        var choice = root.getAttribute('data-theme-choice') || 'auto';
-        var dark = choice === 'dark' || (choice === 'auto' && darkScheme !== null && darkScheme.matches);
-        root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    markCurrentArea(sidebar);
+    initAreaFilter(sidebar);
+}
+
+// Odkaz na právě otevřenou stránku se zvýrazní a jeho oblast se rozbalí. Detail člena, úprava člena a detail AP
+// patří k AP, na jehož seznam členů odkazují v drobečkové navigaci nebo v akcích stránky; zvýrazní se to AP.
+function markCurrentArea(sidebar) {
+    const here = pathOf(window.location.href);
+    const related = [...document.querySelectorAll('.page-crumbs a[href], .page-actions a[href]')]
+        .map(link => pathOf(link.href))
+        .filter(path => /\/uzivatel-list\/list\/\d+$/.test(path));
+    const marked = [];
+    for (const link of sidebar.querySelectorAll('.nav-sidebar a[href]')) {
+        const path = pathOf(link.href);
+        if (path !== here && related.includes(path) === false) {
+            continue;
+        }
+        if (path === here) {
+            link.setAttribute('aria-current', 'page');
+        }
+        link.closest('li').classList.add('active');
+        for (let details = link.closest('details'); details !== null; details = details.parentElement.closest('details')) {
+            details.open = true;
+        }
+        marked.push(link);
     }
-    if (darkScheme !== null) {
-        var onSchemeChange = function () { applyTheme(); };
-        if (darkScheme.addEventListener) darkScheme.addEventListener('change', onSchemeChange);
-        else if (darkScheme.addListener) darkScheme.addListener(onSchemeChange);
+    // Rozbalená větev stromu všech oblastí (nebo jinak první zvýrazněný odkaz) se ukáže uprostřed seznamu,
+    // když není vidět; posouvá se jen seznam, ne stránka.
+    const content = sidebar.querySelector('.sidebar-content');
+    const target = marked.find(link => link.closest('#oblastitree') !== null) ?? marked[0];
+    if (target !== undefined && content !== null) {
+        const frame = content.getBoundingClientRect();
+        const branch = (target.closest('details') ?? target).getBoundingClientRect();
+        if (branch.top < frame.top || branch.bottom > frame.bottom) {
+            content.scrollTop += branch.top - frame.top - Math.max(0, (frame.height - branch.height) / 2);
+        }
     }
-    function chooseTheme(option) {
-        var choice = option.attr('data-theme-choice');
-        var path = (document.body.getAttribute('data-base-path') || '') + '/';
-        document.cookie = 'userdb_theme=' + encodeURIComponent(choice) + '; path=' + path + '; max-age=31536000; SameSite=Lax';
-        root.setAttribute('data-theme-choice', choice);
-        applyTheme();
-        // skupina prepinacu: v poradi Tab je jen vybrana volba, mezi volbami se chodi sipkami
-        $('.theme-option').attr({ 'aria-checked': 'false', tabindex: '-1' });
-        option.attr({ 'aria-checked': 'true', tabindex: '0' });
+}
+
+// Filtr nad seznamem oblastí: ukáže jen oblasti a AP, jejichž název obsahuje hledaný text (bez ohledu na diakritiku).
+// AP se najde i pod zápisem „Oblast - AP“.
+function initAreaFilter(sidebar) {
+    const input = sidebar.querySelector('[data-sidebar-filter]');
+    if (input === null) {
+        return;
     }
-    $(document).on('click', '.theme-option', function () {
-        chooseTheme($(this));
-    });
-    $(document).on('keydown', '.theme-option', function (event) {
-        var step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
-        if (!step) return;
-        event.preventDefault();
-        event.stopPropagation(); // sipky v nabidce jinak obsluhuje Bootstrap
-        var options = $('.theme-option');
-        var next = options.eq((options.index(this) + step + options.length) % options.length);
-        chooseTheme(next);
-        next.trigger('focus');
-    });
+    const empty = sidebar.querySelector('.sidebar-empty');
+    const items = [...sidebar.querySelectorAll('.nav-sidebar > li')];
+    const openBefore = new Map();
 
-    // bublina v body: v posuvnem ramu tabulky by ji okraj ramu orizl
-    $('[data-toggle="tooltip"]').tooltip({ container: 'body' });
-
-    $('[data-toggle="popover"]').popover();
-});
-
-// EXTREMNI prasarna pro "nastaveni" defaultniho inputu ve formulari
-$(document).ready(function () {
-    $('form').each(function () {
-        var thisform = $(this);
-        var clonebutton = thisform.find('input.default');
-        var newID = clonebutton.attr('id') + "x";
-        thisform.prepend(clonebutton.clone().css({
-            position: 'absolute',
-            left: '-2000px',
-            top: '-2000px',
-            height: 0,
-            width: 0
-        }).attr('id', newID));
-    });
-});
-
-// Strom oblasti v levem panelu: sbaleni vetvi, zvyrazneni prave otevrene oblasti nebo AP a rozbaleni jeji vetve.
-// Vola se hned za levym panelem (viz @layout.latte), aby velka stranka neukazovala nezvyrazneny rozbaleny
-// strom, dokud se nenacte cela. Detail clena, uprava clena a detail AP patri k AP, na jehoz seznam clenu
-// odkazuji v hlavicce stranky; jejich sablony proto volaji znovu hned za hlavickou. Volani po nacteni je pojistka.
-window.userdbSidebarTree = function () {
-    // opakovane volani bonsai() strom znovu nezaklada
-    var tree = $('#oblastitree').bonsai().data('bonsai');
-    var current = window.location.pathname;
-    var related = $('.page-crumbs a, .page-actions a').filter(function () {
-        return /\/uzivatel-list\/list\/\d+$/.test(this.pathname);
-    }).map(function () {
-        return this.pathname;
-    }).get();
-    $('.sidebar .nav-sidebar a').each(function () {
-        if (this.pathname !== current && related.indexOf(this.pathname) === -1) return;
-        if (this.pathname === current) $(this).attr('aria-current', 'page');
-        var item = $(this).parent();
-        if (item.hasClass('active')) return;
-        item.addClass('active');
-        // vetve v "Moje oblasti" jsou rozbalene porad a ke stromu nepatri
-        var branch = item.closest('#oblastitree li.has-children');
-        if (tree && branch.length > 0) tree.expand(branch);
-    });
-};
-$(document).ready(window.userdbSidebarTree);
-
-// Filtr oblasti a AP v levem panelu, bez ohledu na diakritiku a velikost pismen
-$(document).ready(function () {
-    var input = $('#sidebar-filter-input');
-    var sidebar = $('.sidebar');
-    var areas = sidebar.find('ul.nav-sidebar > li');
-
-    function fold(text) {
-        return $.trim(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    }
-
-    input.on('input', function () {
-        var needle = fold(input.val());
-        var found = false;
-        areas.each(function () {
-            var area = $(this);
-            var areaText = fold(area.children('a').text());
-            var areaMatches = areaText.indexOf(needle) !== -1;
-            var shown = areaMatches;
-            area.find('li').each(function () {
-                // AP se najde i pod zapisem "Oblast - AP", jak se dosud v seznamu vypisovalo
-                var apText = fold($(this).text());
-                var matches = areaMatches || apText.indexOf(needle) !== -1 || (areaText + ' - ' + apText).indexOf(needle) !== -1;
-                $(this).toggleClass('sidebar-hidden', !matches);
-                shown = shown || matches;
+    input.addEventListener('input', () => {
+        const query = fold(input.value);
+        let anyVisible = false;
+        for (const item of items) {
+            const details = item.querySelector(':scope > details');
+            if (details !== null && openBefore.has(details) === false) {
+                openBefore.set(details, details.open);
+            }
+            if (query === '') {
+                item.hidden = false;
+                item.querySelectorAll('li').forEach(child => { child.hidden = false; });
+                if (details !== null) {
+                    details.open = openBefore.get(details);
+                }
+                anyVisible = true;
+                continue;
+            }
+            const areaText = fold(item.querySelector('a').textContent);
+            const ownMatch = areaText.includes(query);
+            let childMatch = false;
+            item.querySelectorAll(':scope ul li').forEach(child => {
+                const apText = fold(child.textContent);
+                const match = ownMatch || apText.includes(query) || `${areaText} - ${apText}`.includes(query);
+                child.hidden = match === false;
+                childMatch ||= match;
             });
-            area.toggleClass('sidebar-hidden', !shown);
-            found = found || shown;
-        });
-        sidebar.toggleClass('sidebar-filtering', needle !== '');
-        $('#sidebar-nomatch').prop('hidden', found);
-    });
-});
-
-// Siroka tabulka se posouva ve vlastnim ramu, aby se do strany neposouvala cela stranka.
-// Presun nativnim DOM, protoze jQuery by pri presunu znovu spustilo skripty uvnitr tabulky.
-$(document).ready(function () {
-    $('.main table.table').each(function () {
-        if ($(this).closest('.grido, table.form, .table-scroll').length > 0 || $(this).parent().closest('table').length > 0) return;
-        var frame = document.createElement('div');
-        frame.className = 'table-scroll';
-        this.parentNode.insertBefore(frame, this);
-        frame.appendChild(this);
-    });
-});
-
-// Grid sirsi nez stranka dostane vlastni posuvnik; grid, ktery se vejde, zustava bez nej
-$(document).ready(function () {
-    // siroky grid se posouva ve vlastnim ramu; seznamy clenu maji ram uz v sablone (.user-list-scroll),
-    // ostatnim gridum je ramem sam formular a jde na nej klavesnici
-    function markWideGrids() {
-        $('form.grido').each(function () {
-            var table = $(this).children('table')[0];
-            var wide = !!table && table.offsetWidth > this.clientWidth + 1;
-            var ownFrame = $(this).closest('.user-list-scroll').length === 0;
-            $(this).toggleClass('grid-wide', wide);
-            if (wide && ownFrame) $(this).attr('tabindex', '0');
-            else $(this).removeAttr('tabindex');
-        });
-    }
-    markWideGrids();
-    $(window).on('resize', markWideGrids);
-    $(document).ajaxComplete(function () {
-        setTimeout(markWideGrids, 0);
-    });
-
-    // nabidka v gridu se kresli pres okraj ramu, jinak by ji posuvnik orizl
-    function placeGridMenu(dropdown) {
-        var button = $(dropdown).find('.dropdown-toggle')[0].getBoundingClientRect();
-        var menu = $(dropdown).find('.dropdown-menu');
-        var left = Math.max(8, Math.min(button.left, window.innerWidth - menu.outerWidth() - 8));
-        var fitsBelow = button.bottom + menu.outerHeight() <= window.innerHeight;
-        var minTop = $('.navbar-fixed-top').outerHeight() + 8;
-        menu.css({ position: 'fixed', left: left, right: 'auto', top: fitsBelow ? button.bottom : Math.max(minTop, button.top - menu.outerHeight()) });
-    }
-    // tlacitko je videt, kdyz jeho stred lezi pod horni listou, v okne a ve viditelne casti ramu gridu
-    // (stred, ne cely obdelnik: po posunu k tlacitku muze o zlomek pixelu presahovat okraj ramu)
-    function gridToggleVisible(dropdown) {
-        var button = $(dropdown).find('.dropdown-toggle')[0].getBoundingClientRect();
-        // ram je obal seznamu clenu, jinde formular gridu (closest() by vratil blizsi formular)
-        var frameElement = $(dropdown).closest('.user-list-scroll')[0] || $(dropdown).closest('form.grido')[0];
-        var frame = frameElement ? frameElement.getBoundingClientRect() : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
-        var bar = $('.navbar-fixed-top')[0];
-        var top = Math.max(bar ? bar.getBoundingClientRect().bottom : 0, frame.top);
-        var x = button.left + button.width / 2;
-        var y = button.top + button.height / 2;
-        return x >= Math.max(0, frame.left) && x <= Math.min(window.innerWidth, frame.right)
-            && y >= top && y <= Math.min(window.innerHeight, frame.bottom);
-    }
-    $(document).on('shown.bs.dropdown', '.grido .dropdown', function () {
-        placeGridMenu(this);
-    });
-    // posun stranky nebo ramu gridu nabidku presune s tlacitkem (i posun, kterym prohlizec
-    // ukaze prave zamerene tlacitko); zavre ji, az tlacitko zmizi z ramu. Posun uvnitr nabidky ji nechava.
-    document.addEventListener('scroll', function (event) {
-        if ($(event.target).closest('.dropdown-menu').length > 0) return;
-        $('.grido .dropdown.open').each(function () {
-            if (gridToggleVisible(this)) placeGridMenu(this);
-            else $(this).find('.dropdown-toggle').dropdown('toggle');
-        });
-    }, true);
-});
-
-// Pomocný vodorovný posuvník, dokud je spodní okraj seznamu členů AP mimo okno.
-$(document).ready(function () {
-    var frame = document.querySelector('.user-list-scroll-with-bar');
-    if (!frame) return;
-    var bar = document.querySelector('.user-list-scrollbar');
-    var mouse = window.matchMedia('(any-hover: hover) and (any-pointer: fine)');
-
-    function updateVisibility() {
-        var bounds = frame.getBoundingClientRect();
-        var viewportBottom = document.documentElement.clientHeight;
-        bar.hidden = !mouse.matches || Number(bar.max) === 0
-            || bounds.top >= viewportBottom || bounds.bottom <= viewportBottom;
-    }
-
-    function syncFromFrame() {
-        if (bar.valueAsNumber !== frame.scrollLeft) bar.valueAsNumber = frame.scrollLeft;
-    }
-
-    function resizeBar() {
-        var width = frame.clientWidth;
-        var contentWidth = frame.scrollWidth;
-        bar.max = contentWidth - width;
-        if (contentWidth > width) {
-            var bounds = frame.getBoundingClientRect();
-            var nativeScrollbarHeight = frame.offsetHeight - frame.clientHeight;
-            var thumbWidth = Math.max(24, Math.round(width * width / contentWidth));
-            bar.style.left = bounds.left + 'px';
-            bar.style.width = width + 'px';
-            bar.style.setProperty('--user-list-scroll-thumb-width', thumbWidth + 'px');
-            bar.style.setProperty('--user-list-scrollbar-height', Math.max(14, nativeScrollbarHeight) + 'px');
-            syncFromFrame();
+            item.hidden = (ownMatch || childMatch) === false;
+            // Při filtrování je odpovídající oblast rozbalená, i když odpovídá jen její název.
+            if (details !== null) {
+                details.open = childMatch;
+            }
+            anyVisible ||= item.hidden === false;
         }
-        updateVisibility();
-    }
-
-    frame.addEventListener('scroll', syncFromFrame);
-    bar.addEventListener('input', function () {
-        frame.scrollLeft = bar.valueAsNumber;
+        sidebar.classList.toggle('sidebar-filtering', query !== '');
+        if (empty !== null) {
+            empty.hidden = anyVisible;
+        }
     });
-    // Po tažení mají šipky a Page Down opět posouvat stránku.
-    window.addEventListener('pointerup', function () {
-        if (document.activeElement === bar) bar.blur();
-    });
-    window.addEventListener('scroll', updateVisibility, { passive: true });
-    window.addEventListener('resize', resizeBar);
-    mouse.addEventListener('change', updateVisibility);
+}
 
-    // Živé hledání a údaje doplněné do buněk mohou změnit velikost tabulky bez změny velikosti okna.
-    var observer = new ResizeObserver(resizeBar);
-    observer.observe(frame);
-    var table = frame.querySelector('table');
-    if (table) observer.observe(table);
-});
+/* ------------------------------------------------------- nabídky a nápovědy */
 
-// Scroll na objekt odkazovany ve fragmentu (napr. "#ip10.107.12.1")
-// a zvyrazneni objektu (id musi byt napr. 'highlightable-ip10.107.12.1')
-$(document).ready(function () {
-    var elem = document.getElementById('highlightable-' + window.location.hash.replace('#', ''));
-    if (elem) {
-        console.log(elem);
-        // nastavit vyrazne zvyrazneni
-        $(elem).addClass('highlighted');
-        // po chvili nastavit (v CSS animovane) slabsi zvyrazneni
-        setTimeout(function () {
-            $(elem).addClass('highlighted-fadeout');
-        }, 1000);
-        // scrollovat k elementu (musime odscrollovat trochu min, protoze nahore je fixni navbar-header)
-        // scrollovat tak, aby element byl v prvni tretine obrazovky
-        $('html, body').animate({
-            scrollTop: $(elem).offset().top - $('.navbar-header').height() - ($(window).height() - $('.navbar-header').height()) / 3
-        }, 1000);
+// Nabídka (atribut popover) se otevře pod tlačítkem, které ji ovládá, a nevyjede z okna.
+// Zarovná se k levému okraji tlačítka, v pravé polovině okna k pravému; nevejde-li se dolů, otevře se nahoru.
+// Nikdy nezajede pod horní lištu obsahu.
+function placeBelow(floating, anchor, gap = 6) {
+    const box = anchor.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = document.documentElement.clientHeight;
+    const topbar = document.querySelector('.app-topbar');
+    const minTop = topbar !== null && topbar.contains(anchor) === false ? Math.max(8, topbar.getBoundingClientRect().bottom + 4) : 8;
+    const width = floating.offsetWidth;
+    const height = floating.offsetHeight;
+    const preferred = box.left + box.width / 2 < viewportWidth / 2 ? box.left : box.right - width;
+    const left = Math.max(8, Math.min(preferred, viewportWidth - width - 8));
+    const below = box.bottom + gap;
+    const fitsBelow = below + height <= viewportHeight - 8;
+    const above = box.top - gap - height;
+    // Vysoká nabídka, která se nevejde ani nahoru, zůstane v okně (výšku jí omezuje max-height ve screen.css).
+    const top = fitsBelow || above < minTop ? Math.max(minTop, Math.min(below, viewportHeight - height - 8)) : above;
+    floating.style.left = `${Math.round(left)}px`;
+    floating.style.top = `${Math.round(top)}px`;
+}
+
+function menuInvoker(menu) {
+    return document.querySelector(`[popovertarget="${CSS.escape(menu.id)}"]`);
+}
+
+// Tlačítko je vidět, když jeho střed leží v okně, pod horní lištou a ve viditelné části každého rámu, který
+// obsah ořezává (posuvný seznam, tabulka). Střed, ne celý obdélník: po posunu k tlačítku může o zlomek pixelu
+// přesahovat okraj rámu.
+function invokerVisible(invoker) {
+    if (isShown(invoker) === false) {
+        return false;
     }
-});
+    const box = invoker.getBoundingClientRect();
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    const topbar = document.querySelector('.app-topbar');
+    let top = topbar !== null && topbar.contains(invoker) === false ? topbar.getBoundingClientRect().bottom : 0;
+    let left = 0;
+    let right = window.innerWidth;
+    let bottom = window.innerHeight;
+    for (let frame = invoker.parentElement; frame !== null && frame !== document.body; frame = frame.parentElement) {
+        const style = getComputedStyle(frame);
+        if (style.overflowX === 'visible' && style.overflowY === 'visible') {
+            continue;
+        }
+        const edges = frame.getBoundingClientRect();
+        top = Math.max(top, edges.top);
+        left = Math.max(left, edges.left);
+        right = Math.min(right, edges.right);
+        bottom = Math.min(bottom, edges.bottom);
+    }
+    return x >= left && x <= right && y >= top && y <= bottom;
+}
 
-$(document).ready(function () {
-    $(document).on('click', '.wboxbutton', function (event) {
-        event.preventDefault();
-        var txt = $(this).attr('tag');
-        if (!txt || txt == '') {
+function initMenus() {
+    document.addEventListener('toggle', event => {
+        const menu = event.target;
+        if ((menu instanceof HTMLElement) === false || menu.matches('.menu') === false) {
             return;
         }
+        const invoker = event.source ?? menuInvoker(menu);
+        if (invoker !== null) {
+            invoker.setAttribute('aria-expanded', String(event.newState === 'open'));
+        }
+        if (event.newState === 'open' && invoker !== null) {
+            placeBelow(menu, invoker);
+            menu.dataset.placed = '';
+            menuItems(menu)[0]?.focus({ preventScroll: true });
+        } else {
+            delete menu.dataset.placed;
+        }
+    }, true);
 
-        copyTextToClipboard(txt);
+    // Šipky nahoru a dolů procházejí položky otevřené nabídky. Volby vzhledu jsou skupina přepínačů
+    // a šipky mění vybranou volbu (initTheme); do nabídky patří jen ta vybraná.
+    document.addEventListener('keydown', event => {
+        const menu = event.target.closest?.('.menu:popover-open');
+        if (menu === null || menu === undefined || (event.key !== 'ArrowDown' && event.key !== 'ArrowUp')
+            || event.target.closest('.theme-option') !== null) {
+            return;
+        }
+        event.preventDefault();
+        const items = menuItems(menu);
+        const index = items.indexOf(document.activeElement);
+        const next = event.key === 'ArrowDown' ? index + 1 : index - 1;
+        items[(next + items.length) % items.length]?.focus();
     });
-});
+
+    // Posun stránky nebo rámu tabulky nabídku přesune s tlačítkem, i posun, kterým prohlížeč ukáže právě
+    // zaměřené tlačítko. Zavře ji, až tlačítko zmizí z rámu nebo zajede pod lištu. Posun uvnitř nabídky ji nechá.
+    document.addEventListener('scroll', event => {
+        if (event.target instanceof Element && event.target.closest('.menu') !== null) {
+            return;
+        }
+        document.querySelectorAll('.menu:popover-open').forEach(menu => {
+            const invoker = menuInvoker(menu);
+            if (invoker === null) {
+                return;
+            }
+            if (invokerVisible(invoker)) {
+                placeBelow(menu, invoker);
+            } else {
+                menu.hidePopover();
+            }
+        });
+    }, { capture: true, passive: true });
+
+    window.addEventListener('resize', () => {
+        document.querySelectorAll('.menu:popover-open').forEach(menu => menu.hidePopover());
+    });
+}
+
+function menuItems(menu) {
+    return [...menu.querySelectorAll('a[href], button:not(.theme-option), .theme-option[tabindex="0"]')]
+        .filter(item => item.getAttribute('aria-disabled') !== 'true' || item.matches('.stitky-item'));
+}
+
+// Nápověda z atributu title: místo systémové bubliny vlastní, která se ukáže i při ovládání klávesnicí.
+// Kreslí se do <body>, takže ji posuvný rám tabulky neořízne.
+const tip = {
+    element: null,
+    owner: null,
+
+    show(owner, text) {
+        if (this.element === null) {
+            this.element = document.createElement('div');
+            this.element.className = 'tip';
+            this.element.setAttribute('popover', 'manual');
+            this.element.setAttribute('role', 'tooltip');
+            this.element.id = 'userdb-tip';
+            document.body.append(this.element);
+        }
+        if (this.owner !== null && this.owner !== owner) {
+            this.owner.removeAttribute('aria-describedby');
+        }
+        this.owner = owner;
+        // Text nápovědy zůstane popisem prvku i pro čtečky obrazovky.
+        owner.setAttribute('aria-describedby', this.element.id);
+        this.element.textContent = text;
+        if (this.element.matches(':popover-open') === false) {
+            this.element.showPopover();
+        }
+        const box = owner.getBoundingClientRect();
+        const width = this.element.offsetWidth;
+        const height = this.element.offsetHeight;
+        const left = Math.min(Math.max(8, box.left + box.width / 2 - width / 2), window.innerWidth - width - 8);
+        const top = box.top - height - 6 >= 8 ? box.top - height - 6 : box.bottom + 6;
+        this.element.style.left = `${Math.round(left)}px`;
+        this.element.style.top = `${Math.round(top)}px`;
+    },
+
+    hide(owner) {
+        // Nápovědu jiného prvku nechá být (např. doběhne časovač kopírování, zatímco myš je nad jiným tlačítkem).
+        if (owner !== undefined && owner !== this.owner) {
+            return;
+        }
+        if (this.element !== null && this.element.matches(':popover-open')) {
+            this.element.hidePopover();
+        }
+        this.owner?.removeAttribute('aria-describedby');
+        this.owner = null;
+    },
+};
+
+// Text nápovědy prvku; atribut title se přesune do data-tip, aby se nezobrazovala i systémová bublina.
+function tipText(element) {
+    if (element.hasAttribute('title')) {
+        // Ikona bez textu by po odebrání title ztratila přístupný název; ten zůstane v aria-label.
+        if (element.textContent.trim() === '' && element.hasAttribute('aria-label') === false) {
+            element.setAttribute('aria-label', element.getAttribute('title'));
+        }
+        element.dataset.tip = element.getAttribute('title');
+        element.removeAttribute('title');
+    }
+    return element.dataset.tip ?? '';
+}
+
+function initTips() {
+    const selector = '[data-toggle="tooltip"]';
+    const showFor = event => {
+        const owner = event.target.closest?.(selector);
+        if (owner === null || owner === undefined || owner.dataset.copyResult !== undefined) {
+            return;
+        }
+        const text = tipText(owner);
+        if (text !== '') {
+            tip.show(owner, text);
+        }
+    };
+    const hideFor = event => {
+        const owner = event.target.closest?.(selector);
+        if (owner !== null && owner !== undefined && owner.dataset.copyResult === undefined && owner.contains(event.relatedTarget) === false) {
+            tip.hide(owner);
+        }
+    };
+    document.addEventListener('pointerover', showFor);
+    document.addEventListener('pointerout', hideFor);
+    document.addEventListener('focusin', showFor);
+    document.addEventListener('focusout', hideFor);
+    document.addEventListener('scroll', () => tip.hide(), { passive: true, capture: true });
+}
+
+/* ------------------------------------------------------------------- vzhled */
+
+// Vzhled (světlý, tmavý, podle systému): volba v cookie userdb_theme, přepnutí hned bez načtení stránky.
+// Server ji čte v BasePresenter (App\Services\Vzhled), vzhled podle systému rozhoduje skript v hlavičce @layout.latte.
+function initTheme() {
+    const root = document.documentElement;
+    const darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    const apply = () => {
+        const choice = root.dataset.themeChoice ?? 'auto';
+        const dark = choice === 'dark' || (choice === 'auto' && darkScheme.matches);
+        root.dataset.theme = dark ? 'dark' : 'light';
+        meta?.setAttribute('content', choice === 'auto' ? 'light dark' : root.dataset.theme);
+    };
+    darkScheme.addEventListener('change', apply);
+
+    const choose = option => {
+        const choice = option.dataset.themeChoice;
+        const path = `${document.body.dataset.basePath ?? ''}/`;
+        document.cookie = `userdb_theme=${encodeURIComponent(choice)}; path=${path}; max-age=31536000; SameSite=Lax`;
+        root.dataset.themeChoice = choice;
+        apply();
+        // Skupina přepínačů: v pořadí Tab je jen vybraná volba.
+        document.querySelectorAll('.theme-option').forEach(other => {
+            other.setAttribute('aria-checked', String(other === option));
+            other.tabIndex = other === option ? 0 : -1;
+        });
+    };
+    document.addEventListener('click', event => {
+        const option = event.target.closest('.theme-option');
+        if (option !== null) {
+            choose(option);
+            // Volba myší nabídku zavře jako výběr položky; šipkami se dá vybírat dál.
+            option.closest('[popover]')?.hidePopover();
+        }
+    });
+    document.addEventListener('keydown', event => {
+        const option = event.target.closest?.('.theme-option');
+        const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+        if (option === null || option === undefined || step === undefined) {
+            return;
+        }
+        event.preventDefault();
+        const options = [...option.closest('[role="radiogroup"]').querySelectorAll('.theme-option')];
+        const next = options[(options.indexOf(option) + step + options.length) % options.length];
+        choose(next);
+        next.focus();
+    });
+}
+
+/* ------------------------------------------------------------------- hledání */
+
+// Napovídání v hledání nabízí jen odkazy, které přihlášený uživatel už vidí v levém panelu a v nástrojích.
+// Enter bez vybraného návrhu hledá člena na serveru; klávesa / do hledání skočí odkudkoli.
+function initSearch() {
+    const form = document.querySelector('.app-search');
+    const input = form?.querySelector('input[name="search"]');
+    const panel = form?.querySelector('.search-suggestions');
+    const options = document.getElementById('search-options');
+    if (input === null || input === undefined) {
+        return;
+    }
+
+    document.addEventListener('keydown', event => {
+        if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) {
+            return;
+        }
+        if (event.target.closest?.('input, textarea, select, [contenteditable="true"]')) {
+            return;
+        }
+        event.preventDefault();
+        input.focus();
+        input.select();
+    });
+
+    if (panel === null || options === null) {
+        return;
+    }
+    const hint = panel.querySelector('.search-hint');
+    const help = panel.querySelector('.search-help');
+    const emptyHint = hint.textContent;
+    const submitHint = 'Enter vyhledá účastníka i podle čísla smlouvy nebo IP adresy.';
+    const index = [];
+    const seen = new Map();
+    let active = -1;
+
+    // area: jméno oblasti, pod kterou AP v levém panelu stojí; AP se najde i pod zápisem „Oblast - AP“.
+    const add = (link, description, area = '') => {
+        const href = link.getAttribute('href');
+        if (href === null) {
+            return;
+        }
+        const text = link.textContent.trim();
+        const foldedWithArea = area === '' ? '' : fold(`${area} - ${text}`);
+        const known = seen.get(href);
+        if (known !== undefined) {
+            // Jediné aktivní AP oblasti stojí v Mých oblastech samo, ve Všech oblastech pod svou oblastí.
+            if (foldedWithArea !== '' && known.foldedWithArea === '') {
+                known.foldedWithArea = foldedWithArea;
+                known.description = description;
+            }
+            return;
+        }
+        const item = { href, text, description, folded: fold(text), foldedWithArea };
+        seen.set(href, item);
+        index.push(item);
+    };
+    document.querySelectorAll('.app-sidebar .nav-sidebar > li').forEach(item => {
+        const link = item.querySelector(':scope > a, :scope > details > summary > a');
+        if (link === null) {
+            return;
+        }
+        // :scope: bez něj by 'ul a' našlo i odkaz položky samé, leží v seznamu panelu.
+        const children = item.querySelectorAll(':scope ul a');
+        add(link, children.length > 0 ? 'oblast' : 'AP');
+        const area = link.textContent.trim();
+        children.forEach(child => add(child, `AP · ${area}`, area));
+    });
+    document.querySelectorAll('#menu-nastroje a').forEach(link => add(link, 'nástroj'));
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-controls', 'search-options');
+    input.setAttribute('aria-expanded', 'false');
+
+    const rows = () => [...options.children];
+    const close = () => {
+        panel.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+        active = -1;
+    };
+    const render = () => {
+        const needle = fold(input.value);
+        options.replaceChildren();
+        active = -1;
+        input.removeAttribute('aria-activedescendant');
+        if (needle !== '') {
+            const starts = [];
+            const contains = [];
+            index.forEach(item => {
+                const at = item.folded.indexOf(needle);
+                if (at === 0) {
+                    starts.push(item);
+                } else if (at > 0 || item.foldedWithArea.includes(needle)) {
+                    contains.push(item);
+                }
+            });
+            starts.concat(contains).slice(0, 9).forEach((item, i) => {
+                const option = document.createElement('a');
+                option.className = 'search-option';
+                option.href = item.href;
+                option.id = `search-option-${i}`;
+                option.tabIndex = -1;
+                option.setAttribute('role', 'option');
+                option.setAttribute('aria-selected', 'false');
+                const text = document.createElement('span');
+                text.className = 'search-option-text';
+                text.textContent = item.text;
+                const description = document.createElement('span');
+                description.className = 'search-option-description';
+                description.textContent = item.description;
+                option.append(text, description);
+                options.append(option);
+            });
+        }
+        panel.hidden = false;
+        const hasOptions = options.children.length > 0;
+        input.setAttribute('aria-expanded', String(hasOptions));
+        if (help !== null) {
+            help.hidden = hasOptions === false;
+        }
+        let message = needle === '' ? emptyHint : submitHint;
+        if (needle !== '' && hasOptions === false) {
+            message = `Oblast, AP ani nástroj nenalezen. ${submitHint}`;
+        }
+        hint.textContent = message;
+    };
+
+    input.addEventListener('focus', render);
+    input.addEventListener('input', render);
+    input.addEventListener('blur', () => {
+        // Kliknutí na návrh musí doběhnout před skrytím nabídky.
+        setTimeout(() => {
+            if (form.contains(document.activeElement) === false) {
+                close();
+            }
+        }, 150);
+    });
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            close();
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (panel.hidden) {
+                render();
+            }
+            const list = rows();
+            if (list.length === 0) {
+                return;
+            }
+            const down = event.key === 'ArrowDown';
+            active = active < 0 ? (down ? 0 : list.length - 1) : (active + (down ? 1 : -1) + list.length) % list.length;
+            list.forEach((row, i) => {
+                row.classList.toggle('active', i === active);
+                row.setAttribute('aria-selected', String(i === active));
+            });
+            input.setAttribute('aria-activedescendant', list[active].id);
+            list[active].scrollIntoView({ block: 'nearest' });
+        } else if (event.key === 'Enter' && active >= 0 && panel.hidden === false) {
+            event.preventDefault();
+            window.location.href = rows()[active].href;
+        }
+    });
+    panel.addEventListener('mousedown', event => {
+        if (event.target.closest('a') !== null) {
+            event.preventDefault();
+        }
+    });
+    document.addEventListener('click', event => {
+        if (form.contains(event.target) === false) {
+            close();
+        }
+    });
+}
+
+/* ---------------------------------------------------------------- formuláře */
+
+// Enter v poli formuláře spustí tlačítko s třídou default (Uložit), ne první tlačítko ve formuláři (Odstranit).
+// Prohlížeč bere první odesílací tlačítko, proto se na začátek formuláře vloží neviditelná kopie výchozího.
+function initDefaultSubmit() {
+    document.querySelectorAll('form').forEach(form => {
+        const button = form.querySelector('input.default');
+        if (button === null) {
+            return;
+        }
+        const clone = button.cloneNode();
+        clone.id = `${button.id}x`;
+        clone.tabIndex = -1;
+        clone.setAttribute('aria-hidden', 'true');
+        Object.assign(clone.style, { position: 'absolute', left: '-2000px', top: '-2000px', height: '0', width: '0' });
+        form.prepend(clone);
+    });
+}
+
+// Chyby ověření ve všech formulářích stojí pod příslušným polem místo jednoho vyskakovacího okna.
+// Chyby, které vrátí server, zůstávají, jak je šablona vykreslila.
+function initFormErrors() {
+    let sequence = 0;
+    const records = new WeakMap();
+
+    const updateStatus = form => {
+        const count = form.querySelectorAll('.field-error-message').length;
+        let message = form.classList.contains('form-dirty') ? 'Neuložené změny' : '';
+        if (count > 0) {
+            message = `Formulář obsahuje chyby (${count}). Před uložením je opravte.`;
+        }
+        form.querySelectorAll('.form-status').forEach(status => {
+            status.textContent = message;
+            status.classList.toggle('form-status-error', count > 0);
+        });
+    };
+
+    const clearError = record => {
+        record.fields.forEach(field => {
+            const description = (field.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(id => id !== '' && id !== record.id);
+            if (description.length > 0) {
+                field.setAttribute('aria-describedby', description.join(' '));
+            } else {
+                field.removeAttribute('aria-describedby');
+            }
+            const previous = record.previousInvalid.get(field);
+            if (previous === null) {
+                field.removeAttribute('aria-invalid');
+            } else {
+                field.setAttribute('aria-invalid', previous);
+            }
+            field.classList.remove('field-invalid');
+            records.delete(field);
+        });
+        record.note.remove();
+    };
+
+    if (window.Nette !== undefined) {
+        window.Nette.showFormErrors = (form, errors) => {
+            form.querySelectorAll('.field-invalid').forEach(field => {
+                const record = records.get(field);
+                if (record !== undefined) {
+                    clearError(record);
+                }
+            });
+            form.querySelectorAll(':scope > .client-form-error').forEach(error => error.remove());
+            let first = null;
+            errors.forEach(error => {
+                const field = error.element;
+                if (field === undefined || field === null || field === form) {
+                    const note = document.createElement('div');
+                    note.className = 'client-form-error field-error-message';
+                    note.setAttribute('role', 'alert');
+                    note.textContent = error.message;
+                    form.prepend(note);
+                    return;
+                }
+                let record = records.get(field);
+                if (record === undefined) {
+                    const fields = field.type === 'radio'
+                        ? [...form.elements].filter(other => other.type === 'radio' && other.name === field.name)
+                        : [field];
+                    const id = `form-field-error-${++sequence}`;
+                    const note = document.createElement('div');
+                    note.className = 'field-error';
+                    note.id = id;
+                    note.setAttribute('role', 'alert');
+                    let anchor = fields[fields.length - 1];
+                    if (anchor.parentElement.matches('label')) {
+                        anchor = anchor.parentElement;
+                    }
+                    anchor.after(note);
+                    record = { fields, note, id, previousInvalid: new Map() };
+                    fields.forEach(control => {
+                        record.previousInvalid.set(control, control.getAttribute('aria-invalid'));
+                        records.set(control, record);
+                        control.classList.add('field-invalid');
+                        control.setAttribute('aria-invalid', 'true');
+                        control.setAttribute('aria-describedby', `${control.getAttribute('aria-describedby') ?? ''} ${id}`.trim());
+                    });
+                    first ??= fields.find(control => isShown(control) && control.disabled === false) ?? null;
+                }
+                const message = document.createElement('div');
+                message.className = 'field-error-message';
+                message.textContent = error.message;
+                record.note.append(message);
+            });
+            updateStatus(form);
+            if (first !== null) {
+                first.focus();
+                first.scrollIntoView({ block: 'center' });
+            }
+        };
+    }
+
+    const onEdit = event => {
+        const record = records.get(event.target);
+        if (record !== undefined) {
+            clearError(record);
+            updateStatus(event.target.form);
+        }
+    };
+    document.addEventListener('input', onEdit);
+    document.addEventListener('change', onEdit);
+
+    // Formulář člena po částech: neuložené změny, dotaz při odchodu a zvýraznění části v rozcestníku.
+    const form = document.querySelector('form.member-form');
+    if (form === null) {
+        return;
+    }
+    let leaving = false;
+    const markDirty = () => {
+        form.classList.add('form-dirty');
+        updateStatus(form);
+    };
+    form.addEventListener('input', markDirty);
+    form.addEventListener('change', markDirty);
+    updateStatus(form);
+    // Na window už proběhlo ověření Nette i obsluhy formuláře.
+    window.addEventListener('submit', event => {
+        if (event.target === form && event.defaultPrevented === false) {
+            leaving = true;
+        }
+    });
+    window.addEventListener('pageshow', () => { leaving = false; });
+    window.addEventListener('beforeunload', event => {
+        if (form.classList.contains('form-dirty') && leaving === false) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    const sections = [...form.querySelectorAll('.form-section')];
+    const links = [...document.querySelectorAll('.form-nav a')];
+    let waiting = false;
+    const highlightSection = () => {
+        const topbar = document.querySelector('.app-topbar');
+        const top = Math.max(150, (topbar?.getBoundingClientRect().bottom ?? 0) + 40);
+        let current = 0;
+        sections.forEach((section, index) => {
+            if (section.getBoundingClientRect().top <= top) {
+                current = index;
+            }
+        });
+        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+            current = sections.length - 1;
+        }
+        links.forEach((link, index) => {
+            link.classList.toggle('active', index === current);
+            if (index === current) {
+                link.setAttribute('aria-current', 'location');
+            } else {
+                link.removeAttribute('aria-current');
+            }
+        });
+        waiting = false;
+    };
+    const schedule = () => {
+        if (waiting === false) {
+            waiting = true;
+            window.requestAnimationFrame(highlightSection);
+        }
+    };
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    highlightSection();
+}
+
+/* ------------------------------------------------------- tabulky a ovládání */
+
+// Široká tabulka se posouvá ve vlastním rámu, aby se do strany neposouvala celá stránka.
+function initTableFrames() {
+    document.querySelectorAll('.main table.table').forEach(table => {
+        if (table.closest('.grido, table.form, .table-scroll') !== null || table.parentElement.closest('table') !== null) {
+            return;
+        }
+        const frame = document.createElement('div');
+        frame.className = 'table-scroll';
+        table.before(frame);
+        frame.append(table);
+    });
+}
+
+// Tabulky Grido: grid širší než stránka se posouvá ve vlastním rámu; seznamy členů mají rám už v šabloně
+// (.user-list-scroll), ostatním gridům je rámem sám formulář a jde na něj klávesnicí.
+// Změna počtu položek na stránce se rovnou projeví; "..." ve stránkování se zeptá na číslo stránky.
+function initGrids() {
+    const markWideGrids = () => {
+        document.querySelectorAll('form.grido').forEach(grid => {
+            const table = grid.querySelector(':scope > table');
+            const wide = table !== null && table.offsetWidth > grid.clientWidth + 1;
+            const ownFrame = grid.closest('.user-list-scroll') === null;
+            grid.classList.toggle('grid-wide', wide);
+            if (wide && ownFrame) {
+                grid.tabIndex = 0;
+            } else {
+                grid.removeAttribute('tabindex');
+            }
+        });
+    };
+    markWideGrids();
+    window.addEventListener('resize', markWideGrids);
+
+    document.addEventListener('change', event => {
+        const select = event.target.closest('.grido .count select');
+        if (select !== null) {
+            const form = select.form;
+            const button = form?.querySelector('[name="buttons[perPage]"]');
+            if (button) {
+                form.requestSubmit(button);
+            } else {
+                form?.requestSubmit();
+            }
+        }
+    });
+    document.addEventListener('click', event => {
+        const prompt = event.target.closest('.grido [data-grido-prompt]');
+        if (prompt === null) {
+            return;
+        }
+        event.preventDefault();
+        const page = Number.parseInt(window.prompt(prompt.dataset.gridoPrompt) ?? '', 10);
+        if (Number.isInteger(page) && page > 0) {
+            window.location.href = prompt.dataset.gridoLink.replace(/page=0/, `page=${page}`);
+        }
+    });
+}
+
+// Záložky (vzor záložek WAI-ARIA): kliknutí nebo šipky, Home a End přepnou panel; v pořadí Tab je jen vybraná záložka.
+function initTabs() {
+    const show = tab => {
+        tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]').forEach(other => {
+            const selected = other === tab;
+            other.setAttribute('aria-selected', String(selected));
+            other.tabIndex = selected ? 0 : -1;
+            other.closest('li')?.classList.toggle('active', selected);
+            const panel = document.getElementById(other.getAttribute('aria-controls'));
+            panel?.classList.toggle('active', selected);
+        });
+    };
+    document.addEventListener('click', event => {
+        const tab = event.target.closest('[role="tab"][data-toggle="tab"]');
+        if (tab !== null) {
+            event.preventDefault();
+            show(tab);
+        }
+    });
+    document.addEventListener('keydown', event => {
+        const tab = event.target.closest?.('[role="tab"][data-toggle="tab"]');
+        if (tab === null || tab === undefined) {
+            return;
+        }
+        if (event.key === ' ') {
+            event.preventDefault();
+            show(tab);
+            return;
+        }
+        const tabs = [...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')];
+        const index = tabs.indexOf(tab);
+        const target = { End: tabs.length - 1, Home: 0, ArrowLeft: index - 1, ArrowRight: index + 1 }[event.key];
+        if (target === undefined) {
+            return;
+        }
+        event.preventDefault();
+        const next = tabs[(target + tabs.length) % tabs.length];
+        show(next);
+        next.focus();
+    });
+}
+
+// Tlačítko s data-toggle="collapse" rozbalí a sbalí prvek, který jmenuje v aria-controls.
+function initCollapse() {
+    document.addEventListener('click', event => {
+        const button = event.target.closest('[data-toggle="collapse"][aria-controls]');
+        if (button === null) {
+            return;
+        }
+        const target = document.getElementById(button.getAttribute('aria-controls'));
+        if (target !== null) {
+            target.hidden = target.hidden === false;
+            button.setAttribute('aria-expanded', String(target.hidden === false));
+        }
+    });
+}
+
+/* --------------------------------------------- zvýraznění prvku z adresy (#...) */
+
+// Odkaz jako "#ip10.107.12.1" posune stránku k prvku s id "highlightable-ip10.107.12.1" a krátce ho zvýrazní.
+function initHighlight() {
+    const element = document.getElementById(`highlightable-${window.location.hash.replace('#', '')}`);
+    if (element === null) {
+        return;
+    }
+    element.classList.add('highlighted');
+    setTimeout(() => element.classList.add('highlighted-fadeout'), 1000);
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* --------------------------------------------------------- kopírování hodnot */
 
 function copyTextToClipboard(text) {
-    var textArea = document.createElement("textarea");
-
-    textArea.style.position = 'fixed';
-    textArea.style.top = 0;
-    textArea.style.left = 0;
-    textArea.style.width = '2em';
-    textArea.style.height = '2em';
-    textArea.style.padding = 0;
-    textArea.style.border = 'none';
-    textArea.style.outline = 'none';
-    textArea.style.boxShadow = 'none';
-    textArea.style.background = 'transparent';
+    const textArea = document.createElement('textarea');
+    Object.assign(textArea.style, {
+        position: 'fixed', top: '0', left: '0', width: '2em', height: '2em', padding: '0',
+        border: 'none', outline: 'none', boxShadow: 'none', background: 'transparent',
+    });
     textArea.value = text;
     document.body.appendChild(textArea);
     textArea.select();
-    var successful = false;
+    let successful = false;
     try {
         successful = document.execCommand('copy');
-        var msg = successful ? 'successful' : 'unsuccessful';
-        console.log('Copying text command was ' + msg);
-    } catch (err) {
-        console.log('Oops, unable to copy');
+    } catch {
+        successful = false;
     }
     document.body.removeChild(textArea);
     return successful;
 }
 
-/** KOPÍROVÁNÍ LOGINU A HESLA **/
-// Buňky Login a Heslo skládá App\Model\IPAdresa: hodnota je v prvku .copy-value, za ní tlačítko .copy-value-button.
-$(document).ready(function () {
-    $(document).on('click', '.copy-value-button', function () {
-        var button = $(this);
-        writeTextToClipboard(button.siblings('.copy-value').text()).then(function (copied) {
-            showCopyResult(button, copied);
-        });
-    });
-
-    // Výběr tažený myší, který skončí nad tlačítkem, ve Firefoxu nedosáhne na konec hodnoty.
-    // Po dobu tažení proto tlačítka myš nevnímají (pointer-events v screen.css) a výběr se chová jako nad prázdným místem.
-    $(document).on('mousedown', function (event) {
-        if (event.which !== 1 || $(event.target).closest('.copy-value-button').length > 0) {
-            return;
-        }
-        $('body').addClass('copy-value-selecting');
-        // Puštění tlačítka myši se může ztratit (kontextové menu, jiné okno); skončí to i první pohyb bez stisku.
-        $(document).off('.copyValueDrag').on('mousemove.copyValueDrag mouseup.copyValueDrag', function (move) {
-            if (move.type === 'mouseup' || move.buttons !== 1) {
-                $('body').removeClass('copy-value-selecting');
-                $(document).off('.copyValueDrag');
-            }
-        });
-    });
-
-    // Kliknutí nebo dvojklik označí celou hodnotu; dvojklik by jinak vybral jen část hesla po nejbližší oddělovač.
-    // Výběr tažením zůstává na prohlížeči (user-select: all v CSS ho v Chromiu i Firefoxu kazí).
-    // Označuje se až po obsluze kliknutí: Chromium a WebKit při ní výběr teprve ruší.
-    $(document).on('click dblclick', '.copy-value', function (event) {
-        var value = this;
-        if (!event.shiftKey) {
-            setTimeout(function () {
-                window.getSelection().selectAllChildren(value);
-            }, 0);
-        }
-    });
-
-    // Výběr tažením myší často začne nebo skončí mimo hodnotu: prohlížeč pak před ni vloží tabulátor
-    // (oddělovač buněk tabulky), za ni někdy konec řádku, nebo z ní pár znaků chybí. Zasahuje-li výběr
-    // do jediné hodnoty a nic dalšího v něm není, jde do schránky celá a přesná a celá se i označí.
-    // Kopírování z textového pole (i z pomocného pole v copyTextToClipboard) se netýká výběru na stránce.
-    $(document).on('copy', function (event) {
-        var selection = window.getSelection();
-        if (selection.rangeCount !== 1 || $(event.target).is('input, textarea')) {
-            return;
-        }
-        var range = selection.getRangeAt(0);
-        var values = $('.copy-value').filter(function () {
-            return selectedPartOf(this, range) !== '';
-        });
-        if (values.length !== 1 || withoutWhitespace(selection.toString()) !== withoutWhitespace(selectedPartOf(values[0], range))) {
-            return;
-        }
-        event.originalEvent.clipboardData.setData('text/plain', values.text());
-        event.preventDefault();
-        selection.selectAllChildren(values[0]);
-    });
-
-    // Výsledek kopírování pro čtečky obrazovky.
-    if ($('.copy-value-button').length > 0) {
-        $('<div id="copy-value-status" class="sr-only" role="status"></div>').appendTo('body');
+// Vrací Promise s true, když se text dostal do schránky. navigator.clipboard je jen na HTTPS a na localhostu.
+function writeTextToClipboard(text) {
+    if (navigator.clipboard === undefined) {
+        return Promise.resolve(copyTextToClipboard(text));
     }
-});
+    return navigator.clipboard.writeText(text).then(() => true, () => copyTextToClipboard(text));
+}
 
 // Text prvku, který leží uvnitř výběru. Prvek, kterého se výběr jen dotýká na okraji, dá prázdný řetězec.
 function selectedPartOf(element, range) {
-    if (!range.intersectsNode(element)) {
+    if (range.intersectsNode(element) === false) {
         return '';
     }
-    var part = document.createRange();
+    const part = document.createRange();
     part.selectNodeContents(element);
     if (part.compareBoundaryPoints(Range.START_TO_START, range) < 0) {
         part.setStart(range.startContainer, range.startOffset);
@@ -425,532 +1021,469 @@ function withoutWhitespace(text) {
     return text.replace(/\s/g, '');
 }
 
-// Vrací Promise s true, když se text dostal do schránky. navigator.clipboard je jen na HTTPS a na localhostu.
-function writeTextToClipboard(text) {
-    if (!navigator.clipboard) {
-        return Promise.resolve(copyTextToClipboard(text));
+// Na chvíli ukáže u tlačítka výsledek kopírování, pak vrátí původní ikonu a nápovědu.
+function showCopyResult(button, copied) {
+    const icon = button.querySelector('.fa');
+    const resultIcon = copied ? 'fa-check' : 'fa-exclamation-triangle';
+    const resultText = copied ? 'Zkopírováno' : 'Kopírování se nezdařilo. Klikněte na hodnotu a zkopírujte ji ručně.';
+    const status = document.getElementById('copy-value-status');
+
+    tipText(button);
+    icon?.classList.remove('fa-copy', 'fa-check', 'fa-exclamation-triangle');
+    icon?.classList.add(resultIcon);
+    button.dataset.copyResult = copied ? 'ok' : 'error';
+    if (status !== null) {
+        status.textContent = resultText;
     }
-    return navigator.clipboard.writeText(text).then(function () {
-        return true;
-    }, function () {
-        return copyTextToClipboard(text);
+    // copyTextToClipboard přesouvá fokus do pomocného pole; vrátit ho, ať jde pokračovat klávesnicí.
+    button.focus();
+    tip.show(button, resultText);
+    clearTimeout(button.copyResultTimer);
+    button.copyResultTimer = setTimeout(() => {
+        icon?.classList.remove(resultIcon);
+        icon?.classList.add('fa-copy');
+        delete button.dataset.copyResult;
+        if (status !== null) {
+            status.textContent = '';
+        }
+        button.dataset.tip = button.getAttribute('aria-label') ?? button.dataset.tip;
+        tip.hide(button);
+    }, 2000);
+}
+
+// Login a heslo zařízení (buňky skládá App\Model\IPAdresa): hodnota je v prvku .copy-value, za ní tlačítko .copy-value-button.
+function initCopyValues() {
+    document.addEventListener('click', event => {
+        const button = event.target.closest('.copy-value-button');
+        if (button === null) {
+            return;
+        }
+        const value = button.parentElement.querySelector('.copy-value');
+        writeTextToClipboard(value?.textContent ?? '').then(copied => showCopyResult(button, copied));
+    });
+
+    // Výběr tažený myší, který skončí nad tlačítkem, ve Firefoxu nedosáhne na konec hodnoty.
+    // Po dobu tažení proto tlačítka myš nevnímají (pointer-events v screen.css) a výběr se chová jako nad prázdným místem.
+    document.addEventListener('mousedown', event => {
+        if (event.button !== 0 || event.target.closest('.copy-value-button') !== null) {
+            return;
+        }
+        document.body.classList.add('copy-value-selecting');
+        // Puštění tlačítka myši se může ztratit (kontextové menu, jiné okno); skončí to i první pohyb bez stisku.
+        const controller = new AbortController();
+        const stop = move => {
+            if (move.type === 'mouseup' || move.buttons !== 1) {
+                document.body.classList.remove('copy-value-selecting');
+                controller.abort();
+            }
+        };
+        document.addEventListener('mousemove', stop, { signal: controller.signal });
+        document.addEventListener('mouseup', stop, { signal: controller.signal });
+    });
+
+    // Kliknutí nebo dvojklik označí celou hodnotu; dvojklik by jinak vybral jen část hesla po nejbližší oddělovač.
+    // Výběr tažením zůstává na prohlížeči (user-select: all v CSS ho v Chromiu i Firefoxu kazí).
+    // Označuje se až po obsluze kliknutí: Chromium a WebKit při ní výběr teprve ruší.
+    const selectValue = event => {
+        const value = event.target.closest('.copy-value');
+        if (value !== null && event.shiftKey === false) {
+            setTimeout(() => window.getSelection().selectAllChildren(value), 0);
+        }
+    };
+    document.addEventListener('click', selectValue);
+    document.addEventListener('dblclick', selectValue);
+
+    // Výběr tažením myší často začne nebo skončí mimo hodnotu: prohlížeč pak před ni vloží tabulátor
+    // (oddělovač buněk tabulky), za ni někdy konec řádku, nebo z ní pár znaků chybí. Zasahuje-li výběr
+    // do jediné hodnoty a nic dalšího v něm není, jde do schránky celá a přesná a celá se i označí.
+    // Kopírování z textového pole (i z pomocného pole v copyTextToClipboard) se netýká výběru na stránce.
+    document.addEventListener('copy', event => {
+        const selection = window.getSelection();
+        if (selection.rangeCount !== 1 || event.target.closest?.('input, textarea')) {
+            return;
+        }
+        const range = selection.getRangeAt(0);
+        const values = [...document.querySelectorAll('.copy-value')].filter(value => selectedPartOf(value, range) !== '');
+        if (values.length !== 1 || withoutWhitespace(selection.toString()) !== withoutWhitespace(selectedPartOf(values[0], range))) {
+            return;
+        }
+        event.clipboardData.setData('text/plain', values[0].textContent);
+        event.preventDefault();
+        selection.selectAllChildren(values[0]);
+    });
+
+    // Výsledek kopírování pro čtečky obrazovky.
+    if (document.querySelector('.copy-value-button') !== null) {
+        const status = document.createElement('div');
+        status.id = 'copy-value-status';
+        status.className = 'sr-only';
+        status.setAttribute('role', 'status');
+        document.body.append(status);
+    }
+
+    // Tlačítko SSH u IP adresy zkopíruje příkaz do schránky.
+    document.addEventListener('click', event => {
+        const button = event.target.closest('.wboxbutton');
+        if (button === null) {
+            return;
+        }
+        event.preventDefault();
+        const text = button.getAttribute('tag');
+        if (text !== null && text !== '') {
+            copyTextToClipboard(text);
+        }
     });
 }
 
-// Na chvíli ukáže u tlačítka výsledek kopírování, pak vrátí původní ikonu a nápovědu.
-function showCopyResult(button, copied) {
-    var icon = button.children('.fa');
-    var resultIcon = copied ? 'fa-check' : 'fa-exclamation-triangle';
-    var resultText = copied ? 'Zkopírováno' : 'Kopírování se nezdařilo. Klikněte na hodnotu a zkopírujte ji ručně.';
+// Tlačítka pro zkopírování na detailu člena (e-mail, telefon, číslo karty, IP adresy). IP adresám je doplní
+// skript, jen v tabulce, kterou šablona označí data-copy-ips="true" (člen, kterého uživatel smí vidět celého).
+function initCopyButtons() {
+    document.querySelectorAll('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] .ip-address').forEach(cell => {
+        const link = cell.querySelector(':scope > a');
+        const value = (link ?? cell).textContent.trim();
+        // Adresa a tlačítko drží pohromadě (.ip-copy); štítek pingu z pinger.js stojí až za nimi.
+        const copy = document.createElement('span');
+        copy.className = 'ip-copy';
+        copy.append(...cell.childNodes);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-button';
+        button.dataset.copyValue = value;
+        button.title = 'Zkopírovat IP adresu';
+        button.setAttribute('aria-label', 'Zkopírovat IP adresu');
+        const icon = document.createElement('i');
+        icon.className = 'icon icon-copy';
+        icon.setAttribute('aria-hidden', 'true');
+        button.append(icon);
+        copy.append(button);
+        cell.append(copy);
+    });
 
-    icon.removeClass('fa-copy fa-check fa-exclamation-triangle').addClass(resultIcon);
-    $('#copy-value-status').text(resultText);
-    // copyTextToClipboard přesouvá fokus do pomocného pole; vrátit ho, ať jde pokračovat klávesnicí.
-    button.trigger('focus').attr('data-original-title', resultText).tooltip('show');
-    clearTimeout(button.data('copyResultTimer'));
-    button.data('copyResultTimer', setTimeout(function () {
-        icon.removeClass(resultIcon).addClass('fa-copy');
-        $('#copy-value-status').text('');
-        button.attr('data-original-title', button.attr('aria-label')).tooltip('hide');
-    }, 2000));
+    if (document.querySelector('.copy-button') === null) {
+        return;
+    }
+    const feedback = document.createElement('span');
+    feedback.className = 'sr-only';
+    feedback.setAttribute('role', 'status');
+    feedback.setAttribute('aria-live', 'polite');
+    document.querySelector('.main')?.append(feedback);
+
+    document.addEventListener('click', event => {
+        const button = event.target.closest('.copy-button');
+        if (button === null) {
+            return;
+        }
+        const icon = button.querySelector('i');
+        icon.dataset.original ??= icon.className;
+        const done = success => {
+            feedback.textContent = success ? 'Zkopírováno.' : 'Kopírování se nezdařilo. Označte a zkopírujte hodnotu ručně.';
+            button.classList.toggle('copied', success);
+            icon.className = success ? 'icon icon-check' : 'icon icon-circle-alert';
+            clearTimeout(button.copyTimer);
+            button.copyTimer = setTimeout(() => {
+                button.classList.remove('copied');
+                icon.className = icon.dataset.original;
+            }, 1300);
+        };
+        writeTextToClipboard(button.dataset.copyValue ?? '').then(success => {
+            done(success);
+            button.focus();
+        });
+    });
 }
-/** KOPÍROVÁNÍ LOGINU A HESLA **/
-
-// Záložky Bootstrapu 3.2 nepřepínají aria-selected ani tabindex; čtečka obrazovky by hlásila záložku,
-// která už vybraná není, a Tab by vedl na každou záložku zvlášť.
-$(document).on('shown.bs.tab', '[role="tab"][data-toggle="tab"]', function (event) {
-    $(event.relatedTarget).attr({ 'aria-selected': 'false', tabindex: '-1' });
-    $(event.target).attr({ 'aria-selected': 'true', tabindex: '0' });
-});
-
-// Mezi záložkami se chodí šipkami, Home a End, Mezerník záložku otevře (vzor záložek WAI-ARIA).
-$(document).on('keydown', '[role="tab"][data-toggle="tab"]', function (event) {
-    var tabs = $(this).closest('[role="tablist"]').find('[role="tab"]');
-    var index = tabs.index(this);
-    var targets = { 35: tabs.length - 1, 36: 0, 37: index - 1, 39: index + 1 };
-    if (event.which === 32) {
-        event.preventDefault();
-        $(this).tab('show');
-        return;
-    }
-    if (!(event.which in targets)) {
-        return;
-    }
-    event.preventDefault();
-    tabs.eq((targets[event.which] + tabs.length) % tabs.length).tab('show').trigger('focus');
-});
 
 function openMikrotikWebfig(ip, username, password) {
-    var theHTML = "<!doctype html><html>" +
-        "<head><script>window.name='login=" + username + "|" + password + "';window.location.replace('http://" + ip + "/webfig/#Wireless');</script></head><body></body></html>";
-    var webfigWindow = window.open("", "");
-    webfigWindow.document.write(theHTML);
+    const html = '<!doctype html><html>'
+        + "<head><script>window.name='login=" + username + '|' + password + "';window.location.replace('http://" + ip + "/webfig/#Wireless');</script></head><body></body></html>";
+    const webfigWindow = window.open('', '');
+    webfigWindow.document.write(html);
     return false;
 }
 
-/** STITKY **/
-function showMessage(message, type = 'success') {
-    const messageContainer = $('#message-container');
-    const messageContent = $('#message-content');
+/* ------------------------------------------------------------------- štítky */
 
-    messageContent.text(message); // Nastav text zprávy
-    messageContainer.removeClass('alert-success alert-danger').addClass(`alert-${type}`);
-    messageContainer.show(); // Zobraz zprávu
-
-    setTimeout(() => {
-        messageContainer.fadeOut(); // Automaticky skryj zprávu po 5 sekundách
-    }, 5000);
+async function sendLabelRequest(url, init) {
+    const response = await fetch(url, { ...init, headers: { 'X-Requested-With': 'XMLHttpRequest', ...init.headers } });
+    if (response.ok === false) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+    return response.json();
 }
 
+// Štítek, jak ho vykreslí UserLabelsComponent.latte; barvy ve vzhledu aplikace spočítal server (BarvaStitku).
+function labelBadge(response, stitekId, userId) {
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.setAttribute('style', response.styl);
+    const text = document.createElement('span');
+    text.textContent = response.text;
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'badge-remove';
+    remove.dataset.stitekId = stitekId;
+    remove.dataset.userId = userId;
+    remove.title = 'Odebrat štítek';
+    remove.setAttribute('aria-label', `Odebrat štítek ${response.text}`);
+    remove.textContent = '×';
+    badge.append(text, remove);
+    return badge;
+}
 
-// Delegovane udalosti funguji i po obnoveni gridu pres AJAX.
-$(document).ready(function () {
-    var pendingLabels = {};
+// Přidání a odebrání štítku bez načtení stránky. Člen může být na stránce víckrát, změní se všude.
+function initLabels() {
+    const urls = document.body.dataset;
+    const pending = new Set();
+    const components = userId => [...document.querySelectorAll('.user-labels-component')].filter(component => component.dataset.userId === userId);
 
-    // Bootstrap 3.2 stav aria-expanded sam neaktualizuje.
-    $('.navbar-collapse').on('shown.bs.collapse hidden.bs.collapse', function (event) {
-        $('.navbar-toggle').attr('aria-expanded', event.type === 'shown' ? 'true' : 'false');
-    });
-    $(document).on('shown.bs.dropdown hidden.bs.dropdown', '.dropdown, .btn-group', function (event) {
-        $(this).find('.dropdown-toggle').attr('aria-expanded', event.type === 'shown' ? 'true' : 'false');
-    });
-
-    function components(userId) {
-        return $('.user-labels-component').filter(function () {
-            return $(this).attr('data-user-id') === userId;
-        });
-    }
-
-    function refreshLabels() {
-        $('.user-labels-component').each(function () {
-            var component = $(this);
-            var labels = component.find('.user-labels');
-            labels.find('.labels-empty').remove();
-            if (!labels.find('.badge').length) {
-                labels.append($('<span class="labels-empty"></span>').text('žádné'));
+    // Prázdný seznam má napsáno „žádné“; štítky, které člen už má, jsou v nabídce označené a nejdou přidat znovu.
+    const refresh = () => {
+        document.querySelectorAll('.user-labels-component').forEach(component => {
+            const labels = component.querySelector('.user-labels');
+            if (labels === null) {
+                return;
             }
-            component.find('.stitky-item').each(function () {
-                var item = $(this);
-                var assigned = labels.find('.badge-remove').filter(function () {
-                    return $(this).attr('data-stitek-id') === item.attr('data-id');
-                }).length > 0;
-                item.toggleClass('label-assigned', assigned)
-                    .attr('aria-disabled', assigned ? 'true' : 'false')
-                    .attr('title', assigned ? 'Účastník tento štítek už má' : 'Přidat štítek');
+            labels.querySelector('.labels-empty')?.remove();
+            if (labels.querySelector('.badge') === null) {
+                const empty = document.createElement('span');
+                empty.className = 'labels-empty';
+                empty.textContent = 'žádné';
+                labels.append(empty);
+            }
+            component.querySelectorAll('.stitky-item').forEach(item => {
+                const assigned = labels.querySelector(`.badge-remove[data-stitek-id="${CSS.escape(item.dataset.id)}"]`) !== null;
+                item.classList.toggle('label-assigned', assigned);
+                item.setAttribute('aria-disabled', String(assigned));
+                item.title = assigned ? 'Účastník tento štítek už má' : 'Přidat štítek';
             });
         });
-    }
-
-    function labelError(userId, message) {
-        components(userId).each(function () {
-            $(this).find('.label-error').remove();
-            $('<span class="label-error" role="alert"></span>').text(message).appendTo(this);
-        });
-    }
-
-    $(document).on('click', '.user-labels-component .badge-remove, .user-labels-component .stitky-item', function (event) {
-        event.preventDefault();
-        var control = $(this);
-        var component = control.closest('.user-labels-component');
-        var userId = component.attr('data-user-id');
-        var removing = control.hasClass('badge-remove');
-        var labelId = control.attr(removing ? 'data-stitek-id' : 'data-id');
-        var key = userId + ':' + labelId;
-        if (pendingLabels[key] || (!removing && control.attr('aria-disabled') === 'true')) return;
-
-        var url = $('body').data(removing ? 'stitky-delete-url' : 'stitky-save-url');
-        if (!url) {
-            labelError(userId, 'Chybí adresa pro úpravu štítků. Obnovte stránku.');
-            return;
-        }
-        pendingLabels[key] = true;
-        components(userId).find('.label-error').remove();
-        var data = { stitek_id: labelId, user_id: userId };
-        $.ajax({
-            url: url,
-            type: removing ? 'DELETE' : 'POST',
-            contentType: removing ? 'application/json' : 'application/x-www-form-urlencoded; charset=UTF-8',
-            data: removing ? JSON.stringify(data) : data,
-            success: function (response) {
-                if (!response.success) {
-                    labelError(userId, 'Štítek se nepodařilo změnit. Zkuste to znovu.');
-                    return;
-                }
-                components(userId).each(function () {
-                    var labels = $(this).find('.user-labels');
-                    labels.find('.badge-remove').filter(function () {
-                        return $(this).attr('data-stitek-id') === labelId;
-                    }).closest('.badge').remove();
-                    if (!removing) {
-                        // barvy ve vzhledu aplikace spocital server (BarvaStitku), atribut je jen z nich
-                        var badge = $('<span class="badge"></span>').attr('style', response.styl)
-                            .append($('<span></span>').text(response.text));
-                        $('<button type="button" class="badge-remove">&times;</button>')
-                            .attr({ 'data-stitek-id': labelId, 'data-user-id': userId,
-                                'aria-label': 'Odebrat štítek ' + response.text, title: 'Odebrat štítek' })
-                            .appendTo(badge);
-                        labels.append(badge);
-                    }
-                });
-                refreshLabels();
-                if (document.activeElement === document.body || control.is(':focus')) {
-                    component.find('.dropdown-toggle').focus();
-                }
-            },
-            error: function () {
-                labelError(userId, 'Nepodařilo se připojit k serveru. Zkuste to znovu.');
-            },
-            complete: function () {
-                delete pendingLabels[key];
-            }
-        });
-    });
-    refreshLabels();
-    $(document).ajaxComplete(refreshLabels);
-});
-
-// Filtr nad seznamem clenu. Hledani a stitky jdou na server (Enter, tlacitko Hledat, vyber v nabidce), takze plati
-// pro vsechny stranky tabulky. Kdyz jsou vsechny radky na jedne strance, filtruje se navic hned pri psani.
-$(document).ready(function () {
-    var filter = $('.member-filter');
-    if (!filter.length) return;
-    var input = filter.find('input[type="search"]');
-    var form = document.getElementById(input.attr('form'));
-    var count = filter.find('.quick-filter-count');
-    var live = filter.attr('data-live') === 'true';
-    var applied = filter.attr('data-applied') || '';
-    var normalize = function (text) {
-        return $.trim(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     };
 
-    function submit() {
-        var button = filter.find('button[name="buttons[search]"]')[0];
-        if (form.requestSubmit) form.requestSubmit(button); else button.click();
-    }
+    const showError = (userId, message) => {
+        components(userId).forEach(component => {
+            component.querySelector('.label-error')?.remove();
+            const error = document.createElement('span');
+            error.className = 'label-error';
+            error.setAttribute('role', 'alert');
+            error.textContent = message;
+            component.append(error);
+        });
+    };
 
-    function applyFilter() {
-        var rows = $(form).find('tbody tr[class*="grid-row-"]');
-        var value = input.val();
-        // Radky uz vybral server; jeho hledani je presnejsi nez text bunek (zkracene poznamky, skryte sloupce).
-        if (!live || $.trim(value) === $.trim(applied)) {
-            rows.removeClass('quick-filter-hidden');
-            count.text($.trim(value) === $.trim(applied) ? count.attr('data-total') : 'Enter hledá ve všech účastnících');
-            filter.removeClass('quick-filter-no-match');
+    document.addEventListener('click', async event => {
+        const control = event.target.closest('.user-labels-component .badge-remove, .user-labels-component .stitky-item');
+        if (control === null) {
             return;
         }
-        var needle = normalize(value);
-        var shown = 0;
-        rows.each(function () {
-            // Nabidka obsahuje vsechny stitky, do filtru patri jen hodnoty radku a prirazene stitky.
-            var searchable = this.cloneNode(true);
-            $(searchable).find('.dropdown, .labels-empty, button, script').remove();
-            var matches = normalize($(searchable).text()).indexOf(needle) !== -1;
-            $(this).toggleClass('quick-filter-hidden', !matches);
-            if (matches) shown++;
-        });
-        count.text(shown + ' z ' + rows.length + ' řádků, Enter hledá na serveru');
-        filter.toggleClass('quick-filter-no-match', shown === 0);
-    }
+        event.preventDefault();
+        const component = control.closest('.user-labels-component');
+        const userId = component.dataset.userId;
+        const removing = control.classList.contains('badge-remove');
+        const labelId = removing ? control.dataset.stitekId : control.dataset.id;
+        const key = `${userId}:${labelId}`;
+        if (pending.has(key) || (removing === false && control.getAttribute('aria-disabled') === 'true')) {
+            return;
+        }
+        control.closest('[popover]')?.hidePopover();
+        const url = removing ? urls.stitkyDeleteUrl : urls.stitkySaveUrl;
+        if (url === undefined || url === '') {
+            showError(userId, 'Chybí adresa pro úpravu štítků. Obnovte stránku.');
+            return;
+        }
+        pending.add(key);
+        components(userId).forEach(other => other.querySelector('.label-error')?.remove());
+        try {
+            const response = removing
+                ? await sendLabelRequest(urls.stitkyDeleteUrl, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stitek_id: labelId, user_id: userId }),
+                })
+                : await sendLabelRequest(urls.stitkySaveUrl, {
+                    method: 'POST',
+                    body: new URLSearchParams({ stitek_id: labelId, user_id: userId }),
+                });
+            if (response.success !== true) {
+                showError(userId, 'Štítek se nepodařilo změnit. Zkuste to znovu.');
+                return;
+            }
+            components(userId).forEach(other => {
+                const labels = other.querySelector('.user-labels');
+                labels.querySelectorAll(`.badge-remove[data-stitek-id="${CSS.escape(labelId)}"]`).forEach(button => button.closest('.badge').remove());
+                if (removing === false) {
+                    labels.append(labelBadge(response, labelId, userId));
+                }
+            });
+            refresh();
+            if (document.activeElement === document.body || document.activeElement === control || control.isConnected === false) {
+                component.querySelector('.stitky-toggle')?.focus();
+            }
+        } catch {
+            showError(userId, 'Nepodařilo se připojit k serveru. Zkuste to znovu.');
+        } finally {
+            pending.delete(key);
+        }
+    });
+    refresh();
+}
 
-    input.on('input', applyFilter);
-    filter.on('change', 'select[data-submit-on-change]', submit);
-    filter.on('change', '.label-chip-add', function () {
-        var labels = filter.find('input[name="filters[stitky]"]');
-        var chosen = $(this).val();
-        if (!chosen) return;
-        var values = labels.val() ? labels.val().split(',') : [];
-        if (values.indexOf(chosen) === -1) values.push(chosen);
-        labels.val(values.join(','));
-        $(this).val('');
-        submit();
+/* --------------------------------------------- posuvník seznamu členů AP */
+
+// Pomocný vodorovný posuvník u dolního okraje okna, dokud je spodní okraj dlouhého seznamu členů AP mimo okno:
+// posuvník rámu by jinak byl až pod posledním řádkem. Jen pro myš; na dotykovém displeji se rám posouvá prstem.
+function initListScrollbar() {
+    const frame = document.querySelector('.user-list-scroll-with-bar');
+    const bar = document.querySelector('.user-list-scrollbar');
+    if (frame === null || bar === null) {
+        return;
+    }
+    const mouse = window.matchMedia('(any-hover: hover) and (any-pointer: fine)');
+
+    const updateVisibility = () => {
+        const bounds = frame.getBoundingClientRect();
+        const viewportBottom = document.documentElement.clientHeight;
+        bar.hidden = mouse.matches === false || Number(bar.max) === 0
+            || bounds.top >= viewportBottom || bounds.bottom <= viewportBottom;
+    };
+    const syncFromFrame = () => {
+        if (bar.valueAsNumber !== frame.scrollLeft) {
+            bar.valueAsNumber = frame.scrollLeft;
+        }
+    };
+    const resizeBar = () => {
+        const width = frame.clientWidth;
+        const contentWidth = frame.scrollWidth;
+        bar.max = String(contentWidth - width);
+        if (contentWidth > width) {
+            const bounds = frame.getBoundingClientRect();
+            const nativeScrollbarHeight = frame.offsetHeight - frame.clientHeight;
+            const thumbWidth = Math.max(24, Math.round(width * width / contentWidth));
+            bar.style.left = `${bounds.left}px`;
+            bar.style.width = `${width}px`;
+            bar.style.setProperty('--user-list-scroll-thumb-width', `${thumbWidth}px`);
+            bar.style.setProperty('--user-list-scrollbar-height', `${Math.max(14, nativeScrollbarHeight)}px`);
+            syncFromFrame();
+        }
+        updateVisibility();
+    };
+
+    frame.addEventListener('scroll', syncFromFrame);
+    bar.addEventListener('input', () => {
+        frame.scrollLeft = bar.valueAsNumber;
+    });
+    // Po tažení mají šipky a Page Down zase posouvat stránku.
+    window.addEventListener('pointerup', () => {
+        if (document.activeElement === bar) {
+            bar.blur();
+        }
+    });
+    window.addEventListener('scroll', updateVisibility, { passive: true });
+    window.addEventListener('resize', resizeBar);
+    mouse.addEventListener('change', updateVisibility);
+
+    // Hledání při psaní a údaje doplněné do buněk (ping) mění velikost tabulky bez změny velikosti okna;
+    // skrytí a zobrazení postranního panelu mění šířku rámu.
+    const observer = new ResizeObserver(resizeBar);
+    observer.observe(frame);
+    const table = frame.querySelector('table');
+    if (table !== null) {
+        observer.observe(table);
+    }
+}
+
+/* ------------------------------------------------------- filtr seznamu členů */
+
+// Hledání a štítky jdou na server (Enter, tlačítko Hledat, výběr v nabídce), takže platí pro všechny stránky
+// tabulky. Když jsou všechny řádky na jedné stránce, filtruje se navíc hned při psaní.
+function initMemberFilter() {
+    const filter = document.querySelector('.member-filter');
+    const input = filter?.querySelector('input[type="search"]');
+    if (input === null || input === undefined) {
+        return;
+    }
+    const form = document.getElementById(input.getAttribute('form'));
+    const count = filter.querySelector('.quick-filter-count');
+    const live = filter.dataset.live === 'true';
+    const applied = (filter.dataset.applied ?? '').trim();
+
+    const submit = () => {
+        const button = filter.querySelector('button[name="buttons[search]"]');
+        form.requestSubmit(button);
+    };
+
+    const applyFilter = () => {
+        const rows = [...form.querySelectorAll('tbody tr[class*="grid-row-"]')];
+        const value = input.value.trim();
+        // Řádky už vybral server; jeho hledání je přesnější než text buněk (zkrácené poznámky, skryté sloupce).
+        if (live === false || value === applied) {
+            rows.forEach(row => row.classList.remove('quick-filter-hidden'));
+            count.textContent = value === applied ? count.dataset.total : 'Enter hledá ve všech účastnících';
+            filter.classList.remove('quick-filter-no-match');
+            return;
+        }
+        const needle = fold(value);
+        let shown = 0;
+        rows.forEach(row => {
+            // Nabídka obsahuje všechny štítky, do filtru patří jen hodnoty řádku a přiřazené štítky.
+            const searchable = row.cloneNode(true);
+            searchable.querySelectorAll('.stitky-menu, .labels-empty, button, script').forEach(element => element.remove());
+            const matches = fold(searchable.textContent).includes(needle);
+            row.classList.toggle('quick-filter-hidden', matches === false);
+            if (matches) {
+                shown++;
+            }
+        });
+        count.textContent = `${shown} z ${rows.length} řádků, Enter hledá na serveru`;
+        filter.classList.toggle('quick-filter-no-match', shown === 0);
+    };
+
+    input.addEventListener('input', applyFilter);
+    filter.addEventListener('change', event => {
+        if (event.target.matches('select[data-submit-on-change]')) {
+            submit();
+        }
+        if (event.target.matches('.label-chip-add')) {
+            const labels = filter.querySelector('input[name="filters[stitky]"]');
+            const chosen = event.target.value;
+            if (chosen === '') {
+                return;
+            }
+            const values = labels.value === '' ? [] : labels.value.split(',');
+            if (values.includes(chosen) === false) {
+                values.push(chosen);
+            }
+            labels.value = values.join(',');
+            event.target.value = '';
+            submit();
+        }
     });
     applyFilter();
-});
+}
 
-// Kopirovani IP doplnuje pouze autorizovanou tabulku, bez presouvani obsahu nebo skriptu.
-$(document).ready(function () {
-    $('#member-ip[data-copy-ips="true"] tr[id^="highlightable-ip"] .ip-address').each(function () {
-        var link = $(this).children('a');
-        var value = $.trim(link.length ? link.text() : $(this).text());
-        // Adresa a tlačítko drží pohromadě (.ip-copy); štítek pingu z pinger.js stojí až za nimi.
-        var copy = $(this).wrapInner('<span class="ip-copy"></span>').children('.ip-copy');
-        $('<button type="button" class="copy-button"><i class="fa fa-clone" aria-hidden="true"></i></button>')
-            .attr({ 'data-copy-value': value, title: 'Zkopírovat IP adresu', 'aria-label': 'Zkopírovat IP adresu' })
-            .appendTo(copy);
-    });
+/* ------------------------------------------------------------------- start */
 
-    var feedback = $('<span class="sr-only" role="status" aria-live="polite"></span>');
-    if ($('.copy-button').length) feedback.appendTo('.main');
-    $(document).on('click', '.copy-button', function () {
-        var button = $(this);
-        var value = button.attr('data-copy-value');
-        function done(success) {
-            feedback.text(success ? 'Zkopírováno.' : 'Kopírování se nezdařilo. Označte a zkopírujte hodnotu ručně.');
-            button.toggleClass('copied', success);
-            button.find('i').attr('class', success ? 'fa fa-check' : 'fa fa-exclamation-circle');
-            setTimeout(function () {
-                button.removeClass('copied').find('i').attr('class', 'fa fa-clone');
-            }, 1300);
-        }
-        function fallback() {
-            done(copyTextToClipboard(value));
-            button.focus();
-        }
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(value).then(function () { done(true); }, fallback);
-        } else {
-            fallback();
-        }
-    });
-});
+function start() {
+    initSidebar();
+    initMenus();
+    initTips();
+    initTheme();
+    initSearch();
+    initDefaultSubmit();
+    initFormErrors();
+    initTableFrames();
+    initGrids();
+    initTabs();
+    initCollapse();
+    initHighlight();
+    initCopyValues();
+    initCopyButtons();
+    initLabels();
+    initMemberFilter();
+    initListScrollbar();
+}
 
-// Validace vsech formularu: zpravy u poli, bez zmeny serverovych chyb.
-$(document).ready(function () {
-    var errorSequence = 0;
-
-    function updateStatus(form) {
-        var count = $(form).find('.field-error-message').length;
-        var message = $(form).hasClass('form-dirty') ? 'Neuložené změny' : '';
-        if (count > 0) {
-            message = 'Formulář obsahuje chyby (' + count + '). Před uložením je opravte.';
-        }
-        $(form).find('.form-status').text(message).toggleClass('form-status-error', count > 0);
-    }
-
-    function clearError(record) {
-        record.fields.each(function () {
-            var field = $(this);
-            var description = (field.attr('aria-describedby') || '').split(/\s+/).filter(function (id) {
-                return id && id !== record.id;
-            });
-            if (description.length) field.attr('aria-describedby', description.join(' '));
-            else field.removeAttr('aria-describedby');
-            var previous = field.data('client-error-previous-invalid');
-            if (previous === undefined) field.removeAttr('aria-invalid');
-            else field.attr('aria-invalid', previous);
-            field.removeClass('field-invalid').removeData('client-error').removeData('client-error-previous-invalid');
-        });
-        record.note.remove();
-    }
-
-    if (window.Nette) {
-        // netteForms.js se nacita az za main.js, proto az po DOM ready.
-        Nette.showFormErrors = function (form, errors) {
-            $(form).find('.field-invalid').each(function () {
-                var record = $(this).data('client-error');
-                if (record) clearError(record);
-            });
-            $(form).children('.client-form-error').remove();
-            var first = null;
-            errors.forEach(function (error) {
-                var field = error.element;
-                if (!field || field === form) {
-                    $('<div class="client-form-error field-error-message" role="alert"></div>').text(error.message).prependTo(form);
-                    return;
-                }
-                var record = $(field).data('client-error');
-                if (!record) {
-                    var fields = $(field);
-                    if (field.type === 'radio') {
-                        fields = $(form.elements).filter(function () { return this.type === 'radio' && this.name === field.name; });
-                    }
-                    var id = 'form-field-error-' + (++errorSequence);
-                    var note = $('<div class="field-error" role="alert"></div>').attr('id', id);
-                    var anchor = fields.last();
-                    if (anchor.parent().is('label')) anchor = anchor.parent();
-                    note.insertAfter(anchor);
-                    record = { fields: fields, note: note, id: id };
-                    fields.each(function () {
-                        var control = $(this);
-                        control.data('client-error-previous-invalid', control.attr('aria-invalid'));
-                        control.data('client-error', record).addClass('field-invalid').attr({
-                            'aria-invalid': 'true',
-                            'aria-describedby': $.trim((control.attr('aria-describedby') || '') + ' ' + id)
-                        });
-                    });
-                    if (!first) first = fields.filter(':visible:not(:disabled)')[0];
-                }
-                $('<div class="field-error-message"></div>').text(error.message).appendTo(record.note);
-            });
-            updateStatus(form);
-            if (first) {
-                first.focus();
-                first.scrollIntoView({ block: 'center' });
-            }
-        };
-    }
-
-    $(document).on('input change', 'input, select, textarea', function () {
-        var record = $(this).data('client-error');
-        if (record) {
-            clearError(record);
-            updateStatus(this.form);
-        }
-    });
-
-    // Seskupeny formular clena: neulozene zmeny a navigace mezi oddily.
-    var form = document.querySelector('form.member-form');
-    if (!form) return;
-    var leaving = false;
-    $(form).on('input change', function () {
-        $(form).addClass('form-dirty');
-        updateStatus(form);
-    });
-    updateStatus(form);
-    // Na window uz probehla validace Nette i obsluhy formulare.
-    window.addEventListener('submit', function (event) {
-        if (event.target === form && !event.defaultPrevented) leaving = true;
-    });
-    window.addEventListener('pageshow', function () { leaving = false; });
-    window.addEventListener('beforeunload', function (event) {
-        if ($(form).hasClass('form-dirty') && !leaving) {
-            event.preventDefault();
-            event.returnValue = '';
-        }
-    });
-
-    var sections = $(form).find('.form-section');
-    var links = $('.form-nav a');
-    var waiting = false;
-    function highlightSection() {
-        var current = 0;
-        var top = Math.max(150, $('.navbar-fixed-top').outerHeight() + 40);
-        sections.each(function (index) {
-            if (this.getBoundingClientRect().top <= top) current = index;
-        });
-        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
-            current = sections.length - 1;
-        }
-        links.each(function (index) {
-            $(this).toggleClass('active', index === current);
-            if (index === current) $(this).attr('aria-current', 'location');
-            else $(this).removeAttr('aria-current');
-        });
-        waiting = false;
-    }
-    $(window).on('scroll resize', function () {
-        if (!waiting) {
-            waiting = true;
-            window.requestAnimationFrame(highlightSection);
-        }
-    });
-    highlightSection();
-});
-
-// Hledani nabizi pouze odkazy, ktere uz prihlaseny uzivatel vidi v navigaci.
-$(document).ready(function () {
-    var form = $('.navbar-search');
-    var input = form.find('input[name="search"]');
-    var panel = form.find('.search-suggestions');
-    var options = $('#search-options');
-    if (!input.length || !panel.length) return;
-    var hint = panel.find('.search-hint');
-    var emptyHint = hint.text();
-    var submitHint = 'Enter vyhledá účastníka i podle čísla smlouvy nebo IP adresy.';
-    var index = [];
-    var seen = {};
-    var active = -1;
-
-    function fold(value) {
-        return $.trim(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    }
-
-    // area: jmeno oblasti, pod kterou AP v levem panelu stoji; AP se najde i pod zapisem "Oblast - AP"
-    function add(link, description, area) {
-        var href = link.getAttribute('href');
-        var text = $.trim(link.textContent);
-        if (!href) return;
-        var foldedWithArea = area ? fold(area + ' - ' + text) : '';
-        var known = seen[href];
-        if (known) {
-            // Jedine aktivni AP oblasti stoji v Mych oblastech samo, ve Vsech oblastech pod svou oblasti.
-            if (foldedWithArea && !known.foldedWithArea) {
-                known.foldedWithArea = foldedWithArea;
-                known.description = description;
-            }
-            return;
-        }
-        seen[href] = { href: href, text: text, description: description, folded: fold(text), foldedWithArea: foldedWithArea };
-        index.push(seen[href]);
-    }
-
-    $('.sidebar ul.nav-sidebar > li').each(function () {
-        var link = $(this).children('a')[0];
-        if (!link) return;
-        var children = $(this).find('ul a');
-        add(link, children.length ? 'oblast' : 'AP');
-        children.each(function () { add(this, 'AP · ' + $.trim(link.textContent), $.trim(link.textContent)); });
-    });
-    $('#navbar-tools a').each(function () { add(this, 'nástroj'); });
-    input.attr({ role: 'combobox', 'aria-autocomplete': 'list', 'aria-controls': 'search-options', 'aria-expanded': 'false' });
-
-    function close() {
-        panel.prop('hidden', true);
-        input.attr('aria-expanded', 'false').removeAttr('aria-activedescendant');
-        active = -1;
-    }
-
-    function render() {
-        var needle = fold(input.val());
-        options.empty();
-        active = -1;
-        input.removeAttr('aria-activedescendant');
-        if (needle) {
-            var starts = [];
-            var contains = [];
-            index.forEach(function (item) {
-                var at = item.folded.indexOf(needle);
-                if (at === 0) starts.push(item);
-                else if (at > 0 || item.foldedWithArea.indexOf(needle) !== -1) contains.push(item);
-            });
-            starts.concat(contains).slice(0, 9).forEach(function (item, i) {
-                $('<a class="search-option" role="option" tabindex="-1" aria-selected="false"></a>')
-                    .attr({ href: item.href, id: 'search-option-' + i })
-                    .append($('<span class="search-option-text"></span>').text(item.text))
-                    .append($('<span class="search-option-description"></span>').text(item.description))
-                    .appendTo(options);
-            });
-        }
-        panel.prop('hidden', false);
-        var hasOptions = options.children().length > 0;
-        input.attr('aria-expanded', hasOptions ? 'true' : 'false');
-        form.find('.search-help').prop('hidden', !hasOptions);
-        var message = needle ? submitHint : emptyHint;
-        if (needle && !hasOptions) message = 'Oblast, AP ani nástroj nenalezen. ' + submitHint;
-        hint.text(message);
-    }
-
-    input.on('focus input', render).on('blur', function () {
-        // Kliknuti na navrh musi dobehnout pred skrytim nabidky.
-        setTimeout(function () { if (!form[0].contains(document.activeElement)) close(); }, 150);
-    }).on('keydown', function (event) {
-        if (event.key === 'Escape') {
-            event.preventDefault();
-            close();
-        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-            event.preventDefault();
-            if (panel.prop('hidden')) render();
-            var rows = options.children();
-            if (!rows.length) return;
-            active = active < 0 ? (event.key === 'ArrowDown' ? 0 : rows.length - 1)
-                : (active + (event.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length;
-            rows.removeClass('active').attr('aria-selected', 'false');
-            rows.eq(active).addClass('active').attr('aria-selected', 'true');
-            input.attr('aria-activedescendant', rows[active].id);
-            rows[active].scrollIntoView({ block: 'nearest' });
-        } else if (event.key === 'Enter' && active >= 0 && !panel.prop('hidden')) {
-            event.preventDefault();
-            window.location.href = options.children().eq(active).attr('href');
-        }
-    });
-    panel.on('mousedown', 'a', function (event) { event.preventDefault(); });
-    $(document).on('click', function (event) {
-        if (!form[0].contains(event.target)) close();
-    }).on('keydown', function (event) {
-        if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey
-            && !$(event.target).is('input, textarea, select') && !event.target.isContentEditable) {
-            event.preventDefault();
-            input.focus().select();
-        }
-    });
-});
+// S atributem defer je HTML už načtené; bez něj (např. v hlavičce stránky) se počká na jeho konec.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+} else {
+    start();
+}

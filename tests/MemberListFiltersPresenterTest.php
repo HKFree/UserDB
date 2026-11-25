@@ -188,7 +188,8 @@ final class MemberListFiltersPresenterTest extends DatabaseTestCase
         // The application runs under /userdb only on production; a fixed prefix breaks labels everywhere else.
         $script = (string) file_get_contents(__DIR__ . '/../www/js/main.js');
         Assert::notContains('/userdb/stitky/', $script);
-        Assert::contains("$('body').data(removing ? 'stitky-delete-url' : 'stitky-save-url')", $script);
+        Assert::contains('sendLabelRequest(urls.stitkySaveUrl', $script);
+        Assert::contains('sendLabelRequest(urls.stitkyDeleteUrl', $script);
     }
 
     /** @param array<string, mixed> $parameters */

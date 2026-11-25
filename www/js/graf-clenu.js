@@ -3,7 +3,7 @@
  * Měsíce s počty a českými názvy připraví server v atributu data-mesice obalu grafů. Každý graf v atributu
  * data-serie říká, které způsoby aktivace kreslí, v pořadí legendy shora dolů. Barvy a rozměry os určuje screen.css.
  */
-$(function () {
+document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
     var obal = document.querySelector('.graf-clenu-grafy');
@@ -207,7 +207,7 @@ $(function () {
         if (window.ResizeObserver) {
             new ResizeObserver(prekresli).observe(element);
         } else {
-            $(window).on('resize', prekresli);
+            window.addEventListener('resize', prekresli);
         }
         graf.render();
     }

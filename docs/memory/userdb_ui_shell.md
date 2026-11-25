@@ -7,11 +7,9 @@ metadata:
 
 # UserDB: kostra aplikace a styly
 
-- Přibalený Bootstrap 3.2 je vlastní sestavení: navbar skládá pod 990 px, ne pod
-  768 px jako výchozí Bootstrap. Kostra (`@layout.latte`, `screen.css`) proto přepíná
-  úzké a široké rozvržení na 989/990 px. Ověřeno 22. 11. 2026 výpisem media queries
-  pro `.navbar-toggle` a `.navbar-collapse` z `www/css/bootstrap.min.css` a měřením
-  výšky navbaru v prohlížeči při 989 a 990 px.
+- Úzké a široké rozvržení se přepíná na 989/990 px (`@media (max-width: 989px)` ve `screen.css`
+  a `narrowLayout` v `main.js`): pod 990 px se postranní panel vysouvá přes obsah. Hranice zůstala
+  z doby Bootstrapu (jeho vlastní sestavení skládalo navbar pod 990 px), testy s ní počítají.
 - `PermissionGridExportsPresenterTest` pozná řádek s přeplatkem podle toho, že HTML
   stránky obsahuje řetězec `preplatek`. Nová značka na stránkách seznamu členů proto
   nesmí `preplatek` ani `neaktivni` obsahovat, pokud takový řádek opravdu nevykresluje;
@@ -22,10 +20,10 @@ metadata:
   z definice formuláře, a pamatuj na stav `:disabled`. Ověřeno 22. 11. 2026 čtením
   pravidel a měřením v prohlížeči na formuláři e-mailu členovi: s `min-height` má pole
   zprávy výšku 198 px podle svého `rows`, zakázané pole příjemce je šedé.
-- Bootstrap nastavuje `input[type="range"]` na `display: block`, takže u tohoto
-  pole přebije obecné `[hidden]`. Ověřeno 25. 11. 2026 v Playwrightu: atribut
-  `hidden` byl nastavený a posuvník přesto zůstal viditelný. U takového pole
-  použij vlastní selektor třídy s `[hidden]` a ověř skutečnou viditelnost.
+- Pravidlo s `display` u pole (dřív Bootstrap s `input[type="range"] { display: block }`, dnes
+  kterékoli pravidlo ve vrstvách `screen.css`) přebije obecné `[hidden]` z prohlížeče. Ověřeno
+  25. 11. 2026 v Playwrightu: atribut `hidden` byl nastavený a posuvník seznamu přesto zůstal
+  viditelný. U takového pole použij vlastní selektor třídy s `[hidden]` a ověř skutečnou viditelnost.
 - V emulaci telefonu (Playwright s `isMobile`) roste `window.innerWidth` spolu s obsahem,
   takže rozdíl `scrollWidth - innerWidth` vyjde nula i u stránky širší než displej.
   Šířku stránky porovnávej s nastavenou šířkou okna (375). Ověřeno 22. 11. 2026: úprava
@@ -41,22 +39,37 @@ metadata:
 **How to apply:** Po změně `screen.css` nebo layoutu projdi i formuláře mimo upravovanou
 obrazovku a pusť celou sadu testů, ne jen testy měněné stránky.
 
-## Vzhled: proměnné a tmavý režim
+## Vzhled: tokeny a tmavý režim
 
-- `screen.css` bere barvy z `www/css/theme.css`. Stránka, která načte `screen.css` bez
-  `theme.css`, má barvy prázdné (průhledné pozadí, černé písmo). Hlídá to `AssetVersionsTest`
-  pro šablony; zkušební stránky v `tests/screenshots/test/` načítají `theme.css` také.
-- Obecné pravidlo pro tmavý režim nad elementem (`a`, `body`) zapisuj jako
-  `:where(:root[data-theme="dark"]) a`. S `:root[data-theme="dark"] a` má váhu 0,2,1 a přebije
-  vlastní barvy odkazů v liště a v postranním panelu. Ověřeno 23. 11. 2026 v prohlížeči.
+- Barvy jsou tokeny ve vrstvě `tokens` ve `screen.css` s `light-dark()`; vzhled volí `color-scheme`
+  podle `data-theme` na `<html>`. Prohlížeč vrací spočítané barvy jako `oklch(...)`, ne `rgb(...)`:
+  test, který porovnává nebo měří kontrast, je musí převést přes canvas (`fillStyle`, `getImageData`),
+  jako `tests/e2e/specs/vzhled.spec.mjs`. Ověřeno 25. 11. 2026 v Chromiu.
+- Rámeček pole (`--input`) má v tmavém vzhledu oklch(0.54) místo poloprůhledné bílé ze shadcn/ui:
+  s ní měl proti poli a kartě kontrast kolem 1,4 : 1, požadavek z masteru (test ve `vzhled.spec.mjs`)
+  je aspoň 3 : 1. Tlačítka mají rámeček jemnější (`--input` na 40 %), pole ho potřebují.
 - Text uvnitř `::after` se počítá do přístupného jména prvku: zatržítko `✓` za vybranou volbou
-  změnilo jméno přepínače na „Tmavý ✓“ a test podle role a jména ho nenašel. Výběr proto ukazuje
-  tučné písmo a proužek. Ověřeno tamtéž.
-- Kontrast tmavého vzhledu jde změřit skriptem v Playwrightu: pro každý viditelný text barva písma
-  proti prvnímu neprůhlednému pozadí předků (s prolnutím poloprůhledných vrstev). Bootstrap má
-  bílé písmo na `btn-primary`, `btn-success` a `label-success` pod 4,5 : 1 už ve světlém vzhledu;
-  tmavý vzhled je proto přebarvuje. Ověřeno 23. 11. 2026 na 16 stránkách při 1280 px.
+  změnilo jméno přepínače na „Tmavý ✓“ a test podle role a jména ho nenašel. Značka proto kreslí
+  `content: ""` s maskou nebo tečkou. Naopak dvě položky „Demo oblastní“ v nabídce štítků
+  (demo data mají dva štítky se stejným textem) rozlišil v Bootstrapu jen glyf Font Awesome
+  v `::after`; test proto vybírá `disabled: false`. Ověřeno 23. a 25. 11. 2026.
+- `www/css/rickshaw.min.css` stojí mimo vrstvy a načítá se po `screen.css`, takže přebije každé
+  pravidlo z `@layer`. Úpravy grafu počtu členů jsou proto na konci `screen.css` mimo vrstvy
+  a s vyšší specifičností. Ověřeno 25. 11. 2026: `.detail:empty` ve vrstvě pages nic neskrylo.
 
 **Why:** Všechno se projeví až na stránce v jednom ze vzhledů, ne v kódu.
 
 **How to apply:** Po změně barev pusť `tests/ThemeTokensTest.php` a projdi stránku v obou vzhledech.
+
+## Nabídky a seznamy v `main.js`
+
+- Otevřená nabídka (Popover API, `position: fixed`) se při posunu stránky nebo rámu přesune
+  s tlačítkem a zavře se, když tlačítko zmizí z rámu nebo pod horní lištu. Rám je každý předek
+  s `overflow` jiným než `visible`; formulář Grida v posuvném seznamu má `overflow: visible`
+  a je užší než tabulka, takže podle něj by tlačítko ve sloupci Štítky vyšlo mimo rám a nabídka
+  by se hned zavřela. Ověřeno 25. 11. 2026 v Playwrightu na `/uzivatel-list/list/201` jako VV.
+- Nabídka se otevírá krátkým zvětšením (`scale` 0,95 → 1). Test, který měří její polohu, musí
+  počkat na `getAnimations()`, jinak naměří posun o několik pixelů.
+- `item.querySelectorAll('ul a')` najde i odkaz položky samé: selektor se vyhodnocuje proti celému
+  dokumentu a `ul` je seznam panelu nad ní. Pro potomky v položce piš `:scope ul a`. Ověřeno
+  25. 11. 2026: napovídání v hledání bralo AP za vlastní oblast.

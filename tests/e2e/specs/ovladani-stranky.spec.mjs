@@ -33,6 +33,11 @@ test('filtr v levém panelu nechá jen odpovídající oblasti a AP bez ohledu n
     await expect(shown).toHaveText([/^Demo malé AP \(200\)$/]);
     await expect(page.getByText('Žádná oblast ani AP neodpovídá.', { exact: true })).toBeHidden();
 
+    // Název oblasti s více AP ukáže oblast rozbalenou se všemi jejími AP.
+    await filter.fill('rozvetvena oblast');
+    await expect(shown).toHaveCount(1);
+    await expect(shown.getByRole('link', { name: 'Demo hlavní AP (201)', exact: true })).toBeVisible();
+
     await filter.fill('takova oblast neni');
     await expect(shown).toHaveCount(0);
     await expect(page.getByText('Žádná oblast ani AP neodpovídá.', { exact: true })).toBeVisible();
@@ -48,17 +53,21 @@ test('kliknutí na název oblasti otevře její přehled a rozbalí její AP', a
     const oblast = strom.locator('> li').filter({
         has: page.getByRole('link', { name: 'Demo rozvětvená oblast', exact: true }),
     });
-    await expect(oblast).toHaveClass(/\bcollapsed\b/);
+    const vetev = oblast.locator('> details');
+    await expect(vetev).not.toHaveAttribute('open', '');
 
     const prehled = new URL(await odkaz.getAttribute('href'), page.url());
     await odkaz.click();
     await expect(page).toHaveURL(prehled.href);
     await expect(odkaz).toHaveAttribute('aria-current', 'page');
-    await expect(oblast).toHaveClass(/\bexpanded\b/);
+    await expect(vetev).toHaveAttribute('open', '');
     await expect(oblast.getByRole('link', { name: 'Demo hlavní AP (201)', exact: true })).toBeInViewport();
 
-    await oblast.locator('> .thumb').click();
-    await expect(oblast).toHaveClass(/\bcollapsed\b/);
+    // Šipka na konci řádku oblasti větev zase sbalí; název oblasti vede na její přehled.
+    const radek = await vetev.locator('> summary').boundingBox();
+    await page.mouse.click(radek.x + radek.width - 10, radek.y + radek.height / 2);
+    await expect(vetev).not.toHaveAttribute('open', '');
+    await expect(page).toHaveURL(prehled.href);
 });
 
 test('hledání v seznamu AP filtruje hned při psaní a Enter hledá na serveru; řádky jsou kompaktní', async ({ page }) => {

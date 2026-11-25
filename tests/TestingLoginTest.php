@@ -424,39 +424,39 @@ final class TestingLoginTest extends TestCase
             [, $headers] = $this->http($port, 'GET', $path, [$visitor]);
             Assert::same('private, max-age=300', $this->header($headers, 'Cache-Control'), $path);
         }
-        [$status, $headers, $body] = $this->http($port, 'GET', '/js/grido.js', [$visitor]);
+        [$status, $headers, $body] = $this->http($port, 'GET', '/js/netteForms.js', [$visitor]);
         Assert::same(200, $status);
-        Assert::same(file_get_contents(__DIR__ . '/../www/js/grido.js'), $body);
+        Assert::same(file_get_contents(__DIR__ . '/../www/js/netteForms.js'), $body);
         Assert::same('text/javascript; charset=UTF-8', $this->header($headers, 'Content-Type'));
         Assert::same('private, max-age=300', $this->header($headers, 'Cache-Control'));
         $etag = $this->header($headers, 'ETag');
         $modified = $this->header($headers, 'Last-Modified');
         Assert::match('"%h%-%h%"', (string) $etag);
-        Assert::same(gmdate('D, d M Y H:i:s', (int) filemtime(__DIR__ . '/../www/js/grido.js')) . ' GMT', $modified);
+        Assert::same(gmdate('D, d M Y H:i:s', (int) filemtime(__DIR__ . '/../www/js/netteForms.js')) . ' GMT', $modified);
 
         // Checked, an unchanged file is not sent again.
         foreach (["If-None-Match: $etag", "If-None-Match: W/$etag, \"other\"", "If-Modified-Since: $modified"] as $condition) {
-            [$status, $headers, $body] = $this->http($port, 'GET', '/js/grido.js', [$visitor, $condition]);
+            [$status, $headers, $body] = $this->http($port, 'GET', '/js/netteForms.js', [$visitor, $condition]);
             Assert::same(304, $status, $condition);
             Assert::same('', $body, $condition);
             Assert::same($etag, $this->header($headers, 'ETag'), $condition);
         }
-        $older = 'If-Modified-Since: ' . gmdate('D, d M Y H:i:s', (int) filemtime(__DIR__ . '/../www/js/grido.js') - 1) . ' GMT';
+        $older = 'If-Modified-Since: ' . gmdate('D, d M Y H:i:s', (int) filemtime(__DIR__ . '/../www/js/netteForms.js') - 1) . ' GMT';
         // A date that is not one of HTTP (here a relative one) is ignored.
         foreach (['If-None-Match: "other"', $older, 'If-Modified-Since: tomorrow'] as $condition) {
-            [$status, , $body] = $this->http($port, 'GET', '/js/grido.js', [$visitor, $condition]);
+            [$status, , $body] = $this->http($port, 'GET', '/js/netteForms.js', [$visitor, $condition]);
             Assert::same(200, $status, $condition);
-            Assert::same(file_get_contents(__DIR__ . '/../www/js/grido.js'), $body, $condition);
+            Assert::same(file_get_contents(__DIR__ . '/../www/js/netteForms.js'), $body, $condition);
         }
 
-        [$status, $headers, $body] = $this->http($port, 'HEAD', '/fonts/fontawesome-webfont.woff2', [$visitor]);
+        [$status, $headers, $body] = $this->http($port, 'HEAD', '/fonts/geist/geist-latin-wght-normal.woff2', [$visitor]);
         Assert::same(200, $status);
         Assert::same('', $body);
         Assert::same('font/woff2', $this->header($headers, 'Content-Type'));
-        Assert::same((string) filesize(__DIR__ . '/../www/fonts/fontawesome-webfont.woff2'), $this->header($headers, 'Content-Length'));
+        Assert::same((string) filesize(__DIR__ . '/../www/fonts/geist/geist-latin-wght-normal.woff2'), $this->header($headers, 'Content-Length'));
 
         // The sign-in form still decides first.
-        [$status] = $this->http($port, 'GET', '/js/grido.js', ["If-None-Match: $etag"]);
+        [$status] = $this->http($port, 'GET', '/js/netteForms.js', ["If-None-Match: $etag"]);
         Assert::same(302, $status);
     }
 

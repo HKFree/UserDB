@@ -16,7 +16,7 @@ for (const scenario of [
         const deactivation = internet.getByRole('row').filter({ has: page.getByRole('rowheader', { name: 'Deaktivace', exact: true }) }).getByRole('cell');
         await expect(active).toHaveText(scenario.before[0]);
         await expect(deactivation).toHaveText(scenario.before[1]);
-        await page.getByRole('button', { name: new RegExp(` ${scenario.action}$`) }).click();
+        await page.getByRole('button', { name: scenario.action, exact: true }).click();
         await expect(active).toHaveText(scenario.after[0]);
         await expect(deactivation).toHaveText(scenario.after[1]);
         await openAccount(page, 'druzstvo');
