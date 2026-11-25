@@ -40,6 +40,11 @@ try {
     Assert::false(\UserdbLocalInstance::fromEnvironment()->isRebuiltOnSetup());
     Assert::same($directory, \UserdbLocalInstance::fromEnvironment()->runtimeDirectory($directory));
 
+    // IDS is disconnected: no events instead of an error, also without the debug mode the preview runs in.
+    $ids = $container->getByType(\App\Model\IdsConnector::class);
+    Assert::same([], $ids->getEventsForIps(['10.107.0.1']));
+    Assert::same([], $ids->getUniqueIpsFromPrivateSubnets());
+
     $crypto = $container->getByType(\App\Services\CryptoSluzba::class);
     Assert::same('local test', $crypto->decrypt($crypto->encrypt('local test')));
 

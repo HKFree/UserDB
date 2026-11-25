@@ -14,6 +14,8 @@ fi
 : "${FLOX_ENV_CACHE:?Start the preview as root, or inside the activated Flox environment}"
 
 export PHP_CLI_SERVER_WORKERS=4
+# Without the debug bar of Tracy: it made every page several hundred kB larger on the phones of testers.
+export USERDB_DEBUG_MODE=0
 export USERDB_GOOGLE_MAPS_KEY="${USERDB_GOOGLE_MAPS_KEY:-testing-only}"
 export USERDB_TESTING_LOGIN_STATE="$FLOX_ENV_CACHE/testing-login"
 mkdir -p "$USERDB_TESTING_LOGIN_STATE"

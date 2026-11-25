@@ -33,6 +33,17 @@ to, co z kódu není vidět. Ověřeno 23. 11. 2026 sestavením a během image n
 - Nette v náhledu proxy nevěří (`http: proxy: null` z `config.local.DIST.neon`): přesměrování aplikace mají
   v `Location` schéma `http://` a na HTTPS je vrací až proxy. Stejně se choval i dřívější testovací server.
 
+Rychlost náhledu, ověřeno 25. 11. 2026 v Chromiu se zpomalenou sítí (100 ms, 1,5 MB/s) a na lokálním webu:
+
+- PHP vestavěný server posílá soubory z `www/` bez `ETag` a `Last-Modified` a hlavičky, které router nastaví
+  před `return false`, zahodí. Každé kliknutí proto stahovalo všech zhruba 25 stylů a skriptů znovu (asi
+  1,5 MB, na mobilu přes sekundu). Proto je posílá `scripts/UserdbStaticFile.php`.
+- Náhled běží bez ladicího režimu (`USERDB_DEBUG_MODE=0`). Lišta Tracy měla na stránce kolem 460 kB.
+  Bez ladicího režimu aplikace propouští chyby, které jinak polyká (IDS), proto lokální konfigurace odpojuje
+  IDS vlastní třídou, ne nedostupnou adresou.
+- V produkčním režimu Nette DI kontejner po změně konfigurace znovu nesestaví. Kdo `USERDB_DEBUG_MODE=0`
+  zkouší lokálně, smaže po změně NEONu `temp/flox/cache/nette.configurator`. Náhled se staví vždy načisto.
+
 Coolify 4.7.6, přečteno ve zdrojácích téhož dne, na běžící instanci neověřeno:
 
 - Nasazení větve aplikace (`master`) je rolling update: na health check z Dockerfile čeká podle hodnot

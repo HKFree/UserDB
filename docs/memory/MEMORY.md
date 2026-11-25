@@ -10,7 +10,7 @@
 - [Regresní testy SMS](userdb_sms_tests.md) - bezpečné testování bez externí brány a nástrahy starého SMS senderu.
 - [Testy InfluxDB](userdb_influx_tests.md) - lokální server, přidělený port a ověření v1 API.
 - [Přihlašovací formulář náhledů PR](userdb_testing_login.md) - nástrahy formuláře před náhledy PR a jeho lokální zkouška.
-- [Image náhledu PR](userdb_preview_image.md) - nástrahy Dockerfile.preview (Flox v Dockeru, emulace, velikost) a chování Coolify.
+- [Image náhledu PR](userdb_preview_image.md) - nástrahy Dockerfile.preview (Flox v Dockeru, emulace, velikost), rychlost náhledu (cache souborů, bez Tracy) a chování Coolify.
 - [Demo data](userdb_demo_data.md) - nástrahy při psaní scénářových migrací a objemového kroku pro testovací instance.
 - [UI člena a štítky](userdb_member_ui.md) - samostatné Latte v gridu, routované adresy, stav dropdownu a nástrahy formulářů.
 - [Kostra aplikace a styly](userdb_ui_shell.md) - bod zlomu přibaleného Bootstrapu, řetězce hlídané testy, rozměry polí formulářů, proměnné barev a tmavý režim.

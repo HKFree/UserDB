@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/UserdbLocalInstance.php';
 require_once __DIR__ . '/UserdbLocalMailer.php';
+require_once __DIR__ . '/UserdbLocalIdsConnector.php';
 require_once __DIR__ . '/UserdbDemoPersonas.php';
 require_once __DIR__ . '/UserdbDemoPersonaPanel.php';
 
@@ -36,7 +37,8 @@ return (static function (): Nette\DI\Container {
         'USERDB_SESSION_NAME' => 'userdb_' . substr(hash('sha256', $root), 0, 20),
     ]);
     $configurator = new Nette\Bootstrap\Configurator();
-    $configurator->setDebugMode(true);
+    // The preview turns the debug bar off (scripts/userdb_preview.sh); its errors go to the log.
+    $configurator->setDebugMode(getenv('USERDB_DEBUG_MODE') !== '0');
     $configurator->setTempDirectory($root . '/temp/flox');
     $configurator->enableTracy($root . '/log');
     // Registered before the container is built, so the panel is there even when its compilation fails.
