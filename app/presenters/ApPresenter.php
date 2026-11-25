@@ -116,7 +116,15 @@ class ApPresenter extends BasePresenter
             $subnetLinks = $this->getSubnetLinksFromIPs($ips);
             $wewimoLinks = $this->getWewimoLinksFromIPs($ips);
             $apEditLink = $this->link('Ap:edit', array('id' => $ap->id));
-            $this->template->adresy = $this->ipAdresa->getIPTable($ips, $canViewCredentialsOrEdit, $subnetLinks, $wewimoLinks, $apEditLink, false, array($this, "linker"));
+            $this->template->adresy = $this->ipAdresa->getIPTable(
+                $ips,
+                $canViewCredentialsOrEdit,
+                $subnetLinks,
+                $wewimoLinks,
+                $apEditLink,
+                linker: [$this, 'linker'],
+                combineIpActions: true,
+            );
             $this->template->subnety = $this->subnet->getSubnetTable($ap->related('Subnet.Ap_id'));
             $this->template->csubnety = $this->subnet->getAPCSubnets($ap->related('Subnet.Ap_id'));
             $this->template->canViewOrEdit = $this->ap->canViewOrEditAP($this->getParameter('id'), $this->getUser());

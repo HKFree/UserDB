@@ -1105,7 +1105,7 @@ ul.error {
 }
 
 /* Login a heslo zařízení: hodnota i tlačítko zůstávají na jednom řádku, mezery se zobrazí tak, jak jsou uložené.
-   V detailu člena se dlouhá hodnota zalomí (#member-ip níže), aby se tabulka vešla bez posouvání. */
+   V detailu člena a AP se dlouhá hodnota zalomí (.detail-ip-table níže), aby se tabulka vešla bez posouvání. */
 .copy-value-cell {
     white-space: nowrap;
 }
@@ -2759,28 +2759,28 @@ html {
     color: var(--udb-text-6b7280);
 }
 
-#member-ip .ip-address {
+.detail-ip-table .ip-address {
     display: inline-block;
 }
 
 /* Adresa s tlačítkem pro zkopírování (main.js) se nezalomí; štítek pingu za ní se zalomí pod ni, když se do buňky nevejde. */
-#member-ip .ip-copy {
+.detail-ip-table .ip-copy {
     display: inline-block;
     margin-right: 6px;
     white-space: nowrap;
 }
 
-#member-ip .ip-address > .pinger {
+.detail-ip-table .ip-address > .pinger {
     display: inline-block;
 }
 
 /* Lišta akcí stojí ve všech řádcích pod adresou a štítkem pingu, takže řádky vypadají stejně na každé šířce. */
-#member-ip .ip-akce {
+.detail-ip-table .ip-akce {
     margin-top: 4px;
 }
 
 /* Adresa má šířku nejdelší možné adresy, takže tlačítka pro zkopírování stojí pod sebou. */
-#member-ip .ip-address a {
+.detail-ip-table .ip-address a {
     display: inline-block;
     min-width: 15ch;
     font-variant-numeric: tabular-nums;
@@ -2788,21 +2788,21 @@ html {
 }
 
 /* Dlouhé hodnoty včetně SSID se dělí i bez mezery. Nadpisy sloupců se lámou mezi slovy. */
-.main #member-ip .table td,
-#member-ip .table th {
+.main .detail-ip-table .table td,
+.detail-ip-table .table th {
     white-space: normal;
 }
 
-#member-ip .table td {
+.detail-ip-table .table td {
     overflow-wrap: anywhere;
 }
 
-#member-ip .copy-value {
+.detail-ip-table .copy-value {
     white-space: pre-wrap;
 }
 
 @media (max-width: 989px) {
-    #member-ip .table {
+    .detail-ip-table .table {
         min-width: 900px;
     }
 }

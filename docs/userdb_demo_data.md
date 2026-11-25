@@ -131,6 +131,7 @@ tyto scénáře nevyžadují volání Digisignu.
 | Neaktivní AP, bez GPS a adresy, oba zákazy automatizace | AP 202 Demo vypnuté AP | `/ap/show/202`, `/ap/edit/202` |
 | Bez automatického DNS / upgradu | AP 203 Demo bez DNS / 204 Demo bez upgradu | Editace příslušného AP |
 | Plné údaje, víceřádková poznámka | AP 201 Demo hlavní AP | `/ap/show/201` |
+| Dlouhé hodnoty v tabulce IP adres AP | AP 201, IP `198.51.100.2` | `/ap/show/201`, dlouhé SSID, popis, login a heslo |
 | Subnet /24 | AP 200, `192.0.2.0/24` | `/subnet/overview/192.0.2`, `/subnet/detail/192.0.2` |
 | /25 až /30, gateway, network, broadcast a FREE | AP 201, `198.51.100.*` | `/subnet/overview/198.51.100`, `/subnet/detail/198.51.100` |
 | Více subnetů pro IP | AP 205 Demo vnořené subnety, `10.220.0.70` | `/ajax-api/get-ip-details?ip=10.220.0.70` |
@@ -141,7 +142,7 @@ tyto scénáře nevyžadují volání Digisignu.
 | AP bez členů | AP 214 Demo bez členů | `/uzivatel-list/list/214` |
 | Uživatelé mimo AP | AP 213 Demo cizí členové, členové 20062, 20064 a 20065 | `/uzivatel-list/list/213`; každý je z jiné obce. ZSO 20004 smí tyto členy upravit, i když patří do cizí oblasti |
 | AP IP, RouterBoard, všechna běžná nastavení | IP 20000, `192.0.2.1`, AP 200 | `/ap/show/200`, login/heslo `demo` / `demo-only` |
-| Dlouhé heslo se zvláštními znaky | IP 20007, `192.0.2.2`, AP 200 | `/ap/show/200`; 43 znaků včetně `&`, `<` a `>`, hodnota se nezalamuje. Delší heslo se zašifrované do sloupce `heslo` nevejde |
+| Dlouhé heslo se zvláštními znaky | IP 20007, `192.0.2.2`, AP 200 | `/ap/show/200`; 43 znaků včetně `&`, `<` a `>`. Delší heslo se zašifrované do sloupce `heslo` nevejde |
 | Heslo s mezerami | IP 20008, `192.0.2.3`, AP 200 | `/ap/show/200`; mezera na začátku i na konci a dvě uvnitř, do schránky se dostanou všechny |
 | Jen login, jen heslo | IP 20009 `192.0.2.4` a 20010 `192.0.2.5`, AP 200, RouterBoard | `/ap/show/200`; prázdná buňka je bez tlačítka pro kopírování. Odkaz Winboxu je `winbox:192.0.2.4;jenlogin` a `winbox:192.0.2.5`, heslo bez loginu se do něj nedává |
 | Heslo začínající pomlčkou, heslo s diakritikou | IP 20015 `192.0.2.10` a 20016 `192.0.2.11`, AP 200, RouterBoard | `/ap/show/200`; odkaz Winboxu je `winbox:192.0.2.10;admin` (heslo s pomlčkou se vynechá) a `winbox:192.0.2.11;spr%C3%A1vce;%C5%BElu%C5%A5ou%C4%8Dk%C3%BD-k%C5%AF%C5%88` |
