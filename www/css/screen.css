@@ -1104,6 +1104,62 @@ ul.error {
     padding: 12px;
 }
 
+.user-list-scrollbar {
+    position: fixed;
+    bottom: 0;
+    z-index: 6;
+    appearance: none;
+    height: var(--user-list-scrollbar-height, 14px);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background-color: var(--udb-bg-e4e6e9);
+}
+
+.user-list-scrollbar[hidden] {
+    display: none;
+}
+
+.user-list-scrollbar::-webkit-slider-thumb {
+    appearance: none;
+    box-sizing: border-box;
+    width: var(--user-list-scroll-thumb-width);
+    height: var(--user-list-scrollbar-height, 14px);
+    background-color: var(--udb-text-6b7280);
+    border: 2px solid var(--udb-bg-e4e6e9);
+    border-radius: 7px;
+}
+
+.user-list-scrollbar::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--user-list-scroll-thumb-width);
+    height: var(--user-list-scrollbar-height, 14px);
+    background-color: var(--udb-text-6b7280);
+    border: 2px solid var(--udb-bg-e4e6e9);
+    border-radius: 7px;
+}
+
+.user-list-scrollbar::-moz-range-track {
+    background: none;
+}
+
+/* Vlastní posuvník rámu na konci tabulky má v prohlížečích s touto podporou stejný vzhled. */
+@media (any-hover: hover) and (any-pointer: fine) {
+    .user-list-scroll-with-bar::-webkit-scrollbar {
+        height: 14px;
+    }
+
+    .user-list-scroll-with-bar::-webkit-scrollbar-track {
+        background-color: var(--udb-bg-e4e6e9);
+    }
+
+    .user-list-scroll-with-bar::-webkit-scrollbar-thumb {
+        background-color: var(--udb-text-6b7280);
+        border: 2px solid var(--udb-bg-e4e6e9);
+        border-radius: 7px;
+    }
+}
+
 /* Login a heslo zařízení: hodnota i tlačítko zůstávají na jednom řádku, mezery se zobrazí tak, jak jsou uložené.
    V detailu člena a AP se dlouhá hodnota zalomí (.detail-ip-table níže), aby se tabulka vešla bez posouvání. */
 .copy-value-cell {

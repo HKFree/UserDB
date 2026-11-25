@@ -34,7 +34,8 @@
 </div>
 </div>
 
-<div class="user-list-scroll" tabindex="0" role="region" aria-label="Seznam účastníků AP">{$tabulkaClenu|noescape}</div>
+<div class="user-list-scroll user-list-scroll-with-bar" tabindex="0" role="region" aria-label="Seznam účastníků AP">{$tabulkaClenu|noescape}</div>
+<input type="range" class="user-list-scrollbar" min="0" max="0" value="0" step="any" hidden tabindex="-1" aria-label="Vodorovný posuv seznamu účastníků AP">
 
 {include memberStats}
 
