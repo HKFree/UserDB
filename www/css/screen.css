@@ -3307,7 +3307,17 @@ html {
     color: var(--udb-text-6b7280);
 }
 
+.home-side {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+}
+
+/* Two compact columns so the news block fits below the tools. */
 .home-tools {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     margin: 0;
     padding: 0;
     border: 1px solid var(--udb-line-e2e5e9);
@@ -3315,16 +3325,25 @@ html {
     list-style: none;
 }
 
-.home-tools li + li {
+.home-tools li {
     border-top: 1px solid var(--udb-line-eceef1);
+}
+
+.home-tools li:nth-child(-n+2) {
+    border-top: 0;
+}
+
+.home-tools li:nth-child(odd) {
+    border-right: 1px solid var(--udb-line-eceef1);
 }
 
 .main .home-tools a:not(.btn) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    padding: 7px 12px;
+    gap: 8px;
+    height: 100%;
+    padding: 4px 10px;
     color: var(--udb-text-1f2937);
     text-decoration: none;
     overflow-wrap: anywhere;
@@ -3341,7 +3360,7 @@ html {
 }
 
 .home-tip {
-    margin-top: 14px;
+    margin: 10px 0 0;
     color: var(--udb-text-6b7280);
 }
 
@@ -3370,9 +3389,55 @@ html {
     margin: 6px 0 12px;
 }
 
+.main .home-news h3 {
+    margin: 10px 0 4px;
+    color: var(--udb-text-6b7280);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.home-news-list {
+    margin: 0 0 6px;
+    padding-left: 18px;
+}
+
+.home-news-list li {
+    margin-bottom: 3px;
+    overflow-wrap: anywhere;
+}
+
+.home-news-kind {
+    color: var(--udb-text-6b7280);
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.home-news-kind::after {
+    content: ":";
+}
+
+.main a.home-news-all {
+    display: inline-block;
+    margin-top: 6px;
+}
+
 @media (max-width: 989px) {
     .home-grid {
         grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 479px) {
+    .home-tools {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .home-tools li:nth-child(2) {
+        border-top: 1px solid var(--udb-line-eceef1);
+    }
+
+    .home-tools li:nth-child(odd) {
+        border-right: 0;
     }
 }
 

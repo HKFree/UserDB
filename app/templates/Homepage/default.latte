@@ -18,17 +18,32 @@
             <p class="home-empty">Nespravujete žádnou oblast. Oblasti najdete v levém panelu nebo pod tlačítkem Oblasti.</p>
         {/if}
     </section>
-    <section aria-labelledby="home-tools-title">
-        <h2 id="home-tools-title">Nástroje</h2>
-        <ul class="home-tools">
-            <li n:if="$oblasti"><a n:href="UzivatelList:listall id=>null">Všichni členové <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
-            <li><a n:href="Sprava:mapa id=>null">Mapa <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
-            {foreach $toolLinks as $destination => $label}
-                <li n:if="$label !== null"><a href="{link $destination id=>null}" data-tool>{$label} <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+    <div class="home-side">
+        <section aria-labelledby="home-tools-title">
+            <h2 id="home-tools-title">Nástroje</h2>
+            <ul class="home-tools">
+                <li n:if="$oblasti"><a n:href="UzivatelList:listall id=>null">Všichni členové <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+                <li><a n:href="Sprava:mapa id=>null">Mapa <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+                {foreach $toolLinks as $destination => $label}
+                    <li n:if="$label !== null"><a href="{link $destination id=>null}" data-tool>{$label} <i class="fa fa-angle-right" aria-hidden="true"></i></a></li>
+                {/foreach}
+            </ul>
+            <p class="home-tip"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Klávesa <kbd>/</kbd> přejde do hledání z kterékoli stránky.</p>
+        </section>
+        <section class="home-news" aria-labelledby="home-news-title">
+            <h2 id="home-news-title">Novinky</h2>
+            {foreach $posledniNovinky as $vydani}
+                <h3><time datetime="{$vydani->datum|date:'Y-m-d'}">{$vydani->datum|date:'j. n. Y'}</time></h3>
+                <ul class="home-news-list">
+                    <li n:foreach="$vydani->novinky as $polozka" class="home-news-item"><span class="home-news-text">{$polozka->text}</span></li>
+                    <li n:foreach="$vydani->opravy as $polozka" class="home-news-item"><span class="home-news-kind">Oprava</span> <span class="home-news-text">{$polozka->text}</span></li>
+                </ul>
+            {else}
+                <p class="home-empty">Zatím tu nejsou žádné novinky.</p>
             {/foreach}
-        </ul>
-        <p class="home-tip"><i class="fa fa-lightbulb-o" aria-hidden="true"></i> Klávesa <kbd>/</kbd> přejde do hledání z kterékoli stránky.</p>
-    </section>
+            <a n:href="Novinky:default" class="home-news-all">Všechny novinky <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+        </section>
+    </div>
 </div>
 <section class="home-help" aria-labelledby="home-help-title">
     <h2 id="home-help-title">Nápověda</h2>

@@ -129,6 +129,52 @@ final class NovinkyPresenterTest extends DatabaseTestCase
         Assert::count(1, array_keys($this->texts($dom, '.navbar a'), 'Novinky', true));
     }
 
+    public function testHomepageShowsLatestItemsWithLinkToNews(): void {
+        file_put_contents($this->directory . '/2026-11-20.md', "## Novinky\n- Nejstarší novinka");
+        file_put_contents($this->directory . '/2026-11-21.md', "## Opravy\n- Starší oprava\n## Novinky\n- Starší novinka\n  Detail se na Přehledu neukáže");
+        file_put_contents($this->directory . '/2026-11-22.md', "## Opravy\n- Novější oprava\n## Novinky\n- #266 - První novinka\n- Druhá novinka\n- Třetí novinka");
+        $result = $this->presenters->ui($this->reader(), 'Homepage');
+        Assert::same(200, $result->status);
+        $dom = DomQuery::fromHtml($result->html);
+
+        Assert::same(['Novinky'], $this->texts($dom, '.home-news h2'));
+        Assert::same(['Nástroje', 'Novinky'], $this->texts($dom, '.home-side > section > h2'), 'Novinky jsou ve sloupci pod Nástroji.');
+        Assert::same(['22. 11. 2026', '21. 11. 2026'], $this->texts($dom, '.home-news time'));
+        Assert::same(['2026-11-22', '2026-11-21'], array_map(static fn (\SimpleXMLElement $time): string => (string) $time['datetime'], $dom->find('.home-news time')));
+        Assert::same(['První novinka', 'Druhá novinka', 'Třetí novinka', 'Novější oprava', 'Starší novinka'], $this->texts($dom, '.home-news-text'));
+        Assert::same(['Oprava'], $this->texts($dom, '.home-news-kind'));
+        Assert::count(0, $dom->find('.home-news .novinky-detail'));
+        Assert::notContains('Detail se na Přehledu neukáže', $result->html);
+        $links = $dom->find('.home-news a.home-news-all');
+        Assert::count(1, $links);
+        Assert::same('/userdb/novinky/', (string) $links[0]['href']);
+        Assert::same('Všechny novinky', trim((string) $links[0]));
+    }
+
+    public function testHomepageNewsEmptyState(): void {
+        $result = $this->presenters->ui($this->reader(), 'Homepage');
+        Assert::same(200, $result->status);
+        $dom = DomQuery::fromHtml($result->html);
+        Assert::same(['Zatím tu nejsou žádné novinky.'], $this->texts($dom, '.home-news .home-empty'));
+        Assert::count(0, $dom->find('.home-news-item'));
+        Assert::count(1, $dom->find('.home-news a.home-news-all'));
+    }
+
+    public function testLatestKeepsReleaseOrderAndStopsAtLimit(): void {
+        file_put_contents($this->directory . '/2026-11-21.md', "## Novinky\n- C");
+        file_put_contents($this->directory . '/2026-11-22.md', "## Opravy\n- B\n## Novinky\n- A");
+        $novinky = new Novinky($this->directory);
+
+        $two = $novinky->posledni(2);
+        Assert::count(1, $two);
+        Assert::same(['A'], array_map(static fn ($item): string => $item->text, $two[0]->novinky));
+        Assert::same(['B'], array_map(static fn ($item): string => $item->text, $two[0]->opravy));
+
+        $three = $novinky->posledni(3);
+        Assert::same(['2026-11-22', '2026-11-21'], array_map(static fn ($release): string => $release->datum->format('Y-m-d'), $three));
+        Assert::same([], (new Novinky($this->directory . '/chybi'))->posledni(5));
+    }
+
     private function reader(): int {
         $member = $this->fixtures->member($this->ap->id);
         $this->fixtures->role($member->id, 'DRUŽSTEVNÍK');
