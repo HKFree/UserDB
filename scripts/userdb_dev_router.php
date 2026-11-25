@@ -22,7 +22,8 @@ if (preg_match('~(?:^|/)\.~', $path) === 1) {
 }
 $file = realpath($www . $path);
 if ($file !== false && str_starts_with($file, $www . '/') && is_file($file) && pathinfo($file, PATHINFO_EXTENSION) !== 'php') {
-    return false;
+    require_once __DIR__ . '/UserdbStaticFile.php';
+    return UserdbStaticFile::send($file, $_SERVER);
 }
 
 $_SERVER['SCRIPT_NAME'] = '/index.php';

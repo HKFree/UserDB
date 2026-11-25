@@ -404,6 +404,62 @@ final class TestingLoginTest extends TestCase
         Assert::same(file_get_contents(__DIR__ . '/../www/favicon.ico'), $body);
     }
 
+    /**
+     * Styles and scripts stay in the browser. PHP's own server sends them without anything to keep them by,
+     * so on a slow connection every click downloaded all of them again.
+     */
+    public function testBrowserKeepsTheFilesOfWww(): void {
+        $port = $this->startService(['USERDB_TESTING_LOGIN_OPEN_NETWORKS' => '203.0.113.0/24']);
+        $visitor = 'X-Forwarded-For: 203.0.113.5';
+
+        // A file with a version in its address gets a new address when it changes, so it is kept for long.
+        [$status, $headers, $body] = $this->http($port, 'GET', '/css/print.css?v1', [$visitor]);
+        Assert::same(200, $status);
+        Assert::same(file_get_contents(__DIR__ . '/../www/css/print.css'), $body);
+        Assert::same('text/css; charset=UTF-8', $this->header($headers, 'Content-Type'));
+        Assert::same('private, max-age=31536000, immutable', $this->header($headers, 'Cache-Control'));
+
+        // Without a version it is kept for a while and then checked; another parameter is no version.
+        foreach (['/css/print.css?debug=1', '/css/print.css?v', '/css/print.css?v1&x=2'] as $path) {
+            [, $headers] = $this->http($port, 'GET', $path, [$visitor]);
+            Assert::same('private, max-age=300', $this->header($headers, 'Cache-Control'), $path);
+        }
+        [$status, $headers, $body] = $this->http($port, 'GET', '/js/grido.js', [$visitor]);
+        Assert::same(200, $status);
+        Assert::same(file_get_contents(__DIR__ . '/../www/js/grido.js'), $body);
+        Assert::same('text/javascript; charset=UTF-8', $this->header($headers, 'Content-Type'));
+        Assert::same('private, max-age=300', $this->header($headers, 'Cache-Control'));
+        $etag = $this->header($headers, 'ETag');
+        $modified = $this->header($headers, 'Last-Modified');
+        Assert::match('"%h%-%h%"', (string) $etag);
+        Assert::same(gmdate('D, d M Y H:i:s', (int) filemtime(__DIR__ . '/../www/js/grido.js')) . ' GMT', $modified);
+
+        // Checked, an unchanged file is not sent again.
+        foreach (["If-None-Match: $etag", "If-None-Match: W/$etag, \"other\"", "If-Modified-Since: $modified"] as $condition) {
+            [$status, $headers, $body] = $this->http($port, 'GET', '/js/grido.js', [$visitor, $condition]);
+            Assert::same(304, $status, $condition);
+            Assert::same('', $body, $condition);
+            Assert::same($etag, $this->header($headers, 'ETag'), $condition);
+        }
+        $older = 'If-Modified-Since: ' . gmdate('D, d M Y H:i:s', (int) filemtime(__DIR__ . '/../www/js/grido.js') - 1) . ' GMT';
+        // A date that is not one of HTTP (here a relative one) is ignored.
+        foreach (['If-None-Match: "other"', $older, 'If-Modified-Since: tomorrow'] as $condition) {
+            [$status, , $body] = $this->http($port, 'GET', '/js/grido.js', [$visitor, $condition]);
+            Assert::same(200, $status, $condition);
+            Assert::same(file_get_contents(__DIR__ . '/../www/js/grido.js'), $body, $condition);
+        }
+
+        [$status, $headers, $body] = $this->http($port, 'HEAD', '/fonts/fontawesome-webfont.woff2', [$visitor]);
+        Assert::same(200, $status);
+        Assert::same('', $body);
+        Assert::same('font/woff2', $this->header($headers, 'Content-Type'));
+        Assert::same((string) filesize(__DIR__ . '/../www/fonts/fontawesome-webfont.woff2'), $this->header($headers, 'Content-Length'));
+
+        // The sign-in form still decides first.
+        [$status] = $this->http($port, 'GET', '/js/grido.js', ["If-None-Match: $etag"]);
+        Assert::same(302, $status);
+    }
+
     public function testOpenNetworkOverHttpIsReadFromTheEnvironment(): void {
         $port = $this->startService(['USERDB_TESTING_LOGIN_OPEN_NETWORKS' => ' 203.0.113.0/24, 2001:db8:1::/48 ']);
         [$status] = $this->http($port, 'GET', '/favicon.ico', ['X-Forwarded-For: 203.0.113.5']);
@@ -631,6 +687,19 @@ final class TestingLoginTest extends TestCase
             }
         }
         return $parents;
+    }
+
+    /**
+     * @param list<string> $headers header lines of an answer
+     * @return string|null value of the first header of that name
+     */
+    private function header(array $headers, string $name): ?string {
+        foreach ($headers as $header) {
+            if (stripos($header, "$name:") === 0) {
+                return trim(substr($header, strlen($name) + 1));
+            }
+        }
+        return null;
     }
 
     /**

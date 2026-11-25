@@ -267,7 +267,13 @@ files, and visitors signed in as member 1 by default. Every preview answers behi
 [sign-in form](#sign-in-form) that lets in the HKFree network without a password and asks everyone else for
 one; the maintainers have the password. One sign-in is valid for all previews for 30 days.
 
-Within a preview, `/demo-osoba` and the persona panel in the Tracy bar let each visitor choose a [demo persona](docs/userdb_demo_data.md#persony). This choice is confined to that preview and does not change the sign-in shared by the previews.
+Within a preview, `/demo-osoba` and the item "Změnit osobu" in the account menu let each visitor choose a [demo persona](docs/userdb_demo_data.md#persony). This choice is confined to that preview and does not change the sign-in shared by the previews.
+
+Unlike the local web, a preview runs without the debug bar of Tracy (`USERDB_DEBUG_MODE=0` in
+`scripts/userdb_preview.sh`), so that pages stay small on a slow connection; an error shows the error page and
+goes to `log/` in the container. Both send the files of `www/` with `ETag` and `Last-Modified`: a file with a
+version in its address (`screen.css?v56`) is kept for a year, other files for five minutes before the browser
+checks them.
 
 Previews include the scenarios and production-sized synthetic volume described in the
 [demo data catalog](docs/userdb_demo_data.md). The setup step enables volume by default; the variable
