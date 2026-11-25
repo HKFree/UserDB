@@ -36,7 +36,10 @@ class AreasPresenter extends ApiPresenter
                     'gps' => $apcko['gps'],
                     'ulice_cp' => $apcko['ulice_cp'],
                     'mesto' => $apcko['mesto'],
-                    'psc' => $apcko['psc']
+                    'psc' => $apcko['psc'],
+                    'no_auto_dns' => (bool) $apcko['no_auto_dns'],
+                    'no_auto_upgrade' => (bool) $apcko['no_auto_upgrade'],
+                    'spravce_neaktivni' => (bool) $apcko['spravce_neaktivni'],
                 ];
             }
             $oblasti[$idoblast]['aps'] = $apcka;
