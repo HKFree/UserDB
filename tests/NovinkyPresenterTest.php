@@ -138,6 +138,7 @@ final class NovinkyPresenterTest extends DatabaseTestCase
         $dom = DomQuery::fromHtml($result->html);
 
         Assert::same(['Novinky'], $this->texts($dom, '.home-news h2'));
+        Assert::same(['Nástroje', 'Novinky'], $this->texts($dom, '.home-side > section > h2'), 'Novinky jsou ve sloupci pod Nástroji.');
         Assert::same(['22. 11. 2026', '21. 11. 2026'], $this->texts($dom, '.home-news time'));
         Assert::same(['2026-11-22', '2026-11-21'], array_map(static fn (\SimpleXMLElement $time): string => (string) $time['datetime'], $dom->find('.home-news time')));
         Assert::same(['První novinka', 'Druhá novinka', 'Třetí novinka', 'Novější oprava', 'Starší novinka'], $this->texts($dom, '.home-news-text'));
