@@ -2,12 +2,16 @@
     <h3 n:block=title>Mapa</h3>
 
     <script src="https://maps.google.com/maps/api/js?key={$googleMapsApiKey}" type="text/javascript"></script>
+    <script src="{$basePath}/js/markerclusterer.js"></script>
 
     <div id="map" style="width: auto; height: 200px"></div>
     <script type="text/javascript">
         var pointsData = {$data|noescape};
 
-        $('#map').height($(window).height() - $('.navbar').height() - $('h3').height() - 100);
+        // Mapa vyplní okno pod horní lištou a nadpisem.
+        const vyskaListy = document.querySelector('.app-topbar')?.offsetHeight ?? 0;
+        const vyskaNadpisu = document.querySelector('h3')?.offsetHeight ?? 0;
+        document.getElementById('map').style.height = (document.documentElement.clientHeight - vyskaListy - vyskaNadpisu - 100) + 'px';
         var map = new google.maps.Map(document.getElementById('map'), {
             zoom: 10,
             center: new google.maps.LatLng(50.209232, 15.832773),

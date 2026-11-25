@@ -121,12 +121,12 @@ final class NovinkyPresenterTest extends DatabaseTestCase
         Assert::same(200, $result->status);
         $dom = DomQuery::fromHtml($result->html);
         $links = [];
-        foreach ($dom->find('.navbar .dropdown-menu a') as $link) {
+        foreach ($dom->find('.app-topbar #menu-nastroje a') as $link) {
             $links[trim((string) $link)] = (string) $link['href'];
         }
         Assert::same('/userdb/novinky/', $links['Novinky'] ?? null);
         // The link lives only in the Nástroje menu, not next to it in the bar.
-        Assert::count(1, array_keys($this->texts($dom, '.navbar a'), 'Novinky', true));
+        Assert::count(1, array_keys($this->texts($dom, '.app-topbar a'), 'Novinky', true));
     }
 
     public function testHomepageShowsLatestItemsWithLinkToNews(): void {

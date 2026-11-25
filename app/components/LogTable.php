@@ -127,11 +127,6 @@ class LogTable extends UI\Control
         return $logyTab;
     }
 
-    private function tableGetFooter(Html &$table): Html {
-        $table->create('script')->setHtml('$(\'a\').tooltip();');
-        return $table;
-    }
-
     private function tableGetLineBegin(Html &$table, ActiveRow $line): Html {
         $tooltips = array('data-toggle' => 'tooltip', 'data-placement' => 'top');
 
@@ -319,7 +314,6 @@ class LogTable extends UI\Control
         }
 
         $this->tableProcessLines($tabulka, $logy);
-        $this->tableGetFooter($tabulka);
 
         // vložíme do šablony nějaké parametry
         $template->tabulka = $tabulka;

@@ -23,13 +23,15 @@ async function answerPing(page, results) {
     return asked;
 }
 
-// The callback of the ping request has run once jQuery has no request in flight.
+// pinger.js marks <body> with data-ping once it has processed the answer of the ping service.
 async function pingAnswered(page, asked) {
     await expect.poll(() => asked.length).toBeGreaterThan(0);
-    await page.waitForFunction(() => window.jQuery && window.jQuery.active === 0);
+    await page.waitForFunction(() => document.body.dataset.ping !== undefined);
 }
 
-const cellOf = (page, address) => page.locator('td.grid-cell-IPAdresa').filter({ has: page.locator(`span[title="${address}"]`) });
+// The list of addresses moves from the title of the cell content to data-pinger-ips once the result is in its tooltip.
+const cellOf = (page, address) => page.locator('td.grid-cell-IPAdresa')
+    .filter({ has: page.locator(`span[title="${address}"], span[data-pinger-ips="${address}"]`) });
 
 test('adresa podle pingu dostane tlumené podbarvení, proužek nejhoršího stavu a stav slovem pro čtečku', async ({ page }) => {
     const asked = await answerPing(page, [alive, lossy, dead, null]);
@@ -78,7 +80,7 @@ test('bublina s názvem technologie se kreslí mimo posuvný rám seznamu', asyn
     const badge = page.locator('.conn-tech').filter({ hasText: 'P2P 5' }).first();
     await badge.scrollIntoViewIfNeeded();
     await badge.hover();
-    const tooltip = page.locator('.tooltip').filter({ hasText: 'P2P Wi-Fi 5GHz' });
+    const tooltip = page.getByRole('tooltip').filter({ hasText: 'P2P Wi-Fi 5GHz' });
     await expect(tooltip).toBeVisible();
     expect(await tooltip.evaluate(element => element.parentElement === document.body)).toBe(true);
 });

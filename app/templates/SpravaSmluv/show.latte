@@ -115,14 +115,16 @@
 </table>
 
 <script>
-$('#btn-cancel-contract').on('click', function() {
-    let c = confirm("Chystáš se vypovědět smlouvu.\nTato akce NELZE vrátit.\nJsi si opravdu jistý?");
-    if (c) {
-        // Ok
-    } else {
-        // Cancel
+document.getElementById('btn-cancel-contract').addEventListener('click', (event) => {
+    // Vypovězenou smlouvu nejde vypovědět znovu; tlačítko je jen zašedlé, odkaz by jinak šel otevřít.
+    if (event.currentTarget.hasAttribute('disabled')) {
+        event.preventDefault();
+        return;
+    }
+    if (confirm("Chystáš se vypovědět smlouvu.\nTato akce NELZE vrátit.\nJsi si opravdu jistý?") === false) {
         event.preventDefault();
     }
-})</script>
+});
+</script>
 
 {/block}

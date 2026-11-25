@@ -33,7 +33,6 @@ const row = `<tr><td><a href="/subnet">192.0.2.2</a></td>${actions}<td>demo-dlou
     + '<td class="copy-value-cell"><span class="copy-value">user.name@demo.example</span></td>'
     + '<td class="copy-value-cell"><span class="copy-value">demo-43-znaku!Aa1#Bb2$Cc3%Dd4&amp;Ee5&lt;Ff6&gt;Gg7=H</span></td></tr>';
 const page = `<!DOCTYPE html><html><head><meta charset="utf-8">
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/screen.css" rel="stylesheet"></head>
     <body><table class="table table-striped"><tr><th>IP</th><th></th><th>Hostname</th><th>MAC Adresa</th>
     <th>Zařízení</th><th>Atributy</th><th>SSID</th><th>Popis</th><th>Login</th><th>Heslo</th></tr>${row}</table></body></html>`;

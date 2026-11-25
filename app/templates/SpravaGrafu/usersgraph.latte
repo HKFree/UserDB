@@ -1,5 +1,5 @@
 {block head}
-<link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/rickshaw.min.css">
+<link rel="stylesheet" href="{$basePath}/css/rickshaw.min.css">
 {/block}
 
 {block content}
@@ -82,11 +82,11 @@
         </div>
 
         <button type="button" class="btn btn-default btn-sm graf-clenu-prepinac-tabulky" data-toggle="collapse"
-            data-target="#graf-clenu-hodnoty" aria-expanded="false" aria-controls="graf-clenu-hodnoty">
+            aria-expanded="false" aria-controls="graf-clenu-hodnoty">
             <span class="fa fa-table" aria-hidden="true"></span> Hodnoty v tabulce
         </button>
     {/if}
-    <div id="graf-clenu-hodnoty" n:class="count($mesice) > 1 ? collapse">
+    <div id="graf-clenu-hodnoty" n:attr="hidden => count($mesice) > 1">
         <div class="table-responsive">
             <table class="table table-condensed table-striped graf-clenu-tabulka">
                 <caption class="sr-only">Počet aktivních účastníků po měsících, od nejnovějšího</caption>
@@ -136,5 +136,5 @@
 <script src="{$basePath}/js/d3.min.js"></script>
 <script src="{$basePath}/js/d3.layout.min.js"></script>
 <script src="{$basePath}/js/rickshaw.min.js"></script>
-<script src="{$basePath}/js/graf-clenu.js?v2"></script>
+<script src="{$basePath}/js/graf-clenu.js?v3"></script>
 {/block}

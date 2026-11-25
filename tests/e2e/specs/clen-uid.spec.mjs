@@ -78,6 +78,18 @@ for (const width of [1280, 375]) {
                 await checkPageWidth(page, width);
             });
 
+            // Na pomalém spojení přijde stylopis až po HTML. Obsah stránky se nesmí rozvrhnout bez něj,
+            // jinak je stránka po načtení široká jako nestylovaná tabulka (v CI 767 px při 375 px).
+            test('obsah se nerozvrhne dřív, než dorazí styly', async ({ page }) => {
+                await page.route(/\/css\/screen\.css/, async route => {
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    await route.continue();
+                });
+                await page.goto('/uzivatel-list/list/202', { waitUntil: 'commit' });
+                await page.locator('#frm-grid-form').waitFor({ state: 'attached' });
+                await checkPageWidth(page, width);
+            });
+
             test('tužka u členů mimo AP zůstává vedle UID', async ({ page }) => {
                 await page.goto('/uzivatel-list/list/213');
                 for (const uid of [20062, 20064, 20065]) await checkUid(page, '#frm-othersGrid-form', uid, editable);
@@ -119,7 +131,7 @@ for (const width of [1280, 375]) {
                     await expect(items.first()).toBeVisible();
                     const bounds = await menu.evaluate(element => ({
                         menu: element.getBoundingClientRect().toJSON(),
-                        bar: document.querySelector('.navbar-fixed-top').getBoundingClientRect().bottom,
+                        bar: document.querySelector('.app-topbar').getBoundingClientRect().bottom,
                         window: { width: window.innerWidth, height: window.innerHeight },
                     }));
                     // Celá nabídka je v okně a pod horní lištou.
@@ -148,13 +160,15 @@ for (const width of [1280, 375]) {
                     await add.click();
                     const menu = row.getByRole('menu', { name: 'Štítky k přidání', exact: true });
                     await expect(menu).toBeVisible();
+                    // Nabídka se otevírá krátkým zvětšením; měří se, až dosedne.
+                    await menu.evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)));
                     const place = () => page.evaluate(() => {
-                        const open = document.querySelector('.grido .dropdown.open');
-                        if (!open) return null;
+                        const menu = document.querySelector('.grido .menu:popover-open');
+                        if (!menu) return null;
                         return {
-                            button: open.querySelector('.dropdown-toggle').getBoundingClientRect().toJSON(),
-                            menu: open.querySelector('.dropdown-menu').getBoundingClientRect().toJSON(),
-                            bar: document.querySelector('.navbar-fixed-top').getBoundingClientRect().bottom,
+                            button: document.querySelector(`[popovertarget="${menu.id}"]`).getBoundingClientRect().toJSON(),
+                            menu: menu.getBoundingClientRect().toJSON(),
+                            bar: document.querySelector('.app-topbar').getBoundingClientRect().bottom,
                         };
                     });
                     const before = await place();

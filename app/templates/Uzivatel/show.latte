@@ -10,8 +10,6 @@
             <li class="active" aria-current="page">{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni}{else}{$u->nick}{/if}</li>
         </ol>
     </nav>
-    {* Odkaz na seznam clenu AP uz je v hlavicce: levy panel se zvyrazni hned, ne az po nacteni cele stranky. *}
-    <script>if (window.userdbSidebarTree) userdbSidebarTree();</script>
     <div class="page-head">
     <h1 class="page-title">{if $canViewOrEdit}{$u->jmeno} {$u->prijmeni} <small>{$u->nick} · UID {$u->id}</small>{else}{$u->nick}{/if}
         {include spolekDruzstvoLabelUzivatel $u}
@@ -24,8 +22,8 @@
     <a href="{link UzivatelMailSms:sms id=>$u->id}" class="btn btn-default" role="button"><i class="glyphicon glyphicon-phone"></i> SMS</a>
     {/if}
     <div n:if="$canViewOrEdit || $u->regform_downloaded_password_sent==0" class="btn-group">
-    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Další <span class="caret"></span></button>
-    <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-label="Další akce účastníka">
+    <button type="button" class="btn btn-default" popovertarget="menu-clen-dalsi" aria-haspopup="true" aria-expanded="false">Další <i class="icon icon-chevron-down caret-icon" aria-hidden="true"></i></button>
+    <ul class="menu" id="menu-clen-dalsi" popover role="menu" aria-label="Další akce účastníka">
     {if $canViewOrEdit}
         <li role="presentation"><a n:href="UzivatelRightsCc:editrights id=>$u->id" role="menuitem"><i class="glyphicon glyphicon-cog"></i> Editovat oprávnění</a></li>
         <li n:if="$u->spolek" role="presentation"><a n:href="UzivatelRightsCc:editcc id=>$u->id" role="menuitem"><i class="glyphicon glyphicon-asterisk"></i> Editovat čestné členství</a></li>
@@ -86,12 +84,12 @@
           <th>Ulice a č.p.</th>
           <td>{$u->ulice_cp}
             <a n:if="$hasLocation" href="{link Sprava:mapa id=>null}#uid{$u->id}" class="spacing-left"><i class="fa fa-map-marker" aria-hidden="true"></i> mapa</a>
-            <span n:if="$u->location_status == 'unknown'" class="glyphicon glyphicon-exclamation-sign spacing-left" aria-hidden="true" title="Adresu nebylo možné automaticky převést na souřadnice! Opravte ji, prosím." data-toggle="tooltip" data-placement="top"></span>
+            <span n:if="$u->location_status == 'unknown'" class="glyphicon glyphicon-exclamation-sign spacing-left" aria-hidden="true" title="Adresu nebylo možné automaticky převést na souřadnice! Opravte ji, prosím."></span>
           </td>
         </tr>
         <tr><th>Obec</th><td>{$u->mesto}</td></tr>
         <tr><th>PSČ</th><td>{$u->psc}</td></tr>
-        <tr n:if="$hasLocation" title="GPS souřadnice jsou automaticky určeny z adresy." data-toggle="tooltip" data-placement="top">
+        <tr n:if="$hasLocation" title="GPS souřadnice jsou automaticky určeny z adresy.">
           <th>GPS</th>
           <td>
             <span data-latitude="{$u->latitude}" data-longitude="{$u->longitude}" data-formatid="0" id="gpsCoords">{round($u->latitude*1e6)/1e6}, {round($u->longitude*1e6)/1e6}</span>
@@ -110,10 +108,9 @@
 
         <script src="{$basePath}/js/gps.js"></script>
         <script>
-        $(document).ready(function() {
-            $("#gpsCoordsButton").click(function() {
-            rotateGPSFormat($("#gpsCoords"));
-            });
+        document.getElementById('gpsCoordsButton')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            rotateGPSFormat(document.getElementById('gpsCoords'));
         });
         </script>
     {/if}
@@ -307,29 +304,18 @@
         </div>
         -->
         <script>
-            $('#btn-televize-objednat').on('click', function(event) {
-                const c = confirm("Objednání placené služby SledovaniTV.\n\nPokračovat?");
-                if (c) {
-                    // Ok
-                } else {
-                    // Cancel
-                    event.preventDefault();
-                }
-            })
-            $('#btn-televize-aktivovat').on('click', function(event) {
-                if (!confirm("Aktivace služby SledovaniTV během 15 minut.\nZ účtu účastníka bude strženo {$televize_cena} Kč.\n\nPokračovat?")) {
-                    event.preventDefault();
-                }
-            })
-            $('#btn-televize-odobjednat').on('click', function(event) {
-                const c = confirm("Zrušení placené služby SledovaniTV. Televize pojede ještě do konce tohoto měsíce.\n\nPokračovat?");
-                if (c) {
-                    // Ok
-                } else {
-                    // Cancel
-                    event.preventDefault();
-                }
-            })
+            // Tlačítka televize se před odchodem zeptají; tlačítko, které na stránce není, se přeskočí.
+            [
+                ['btn-televize-objednat', "Objednání placené služby SledovaniTV.\n\nPokračovat?"],
+                ['btn-televize-aktivovat', "Aktivace služby SledovaniTV během 15 minut.\nZ účtu účastníka bude strženo {$televize_cena} Kč.\n\nPokračovat?"],
+                ['btn-televize-odobjednat', "Zrušení placené služby SledovaniTV. Televize pojede ještě do konce tohoto měsíce.\n\nPokračovat?"],
+            ].forEach(([id, dotaz]) => {
+                document.getElementById(id)?.addEventListener('click', (event) => {
+                    if (confirm(dotaz) === false) {
+                        event.preventDefault();
+                    }
+                });
+            });
         </script>
         </div>
         </section>
@@ -362,27 +348,20 @@
 
     {if $canViewOrEdit}
         <script>
-            $(document).ready(function( $ ) {
+            // Id má i vedlejší odkaz na náhled smlouvy; dotaz patří jen k prvnímu, k odeslání smlouvy.
+            document.getElementById('btn-handle-subscriber-contract')?.addEventListener('click', (event) => {
+                if (confirm("Nová účastnická smlouva bude odeslána k podpisu na e-mail " + {$u->email} + ".\n\n(e-mail dorazí během 2 minut)\n\nPokračovat?") === false) {
+                    event.preventDefault();
+                }
             });
 
-            $('#btn-handle-subscriber-contract').on('click', function(event) {
-                const c = confirm("Nová účastnická smlouva bude odeslána k podpisu na e-mail "+{$u->email}+".\n\n(e-mail dorazí během 2 minut)\n\nPokračovat?");
-                if (c) {
-                    // Ok
-                } else {
-                    // Cancel
-                    event.preventDefault();
-                }
-            })
-
             // Bez data-confirm člen nemá platnou adresu a hlášku o tom ukáže server.
-            $('#btn-handle-sendPaymentScheduleEmail').on('click', function(event) {
-                const dotaz = $(this).attr('data-confirm');
-                if (dotaz !== undefined && !confirm(dotaz)) {
+            document.getElementById('btn-handle-sendPaymentScheduleEmail')?.addEventListener('click', (event) => {
+                const dotaz = event.currentTarget.getAttribute('data-confirm');
+                if (dotaz !== null && confirm(dotaz) === false) {
                     event.preventDefault();
                 }
-            })
-
+            });
         </script>
         <details class="panel panel-default detail-panel log-panel">
         <summary class="panel-heading"><span class="log-title">Historie změn</span></summary>
@@ -399,18 +378,21 @@
 {/ifset}
 
 <script>
-$(function(){
-    if ($('#ids')) {
-        $.ajax({
-            url : {link ids},
-            type: 'GET',
-            success: function(data){
-                $('#ids').html(data);
-            }
-        });
+// Události z IDS se načtou až po zobrazení stránky.
+{
+    const ids = document.getElementById('ids');
+    if (ids !== null) {
+        fetch({link ids}, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then((response) => {
+                if (response.ok === false) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.text();
+            })
+            .then((html) => { ids.innerHTML = html; })
+            .catch((error) => console.warn('Události z IDS se nepodařilo načíst:', error));
     }
-});
-
+}
 </script>
 {/block}
 

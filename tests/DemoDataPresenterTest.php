@@ -456,7 +456,7 @@ final class DemoDataPresenterTest extends TestCase
         // every AP of an area, My areas only the active ones: area 206 has two APs, one of them switched off.
         $menu = $this->presenters->ui(20002, 'Novinky')->html;
         Assert::same(['Demo Libuše (218)', 'Demo malé AP (200)', 'Demo zbylé AP (219)'], $this->values($menu, '//ul[contains(concat(" ", normalize-space(@class), " "), " sidebar-mine ")]/li/a'));
-        $allAreas = $this->values($menu, '//ul[@id="oblastitree"]/li/a');
+        $allAreas = $this->values($menu, '//ul[@id="oblastitree"]/li/a | //ul[@id="oblastitree"]/li/details/summary/a');
         Assert::same(
             ['Demo bez správců', 'Demo částečně vypnutá', 'Demo jen vypnuté AP (221)', 'Demo Libuše (218)', 'Demo malé AP (200)'],
             array_slice($allAreas, (int) array_search('Demo bez správců', $allAreas, true), 5),
@@ -532,7 +532,7 @@ final class DemoDataPresenterTest extends TestCase
     private function assertAdministration(): void {
         $tools = $this->page('Sprava', 'nastroje');
         // All buttons actually linked from the tools page, guarded against future additions.
-        Assert::count(8, $this->values($tools, '//a[contains(@class,"btn")]/@href'));
+        Assert::count(8, $this->values($tools, '//main//a[contains(@class,"btn")]/@href'));
         foreach ([
             ['SpravaOblasti', 'novaoblast'], ['SpravaOblasti', 'noveap'],
             ['SpravaSifrovani', 'presifrovani'], ['SpravaCc', 'schvalovanicc'],

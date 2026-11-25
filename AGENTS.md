@@ -323,24 +323,40 @@ npx skills add stablyai/orca
 
 ## UI a UX
 
-Frontend je Bootstrap 3.2, jQuery 3.7, jQuery UI 1.14, Grido a Font Awesome
-4.7, vše commitnuté ve `www/`, bez npm a bez buildu. Stránky načítají soubory
-`*.min.*`; `www/js/jquery.js` je starší nepoužívaná verze. Cílem je lepší
-použitelnost ve stávajícím vzhledu, ne nový design.
+Vzhled vychází z design systému [shadcn/ui](https://ui.shadcn.com) (styl
+new-york v4, neutrální téma), převedeného do vlastního stylopisu
+`www/css/screen.css` bez Reactu a Tailwindu: vrstvy `@layer`, tokeny se jmény
+ze shadcn/ui (`--background`, `--primary`, `--muted`, `--border`, `--ring`,
+`--sidebar`, ...) s `light-dark()` pro světlý i tmavý vzhled, kostra podle
+bloku Sidebar ve variantě inset, písmo Geist ve `www/fonts/geist/`, ikony
+Lucide jako masky přímo ve `screen.css`. JavaScript je čistý, bez knihoven,
+ve `www/js/main.js`. Nabídky stojí na Popover API, rozbalování na
+`<details>`. Tabulky kreslí Grido (PHP). Bootstrap, jQuery, jQuery UI ani
+Font Awesome aplikace nemá; že se nevrátí a že každá použitá ikona existuje,
+hlídá `FrontendLibrariesTest`. Vše je commitnuté ve `www/`, bez npm a bez
+buildu.
 
-- **Drž se aplikace.** Nová stránka vypadá jako ostatní: komponenty
-  Bootstrapu 3, ikony Font Awesome, tabulky přes Grido
-  (`App\Components\AppGrid`). Styl piš do `www/css/screen.css`, ne do
+- **Drž se aplikace.** Nová stránka vypadá jako ostatní: tokeny a komponenty
+  ze `screen.css` (tlačítka `btn`, upozornění `alert`, karty `panel`, štítky
+  `label`), ikony `<i class="icon icon-NÁZEV">` s názvem z
+  [lucide.dev](https://lucide.dev), tabulky přes Grido
+  (`App\Components\AppGrid`). Chybějící ikonu přidej do `screen.css` podle
+  návodu u ikon na konci souboru. Třídy Bootstrapu 3 a Font Awesome, které
+  šablony a PHP kód dál používají, kreslí vrstva `compat` a ikony Lucide; nová
+  stránka si vystačí s komponentami a nové knihovní třídy nevymýšlí. Barvu ber
+  z tokenů (`var(--foreground)`, `var(--muted-foreground)`, `var(--border)`,
+  ...), ne pevnou hodnotou, jinak se rozbije tmavý vzhled. Pozor: `--accent`
+  je ve shadcn/ui pozadí položky pod myší, ne zvýrazňující barva. Styl piš do `www/css/screen.css`, ne do
   atributu `style` ani do `<style>` v šabloně.
   Výjimky: hodnota z dat (barva štítku) a stránka, která má fungovat i bez
   aplikace (`/demo-osoba`) a styl si nese sama. Nepřidávej knihovny, build ani zdroje z cizích serverů (CDN, fonty).
   Přibalené knihovny neaktualizuj jako součást jiné změny.
-- **Barvy jen jako proměnné.** Aplikace má světlý a tmavý vzhled (přepínač v nabídce účtu).
-  Ve `screen.css` nepiš barvu napevno, jen `var(--udb-…)`. Proměnnou definuj ve
-  `www/css/theme.css` dvakrát: v `:root` pro světlý a v `:root[data-theme="dark"]` pro tmavý
-  vzhled; jmenuje se podle role a světlé hodnoty (`--udb-text-6b7280`). Komponentu knihovny,
-  kterou začneš používat, doplň do oddílu „Knihovny v tmavém režimu“ v `theme.css`. Hlídá to
-  `tests/ThemeTokensTest.php`; tmavý vzhled si prohlédni stejně jako světlý (nabídka účtu, Vzhled).
+- **Barvy jen jako tokeny.** Aplikace má světlý a tmavý vzhled (přepínač Vzhled
+  v nabídce účtu dole v postranním panelu; volbu si pamatuje cookie
+  `userdb_theme`, server ji zapíše do `data-theme` na `<html>`). Ve `screen.css`
+  piš barvu jen jako `var(--…)`. Nový token patří do vrstvy `tokens` s hodnotou
+  pro oba vzhledy v `light-dark(světlá, tmavá)`. Hlídá to
+  `tests/ThemeTokensTest.php`; tmavý vzhled si prohlédni stejně jako světlý.
 - **Větší změnu nejdřív navrhni.** Mění-li se rozvržení obrazovky nebo postup
   uživatele, předlož zadavateli dvě až tři varianty s rozdíly a počkej na
   výběr. Drobnou opravu dělej rovnou.
@@ -351,7 +367,8 @@ použitelnost ve stávajícím vzhledu, ne nový design.
   data, doplň je do `db/dummy-data`, ať je má i náhled PR.
 - **Počítač i telefon.** Každou změnu si prohlédni v prohlížeči na šířce
   1280 px a v emulaci telefonu (šířka 375 px, mobilní user agent a dotykové
-  ovládání, podle kterého se `main.js` rozhoduje). V obou musí jít přečíst a ovládat; stránka se nesmí
+  ovládání, podle kterého se `main.js` rozhoduje), ve světlém i tmavém
+  vzhledu. V obou musí jít přečíst a ovládat; stránka se nesmí
   posouvat do strany, široká tabulka se posouvá ve vlastním rámu. Zkontroluj
   i konzoli prohlížeče a že stránka neskončila chybou Tracy.
 - **Prohlížeč Orcy.** Je-li Orca dostupná, prohlížej stránky výhradně ve

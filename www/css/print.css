@@ -17,3 +17,9 @@ a img { border: none; }
     width: 16px;
     height: 16px;
 }
+
+/* Tisk zůstává světlý i v tmavém vzhledu: barvy z light-dark() ve screen.css berou světlou hodnotu. */
+:root {
+	color-scheme: light;
+	background: none;
+}

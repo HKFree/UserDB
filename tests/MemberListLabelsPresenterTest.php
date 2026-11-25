@@ -179,7 +179,7 @@ final class MemberListLabelsPresenterTest extends DatabaseTestCase
         Assert::same(array_fill(0, count($labels), (string) $member->id), $this->texts($xpath, $badges . '/button[' . self::hasClass('badge-remove') . ']/@data-user-id'));
         $titles = array_map(static fn (\DOMNode $node): string => $node->textContent, $this->nodes($xpath, $badges . '/abbr/@title'));
         Assert::same(array_map(static fn (ActiveRow $label): string => "06.05.2024 07:08\n\n" . $label->poznamka, $labels), $titles);
-        $options = $cell . '//ul[' . self::hasClass('dropdown-menu') . ']/li/a';
+        $options = $cell . '//ul[' . self::hasClass('stitky-menu') . ']/li/a';
         Assert::same(array_map(static fn (ActiveRow $label): string => $label->text, $this->catalog), $this->texts($xpath, $options));
         Assert::same(array_map(static fn (ActiveRow $label): string => (string) $label->id, $this->catalog), $this->texts($xpath, $options . '/@data-id'));
         Assert::same(array_map(self::colors(...), $this->catalog), $this->texts($xpath, $options . '/@style'));

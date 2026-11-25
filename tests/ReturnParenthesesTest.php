@@ -20,15 +20,7 @@ final class ReturnParenthesesTest extends TestCase
 
     /** Third-party scripts committed to www/js without ".min." in the name; not ours to reformat. */
     private const BUNDLED_SCRIPTS = [
-        'bootstrap.js',
-        'd3.v2.js',
-        'd3.v3.js',
-        'grido.js',
-        'jquery.barrating.js',
-        'jquery.bonsai.js',
-        'jquery.js',
         'markerclusterer.js',
-        'nette.ajax.js',
         'netteForms.js',
         'rickshaw.js',
     ];
@@ -44,8 +36,8 @@ final class ReturnParenthesesTest extends TestCase
         Assert::contains('app/templates/Uzivatel/edit.latte', $scanned);
         Assert::contains('app/components/LogTable.latte', $scanned);
         Assert::contains('www/js/main.js', $scanned);
-        Assert::notContains('www/js/jquery.min.js', $scanned);
-        Assert::notContains('www/js/grido.js', $scanned);
+        Assert::notContains('www/js/rickshaw.min.js', $scanned);
+        Assert::notContains('www/js/netteForms.js', $scanned);
     }
 
     public function testTemplatesAndOwnScriptsReturnBooleansWithoutParentheses(): void {

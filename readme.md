@@ -483,8 +483,9 @@ copying a device login and password from the IP address table (mouse selection, 
 `test/message-form.test.mjs` and `test/edit-form.test.mjs` check with the real `www/css/screen.css` that the forms rendered by
 `app/templates/form.latte` fit into a phone screen: the e-mail and SMS forms and the edit forms with their nested records.
 `test/layout-width.test.mjs` checks in a browser, against the application's `www/css/screen.css` and `www/js/main.js`,
-that the content fits the window at widths from 320 to 1700 px, so that pages do not scroll sideways: beside the
-list of areas from 990 px, and below that width also while the button in the top bar slides the list in and out.
+that the content column beside the sidebar fits the window at widths from 320 to 1700 px, so that pages do not
+scroll sideways: beside the sidebar from 990 px, below that width also while the button in the top bar slides the
+sidebar in and out, and after the sidebar was hidden and shown again (button or Ctrl+B).
 
 ### Jobs to be run
 
@@ -546,7 +547,9 @@ You'll need the credentials (click Authorize in interactive docs). Create creden
 ## License
 
 - Nette: New BSD License or GPL 2.0 or 3.0 (http://nette.org/license)
-- jQuery: MIT License (https://jquery.org/license)
+- Geist and Geist Mono (www/fonts/geist): SIL Open Font License 1.1 (www/fonts/geist/OFL.txt)
+- Lucide icons (embedded in www/css/screen.css): ISC License (https://lucide.dev/license)
+- Design of shadcn/ui (https://ui.shadcn.com) recreated in www/css/screen.css: MIT License
 - Adminer: Apache License 2.0 or GPL 2 (http://www.adminer.org)
 - Sandbox: The Unlicense (http://unlicense.org)
 

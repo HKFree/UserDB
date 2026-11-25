@@ -1,6 +1,6 @@
 ---
 name: Vykreslování seznamu a detailu člena
-description: Samostatné Latte ve sloupci štítků, routované adresy, stav dropdownu a nástrahy formulářů.
+description: Samostatné Latte ve sloupci štítků, routované adresy, stav nabídek a nástrahy formulářů.
 metadata:
   type: reference
 ---
@@ -14,14 +14,9 @@ metadata:
 - Při generování adresy štítků je nutné předat `id => null`, jinak se do ní přenese
   persistentní ID člena nebo AP. Ověřeno 22. 11. 2026 presenter testem pro kořen webu
   i prefix `/userdb` a čtením obou render callbacků v `UzivatelListGrid.php`.
-- Přibalený Bootstrap 3.2 při otevření dropdownu nemění `aria-expanded`. Pro vlastní
-  ovládání je třeba reagovat na `shown.bs.dropdown` a `hidden.bs.dropdown`.
-  Ověřeno 22. 11. 2026 v prohlížeči: otevřená nabídka měla před doplněním obsluhy
-  stále `aria-expanded="false"`.
-- Samotné načtení `grido.js` AJAX nezapíná. V tomto checkoutu se `.grido()` neinicializuje
-  a kliknutí na řazení načte celou stránku. AJAX snippet lze ověřit přes `$.nette.ajax()`;
-  jeho podporu nezaměňovat za chování běžného odkazu. Ověřeno 22. 11. 2026 čtením
-  inicializace a v prohlížeči.
+- Nabídky jsou `popover` s tlačítkem `popovertarget`; `aria-expanded` tlačítka nastavuje `main.js`
+  v události `toggle` (prohlížeč ho sám nemění). Grido běží bez AJAXu (`grido.js` ani `nette.ajax.js`
+  aplikace nemá): řazení, stránky i filtry načtou celou stránku.
 - Řádek filtrů nad seznamem členů kreslí šablona stránky (`memberFilter` v `list.latte`), ne Grido.
   Pole jsou mimo `<form>` tabulky a patří k němu atributem `form="frm-grid-form"`, takže filtr
   nesou odkazy řazení, stránek i exportu jako `grid-filter[...]`. Grido svůj blok vynechá díky

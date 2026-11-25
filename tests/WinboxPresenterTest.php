@@ -138,7 +138,9 @@ final class WinboxPresenterTest extends DatabaseTestCase
             Assert::same(200, $result->status, $role->text);
             $dom = DomQuery::fromHtml($result->html);
             Assert::same('Otevírání Winboxu z prohlížeče', trim((string) $dom->find('h1')[0]), $role->text);
-            Assert::count(1, $dom->find('.navbar li.active > #navbar-tools a[href="' . self::HELP_URL . '"]'), $role->text);
+            // The tools button of the top bar is marked as the current part, the help link as the current page.
+            Assert::count(1, $dom->find('.app-topbar .topbar-link.active[popovertarget="menu-nastroje"]'), $role->text);
+            Assert::count(1, $dom->find('#menu-nastroje a[href="' . self::HELP_URL . '"][aria-current="page"]'), $role->text);
         }
     }
 

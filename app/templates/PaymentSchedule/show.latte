@@ -15,15 +15,11 @@
 </div>
 
 <script>
-  $('#btn-handle-sendPaymentScheduleEmail').on('click', function() {
-      const c = confirm("Rozpis plateb bude odeslán na e-mail "+{$u->email}+".\n\nPokračovat?");
-      if (c) {
-          // Ok
-      } else {
-          // Cancel
+  document.getElementById('btn-handle-sendPaymentScheduleEmail').addEventListener('click', (event) => {
+      if (confirm("Rozpis plateb bude odeslán na e-mail " + {$u->email} + ".\n\nPokračovat?") === false) {
           event.preventDefault();
       }
-  })
+  });
 </script>
 
 <style>

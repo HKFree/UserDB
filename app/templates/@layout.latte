@@ -2,46 +2,41 @@
  * @param string   $basePath web base path
  * @param array    $flashes  flash messages
  *}
-
 <!DOCTYPE html>
 <html lang="cs" data-theme="{$vzhled}" data-theme-choice="{$vzhledVolba}">
 <head>
-	<meta charset="utf-8">
-	{* Vzhled podle systému rozhodne prohlížeč ještě před vykreslením stránky, aby neblikla světlá. *}
-	<script>(function () { var root = document.documentElement; if (root.getAttribute('data-theme-choice') === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) root.setAttribute('data-theme', 'dark'); })();</script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="{$vzhledVolba === auto ? 'light dark' : $vzhled}">
 
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+    {capture $pageTitle}{ifset #title}{include title|striptags}{/ifset}{/capture}
+    {var $pageTitle = trim((string) preg_replace('~\s+~u', ' ', (string) $pageTitle))}
+    <title>{if $pageTitle !== ''}{$pageTitle|noescape} | {/if}HKFree UserDB</title>
 
-        {capture $pageTitle}{ifset #title}{include title|striptags}{/ifset}{/capture}
-        {var $pageTitle = trim((string) preg_replace('~\s+~u', ' ', (string) $pageTitle))}
-        <title>{if $pageTitle !== ''}{$pageTitle|noescape} | {/if}HKFree UserDB</title>
-
-        <link href="{$basePath}/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="{$basePath}/css/font-awesome.min.css">
-        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="{$basePath}/js/jquery.min.js"></script>
-        <link rel="stylesheet" href="{$basePath}/css/jquery-ui.css" />
-        <script src="{$basePath}/js/jquery-ui.min.js"></script>
-        <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script src="{$basePath}/js/bootstrap.min.js"></script>
-        <!-- Bar Rating ( https://github.com/antennaio/jquery-bar-rating ) -->
-        <script src="{$basePath}/js/jquery.barrating.min.js"></script>
-        <script src="{$basePath}/js/jquery.bonsai.js"></script>
-        <script src="{$basePath}/js/markerclusterer.js"></script>
-
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/grido.css">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/theme.css?v12">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css?v60">
-        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/jquery.bonsai.css">
-        <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
-        <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-        <script src="{$basePath}/js/main.js?v31"></script>
-	{block head}{/block}
+    <link rel="preload" href="{$basePath}/fonts/geist/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{$basePath}/css/screen.css?v61">
+    {* Vzhled podle systému, stav postranního panelu a třída js se nastaví před vykreslením, aby stránka neproblikla.
+       Skript stojí za styly záměrně: počká na ně, a obsah stránky se tak nikdy nerozvrhne bez CSS
+       (měření šířky v testech by jinak mohlo proběhnout nad nestylovanou stránkou). *}
+    <script>
+        (() => {
+            const root = document.documentElement;
+            if (root.dataset.themeChoice === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) root.dataset.theme = 'dark';
+            if (localStorage.getItem('userdb-sidebar') === 'hidden') root.dataset.sidebar = 'hidden';
+            root.classList.add('js');
+        })();
+    </script>
+    <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
+    <link rel="icon" href="{$basePath}/favicon.ico">
+    <script src="{$basePath}/js/main.js?v32" defer></script>
+    {block head}{/block}
     {import 'spolekdruzstvo.latte'}
 </head>
 
-<body class="with-navbar" data-base-path="{$basePath}" data-stitky-save-url="{link SpravaStitku:saveLabel id=>null}" data-stitky-delete-url="{link SpravaStitku:deleteLabel id=>null}">
+<body class="app" data-base-path="{$basePath}" data-stitky-save-url="{link SpravaStitku:saveLabel id=>null}" data-stitky-delete-url="{link SpravaStitku:deleteLabel id=>null}">
+    <a class="skip-link" href="#obsah">Přeskočit na obsah</a>
+
+    {* Nástroje: nabídka v horní liště, napovídání v hledání i přehled na úvodní stránce. null je oddělovač. *}
     {var $toolLinks = [
         'Status:default' => 'Status AP',
         'SpravaGrafu:usersgraph' => 'Graf počtu účastníků',
@@ -57,136 +52,170 @@
         'separatorNews' => null,
         'Novinky:default' => 'Novinky',
     ]}
+    {var $toolIcons = [
+        'Status:default' => 'icon-globe',
+        'SpravaGrafu:usersgraph' => 'icon-chart-line',
+        'VnejsiScanner:default' => 'icon-shield',
+        'SpravaCc:prehledcc' => 'icon-star',
+        'SpravaStitku:default' => 'icon-tags',
+        'SpravaUctu:ucty' => 'icon-landmark',
+        'SpravaPlateb:odchoziplatby' => 'icon-arrow-left-right',
+        'Sprava:nastroje' => 'icon-sliders-horizontal',
+        'Winbox:default' => 'icon-terminal',
+        'Novinky:default' => 'icon-megaphone',
+    ]}
     {var $toolsCurrent = $presenter->isLinkCurrent('Status:*') || $presenter->isLinkCurrent('SpravaGrafu:*')
         || $presenter->isLinkCurrent('VnejsiScanner:*') || $presenter->isLinkCurrent('SpravaCc:*')
         || $presenter->isLinkCurrent('SpravaStitku:*') || $presenter->isLinkCurrent('SpravaUctu:*')
         || $presenter->isLinkCurrent('SpravaPlateb:*') || $presenter->isLinkCurrent('Sprava:nastroje')
         || $presenter->isLinkCurrent('Winbox:*') || $presenter->isLinkCurrent('Novinky:*')}
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse" aria-expanded="false">
-            <span class="sr-only">Zobrazit menu</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <button n:if="$mojeOblasti || $oblasti" type="button" class="sidebar-toggle" id="navareas" aria-controls="sidebar" aria-expanded="false"><i class="fa fa-bars" aria-hidden="true"></i> <span class="sidebar-toggle-text">Oblasti</span></button>
-          <a class="navbar-brand" href="{link Homepage:default id=>null}">userdb.<span class="brand-domain">hkfree</span><span class="brand-tld">.org</span></a>
+    {var $identity = $user->getIdentity()}
+
+    <aside class="app-sidebar sidebar" id="oblasti" aria-label="Oblasti">
+        <div class="sidebar-header">
+            <a class="brand" href="{link Homepage:default id=>null}" aria-label="HKFree UserDB, přehled">
+                <span class="brand-mark" aria-hidden="true"><i class="icon icon-radio-tower"></i></span>
+                <span class="brand-text"><span class="brand-name">UserDB</span><span class="brand-domain">hkfree.org</span></span>
+            </a>
         </div>
-        <form n:name="searchForm" role="search">
-          <i class="fa fa-search" aria-hidden="true"></i>
-          <label n:name="search" class="sr-only">Hledat</label>
-          <input n:name="search" placeholder="Hledat účastníka, IP, číslo smlouvy…" autocomplete="off" aria-describedby="search-hint">
-          <div class="search-suggestions" hidden>
-            <div class="search-hint" id="search-hint" role="status">Zadejte účastníka, číslo smlouvy, IP adresu, oblast, AP či nástroj.</div>
-            <div id="search-options" role="listbox" aria-label="Návrhy hledání"></div>
-            <div class="search-help"><kbd>↑</kbd> <kbd>↓</kbd> výběr <kbd>Enter</kbd> otevřít <kbd>Esc</kbd> zavřít</div>
-          </div>
-        </form>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-menu">
-            <li n:class="$presenter->isLinkCurrent('Homepage:*') ? active"><a href="{link Homepage:default id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('Homepage:*') ? page">Přehled</a></li>
-            <li n:if="$oblasti" n:class="$presenter->isLinkCurrent('UzivatelList:listall') ? active"><a href="{link UzivatelList:listall id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('UzivatelList:listall') ? page">Účastníci</a></li>
-            <li n:class="$presenter->isLinkCurrent('Sprava:mapa') ? active"><a href="{link Sprava:mapa id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('Sprava:mapa') ? page">Mapa</a></li>
-            <li n:class="dropdown, $toolsCurrent ? active">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Nástroje <span class="caret"></span></a>
-                <ul class="dropdown-menu" id="navbar-tools">
-                    {foreach $toolLinks as $destination => $label}
-                        {if $label !== null}
-                            <li><a href="{link $destination id=>null}">{$label}</a></li>
+
+        <div class="sidebar-content">
+            <div class="sidebar-group sidebar-filter" n:if="$mojeOblastiSkupiny || $oblasti">
+                <label class="sr-only" for="sidebar-filter-input">Filtrovat oblasti a AP</label>
+                <i class="icon icon-funnel" aria-hidden="true"></i>
+                <input type="search" id="sidebar-filter-input" class="form-control" placeholder="Filtrovat oblasti a AP…" autocomplete="off" data-sidebar-filter>
+            </div>
+            <div class="sidebar-group" n:if="$mojeOblastiSkupiny">
+                <h4 class="sidebar-heading">Moje oblasti</h4>
+                {* AP oblasti stojí odsazená pod jejím jménem; oblast s jediným AP je na jednom řádku. *}
+                <ul class="nav nav-sidebar sidebar-mine">
+                    {foreach $mojeOblastiSkupiny as $skupina}
+                        {if count($skupina['aps']) === 1}
+                            <li n:foreach="$skupina['aps'] as $idap => $jmenoAp"><a n:href="UzivatelList:list id=>$idap">{$jmenoAp}</a></li>
                         {else}
-                            <li role="separator" class="divider"></li>
+                            <li><a n:href="Ap:list id=>$skupina['id']">{$skupina['jmeno']}</a>
+                                <ul class="nav">
+                                    <li n:foreach="$skupina['aps'] as $idap => $jmenoAp"><a n:href="UzivatelList:list id=>$idap">{$jmenoAp}</a></li>
+                                </ul>
+                            </li>
                         {/if}
                     {/foreach}
                 </ul>
-            </li>
-            <li class="navbar-add"><a href="{link Uzivatel:edit id=>null}" title="Přidat účastníka"><i class="fa fa-plus" aria-hidden="true"></i> <span class="navbar-add-text">Přidat účastníka</span></a></li>
-          </ul>
-          <ul class="nav navbar-nav navbar-right navbar-account">
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle-o" aria-hidden="true"></i> <span class="navbar-account-name">{$user->getIdentity()->getNick()} ({$user->getIdentity()->getId()})</span> <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li><a href="{link Uzivatel:show id=>$user->getIdentity()->getId()}">Můj profil</a></li>
-                    <li n:if="$demoPersonaUrl"><a href="{$demoPersonaUrl}" title="Teď se díváš jako {$demoPersonaName}">Změnit osobu</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li class="dropdown-header" id="theme-menu-label">Vzhled</li>
-                    <li id="theme-menu" class="theme-menu" role="radiogroup" aria-labelledby="theme-menu-label">
-                        <button n:foreach="$vzhledVolby as $volba => $popisek" type="button" role="radio" class="theme-option" data-theme-choice="{$volba}" aria-checked="{$volba === $vzhledVolba ? 'true' : 'false'}" tabindex="{$volba === $vzhledVolba ? 0 : -1}"><i n:class="fa, $volba === light ? fa-sun-o : ($volba === dark ? fa-moon-o : fa-adjust)" aria-hidden="true"></i> {$popisek}</button>
-                    </li>
-                    <li role="separator" class="divider"></li>
-                    <li><a href="{link Sprava:logout id=>null}">Odhlášení</a></li>
-                </ul>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="container-fluid">
-      <div class="row">
-        <div class="sidebar" id="sidebar">
-          <div n:if="$mojeOblasti || $oblasti" class="sidebar-filter">
-            <label class="sr-only" for="sidebar-filter-input">Filtrovat oblasti a AP</label>
-            <input type="search" id="sidebar-filter-input" class="form-control input-sm" placeholder="Filtrovat oblasti a AP…" autocomplete="off">
-          </div>
-          {if $mojeOblastiSkupiny}
-            <h4>Moje oblasti</h4>
-            <ul class="nav nav-sidebar sidebar-mine">
-              {foreach $mojeOblastiSkupiny as $skupina}
-                {if count($skupina['aps']) === 1}
-                  <li n:foreach="$skupina['aps'] as $idap => $jmenoAp"><a n:href="UzivatelList:list id=>$idap">{$jmenoAp}</a></li>
-                {else}
-                  <li><a n:href="Ap:list id=>$skupina['id']">{$skupina['jmeno']}</a>
-                    <ul class="nav">
-                      <li n:foreach="$skupina['aps'] as $idap => $jmenoAp"><a n:href="UzivatelList:list id=>$idap">{$jmenoAp}</a></li>
-                    </ul>
-                  </li>
-                {/if}
-              {/foreach}
-            </ul>
-          {/if}
-          {if $oblasti}
-            <h4><a href="{link UzivatelList:listall id=>NULL}">Všechny oblasti</a></h4>
-            <ul class="nav nav-sidebar" n:if="$oblasti" id="oblastitree">
-              {foreach $oblasti as $idoblast => $o}
-                {var $apcka = $o->related('Ap.Oblast_id')->order("jmeno")}
-                {if count($apcka) == 1}
-                  {var $ap = $apcka->fetch()}
-                  <li><a n:href="UzivatelList:list id=>$ap->id"><s n:tag-if="!$ap->aktivni">{$ap->jmeno} ({$ap->id})</s></a></li>
-                {else}
-                  <li><a n:href="Ap:list id=>$o->id">{$o->jmeno}</a>
-                    <ul class="nav">
-                    {foreach $apcka as $idap => $theAp}
-                      <li><a n:href="UzivatelList:list id=>$theAp->id"><s n:tag-if="!$theAp->aktivni">{$theAp->jmeno} ({$theAp->id})</s></a></li>
+            </div>
+            <div class="sidebar-group" n:if="$oblasti">
+                <h4 class="sidebar-heading"><a href="{link UzivatelList:listall id=>NULL}">Všechny oblasti</a></h4>
+                <ul class="nav nav-sidebar area-tree" id="oblastitree">
+                    {foreach $oblasti as $idoblast => $o}
+                        {var $apcka = $o->related('Ap.Oblast_id')->order("jmeno")}
+                        {if count($apcka) == 1}
+                            {var $ap = $apcka->fetch()}
+                            <li><a n:href="UzivatelList:list id=>$ap->id"><s n:tag-if="!$ap->aktivni">{$ap->jmeno} ({$ap->id})</s></a></li>
+                        {else}
+                            <li>
+                                <details>
+                                    <summary><a n:href="Ap:list id=>$o->id">{$o->jmeno}</a></summary>
+                                    <ul class="nav">
+                                        {foreach $apcka as $idap => $theAp}
+                                            <li><a n:href="UzivatelList:list id=>$theAp->id"><s n:tag-if="!$theAp->aktivni">{$theAp->jmeno} ({$theAp->id})</s></a></li>
+                                        {/foreach}
+                                    </ul>
+                                </details>
+                            </li>
+                        {/if}
                     {/foreach}
-                    </ul>
-                  </li>
-                {/if}
-              {/foreach}
-            </ul>
-          {/if}
-          <p class="sidebar-nomatch" id="sidebar-nomatch" role="status" hidden>Žádná oblast ani AP neodpovídá.</p>
+                </ul>
+            </div>
+            <p class="sidebar-empty" id="sidebar-nomatch" role="status" hidden>Žádná oblast ani AP neodpovídá.</p>
         </div>
-        {* Hned, ne az po nacteni cele stranky: u velke oblasti by strom zustal dlouho rozbaleny a bez zvyrazneni. *}
-        <script>if (window.userdbSidebarTree) userdbSidebarTree();</script>
-        <div class="sidebar-backdrop"></div>
-        <div class="main" id="obsah">
-<!--          <h1 class="page-header">Dashboard</h1> -->
-	  <script> document.documentElement.className+=' js' </script>
 
-	  <div n:foreach="$flashes as $flash" class="h4 alert alert-{ifset $flash->type}{$flash->type}{elseifset $flash->type}info{/ifset}">
-      {$flash->message}
+        <div class="sidebar-footer">
+            <button type="button" class="sidebar-user" popovertarget="menu-uzivatel" aria-haspopup="true" aria-expanded="false">
+                <span class="avatar" aria-hidden="true">{$identity->getNick()|substr:0,1|upper}</span>
+                <span class="sidebar-user-text">
+                    <span class="sidebar-user-name">{$identity->getNick()}</span>
+                    <span class="sidebar-user-meta">UID {$identity->getId()}</span>
+                </span>
+                <i class="icon icon-chevrons-up-down" aria-hidden="true"></i>
+            </button>
+            <div id="menu-uzivatel" class="menu" popover>
+                <div class="menu-label">
+                    <span class="avatar" aria-hidden="true">{$identity->getNick()|substr:0,1|upper}</span>
+                    <span class="sidebar-user-text">
+                        <span class="sidebar-user-name">{$identity->getNick()}</span>
+                        <span class="sidebar-user-meta">UID {$identity->getId()}</span>
+                    </span>
+                </div>
+                <hr>
+                <a href="{link Uzivatel:show id=>$identity->getId()}"><i class="icon icon-id-card" aria-hidden="true"></i> Můj profil</a>
+                <a n:if="$demoPersonaUrl" href="{$demoPersonaUrl}" title="Teď se díváš jako {$demoPersonaName}"><i class="icon icon-venetian-mask" aria-hidden="true"></i> Změnit osobu</a>
+                <hr>
+                <div class="menu-heading" id="theme-menu-label">Vzhled</div>
+                {* Skupina přepínačů: v pořadí klávesy Tab je jen vybraná volba, mezi volbami se chodí šipkami. *}
+                <div id="theme-menu" class="theme-menu" role="radiogroup" aria-labelledby="theme-menu-label">
+                    <button n:foreach="$vzhledVolby as $volba => $popisek" type="button" role="radio" class="theme-option" data-theme-choice="{$volba}" aria-checked="{$volba === $vzhledVolba ? 'true' : 'false'}" tabindex="{$volba === $vzhledVolba ? 0 : -1}"><i n:class="icon, $volba === light ? icon-sun : ($volba === dark ? icon-moon : icon-monitor)" aria-hidden="true"></i> {$popisek}</button>
+                </div>
+                <hr>
+                <a href="{link Sprava:logout id=>null}"><i class="icon icon-log-out" aria-hidden="true"></i> Odhlášení</a>
+            </div>
+        </div>
+    </aside>
+    <div class="sidebar-backdrop" aria-hidden="true"></div>
+
+    <div class="app-inset">
+        <header class="app-topbar">
+            <button type="button" class="topbar-icon sidebar-toggle" aria-controls="oblasti" aria-expanded="true" aria-keyshortcuts="Control+B Meta+B" title="Skrýt nebo zobrazit seznam oblastí (Ctrl+B)">
+                <i class="icon icon-panel-left" aria-hidden="true"></i><span class="sr-only">Seznam oblastí</span>
+            </button>
+            <span class="topbar-separator" aria-hidden="true"></span>
+
+            <a class="topbar-brand" href="{link Homepage:default id=>null}" aria-label="HKFree UserDB, přehled">
+                <span class="brand-mark" aria-hidden="true"><i class="icon icon-radio-tower"></i></span>
+                <span class="brand-name">UserDB</span>
+            </a>
+
+            <form n:name="searchForm">
+                <i class="icon icon-search" aria-hidden="true"></i>
+                <label n:name="search" class="sr-only">Hledat</label>
+                <input n:name="search" aria-describedby="search-hint">
+                <kbd class="search-key" aria-hidden="true">/</kbd>
+                <div class="search-suggestions" hidden>
+                    <div class="search-hint" id="search-hint" role="status">Zadejte účastníka, číslo smlouvy, IP adresu, oblast, AP či nástroj.</div>
+                    <div id="search-options" role="listbox" aria-label="Návrhy hledání"></div>
+                    <div class="search-help"><kbd>↑</kbd> <kbd>↓</kbd> výběr <kbd>Enter</kbd> otevřít <kbd>Esc</kbd> zavřít</div>
+                </div>
+            </form>
+
+            <nav class="topbar-nav" aria-label="Hlavní nabídka">
+                <a n:class="topbar-link, $presenter->isLinkCurrent('Homepage:*') ? active" href="{link Homepage:default id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('Homepage:*') ? page"><i class="icon icon-layout-dashboard" aria-hidden="true"></i><span class="topbar-label">Přehled</span></a>
+                <a n:if="$oblasti" n:class="topbar-link, $presenter->isLinkCurrent('UzivatelList:listall') ? active" href="{link UzivatelList:listall id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('UzivatelList:listall') ? page"><i class="icon icon-users" aria-hidden="true"></i><span class="topbar-label">Účastníci</span></a>
+                <a n:class="topbar-link, $presenter->isLinkCurrent('Sprava:mapa') ? active" href="{link Sprava:mapa id=>null}" n:attr="aria-current => $presenter->isLinkCurrent('Sprava:mapa') ? page"><i class="icon icon-map" aria-hidden="true"></i><span class="topbar-label">Mapa</span></a>
+
+                <button type="button" n:class="topbar-link, $toolsCurrent ? active" popovertarget="menu-nastroje" aria-haspopup="true" aria-expanded="false">
+                    <i class="icon icon-wrench" aria-hidden="true"></i><span class="topbar-label">Nástroje</span><i class="icon icon-chevron-down caret-icon" aria-hidden="true"></i>
+                </button>
+                <div id="menu-nastroje" class="menu" popover>
+                    {foreach $toolLinks as $destination => $label}
+                        {if $label !== null}
+                            <a href="{link $destination id=>null}" n:attr="aria-current => $presenter->isLinkCurrent($destination) ? page"><i class="icon {$toolIcons[$destination]}" aria-hidden="true"></i> {$label}</a>
+                        {else}
+                            <hr>
+                        {/if}
+                    {/foreach}
+                </div>
+
+                <a class="btn btn-primary btn-sm topbar-add" href="{link Uzivatel:edit id=>null}"><i class="icon icon-user-plus" aria-hidden="true"></i><span class="topbar-label">Přidat účastníka</span></a>
+            </nav>
+        </header>
+
+        <main class="app-main main" id="obsah" tabindex="-1">
+            <div n:foreach="$flashes as $flash" class="alert alert-{ifset $flash->type}{$flash->type}{else}info{/ifset} flash" role="status">{$flash->message}</div>
+
+            {include content, toolLinks => $toolLinks}
+        </main>
     </div>
 
-	  {include content, toolLinks => $toolLinks}
-        </div>
-      </div>
-    </div>
-	{block scripts}
-    <script src="{$basePath}/js/netteForms.js"></script>
-    <script src="{$basePath}/js/nette.ajax.js"></script>
-    <script src="{$basePath}/js/grido.js"></script>
-	{/block}
+    {block scripts}
+        <script src="{$basePath}/js/netteForms.js"></script>
+    {/block}
 </body>
 </html>

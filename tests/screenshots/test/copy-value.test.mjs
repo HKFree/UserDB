@@ -38,13 +38,8 @@ const copyCell = (value, title) => `<td class="copy-value-cell"><span class="cop
     + ' data-toggle="tooltip" data-placement="top" data-container="body"><span class="fa fa-copy" aria-hidden="true"></span></button></td>';
 const fixture = tableRows => `<!DOCTYPE html><html><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/font-awesome.min.css" rel="stylesheet">
-    <link href="/css/theme.css" rel="stylesheet">
     <link href="/css/screen.css" rel="stylesheet">
-    <script src="/js/jquery.min.js"></script><script src="/js/jquery-ui.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script><script src="/js/jquery.bonsai.js"></script>
-    <script src="/js/main.js"></script></head><body><div class="table-responsive"><table class="table table-striped">
+    <script src="/js/main.js" defer></script></head><body><div class="table-responsive"><table class="table table-striped">
     <tr><th>IP</th><th></th><th>Popis</th><th>Login</th><th>Heslo</th></tr>${tableRows.map(row => `<tr><td>${row.ip}</td>`
         + `<td><span class="wboxbutton btn btn-default btn-xs btn-in-table" tag="${escape(sshCommand)}">`
         + '<span class="glyphicon glyphicon-lock"></span></span></td><td>Demo zařízení</td>'
@@ -116,7 +111,7 @@ describe('copying device login and password', () => {
     // The value is selected right after the browser has finished handling the click.
     const becomesSelected = (page, text) => page.waitForFunction(
         expected => window.getSelection().toString() === expected, text, { timeout: 5000 });
-    const tooltip = (page, text) => page.locator('.tooltip.in .tooltip-inner').getByText(text, { exact: true });
+    const tooltip = (page, text) => page.locator('.tip:popover-open').getByText(text, { exact: true });
     const copyButton = (page, row, title) => page.locator('tr').nth(row + 1).getByRole('button', { name: title });
 
     // A press on the copy button right behind a value starts no selection, so drags begin and end inside the text.
@@ -322,7 +317,7 @@ describe('copying device login and password', () => {
         // The original hint and icon come back.
         await button.locator('.fa-copy').waitFor({ timeout: 5000 });
         assert.equal(await page.getByRole('status').textContent(), '');
-        assert.equal(await button.getAttribute('data-original-title'), 'Zkopírovat heslo');
+        assert.equal(await button.getAttribute('data-tip'), 'Zkopírovat heslo');
         assert.equal(await button.getAttribute('aria-label'), 'Zkopírovat heslo');
     });
 

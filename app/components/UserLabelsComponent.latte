@@ -1,4 +1,6 @@
 {* Grido renders this file with standalone Latte, without {link}; the routed URLs are on <body> in the layout. *}
+{* Člen je v jednom seznamu nejvýš jednou, id nabídky podle něj je proto jedinečné. *}
+{var $menuId = "stitky-" . $userId}
 {var $assignedIds = []}
 {foreach $stitkyUzivatele as $assignedLabel}{do $assignedIds[$assignedLabel->id] = true}{/foreach}
 <div class="user-labels-component" data-user-id="{$userId}">
@@ -13,25 +15,22 @@
         {/foreach}
         <span class="labels-empty" n:if="!$stitkyUzivatele">žádné</span>
     </div>
-    <div class="dropdown me-2">
-        <button class="btn btn-default dropdown-toggle btn-sm" type="button" data-toggle="dropdown" aria-label="Přidat štítek" title="Přidat štítek" aria-haspopup="true" aria-expanded="false">
-            <i class="fa fa-tag" aria-hidden="true"></i> <span class="label-add-text">Přidat štítek</span>
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu" aria-label="Štítky k přidání">
-            <li class="labels-menu-hint" role="presentation">Kliknutím štítek přidáte</li>
-            {foreach $stitky as $stitek}
-                <li role="presentation">
-                    <a href="#" role="menuitem"
-                       n:class="stitky-item, isset($assignedIds[$stitek->id]) ? label-assigned" data-id="{$stitek->id}"
-                       aria-disabled="{isset($assignedIds[$stitek->id]) ? 'true' : 'false'}"
-                       title="{isset($assignedIds[$stitek->id]) ? 'Účastník tento štítek už má' : 'Přidat štítek'}"
-                       style="{App\Services\BarvaStitku::styl($stitek->barva_pozadi, $stitek->barva_popredi)|noescape}">
-                        {$stitek->text}
-                    </a>
-                </li>
-            {/foreach}
-        </ul>
-    </div>
-
+    <button class="btn btn-default btn-sm stitky-toggle" type="button" popovertarget="{$menuId}" aria-label="Přidat štítek" title="Přidat štítek" aria-haspopup="true" aria-expanded="false">
+        <i class="icon icon-tag" aria-hidden="true"></i> <span class="label-add-text">Přidat štítek</span>
+        <i class="icon icon-chevron-down caret-icon" aria-hidden="true"></i>
+    </button>
+    <ul class="menu stitky-menu" id="{$menuId}" popover role="menu" aria-label="Štítky k přidání">
+        <li class="labels-menu-hint" role="presentation">Kliknutím štítek přidáte</li>
+        {foreach $stitky as $stitek}
+            <li role="presentation">
+                <a href="#" role="menuitem"
+                   n:class="stitky-item, isset($assignedIds[$stitek->id]) ? label-assigned" data-id="{$stitek->id}"
+                   aria-disabled="{isset($assignedIds[$stitek->id]) ? 'true' : 'false'}"
+                   title="{isset($assignedIds[$stitek->id]) ? 'Účastník tento štítek už má' : 'Přidat štítek'}"
+                   style="{App\Services\BarvaStitku::styl($stitek->barva_pozadi, $stitek->barva_popredi)|noescape}">
+                    {$stitek->text}
+                </a>
+            </li>
+        {/foreach}
+    </ul>
 </div>

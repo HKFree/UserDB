@@ -1,10 +1,10 @@
 import { test, expect, personas } from '../fixtures.mjs';
 
-/** Links of the top bar and of the sidebar heading; the lists of areas are covered by one area each. */
+/** Links of the top bar, of the user menu and of the sidebar heading; the lists of areas are covered by one area each. */
 async function menuLinks(page) {
     return page.evaluate(() => {
         const skipped = ['/sprava/logout', '/demo-osoba'];
-        const links = [...document.querySelectorAll('.navbar a[href], .sidebar h4 a[href], .sidebar .nav-sidebar > li:first-child > a[href]')]
+        const links = [...document.querySelectorAll('.app-topbar a[href], #menu-uzivatel a[href], .sidebar h4 a[href], .sidebar .nav-sidebar > li:first-child > a[href]')]
             .map(link => new URL(link.href))
             .filter(url => url.origin === location.origin && !url.hash && !skipped.includes(url.pathname))
             .map(url => url.pathname + url.search);
@@ -28,7 +28,7 @@ for (const [role, persona] of Object.entries({ VV: personas.vv, SO: personas.so,
         test('každá stránka z menu se načte bez chyby', async ({ page, problems }) => {
             Object.values(disconnected).flatMap(expected => expected.allow).forEach(pattern => problems.allow(pattern));
             await page.goto('/');
-            await expect(page.locator('.navbar-right').first()).toContainText(`(${persona})`);
+            await expect(page.locator('.sidebar-user')).toContainText(`UID ${persona}`);
             const links = await menuLinks(page);
             expect(links.length).toBeGreaterThan(10);
             for (const link of links) {
@@ -36,7 +36,7 @@ for (const [role, persona] of Object.entries({ VV: personas.vv, SO: personas.so,
                     const response = await page.goto(link);
                     expect(response.status(), `stav odpovědi ${link}`).toBe(disconnected[link]?.status ?? 200);
                     await expect(page.locator('#tracy-bs')).toHaveCount(0);
-                    await expect(page.locator('.navbar-brand')).toBeVisible();
+                    await expect(page.locator('.app-sidebar .brand')).toBeVisible();
                 });
             }
         });

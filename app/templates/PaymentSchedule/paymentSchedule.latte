@@ -88,6 +88,22 @@
   }
 </style>
 
-<style>
-  {$copy_of_bootstrap_css ?? '' |noescape}
+<style n:if="$emailStyles ?? false">
+  section#rozpis {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #1b2330;
+  }
+  section#rozpis .alert {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #b7e1c8;
+    border-radius: 6px;
+    background-color: #e9f7ef;
+    color: #1d5134;
+  }
+  section#rozpis .text-large {
+    font-size: 16px;
+  }
 </style>
