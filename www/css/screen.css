@@ -3370,6 +3370,38 @@ html {
     margin: 6px 0 12px;
 }
 
+.main .home-news h3 {
+    margin: 10px 0 4px;
+    color: var(--udb-text-6b7280);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.home-news-list {
+    margin: 0 0 6px;
+    padding-left: 18px;
+}
+
+.home-news-list li {
+    margin-bottom: 3px;
+    overflow-wrap: anywhere;
+}
+
+.home-news-kind {
+    color: var(--udb-text-6b7280);
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.home-news-kind::after {
+    content: ":";
+}
+
+.main a.home-news-all {
+    display: inline-block;
+    margin-top: 6px;
+}
+
 @media (max-width: 989px) {
     .home-grid {
         grid-template-columns: minmax(0, 1fr);

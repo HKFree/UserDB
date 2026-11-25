@@ -122,7 +122,7 @@ final class FormOverviewPresenterTest extends DatabaseTestCase
             Assert::contains($this->scenario->ap->jmeno, $cards[0]->textContent);
             Assert::same('/userdb/uzivatel-list/list/' . $this->scenario->ap->id, $cards[0]->getAttribute('href'));
         } else {
-            Assert::contains('Nespravujete žádnou oblast.', $this->text($document, '//*[contains(@class,"home-empty")]'));
+            Assert::contains('Nespravujete žádnou oblast.', $this->text($document, '//section[@aria-labelledby="home-areas-title"]//*[contains(@class,"home-empty")]'));
         }
         Assert::count(2, $this->elements($document, '//*[contains(@class,"home-help")]/details/summary'));
         Assert::count(2, $this->elements($document, '//*[contains(@class,"home-help")]/details/img[@alt]'));

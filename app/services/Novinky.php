@@ -39,6 +39,25 @@ final class Novinky
         return array_values($vydani);
     }
 
+    /**
+     * Nejnovější vydání oříznutá na nejvýše $pocet položek; v každém vydání jdou Novinky před Opravami.
+     *
+     * @return list<VydaniNovinek>
+     */
+    public function posledni(int $pocet): array {
+        $vysledek = [];
+        foreach ($this->nacti() as $vydani) {
+            if ($pocet <= 0) {
+                break;
+            }
+            $novinky = array_slice($vydani->novinky, 0, $pocet);
+            $opravy = array_slice($vydani->opravy, 0, $pocet - count($novinky));
+            $vysledek[] = new VydaniNovinek($vydani->datum, $novinky, $opravy);
+            $pocet -= count($novinky) + count($opravy);
+        }
+        return $vysledek;
+    }
+
     private static function spojVydani(VydaniNovinek $prvni, VydaniNovinek $dalsi): VydaniNovinek {
         return new VydaniNovinek(
             $prvni->datum,
