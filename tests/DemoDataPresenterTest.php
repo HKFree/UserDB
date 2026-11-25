@@ -114,7 +114,7 @@ final class DemoDataPresenterTest extends TestCase
         };
         // Only the explicitly guarded, dedicated demo test database is rebuilt.
         (new Runner($driver, $printer))->run(Runner::MODE_RESET, new DefaultConfiguration(TestEnvironment::ROOT . '/db', $driver, true));
-        Assert::same(15, $adapter->scenarioFiles);
+        Assert::same(16, $adapter->scenarioFiles);
         Assert::true($adapter->scenarioStatements >= 70);
         $files = glob(TestEnvironment::ROOT . '/db/{structures,basic-data,dummy-data}/*.sql', GLOB_BRACE);
         Assert::same(count($files === false ? [] : $files), $connection->fetchField('SELECT COUNT(*) FROM migrations WHERE ready = 1'));
@@ -274,9 +274,9 @@ final class DemoDataPresenterTest extends TestCase
     private function assertScenarioSafety(): void {
         Assert::same(12, $this->database->table('Oblast')->count('*'));
         Assert::same(25, $this->database->table('Ap')->count('*'));
-        Assert::same(89, $this->database->table('Uzivatel')->count('*'));
-        Assert::same(79, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081')->count('*'));
-        Assert::same(79, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20081 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
+        Assert::same(92, $this->database->table('Uzivatel')->count('*'));
+        Assert::same(82, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20084')->count('*'));
+        Assert::same(82, $this->database->table('Uzivatel')->where('id BETWEEN 20000 AND 20084 AND poznamka LIKE ?', 'DEMO: %')->count('*'));
         Assert::same(60, $this->database->table('IPAdresa')->where('Uzivatel_id', 20061)->count('*'));
         foreach ([
             'SELECT COUNT(*) FROM Oblast o LEFT JOIN Ap a ON a.Oblast_id = o.id WHERE a.id IS NULL',

@@ -211,3 +211,12 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   element. `DOMDocument::loadHTML()` (helper `values()` v `DemoDataPresenterTest`) zase v hodnotě atributu
   sloučí konce řádků do mezery; text s `\n` (např. `data-confirm`) porovnávat ze syrového HTML.
   Ověřeno 23. 11. 2026 u testů dotazu před odesláním rozpisu plateb (issue 317).
+- Účet `userdb_test` smí v izolované databázi odstranit a obnovit pohled. `DROP VIEW` potvrzuje
+  transakci, proto jej provést před vložením fixtures, po `invalidateSchema()` mimo transakci.
+  V `tearDown()` nejprve rollback fixtures, potom obnovit původní `SHOW CREATE VIEW`; příznak
+  `migrations.ready` vrátit až po úspěšném úklidu. Ověřeno 23. 11. 2026 v
+  `CcOverviewWithoutViewPresenterTest`: původní model bez pohledu padá na chybu 1146.
+- Časové větve SQL lze testovat přes `SET timestamp = UNIX_TIMESTAMP(?)` na spojení testu.
+  `NOW()` i `CURDATE()` pak mají pevný čas bez změny systémových hodin, v `tearDown()` jej vrací
+  `SET timestamp = DEFAULT`. Ověřeno 23. 11. 2026 v `CcOverviewDatabaseTest`, včetně začátku
+  měsíce, přelomu roku a přestupného února.
