@@ -133,6 +133,7 @@ tyto scénáře nevyžadují volání Digisignu.
 | Pouze ZSO | Oblast 204 Demo pouze zástupce, AP 213, 215 a 216 | `/ap/list/204` |
 | Neaktivní AP, bez GPS a adresy, oba zákazy automatizace | AP 202 Demo vypnuté AP | `/ap/show/202`, `/ap/edit/202` |
 | Bez automatického DNS / upgradu | AP 203 Demo bez DNS / 204 Demo bez upgradu | Editace příslušného AP |
+| Zapnutý příznak Správce neaktivní | AP 200 Demo malé AP, persona 20002 | `/ap/show/200`, `/ap/edit/200` |
 | Plné údaje, víceřádková poznámka | AP 201 Demo hlavní AP | `/ap/show/201` |
 | Dlouhé hodnoty v tabulce IP adres AP | AP 201, IP `198.51.100.2` | `/ap/show/201`, dlouhé SSID, popis, login a heslo |
 | Subnet /24 | AP 200, `192.0.2.0/24` | `/subnet/overview/192.0.2`, `/subnet/detail/192.0.2` |

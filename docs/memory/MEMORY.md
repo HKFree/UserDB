@@ -5,7 +5,7 @@
 - [Konfigurace databázového serveru](userdb_database_server.md) - konfigurace dodaná zadavatelem jako podklad pro práci s DB.
 - [Vývoj ve více worktrees](userdb_flox_worktrees.md) - izolace databází, běhových souborů a další závislosti lokálního vývoje.
 - [Worktrees v Orce](userdb_orca_worktrees.md) - chování orca.yaml při založení worktree a jak jeho změnu vyzkoušet.
-- [Testy](userdb_tests.md) - nástrahy testovacího kontejneru, testovací DB z migrací, spouštění presenterů a měření pokrytí.
+- [Testy](userdb_tests.md) - nástrahy testovacího kontejneru, testovací DB z migrací, presenterů, DomQuery a měření pokrytí.
 - [Testy v prohlížeči](userdb_e2e.md) - nástrahy Playwright testů hlavních postupů, předčasně ukončená aktivace Floxu a stránky závislé na odpojené službě.
 - [Regresní testy SMS](userdb_sms_tests.md) - bezpečné testování bez externí brány a nástrahy starého SMS senderu.
 - [Testy InfluxDB](userdb_influx_tests.md) - lokální server, přidělený port a ověření v1 API.

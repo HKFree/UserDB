@@ -220,3 +220,7 @@ není vidět. Ověřeno 20. 11. 2026 nad Nette Application 3.2.6, Nette Tester 2
   `NOW()` i `CURDATE()` pak mají pevný čas bez změny systémových hodin, v `tearDown()` jej vrací
   `SET timestamp = DEFAULT`. Ověřeno 23. 11. 2026 v `CcOverviewDatabaseTest`, včetně začátku
   měsíce, přelomu roku a přestupného února.
+- `Tester\DomQuery::find()` na PHP 8.2 nepodporuje pseudotřídu `:not()`.
+  Pro stav checkboxu vyhledat vstup podle názvu a zkontrolovat `isset($input['checked'])`.
+  Ověřeno 25. 11. 2026 v `ApInactiveManagerPresenterTest`, kde selektor `:not([checked])`
+  vyvolal `InvalidArgumentException` a kontrola atributu prošla pro oba stavy.

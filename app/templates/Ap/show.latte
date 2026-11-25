@@ -20,7 +20,11 @@
 </div>
 {* Odkaz na seznam clenu AP uz je v hlavicce: levy panel se zvyrazni hned, ne az po nacteni cele stranky. *}
 <script>if (window.userdbSidebarTree) userdbSidebarTree();</script>
-<span n:if="$ap->ulice_cp"><b>Adresa AP:</b> {$ap->ulice_cp}, {$ap->mesto}, {$ap->psc}<br><br></span>
+<p n:if="$ap->ulice_cp || $ap->spravce_neaktivni">
+    <span n:if="$ap->ulice_cp"><b>Adresa AP:</b> {$ap->ulice_cp}, {$ap->mesto}, {$ap->psc}</span>
+    <br n:if="$ap->ulice_cp && $ap->spravce_neaktivni">
+    <small n:if="$ap->spravce_neaktivni" class="text-muted">Správce neaktivní</small>
+</p>
 
 <pre>
 {$ap->poznamka}
