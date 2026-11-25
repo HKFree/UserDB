@@ -165,6 +165,7 @@ class ApPresenter extends BasePresenter
         $form->addText('psc', 'Adresa (psč)', 5)->setRequired('Zadejte psč')->addRule(Form::INTEGER, 'PSČ musí být číslo');
         $form->addCheckbox('no_auto_dns', 'Nechci automaticky generovat DNS z UserDB')->setDefaultValue(false);
         $form->addCheckbox('no_auto_upgrade', 'Nechci automaticky upgradovat RouterOS')->setDefaultValue(false);
+        $form->addCheckbox('spravce_neaktivni', 'Správce neaktivní')->setDefaultValue(false);
         $form->addTextArea('poznamka', 'Poznámka', 24, 10);
         $dataIp = $this->ipAdresa;
         $typyZarizeni = $this->typZarizeni->getTypyZarizeni()->fetchPairs('id', 'text');
