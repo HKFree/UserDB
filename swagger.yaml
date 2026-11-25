@@ -99,6 +99,9 @@ paths:
                   6:
                     id: 6
                     jmeno: "Kukleny"
+                    no_auto_dns: false
+                    no_auto_upgrade: false
+                    spravce_neaktivni: false
                 admins:
                   20:
                     id: 20
@@ -117,9 +120,15 @@ paths:
                   112:
                     id: 112
                     jmeno: "AP2"
+                    no_auto_dns: true
+                    no_auto_upgrade: false
+                    spravce_neaktivni: true
                   1112:
                     id: 1112
                     jmeno: "AP3"
+                    no_auto_dns: false
+                    no_auto_upgrade: true
+                    spravce_neaktivni: false
                 admins:
                   1980:
                     id: 1980
@@ -352,11 +361,24 @@ definitions:
 
   Ap:
     type: object
+    required:
+      - no_auto_dns
+      - no_auto_upgrade
+      - spravce_neaktivni
     properties:
       id:
         type: integer
       jmeno:
         type: string
+      no_auto_dns:
+        type: boolean
+        description: Pro toto AP je vypnuté automatické generování DNS z UserDB.
+      no_auto_upgrade:
+        type: boolean
+        description: Pro toto AP je vypnutý automatický upgrade RouterOS.
+      spravce_neaktivni:
+        type: boolean
+        description: U tohoto AP je správce označený jako neaktivní.
   Spravce:
     type: object
     properties:

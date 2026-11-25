@@ -6,6 +6,7 @@ namespace Test;
 
 use Nette\Application\Responses\JsonResponse;
 use Nette\Application\Responses\TextResponse;
+use Nette\Http;
 use Tester\Assert;
 
 require_once __DIR__ . '/bootstrap.php';
@@ -72,6 +73,36 @@ final class ApiPresenterTest extends DatabaseTestCase
         Assert::same(JsonResponse::class, $health->response::class);
         Assert::same(200, $health->status);
         Assert::same('OK', $health->json['result']);
+    }
+
+    public function testAreasReturnsApFlagsAsJsonBooleans(): void {
+        $area = $this->fixtures->area();
+        $firstAp = $this->fixtures->ap($area->id);
+        $firstAp->update(['no_auto_dns' => 1, 'no_auto_upgrade' => 0, 'spravce_neaktivni' => 1]);
+        $secondAp = $this->fixtures->ap($area->id);
+        $secondAp->update(['no_auto_dns' => 0, 'no_auto_upgrade' => 1, 'spravce_neaktivni' => 0]);
+        $key = $this->fixtures->apiKey(presenter: 'Api:Areas');
+
+        $result = $this->presenters->api('Api:Areas', ['apikey' . $key->id, $key->klic]);
+        Assert::same(200, $result->status);
+        Assert::type(JsonResponse::class, $result->response);
+
+        ob_start();
+        try {
+            $result->response->send(new Http\Request(new Http\UrlScript('http://localhost/userdb/api/areas')), new Http\Response());
+            $areas = json_decode((string) ob_get_contents(), true, flags: JSON_THROW_ON_ERROR);
+        } finally {
+            ob_end_clean();
+        }
+
+        foreach ([$firstAp->id => [true, false, true], $secondAp->id => [false, true, false]] as $apId => $expected) {
+            $ap = $areas[$area->id]['aps'][$apId];
+            Assert::same($expected, [
+                $ap['no_auto_dns'] ?? null,
+                $ap['no_auto_upgrade'] ?? null,
+                $ap['spravce_neaktivni'] ?? null,
+            ]);
+        }
     }
 
     public function testOptionsWithoutCredentials(): void {
